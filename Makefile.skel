@@ -1,0 +1,47 @@
+VERSION = 0.8.0
+DATE    = 36/15/2012
+
+COMPILE = $(CC) -Wall -c
+LINK    = $(CC) -Wall -lm -ljpeg
+
+SRCDIR = src
+OBJDIR = obj
+BINDIR = bin
+
+PPL_FILES   = asciidouble.c ppl_commands.c ppl_text.c pyxplot.c
+
+PPL_SOURCES = $(PPL_FILES:%.c=$(SRCDIR)/%.o)
+PPL_OBJECTS = $(PPL_FILES:%.c=$(OBJDIR)/%.o)
+
+all: $(BINDIR)/pyxplot.out
+
+src/ppl_version.c: $(PPL_SOURCES)
+	echo "const char VERSION[] =\"${VERSION}\";"        >  src/ppl_version.c
+	echo "const char DATE[] =\"${DATE}\";"              >> src/ppl_version.c
+	echo "const char SRCDIR[] =\"`pwd`/src/\";"         >> src/ppl_version.c
+	echo "const char DOCDIR[] =\"`pwd`/doc/\";"         >> src/ppl_version.c
+	echo "const char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version.c
+	echo "const char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version.c
+
+src/ppl_version_install.c: $(PPL_SOURCES)
+	echo "const char VERSION[] =\"${VERSION}\";"        >  src/ppl_version_install.c
+	echo "const char DATE[] =\"${DATE}\";"              >> src/ppl_version_install.c
+	echo "const char SRCDIR[] =\"${SRCDIR}\";"          >> src/ppl_version_install.c
+	echo "const char DOCDIR[] =\"${DOCDIR}\";"          >> src/ppl_version_install.c
+	echo "const char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version_install.c
+	echo "const char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version_install.c
+
+$(OBJDIR)/%.o:$(SRCDIR)/%.c
+	mkdir -p $(OBJDIR)
+	$(COMPILE) $< -o $@
+
+$(BINDIR)/pyxplot.out: $(PPL_OBJECTS) obj/ppl_version.o obj/ppl_version_install.o
+	mkdir -p $(BINDIR)
+	$(LINK) $(PPL_OBJECTS) obj/ppl_version.o         -o $(BINDIR)/pyxplot.out
+	$(LINK) $(PPL_OBJECTS) obj/ppl_version_install.o -o $(BINDIR)/pyxplot_install.out
+
+clean:
+	rm -vfR $(OBJDIR)/
+	rm -vfR $(BINDIR)/
+
+afresh: clean all

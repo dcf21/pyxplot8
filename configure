@@ -1,0 +1,102 @@
+#!/bin/sh
+#
+# Installation script for PyXPlot version 0.8.0
+#
+# The code in this file is part of PyXPlot
+# <http://www.pyxplot.org.uk>
+#
+# Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
+#               2008   Ross Church
+#
+# $Id$
+#
+# PyXPlot is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# You should have received a copy of the GNU General Public License along with
+# PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# ----------------------------------------------------------------------------
+
+# 0. START CONSTRUCTING A MAKEFILE
+
+echo "" > Makefile
+
+# 1. TEST THE ECHO COMMAND TO SEE WHICH VARIANT WE HAVE
+
+case `echo "testing\c"; echo 1,2,3`,`echo -n testing; echo 1,2,3` in
+  *c*,-n*) ECHO_N= ECHO_C='
+' ECHO_T='  ' ;;
+  *c*,*  ) ECHO_N=-n ECHO_C= ECHO_T= ;;
+  *)       ECHO_N= ECHO_C='\c' ECHO_T= ;;
+esac
+
+# 2. CHECK FOR DEPENDENCIES
+
+for prog in "latex  " "convert"
+ do
+  echo $ECHO_N "Checking for ${prog}           ............. $ECHO_C"
+  whichout=`which ${prog} 2> /dev/null`
+  if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
+  if [ "$whichout" != "" ] ; then echo "YES"
+  else echo "NO" ; echo "ERROR: Required program ${prog} could not be found." ; exit
+  fi
+ done
+
+# 3. FIND GHOSTVIEW
+
+echo $ECHO_N "Checking for ghostview         ............. $ECHO_C"
+whichout_gv=`which gv 2> /dev/null`
+whichout_ggv=`which ggv 2> /dev/null`
+if [ "`echo $whichout_gv | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_gv="" ; fi
+if [ "`echo $whichout_ggv | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_ggv="" ; fi
+if [ "$whichout_gv" != "" ] ; then
+ echo $ECHO_N "YES (gv"
+ echo "GV_COMMAND=${whichout_gv}" >> Makefile 
+ if [ "`gv --v 2> /dev/null`" = "" ]; then 
+  echo ", single hyphen options)" 
+  echo "GV_OPT=-" >> Makefile
+ else
+  echo ", double hyphen options)" 
+  echo "GV_OPT=--" >> Makefile
+ fi
+elif [ "$whichout_ggv" != "" ] ; then
+ echo "YES (ggv, don't forget to set \"watch file\" in the viewer preferences!)"
+ echo "GV_COMMAND=${whichout_ggv}" >> Makefile
+ echo "GV_OPT=--" >> Makefile
+else
+ echo "GV_COMMAND=/bin/false" >> Makefile
+ echo "NO"
+ echo "WARNING: Ghostview could not be found. Installation will proceed, but X11 terminal will not be available in PyXPlot. If required, install either ghostview (gv) or Gnome-ghostview (ggv), and then re-install PyXPlot."
+fi
+
+# 4. FIND MAKE
+
+echo $ECHO_N "Checking for GNU make          ............. $ECHO_C"
+whichout_make=`which make 2> /dev/null`
+whichout_gmake=`which gmake 2> /dev/null`
+if [ "`echo $whichout_make | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_make="" ; fi
+if [ "`echo $whichout_gmake | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_gmake="" ; fi
+if [ "$whichout_gmake" != "" ] ; then
+ echo "YES (gmake)"
+ echo "MAKE_COMMAND=${whichout_gmake}" >> Makefile
+ MAKE_COMMAND="gmake"
+elif [ "$whichout_make" != "" ] ; then
+ echo "YES (make)"
+ echo "MAKE_COMMAND=${whichout_make}" >> Makefile
+ MAKE_COMMAND="make"
+else
+ echo "NO"
+ echo "ERROR: Required program 'make' could not be found."
+ exit
+fi
+
+# 6. OUTPUT MAKEFILE
+
+cat Makefile.skel >> Makefile
+
+echo "Configuration successful."
+echo "To continue installation, type '${MAKE_COMMAND}'."
