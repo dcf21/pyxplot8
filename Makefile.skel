@@ -8,14 +8,17 @@ SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 
-PPL_FILES   = asciidouble.c ppl_commands.c ppl_text.c pyxplot.c
+PPL_FILES   = asciidouble.c ppl_colours.c ppl_commands.c ppl_settings_term.c ppl_setting_types.c ppl_text.c pyxplot.c
+
+PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h
 
 PPL_SOURCES = $(PPL_FILES:%.c=$(SRCDIR)/%.o)
 PPL_OBJECTS = $(PPL_FILES:%.c=$(OBJDIR)/%.o)
+PPL_HFILES  = $(PPL_HEADERS:%.h=$(SRCDIR)/%.h)
 
 all: $(BINDIR)/pyxplot.out
 
-src/ppl_version.c: $(PPL_SOURCES)
+src/ppl_version.c: $(PPL_SOURCES) $(PPL_HFILES)
 	echo "const char VERSION[] =\"${VERSION}\";"        >  src/ppl_version.c
 	echo "const char DATE[] =\"${DATE}\";"              >> src/ppl_version.c
 	echo "const char SRCDIR[] =\"`pwd`/src/\";"         >> src/ppl_version.c
@@ -23,7 +26,7 @@ src/ppl_version.c: $(PPL_SOURCES)
 	echo "const char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version.c
 	echo "const char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version.c
 
-src/ppl_version_install.c: $(PPL_SOURCES)
+src/ppl_version_install.c: $(PPL_SOURCES) $(PPL_HFILES)
 	echo "const char VERSION[] =\"${VERSION}\";"        >  src/ppl_version_install.c
 	echo "const char DATE[] =\"${DATE}\";"              >> src/ppl_version_install.c
 	echo "const char SRCDIR[] =\"${SRCDIR}\";"          >> src/ppl_version_install.c
@@ -31,7 +34,10 @@ src/ppl_version_install.c: $(PPL_SOURCES)
 	echo "const char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version_install.c
 	echo "const char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version_install.c
 
-$(OBJDIR)/%.o:$(SRCDIR)/%.c
+src/ppl_colours.c: colourlist_generate.py
+	python colourlist_generate.py
+
+$(OBJDIR)/%.o:$(SRCDIR)/%.c $(PPL_HFILES)
 	mkdir -p $(OBJDIR)
 	$(COMPILE) $< -o $@
 
@@ -41,6 +47,7 @@ $(BINDIR)/pyxplot.out: $(PPL_OBJECTS) obj/ppl_version.o obj/ppl_version_install.
 	$(LINK) $(PPL_OBJECTS) obj/ppl_version_install.o -o $(BINDIR)/pyxplot_install.out
 
 clean:
+	rm -f src/ppl_version.c src/ppl_version_install.c src/ppl_colours.c src/ppl_colours.h
 	rm -vfR $(OBJDIR)/
 	rm -vfR $(BINDIR)/
 

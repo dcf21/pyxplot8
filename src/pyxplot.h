@@ -19,6 +19,9 @@
 
 // ----------------------------------------------------------------------------
 
+#ifndef _PPL_PYXPLOT
+#define _PPL_PYXPLOT 1
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,7 +33,7 @@ char  *NextWord        (char *in);
 char  *friendly_timestring();
 
 /* Strings defined in ppl_commands.c */
-extern char ppl_commands[];
+extern const char ppl_commands[];
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];
@@ -54,3 +57,4 @@ extern char DOCDIR[];
 extern char GHOSTVIEW[];
 extern char GHOSTVIEW_OPT[];
 
+#endif

@@ -1,4 +1,4 @@
-// ppl_text.c
+// ppl_commands.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
