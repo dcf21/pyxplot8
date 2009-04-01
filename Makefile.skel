@@ -8,7 +8,7 @@ SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 
-PPL_FILES   = asciidouble.c ppl_colours.c ppl_commands.c ppl_settings_term.c ppl_setting_types.c ppl_text.c pyxplot.c
+PPL_FILES   = asciidouble.c ppl_colours.c ppl_commands.c ppl_error.c ppl_settings_term.c ppl_setting_types.c ppl_text.c pyxplot.c
 
 PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h
 
@@ -19,20 +19,20 @@ PPL_HFILES  = $(PPL_HEADERS:%.h=$(SRCDIR)/%.h)
 all: $(BINDIR)/pyxplot.out
 
 src/ppl_version.c: $(PPL_SOURCES) $(PPL_HFILES)
-	echo "const char VERSION[] =\"${VERSION}\";"        >  src/ppl_version.c
-	echo "const char DATE[] =\"${DATE}\";"              >> src/ppl_version.c
-	echo "const char SRCDIR[] =\"`pwd`/src/\";"         >> src/ppl_version.c
-	echo "const char DOCDIR[] =\"`pwd`/doc/\";"         >> src/ppl_version.c
-	echo "const char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version.c
-	echo "const char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version.c
+	echo "char VERSION[] =\"${VERSION}\";"        >  src/ppl_version.c
+	echo "char DATE[] =\"${DATE}\";"              >> src/ppl_version.c
+	echo "char SRCDIR[] =\"`pwd`/src/\";"         >> src/ppl_version.c
+	echo "char DOCDIR[] =\"`pwd`/doc/\";"         >> src/ppl_version.c
+	echo "char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version.c
+	echo "char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version.c
 
 src/ppl_version_install.c: $(PPL_SOURCES) $(PPL_HFILES)
-	echo "const char VERSION[] =\"${VERSION}\";"        >  src/ppl_version_install.c
-	echo "const char DATE[] =\"${DATE}\";"              >> src/ppl_version_install.c
-	echo "const char SRCDIR[] =\"${SRCDIR}\";"          >> src/ppl_version_install.c
-	echo "const char DOCDIR[] =\"${DOCDIR}\";"          >> src/ppl_version_install.c
-	echo "const char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version_install.c
-	echo "const char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version_install.c
+	echo "char VERSION[] =\"${VERSION}\";"        >  src/ppl_version_install.c
+	echo "char DATE[] =\"${DATE}\";"              >> src/ppl_version_install.c
+	echo "char SRCDIR[] =\"${SRCDIR}\";"          >> src/ppl_version_install.c
+	echo "char DOCDIR[] =\"${DOCDIR}\";"          >> src/ppl_version_install.c
+	echo "char GHOSTVIEW[] =\"${GV_COMMAND}\";"   >> src/ppl_version_install.c
+	echo "char GHOSTVIEW_OPT[] =\"${GV_OPT}\";"   >> src/ppl_version_install.c
 
 src/ppl_colours.c: colourlist_generate.py
 	python colourlist_generate.py

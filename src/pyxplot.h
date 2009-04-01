@@ -33,7 +33,14 @@ char  *NextWord        (char *in);
 char  *friendly_timestring();
 
 /* Strings defined in ppl_commands.c */
-extern const char ppl_commands[];
+extern char ppl_commands[];
+
+/* Functions defined in ppl_error.c */
+void ppl_error_setstreaminfo(int linenumber,char *filename);
+void ppl_error(char *msg);
+void ppl_fatal(char *msg);
+void ppl_warning(char *msg);
+void ppl_report(char *msg);
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];

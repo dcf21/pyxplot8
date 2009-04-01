@@ -27,18 +27,18 @@
 #define SW_BOOL_TRUE  10001
 #define SW_BOOL_FALSE 10002
 
-extern const char *SW_BOOL_STR[];
-extern const int   SW_BOOL_ACL[];
-extern const int   SW_BOOL_INT[];
+extern char *SW_BOOL_STR[];
+extern int   SW_BOOL_ACL[];
+extern int   SW_BOOL_INT[];
 
 // On/Off Switches
 
 #define SW_ONOFF_ON  11001
 #define SW_ONOFF_OFF 11002
 
-extern const char *SW_ONOFF_STR[];
-extern const int   SW_ONOFF_ACL[];
-extern const int   SW_ONOFF_INT[];
+extern char *SW_ONOFF_STR[];
+extern int   SW_ONOFF_ACL[];
+extern int   SW_ONOFF_INT[];
 
 // Plot Style Switches
 
@@ -64,9 +64,9 @@ extern const int   SW_ONOFF_INT[];
 #define SW_STYLE_CSPLINES       12020
 #define SW_STYLE_ACSPLINES      12021
 
-extern const char *SW_STYLE_STR[];
-extern const int   SW_STYLE_ACL[];
-extern const int   SW_STYLE_INT[];
+extern char *SW_STYLE_STR[];
+extern int   SW_STYLE_ACL[];
+extern int   SW_STYLE_INT[];
 
 // Terminal Type Switches
 
@@ -80,9 +80,9 @@ extern const int   SW_STYLE_INT[];
 #define SW_TERMTYPE_JPG  13008
 #define SW_TERMTYPE_GIF  13009
 
-extern const char *SW_TERMTYPE_STR[];
-extern const int   SW_TERMTYPE_ACL[];
-extern const int   SW_TERMTYPE_INT[];
+extern char *SW_TERMTYPE_STR[];
+extern int   SW_TERMTYPE_ACL[];
+extern int   SW_TERMTYPE_INT[];
 
 // Key Position Switches
 
@@ -98,9 +98,9 @@ extern const int   SW_TERMTYPE_INT[];
 #define SW_KEYPOS_BELOW 14010
 #define SW_KEYPOS_OUTSIDE 14011
 
-extern const char *SW_KEYPOS_STR[];
-extern const int   SW_KEYPOS_ACL[];
-extern const int   SW_KEYPOS_INT[];
+extern char *SW_KEYPOS_STR[];
+extern int   SW_KEYPOS_ACL[];
+extern int   SW_KEYPOS_INT[];
 
 // Tick Direction Switches
 
@@ -108,9 +108,9 @@ extern const int   SW_KEYPOS_INT[];
 #define SW_TICDIR_OUT  15002
 #define SW_TICDIR_BOTH 15003
 
-extern const char *SW_TICDIR_STR[];
-extern const int   SW_TICDIR_ACL[];
-extern const int   SW_TICDIR_INT[];
+extern char *SW_TICDIR_STR[];
+extern int   SW_TICDIR_ACL[];
+extern int   SW_TICDIR_INT[];
 
 // Text Horizontal Alignment
 
@@ -118,9 +118,9 @@ extern const int   SW_TICDIR_INT[];
 #define SW_HALIGN_CENT  16002
 #define SW_HALIGN_RIGHT 16003
 
-extern const char *SW_HALIGN_STR[];
-extern const int   SW_HALIGN_ACL[];
-extern const int   SW_HALIGN_INT[];
+extern char *SW_HALIGN_STR[];
+extern int   SW_HALIGN_ACL[];
+extern int   SW_HALIGN_INT[];
 
 // Text Vertical Alignment
 
@@ -128,8 +128,24 @@ extern const int   SW_HALIGN_INT[];
 #define SW_VALIGN_CENT 16002
 #define SW_VALIGN_BOT  16003
 
-extern const char *SW_VALIGN_STR[];
-extern const int   SW_VALIGN_ACL[];
-extern const int   SW_VALIGN_INT[];
+extern char *SW_VALIGN_STR[];
+extern int   SW_VALIGN_ACL[];
+extern int   SW_VALIGN_INT[];
+
+// Colours for displaying on terminals
+
+#define SW_TERMCOL_NOR 17001
+#define SW_TERMCOL_RED 17002
+#define SW_TERMCOL_GRN 17003
+#define SW_TERMCOL_BRN 17004
+#define SW_TERMCOL_BLU 17005
+#define SW_TERMCOL_MAG 17006
+#define SW_TERMCOL_CYN 17007
+#define SW_TERMCOL_WHT 17008
+
+extern char *SW_TERMCOL_STR[];
+extern int   SW_TERMCOL_ACL[];
+extern int   SW_TERMCOL_INT[];
+extern char *SW_TERMCOL_TXT[];
 
 #endif

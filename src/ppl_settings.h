@@ -26,8 +26,10 @@
 
 typedef struct settings_terminal {
  int   backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent;
- float dpi;
+ float dpi, PaperHeight, PaperWidth;
  char  output[FNAME_LENGTH];
+ char  PaperName[FNAME_LENGTH];
+ char  LatexPreamble[FNAME_LENGTH];
  } settings_terminal;
 
 typedef struct settings_graph {
@@ -35,5 +37,24 @@ typedef struct settings_graph {
  float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, KeyXOff, KeyYOff, LineWidth, OriginX, OriginY, PointSize, PointLineWidth, TitleXOff, TitleYOff, width;
  char  title[FNAME_LENGTH];
  } settings_graph;
+
+typedef struct settings_session {
+ int   splash, colour, colour_rep, colour_wrn, colour_err;
+ char  cwd[FNAME_LENGTH];
+ char  tempdir[FNAME_LENGTH];
+ } settings_session;
+
+// Variables defined in ppl_settings_term.c
+#ifndef PPL_SETTINGS_TERM
+extern settings_terminal settings_term_default;
+extern settings_terminal settings_term_current;
+extern settings_graph settings_graph_default;
+extern settings_graph settings_graph_current;
+extern settings_session settings_session_default;
+
+void  ppl_settings_term_init();
+char *FetchSettingName(int id, int *id_list, char **name_list);
+int  *FetchSettingInt (int id, int *id_list, int  **int_list );
+#endif
 
 #endif

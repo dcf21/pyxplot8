@@ -19,6 +19,9 @@
 
 // ----------------------------------------------------------------------------
 
+#define PPL_SETTINGS_TERM 1
+
+#include <stdio.h>
 #include <string.h>
 
 #include "ppl_settings.h"
@@ -31,6 +34,8 @@ settings_terminal settings_term_current;
 settings_graph settings_graph_default;
 settings_graph settings_graph_current;
 
+settings_session settings_session_default;
+
 void ppl_settings_term_init()
  {
   // Default Terminal Settings, used when these values are not changed by any configuration files
@@ -39,8 +44,12 @@ void ppl_settings_term_init()
   settings_term_default.display   = SW_ONOFF_ON;
   settings_term_default.dpi       = 300.0;
   settings_term_default.landscape = SW_ONOFF_OFF;
+  strcpy(settings_term_default.LatexPreamble, "");
   settings_term_default.multiplot = SW_ONOFF_OFF;
   strcpy(settings_term_default.output, "");
+  settings_term_default.PaperHeight= 297.0;
+  strcpy(settings_term_default.PaperName, "A4");
+  settings_term_default.PaperWidth = 210.0;
   settings_term_default.TermAntiAlias = SW_ONOFF_ON;
   settings_term_default.TermType      = SW_TERMTYPE_X11S;
   settings_term_default.TermEnlarge   = SW_ONOFF_OFF;
@@ -83,9 +92,38 @@ void ppl_settings_term_init()
   settings_graph_default.TitleYOff  = 0.0;
   settings_graph_default.width      = 8.0;
 
+  // Setting which affect how we talk to the current interactive session
+  settings_session_default.splash    = SW_ONOFF_ON;
+  settings_session_default.colour    = SW_ONOFF_ON;
+  settings_session_default.colour_rep= SW_TERMCOL_GRN;
+  settings_session_default.colour_wrn= SW_TERMCOL_BRN;
+  settings_session_default.colour_err= SW_TERMCOL_RED;
+
   // Copy Default Settings to Current Settings
   settings_term_current  = settings_term_default;
   settings_graph_current = settings_graph_default;
   return;
+ }
+
+char *FetchSettingName(int id, int *id_list, char **name_list)
+ {
+  while(1)
+   {
+    if (*id_list == id) return *name_list;
+    if (*id_list == -1) return NULL;
+    id_list++; name_list++;
+   }
+  return NULL;
+ }
+
+int *FetchSettingInt(int id, int *id_list, int **int_list)
+ {
+  while(1)
+   {
+    if (*id_list == id) return *int_list;
+    if (*id_list == -1) return NULL;
+    id_list++; int_list++;
+   }
+  return NULL;
  }
 

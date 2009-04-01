@@ -34,7 +34,7 @@
 
 // List of commands recognised by PyXPlot
 
-const char ppl_commands[] = "\
+char ppl_commands[] = "\
 arrow@2:directive = { from@1 } %f:x1 ,@n %f:y1 to@1 %f:x2 ,@n %f:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ < linestyle@6 | ls@2 > %d:linestyle ~ < colour@1 | color@1 > %s:colour ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style | twoway@2:arrow_style:twohead > ) } \n\
 cd@2:directive = [ < %q:directory | %Q:directory | %S:directory > ]:path\n\
 clear@3:directive =\n\

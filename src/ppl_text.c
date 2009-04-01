@@ -20,23 +20,25 @@
 // ----------------------------------------------------------------------------
 
 #include <string.h>
+
 #include "pyxplot.h"
+#include "ppl_constants.h"
 
 // Contains text messages which pyxplot displays
 
-char txt_version[256];
-char txt_help[2048];
-char txt_init[2048];
-char txt_invalid[2048];
-char txt_valid_set_options[2048];
-char txt_valid_show_options[2048];
-char txt_set_noword[2048];
-char txt_unset_noword[2048]; 
-char txt_set[2048];
-char txt_unset[2048];
-char txt_show[2048];
+char txt_version[FNAME_LENGTH];
+char txt_help[FNAME_LENGTH];
+char txt_init[FNAME_LENGTH];
+char txt_invalid[FNAME_LENGTH];
+char txt_valid_set_options[FNAME_LENGTH];
+char txt_valid_show_options[FNAME_LENGTH];
+char txt_set_noword[FNAME_LENGTH];
+char txt_unset_noword[FNAME_LENGTH]; 
+char txt_set[FNAME_LENGTH];
+char txt_unset[FNAME_LENGTH];
+char txt_show[FNAME_LENGTH];
 
-char txt_version_underline[256];
+char txt_version_underline[FNAME_LENGTH];
 
 void ppl_text_init()
 {
