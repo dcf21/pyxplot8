@@ -30,17 +30,14 @@ double GetFloat        (char *str);
 void   file_readline   (FILE *file, char *output);
 void   GetWord         (char *out, char *in, int max);
 char  *NextWord        (char *in);
-char  *friendly_timestring();
+char  *FriendlyTimestring();
+char  *StrStrip        (char *in);
+char  *StrUpper        (char *in);
+char  *StrLower        (char *in);
+char  *StrUnderline    (char *in);
 
 /* Strings defined in ppl_commands.c */
 extern char ppl_commands[];
-
-/* Functions defined in ppl_error.c */
-void ppl_error_setstreaminfo(int linenumber,char *filename);
-void ppl_error(char *msg);
-void ppl_fatal(char *msg);
-void ppl_warning(char *msg);
-void ppl_report(char *msg);
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];

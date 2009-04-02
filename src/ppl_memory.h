@@ -1,4 +1,4 @@
-// ppl_constants.h
+// ppl_memory.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,22 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CONSTANTS
-#define _PPL_CONSTANTS 1
+// Functions for memory management
 
-#define LSTR_LENGTH  32768
-#define FNAME_LENGTH  4096
-#define MEMDEBUG 1
-#define DEBUG 1
+#ifndef _PPL_MEMORY
+#define _PPL_MEMORY 1
 
-#define PATHLINK "/"
+#define MEMORY_SYSTEM 30000
+#define MEMORY_GLOBAL 30001
+#define MEMORY_PLOT   30002
+#define MEMORY_SCRAP  30003
+
+void  ppl_MemoryInit     ();
+void  ppl_SetMemContext  (int context);
+void  ppl_FreeAll        (int context);
+
+void *ppl_malloc(int size);
+void  ppl_free  (void *ptr);
 
 #endif
 

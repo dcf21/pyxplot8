@@ -38,15 +38,9 @@ char txt_set[FNAME_LENGTH];
 char txt_unset[FNAME_LENGTH];
 char txt_show[FNAME_LENGTH];
 
-char txt_version_underline[FNAME_LENGTH];
-
 void ppl_text_init()
 {
-int i;
-
 sprintf(txt_version, "PyXPlot %s", VERSION);
-
-for (i=0;i<strlen(VERSION);i++) txt_version_underline[i]='-'; txt_version_underline[i]='\0';
 
 sprintf(txt_help   , "%s\n\
 %s\n\
@@ -61,10 +55,10 @@ Usage: pyxplot <options> <filelist>\n\
 \n\
 A brief introduction to PyXPlot can be obtained by typing 'man pyxplot'; the\n\
 full Users' Guide can be found in the file:\n\
-%s/pyxplot.pdf\n\
+%s%spyxplot.pdf\n\
 \n\
 For the latest information on PyXPlot development, see the project website:\n\
-<http://www.pyxplot.org.uk>", VERSION, txt_version_underline, DOCDIR);
+<http://www.pyxplot.org.uk>", VERSION, StrUnderline(VERSION), DOCDIR, PATHLINK);
 
 sprintf(txt_init, "\n\
  ____       __  ______  _       _      PYXPLOT\n\

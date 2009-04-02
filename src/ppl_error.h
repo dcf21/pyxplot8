@@ -1,4 +1,4 @@
-// ppl_constants.h
+// ppl_error.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,17 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CONSTANTS
-#define _PPL_CONSTANTS 1
+// Functions for returning messages to the user
 
-#define LSTR_LENGTH  32768
-#define FNAME_LENGTH  4096
-#define MEMDEBUG 1
-#define DEBUG 1
+#ifndef _PPL_ERROR
+#define _PPL_ERROR 1
 
-#define PATHLINK "/"
+extern char temp_err_string[];
+void ppl_error_setstreaminfo(int linenumber,char *filename);
+void ppl_error(char *msg);
+void ppl_fatal(char *file, int line, char *msg);
+void ppl_warning(char *msg);
+void ppl_report(char *msg);
+void ppl_log(char *msg);
 
 #endif
-

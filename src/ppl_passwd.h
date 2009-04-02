@@ -1,4 +1,4 @@
-// ppl_constants.h
+// ppl_passwd.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,11 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CONSTANTS
-#define _PPL_CONSTANTS 1
+#ifndef PPL_PASSWD
+#define PPL_PASSWD 1
 
-#define LSTR_LENGTH  32768
-#define FNAME_LENGTH  4096
-#define MEMDEBUG 1
-#define DEBUG 1
-
-#define PATHLINK "/"
+/* Functions defined in ppl_passwd.c */
+char *UnixGetHomeDir();
+char *UnixGetUserIRLName();
 
 #endif
-

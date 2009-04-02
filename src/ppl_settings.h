@@ -42,6 +42,7 @@ typedef struct settings_session {
  int   splash, colour, colour_rep, colour_wrn, colour_err;
  char  cwd[FNAME_LENGTH];
  char  tempdir[FNAME_LENGTH];
+ char  homedir[FNAME_LENGTH];
  } settings_session;
 
 // Variables defined in ppl_settings_term.c
@@ -53,8 +54,7 @@ extern settings_graph settings_graph_current;
 extern settings_session settings_session_default;
 
 void  ppl_settings_term_init();
-char *FetchSettingName(int id, int *id_list, char **name_list);
-int  *FetchSettingInt (int id, int *id_list, int  **int_list );
+void *FetchSettingName(int id, int *id_list, void **name_list);
 #endif
 
 #endif

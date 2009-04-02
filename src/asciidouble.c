@@ -25,6 +25,8 @@
 #include <time.h>
 #include <string.h>
 
+#include "ppl_constants.h"
+
 /* GETFLOAT(): This gets a float from a string */
 
 double GetFloat(char *str)
@@ -104,10 +106,58 @@ char *NextWord(char *in)
 
 /* FRIENDLY_TIMESTRING(): Returns pointer to time string */
 
-char *friendly_timestring()
+char *FriendlyTimestring()
  {
   time_t timenow;
   timenow = time(NULL);
   return( ctime(&timenow) );
+ }
+
+static char temp_strproc_buffer[LSTR_LENGTH];
+
+/* STRSTRIP(): Strip whitespace from both ends of a string */
+
+char *StrStrip(char *in)
+ {
+  char *out = temp_strproc_buffer;
+  while ((*in < 33) && (*in > 0)) in++;
+  while (              (*in > 0)) *(out++)=*(in++);
+  while ((out!=temp_strproc_buffer) && (*out < 33)) out--;
+  *++out = '\0';
+  return temp_strproc_buffer;
+ }
+
+/* STRUPPER(): Capitalise a string */
+
+char *StrUpper(char *in)
+ {
+  char *out = temp_strproc_buffer;
+  while (*in > 0)
+   if ((*in >='a') && (*in <='z')) *out++ = *in++ +'A'-'a';
+   else                            *out++ = *in++;
+  *out = '\0';
+  return temp_strproc_buffer;
+ }
+
+/* STRLOWER(): Lowercase a string */
+
+char *StrLower(char *in)
+ {
+  char *out = temp_strproc_buffer;
+  while (*in > 0)
+   if ((*in >='A') && (*in <='Z')) *out++ = *in++ +'a'-'A';
+   else                            *out++ = *in++;
+  *out = '\0';
+  return temp_strproc_buffer;
+ }
+
+/* STRUNDERLINE(): Underline a string */
+
+char *StrUnderline(char *in)
+ {
+  char *out = temp_strproc_buffer;
+  while (*in++ > 0) *out++='-';
+  *out = '\0';
+  return temp_strproc_buffer;
  }
 

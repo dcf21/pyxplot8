@@ -27,6 +27,8 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_colours.h"
+#include "ppl_passwd.h"
+#include "ppl_error.h"
 
 settings_terminal settings_term_default;
 settings_terminal settings_term_current;
@@ -98,6 +100,7 @@ void ppl_settings_term_init()
   settings_session_default.colour_rep= SW_TERMCOL_GRN;
   settings_session_default.colour_wrn= SW_TERMCOL_BRN;
   settings_session_default.colour_err= SW_TERMCOL_RED;
+  strcpy(settings_session_default.homedir, UnixGetHomeDir());
 
   // Copy Default Settings to Current Settings
   settings_term_current  = settings_term_default;
@@ -105,25 +108,22 @@ void ppl_settings_term_init()
   return;
  }
 
-char *FetchSettingName(int id, int *id_list, char **name_list)
+void *FetchSettingName(int id, int *id_list, void **name_list)
  {
+  int first;
+  first = *id_list;
   while(1)
    {
     if (*id_list == id) return *name_list;
-    if (*id_list == -1) return NULL;
+    if (*id_list == -1)
+     {
+      sprintf(temp_err_string, "Setting with illegal value %d; should have had a value of type %d.", id, first);
+      ppl_fatal(__FILE__, __LINE__, temp_err_string);
+     }
     id_list++; name_list++;
    }
-  return NULL;
- }
-
-int *FetchSettingInt(int id, int *id_list, int **int_list)
- {
-  while(1)
-   {
-    if (*id_list == id) return *int_list;
-    if (*id_list == -1) return NULL;
-    id_list++; int_list++;
-   }
+  sprintf(temp_err_string, "Setting has illegal value %d.", id);
+  ppl_fatal(__FILE__, __LINE__, temp_err_string);
   return NULL;
  }
 
