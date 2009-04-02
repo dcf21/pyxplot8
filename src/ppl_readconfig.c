@@ -1,4 +1,4 @@
-// pyxplot.h
+// ppl_readconfig.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,35 +19,15 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_PYXPLOT
-#define _PPL_PYXPLOT 1
-
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-/* Strings defined in ppl_commands.c */
-extern char ppl_commands[];
+#include "ppl_error.h"
+#include "ppl_settings.h"
 
-/* Strings defined in ppl_text.c */
-extern char txt_version[];
-extern char txt_help[];
-extern char txt_init[];
-extern char txt_invalid[];
-extern char txt_valid_set_options[];
-extern char txt_valid_show_options[];
-extern char txt_set_noword[];
-extern char txt_unset_noword[];
-extern char txt_set[];
-extern char txt_unset[];
-extern char txt_show[];
-void   ppl_text_init   ();
+void ReadConfigFile(char *ConfigFname)
+ {
+  if (DEBUG) { sprintf(temp_err_string, "Scanning configuration file %s.", ConfigFname); ppl_log(temp_err_string); }
+  return;
+ }
 
-/* Strings defined in ppl_version.c */
-extern char VERSION[];
-extern char DATE[];
-extern char SRCDIR[];
-extern char DOCDIR[];
-extern char GHOSTVIEW[];
-extern char GHOSTVIEW_OPT[];
-
-#endif

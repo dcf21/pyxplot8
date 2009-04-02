@@ -28,6 +28,7 @@
 #include <readline/readline.h>
 
 #include "pyxplot.h"
+#include "ppl_children.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_constants.h"
@@ -58,8 +59,8 @@ int main(int argc, char **argv)
   strcpy(settings_session_default.tempdir, tempdirpath); // Store our chosen temporary directory path
 
   // Launch child process
-  if (DEBUG) ppl_log("Launching the Child Support Agency.");
-
+  if (DEBUG) ppl_log("Launching the Child Support Process.");
+  InitialiseCSP();
 
   // Wait for temporary directory to appear, and change directory into it
   if (DEBUG) ppl_log("Waiting for temporary directory to appear.");
@@ -77,6 +78,9 @@ int main(int argc, char **argv)
   // Print welcome text
   if (DEBUG) ppl_log("Entering main execution loop.");
   ppl_report(txt_init);
+  SendCommandToCSP("0/tmp/elephant.eps\n");
+  sleep(3);
+  CheckForGvOutput();
 
   // Terminate
   ppl_FreeAll(MEMORY_SYSTEM);

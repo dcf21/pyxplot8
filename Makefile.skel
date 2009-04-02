@@ -8,7 +8,7 @@ SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 
-PPL_FILES   = asciidouble.c ppl_colours.c ppl_commands.c ppl_error.c ppl_passwd.c ppl_list.c ppl_memory.c ppl_settings_term.c ppl_setting_types.c ppl_text.c pyxplot.c
+PPL_FILES   = asciidouble.c ppl_children.c ppl_colours.c ppl_commands.c ppl_error.c ppl_passwd.c ppl_list.c ppl_memory.c ppl_readconfig.c ppl_settings_term.c ppl_setting_types.c ppl_text.c pyxplot.c
 
 PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h
 
@@ -48,7 +48,7 @@ $(BINDIR)/pyxplot: $(PPL_OBJECTS) obj/ppl_colours.o obj/ppl_version.o obj/ppl_ve
 	rm -f $(SRCDIR)/*.o
 
 clean:
-	rm -f src/ppl_version.c src/ppl_version_install.c src/ppl_colours.c src/ppl_colours.h
+	rm -f src/ppl_version.c src/ppl_version_install.c src/ppl_colours.c src/ppl_colours.h src/*.o
 	rm -vfR $(OBJDIR)/
 	rm -vfR $(BINDIR)/
 

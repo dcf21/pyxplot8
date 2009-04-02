@@ -1,4 +1,4 @@
-// pyxplot.h
+// ppl_children.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,35 +19,28 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_PYXPLOT
-#define _PPL_PYXPLOT 1
+#ifndef PPL_CHILDREN
+#define PPL_CHILDREN 1
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "ppl_list.h"
 
-/* Strings defined in ppl_commands.c */
-extern char ppl_commands[];
+extern char GhostView_Fname[];
 
-/* Strings defined in ppl_text.c */
-extern char txt_version[];
-extern char txt_help[];
-extern char txt_init[];
-extern char txt_invalid[];
-extern char txt_valid_set_options[];
-extern char txt_valid_show_options[];
-extern char txt_set_noword[];
-extern char txt_unset_noword[];
-extern char txt_set[];
-extern char txt_unset[];
-extern char txt_show[];
-void   ppl_text_init   ();
+// Functions to be called from main PyXPlot process
 
-/* Strings defined in ppl_version.c */
-extern char VERSION[];
-extern char DATE[];
-extern char SRCDIR[];
-extern char DOCDIR[];
-extern char GHOSTVIEW[];
-extern char GHOSTVIEW_OPT[];
+void  InitialiseCSP            ();
+void  CheckForGvOutput         ();
+void  SendCommandToCSP         (char *cmd);
+
+// Functions to be called from the Child Support Process
+
+void  CSPmain                  ();
+void  CSPCheckForChildExits    ();
+void  CSPCheckForNewCommands   ();
+void  CSPProcessCommand        (char *in);
+int   CSPForkNewGv             (char *fname, List *gv_list);
+void  CSPKillAllGvs            ();
+void  CSPKillLatestSinglewindow();
 
 #endif
+

@@ -19,9 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "pyxplot.h"
+#include "asciidouble.h"
 #include "ppl_constants.h"
 
 // Contains text messages which pyxplot displays

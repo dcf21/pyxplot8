@@ -40,8 +40,6 @@ void ppl_MemoryInit()
  {
   if (MEMDEBUG) ppl_log("Initialising memory management system.");
   ppl_FreeAll(MEMORY_SYSTEM);
-  ppl_SetMemContext(MEMORY_SCRAP);
-  ppl_malloc(4096);
   ppl_SetMemContext(MEMORY_SYSTEM);
   return;
  }

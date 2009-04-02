@@ -57,4 +57,7 @@ void  ppl_settings_term_init();
 void *FetchSettingName(int id, int *id_list, void **name_list);
 #endif
 
+// Functions defined in ppl_readconfig.c
+void ReadConfigFile(char *ConfigFname);
+
 #endif

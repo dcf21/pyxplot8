@@ -1,4 +1,4 @@
-// pyxplot.h
+// asciidouble.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,35 +19,20 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_PYXPLOT
-#define _PPL_PYXPLOT 1
+#ifndef _PPL_ASCIIDOUBLE
+#define _PPL_ASCIIDOUBLE 1
 
 #include <stdio.h>
-#include <stdlib.h>
 
-/* Strings defined in ppl_commands.c */
-extern char ppl_commands[];
-
-/* Strings defined in ppl_text.c */
-extern char txt_version[];
-extern char txt_help[];
-extern char txt_init[];
-extern char txt_invalid[];
-extern char txt_valid_set_options[];
-extern char txt_valid_show_options[];
-extern char txt_set_noword[];
-extern char txt_unset_noword[];
-extern char txt_set[];
-extern char txt_unset[];
-extern char txt_show[];
-void   ppl_text_init   ();
-
-/* Strings defined in ppl_version.c */
-extern char VERSION[];
-extern char DATE[];
-extern char SRCDIR[];
-extern char DOCDIR[];
-extern char GHOSTVIEW[];
-extern char GHOSTVIEW_OPT[];
+double GetFloat        (char *str);
+void   file_readline   (FILE *file, char *output);
+void   GetWord         (char *out, char *in, int max);
+char  *NextWord        (char *in);
+char  *FriendlyTimestring();
+char  *StrStrip        (char *in);
+char  *StrUpper        (char *in);
+char  *StrLower        (char *in);
+char  *StrUnderline    (char *in);
+char  *StrRemoveCompleteLine(char *in);
 
 #endif

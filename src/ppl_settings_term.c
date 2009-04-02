@@ -40,6 +40,8 @@ settings_session settings_session_default;
 
 void ppl_settings_term_init()
  {
+  char ConfigFname[FNAME_LENGTH];
+
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup    = SW_ONOFF_OFF;
   settings_term_default.colour    = SW_ONOFF_ON;
@@ -101,6 +103,11 @@ void ppl_settings_term_init()
   settings_session_default.colour_wrn= SW_TERMCOL_BRN;
   settings_session_default.colour_err= SW_TERMCOL_RED;
   strcpy(settings_session_default.homedir, UnixGetHomeDir());
+
+  sprintf(ConfigFname, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplotrc");
+  ReadConfigFile(ConfigFname);
+  sprintf(ConfigFname, "%s", ".pyxplotrc");
+  ReadConfigFile(ConfigFname);
 
   // Copy Default Settings to Current Settings
   settings_term_current  = settings_term_default;

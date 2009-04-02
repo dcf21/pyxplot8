@@ -24,7 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "pyxplot.h"
+#include "asciidouble.h"
 #include "ppl_error.h"
 #include "ppl_constants.h"
 #include "ppl_memory.h"
@@ -36,7 +36,9 @@ static char ppl_error_input_filename[FNAME_LENGTH] = "";
 static int  ppl_error_last_linenumber              = -1; // Only inform user one of each line number
 static char ppl_error_last_filename[FNAME_LENGTH]  = "";
 
-static char temp_stringA[LSTR_LENGTH], temp_stringB[LSTR_LENGTH];
+char ppl_error_source[16] = "main     "; // Identifier of the process producing log messages
+
+static char temp_stringA[LSTR_LENGTH], temp_stringB[LSTR_LENGTH], temp_stringC[LSTR_LENGTH], temp_stringD[LSTR_LENGTH], temp_stringE[LSTR_LENGTH];
 char temp_err_string[FNAME_LENGTH];
 
 void ppl_error_setstreaminfo(int linenumber,char *filename)
@@ -48,32 +50,34 @@ void ppl_error_setstreaminfo(int linenumber,char *filename)
 
 void ppl_error(char *msg)
  {
+  if (msg!=temp_stringA) strcpy(temp_stringA, msg);
+  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Error:\n", temp_stringA); ppl_log(temp_stringC); }
   if ( ((       ppl_error_input_linenumber    != -1) && (       ppl_error_input_linenumber                         != ppl_error_last_linenumber)) ||
        ((strcmp(ppl_error_input_filename, "") !=  0) && (strcmp(ppl_error_input_filename, ppl_error_last_filename) !=                         0))   )
    {
     strcpy(ppl_error_last_filename, ppl_error_input_filename);
     ppl_error_last_linenumber = ppl_error_input_linenumber;
-    sprintf(temp_stringA, "Error encountered in %s at line %d:", ppl_error_input_filename, ppl_error_input_linenumber);
-    ppl_error(temp_stringA);
-    if (DEBUG) ppl_log(temp_stringA);
+    sprintf(temp_stringB, "Error encountered in %s at line %d:", ppl_error_input_filename, ppl_error_input_linenumber);
+    ppl_error(temp_stringB);
+    if (DEBUG) ppl_log(temp_stringB);
    }
-  if (DEBUG) { sprintf(temp_stringB, "%s%s", "Error: ", msg); ppl_log(temp_stringB); }
   if (isatty(STDERR_FILENO) == 1)
-   sprintf(temp_stringB, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_err , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-                                     msg,
+   sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_err , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
+                                     temp_stringA,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
   else
-   sprintf(temp_stringB, "%s\n", msg);
-  fputs(temp_stringB, stderr);
+   sprintf(temp_stringC, "%s\n", temp_stringA);
+  fputs(temp_stringC, stderr);
   return; 
  }
 
 void ppl_fatal(char *file, int line, char *msg)
  {
   char introline[FNAME_LENGTH];
+  if (msg!=temp_stringE) strcpy(temp_stringE, msg);
   sprintf(introline, "Fatal Error encounted in %s at line %d:", file, line);
   ppl_error(introline);
-  ppl_error(msg);
+  ppl_error(temp_stringE);
   ppl_FreeAll(MEMORY_SYSTEM);
   if (DEBUG) ppl_log("Terminating with error condition 1.");
   exit(1);
@@ -81,27 +85,29 @@ void ppl_fatal(char *file, int line, char *msg)
 
 void ppl_warning(char *msg)
  {
-  if (DEBUG) { sprintf(temp_stringB, "%s%s", "Warning: ", msg); ppl_log(temp_stringB); }
+  if (msg!=temp_stringA) strcpy(temp_stringA, msg);
+  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Warning:\n", temp_stringA); ppl_log(temp_stringC); }
   if (isatty(STDERR_FILENO) == 1)
-   sprintf(temp_stringB, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-                                     msg,
+   sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
+                                     temp_stringA,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
   else
-   sprintf(temp_stringB, "%s\n", msg);
-  fputs(temp_stringB, stderr);
+   sprintf(temp_stringC, "%s\n", temp_stringA);
+  fputs(temp_stringC, stderr);
   return;
  }
 
 void ppl_report(char *msg)
  {
-  if (DEBUG) { sprintf(temp_stringB, "%s%s", "Reporting: ", msg); ppl_log(temp_stringB); }
+  if (msg!=temp_stringA) strcpy(temp_stringA, msg);
+  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Reporting:\n", temp_stringA); ppl_log(temp_stringC); }
   if (isatty(STDOUT_FILENO) == 1)
-   sprintf(temp_stringB, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-                                     msg,
+   sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
+                                     temp_stringA,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
   else
-   sprintf(temp_stringB, "%s\n", msg);
-  fputs(temp_stringB, stdout);
+   sprintf(temp_stringC, "%s\n", temp_stringA);
+  fputs(temp_stringC, stdout);
   return;
  }
 
@@ -116,7 +122,9 @@ void ppl_log(char *msg)
    if ((logfile=fopen("pyxplot.log","w")) == NULL)
     ppl_fatal(__FILE__,__LINE__,"Could not open log file to write.");
 
-  fprintf(logfile, "[%s] %s\n", StrStrip(FriendlyTimestring()), msg);
+  if (msg!=temp_stringD) strcpy(temp_stringD, msg);
+  fprintf(logfile, "[%s] [%s] %s\n", StrStrip(FriendlyTimestring()), ppl_error_source, temp_stringD);
+  fflush(logfile);
   latch = 0;
   return;
  }

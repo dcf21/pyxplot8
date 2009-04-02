@@ -148,8 +148,7 @@ ListIterator *ListIterateInit(List *in)
 ListIterator *ListIterate(ListIterator *in, void **item)
  {
   if (in==NULL) { *item = NULL; return NULL; }
-  in = in->next;
-  if (in==NULL) { *item = NULL; return NULL; }
   *item = in->data;
+  in = in->next;
   return in;
  }

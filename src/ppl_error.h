@@ -24,6 +24,7 @@
 #ifndef _PPL_ERROR
 #define _PPL_ERROR 1
 
+extern char ppl_error_source[];
 extern char temp_err_string[];
 void ppl_error_setstreaminfo(int linenumber,char *filename);
 void ppl_error(char *msg);
