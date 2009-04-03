@@ -28,6 +28,14 @@
 /* Strings defined in ppl_commands.c */
 extern char ppl_commands[];
 
+/* Functions defined in ppl_shell.c */
+#ifndef _PPL_SHELL
+extern int  PPL_SHELL_EXITTING;
+#endif
+void        InteractiveSession  ();
+void        ProcessPyXPlotScript(char *input);
+int         ProcessDirective    (char *in);
+
 /* Strings defined in ppl_text.c */
 extern char txt_version[];
 extern char txt_help[];
@@ -49,5 +57,11 @@ extern char SRCDIR[];
 extern char DOCDIR[];
 extern char GHOSTVIEW[];
 extern char GHOSTVIEW_OPT[];
+
+/* Functions defined in pyxplot.c */
+
+#ifndef _PYXPLOT_C
+extern int WillBeInteractive;
+#endif
 
 #endif

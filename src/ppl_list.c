@@ -22,6 +22,8 @@
 // Functions for manupulating linked lists
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "ppl_list.h"
 #include "ppl_memory.h"
@@ -30,26 +32,11 @@ List *ListInit()
  {
   List *out;
   out = ppl_malloc(sizeof(List));
-  out->first = NULL;
-  out->last  = NULL;
-  out->length= 0;
+  out->first  = NULL;
+  out->last   = NULL;
+  out->length = 0;
+  out->memory_context = ppl_GetMemContext();
   return out;
- }
-
-void ListKill(List *in)
- {
-  ListItem *ptr, *ptrnext;
-  if (in==NULL) return;
-  ptr = in->first;
-  ppl_free(in);
-  while (ptr != NULL)
-   {
-    if (ptr->data != NULL) ppl_free(ptr->data);
-    ptrnext = ptr->next;
-    ppl_free(ptr);
-    ptr = ptrnext;
-   }
-  return;
  }
 
 int ListLen(List *in)
@@ -57,15 +44,45 @@ int ListLen(List *in)
   return in->length;
  }
 
-void ListAppend(List *in, void *item)
+void ListAppendPtr(List *in, void *item)
  {
   ListItem *ptrnew;
   ptrnew = ppl_malloc(sizeof(ListItem));
   ptrnew->prev = in->last;
   ptrnew->next = NULL;
   ptrnew->data = item;
+  ptrnew->DataType = DATATYPE_VOID;
   if (in->first == NULL) in->first = ptrnew;
+  if (in->last  != NULL) in->last->next = ptrnew;
   in->last = ptrnew;
+  return;
+ }
+
+void ListAppendInt(List *in, int item)
+ {
+  int *ptr = (int *)ppl_malloc_incontext(sizeof(int), in->memory_context);
+  *ptr = item;
+  ListAppendPtr(in, (void *)ptr);
+  in->last->DataType = DATATYPE_INT;
+  return;
+ }
+
+void ListAppendFloat(List *in, double item)
+ {
+  double *ptr = (double *)ppl_malloc_incontext(sizeof(double), in->memory_context);
+  *ptr = item;
+  ListAppendPtr(in, (void *)ptr);
+  in->last->DataType = DATATYPE_FLOAT;
+  return;
+ }
+
+void ListAppendString(List *in, char *item)
+ {
+  int length = strlen(item);
+  char  *ptr = (char *)ppl_malloc_incontext((length+1)*sizeof(char), in->memory_context);
+  strcpy(ptr, item);
+  ListAppendPtr(in, (void *)ptr);
+  in->last->DataType = DATATYPE_STRING;
   return;
  }
 
@@ -78,13 +95,11 @@ int ListRemovePtr(List *in, void *item)
    {
     if (ptr->data == item)
      {
-      if (item!=NULL) ppl_free(item);
       if (ptr->next != NULL) // We are not the last item in the list
        {
         ptrnext   = ptr->next;
         ptr->data = ptrnext->data;
         ptr->next = ptrnext->next;
-        ppl_free(ptrnext);
         if (in->last == ptrnext) in->last = ptr;
         else ptr->next->prev = ptr;
        }
@@ -93,13 +108,11 @@ int ListRemovePtr(List *in, void *item)
         ptrnext   = ptr->prev;
         ptr->data = ptrnext->data;
         ptr->prev = ptrnext->prev;
-        ppl_free(ptrnext);
         if (in->first == ptrnext) in->first = ptr;
         else ptr->prev->next = ptr;
        }
       else // We are the only item in the list
        {
-        ppl_free(ptr);
         in->first = NULL;
         in->last  = NULL;
        }
@@ -127,7 +140,6 @@ void *ListPop(List *in)
     in->first = in->last = NULL;
    } else {
     in->last = in->last->prev;
-    ppl_free(in->last->next);
     in->last->next = NULL;
    }
   in->length--;
@@ -147,8 +159,32 @@ ListIterator *ListIterateInit(List *in)
 
 ListIterator *ListIterate(ListIterator *in, void **item)
  {
-  if (in==NULL) { *item = NULL; return NULL; }
-  *item = in->data;
+  if (in==NULL) { if (item!=NULL) *item = NULL; return NULL; }
+  if (item!=NULL) *item = in->data;
   in = in->next;
   return in;
  }
+
+char *ListPrint(List *in, char *out, int size)
+ {
+  ListIterator *iter;
+  int pos,first;
+  iter = ListIterateInit(in);
+  pos=0; first=1;
+  strcpy(out+pos, "["); pos += strlen(out+pos);
+  while (iter != NULL)
+   {
+    if (pos > (size-30)) { strcpy(out+pos, ", ... ]"); return out; }// Truncate string as we're getting close to the end of the buffer
+    if (first!=1) strcpy(out+(pos++), ",");
+    if      (iter->DataType == DATATYPE_VOID  ) { strcpy (out+pos, "void"                         ); }
+    else if (iter->DataType == DATATYPE_INT   ) { sprintf(out+pos, "%d"  , *((int    *)iter->data)); }
+    else if (iter->DataType == DATATYPE_FLOAT ) { sprintf(out+pos, "%e"  , *((double *)iter->data)); }
+    else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s'",  ((char   *)iter->data)); }
+    pos += strlen(out+pos);
+    first=0;
+    iter = ListIterate(iter, NULL);
+   }
+  strcpy(out+pos, "]"); pos += strlen(out+pos);
+  return out;
+ }
+

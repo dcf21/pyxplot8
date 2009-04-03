@@ -23,6 +23,7 @@
 #define _PPL_ASCIIDOUBLE 1
 
 #include <stdio.h>
+#include "ppl_list.h"
 
 double GetFloat        (char *str);
 void   file_readline   (FILE *file, char *output);
@@ -34,5 +35,7 @@ char  *StrUpper        (char *in);
 char  *StrLower        (char *in);
 char  *StrUnderline    (char *in);
 char  *StrRemoveCompleteLine(char *in);
+char  *StrSlice        (char *in, char *out, int start, int end);
+List  *StrSplit        (char *in);
 
 #endif

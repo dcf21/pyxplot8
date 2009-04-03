@@ -46,7 +46,7 @@ typedef struct settings_session {
  } settings_session;
 
 // Variables defined in ppl_settings_term.c
-#ifndef PPL_SETTINGS_TERM
+#ifndef _PPL_SETTINGS_TERM
 extern settings_terminal settings_term_default;
 extern settings_terminal settings_term_current;
 extern settings_graph settings_graph_default;
@@ -58,6 +58,9 @@ void *FetchSettingName(int id, int *id_list, void **name_list);
 #endif
 
 // Functions defined in ppl_readconfig.c
+#ifndef _PPL_READCONFIG
+extern int ppl_termtype_set_in_configfile;
 void ReadConfigFile(char *ConfigFname);
+#endif
 
 #endif

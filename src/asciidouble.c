@@ -25,7 +25,11 @@
 #include <time.h>
 #include <string.h>
 
+#include "ppl_list.h"
 #include "ppl_constants.h"
+
+char temp_strproc_buffer[LSTR_LENGTH];
+
 
 /* GETFLOAT(): This gets a float from a string */
 
@@ -113,8 +117,6 @@ char *FriendlyTimestring()
   return( ctime(&timenow) );
  }
 
-static char temp_strproc_buffer[LSTR_LENGTH];
-
 /* STRSTRIP(): Strip whitespace from both ends of a string */
 
 char *StrStrip(char *in)
@@ -157,7 +159,7 @@ char *StrLower(char *in)
 char *StrUnderline(char *in)
  {
   char *out = temp_strproc_buffer;
-  while (*in++ > 0) *out++='-';
+  while (*in > 0) if (*in++ >= ' ') *out++='-';
   *out = '\0';
   return temp_strproc_buffer;
  }
@@ -180,7 +182,49 @@ char  *StrRemoveCompleteLine(char *in)
     while (*scan != '\0') *scan2 = *scan;
     *scan2 = '\0';
    }
+  return out;
+ }
 
+/* STRSLICE(): Take a slice out of a string */
+
+char *StrSlice(char *in, char *out, int start, int end)
+ {
+  char *scan;
+  int   pos;
+  scan = out;
+  pos  = 0;
+  while ((pos<start) && (in[pos]!='\0')) pos++;
+  while ((pos<end  ) && (in[pos]!='\0')) *(scan++) = in[pos++];
+  *scan = '\0';
+  return out;
+ }
+
+/* STRSPLIT(): Split up a string into bits separated by whitespace */
+
+List *StrSplit(char *in)
+ {
+  int pos, start, end;
+  char *word;
+  char text_buffer[LSTR_LENGTH];
+  List *out;
+  out  = ListInit();
+  pos  = 0;
+  while (in[pos] != '\0')
+   {
+    // Scan along to find the next word
+    while ((in[pos] <= ' ') && (in[pos] > '\0')) pos++;
+    start = pos;
+
+    // Scan along to find the end of this word
+    while ((in[pos] >  ' ') && (in[pos] > '\0')) pos++;
+    end = pos;
+
+    if (end>start)
+     {
+      word = StrSlice(in, text_buffer, start, end);
+      ListAppendString(out, word);
+     }
+   }
   return out;
  }
 

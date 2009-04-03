@@ -24,9 +24,15 @@
 #ifndef _PPL_LIST
 #define _PPL_LIST 1
 
+#define DATATYPE_VOID   31000
+#define DATATYPE_INT    31001
+#define DATATYPE_FLOAT  31002
+#define DATATYPE_STRING 31003
+
 typedef struct ListItemS
  {
-  void *data;
+  void             *data;
+  int               DataType;
   struct ListItemS *next;
   struct ListItemS *prev;
  } ListItem;
@@ -36,21 +42,25 @@ typedef struct ListS
  {
   struct ListItemS *first;
   struct ListItemS *last;
-  int    length;
+  int               length;
+  int               memory_context;
  } List;
 
 typedef ListItem ListIterator;
 
 // Functions defined in ppl_list.c
 List *ListInit         ();
-void  ListKill         (List *in);
 int   ListLen          (List *in);
-void  ListAppend       (List *in, void *item);
+void  ListAppendPtr    (List *in, void *item);
+void  ListAppendInt    (List *in, int   item);
+void  ListAppendFloat  (List *in, double item);
+void  ListAppendString (List *in, char *item);
 int   ListRemovePtr    (List *in, void *item);
 void  ListRemovePtrAll (List *in, void *item);
 void *ListPop          (List *in);
 void *ListLast         (List *in);
 ListIterator *ListIterateInit(List *in);
 ListIterator *ListIterate(ListIterator *in, void **item);
+char *ListPrint        (List *in, char *out, int size);
 
 #endif

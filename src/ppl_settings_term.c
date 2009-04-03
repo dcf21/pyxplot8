@@ -19,7 +19,7 @@
 
 // ----------------------------------------------------------------------------
 
-#define PPL_SETTINGS_TERM 1
+#define _PPL_SETTINGS_TERM 1
 
 #include <stdio.h>
 #include <string.h>
@@ -118,17 +118,23 @@ void ppl_settings_term_init()
 void *FetchSettingName(int id, int *id_list, void **name_list)
  {
   int first;
+  static int latch=0;
+  static char *dummyout = "";
   first = *id_list;
   while(1)
    {
     if (*id_list == id) return *name_list;
     if (*id_list == -1)
      {
+      if (latch==1) return dummyout; // Prevent recursive calling
+      latch=1;
       sprintf(temp_err_string, "Setting with illegal value %d; should have had a value of type %d.", id, first);
       ppl_fatal(__FILE__, __LINE__, temp_err_string);
      }
     id_list++; name_list++;
    }
+  if (latch==1) return dummyout;
+  latch=1;
   sprintf(temp_err_string, "Setting has illegal value %d.", id);
   ppl_fatal(__FILE__, __LINE__, temp_err_string);
   return NULL;

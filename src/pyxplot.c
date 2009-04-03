@@ -19,6 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
+#define _PYXPLOT_C 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,13 +28,19 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <readline/readline.h>
+#include <readline/history.h>
 
 #include "pyxplot.h"
+#include "asciidouble.h"
 #include "ppl_children.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_constants.h"
+#include "ppl_list.h"
 #include "ppl_memory.h"
+
+int WillBeInteractive;
 
 int main(int argc, char **argv)
  {
@@ -44,6 +52,7 @@ int main(int argc, char **argv)
   struct timespec waitperiod, waitedperiod; // A time.h timespec specifier for a 100ns nanosleep wait
   waitperiod.tv_sec  = 1;
   waitperiod.tv_nsec = 0;
+  WillBeInteractive  = 1;
 
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
@@ -51,6 +60,50 @@ int main(int argc, char **argv)
   ppl_text_init();
   if (DEBUG) ppl_log("Initialising settings.");
   ppl_settings_term_init();
+
+  // Scan commandline options for any switches
+  for (i=1; i<argc; i++)
+   {
+    if (strlen(argv[i])==0) continue;
+    if (argv[i][0]!='-')
+     {
+      if (WillBeInteractive==1) WillBeInteractive=0;
+      continue;
+     }
+    if      (strcmp(argv[i], "-q"         )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-quiet"     )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-V"         )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-verbose"   )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-c"         )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-colour"    )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-color"     )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-m"         )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-mono"      )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-monochrome")==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-"          )==0) WillBeInteractive=2;
+    else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0))
+     {
+      ppl_report(txt_version);
+      ppl_FreeAll(MEMORY_GLOBAL);
+      if (DEBUG) ppl_log("Reported version number as requested.");
+      return 0;
+     }
+    else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0))
+     {
+      ppl_report(txt_help);
+      ppl_FreeAll(MEMORY_GLOBAL);
+      if (DEBUG) ppl_log("Reported help text as requested.");
+      return 0;
+     }
+    else
+    {
+     sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot -help' for a list of available commandline options.", argv[i]);
+     ppl_error(temp_err_string);
+     ppl_FreeAll(MEMORY_GLOBAL);
+     if (DEBUG) ppl_log("Received unexpected commandline switch.");
+     return 1;
+    }
+   }
 
   // Decide upon a path for a temporary directory for us to live in
   if (DEBUG) ppl_log("Finding a filepath for a temporary directory.");
@@ -75,15 +128,43 @@ int main(int argc, char **argv)
   if (fail==1)                { ppl_fatal(__FILE__,__LINE__,"Failed to create temporary directory." ); }
   if (chdir(tempdirpath) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
 
-  // Print welcome text
-  if (DEBUG) ppl_log("Entering main execution loop.");
-  ppl_report(txt_init);
-  SendCommandToCSP("0/tmp/elephant.eps\n");
-  sleep(3);
-  CheckForGvOutput();
+  // Read GNU Readline history
+  if (DEBUG) ppl_log("Reading GNU Readline history.");
+  sprintf(tempdirpath, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplot_history");
+  read_history(tempdirpath);
+  stifle_history(1000);
+
+  // Set default terminal
+  // TODO: Check ('DISPLAY' not in os.environ.keys()) or (len(os.environ['DISPLAY']) < 1)
+  if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) || (strcmp(GHOSTVIEW, "/bin/false")==0) || (isatty(STDIN_FILENO) != 1)))
+   settings_term_default.TermType = SW_TERMTYPE_EPS;
+
+  // Scan commandline and process all script files we have been given
+  for (i=1; i<argc; i++)
+   {
+    if (strlen(argv[i])==0) continue;
+    if (argv[i][0]=='-')
+     {
+      if (argv[i][1]=='\0') InteractiveSession();
+      continue;
+     }
+    ProcessPyXPlotScript(argv[i]);
+   }
+  if (argc==1) InteractiveSession();
+
+  // Notify the CSP that we are about to quit
+  SendCommandToCSP("B");
+
+  // Save GNU Readline history
+  if (WillBeInteractive>0)
+   {
+    if (DEBUG) ppl_log("Saving GNU Readline history.");
+    sprintf(tempdirpath, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplot_history");
+    write_history(tempdirpath);
+   }
 
   // Terminate
-  ppl_FreeAll(MEMORY_SYSTEM);
+  ppl_FreeAll(MEMORY_GLOBAL);
   if (DEBUG) ppl_log("Terminating normally.");
   return 0;
  }

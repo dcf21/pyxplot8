@@ -19,11 +19,15 @@
 
 // ----------------------------------------------------------------------------
 
+#define _PPL_READCONFIG 1
+
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "ppl_error.h"
 #include "ppl_settings.h"
+
+int ppl_termtype_set_in_configfile = 0;
 
 void ReadConfigFile(char *ConfigFname)
  {

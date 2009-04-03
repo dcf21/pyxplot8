@@ -107,7 +107,7 @@ void  InitialiseCSP()
   if (chdir("/") < 0) ppl_fatal(__FILE__,__LINE__,"chdir out of temporary directory failed."); // chdir out of temporary directory
   sprintf(PipeOutputBuffer, "rm -Rf %s", settings_session_default.tempdir);
   if (system(PipeOutputBuffer) < 0) ppl_fatal(__FILE__,__LINE__,"Removal of temporary directory failed."); // Remove temporary directory
-  ppl_FreeAll(MEMORY_SYSTEM);
+  ppl_FreeAll(MEMORY_GLOBAL);
   if (DEBUG) ppl_log("CSP terminating normally.");
   exit(0);
  }
@@ -118,6 +118,7 @@ void CheckForGvOutput()
   char *line;
   char  linebuffer[SSTR_LENGTH];
   pos = strlen(PipeOutputBuffer);
+  // Todo: Call select() here to make sure there is data to read
   read(PipeCSP2MAIN[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5);
   while (1)
    {
@@ -246,16 +247,14 @@ void CSPProcessCommand(char *in)
 
 int CSPForkNewGv(char *fname, List *gv_list)
  {
-  int pid, *ptr;
+  int pid;
   char WatchText[16];
 
   if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for the CSP.");
   else if ( pid        != 0)
    {
     // Parent process (i.e. the CSP)
-    ptr = (int *)ppl_malloc(sizeof(int));
-    *ptr = pid;
-    ListAppend(gv_list, ptr);
+    ListAppendInt(gv_list, pid);
     return pid;
    }
   else

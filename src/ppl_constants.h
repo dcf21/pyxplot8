@@ -25,6 +25,7 @@
 #define LSTR_LENGTH  32768
 #define FNAME_LENGTH  4096
 #define SSTR_LENGTH   2048
+
 #define MEMDEBUG 1
 #define DEBUG 1
 
