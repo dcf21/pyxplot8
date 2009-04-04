@@ -33,26 +33,28 @@ char temp_strproc_buffer[LSTR_LENGTH];
 
 /* GETFLOAT(): This gets a float from a string */
 
-double GetFloat(char *str)
+double GetFloat(char *str, int *Nchars)
  {
   double accumulator = 0;
   int decimals = 0;
   int past_decimal_point = 0;
   int negative = 0;
+  int pos = 0;
+  int pos2= 0;
 
-  if (*str == '-') { negative = 1; str++; }                     /* Deal with negatives */
-  if (*str == '+') {               str++; }                     /* Deal with e.g. 1E+09 */
+  if (str[pos] == '-') { negative = 1; pos++; }                     /* Deal with negatives */
+  if (str[pos] == '+') {               pos++; }                     /* Deal with e.g. 1E+09 */
 
-  while (((((int)*str)>47) && (((int)*str)<59)) || (*str == '.'))
+  while (((str[pos]>='0') && (str[pos]<='9')) || (str[pos] == '.'))
    {
-    if (*str == '.')
+    if (str[pos] == '.')
      {
       past_decimal_point = 1;
      } else {
-      accumulator = ((10 * accumulator) + (((int)*str)-48));
+      accumulator = ((10 * accumulator) + (((int)str[pos])-48));
       if (past_decimal_point == 1) decimals++;
      }
-    str++;
+    pos++;
    }
 
   while (decimals != 0)                                         /* Deals with decimals */
@@ -63,8 +65,11 @@ double GetFloat(char *str)
 
   if (negative == 1) accumulator *= -1;                         /* Deals with negatives */
 
-  if ((*str == 'e') || (*str == 'E')) accumulator *= pow(10.0,GetFloat(str+1));       /* Deals with exponents */
+  if ((str[pos] == 'e') || (str[pos] == 'E')) accumulator *= pow(10.0,GetFloat(str+pos+1 , &pos2)); /* Deals with exponents */
 
+  if (pos2   >     0) pos += (1+pos2); // Add on characters taken up by exponent, including one for the 'e' character.
+  if (pos    ==    0) pos = -1; // Alert the user that this was a blank string!
+  if (Nchars != NULL) *Nchars = pos;
   return(accumulator);
  }
 
@@ -131,26 +136,26 @@ char *StrStrip(char *in, char *out)
 
 /* STRUPPER(): Capitalise a string */
 
-char *StrUpper(char *in)
+char *StrUpper(char *in, char *out)
  {
-  char *out = temp_strproc_buffer;
+  char *scan = out;
   while (*in > 0)
-   if ((*in >='a') && (*in <='z')) *out++ = *in++ +'A'-'a';
-   else                            *out++ = *in++;
-  *out = '\0';
-  return temp_strproc_buffer;
+   if ((*in >='a') && (*in <='z')) *scan++ = *in++ +'A'-'a';
+   else                            *scan++ = *in++;
+  *scan = '\0';
+  return out;
  }
 
 /* STRLOWER(): Lowercase a string */
 
-char *StrLower(char *in)
+char *StrLower(char *in, char *out)
  {
-  char *out = temp_strproc_buffer;
+  char *scan = out;
   while (*in > 0)
-   if ((*in >='A') && (*in <='Z')) *out++ = *in++ +'a'-'A';
-   else                            *out++ = *in++;
-  *out = '\0';
-  return temp_strproc_buffer;
+   if ((*in >='A') && (*in <='Z')) *scan++ = *in++ +'a'-'A';
+   else                            *scan++ = *in++;
+  *scan = '\0';
+  return out;
  }
 
 /* STRUNDERLINE(): Underline a string */

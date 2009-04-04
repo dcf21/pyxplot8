@@ -54,7 +54,8 @@ extern settings_graph settings_graph_current;
 extern settings_session settings_session_default;
 
 void  ppl_settings_term_init();
-void *FetchSettingName(int id, int *id_list, void **name_list);
+void *FetchSettingName      (int id, int *id_list, void **name_list);
+int   FetchSettingByName    (char *name, int *id_list, char **name_list);
 #endif
 
 // Functions defined in ppl_readconfig.c

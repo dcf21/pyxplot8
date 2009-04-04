@@ -25,14 +25,14 @@
 #include <stdio.h>
 #include "ppl_list.h"
 
-double GetFloat        (char *str);
+double GetFloat        (char *str, int *Nchars);
 void   file_readline   (FILE *file, char *output);
 void   GetWord         (char *out, char *in, int max);
 char  *NextWord        (char *in);
 char  *FriendlyTimestring();
 char  *StrStrip        (char *in, char *out);
-char  *StrUpper        (char *in);
-char  *StrLower        (char *in);
+char  *StrUpper        (char *in, char *out);
+char  *StrLower        (char *in, char *out);
 char  *StrUnderline    (char *in);
 char  *StrRemoveCompleteLine(char *in, char *out);
 char  *StrSlice        (char *in, char *out, int start, int end);

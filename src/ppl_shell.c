@@ -37,7 +37,7 @@
 #include "ppl_setting_types.h"
 #include "ppl_constants.h"
 
-int PPL_SHELL_EXITTING;
+int PPL_SHELL_EXITING;
 int PPL_SHELL_MULTILINE;
 
 void InteractiveSession()
@@ -46,7 +46,7 @@ void InteractiveSession()
   char *line_ptr;
   char  linebuffer[LSTR_LENGTH];
 
-  PPL_SHELL_EXITTING = PPL_SHELL_MULTILINE = 0;
+  PPL_SHELL_EXITING = PPL_SHELL_MULTILINE = 0;
   ppl_log("Starting an interactive session.");
 
   // Set up SIGINT handler
@@ -56,14 +56,14 @@ void InteractiveSession()
 
     if ((isatty(STDIN_FILENO) == 1) && (settings_session_default.splash == SW_ONOFF_ON)) ppl_report(txt_init);
 
-    while (PPL_SHELL_EXITTING == 0)
+    while (PPL_SHELL_EXITING == 0)
      {
       CheckForGvOutput();
       if (isatty(STDIN_FILENO) == 1)
        {
         if (PPL_SHELL_MULTILINE==0) line_ptr = readline("pyxplot> ");
         else                        line_ptr = readline(".......> ");
-        if (line_ptr == NULL) { PPL_SHELL_EXITTING = 1; continue; }
+        if (line_ptr == NULL) { PPL_SHELL_EXITING = 1; continue; }
         strcpy(linebuffer, line_ptr) ; free(line_ptr);
         ProcessDirective(linebuffer, 1);
        } else {
@@ -72,7 +72,7 @@ void InteractiveSession()
         ProcessDirective(linebuffer, 0);
         ppl_error_setstreaminfo(0, "");
         linenumber++;
-        if (feof(stdin) || ferror(stdin)) PPL_SHELL_EXITTING = 1;
+        if (feof(stdin) || ferror(stdin)) PPL_SHELL_EXITING = 1;
        }
      }
 
@@ -94,7 +94,7 @@ void ProcessPyXPlotScript(char *input)
   char linebuffer[LSTR_LENGTH];
   FILE *infile;
 
-  PPL_SHELL_EXITTING = 0;
+  PPL_SHELL_EXITING = 0;
   sprintf(temp_err_string, "Processing input from the script file '%s'.", input); ppl_log(temp_err_string);
   UnixExpandUserHomeDir(input , settings_session_default.cwd, full_filename);
   sprintf(filename_description, "file '%s'", input);
@@ -104,7 +104,7 @@ void ProcessPyXPlotScript(char *input)
     return;
    }
 
-  while ((PPL_SHELL_EXITTING == 0) && (!feof(infile)) && (!ferror(infile)))
+  while ((PPL_SHELL_EXITING == 0) && (!feof(infile)) && (!ferror(infile)))
    {
     file_readline(infile, linebuffer);
     if (StrStrip(linebuffer,linebuffer)[0] != '\0')

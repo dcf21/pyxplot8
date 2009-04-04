@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "asciidouble.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_colours.h"
@@ -61,9 +62,9 @@ void ppl_settings_term_init()
   settings_term_default.TermTransparent = SW_ONOFF_OFF;
 
   // Default Graph Settings, used when these values are not changed by any configuration files
-  settings_graph_default.AxesColour = COLOUR_BLACK;
   settings_graph_default.aspect     = 1.0;
   settings_graph_default.AutoAspect = SW_ONOFF_ON;
+  settings_graph_default.AxesColour = COLOUR_BLACK;
   settings_graph_default.bar        = 1.0;
   settings_graph_default.BinOrigin  = 0.0;
   settings_graph_default.BinWidth   = 1.0;
@@ -138,5 +139,18 @@ void *FetchSettingName(int id, int *id_list, void **name_list)
   sprintf(temp_err_string, "Setting has illegal value %d.", id);
   ppl_fatal(__FILE__, __LINE__, temp_err_string);
   return NULL;
+ }
+
+int FetchSettingByName(char *name, int *id_list, char **name_list)
+ {
+  char UpperName[LSTR_LENGTH];
+  StrUpper(name, UpperName);
+  while(1)
+   {
+    if (*id_list == -1) return -1;
+    if (strcmp(UpperName, *name_list) == 0) return *id_list;
+    id_list++; name_list++;
+   }
+  return -1;
  }
 

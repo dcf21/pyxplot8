@@ -30,7 +30,7 @@ extern char ppl_commands[];
 
 /* Functions defined in ppl_shell.c */
 #ifndef _PPL_SHELL
-extern int  PPL_SHELL_EXITTING;
+extern int  PPL_SHELL_EXITING;
 #endif
 void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input);
