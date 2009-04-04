@@ -39,17 +39,26 @@ DATE    = 36/15/2012
 COMPILE = $(CC) -Wall -c
 LINK    = $(CC) -Wall -lm -lreadline -ljpeg
 
-SRCDIR = src
-OBJDIR = obj
-BINDIR = bin
+OPTIMISATION = -O0
 
-PPL_FILES   = asciidouble.c ppl_children.c ppl_colours.c ppl_commands.c ppl_error.c ppl_passwd.c ppl_list.c ppl_memory.c ppl_readconfig.c ppl_settings_term.c ppl_setting_types.c ppl_shell.c ppl_text.c pyxplot.c
+DEBUG   = -D DEBUG=1 -D MEMDEBUG=1
+NODEBUG = -D DEBUG=0 -D MEMDEBUG=0
 
-PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h
+SRCDIR  = src
+OBJDIR  = obj
+BINDIR  = bin
 
-PPL_SOURCES = $(PPL_FILES:%.c=$(SRCDIR)/%.o)
-PPL_OBJECTS = $(PPL_FILES:%.c=$(OBJDIR)/%.o)
-PPL_HFILES  = $(PPL_HEADERS:%.h=$(SRCDIR)/%.h)
+PPL_FILES   = asciidouble.c ppl_children.c ppl_colours.c ppl_commands.c ppl_dict.c ppl_error.c ppl_list.c ppl_memory.c ppl_passwd.c ppl_readconfig.c ppl_settings_term.c ppl_setting_types.c ppl_shell.c ppl_text.c pyxplot.c
+
+PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h Makefile
+
+PPL_VERSIONS = ppl_version.c ppl_version_install.c
+
+PPL_SOURCES         = $(PPL_FILES:%.c=$(SRCDIR)/%.c)
+PPL_OBJECTS         = $(PPL_FILES:%.c=$(OBJDIR)/%.o)
+PPL_OBJECTS_DEBUG   = $(PPL_OBJECTS:%.o=%.debug.o)
+PPL_OBJECTS_VERSION = $(PPL_VERSIONS:%.c=$(OBJDIR)/%.o) $(PPL_VERSIONS:%.c=$(OBJDIR)/%.debug.o)
+PPL_HFILES          = $(PPL_HEADERS:%.h=$(SRCDIR)/%.h)
 
 all: $(BINDIR)/pyxplot
 
@@ -72,15 +81,19 @@ src/ppl_version_install.c: $(PPL_SOURCES) $(PPL_HFILES)
 src/ppl_colours.c: colourlist_generate.py
 	python colourlist_generate.py
 
-$(OBJDIR)/%.o:$(SRCDIR)/%.c $(PPL_HFILES)
+$(OBJDIR)/%.o:       $(SRCDIR)/%.c $(PPL_HFILES)
 	mkdir -p $(OBJDIR)
-	$(COMPILE) $< -o $@
+	$(COMPILE) $(OPTIMISATION) $< $(NODEBUG) -o $@
 
-$(BINDIR)/pyxplot: $(PPL_OBJECTS) obj/ppl_colours.o obj/ppl_version.o obj/ppl_version_install.o
+$(OBJDIR)/%.debug.o: $(SRCDIR)/%.c $(PPL_HFILES)
+	mkdir -p $(OBJDIR)
+	$(COMPILE) $(OPTIMISATION) $<   $(DEBUG) -o $@
+
+$(BINDIR)/pyxplot: $(PPL_OBJECTS) $(PPL_OBJECTS_DEBUG) $(PPL_OBJECTS_VERSION)
 	mkdir -p $(BINDIR)
-	$(LINK) $(PPL_OBJECTS) obj/ppl_version.o         -o $(BINDIR)/pyxplot
-	$(LINK) $(PPL_OBJECTS) obj/ppl_version_install.o -o $(BINDIR)/pyxplot.install
-	rm -f $(SRCDIR)/*.o
+	$(LINK) $(OPTIMISATION) $(PPL_OBJECTS)       obj/ppl_version.o         -o $(BINDIR)/pyxplot
+	$(LINK) $(OPTIMISATION) $(PPL_OBJECTS_DEBUG) obj/ppl_version.debug.o   -o $(BINDIR)/pyxplot.debug
+	$(LINK) $(OPTIMISATION) $(PPL_OBJECTS)       obj/ppl_version_install.o -o $(BINDIR)/pyxplot.install
 
 clean:
 	rm -f src/ppl_version.c src/ppl_version_install.c src/ppl_colours.c src/ppl_colours.h src/*.o

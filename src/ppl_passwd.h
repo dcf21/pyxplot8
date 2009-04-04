@@ -23,7 +23,9 @@
 #define PPL_PASSWD 1
 
 /* Functions defined in ppl_passwd.c */
-char *UnixGetHomeDir();
-char *UnixGetUserIRLName();
+char *UnixGetHomeDir       ();
+char *UnixGetUserHomeDir   (char *username);
+char *UnixGetIRLName       ();
+char *UnixExpandUserHomeDir(char *in, char *cwd, char *out);
 
 #endif

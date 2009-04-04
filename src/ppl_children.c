@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/select.h>
 
 #include "asciidouble.h"
 #include "pyxplot.h"
@@ -101,6 +102,7 @@ void  InitialiseCSP()
   if (chdir(settings_session_default.tempdir) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
 
   // Enter CSP execution loop
+  if (signal(SIGCHLD, CSPCheckForChildExits) == SIG_ERR) ppl_fatal(__FILE__,__LINE__,"CSP could not set up a signal handler for SIGCHLD.");
   CSPmain();
   close(PipeCSP2MAIN[1]); // Close pipes
   close(PipeMAIN2CSP[0]);
@@ -114,18 +116,23 @@ void  InitialiseCSP()
 
 void CheckForGvOutput()
  {
-  int   pos;
-  char *line;
-  char  linebuffer[SSTR_LENGTH];
+  struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
+  fd_set          readable;
+  int             pos;
+  char            linebuffer[SSTR_LENGTH];
+
+  waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
+  FD_ZERO(&readable); FD_SET(PipeCSP2MAIN[0], &readable);
+  pselect(PipeCSP2MAIN[0]+1, &readable, NULL, NULL, &waitperiod, NULL);
+  if (!FD_ISSET(PipeCSP2MAIN[0] , &readable)) return; // select tells us that pipe from CSP is not readable
+
   pos = strlen(PipeOutputBuffer);
-  // Todo: Call select() here to make sure there is data to read
   read(PipeCSP2MAIN[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5);
   while (1)
    {
-    line = StrRemoveCompleteLine(PipeOutputBuffer);
-    if (strlen(line)==0) break;
-    if (strstr(line, SIGTERM_NAME)!=NULL) continue;
-    strcpy(linebuffer,line);
+    StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
+    if (linebuffer[0]=='\0') break;
+    if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
     ppl_error(linebuffer);
    }
   return;
@@ -144,9 +151,8 @@ void  CSPmain()
   while ((PyXPlotRunning==1) || (ListLen(GhostView_Persists)>0))
    {
     sleep(1); // Wake up every second
-    CSPCheckForChildExits();
     CSPCheckForNewCommands(); // Check for orders from PyXPlot
-    if (getppid()==1) // We've been orphaned and adopted by init
+    if ((PyXPlotRunning==1) && (getppid()==1)) // We've been orphaned and adopted by init
      {
       PyXPlotRunning=0;
       if (DEBUG) ppl_log("CSP has detected that it has been orphaned.");
@@ -155,7 +161,7 @@ void  CSPmain()
   return;
  }
 
-void CSPCheckForChildExits()
+void CSPCheckForChildExits(int signo)
  {
   ListIterator *iter;
   int          *gv_pid;
@@ -186,16 +192,22 @@ void CSPCheckForChildExits()
 
 void CSPCheckForNewCommands()
  {
+  struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
+  fd_set          readable;
   int pos;
-  char *line;
   char linebuffer[SSTR_LENGTH];
+
+  waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
+  FD_ZERO(&readable); FD_SET(PipeMAIN2CSP[0], &readable);
+  pselect(PipeMAIN2CSP[0]+1, &readable, NULL, NULL, &waitperiod, NULL);
+  if (!FD_ISSET(PipeMAIN2CSP[0] , &readable)) return; // select tells us that pipe from CSP is not readable
+
   pos = strlen(PipeOutputBuffer);
   read(PipeMAIN2CSP[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5);
   while (1)
    {
-    line = StrRemoveCompleteLine(PipeOutputBuffer);
-    if (strlen(line)==0) break;
-    strcpy(linebuffer, line);
+    StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
+    if (linebuffer[0]=='\0') break;
     CSPProcessCommand(linebuffer);
    }
   return;
@@ -205,7 +217,7 @@ void CSPProcessCommand(char *in)
  {
   char cmd[FNAME_LENGTH];
 
-  if      (strlen(in)==0) return;
+  if      (in[0]=='\0') return;
   else if (in[0]=='A')                                 // clear command executed
    {
     if (DEBUG) ppl_log("Received request to clear display.");
@@ -297,7 +309,6 @@ void CSPKillLatestSinglewindow()
   if (DEBUG) { sprintf(temp_err_string, "Killing latest GhostView singlewindow process with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
   if (GhostView_pid > 1) kill(GhostView_pid, SIGTERM);
   GhostView_pid = 0;
-  CSPCheckForChildExits();
   return;
  }
 

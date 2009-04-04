@@ -69,14 +69,13 @@ double GetFloat(char *str)
  }
 
 /* FILE_READLINE(): This remarkably useful function forwards a file to the next newline */
-/*                  Why is this not in stdio? */
 
 void file_readline(FILE *file, char *output)
 {
- char c = 'X';
+ char c = '\x07';
  char *outputscan = output;
 
- while (((int)c != 10) && (!feof(file)))
+ while (((int)c != 10) && (!feof(file)) && (!ferror(file)))
   {
    fscanf(file,"%c",&c);
    if (((int)c)>31) *(outputscan++) = c;
@@ -119,15 +118,15 @@ char *FriendlyTimestring()
 
 /* STRSTRIP(): Strip whitespace from both ends of a string */
 
-char *StrStrip(char *in)
+char *StrStrip(char *in, char *out)
  {
-  char *out = temp_strproc_buffer;
+  char *scan = out;
   while ((*in <= ' ') && (*in > '\0')) in++;
-  while (                (*in > '\0')) *(out++)=*(in++);
-  out--;
-  while ((out!=temp_strproc_buffer) && (*out <= ' ')) out--;
-  *++out = '\0';
-  return temp_strproc_buffer;
+  while (                (*in > '\0')) *(scan++)=*(in++);
+  scan--;
+  while ((scan>out) && (*scan <= ' ')) scan--;
+  *++scan = '\0';
+  return out;
  }
 
 /* STRUPPER(): Capitalise a string */
@@ -166,20 +165,21 @@ char *StrUnderline(char *in)
 
 /* STRREMOVECOMPLETELINE(): Removes a single complete line from a text buffer, if there is one */
 
-char  *StrRemoveCompleteLine(char *in)
+char  *StrRemoveCompleteLine(char *in, char *out)
  {
-  char *scan, *scan2, *out;
-  scan = scan2 = in; out = temp_strproc_buffer;
+  char *scan, *scan2, *scanout;
+  scan = scan2 = in;
+  scanout      = out;
   while ((*scan != '\0') && (*scan != '\x0D') && (*scan != '\x0A')) scan++; // Find first carriage-return in text buffer
-  if (*scan != '\0') while (scan2<scan) *out++=*scan2++; // If one is found, copy up to this point into temporary string processing buffer
-  *out = '\0';
-  out = StrStrip(temp_strproc_buffer); // Strip it, and then this is what we will return
+  if (*scan != '\0') while (scan2<scan) *scanout++=*scan2++; // If one is found, copy up to this point into temporary string processing buffer
+  *scanout = '\0';
+  StrStrip(out, out); // Strip it, and then this is what we will return
 
   if (*scan != '\0') // If we've taken a line out of the buffer, delete it from buffer
    {
     scan2 = in;
     while ((*scan == '\x0D') || (*scan == '\x0A')) scan++; // Forward over carriage return
-    while (*scan != '\0') *scan2 = *scan;
+    while (*scan != '\0') *scan2++ = *scan++;
     *scan2 = '\0';
    }
   return out;

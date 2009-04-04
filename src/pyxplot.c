@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <setjmp.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <readline/readline.h>
@@ -42,16 +44,24 @@
 
 int WillBeInteractive;
 
+// SIGINT Handling information
+
+sigjmp_buf sigjmp_ToMain;
+sigjmp_buf sigjmp_ToInteractive;
+sigjmp_buf sigjmp_ToDirective;
+sigjmp_buf *sigjmp_FromSigInt = NULL;
+
 int main(int argc, char **argv)
  {
   int i,fail;
   int tempdirnumber = 1;
   char tempdirpath[FNAME_LENGTH];
+  char *EnvDisplay;
   struct stat statinfo;
 
-  struct timespec waitperiod, waitedperiod; // A time.h timespec specifier for a 100ns nanosleep wait
-  waitperiod.tv_sec  = 1;
-  waitperiod.tv_nsec = 0;
+  struct timespec waitperiod, waitedperiod; // A time.h timespec specifier for a 100ms nanosleep wait
+  waitperiod.tv_sec  = 0;
+  waitperiod.tv_nsec = 50000000;
   WillBeInteractive  = 1;
 
   // Initialise sub-modules
@@ -115,45 +125,63 @@ int main(int argc, char **argv)
   if (DEBUG) ppl_log("Launching the Child Support Process.");
   InitialiseCSP();
 
-  // Wait for temporary directory to appear, and change directory into it
-  if (DEBUG) ppl_log("Waiting for temporary directory to appear.");
-  for (i=0; i<3; i++) { if (access(tempdirpath, F_OK) == 0) break; nanosleep(&waitperiod,&waitedperiod); } // Wait for temp dir to be created by child process
-  if (access(tempdirpath, F_OK) != 0) { fail=1; } // If it never turns up, fail.
-  else
+  // Set up SIGINT handler
+  if (sigsetjmp(sigjmp_ToMain, 1) == 0)
    {
-    stat(tempdirpath, &statinfo); // Otherwise stat it and make sure it's a directory we own
-    if (!S_ISDIR(statinfo.st_mode)) fail=1;
-    if (statinfo.st_uid != getuid()) fail=1;
-   }
-  if (fail==1)                { ppl_fatal(__FILE__,__LINE__,"Failed to create temporary directory." ); }
-  if (chdir(tempdirpath) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
+    sigjmp_FromSigInt = &sigjmp_ToMain;
+    signal(SIGINT, SigIntHandler);
 
-  // Read GNU Readline history
-  if (DEBUG) ppl_log("Reading GNU Readline history.");
-  sprintf(tempdirpath, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplot_history");
-  read_history(tempdirpath);
-  stifle_history(1000);
-
-  // Set default terminal
-  // TODO: Check ('DISPLAY' not in os.environ.keys()) or (len(os.environ['DISPLAY']) < 1)
-  if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) || (strcmp(GHOSTVIEW, "/bin/false")==0) || (isatty(STDIN_FILENO) != 1)))
-   settings_term_default.TermType = SW_TERMTYPE_EPS;
-
-  // Scan commandline and process all script files we have been given
-  for (i=1; i<argc; i++)
-   {
-    if (strlen(argv[i])==0) continue;
-    if (argv[i][0]=='-')
+    // Wait for temporary directory to appear, and change directory into it
+    if (DEBUG) ppl_log("Waiting for temporary directory to appear.");
+    for (i=0; i<100; i++) { if (access(tempdirpath, F_OK) == 0) break; nanosleep(&waitperiod,&waitedperiod); } // Wait for temp dir to be created by child process
+    if (access(tempdirpath, F_OK) != 0) { fail=1; } // If it never turns up, fail.
+    else
      {
-      if (argv[i][1]=='\0') InteractiveSession();
-      continue;
+      stat(tempdirpath, &statinfo); // Otherwise stat it and make sure it's a directory we own
+      if (!S_ISDIR(statinfo.st_mode)) fail=1;
+      if (statinfo.st_uid != getuid()) fail=1;
      }
-    ProcessPyXPlotScript(argv[i]);
+    if (fail==1)                { ppl_fatal(__FILE__,__LINE__,"Failed to create temporary directory." ); }
+    if (chdir(tempdirpath) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
+
+    // Read GNU Readline history
+    if (DEBUG) ppl_log("Reading GNU Readline history.");
+    sprintf(tempdirpath, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplot_history");
+    read_history(tempdirpath);
+    stifle_history(1000);
+
+    // Set default terminal
+    EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
+    if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) ||
+                                                  (EnvDisplay==NULL) ||
+                                                  (EnvDisplay[0]=='\0') ||
+                                                  (strcmp(GHOSTVIEW, "/bin/false")==0) ||
+                                                  (isatty(STDIN_FILENO) != 1)))
+     {
+      ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");
+      settings_term_default.TermType = SW_TERMTYPE_EPS;
+     }
+
+    // Scan commandline and process all script files we have been given
+    for (i=1; i<argc; i++)
+     {
+      if (strlen(argv[i])==0) continue;
+      if (argv[i][0]=='-')
+       {
+        if (argv[i][1]=='\0') InteractiveSession();
+        continue;
+       }
+      ProcessPyXPlotScript(argv[i]);
+     }
+    if (argc==1) InteractiveSession();
+
+   // SIGINT longjmps to main return here
+   } else {
+    ppl_error("\nReceived SIGINT. Terminating.");
    }
-  if (argc==1) InteractiveSession();
 
   // Notify the CSP that we are about to quit
-  SendCommandToCSP("B");
+  SendCommandToCSP("B\n");
 
   // Save GNU Readline history
   if (WillBeInteractive>0)
@@ -165,7 +193,16 @@ int main(int argc, char **argv)
 
   // Terminate
   ppl_FreeAll(MEMORY_GLOBAL);
+  ppl_MemoryStop();
   if (DEBUG) ppl_log("Terminating normally.");
   return 0;
  }
 
+void SigIntHandler(int signo)
+ {
+  sigjmp_buf *destination = sigjmp_FromSigInt;
+  sigjmp_FromSigInt = NULL; // DO NOT recursively go back to the same sigint handler over and over again if it doesn't seem to work.
+  if (destination != NULL) siglongjmp(*destination, 1);
+  raise(SIGTERM);
+  raise(SIGKILL);
+ }

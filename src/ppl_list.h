@@ -28,6 +28,8 @@
 #define DATATYPE_INT    31001
 #define DATATYPE_FLOAT  31002
 #define DATATYPE_STRING 31003
+#define DATATYPE_LIST   31004
+#define DATATYPE_DICT   31005
 
 typedef struct ListItemS
  {
@@ -48,6 +50,8 @@ typedef struct ListS
 
 typedef ListItem ListIterator;
 
+#include "ppl_dict.h"
+
 // Functions defined in ppl_list.c
 List *ListInit         ();
 int   ListLen          (List *in);
@@ -55,6 +59,8 @@ void  ListAppendPtr    (List *in, void *item);
 void  ListAppendInt    (List *in, int   item);
 void  ListAppendFloat  (List *in, double item);
 void  ListAppendString (List *in, char *item);
+void  ListAppendList   (List *in, List *item);
+void  ListAppendDict   (List *in, Dict *item);
 int   ListRemovePtr    (List *in, void *item);
 void  ListRemovePtrAll (List *in, void *item);
 void *ListPop          (List *in);

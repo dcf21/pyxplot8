@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "ppl_list.h"
+#include "ppl_dict.h"
 #include "ppl_memory.h"
 
 List *ListInit()
@@ -55,6 +56,7 @@ void ListAppendPtr(List *in, void *item)
   if (in->first == NULL) in->first = ptrnew;
   if (in->last  != NULL) in->last->next = ptrnew;
   in->last = ptrnew;
+  in->length++;
   return;
  }
 
@@ -86,6 +88,20 @@ void ListAppendString(List *in, char *item)
   return;
  }
 
+void ListAppendList(List *in, List *item)
+ {
+  ListAppendPtr(in, (void *)item);
+  in->last->DataType = DATATYPE_LIST;
+  return;
+ }
+
+void ListAppendDict(List *in, Dict *item)
+ {
+  ListAppendPtr(in, (void *)item);
+  in->last->DataType = DATATYPE_DICT;
+  return;
+ }
+
 int ListRemovePtr(List *in, void *item)
  {
   ListItem *ptr, *ptrnext;
@@ -97,17 +113,19 @@ int ListRemovePtr(List *in, void *item)
      {
       if (ptr->next != NULL) // We are not the last item in the list
        {
-        ptrnext   = ptr->next;
-        ptr->data = ptrnext->data;
-        ptr->next = ptrnext->next;
+        ptrnext       = ptr->next;
+        ptr->DataType = ptrnext->DataType;
+        ptr->data     = ptrnext->data;
+        ptr->next     = ptrnext->next;
         if (in->last == ptrnext) in->last = ptr;
         else ptr->next->prev = ptr;
        }
       else if (ptr->prev != NULL) // We are the last item in the list, but not the first item
        {
-        ptrnext   = ptr->prev;
-        ptr->data = ptrnext->data;
-        ptr->prev = ptrnext->prev;
+        ptrnext       = ptr->prev;
+        ptr->DataType = ptrnext->DataType;
+        ptr->data     = ptrnext->data;
+        ptr->prev     = ptrnext->prev;
         if (in->first == ptrnext) in->first = ptr;
         else ptr->prev->next = ptr;
        }
@@ -180,6 +198,8 @@ char *ListPrint(List *in, char *out, int size)
     else if (iter->DataType == DATATYPE_INT   ) { sprintf(out+pos, "%d"  , *((int    *)iter->data)); }
     else if (iter->DataType == DATATYPE_FLOAT ) { sprintf(out+pos, "%e"  , *((double *)iter->data)); }
     else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s'",  ((char   *)iter->data)); }
+    else if (iter->DataType == DATATYPE_LIST  ) { ListPrint( ((List *)iter->data), out+pos, size-pos); }
+    else if (iter->DataType == DATATYPE_DICT  ) { DictPrint( ((Dict *)iter->data), out+pos, size-pos); } 
     pos += strlen(out+pos);
     first=0;
     iter = ListIterate(iter, NULL);

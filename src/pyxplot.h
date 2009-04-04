@@ -34,7 +34,8 @@ extern int  PPL_SHELL_EXITTING;
 #endif
 void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input);
-int         ProcessDirective    (char *in);
+int         ProcessDirective    (char *in, int interactive);
+int         ProcessDirective2   (char *in);
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];
@@ -61,7 +62,13 @@ extern char GHOSTVIEW_OPT[];
 /* Functions defined in pyxplot.c */
 
 #ifndef _PYXPLOT_C
-extern int WillBeInteractive;
+#include <setjmp.h>
+extern int         WillBeInteractive;
+extern sigjmp_buf  sigjmp_ToMain;
+extern sigjmp_buf  sigjmp_ToInteractive;
+extern sigjmp_buf  sigjmp_ToDirective;
+extern sigjmp_buf *sigjmp_FromSigInt;
 #endif
+void               SigIntHandler(int signo);
 
 #endif

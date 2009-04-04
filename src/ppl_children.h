@@ -35,7 +35,7 @@ void  SendCommandToCSP         (char *cmd);
 // Functions to be called from the Child Support Process
 
 void  CSPmain                  ();
-void  CSPCheckForChildExits    ();
+void  CSPCheckForChildExits    (int signo);
 void  CSPCheckForNewCommands   ();
 void  CSPProcessCommand        (char *in);
 int   CSPForkNewGv             (char *fname, List *gv_list);
