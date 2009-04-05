@@ -122,10 +122,13 @@ MULTIPLOT=OFF
 ORIGINX=0.0
 ORIGINY=0.0
 OUTPUT=
+PAPERHEIGHT=297
+PAPERWIDTH=210
 POINTLINEWIDTH=1.0
 POINTSIZE=1.0 
 SAMPLES=250
 TERMANTIALIAS=ON
+TERMENLARGE=OFF
 TERMINVERT=OFF
 TERMTRANSPARENT=OFF
 TERMTYPE=X11_singlewindow
@@ -133,8 +136,8 @@ TEXTCOLOUR=Black
 TEXTHALIGN=Left
 TEXTVALIGN=Bottom
 TITLE=
-TIT_XOFF=0.0
-TIT_YOFF=0.0
+TITLE_XOFF=0.0
+TITLE_YOFF=0.0
 WIDTH=8.0
 
 [terminal]
@@ -242,13 +245,6 @@ with a list of possible values for each:
 
                Sets the sampling quality used, in dots per inch, when output is sent to a bitmapped terminal (the jpeg/gif/png terminals).
                \\
-{\tt ENLARGE} & {\bf Possible values:} {\tt ON} / {\tt OFF}
-
-               {\bf Analogous set command:} \indcmdts{set terminal}
-                   
-               When set to `{\tt ON}' output is enlarged or shrunk to fit the current paper size.
-               \\
-
 {\tt FONTSIZE} & {\bf Possible values:} Integers in the range $-4 \to 5$.
 
                {\bf Analogous set command:} \indcmdts{set fontsize}
@@ -399,6 +395,13 @@ with a list of possible values for each:
 
                Sets whether jpeg/gif/png output is antialiased, i.e.\ whether colour boundaries are smoothed to disguise the effects of pixelisation.
                \\
+{\tt TERMENLARGE} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+
+               {\bf Analogous set command:} \indcmdts{set terminal}
+
+               When set to `{\tt ON}' output is enlarged or shrunk to fit the current paper size.
+               \\
+
 {\tt TERMINVERT} & {\bf Possible values:} {\tt ON} / {\tt OFF}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
@@ -443,13 +446,13 @@ with a list of possible values for each:
 
                Sets the title to appear at the top of the plot.
                \\
-{\tt TIT\_XOFF} & {\bf Possible values:} Any floating point number.
+{\tt TITLE\_XOFF} & {\bf Possible values:} Any floating point number.
 
                {\bf Analogous set command:} \indcmdts{set title}
 
                Sets the horizontal offset of the title of the plot from its default central location.
                \\
-{\tt TIT\_YOFF} & {\bf Possible values:} Any floating point number.
+{\tt TITLE\_YOFF} & {\bf Possible values:} Any floating point number.
 
                {\bf Analogous set command:} \indcmdts{set title}
 

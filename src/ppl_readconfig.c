@@ -24,10 +24,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "asciidouble.h"
 #include "ppl_colours.h"
 #include "ppl_error.h"
+#include "ppl_dcfmath.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
@@ -97,7 +99,7 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_COLOUR_INT,SW_COLOUR_STR))>0) settings_graph_default.AxesColour    = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR."       , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else if (strcmp(setkey, "BACKUP"       )==0)
-        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .AutoAspect    = i;
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .backup        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting BACKUP."       , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else if (strcmp(setkey, "BAR"          )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_graph_default.bar           = fl;
@@ -126,9 +128,6 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "DPI"          )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_term_default .dpi           = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting DPI."          , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
-      else if (strcmp(setkey, "ENLARGE"      )==0)
-        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_graph_default.TermEnlarge   = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ENLARGE."      , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else if (strcmp(setkey, "FONTSIZE"     )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_graph_default.FontSize      = (int)fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting FONTSIZE."     , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
@@ -181,11 +180,11 @@ void ReadConfigFile(char *ConfigFname)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_graph_default.OriginY       = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINY."      , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else if (strcmp(setkey, "OUTPUT"       )==0)
-        strcpy(settings_graph_default.output , setvalue);
-      else if (strcmp(setkey, "PAPERHEIGHT"  )==0)
+        strcpy(settings_term_default.output , setvalue);
+      else if (strcmp(setkey, "PAPER_HEIGHT" )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_term_default .PaperHeight   = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting PAPERHEIGHT."  , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
-      else if (strcmp(setkey, "PAPERWIDTH"   )==0)
+      else if (strcmp(setkey, "PAPER_WIDTH"  )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_term_default .PaperWidth    = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting PAPERWIDTH."   , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else if (strcmp(setkey, "POINTLINEWIDTH")==0)
@@ -223,13 +222,13 @@ void ReadConfigFile(char *ConfigFname)
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TEXTVALIGN."   , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else if (strcmp(setkey, "TITLE"        )==0)
         strcpy(settings_graph_default.title  , setvalue);
-      else if (strcmp(setkey, "TIT_XOFF"      )==0)
+      else if (strcmp(setkey, "TIT_XOFF"     )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_graph_default.TitleXOff     = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TIT_XOFF."      ,linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
-      else if (strcmp(setkey, "TIT_YOFF"      )==0)
+      else if (strcmp(setkey, "TIT_YOFF"     )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_graph_default.TitleYOff     = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TIT_YOFF."      ,linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
-      else if (strcmp(setkey, "WIDTH"         )==0)
+      else if (strcmp(setkey, "WIDTH"        )==0)
         if ((fl=GetFloat(setvalue, &i) || 1) && (i==strlen(setvalue)))      settings_graph_default.width         = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting WIDTH."         ,linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
       else
@@ -238,6 +237,23 @@ void ReadConfigFile(char *ConfigFname)
     else if (state == 2)
      {
       StrUpper(setkey, setkey);
+      if      (strcmp(setkey, "COLOUR"       )==0)
+        if ((i=FetchSettingByName(setvalue, SW_ONOFF_INT,   SW_ONOFF_STR  ))>0) settings_session_default.colour      = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR."       , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
+      else if (strcmp(setkey, "COLOUR_ERR"   )==0)
+        if ((i=FetchSettingByName(setvalue, SW_TERMCOL_INT, SW_TERMCOL_STR))>0) settings_session_default.colour_err  = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR_ERR."   , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
+      else if (strcmp(setkey, "COLOUR_REP"   )==0)
+        if ((i=FetchSettingByName(setvalue, SW_TERMCOL_INT, SW_TERMCOL_STR))>0) settings_session_default.colour_rep  = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR_REP."   , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
+      else if (strcmp(setkey, "COLOUR_WRN"   )==0)
+        if ((i=FetchSettingByName(setvalue, SW_TERMCOL_INT, SW_TERMCOL_STR))>0) settings_session_default.colour_wrn  = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR_WRN."   , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
+      else if (strcmp(setkey, "SPLASH"       )==0)
+        if ((i=FetchSettingByName(setvalue, SW_ONOFF_INT,   SW_ONOFF_STR  ))>0) settings_session_default.splash      = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting SPLASH."       , linecounter, ConfigFname); ppl_warning(temp_err_string); break; }
+      else
+       { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnrecognised setting name '%s'.", linecounter, ConfigFname, setkey); ppl_warning(temp_err_string); break; }
      }
     else if (state == 3)
      {
@@ -246,6 +262,10 @@ void ReadConfigFile(char *ConfigFname)
     else if (state == 4)
      {
       StrUpper(setkey, setkey);
+      if      (strcmp(setkey, "PREAMBLE"     )==0)
+        strcpy(settings_term_default.LatexPreamble, setvalue);
+      else
+       { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnrecognised setting name '%s'.", linecounter, ConfigFname, setkey); ppl_warning(temp_err_string); break; }
      }
     else if (state == 5)
      {
