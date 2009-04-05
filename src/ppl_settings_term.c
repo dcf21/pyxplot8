@@ -34,10 +34,12 @@
 settings_terminal settings_term_default;
 settings_terminal settings_term_current;
 
-settings_graph settings_graph_default;
-settings_graph settings_graph_current;
+settings_graph    settings_graph_default;
+settings_graph    settings_graph_current;
 
-settings_session settings_session_default;
+settings_axis     settings_axis_default;
+
+settings_session  settings_session_default;
 
 void ppl_settings_term_init()
  {
@@ -96,6 +98,30 @@ void ppl_settings_term_init()
   settings_graph_default.TitleXOff  = 0.0;
   settings_graph_default.TitleYOff  = 0.0;
   settings_graph_default.width      = 8.0;
+
+  // Default Axis Settings, used whenever a new axis is created
+  settings_axis_default.log         = SW_BOOL_FALSE;
+  settings_axis_default.MaxSet      = SW_BOOL_FALSE;
+  settings_axis_default.MinSet      = SW_BOOL_FALSE;
+  settings_axis_default.TickDirection=SW_TICDIR_IN;
+  settings_axis_default.MTickMaxSet = SW_BOOL_FALSE;
+  settings_axis_default.MTickMinSet = SW_BOOL_FALSE;
+  settings_axis_default.MTickStepSet= SW_BOOL_FALSE;
+  settings_axis_default.TickMaxSet  = SW_BOOL_FALSE;
+  settings_axis_default.TickMinSet  = SW_BOOL_FALSE;
+  settings_axis_default.TickStepSet = SW_BOOL_FALSE;
+  settings_axis_default.LogBase     = 10.0;
+  settings_axis_default.max         =  0.0;
+  settings_axis_default.min         =  0.0;
+  settings_axis_default.MTickMax    =  0.0;
+  settings_axis_default.MTickMin    =  0.0;
+  settings_axis_default.MTickStep   =  0.0;
+  settings_axis_default.TickMax     =  0.0;
+  settings_axis_default.TickMin     =  0.0;
+  settings_axis_default.TickStep    =  0.0;
+  settings_axis_default.MTickList   = NULL;
+  settings_axis_default.TickList    = NULL;
+  strcpy(settings_axis_default.label, "");
 
   // Setting which affect how we talk to the current interactive session
   settings_session_default.splash    = SW_ONOFF_ON;

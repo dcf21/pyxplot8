@@ -32,10 +32,12 @@
 #include "pyxplot.h"
 #include "asciidouble.h"
 #include "ppl_children.h"
+#include "ppl_constants.h"
 #include "ppl_error.h"
+#include "ppl_parser.h"
+#include "ppl_passwd.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
-#include "ppl_constants.h"
 
 int PPL_SHELL_EXITING;
 int PPL_SHELL_MULTILINE;

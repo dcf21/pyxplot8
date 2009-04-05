@@ -48,7 +48,7 @@ SRCDIR  = src
 OBJDIR  = obj
 BINDIR  = bin
 
-PPL_FILES   = asciidouble.c ppl_children.c ppl_colours.c ppl_commands.c ppl_dict.c ppl_error.c ppl_list.c ppl_memory.c ppl_passwd.c ppl_readconfig.c ppl_settings_term.c ppl_setting_types.c ppl_shell.c ppl_text.c pyxplot.c
+PPL_FILES   = asciidouble.c ppl_children.c ppl_colours.c ppl_commands.c ppl_dict.c ppl_error.c ppl_list.c ppl_memory.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_settings_term.c ppl_setting_types.c ppl_shell.c ppl_text.c pyxplot.c
 
 PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h Makefile
 

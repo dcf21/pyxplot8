@@ -23,6 +23,7 @@
 #define _PPL_SETTINGS 1
 
 #include "ppl_constants.h"
+#include "ppl_list.h"
 
 typedef struct settings_terminal {
  int   backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent;
@@ -33,10 +34,17 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int   AxesColour, aspect, AutoAspect, DataStyle, FontSize, FuncStyle, grid, GridAxisX, GridAxisY, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ int   aspect, AutoAspect, AxesColour, DataStyle, FontSize, FuncStyle, grid, GridAxisX, GridAxisY, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
  float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, KeyXOff, KeyYOff, LineWidth, OriginX, OriginY, PointSize, PointLineWidth, TitleXOff, TitleYOff, width;
  char  title[FNAME_LENGTH];
  } settings_graph;
+
+typedef struct settings_axis {
+ int MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
+ float LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
+ char label[FNAME_LENGTH];
+ List *MTickList, *TickList;
+ } settings_axis;
 
 typedef struct settings_session {
  int   splash, colour, colour_rep, colour_wrn, colour_err;
@@ -49,9 +57,10 @@ typedef struct settings_session {
 #ifndef _PPL_SETTINGS_TERM
 extern settings_terminal settings_term_default;
 extern settings_terminal settings_term_current;
-extern settings_graph settings_graph_default;
-extern settings_graph settings_graph_current;
-extern settings_session settings_session_default;
+extern settings_graph    settings_graph_default;
+extern settings_graph    settings_graph_current;
+extern settings_axis     settings_axis_default;
+extern settings_session  settings_session_default;
 
 void  ppl_settings_term_init();
 void *FetchSettingName      (int id, int *id_list, void **name_list);

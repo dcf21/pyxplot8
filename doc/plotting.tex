@@ -1,0 +1,739 @@
+% PLOTTING.TEX
+%
+% The documentation in this file is part of PyXPlot
+% <http://www.pyxplot.org.uk>
+%
+% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
+%               2008   Ross Church
+%
+% $Id$
+%
+% PyXPlot is free software; you can redistribute it and/or modify it under the
+% terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+%
+% You should have received a copy of the GNU General Public License along with
+% PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+% Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+% ----------------------------------------------------------------------------
+
+% LaTeX source for the PyXPlot Users' Guide
+
+\chapter{Advanced Plotting}
+
+In this chapter, we continue to explore the various options of the {\tt plot}
+command. Specifically, we turn to those aspects which differ from \gnuplot's
+{\tt plot} command.
+
+\section{A Tour of PyXPlot's Plot Styles}
+
+We begin by reviewing the various plot styles which are available in PyXPlot.
+Two of these we have already met: {\tt lines}, which draws straight lines
+between \datapoint s, and {\tt points}, which does not connect \datapoint s.
+
+\subsection{Lines and Points}
+
+The following are PyXPlot's most basic plot styles\footnote{This is not an
+exhaustive list; see Section~\ref{list_of_plotstyles}.}:
+\begin{itemize}
+\item \indpst{dots} -- places a small dot at each datum.
+\item \indpst{points} -- places a marker symbol at each datum.
+\item \indpst{lines} -- connects adjacent \datapoint s with straight lines.
+\item \indpst{linespoints} -- a combination of both lines and points.
+\end{itemize}
+
+When using the \indpst{points}, \indpst{linespoints} and \indpst{dots} plot
+styles, the size of the plotted points or dots can be varied by using the
+\indmodt{pointsize} modifier, for example:
+
+\begin{verbatim}
+set samples 25
+plot sin(x) with dots pointsize 10
+\end{verbatim}
+
+which would represent data with large dots. The default value of this setting
+is $1.0$.
+
+\noindent The width of lines can similarly be controlled with the
+\indmodt{linewidth} modifier, and the width of the lines used to draw point
+symbols can be controlled with the \indmodt{pointlinewidth} modifier. For
+example:
+
+\begin{verbatim}
+set samples 25
+plot sin(x) with points pointlinewidth 2
+\end{verbatim}
+
+\noindent In addition to setting these parameters on a per-plot basis, their
+default values can also be changed. The command:
+
+\begin{verbatim}
+set pointlinewidth 2
+\end{verbatim}
+
+\noindent would set the default line width used when drawing \datapoint s. Both
+here, and in the {\tt plot} command, the abbreviation {\tt plw} is valid. 
+
+\subsection{Upper and Lower Limit Data Points}
+
+PyXPlot can plot \datapoint s using the standard upper- and lower-limit
+symbols.\index{lower-limit datapoints}\index{upper-limit datapoints} No special
+syntax is required for this; these symbols are pointtypes\footnote{The
+{\tt pointtype} modifier was introduced in
+Section~\ref{pointtype_modifier}.} 12 and 13 respectively, obtained as follows:
+
+\begin{verbatim}
+plot 'upperlimits.dat' with points pointtype 12
+plot 'lowerlimits.dat' with points pointtype 13
+\end{verbatim}
+
+\subsection{Drawing Arrows}
+\label{arrows_plot_style} 
+
+Data may be represented as arrows connecting two points on a plot by using the
+\indpst{arrows} plot style.  This takes four columns of data -- $x_1$, $y_1$,
+$x_2$ and $y_2$ -- and for each \datapoint\ draws an arrow from the point
+$(x_1,y_1)$ to the point $(x_2,y_2)$.  Three different kinds of arrows can be
+drawn: ones with normal arrow heads, ones with no arrow heads, which just
+appear as lines, and ones with arrow heads on both ends. The syntax to obtain
+these varieties is:
+
+\begin{verbatim}
+plot 'data.dat' with arrows_head
+plot 'data.dat' with arrows_nohead
+plot 'data.dat' with arrows_twohead
+\end{verbatim}
+
+The syntax {\tt with arrows} is a shorthand for {\tt with arrows\_head}.  This
+plot style is analogous to the \indpst{vectors} plot style in Version~4 of
+\gnuplot.
+
+\subsection{Error Bars}
+
+\index{errorbars}\label{errorbars}
+In \gnuplot, when one uses errorbars, one can specify either the size of the
+errorbar, or the minimum to maximum range of the errorbar. Both of these usages
+share a common syntax, and \gnuplot's behaviour depends upon the number of
+columns of data provided:
+
+\begin{verbatim}
+plot 'data.dat' with yerrorbars
+\end{verbatim}
+
+\noindent Given a \datafile\ with three columns, this takes the third column to
+indicate the size of the $y$-errorbar. Given a four-column \datafile, it takes
+the third and fourth columns to indicate the minimum to maximum range to be
+marked out by the errorbar.
+
+To avoid confusion, a different syntax is adopted in PyXPlot. The syntax:
+
+\begin{verbatim}
+plot 'data.dat' with yerrorbars
+\end{verbatim}
+
+\noindent always assumes that the third column of the \datafile\ indicates the
+size of the errorbar, regardless of whether a fourth is present. The syntax:
+
+\begin{verbatim}
+plot 'data.dat' with yerrorrange
+\end{verbatim}
+
+\noindent always assumes that the third and fourth columns indicate the minimum
+to maximum range of the errorbar.
+
+\vspace{0.5cm}
+For clarity, a complete list of the errorbar plot styles available in PyXPlot
+is given below:
+
+\begin{tabular}{p{2.5cm}p{7.5cm}}
+\indpst{yerrorbars} & Vertical errorbars; size drawn from the third data column. \\
+\indpst{xerrorbars} & Horizontal errorbars; size drawn from the third data column. \\
+\indpst{xyerrorbars} & Horizontal and vertical errorbars; sizes drawn from the third and fourth data columns respectively.\\
+\indpst{errorbars} & Shorthand for {\tt yerrorbars}. \\
+\end{tabular}
+
+\begin{tabular}{p{2.5cm}p{7.5cm}}
+\indpst{yerrorrange} & Vertical errorbars; minimum drawn from the third data column, maximum from the fourth.\\
+\indpst{xerrorrange} & Horizontal errorbars; minimum drawn from the third data column, maximum from the fourth.\\
+\indpst{xyerrorrange} & Horizontal and vertical errorbars; horizontal minimum drawn from the third data column and maximum from the fourth; vertical minimum drawn from the fifth and maximum from the sixth.\\
+\indpst{errorrange} & Shorthand for {\tt yerrorrange}. \\
+\end{tabular}
+
+\subsection{Plotting Functions with Errorbars, Arrows, or More}
+
+In \gnuplot, when a function (as opposed to a \datafile) is plotted, only those
+plot styles which accept two columns of data can be used -- for example,
+{\tt lines} or {\tt points}. This means that it is not possible to plot a
+function with errorbars. In PyXPlot, this is possible using the following
+syntax:
+
+\begin{verbatim}
+plot f(x):g(x) with yerrorbars
+\end{verbatim}
+
+\noindent Two functions are supplied, separated by a colon; plotting proceeds
+as if a \datafile\ had been supplied, containing values of $x$ in column 1,
+values of $f(x)$ in column 2, and values of $g(x)$ in column 3. This may be
+useful, for example, if $g(x)$ measures the intrinsic uncertainty in $f(x)$.
+The {\tt using} modifier may also be used:
+
+\begin{verbatim}
+plot f(x):g(x) using 2:3
+\end{verbatim}
+
+Here, $g(x)$ would be plotted on the $y$-axis, against $f(x)$ on the $x$-axis.
+It should be noted, however, that the range of values of $x$ used would still
+correspond to the range of the plot's horizontal axis. If the above were to be
+attempted with an autoscaling horizontal axis, the result might be rather
+unexpected -- PyXPlot would find itself autoscaling the $x$-axis range to the
+spread of values of $f(x)$, but find that this itself changed depending upon
+the range of the $x$-axis.\footnote{We're aware that this is not good. Expect
+it to change in a future release.}
+
+\section{Barcharts and Histograms}
+\label{barcharts}\index{bar charts}
+\index{steps plot style@{\tt steps} plot style}
+\index{fsteps plot style@{\tt fsteps} plot style}
+\index{histeps plot style@{\tt histeps} plot style}
+\index{impulses plot style@{\tt impulses} plot style}
+
+\subsection{Basic Operation}
+
+As in \gnuplot, bar charts and histograms can be produced using the
+\indpst{boxes} plot style:
+
+\begin{verbatim} 
+plot 'data.dat' with boxes
+\end{verbatim}
+
+\noindent Horizontally, the interfaces between the bars are, by default, at the
+midpoints along the $x$-axis between the specified \datapoint s (see, for
+example, Figure~\ref{fig:ex_barchart2}a).  Alternatively, the widths of the
+bars may be set using the {\tt set boxwidth} command. In this case, all of
+the bars will be centred upon their specified $x$-co-ordinates, and have total
+widths equalling that specified in the \indcmdt{set boxwidth}. Consequently, there may be
+gaps between them, or they may overlap, as seen in
+Figure~\ref{fig:ex_barchart2}(b).
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_barchart2.eps}
+\end{center}
+\caption[A gallery of the various bar chart styles which PyXPlot can produce]
+{A gallery of the various bar chart styles which PyXPlot can produce.
+See the text for more details.  The script and data file used to produce this
+image are available on the PyXPlot website at
+\protect\url{http://www.pyxplot.org.uk/examples/Manual/04barchart2/}.}
+\label{fig:ex_barchart2}
+\end{figure}
+
+Having set a fixed box width, the default behaviour of scaling box widths
+automatically may be restored either with the {\tt unset boxwidth} command,
+or by setting the boxwidth to a negative width.
+
+As a third alternative, it is also possible to specify different widths for
+each bar manually, in an additional column of the input \datafile. To achieve
+this behaviour, the \indpst{wboxes} plot style should be used:
+
+\begin{verbatim} 
+plot 'data.dat' using 1:2:3 with wboxes
+\end{verbatim}
+
+\noindent This plot style expects three columns of data to be provided: the
+$x$- and $y$-co-ordinates of each bar in the first two, and the width of the
+bars in the third.  Figure~\ref{fig:ex_barchart2}(c) shows an example of this
+plot style in use.
+
+By default, the bars originate from the line $y=0$, as is normal for a
+histogram. However, should it be desired for the bars to start from a different
+vertical point, this may be achieved by using the \indcmdt{set boxfrom},
+for example:
+
+\begin{verbatim} 
+set boxfrom 5
+\end{verbatim}
+
+\noindent In this case, all of the bars would now originate from the line
+$y=5$. Figure~\ref{fig:ex_barchart1}(1) shows the kind of effect that is
+achieved; for comparison, Figure~\ref{fig:ex_barchart1}(b) shows the same bar
+chart with the boxes starting from their default position of $y=0$.
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_barchart1.eps}
+\end{center}
+\caption[A second gallery of the various bar chart styles which PyXPlot can
+produce]
+{A second gallery of the various bar chart styles which PyXPlot can
+produce. See the text for more details.  The script and data file used to
+produce this image are available on the PyXPlot website at
+\protect\url{http://www.pyxplot.org.uk/examples/Manual/03barchart1/}.}
+\label{fig:ex_barchart1}
+\end{figure}
+
+The bars may be filled using the {\tt with} \indmodt{fillcolour} modifier,
+followed by the name of a colour:
+
+\begin{verbatim} 
+plot 'data.dat' with boxes fillcolour blue
+plot 'data.dat' with boxes fc 4
+\end{verbatim}
+
+\noindent Figures~\ref{fig:ex_barchart2}(b) and (d) demonstrate the use of
+filled bars.
+
+Finally, the \indpst{impulses} plot style, as in \gnuplot, produces bars of zero
+width; see Figure~\ref{fig:ex_barchart1}(c) for an example.
+
+\subsection{Stacked Bar Charts}
+
+If several \datapoint s are supplied to the \indpst{boxes} or \indpst{wboxes}
+plot styles at a common $x$-co-ordinate, then the bars are stacked one above
+another into a stacked barchart. Consider the following \datafile:
+
+\begin{verbatim} 
+1 1
+2 2
+2 3
+3 4
+\end{verbatim}
+
+\noindent The second bar at $x=2$ would be placed on top of the first, spanning
+the range $2<y<5$, and having the same width as the first. If plot colours are
+being automatically selected from the palette, then a different palette colour
+is used to plot the upper bar.
+
+\subsection{Steps}
+
+The plot styles met so far plot data as solid bars, with left, right and top
+sides all drawn. Data may also be plotted with {\it steps}, with the left and
+right sides of each bar omitted. Some examples are shown in
+Figures~\ref{fig:ex_barchart1}(d), (e) and (f).  As is illustrated in these
+panels, three flavours of steps are available, exactly as in \gnuplot:
+
+\begin{verbatim}
+plot 'data.dat' with steps 
+plot 'data.dat' with fsteps 
+plot 'data.dat' with histeps
+\end{verbatim}
+
+\noindent When using the \indpst{steps} plot style, the \datapoint s specify the
+right-most edges of each step. When using the \indpst{fsteps} plot style, they
+specify the left-most edges of the steps. The \indpst{histeps} plot style works
+rather like the {\tt boxes} plot style; the interfaces between the steps occur
+at the horizontal midpoints between the \datapoint s.
+
+\section{Choosing which Data to Plot}
+\label{select_modifier} 
+As well as the {\tt plot} command's {\tt index}, {\tt using} and {\tt every}
+modifiers, which allow users to plot subsets of data from \datafile s, it also
+has a further modifier, \indmodt{select}. This can be used to plot only those
+\datapoint s in a \datafile\ which specify some given criterion. For example:
+
+\begin{verbatim}
+plot 'data.dat' select ($8>5)
+plot sin(x) select (($1>0) and ($2>0))
+\end{verbatim}
+
+\noindent In the second example, two selection criteria are given, combined
+with the logical {\tt and} operator. A full list of all of the operators
+recognised by PyXPlot, including logical operators, was given in Chapter~2; see
+Table~\ref{operators_table}.  The select modifier has many applications, for
+example, plotting two-dimensional slices of three-dimensional datasets and
+plotting subsets of data from files.
+
+When plotting using the \indpst{lines} style, the default behaviour is for the
+lines plotted not to be broken if a set of datapoints are removed by the select
+modifier.  However, this behaviour is sometimes undesirable.  To cause the
+plotted line to break when points are removed the \indmodt{discontinuous}\
+modifier is supplied.  For example:
+
+\begin{verbatim}
+plot sin(x) select ($1>0) discontinuous
+\end{verbatim}
+
+plots a set of disconnected peaks from the sine function.
+
+\section{Horizontally arranged \Datafile s}
+
+\index{horizontal datafiles}\index{datafiles!horizontal}\index{using rows
+modifier@{\tt using rows} modifier}\index{using columns modifier@{\tt using
+columns} modifier}\label{horizontal_datafiles} The command syntax for plotting
+columns of \datafile s against one another was previously described in
+Section~\ref{plot_datafiles}.  In an extension of what is possible in \gnuplot,
+PyXPlot also allows one to plot {\it rows} of data against one another in
+horizontally-arranged \datafile s.  For this, the keyword \indkeyt{rows} is
+placed after the {\tt using} modifier:
+
+\begin{verbatim}
+plot 'data.dat' index 1 using rows 1:2
+\end{verbatim}
+
+\noindent For completeness, the syntax {\tt using} \indkeyt{columns} is also
+accepted, to specify the default behaviour of plotting columns against one
+another:
+
+\begin{verbatim}
+plot 'data.dat' index 1 using columns 1:2
+\end{verbatim}
+
+When plotting horizontally-arranged \datafile s, the meanings of the {\tt
+index} and {\tt every} modifiers (see Section~\ref{plot_datafiles}) are altered
+slightly. The former continues to refer to vertically-displaced blocks of data
+separated by two blank lines.  Blocks, as referenced in the {\tt every}
+modifier, likewise continue to refer to vertically-displaced blocks of
+\datapoint s, separated by single blank lines. The row numbers passed to the
+{\tt using} modifier are counted from the top of the current block.
+
+However, the line-numbers specified in the \indmodt{every} modifier -- i.e.\
+variables $a$, $c$ and $e$ in the system introduced in
+Section~\ref{introduce_every} -- now refer to horizontal columns, rather than
+lines. For example:
+
+\begin{verbatim}
+plot 'data.dat' using rows 1:2 every 2::3::9
+\end{verbatim}
+
+\noindent would plot the data in row 2 against that in row 1, using only the
+values in every other column, between columns 3 and 9.
+
+\section{Configuring Axes}
+\label{axis_extensions}\label{ranges_multiaxes}\label{multiple_axes}
+
+By default, plots have only one $x$-axis and one $y$-axis. Further parallel
+axes can be added and configured via statements such as:\index{axes
+modifier@{\tt axes} modifier}\indcmd{set axis}
+
+\begin{verbatim}
+set x3label 'foo'
+plot sin(x) axes x3y1
+set axis x3
+\end{verbatim}
+
+\noindent In the top statement, a further horizontal axis, called the
+$x3$-axis, is implicitly created by giving it a label. In the next, the {\tt
+axes} modifier is used to tell the {\tt plot} command to plot data using the
+horizontal $x3$-axis and the vertical $y$-axis. Here again, the axis would be
+implicitly created if it didn't already exist.  In the third statement, an
+$x3$-axis is explicitly created.
+
+Unlike \gnuplot, which allows only a maximum of two parallel axes to be
+attached to any given plot, PyXPlot allows an unlimited number of axes to be
+used. Odd-numbered $x$-axes appear below the plot, and even numbered $x$-axes
+above it; a similar rule applies for $y$-axes, to the left and to the right.
+This is illustrated in Figure~\ref{fig:ex_multiaxes}.
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_multiaxes.eps}
+\end{center}
+\caption[A plot demonstrating the use of large numbers of axes]
+{A plot demonstrating the use of large numbers of axes. Odd-numbered
+$x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
+rule applies for $y$-axes, to the left and to the right.}
+\label{fig:ex_multiaxes}
+\end{figure}
+
+As discussed in the previous chapter, the ranges of axes can be set either
+using the \indcmdt{set xrange}, or within the {\tt plot} command. The following
+two statements would set equivalent ranges for the $x3$-axis:
+
+\begin{verbatim}
+set x3range [-2:2]
+plot [:][:][:][:][-2:2] sin(x) axes x3y1
+\end{verbatim}
+
+\noindent As usual, the first two ranges specified in the {\tt plot} command
+apply to the $x$- and $y$-axes. The next pair apply to the $x2$- and $y2$-axes,
+and so forth.
+
+\index{axes!removal}\index{removing axes}\index{hidden
+axes}\label{axis_removal} Having made axes with the above commands, they may
+subsequently be removed using the \indcmdt{unset axis} as follows:
+
+\begin{verbatim}
+unset axis x3
+unset axis x3x5y3 y7
+\end{verbatim}
+
+\noindent The top statement, for example, would remove axis $x3$. The command
+{\tt unset axis} on its own, with no axes specified, returns all axes to
+their default configuration.  The special case of {\tt unset axis x1} does
+not remove the first $x$-axis -- it cannot be removed -- but instead returns it
+to its default configuration.
+
+It should be noted that if the following two commands are typed in succession,
+the second may not entirely negate the first:
+
+\begin{verbatim}
+set x3label 'foo'
+unset x3label 'foo'
+\end{verbatim}
+
+\noindent If an $x3$-axis did not previously exist, then the first will have
+implicitly created one. This would need to be removed with the {\tt unset axis
+x3} command if it was not desired.
+
+A subtly different task is that of removing labels from axes, or setting axes
+not to display. To achieve this, a number of special axis labels are used.
+Labelling an axis \indkeyt{nolabels} has the effect that no title or numerical
+labels are placed upon it. Labelling it\label{nolabelstics}
+\indkeyt{nolabelstics} is stronger still; this removes all tick marks from it
+as well (similar in effect to the {\tt set noxtics} command; see below).
+Finally, labelling it \indkeyt{invisible} makes an axis completely invisible.
+
+Labels may be placed on such axes, by suffixing the magic keywords above with a
+colon and the desired title. For example:
+
+\begin{verbatim}
+set xlabel 'nolabels:Time'
+\end{verbatim}
+
+\noindent would produce an $x$-axis with no numeric labels, but a label of
+`Time'.
+
+In the unlikely event of wanting
+to label a normal axis with one of these magic words\index{axes!reserved
+labels}\index{magic axis labels}, this may be achieved by prefixing the magic
+word with a space. There is one further magic axis label, {\tt linkaxis},
+which will be described in Section~\ref{linked_axes}.
+
+The ticks of axes can be configured to point either inward, towards the plot,
+as is the default, or outward towards the axis labels, or in both directions.
+This is achieved using the {\tt set xticdir} command, for example:
+
+\begin{verbatim}
+set xticdir inward
+set y2ticdir outward
+set x2ticdir both
+\end{verbatim}
+
+The position of ticks along each axis can be configured with the \indcmdt{set
+xtics}. The appearance of ticks along any axis can be turned off with the
+\indcmdt{set noxtics}. The syntax for these is given below:
+
+\begin{verbatim}
+set xtics { axis | border | inward | outward | both }
+          {  autofreq
+           | <increment>
+           | <minimum>, <increment> { , <maximum> }
+           | (     {"label"} <position>
+               { , {"label"} <position> } .... )
+          }
+set noxtics
+show xtics
+\end{verbatim}
+
+The keywords \indkeyt{inward}, \indkeyt{outward} and \indkeyt{both} alter the
+directions of the ticks, and have the same effect as in the \indcmdt{set
+xticdir}. The keyword \indkeyt{axis} is an alias for \indkeyt{inward}, and
+\indkeyt{border} an alias for \indkeyt{outward}; both are provided for
+compatibility with \gnuplot. If the keyword \indkeyt{autofreq} is given, the
+automatic placement of ticks along the axis is restored.
+
+If {\tt <minimum>, <increment>, <maximum>} are specified, then ticks are
+placed at evenly spaced intervals between the specified limits. In the case of
+logarithmic axes, {\tt <increment>} is applied multiplicatively.
+
+Alternatively, the final form allows ticks to be placed on an axis
+individually, and each given its own textual label.
+
+The following example sets the $x1$-axis to have tick marks at
+$x=0.05$, $0.1$, $0.2$ and $0.4$.  The $x2$-axis has symbolically labelled tics at
+$x=1/\pi, 2/\pi$, etc., pointing outwards from the plot.  The left-hand
+$y$-axis has tick marks placed automatically whereas the $y2$-axis has no tics
+at all.  The overall effect is shown in Figure~\ref{fig:ex_axistics}.
+
+\begin{verbatim}
+set log x1x2
+set grid x2
+set xtics 0.05, 2, 0.4
+set x2tics border \
+     ("$\frac{1}{\pi}$" 1/pi,      "$\frac{1}{2\pi}$" 1/(2*pi), \
+      "$\frac{1}{3\pi}$" 1/(3*pi), "$\frac{1}{4\pi}$" 1/(4*pi), \
+      "$\frac{1}{5\pi}$" 1/(5*pi), "$\frac{1}{6\pi}$" 1/(6*pi))
+set ytics autofreq
+set noy2tics
+\end{verbatim}
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_axistics.eps}
+\end{center}
+\caption[A plot demonsrating the use of custom axis ticks]
+{A plot illustrating some of the crossing points of the function
+$\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this
+plot are as given in the text.}
+\label{fig:ex_axistics}
+\end{figure}
+
+Minor tick marks can be placed on axes with the \indcmdt{set mxtics}, which has
+the same syntax as above.
+
+\section{Keys and Legends}\index{keys}\index{legends}
+
+By default, plots are displayed with legends in their top-right corners. The
+textual description of each dataset is drawn by default from the command used
+to plot it. Alternatively, the user may specify his own description for each
+dataset by following the {\tt plot} command with the \indmodt{title} modifier,
+as follows:
+
+\begin{verbatim}
+plot sin(x) title 'A sine wave'
+plot cos(x) title ''
+\end{verbatim}
+
+In the lower case, a blank title is specified, in which case PyXPlot makes no
+entry for the dataset in the legend. This is useful if it is desired to place
+some but not all datasets into the legend of a plot.  Alternatively, the
+production of the legend can be completely turned off for all datasets using
+the command \indcmdts{set nokey}. The opposite effect can be achieved by the
+\indcmdt{set key}.
+
+The \indcmdt{set key} command can also be used to dictate where on the plot the
+legend should be placed, using a syntax along the lines of:
+
+\begin{verbatim}
+set key top right
+\end{verbatim}
+
+The following recognised positioning keywords are self-explanatory:
+\indkeyt{top}, \indkeyt{bottom}, \indkeyt{left}, \indkeyt{right},
+\indkeyt{xcentre} and \indkeyt{ycentre}. The word \indkeyt{outside} places the
+key outside the plot, on its right side. The words \indkeyt{below} and
+\indkeyt{above} place legends below and above the plot respectively.
+
+In addition, two positional offset co-ordinates may be specified after such
+keywords -- the first value is assumed to be an $x$-offset, and the second a
+$y$-offset, both in units of centimetres. For example:
+
+\begin{verbatim}
+set key bottom left 0.0 -2
+\end{verbatim}
+
+\noindent would display a key below the bottom left corner of the graph.
+
+By default, entries in the key are placed in a single vertical list. They can
+instead be arranged into a number of columns by means of the \indcmdt{set
+keycolumns}. This should be followed by the integer number of desired columns,
+for example:
+
+\begin{verbatim}
+set keycolumns 2
+\end{verbatim}
+
+\noindent An example of a plot with a two-column legend is given in
+Figure~\ref{fig:ex_legends}.
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_legends.eps}
+\end{center}
+\caption[A plot demonstrating the use of a two-column legend]
+{This plot shows how rapidly three functions, often approximated as
+$x$, deviate from that approximation.  Furthermore it is an example of a plot
+with a two-column legend, positioned below the plot using {\tt set key below}.
+The complete script used to produce the plot can be found on the PyXPlot
+website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.}
+\label{fig:ex_legends}
+\end{figure}
+
+\section{The {\tt linestyle} Keyword}
+
+At times, the string of style keywords placed after the {\tt with} modifier
+in {\tt plot} commands can grow rather unwieldy in its length. For clarity,
+frequently used plot styles can be stored as {\it linestyles}; despite the name,
+this is true of styles involving points as well as lines. The syntax for
+setting a linestyle is:
+
+\begin{verbatim}
+set linestyle 2 points pointtype 3
+\end{verbatim}
+
+\noindent where the {\tt 2} is the identification number of the linestyle. In a
+subsequent {\tt plot} statement, this linestyle can be recalled as follows:
+
+\begin{verbatim}
+plot sin(x) with linestyle 2
+\end{verbatim}
+
+\section{Colour Plotting}
+
+\index{colours!setting for datasets} In the {\tt with} clause of the plot
+command, the modifier {\tt colour}, which can be abbreviated to
+`{\tt c}', can be used to manually select the colour in which each dataset
+is to be plotted. It should be followed either by an integer, to set a colour
+from the present palette, or by a colour name. A list of valid colour names is
+given in Section~\ref{colour_names}. For example:
+
+\begin{verbatim}
+plot sin(x) with c 5
+plot sin(x) with colour blue
+\end{verbatim}
+
+\noindent The {\tt colour} modifier can also be used when defining linestyles.
+
+\index{palette}\index{colours!setting the palette}
+PyXPlot has a palette of colours which it assigns sequentially to datasets when
+colours are not manually assigned. This is also the palette to which integers
+passed to {\tt set colour} refer -- the {\tt 5} above, for example. It may be
+set using the \indcmdt{set palette}, which differs in syntax from \gnuplot. It
+should be followed by a comma-separated list of colours, for example:
+
+\begin{verbatim}
+set palette BrickRed, LimeGreen, CadetBlue
+\end{verbatim}
+
+\noindent Another way of setting the palette, in a configuration file, is
+described in Section~\ref{config_files}; a list of valid colour names is given
+in Section~\ref{colour_names}.
+
+\section{Plotting Many Files at Once}
+
+\index{globbing}\index{wildcards}\index{datafiles!globbing}
+
+PyXPlot allows the wildcards {\tt *} and {\tt ?} to be used in the filenames of
+\datafile s supplied to the \indcmdt{plot}.  For example, the following would
+plot all \datafile s in the current directory with a {\tt .dat} suffix, using
+the same plot options:
+
+\begin{verbatim}
+plot '*.dat' with linewidth 2
+\end{verbatim}
+
+\noindent In the legend, full filenames are displayed, allowing the \datafile s
+to be distinguished.  As in \gnuplot, a blank filename passed to the plot
+command causes the last used \datafile\ to be used again, for example:
+
+\begin{verbatim}
+plot 'data.dat' using 1:2, '' using 2:3
+\end{verbatim}
+
+\noindent or even:
+
+\begin{verbatim}
+plot '*.dat' using 1:2, '' using 2:3
+\end{verbatim}
+
+The {\tt *} and {\tt ?} wildcards can be used in a similar fashion in the
+\indcmdt{load}.
+
+\section{Backing Up Over-Written Files}
+
+\index{overwriting files}\index{backup files}\label{filebackup}
+
+By default, when graphical output is sent to a file -- i.e.\ a postscript file or
+a bitmap image -- pre-existing files are overwritten if their filenames match
+that of the file which PyXPlot generates. This behaviour may be changed with
+the \indcmdt{set backup}, which has the syntax:
+
+\begin{verbatim}
+set backup
+set nobackup
+\end{verbatim}
+
+When this switch is turned on, pre-existing files will be renamed with a tilde
+appended to their filenames, rather than being overwritten.
+

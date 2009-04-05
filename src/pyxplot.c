@@ -35,12 +35,13 @@
 #include "pyxplot.h"
 #include "asciidouble.h"
 #include "ppl_children.h"
-#include "ppl_error.h"
-#include "ppl_settings.h"
-#include "ppl_setting_types.h"
 #include "ppl_constants.h"
+#include "ppl_error.h"
 #include "ppl_list.h"
 #include "ppl_memory.h"
+#include "ppl_parser.h"
+#include "ppl_settings.h"
+#include "ppl_setting_types.h"
 
 int WillBeInteractive;
 
@@ -124,6 +125,10 @@ int main(int argc, char **argv)
   // Launch child process
   if (DEBUG) ppl_log("Launching the Child Support Process.");
   InitialiseCSP();
+
+  // Set up commandline parser
+  if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");
+  ppl_commands_read();
 
   // Set up SIGINT handler
   if (sigsetjmp(sigjmp_ToMain, 1) == 0)

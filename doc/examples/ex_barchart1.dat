@@ -1,0 +1,49 @@
+# EX_BARCHART1.DAT
+#
+# The code in this file is part of PyXPlot
+# <http://www.pyxplot.org.uk>
+#
+# Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
+#               2008   Ross Church
+#
+# $Id$
+#
+# PyXPlot is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# You should have received a copy of the GNU General Public License along with
+# PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# ----------------------------------------------------------------------------
+
+# This data produces a figure for the PyXPlot Users' Guide
+
+# The following is 25 samples from a sine wave.
+-10.000000 0.544021
+-9.166667 -0.255255
+-8.333333 -0.887294
+-7.500000 -0.938000
+-6.666667 -0.374151
+-5.833333 0.434832
+-5.000000 0.958924
+-4.166667 0.854753
+-3.333333 0.190568
+-2.500000 -0.598472
+-1.666667 -0.995408
+-0.833333 -0.740177
+0.000000 0.000000
+0.833333 0.740177
+1.666667 0.995408
+2.500000 0.598472
+3.333333 -0.190568
+4.166667 -0.854753
+5.000000 -0.958924
+5.833333 -0.434832
+6.666667 0.374151
+7.500000 0.938000
+8.333333 0.887294
+9.166667 0.255255
+10.000000 -0.544021

@@ -1,0 +1,331 @@
+% NUMERICS.TEX
+%
+% The documentation in this file is part of PyXPlot
+% <http://www.pyxplot.org.uk>
+%
+% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
+%               2008   Ross Church
+%
+% $Id$
+%
+% PyXPlot is free software; you can redistribute it and/or modify it under the
+% terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+%
+% You should have received a copy of the GNU General Public License along with
+% PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+% Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+% ----------------------------------------------------------------------------
+
+% LaTeX source for the PyXPlot Users' Guide
+
+\chapter{Numerical Analysis}
+\label{gnuplot_ext_last}
+
+In this chapter, we outline the facilities provided for simple numerical
+analysis and data processing within PyXPlot.
+
+\section{Function Splicing}
+\index{function splicing}
+\index{splicing functions}
+
+In PyXPlot, as in \gnuplot, user-defined functions may be declared on the
+command line:
+
+\begin{verbatim}
+f(x) = x*sin(x)
+\end{verbatim}
+
+\noindent It is also possible to declare functions which are valid only over
+certain ranges of argument space. For example, the following function would
+only be valid within the range $-2<x<2$:\footnote{The syntax {\tt [-2:2]} can
+also be written {\tt [-2 to 2]}.}
+
+\begin{verbatim}
+f(x)[-2:2] = x*sin(x)
+\end{verbatim}
+
+\noindent The following function would only be valid when all of ${a,b,c}$ were
+in the range $-1 \to 1$:
+
+\begin{verbatim}
+f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
+\end{verbatim}
+
+If an attempt is made to evaluate a function outside of its specified range,
+then an error results. This may be useful, for example, for plotting a function
+only within some specified range. The following would plot the function
+$\sinc(x)$, but only in the range $-2<x<7$:
+
+\begin{verbatim}
+f(x)[-2:7] = sin(x)/x
+plot f(x)
+\end{verbatim}
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_funcsplice1.eps}
+\end{center}
+\caption[A simple example of the use of function splicing to truncate a function]
+{A simple example of the use of function splicing to truncate the function $\sinc(x)$ at $x=-2$ and $x=7$. See details in the text.}
+\label{fig:ex_funcsplice1}
+\end{figure}
+
+\label{splice} \noindent The output of this particular example can be seen in
+Figure~\ref{fig:ex_funcsplice1}. A similar effect could also have been achieved
+with the {\tt select} keyword; see Section~\ref{select_modifier}.
+
+It is possible to make multiple declarations of the same function, over
+different regions of argument space; if there is an overlap in the valid
+argument space for multiple definitions, then later declarations take
+precedence. This makes it possible to use different functional forms for
+functions in different parts of parameter space, and is especially useful when
+fitting functions to data, if different functional forms are to be spliced
+together to fit different regimes in the data.
+
+Another application of function splicing is to work with functions which do not
+have analytic forms, or which are, by definition, discontinuous, such as
+top-hat functions or Heaviside functions. The following example would define
+$f(x)$ to be a Heaviside function:
+
+\begin{verbatim}
+f(x) = 0
+f(x)[0:] = 1
+\end{verbatim}
+
+\noindent The following example would define $f(x)$ to follow the Fibonacci
+sequence, though it is not at all computationally efficient, and it is
+inadvisable to evaluate it for $x\gtrsim8$:
+
+\begin{verbatim}
+f(x) = 1
+f(x)[2:] = f(x-1) + f(x-2)
+plot [0:8] f(x)
+\end{verbatim}
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_funcsplice2.eps}
+\end{center}
+\caption[An example of the use of function splicing to define a function which does not have an analytic form]
+{An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.}
+\label{fig:ex_funcsplice2}
+\end{figure}
+
+\noindent The output of this example can be seen in Figure~\ref{fig:ex_funcsplice2}
+
+\section{Datafile Interpolation: Spline Fitting}
+\label{spline_command}
+\index{best fit lines}
+
+Gnuplot allows data to be interpolated using its \indpst{csplines} plot style,
+for example:\indps{acsplines}
+
+\begin{verbatim}
+plot 'data.dat' with csplines
+plot 'data.dat' with acsplines
+\end{verbatim}
+
+\noindent where the upper statement fits a spline through all of the
+datapoints, and the lower applies some smoothing to the data first. This syntax
+also is supported in PyXPlot, though splines may also be fit through data using
+a new, more powerful, \indcmdt{spline}. This has a syntax similar to that of
+the \indcmdt{fit}, for example:
+
+\begin{verbatim}
+spline f() 'data.dat' index 1 using 2:3
+\end{verbatim}
+
+\noindent In this example, the function $f(x)$ now becomes a special function,
+representing a spline fit to the given datafile. It can be plotted or otherwise
+used in exactly the same way as any other function. This approach is more
+flexible than \gnuplot's syntax, as the spline $f(x)$ can subsequently be
+spliced together with other functions (see the previous section), or used in
+any mathematical operation.  The following code snippet, for example, would fit
+splines through two datasets, and then plot the interpolated differences
+between them, regardless, for example, of whether the two datasets were sampled
+at exactly the same $x$ co-ordinates:
+
+\begin{verbatim}
+spline f() 'data1.dat'
+spline g() 'data2.dat'
+plot f(x)-g(x)
+\end{verbatim}
+
+Smoothed splines can also be produced:
+
+\begin{verbatim}
+spline f() 'data1.dat' smooth 1.0
+\end{verbatim}
+
+\noindent where the value $1.0$ determines the degree of smoothing to apply;
+the higher the value, the more smoothing is applied. The default behaviour is
+not to smooth at all -- equivalent to {\tt smooth 0.0} -- and a value of $1.0$
+corresponds to the default amount of smoothing applied in \gnuplot's {\tt
+acsplines} plot style.
+
+\section{Tabulating Functions and Slicing Data Files}
+
+PyXPlot's \indcmdt{tabulate} can be used to produce a text file containing the
+values of a function at a set of points.  For example, the following would
+produce a data file called {\tt sine.dat} containing a list of values of the
+sine function:
+
+\begin{verbatim}
+set output 'sine.dat'
+tabulate [-pi:pi] sin(x)
+\end{verbatim}
+
+\noindent Multiple functions may be tabulated into the same file, either by
+using the \indmodt{using} modifier:
+
+\begin{verbatim}
+tabulate [0:2*pi] sin(x):cos(x):tan(x) u 1:2:3:4
+\end{verbatim}
+
+\noindent or by placing them in a comma-separated list, as in the {\tt plot}
+command:
+
+\begin{verbatim}
+tabulate [0:2*pi] sin(x), cos(x), tan(x)
+\end{verbatim}
+
+The {\tt samples} setting can be used to control the number of points that are
+inserted into the data file:\indcmd{set samples}
+
+\begin{verbatim}
+set samples 200
+\end{verbatim}
+
+\noindent If the $x$-axis is set to be logarithmic then the points at which the
+functions are evaluated are spaced logarithmically.
+
+The {\tt tabulate} command can also be used to select portions of data files
+for output into a new file.  For example, the following would write out the
+third, sixth and ninth columns of the datafile {\tt input.dat}, but only when
+the arcsine of the value in the fourth column is positive:
+
+\begin{verbatim}
+set output 'filtered.dat'
+tabulate 'input.dat' u 3:6:9 select (asin($4)>0)
+\end{verbatim}
+
+\noindent The \indmodt{select}, \indmodt{using} and \indmodt{every} modifiers
+operate in the same manner as with the {\tt plot} command.
+
+The format used in each column of the output file is chosen automatically with
+integers and small numbers treated intelligently to produce output which
+preserves accuracy, but is also easily human-readable. If desired, however, a
+format statement may be specified using the {\tt with format} specifier. The
+syntax for this is similar to that expected by the Python string substitution
+operator ({\tt \%})\index{\% operator@{\tt \%} operator}\index{string
+operators!substitution}\footnote{Note that this operator can also be used
+within PyXPlot; see Section~\ref{string_subs_op} for details.}.  For example,
+to tabulate the values of $x^2$ to very many significant figures one could use:
+
+\begin{verbatim}
+tabulate x**2 with format "%27.20e"
+\end{verbatim}
+
+If there are not enough columns present in the supplied format statement it
+will be repeated in a cyclic fashion; e.g. in the example above the single
+supplied format is used for both columns.
+
+\section{Numerical Integration and Differentiation}
+
+\index{differentiation}\index{integration} Special functions are available for
+performing numerical integration and differentiation of expressions:
+\indfunt{int\_dx()} and \indfunt{diff\_dx()}. In each case, the `{\tt x}' may
+be replaced with any valid one-letter variable name, to integrate or
+differentiate with respect to that dummy variable.
+
+The function {\tt int\_dx()} takes three parameters -- firstly the
+expression to be integrated, which should be placed in quotes as a string,
+followed by the minimum and maximum integration limits. For example, the
+following would plot the integral of the function $\sin(x)$:
+
+\begin{verbatim}
+plot int_dt('sin(t)',0,x)
+\end{verbatim} 
+
+The function {\tt diff\_dx()} takes two obligatory parameters plus two further
+optional parameters. The first is the expression to be differentiated, which,
+as above, should be placed in quotes as a string, followed by the point at
+which the differential should be evaluated, followed by optional parameters
+$\epsilon_1$ and $\epsilon_2$ which are described below.  The following example
+would evaluate the differential of the function $\cos(x)$ with respect to $x$
+at $x=1.0$:
+
+\begin{verbatim}
+print diff_dx('cos(x)', 1.0)
+\end{verbatim}
+
+Differentials are evaluated by a simple differencing algorithm, and a parameter
+$\epsilon$ controls the spacing with which to perform the differencing
+operation:
+
+\begin{displaymath}
+\left.\frac{\mathrm{d}f}{\mathrm{d}x}\right|_{x=x_0} \approx \frac{f(x_0+\epsilon/2) - f(x_0-\epsilon/2)}{\epsilon}
+\end{displaymath}
+
+\noindent where $\epsilon = \epsilon_1 + x \epsilon_2$. By default, $\epsilon_1
+= \epsilon_2 = 10^{-6}$, which is appropriate for the differentiation of most
+well-behaved functions.
+
+Advanced users may be interested to know that integration is performed using
+the {\tt quad} function of the {\tt integrate} package of the
+{\tt scipy} numerical toolkit for Python -- a general purpose integration
+routine.\index{scipy}
+
+\section{Histograms}
+
+The \indcmdt{histogram} takes data from a file and bins it, producing a
+function that represents the frequency distribution of the supplied data.  A
+histogram is defined as a function consisting of discrete intervals, the area
+under each of which is equal to the number of points binned in that interval.
+For example:
+
+\begin{verbatim}
+histogram f() 'input.dat'
+\end{verbatim}
+
+\noindent would bin the points in the first column of the file {\tt input.dat}
+into bins of unit width and produce a function $f()$, the value of which at any
+given point was equal to the number of items in the bin at that point.
+
+Modifiers can be supplied to the \indcmdt{histogram} command to control the bins
+that it uses.  The \indmodt{binwidth} modifier sets the width of the bins used
+and the \indmodt{binorigin} modifier their origin.  For example:
+
+\begin{verbatim}
+histogram wabbitcount() 'rabits.dat' binorigin 0.5 binwidth 2
+\end{verbatim}
+
+\noindent bins the rabbit data into bins between $0.5$ and $2.5$, $2.5$ and
+$4.5$, etc.  Alternatively the \indmodt{bins} modifier allows an arbitrary set
+of bins to be specified. For example the command:
+
+\begin{verbatim}
+histogram g() 'input.dat' bins (1, 2, 4)
+\end{verbatim}
+
+\noindent would bin the points in the first column of the file {\tt input.dat}
+into two bins, $x=1\to 2$ and $x=2\to 4$.
+
+A range can be supplied immediately following the command, using the same
+syntax as in the {\tt plot} and {\tt fit} commands; only points that fall in
+that range will then be binned.  In the same way as for the {\tt plot} command,
+the \indmodt{index}, \indmodt{every}, \indmodt{using} and \indmodt{select}
+modifiers can also be used to bin different portions of a datafile.
+
+Note that, although a histogram is similar to a bar chart, they are subtly
+different.  A bar chart has the {\it height} of the bar equal to the number of
+points that it represents; for a histogram the {\it area} of the bar is equal to
+the number of points.  To produce a bar chart use the histogram
+command and then multiply by the bin width when plotting.
+
+If the function produced by the histogram command is plotted using the
+\indpst{boxes} plot style, box boundaries will be drawn to coincide with the
+bins into which the data were sorted.
