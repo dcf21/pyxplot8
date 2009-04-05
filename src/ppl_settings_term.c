@@ -43,7 +43,10 @@ settings_session  settings_session_default;
 
 void ppl_settings_term_init()
  {
-  char ConfigFname[FNAME_LENGTH];
+  FILE  *LocalePipe;
+  int    Nchars;
+  double PaperWidth, PaperHeight;
+  char   ConfigFname[FNAME_LENGTH];
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup    = SW_ONOFF_OFF;
@@ -130,6 +133,27 @@ void ppl_settings_term_init()
   settings_session_default.colour_wrn= SW_TERMCOL_BRN;
   settings_session_default.colour_err= SW_TERMCOL_RED;
   strcpy(settings_session_default.homedir, UnixGetHomeDir());
+
+  // Try and find out the default papersize from the locale command
+  // Do this using the popen() command rather than direct calls to nl_langinfo(_NL_PAPER_WIDTH), because the latter is gnu-specific
+  if (DEBUG) ppl_log("Querying papersize from the locale command.");
+  if ((LocalePipe = popen("locale -c LC_PAPER 2> /dev/null","r"))==NULL)
+   {
+    if (DEBUG) ppl_log("Failed to open a pipe to the locale command.");
+   } else {
+    file_readline(LocalePipe, ConfigFname); // Should read LC_PAPER
+    file_readline(LocalePipe, ConfigFname); // Should quote the default paper width
+    PaperHeight = GetFloat(ConfigFname, &Nchars);
+    if (Nchars != strlen(ConfigFname)) goto PAPERSIZE_DONE;
+    file_readline(LocalePipe, ConfigFname); // Should quote the default paper height
+    PaperWidth  = GetFloat(ConfigFname, &Nchars);
+    if (Nchars != strlen(ConfigFname)) goto PAPERSIZE_DONE;
+    if (DEBUG) { sprintf(temp_err_string, "Read papersize %f x %f", PaperWidth, PaperHeight); ppl_log(temp_err_string); }
+    settings_term_default.PaperHeight = PaperHeight;
+    settings_term_default.PaperWidth  = PaperWidth;
+    if (0) { PAPERSIZE_DONE: if (DEBUG) ppl_log("Failed to read papersize from the locale command."); }
+    pclose(LocalePipe);
+   }
 
   sprintf(ConfigFname, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplotrc");
   ReadConfigFile(ConfigFname);
