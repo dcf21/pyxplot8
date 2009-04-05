@@ -78,7 +78,11 @@ void InteractiveSession()
        }
      }
 
-    if ((isatty(STDIN_FILENO) == 1) && (settings_session_default.splash == SW_ONOFF_ON)) ppl_report("\nGoodbye. Have a nice day.");
+    if (isatty(STDIN_FILENO) == 1) 
+     {
+      if (settings_session_default.splash == SW_ONOFF_ON) ppl_report("\nGoodbye. Have a nice day.");
+      else                                                ppl_report(""); // Make a new line
+     }
    } else {
     ppl_error("\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
    }

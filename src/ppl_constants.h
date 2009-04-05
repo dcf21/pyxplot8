@@ -26,6 +26,8 @@
 #define FNAME_LENGTH  4096
 #define SSTR_LENGTH   2048
 
+#define PALETTE_LENGTH 512
+
 #define PATHLINK "/"
 
 #endif

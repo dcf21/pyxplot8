@@ -178,7 +178,7 @@ int main(int argc, char **argv)
        }
       ProcessPyXPlotScript(argv[i]);
      }
-    if (argc==1) InteractiveSession();
+    if (WillBeInteractive==1) InteractiveSession();
 
    // SIGINT longjmps to main return here
    } else {

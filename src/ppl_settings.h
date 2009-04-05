@@ -61,6 +61,7 @@ extern settings_graph    settings_graph_default;
 extern settings_graph    settings_graph_current;
 extern settings_axis     settings_axis_default;
 extern settings_session  settings_session_default;
+extern int               settings_palette[];
 
 void  ppl_settings_term_init();
 void *FetchSettingName      (int id, int *id_list, void **name_list);
