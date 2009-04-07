@@ -233,3 +233,15 @@ List *StrSplit(char *in)
   return out;
  }
 
+/* STRCOMMASEPARATEDLISTSCAN(): Split up a comma-separated list into individual values */
+
+char *StrCommaSeparatedListScan(char **inscan, char *out)
+ {
+  char *outscan = out;
+  while ((**inscan != '\0') && (**inscan != ',')) *(outscan++) = *((*inscan)++);
+  if (**inscan == ',') (*inscan)++; // Fastforward over comma character
+  *outscan = '\0';
+  StrStrip(out,out);
+  return out;
+ }
+

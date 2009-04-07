@@ -21,15 +21,18 @@
 
 #define _PPL_SETTINGS_TERM 1
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "asciidouble.h"
+#include "ppl_colours.h"
+#include "ppl_error.h"
+#include "ppl_papersize.h"
+#include "ppl_passwd.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
-#include "ppl_colours.h"
-#include "ppl_passwd.h"
-#include "ppl_error.h"
 
 settings_terminal settings_term_default;
 settings_terminal settings_term_current;
@@ -49,6 +52,7 @@ void ppl_settings_term_init()
   int    Nchars;
   double PaperWidth, PaperHeight;
   char   ConfigFname[FNAME_LENGTH];
+  char  *PaperSizePtr;
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup    = SW_ONOFF_OFF;
@@ -146,15 +150,52 @@ void ppl_settings_term_init()
     file_readline(LocalePipe, ConfigFname); // Should read LC_PAPER
     file_readline(LocalePipe, ConfigFname); // Should quote the default paper width
     PaperHeight = GetFloat(ConfigFname, &Nchars);
-    if (Nchars != strlen(ConfigFname)) goto PAPERSIZE_DONE;
+    if (Nchars != strlen(ConfigFname)) goto LC_PAPERSIZE_DONE;
     file_readline(LocalePipe, ConfigFname); // Should quote the default paper height
     PaperWidth  = GetFloat(ConfigFname, &Nchars);
-    if (Nchars != strlen(ConfigFname)) goto PAPERSIZE_DONE;
+    if (Nchars != strlen(ConfigFname)) goto LC_PAPERSIZE_DONE;
     if (DEBUG) { sprintf(temp_err_string, "Read papersize %f x %f", PaperWidth, PaperHeight); ppl_log(temp_err_string); }
     settings_term_default.PaperHeight = PaperHeight;
     settings_term_default.PaperWidth  = PaperWidth;
-    if (0) { PAPERSIZE_DONE: if (DEBUG) ppl_log("Failed to read papersize from the locale command."); }
+    if (0) { LC_PAPERSIZE_DONE: if (DEBUG) ppl_log("Failed to read papersize from the locale command."); }
     pclose(LocalePipe);
+   }
+
+  // Try and find out the default papersize from /etc/papersize
+  if (DEBUG) ppl_log("Querying papersize from /etc/papersize.");
+  if ((LocalePipe = fopen("/etc/papersize","r"))==NULL)
+   {
+    if (DEBUG) ppl_log("Failed to open /etc/papersize.");
+   } else {
+    file_readline(LocalePipe, ConfigFname); // Should a papersize name
+    ppl_PaperSizeByName(ConfigFname, &PaperHeight, &PaperWidth);
+    if (PaperHeight > 0)
+     {
+      if (DEBUG) { sprintf(temp_err_string, "Read papersize %s, with dimensions %f x %f", ConfigFname, PaperWidth, PaperHeight); ppl_log(temp_err_string); }
+      settings_term_default.PaperHeight = PaperHeight;
+      settings_term_default.PaperWidth  = PaperWidth;
+     } else {
+      if (DEBUG) ppl_log("/etc/papersize returned an unrecognised papersize.");
+     }
+    fclose(LocalePipe);
+   }
+
+  // Try and find out the default papersize from PAPERSIZE environment variable
+  if (DEBUG) ppl_log("Querying papersize from $PAPERSIZE");
+  PaperSizePtr = getenv("PAPERSIZE");
+  if (PaperSizePtr == NULL)
+   {
+    if (DEBUG) ppl_log("Environment variable $PAPERSIZE not set.");
+   } else {
+    ppl_PaperSizeByName(PaperSizePtr, &PaperHeight, &PaperWidth);
+    if (PaperHeight > 0)
+     {
+      if (DEBUG) { sprintf(temp_err_string, "Read papersize %s, with dimensions %f x %f", PaperSizePtr, PaperWidth, PaperHeight); ppl_log(temp_err_string); }
+      settings_term_default.PaperHeight = PaperHeight;
+      settings_term_default.PaperWidth  = PaperWidth;
+     } else {
+      if (DEBUG) ppl_log("$PAPERSIZE returned an unrecognised paper size."); 
+     }
    }
 
   sprintf(ConfigFname, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplotrc");

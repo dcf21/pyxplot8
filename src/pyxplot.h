@@ -51,14 +51,6 @@ extern char txt_unset[];
 extern char txt_show[];
 void   ppl_text_init   ();
 
-/* Strings defined in ppl_version.c */
-extern char VERSION[];
-extern char DATE[];
-extern char SRCDIR[];
-extern char DOCDIR[];
-extern char GHOSTVIEW[];
-extern char GHOSTVIEW_OPT[];
-
 /* Functions defined in pyxplot.c */
 
 #ifndef _PYXPLOT_C

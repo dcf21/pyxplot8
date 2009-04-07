@@ -39,9 +39,11 @@
 #include "ppl_error.h"
 #include "ppl_list.h"
 #include "ppl_memory.h"
+#include "ppl_papersize.h"
 #include "ppl_parser.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_userspace.h"
 
 int WillBeInteractive;
 
@@ -68,6 +70,8 @@ int main(int argc, char **argv)
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
   ppl_MemoryInit();
+  ppl_PaperSizeInit();
+  ppl_UserSpaceInit();
   ppl_text_init();
   if (DEBUG) ppl_log("Initialising settings.");
   ppl_settings_term_init();
@@ -95,14 +99,14 @@ int main(int argc, char **argv)
     else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0))
      {
       ppl_report(txt_version);
-      ppl_FreeAll(MEMORY_GLOBAL);
+      ppl_FreeAll(0);
       if (DEBUG) ppl_log("Reported version number as requested.");
       return 0;
      }
     else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0))
      {
       ppl_report(txt_help);
-      ppl_FreeAll(MEMORY_GLOBAL);
+      ppl_FreeAll(0);
       if (DEBUG) ppl_log("Reported help text as requested.");
       return 0;
      }
@@ -110,7 +114,7 @@ int main(int argc, char **argv)
     {
      sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot -help' for a list of available commandline options.", argv[i]);
      ppl_error(temp_err_string);
-     ppl_FreeAll(MEMORY_GLOBAL);
+     ppl_FreeAll(0);
      if (DEBUG) ppl_log("Received unexpected commandline switch.");
      return 1;
     }
@@ -197,7 +201,7 @@ int main(int argc, char **argv)
    }
 
   // Terminate
-  ppl_FreeAll(MEMORY_GLOBAL);
+  ppl_FreeAll(0);
   ppl_MemoryStop();
   if (DEBUG) ppl_log("Terminating normally.");
   return 0;

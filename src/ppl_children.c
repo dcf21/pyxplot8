@@ -109,7 +109,7 @@ void  InitialiseCSP()
   if (chdir("/") < 0) ppl_fatal(__FILE__,__LINE__,"chdir out of temporary directory failed."); // chdir out of temporary directory
   sprintf(PipeOutputBuffer, "rm -Rf %s", settings_session_default.tempdir);
   if (system(PipeOutputBuffer) < 0) ppl_fatal(__FILE__,__LINE__,"Removal of temporary directory failed."); // Remove temporary directory
-  ppl_FreeAll(MEMORY_GLOBAL);
+  ppl_FreeAll(0);
   if (DEBUG) ppl_log("CSP terminating normally.");
   exit(0);
  }

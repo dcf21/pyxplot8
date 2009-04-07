@@ -24,18 +24,16 @@
 #ifndef _PPL_MEMORY
 #define _PPL_MEMORY 1
 
-#define MEMORY_GLOBAL 30000
-#define MEMORY_PLOT   30001
-#define MEMORY_SCRAP  30002
+void  ppl_MemoryInit            ();
+void  ppl_MemoryStop            ();
+int   ppl_DescendIntoNewContext ();
+int   ppl_AscendOutOfContext    (int context);
+void _ppl_SetMemContext         (int context);
+int   ppl_GetMemContext         ();
+void  ppl_FreeAll               (int context);
 
-void  ppl_MemoryInit      ();
-void  ppl_MemoryStop      ();
-void  ppl_SetMemContext   (int context);
-int   ppl_GetMemContext   ();
-void  ppl_FreeAll         (int context);
-
-void *ppl_malloc          (int size);
-void *ppl_malloc_incontext(int size, int context);
+void *ppl_malloc                (int size);
+void *ppl_malloc_incontext      (int size, int context);
 
 // Fastmalloc functions
 

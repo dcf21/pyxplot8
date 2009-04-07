@@ -78,7 +78,7 @@ void ppl_fatal(char *file, int line, char *msg)
   sprintf(introline, "Fatal Error encounted in %s at line %d:", file, line);
   ppl_error(introline);
   ppl_error(temp_stringE);
-  ppl_FreeAll(MEMORY_GLOBAL);
+  ppl_FreeAll(0);
   if (DEBUG) ppl_log("Terminating with error condition 1.");
   exit(1);
  }

@@ -1,4 +1,4 @@
-// asciidouble.h
+// ppl_dcfmath.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,24 +19,26 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_ASCIIDOUBLE
-#define _PPL_ASCIIDOUBLE 1
-
+#include <stdlib.h>
 #include <stdio.h>
-#include "ppl_list.h"
+#include <math.h>
 
-double GetFloat        (char *str, int *Nchars);
-void   file_readline   (FILE *file, char *output);
-void   GetWord         (char *out, char *in, int max);
-char  *NextWord        (char *in);
-char  *FriendlyTimestring();
-char  *StrStrip        (char *in, char *out);
-char  *StrUpper        (char *in, char *out);
-char  *StrLower        (char *in, char *out);
-char  *StrUnderline    (char *in);
-char  *StrRemoveCompleteLine(char *in, char *out);
-char  *StrSlice        (char *in, char *out, int start, int end);
-List  *StrSplit        (char *in);
-char  *StrCommaSeparatedListScan(char **inscan, char *out);
+double max(double x, double y)
+ {
+  if (x>y) return x;
+  return y;
+ }
 
-#endif
+double min(double x, double y)
+ {
+  if (x<y) return x;
+  return y;
+ }
+
+int sgn(double x)
+ {
+  if (x==0) return  0;
+  if (x< 0) return -1;
+  return 1;
+ }
+

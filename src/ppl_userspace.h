@@ -1,4 +1,4 @@
-// asciidouble.h
+// ppl_userspace.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,24 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_ASCIIDOUBLE
-#define _PPL_ASCIIDOUBLE 1
+#ifndef _PPL_USERSPACE
+#define _PPL_USERSPACE 1
 
-#include <stdio.h>
-#include "ppl_list.h"
-
-double GetFloat        (char *str, int *Nchars);
-void   file_readline   (FILE *file, char *output);
-void   GetWord         (char *out, char *in, int max);
-char  *NextWord        (char *in);
-char  *FriendlyTimestring();
-char  *StrStrip        (char *in, char *out);
-char  *StrUpper        (char *in, char *out);
-char  *StrLower        (char *in, char *out);
-char  *StrUnderline    (char *in);
-char  *StrRemoveCompleteLine(char *in, char *out);
-char  *StrSlice        (char *in, char *out, int start, int end);
-List  *StrSplit        (char *in);
-char  *StrCommaSeparatedListScan(char **inscan, char *out);
-
+void ppl_UserSpaceInit          ();
+void ppl_UserSpace_SetVarStr    (char *name, char   *value);
+void ppl_UserSpace_SetVarNumeric(char *name, double  value);
+void ppl_UserSpace_SetFunc      (char *name, char   *value);
 #endif
+
