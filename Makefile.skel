@@ -50,18 +50,28 @@ BINDIR  = bin
 
 PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c MathsTools/dcfmath.c ppl_children.c ppl_commands.c ppl_error.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_text.c ppl_userspace.c pyxplot.c StringTools/asciidouble.c
 
-PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h Makefile
+PPL_HEADERS = ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h MathsTools/dcfmath.h ppl_children.h ppl_constants.h ppl_error.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_userspace.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
+
+TESTCARD_FILES = EPSMaker/eps_colours.c EPSMaker/eps_hub.c EPSMaker/eps_latex.c EPSMaker/eps_testcard.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c StringTools/asciidouble.c
+
+TESTCARD_HEADERS =  EPSMaker/eps_colours.h EPSMaker/eps_hub.h EPSMaker/eps_latex.h EPSMaker/eps_testcard.h ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h StringTools/asciidouble.h
 
 PPL_SOURCES         = $(PPL_FILES:%.c=$(SRCDIR)/%.c)
 PPL_OBJECTS         = $(PPL_FILES:%.c=$(OBJDIR)/%.o)
 PPL_OBJECTS_DEBUG   = $(PPL_OBJECTS:%.o=%.debug.o)
 PPL_OBJECTS_INSTALL = $(PPL_OBJECTS:%.o=%.install.o)
-PPL_HFILES          = $(PPL_HEADERS:%.h=$(SRCDIR)/%.h)
+PPL_HFILES          = $(PPL_HEADERS:%.h=$(SRCDIR)/%.h) Makefile
+
+TESTCARD_SOURCES    = $(TESTCARD_FILES:%.c=$(SRCDIR)/%.c)
+TESTCARD_OBJECTS    = $(TESTCARD_FILES:%.c=$(OBJDIR)/%.debug.o)
+TESTCARD_HFILES     = $(TESTCARD_HEADERS:%.h=$(SRCDIR)/%.h) Makefile
 
 NOINSTALL_SWITCHES  = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D SRCDIR=\"`pwd`/src/\"  -D DOCDIR=\"`pwd`/doc/\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
 INSTALL_SWITCHES    = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D SRCDIR=\"$(SRCDIR)\"   -D DOCDIR=\"$(DOCDIR)\"   -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
 
 all: $(BINDIR)/pyxplot $(BINDIR)/pyxplot.debug $(BINDIR)/pyxplot.install
+
+testcard: $(BINDIR)/testcard.debug
 
 src/EPSMaker/eps_colours.c: colourlist_generate.py
 	python colourlist_generate.py
@@ -89,6 +99,10 @@ $(BINDIR)/pyxplot.debug:   $(PPL_OBJECTS_DEBUG)
 $(BINDIR)/pyxplot.install: $(PPL_OBJECTS_INSTALL)
 	mkdir -p $(BINDIR)
 	$(LINK) $(OPTIMISATION) $(PPL_OBJECTS_INSTALL) -o $(BINDIR)/pyxplot.install
+
+$(BINDIR)/testcard.debug:   $(TESTCARD_OBJECTS)
+	mkdir -p $(BINDIR)
+	$(LINK) $(OPTIMISATION) $(TESTCARD_OBJECTS)    -o $(BINDIR)/testcard.debug
 
 clean:
 	rm -f src/EPSMaker/eps_colours.c src/EPSMaker/eps_colours.h
