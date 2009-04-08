@@ -1,10 +1,10 @@
-// ppl_memory.h
+// lt_memory.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -21,19 +21,19 @@
 
 // Functions for memory management
 
-#ifndef _PPL_MEMORY
-#define _PPL_MEMORY 1
+#ifndef _LT_MEMORY_H
+#define _LT_MEMORY_H 1
 
-void  ppl_MemoryInit            ();
-void  ppl_MemoryStop            ();
-int   ppl_DescendIntoNewContext ();
-int   ppl_AscendOutOfContext    (int context);
-void _ppl_SetMemContext         (int context);
-int   ppl_GetMemContext         ();
-void  ppl_FreeAll               (int context);
+void  lt_MemoryInit            ( void(*mem_fatal_handler)(char *, int, char *) , void(*mem_log_handler)(char *) );
+void  lt_MemoryStop            ();
+int   lt_DescendIntoNewContext ();
+int   lt_AscendOutOfContext    (int context);
+void _lt_SetMemContext         (int context);
+int   lt_GetMemContext         ();
+void  lt_FreeAll               (int context);
 
-void *ppl_malloc                (int size);
-void *ppl_malloc_incontext      (int size, int context);
+void *lt_malloc                (int size);
+void *lt_malloc_incontext      (int size, int context);
 
 // Fastmalloc functions
 

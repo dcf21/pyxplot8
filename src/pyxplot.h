@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,8 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_PYXPLOT
-#define _PPL_PYXPLOT 1
+#ifndef _PYXPLOT_H
+#define _PYXPLOT_H 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +29,7 @@
 extern char ppl_commands[];
 
 /* Functions defined in ppl_shell.c */
-#ifndef _PPL_SHELL
+#ifndef _PPL_SHELL_C
 extern int  PPL_SHELL_EXITING;
 #endif
 void        InteractiveSession  ();

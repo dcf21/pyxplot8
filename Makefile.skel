@@ -36,8 +36,8 @@ MANDIR=${USRDIR}/man/man1
 VERSION = 0.8.0
 DATE    = 36/15/2012
 
-COMPILE = $(CC) -Wall -c
-LINK    = $(CC) -Wall -lm -lreadline -ljpeg
+COMPILE = $(CC) -Wall -g -c -I `pwd`/src
+LINK    = $(CC) -Wall -g -lm -lreadline -ljpeg
 
 OPTIMISATION = -O0
 
@@ -48,7 +48,7 @@ SRCDIR  = src
 OBJDIR  = obj
 BINDIR  = bin
 
-PPL_FILES   = asciidouble.c ppl_children.c ppl_colours.c ppl_commands.c ppl_dcfmath.c ppl_dict.c ppl_error.c ppl_list.c ppl_memory.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_settings_term.c ppl_setting_types.c ppl_shell.c ppl_text.c ppl_userspace.c pyxplot.c
+PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c MathsTools/dcfmath.c ppl_children.c ppl_commands.c ppl_error.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_text.c ppl_userspace.c pyxplot.c StringTools/asciidouble.c
 
 PPL_HEADERS = ppl_constants.h ppl_settings.h ppl_setting_types.h pyxplot.h Makefile
 
@@ -63,19 +63,19 @@ INSTALL_SWITCHES    = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D SRCDIR=
 
 all: $(BINDIR)/pyxplot $(BINDIR)/pyxplot.debug $(BINDIR)/pyxplot.install
 
-src/ppl_colours.c: colourlist_generate.py
+src/EPSMaker/eps_colours.c: colourlist_generate.py
 	python colourlist_generate.py
 
 $(OBJDIR)/%.o:         $(SRCDIR)/%.c $(PPL_HFILES)
-	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR) $(OBJDIR)/EPSMaker $(OBJDIR)/ListTools $(OBJDIR)/MathsTools $(OBJDIR)/StringTools 
 	$(COMPILE) $(OPTIMISATION) $(NODEBUG) $(NOINSTALL_SWITCHES) $< -o $@
 
 $(OBJDIR)/%.debug.o:   $(SRCDIR)/%.c $(PPL_HFILES)
-	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR) $(OBJDIR)/EPSMaker $(OBJDIR)/ListTools $(OBJDIR)/MathsTools $(OBJDIR)/StringTools
 	$(COMPILE) $(OPTIMISATION) $(DEBUG)   $(NOINSTALL_SWITCHES) $< -o $@
 
 $(OBJDIR)/%.install.o: $(SRCDIR)/%.c $(PPL_HFILES)
-	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR) $(OBJDIR)/EPSMaker $(OBJDIR)/ListTools $(OBJDIR)/MathsTools $(OBJDIR)/StringTools
 	$(COMPILE) $(OPTIMISATION) $(NODEBUG) $(INSTALL_SWITCHES)   $< -o $@
 
 $(BINDIR)/pyxplot:         $(PPL_OBJECTS)
@@ -91,7 +91,7 @@ $(BINDIR)/pyxplot.install: $(PPL_OBJECTS_INSTALL)
 	$(LINK) $(OPTIMISATION) $(PPL_OBJECTS_INSTALL) -o $(BINDIR)/pyxplot.install
 
 clean:
-	rm -f src/ppl_colours.c src/ppl_colours.h
+	rm -f src/EPSMaker/eps_colours.c src/EPSMaker/eps_colours.h
 	rm -vfR $(OBJDIR)/
 	rm -vfR $(BINDIR)/
 

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,12 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CONSTANTS
-#define _PPL_CONSTANTS 1
-
-#define LSTR_LENGTH  32768
-#define FNAME_LENGTH  4096
-#define SSTR_LENGTH   2048
+#ifndef _PPL_CONSTANTS_H
+#define _PPL_CONSTANTS_H 1
 
 #define PALETTE_LENGTH 512
 

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -23,11 +23,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "asciidouble.h"
-#include "ppl_list.h"
-#include "ppl_dict.h"
+#include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
+
+#include "ListTools/lt_list.h"
+#include "ListTools/lt_dict.h"
+
 #include "ppl_error.h"
-#include "ppl_constants.h"
 #include "ppl_parser.h"
 
 // --------------------------------------------------------------------------

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,11 +19,11 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_SETTINGS
-#define _PPL_SETTINGS 1
+#ifndef _PPL_SETTINGS_H
+#define _PPL_SETTINGS_H 1
 
-#include "ppl_constants.h"
-#include "ppl_list.h"
+#include "StringTools/str_constants.h"
+#include "ListTools/lt_list.h"
 
 typedef struct settings_terminal {
  int   backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent;
@@ -53,8 +53,8 @@ typedef struct settings_session {
  char  homedir[FNAME_LENGTH];
  } settings_session;
 
-// Variables defined in ppl_settings_term.c
-#ifndef _PPL_SETTINGS_TERM
+// Variables defined in ppl_settings.c
+#ifndef _PPL_SETTINGS_C
 extern settings_terminal settings_term_default;
 extern settings_terminal settings_term_current;
 extern settings_graph    settings_graph_default;
@@ -69,7 +69,7 @@ int   FetchSettingByName    (char *name, int *id_list, char **name_list);
 #endif
 
 // Functions defined in ppl_readconfig.c
-#ifndef _PPL_READCONFIG
+#ifndef _PPL_READCONFIG_C
 extern int ppl_termtype_set_in_configfile;
 void ReadConfigFile(char *ConfigFname);
 #endif

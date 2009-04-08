@@ -1,10 +1,10 @@
-// ppl_list.h
+// lt_list.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -21,8 +21,8 @@
 
 // Data structures for linked lists
 
-#ifndef _PPL_LIST
-#define _PPL_LIST 1
+#ifndef _LT_LIST_H
+#define _LT_LIST_H 1
 
 #define DATATYPE_VOID   31000
 #define DATATYPE_INT    31001
@@ -50,9 +50,9 @@ typedef struct ListS
 
 typedef ListItem ListIterator;
 
-#include "ppl_dict.h"
+#include "lt_dict.h"
 
-// Functions defined in ppl_list.c
+// Functions defined in lt_list.c
 List *ListInit         ();
 int   ListLen          (List *in);
 void  ListAppendPtr    (List *in, void *item);
@@ -70,3 +70,4 @@ ListIterator *ListIterate(ListIterator *in, void **item);
 char *ListPrint        (List *in, char *out, int size);
 
 #endif
+

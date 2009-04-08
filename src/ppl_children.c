@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -28,14 +28,16 @@
 #include <sys/wait.h>
 #include <sys/select.h>
 
-#include "asciidouble.h"
+#include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
+
+#include "ListTools/lt_list.h"
+#include "ListTools/lt_memory.h"
+
 #include "pyxplot.h"
 #include "ppl_children.h"
-#include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
-#include "ppl_list.h"
-#include "ppl_memory.h"
 
 // Pipes for communication between the main PyXPlot process and the CSP
 
@@ -109,7 +111,7 @@ void  InitialiseCSP()
   if (chdir("/") < 0) ppl_fatal(__FILE__,__LINE__,"chdir out of temporary directory failed."); // chdir out of temporary directory
   sprintf(PipeOutputBuffer, "rm -Rf %s", settings_session_default.tempdir);
   if (system(PipeOutputBuffer) < 0) ppl_fatal(__FILE__,__LINE__,"Removal of temporary directory failed."); // Remove temporary directory
-  ppl_FreeAll(0);
+  lt_FreeAll(0);
   if (DEBUG) ppl_log("CSP terminating normally.");
   exit(0);
  }

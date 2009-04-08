@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,16 +19,20 @@
 
 // ----------------------------------------------------------------------------
 
-#define _PPL_READCONFIG 1
+#define _PPL_READCONFIG_C 1
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-#include "asciidouble.h"
-#include "ppl_colours.h"
-#include "ppl_dcfmath.h"
+#include "StringTools/asciidouble.h"
+
+#include "EPSMaker/eps_colours.h"
+
+#include "MathsTools/dcfmath.h"
+
+#include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_papersize.h"
 #include "ppl_settings.h"

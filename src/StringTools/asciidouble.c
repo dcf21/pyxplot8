@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -25,11 +25,11 @@
 #include <time.h>
 #include <string.h>
 
-#include "ppl_list.h"
-#include "ppl_constants.h"
+#include "str_constants.h"
+
+#include "ListTools/lt_list.h"
 
 char temp_strproc_buffer[LSTR_LENGTH];
-
 
 /* GETFLOAT(): This gets a float from a string */
 

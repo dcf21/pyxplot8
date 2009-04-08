@@ -1,10 +1,10 @@
-// ppl_dict.c
+// lt_dict.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -25,18 +25,18 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ppl_list.h"
-#include "ppl_dict.h"
-#include "ppl_memory.h"
+#include "lt_dict.h"
+#include "lt_list.h"
+#include "lt_memory.h"
 
 Dict *DictInit()
  {
   Dict *out;
-  out = ppl_malloc(sizeof(Dict));
+  out = lt_malloc(sizeof(Dict));
   out->first  = NULL;
   out->last   = NULL;
   out->length = 0;
-  out->memory_context = ppl_GetMemContext();
+  out->memory_context = lt_GetMemContext();
   return out;
  }
 
@@ -49,10 +49,10 @@ void DictAppendPtr(Dict *in, char *key, int UserData, void *item)
  {
   DictItem *ptrnew;
   DictRemoveKey(in, key);
-  ptrnew           = ppl_malloc(sizeof(DictItem));
+  ptrnew           = lt_malloc(sizeof(DictItem));
   ptrnew->prev     = in->last;
   ptrnew->next     = NULL;
-  ptrnew->key      = (char *)ppl_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context); strcpy(ptrnew->key, key);
+  ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context); strcpy(ptrnew->key, key);
   ptrnew->UserData = UserData;
   ptrnew->data     = item;
   ptrnew->DataType = DATATYPE_VOID;
@@ -65,7 +65,7 @@ void DictAppendPtr(Dict *in, char *key, int UserData, void *item)
 
 void DictAppendInt(Dict *in, char *key, int UserData, int item)
  {
-  int *ptr = (int *)ppl_malloc_incontext(sizeof(int), in->memory_context);
+  int *ptr = (int *)lt_malloc_incontext(sizeof(int), in->memory_context);
   *ptr = item;
   DictAppendPtr(in, key, UserData, (void *)ptr);
   in->last->DataType = DATATYPE_INT;
@@ -74,7 +74,7 @@ void DictAppendInt(Dict *in, char *key, int UserData, int item)
 
 void DictAppendFloat(Dict *in, char *key, int UserData, double item)
  {
-  double *ptr = (double *)ppl_malloc_incontext(sizeof(double), in->memory_context);
+  double *ptr = (double *)lt_malloc_incontext(sizeof(double), in->memory_context);
   *ptr = item;
   DictAppendPtr(in, key, UserData, (void *)ptr);
   in->last->DataType = DATATYPE_FLOAT;
@@ -84,7 +84,7 @@ void DictAppendFloat(Dict *in, char *key, int UserData, double item)
 void DictAppendString(Dict *in, char *key, int UserData, char *item)
  {
   int length = strlen(item);
-  char  *ptr = (char *)ppl_malloc_incontext((length+1)*sizeof(char), in->memory_context);
+  char  *ptr = (char *)lt_malloc_incontext((length+1)*sizeof(char), in->memory_context);
   strcpy(ptr, item);
   DictAppendPtr(in, key, UserData, (void *)ptr);
   in->last->DataType = DATATYPE_STRING;

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,7 +19,7 @@
 
 // ----------------------------------------------------------------------------
 
-#define _PPL_SHELL 1
+#define _PPL_SHELL_C 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,10 +29,11 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
+
 #include "pyxplot.h"
-#include "asciidouble.h"
 #include "ppl_children.h"
-#include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_parser.h"
 #include "ppl_passwd.h"

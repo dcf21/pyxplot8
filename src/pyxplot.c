@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -32,13 +32,16 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
+
+#include "ListTools/lt_list.h"
+#include "ListTools/lt_memory.h"
+
 #include "pyxplot.h"
-#include "asciidouble.h"
 #include "ppl_children.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
-#include "ppl_list.h"
-#include "ppl_memory.h"
 #include "ppl_papersize.h"
 #include "ppl_parser.h"
 #include "ppl_settings.h"
@@ -69,7 +72,7 @@ int main(int argc, char **argv)
 
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
-  ppl_MemoryInit();
+  lt_MemoryInit(&ppl_fatal, &ppl_log);
   ppl_PaperSizeInit();
   ppl_UserSpaceInit();
   ppl_text_init();
@@ -99,23 +102,23 @@ int main(int argc, char **argv)
     else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0))
      {
       ppl_report(txt_version);
-      ppl_FreeAll(0);
       if (DEBUG) ppl_log("Reported version number as requested.");
+      lt_FreeAll(0); lt_MemoryStop();
       return 0;
      }
     else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0))
      {
       ppl_report(txt_help);
-      ppl_FreeAll(0);
       if (DEBUG) ppl_log("Reported help text as requested.");
+      lt_FreeAll(0); lt_MemoryStop();
       return 0;
      }
     else
     {
      sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot -help' for a list of available commandline options.", argv[i]);
      ppl_error(temp_err_string);
-     ppl_FreeAll(0);
      if (DEBUG) ppl_log("Received unexpected commandline switch.");
+     lt_FreeAll(0); lt_MemoryStop();
      return 1;
     }
    }
@@ -201,8 +204,8 @@ int main(int argc, char **argv)
    }
 
   // Terminate
-  ppl_FreeAll(0);
-  ppl_MemoryStop();
+  lt_FreeAll(0);
+  lt_MemoryStop();
   if (DEBUG) ppl_log("Terminating normally.");
   return 0;
  }

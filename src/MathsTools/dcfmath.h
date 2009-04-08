@@ -1,10 +1,10 @@
-// ppl_dcfmath.h
+// dcfmath.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,8 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_DCFMATH
-#define _PPL_DCFMATH 1
+#ifndef _DCFMATH_H
+#define _DCFMATH_H 1
 
 double max    (double x, double y);
 double min    (double x, double y);

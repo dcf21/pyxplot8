@@ -1,10 +1,10 @@
-// ppl_list.c
+// lt_list.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -25,18 +25,18 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ppl_list.h"
-#include "ppl_dict.h"
-#include "ppl_memory.h"
+#include "lt_dict.h"
+#include "lt_list.h"
+#include "lt_memory.h"
 
 List *ListInit()
  {
   List *out;
-  out = ppl_malloc(sizeof(List));
+  out = lt_malloc(sizeof(List));
   out->first  = NULL;
   out->last   = NULL;
   out->length = 0;
-  out->memory_context = ppl_GetMemContext();
+  out->memory_context = lt_GetMemContext();
   return out;
  }
 
@@ -48,7 +48,7 @@ int ListLen(List *in)
 void ListAppendPtr(List *in, void *item)
  {
   ListItem *ptrnew;
-  ptrnew = ppl_malloc(sizeof(ListItem));
+  ptrnew = lt_malloc(sizeof(ListItem));
   ptrnew->prev = in->last;
   ptrnew->next = NULL;
   ptrnew->data = item;
@@ -62,7 +62,7 @@ void ListAppendPtr(List *in, void *item)
 
 void ListAppendInt(List *in, int item)
  {
-  int *ptr = (int *)ppl_malloc_incontext(sizeof(int), in->memory_context);
+  int *ptr = (int *)lt_malloc_incontext(sizeof(int), in->memory_context);
   *ptr = item;
   ListAppendPtr(in, (void *)ptr);
   in->last->DataType = DATATYPE_INT;
@@ -71,7 +71,7 @@ void ListAppendInt(List *in, int item)
 
 void ListAppendFloat(List *in, double item)
  {
-  double *ptr = (double *)ppl_malloc_incontext(sizeof(double), in->memory_context);
+  double *ptr = (double *)lt_malloc_incontext(sizeof(double), in->memory_context);
   *ptr = item;
   ListAppendPtr(in, (void *)ptr);
   in->last->DataType = DATATYPE_FLOAT;
@@ -81,7 +81,7 @@ void ListAppendFloat(List *in, double item)
 void ListAppendString(List *in, char *item)
  {
   int length = strlen(item);
-  char  *ptr = (char *)ppl_malloc_incontext((length+1)*sizeof(char), in->memory_context);
+  char  *ptr = (char *)lt_malloc_incontext((length+1)*sizeof(char), in->memory_context);
   strcpy(ptr, item);
   ListAppendPtr(in, (void *)ptr);
   in->last->DataType = DATATYPE_STRING;

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,8 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef PPL_PASSWD
-#define PPL_PASSWD 1
+#ifndef PPL_PASSWD_H
+#define PPL_PASSWD_H 1
 
 /* Functions defined in ppl_passwd.c */
 char *UnixGetHomeDir       ();

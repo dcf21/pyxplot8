@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -21,11 +21,12 @@
 
 // Functions for returning messages to the user
 
-#ifndef _PPL_ERROR
-#define _PPL_ERROR 1
+#ifndef _PPL_ERROR_H
+#define _PPL_ERROR_H 1
 
 extern char ppl_error_source[];
 extern char temp_err_string[];
+
 void ppl_error_setstreaminfo(int linenumber,char *filename);
 void ppl_error(char *msg);
 void ppl_fatal(char *file, int line, char *msg);

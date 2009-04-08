@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -24,10 +24,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "asciidouble.h"
+#include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
+
+#include "ListTools/lt_memory.h"
+
 #include "ppl_error.h"
-#include "ppl_constants.h"
-#include "ppl_memory.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
@@ -78,7 +80,7 @@ void ppl_fatal(char *file, int line, char *msg)
   sprintf(introline, "Fatal Error encounted in %s at line %d:", file, line);
   ppl_error(introline);
   ppl_error(temp_stringE);
-  ppl_FreeAll(0);
+  lt_FreeAll(0);
   if (DEBUG) ppl_log("Terminating with error condition 1.");
   exit(1);
  }

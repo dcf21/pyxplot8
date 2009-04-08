@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-//               2008   Ross Church
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
 //
 // $Id$
 //
@@ -19,11 +19,11 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_PARSER
-#define _PPL_PARSER 1
+#ifndef _PPL_PARSER_H
+#define _PPL_PARSER_H 1
 
-#include "ppl_list.h"
-#include "ppl_dict.h"
+#include "ListTools/lt_list.h"
+#include "ListTools/lt_dict.h"
 
 void  ppl_commands_read();
 Dict *parse            (char *line);

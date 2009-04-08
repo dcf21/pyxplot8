@@ -1,4 +1,4 @@
-// ppl_userspace.h
+// str_constants.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,13 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_USERSPACE_H
-#define _PPL_USERSPACE_H 1
+#ifndef _STR_CONSTANTS_H
+#define _STR_CONSTANTS_H 1
 
-void ppl_UserSpaceInit          ();
-void ppl_UserSpace_SetVarStr    (char *name, char   *value);
-void ppl_UserSpace_SetVarNumeric(char *name, double  value);
-void ppl_UserSpace_SetFunc      (char *name, char   *value);
+#define LSTR_LENGTH  32768
+#define FNAME_LENGTH  4096
+#define SSTR_LENGTH   2048
 
 #endif
 
