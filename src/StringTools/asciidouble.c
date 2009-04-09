@@ -24,14 +24,9 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include <ctype.h>
 
-#include "str_constants.h"
-
-#include "ListTools/lt_list.h"
-
-char temp_strproc_buffer[LSTR_LENGTH];
-
-/* GETFLOAT(): This gets a float from a string */
+/* GetFloat(): This gets a float from a string */
 
 double GetFloat(char *str, int *Nchars)
  {
@@ -73,7 +68,7 @@ double GetFloat(char *str, int *Nchars)
   return(accumulator);
  }
 
-/* FILE_READLINE(): This remarkably useful function forwards a file to the next newline */
+/* file_readline(): This remarkably useful function forwards a file to the next newline */
 
 void file_readline(FILE *file, char *output)
 {
@@ -88,7 +83,7 @@ void file_readline(FILE *file, char *output)
   *(outputscan++) = '\0';
 }
 
-/* GETWORD(): This returns the first word (terminated by any whitespace). Maximum <max> characters. */
+/* GetWord(): This returns the first word (terminated by any whitespace). Maximum <max> characters. */
 
 void GetWord(char *out, char *in, int max)
  {
@@ -102,7 +97,7 @@ void GetWord(char *out, char *in, int max)
   *out = '\0'; /* Terminate output */
  }
 
-/* NEXTWORD(): Fast forward over word, and return pointer to next word */
+/* NextWord(): Fast forward over word, and return pointer to next word */
 
 char *NextWord(char *in)
  {
@@ -112,7 +107,7 @@ char *NextWord(char *in)
   return(in); /* Return pointer to next word */
  }
 
-/* FRIENDLY_TIMESTRING(): Returns pointer to time string */
+/* FriendlyTimestring(): Returns pointer to time string */
 
 char *FriendlyTimestring()
  {
@@ -121,7 +116,7 @@ char *FriendlyTimestring()
   return( ctime(&timenow) );
  }
 
-/* STRSTRIP(): Strip whitespace from both ends of a string */
+/* StrStrip(): Strip whitespace from both ends of a string */
 
 char *StrStrip(char *in, char *out)
  {
@@ -134,7 +129,7 @@ char *StrStrip(char *in, char *out)
   return out;
  }
 
-/* STRUPPER(): Capitalise a string */
+/* StrUpper(): Capitalise a string */
 
 char *StrUpper(char *in, char *out)
  {
@@ -146,7 +141,7 @@ char *StrUpper(char *in, char *out)
   return out;
  }
 
-/* STRLOWER(): Lowercase a string */
+/* StrLower(): Lowercase a string */
 
 char *StrLower(char *in, char *out)
  {
@@ -158,17 +153,17 @@ char *StrLower(char *in, char *out)
   return out;
  }
 
-/* STRUNDERLINE(): Underline a string */
+/* StrUnderline(): Underline a string */
 
-char *StrUnderline(char *in)
+char *StrUnderline(char *in, char *out)
  {
-  char *out = temp_strproc_buffer;
-  while (*in > 0) if (*in++ >= ' ') *out++='-';
-  *out = '\0';
-  return temp_strproc_buffer;
+  char *scan = out;
+  while (*in > 0) if (*in++ >= ' ') *scan++='-';
+  *scan = '\0';
+  return out;
  }
 
-/* STRREMOVECOMPLETELINE(): Removes a single complete line from a text buffer, if there is one */
+/* StrRemoveCompleteLine(): Removes a single complete line from a text buffer, if there is one */
 
 char  *StrRemoveCompleteLine(char *in, char *out)
  {
@@ -190,7 +185,7 @@ char  *StrRemoveCompleteLine(char *in, char *out)
   return out;
  }
 
-/* STRSLICE(): Take a slice out of a string */
+/* StrSlice(): Take a slice out of a string */
 
 char *StrSlice(char *in, char *out, int start, int end)
  {
@@ -204,36 +199,7 @@ char *StrSlice(char *in, char *out, int start, int end)
   return out;
  }
 
-/* STRSPLIT(): Split up a string into bits separated by whitespace */
-
-List *StrSplit(char *in)
- {
-  int pos, start, end;
-  char *word;
-  char text_buffer[LSTR_LENGTH];
-  List *out;
-  out  = ListInit();
-  pos  = 0;
-  while (in[pos] != '\0')
-   {
-    // Scan along to find the next word
-    while ((in[pos] <= ' ') && (in[pos] > '\0')) pos++;
-    start = pos;
-
-    // Scan along to find the end of this word
-    while ((in[pos] >  ' ') && (in[pos] > '\0')) pos++;
-    end = pos;
-
-    if (end>start)
-     {
-      word = StrSlice(in, text_buffer, start, end);
-      ListAppendString(out, word);
-     }
-   }
-  return out;
- }
-
-/* STRCOMMASEPARATEDLISTSCAN(): Split up a comma-separated list into individual values */
+/* StrCommaSeparatedListScan(): Split up a comma-separated list into individual values */
 
 char *StrCommaSeparatedListScan(char **inscan, char *out)
  {
@@ -243,5 +209,59 @@ char *StrCommaSeparatedListScan(char **inscan, char *out)
   *outscan = '\0';
   StrStrip(out,out);
   return out;
+ }
+
+/* StrAutocomplete(): Test whether a candidate string matches the beginning of test string, and is a least N characters long */
+
+int StrAutocomplete(char *candidate, char *test, int Nmin)
+ {
+  int IsAlphanumeric = 1; // Alphanumeric test strings can be terminated by punctuation; others must have spaces after them
+  int i,j;
+
+  for (i=0; test[i]!='\0'; i++) if (!(isalnum(test[i]) || (test[i]=='_'))) {IsAlphanumeric=0; break;}
+  for (j=0; ((candidate[j]>'\0') && (candidate[j]<=' ')); j++); // Fastforward over whitespace at beginning of candidate
+
+  for (i=0; 1; i++,j++)
+   if (test[i]!='\0')
+    {
+     if (toupper(test[i]) != toupper(candidate[j])) // Candidate string has deviated from test string
+      {
+       if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && ((isalnum(candidate[j])!=0) || (candidate[j]=='_')))) // If this is with a space...
+        {
+         if (i>=Nmin) return j; // ... it's okay so long as we've already passed enough characters
+         return -1;
+        }
+       else return -1;
+      }
+    } else { // We've hit the end of the test string
+     if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && ((isalnum(candidate[j])!=0) || (candidate[j]=='_')))) return j; // If candidate string has a space, it's okay
+     else return -1; // Otherwise it has unexpected characters on the end
+    }
+ }
+
+/* StrWordWrap(): Word wrap a piece of text to a certain width */
+
+void StrWordWrap(char *in, char *out, int width)
+ {
+  int WhiteSpace =  1;
+  int LastSpace  = -1;
+  int LineStart  =  0;
+  int i,j;
+  for (i=0,j=0 ; in[i]!='\0' ; i++)
+   {
+    if ((WhiteSpace==1) && (in[i]<=' ')) continue; // Once we've encountered one space, ignore any further whitespaceness
+    if ((WhiteSpace==0) && (in[i]<=' ')) {out[j]=' '; LastSpace=j++; WhiteSpace=1; continue;} // First whitespace character after a string of letters
+    if ((in[i]=='\\') && (in[i+1]=='\\')) {i++; out[j]='\n'; LastSpace=j++; WhiteSpace=1; continue;} // Double-backslash implies a hard linebreak.
+    if (in[i]=='#') {out[j++]=' '; WhiteSpace=1; continue;} // A hash character implies a hard space character, used to tabulate data
+    WhiteSpace=0;
+    if (((j-LineStart) > width) && (LastSpace != -1)) { out[LastSpace]='\n'; LineStart=LastSpace; LastSpace=-1; } // If line is too line, insert a linebreak
+    if (strncmp(in+i, "\\lab"    , 4)==0) {i+=3; out[j++]='<'; continue;} // Macros for left-angle-brackets, etc.
+    if (strncmp(in+i, "\\rab"    , 4)==0) {i+=3; out[j++]='>'; continue;}
+    if (strncmp(in+i, "\\VERSION", 8)==0) {i+=7; strcpy(out+j,VERSION); j+=strlen(out+j); continue;}
+    if (strncmp(in+i, "\\DATE"   , 5)==0) {i+=4; strcpy(out+j,DATE   ); j+=strlen(out+j); continue;}
+    out[j++] = in[i];
+   }
+  out[j]='\0';
+  return;
  }
 

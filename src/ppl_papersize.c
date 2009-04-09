@@ -116,21 +116,23 @@ void ppl_PaperSizeInit()
 
 void ppl_PaperSizeByName(char *name, double *height, double *width)
  {
-  char LowerName[SSTR_LENGTH];
+  char *LowerName;
   int i=0;
-  StrLower(name, LowerName);
+  StrLower(name, LowerName = (char *)malloc((strlen(name)+8)*sizeof(char)));
   while (1)
    {
     if (strcmp(PaperSizeList[i].name, "END")==0) // The requested papersize doesn't exist
      {
       *height = 0.0;
       *width  = 0.0;
+      free(LowerName);
       return;
      }
     if (strcmp(PaperSizeList[i].name, LowerName)==0) // We've found the requested papersize
      {
       *height = PaperSizeList[i].height;
       *width  = PaperSizeList[i].width;
+      free(LowerName);
       return;
      }
     i++;

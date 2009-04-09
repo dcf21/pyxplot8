@@ -32,9 +32,13 @@
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
+#include "ListTools/lt_dict.h"
+#include "ListTools/lt_memory.h"
+
 #include "pyxplot.h"
 #include "ppl_children.h"
 #include "ppl_error.h"
+#include "ppl_help.h"
 #include "ppl_parser.h"
 #include "ppl_passwd.h"
 #include "ppl_settings.h"
@@ -45,10 +49,12 @@ int PPL_SHELL_MULTILINE;
 
 void InteractiveSession()
  {
-  int linenumber = 1;
+  int   memcontext;
+  int   linenumber = 1;
   char *line_ptr;
   char  linebuffer[LSTR_LENGTH];
 
+  memcontext = lt_DescendIntoNewContext();
   PPL_SHELL_EXITING = PPL_SHELL_MULTILINE = 0;
   ppl_log("Starting an interactive session.");
 
@@ -87,20 +93,23 @@ void InteractiveSession()
    } else {
     ppl_error("\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
    }
+  lt_AscendOutOfContext(memcontext);
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   return;
  }
 
 void ProcessPyXPlotScript(char *input)
  {
-  int linenumber = 1;
-  int status;
-  int ProcessedALine = 0;
+  int  memcontext;
+  int  linenumber = 1;
+  int  status;
+  int  ProcessedALine = 0;
   char full_filename[FNAME_LENGTH];
   char filename_description[FNAME_LENGTH];
   char linebuffer[LSTR_LENGTH];
   FILE *infile;
 
+  memcontext = lt_DescendIntoNewContext();
   PPL_SHELL_EXITING = 0;
   sprintf(temp_err_string, "Processing input from the script file '%s'.", input); ppl_log(temp_err_string);
   UnixExpandUserHomeDir(input , settings_session_default.cwd, full_filename);
@@ -108,6 +117,7 @@ void ProcessPyXPlotScript(char *input)
   if ((infile=fopen(full_filename,"r")) == NULL)
    {
     sprintf(temp_err_string, "PyXPlot Error: Could not find command file '%s'\nSkipping on to next command file", full_filename); ppl_error(temp_err_string);
+    lt_AscendOutOfContext(memcontext);
     return;
    }
 
@@ -130,13 +140,16 @@ void ProcessPyXPlotScript(char *input)
    }
   fclose(infile);
   CheckForGvOutput();
+  lt_AscendOutOfContext(memcontext);
   return;
  }
 
 int ProcessDirective(char *in, int interactive)
  {
+  int memcontext;
   int status;
 
+  memcontext = lt_DescendIntoNewContext();
   if ((interactive==0) || (sigsetjmp(sigjmp_ToDirective, 1) == 0))  // Set up SIGINT handler, but only if this is an interactive session
    {
     if (interactive!=0) sigjmp_FromSigInt = &sigjmp_ToDirective;
@@ -146,13 +159,18 @@ int ProcessDirective(char *in, int interactive)
     status = 1;
    }
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
+  lt_AscendOutOfContext(memcontext);
   return status;
  }
 
 int ProcessDirective2(char *in)
  {
+  Dict *command;
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
   //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
+  command = DictInit();
+  DictAppendString(command, "topic", 0, "blah foo bar plob bolp");
+  directive_help(command,1);
   return 0;
  }
 

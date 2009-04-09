@@ -65,6 +65,7 @@ void lt_MemoryInit( void(*mem_fatal_handler)(char *, int, char *) , void(*mem_lo
 
 void lt_MemoryStop()
  {
+  if (MEMDEBUG) (*mem_log)("Shutting down memory management system.");
   fastmalloc_close();
   lt_mem_context = -1;
   return;
@@ -78,6 +79,7 @@ int lt_DescendIntoNewContext()
   if (lt_mem_context <                    0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_DescendIntoNewContext() before call to lt_MemoryInit().");
   if (lt_mem_context >= (PPL_MAX_CONTEXTS+1)) (*mem_fatal)(__FILE__,__LINE__,"Too many memory contexts.");
   _lt_SetMemContext(lt_mem_context+1);
+  if (MEMDEBUG) { sprintf(temp_merr_string, "Descended into memory context %d.", lt_mem_context); (*mem_log)(temp_merr_string); }
   return lt_mem_context;
  }
 
@@ -86,11 +88,11 @@ int lt_DescendIntoNewContext()
 
 int  lt_AscendOutOfContext(int context)
  {
-  int i;
-  if (lt_mem_context <                    0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_AscendOutOfContext() before call to lt_MemoryInit().");
-  if (context         >=     lt_mem_context ) return lt_mem_context;
-  if (context         <=                   0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_AscendOutOfContext() attempting to descend out of lowest possible memory context.");
-  for (i=context; i<=lt_mem_context; i++)     lt_FreeAll(i);
+  if (lt_mem_context <               0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_AscendOutOfContext() before call to lt_MemoryInit().");
+  if (context        >  lt_mem_context ) return lt_mem_context;
+  if (context        <=              0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_AscendOutOfContext() attempting to ascend out of lowest possible memory context.");
+  if (MEMDEBUG) { sprintf(temp_merr_string, "Ascending out of memory context %d.", lt_mem_context); (*mem_log)(temp_merr_string); }
+  lt_FreeAll(context);
   _lt_SetMemContext(context-1);
   return lt_mem_context;
  }
@@ -101,7 +103,6 @@ void _lt_SetMemContext(int context)
  {
   if ((context<0) || (context>=PPL_MAX_CONTEXTS))
    { sprintf(temp_merr_string, "lt_SetMemContext passed unrecognised context number %d.", context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
-  if (MEMDEBUG) { sprintf(temp_merr_string, "Setting memory allocation context to level %d.", context); (*mem_log)(temp_merr_string); }
   lt_mem_context = context;
   return; 
  }

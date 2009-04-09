@@ -24,8 +24,6 @@
 
 #include <stdio.h>
 
-#include "ListTools/lt_list.h"
-
 double GetFloat                 (char *str, int *Nchars);
 void   file_readline            (FILE *file, char *output);
 void   GetWord                  (char *out, char *in, int max);
@@ -34,10 +32,11 @@ char  *FriendlyTimestring       ();
 char  *StrStrip                 (char *in, char *out);
 char  *StrUpper                 (char *in, char *out);
 char  *StrLower                 (char *in, char *out);
-char  *StrUnderline             (char *in);
+char  *StrUnderline             (char *in, char *out);
 char  *StrRemoveCompleteLine    (char *in, char *out);
 char  *StrSlice                 (char *in, char *out, int start, int end);
-List  *StrSplit                 (char *in);
 char  *StrCommaSeparatedListScan(char **inscan, char *out);
+int    StrAutocomplete          (char *candidate, char *test, int Nmin);
+void   StrWordWrap              (char *in, char *out, int width);
 
 #endif

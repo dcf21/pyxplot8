@@ -31,17 +31,18 @@
 
 // Contains text messages which pyxplot displays
 
-char txt_version[SSTR_LENGTH];
-char txt_help[LSTR_LENGTH];
-char txt_init[LSTR_LENGTH];
-char txt_invalid[LSTR_LENGTH];
-char txt_valid_set_options[LSTR_LENGTH];
-char txt_valid_show_options[LSTR_LENGTH];
-char txt_set_noword[LSTR_LENGTH];
-char txt_unset_noword[LSTR_LENGTH]; 
-char txt_set[LSTR_LENGTH];
-char txt_unset[LSTR_LENGTH];
-char txt_show[LSTR_LENGTH];
+char txt_version            [SSTR_LENGTH];
+char txt_version_underline  [SSTR_LENGTH];
+char txt_help               [LSTR_LENGTH];
+char txt_init               [LSTR_LENGTH];
+char txt_invalid            [LSTR_LENGTH];
+char txt_valid_set_options  [LSTR_LENGTH];
+char txt_valid_show_options [LSTR_LENGTH];
+char txt_set_noword         [LSTR_LENGTH];
+char txt_unset_noword       [LSTR_LENGTH]; 
+char txt_set                [LSTR_LENGTH];
+char txt_unset              [LSTR_LENGTH];
+char txt_show               [LSTR_LENGTH];
 
 void ppl_text_init()
 {
@@ -63,7 +64,7 @@ full Users' Guide can be found in the file:\n\
 %s%spyxplot.pdf\n\
 \n\
 For the latest information on PyXPlot development, see the project website:\n\
-<http://www.pyxplot.org.uk>\n", txt_version, StrUnderline(txt_version), DOCDIR, PATHLINK);
+<http://www.pyxplot.org.uk>\n", txt_version, StrUnderline(txt_version, txt_version_underline), DOCDIR, PATHLINK);
 
 sprintf(txt_init, "\n\
  ____       __  ______  _       _      PYXPLOT\n\

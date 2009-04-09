@@ -240,14 +240,15 @@ void *FetchSettingName(int id, int *id_list, void **name_list)
 
 int FetchSettingByName(char *name, int *id_list, char **name_list)
  {
-  char UpperName[LSTR_LENGTH];
-  StrUpper(name, UpperName);
+  char *UpperName;
+  StrUpper(name, UpperName = (char *)malloc((strlen(name)+8)*sizeof(char)));
   while(1)
    {
     if (*id_list == -1) return -1;
-    if (strcmp(UpperName, *name_list) == 0) return *id_list;
+    if (strcmp(UpperName, *name_list) == 0) { free(UpperName); return *id_list; }
     id_list++; name_list++;
    }
+  free(UpperName);
   return -1;
  }
 
