@@ -279,23 +279,30 @@ void StrWordWrap(char *in, char *out, int width)
  }
 
 /* StrBacketMatch(): Find a closing bracket to match an opening bracket, and optionally return a list of all comma positions */
+/*                   'in' should point to the opening bracket character for which we are looking for the closing partner */
 
-void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int *MaxCommaPoses)
+void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses)
  {
-  int BracketLevel = 0;
-  int inpos        = 0;
-  int commapos     = 0;
+  int  BracketLevel = 0;
+  int  inpos        = 0;
+  int  commapos     = 0;
+  char QuoteType    = '\0';
 
   for ( ; in[inpos] != '\0'; inpos++)
    {
-    if      (in[inpos]=='(') BracketLevel += 1;
-    else if (in[inpos]==')') BracketLevel -= 1;
+    if (QuoteType != '\0') // Do not pay attention to brackets inside quoted strings
+     {
+      if ((in[inpos]==QuoteType) && (in[inpos-1]!='\\')) QuoteType='\0';
+      continue;
+     }
+    else if ((in[inpos]=='\'') || (in[inpos]=='\"')) QuoteType     = in[inpos]; // Entering a quoted string
+    else if  (in[inpos]=='(')                        BracketLevel += 1;         // Entering a nested level of brackets
+    else if  (in[inpos]==')')                        { BracketLevel -= 1; if (BracketLevel == 0) break; }
     else if ((in[inpos]==',') && (BracketLevel==1))
      {
-      if ((CommaPositions != NULL) && ((MaxCommaPoses == NULL) || (commapos < *MaxCommaPoses))) *(CommaPositions+commapos) = inpos;
+      if ((CommaPositions != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+commapos) = inpos;
       commapos++;
      }
-    if (BracketLevel == 0) break;
    }
 
   if (in[inpos] == '\0')
@@ -309,3 +316,4 @@ void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBrac
     return;
    }
  }
+

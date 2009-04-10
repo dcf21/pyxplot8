@@ -22,10 +22,15 @@
 #ifndef _PPL_USERSPACE_H
 #define _PPL_USERSPACE_H 1
 
+#include "ListTools/lt_dict.h"
+
 void ppl_UserSpaceInit          ();
 void ppl_UserSpace_SetVarStr    (char *name, char   *value);
 void ppl_UserSpace_SetVarNumeric(char *name, double  value);
 void ppl_UserSpace_SetFunc      (char *name, char   *value);
+
+void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *NamespaceVars, Dict *NamespaceFuncs, int *errpos, char *errtext);
+void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, int *errpos, char *errtext);
 
 #endif
 

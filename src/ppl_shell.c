@@ -43,6 +43,7 @@
 #include "ppl_passwd.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_userspace.h"
 
 int PPL_SHELL_EXITING;
 int PPL_SHELL_MULTILINE;
@@ -165,12 +166,25 @@ int ProcessDirective(char *in, int interactive)
 
 int ProcessDirective2(char *in)
  {
-  Dict *command;
+  //Dict *command;
+  char text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
+  int  errpos=-1;
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
   //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
-  command = DictInit();
-  DictAppendString(command, "topic", 0, "c set");
-  directive_help(command,1);
+
+  //command = DictInit();
+  //DictAppendString(command, "topic", 0, "c set");
+  //directive_help(command,1);
+
+  ppl_GetQuotedString("'This is a test quoted string'", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+
+  ppl_GetQuotedString("psi", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+
+  ppl_GetQuotedString("pi", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+
   return 0;
  }
 
