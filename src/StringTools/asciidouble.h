@@ -38,5 +38,7 @@ char  *StrSlice                 (char *in, char *out, int start, int end);
 char  *StrCommaSeparatedListScan(char **inscan, char *out);
 int    StrAutocomplete          (char *candidate, char *test, int Nmin);
 void   StrWordWrap              (char *in, char *out, int width);
+void   StrBracketMatch          (char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int *MaxCommaPoses);
 
 #endif
+

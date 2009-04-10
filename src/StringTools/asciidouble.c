@@ -264,7 +264,7 @@ void StrWordWrap(char *in, char *out, int width)
       out[j]=' '; LastSpace=j++; WhiteSpace=1;
       continue;
      }
-    if ((in[i]=='\\') && (in[i+1]=='\\')) {i++; out[j]='\n'; LastSpace=j++; WhiteSpace=1; continue;} // Double-backslash implies a hard linebreak.
+    if ((in[i]=='\\') && (in[i+1]=='\\')) {i++; out[j]='\n'; LineStart=j++; LastSpace=-1; WhiteSpace=1; continue;} // Double-backslash implies a hard linebreak.
     if (in[i]=='#') {out[j++]=' '; WhiteSpace=1; continue;} // A hash character implies a hard space character, used to tabulate data
     WhiteSpace=0; LineFeeds=0;
     if (((j-LineStart) > width) && (LastSpace != -1)) { out[LastSpace]='\n'; LineStart=LastSpace; LastSpace=-1; } // If line is too line, insert a linebreak
@@ -278,3 +278,34 @@ void StrWordWrap(char *in, char *out, int width)
   return;
  }
 
+/* StrBacketMatch(): Find a closing bracket to match an opening bracket, and optionally return a list of all comma positions */
+
+void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int *MaxCommaPoses)
+ {
+  int BracketLevel = 0;
+  int inpos        = 0;
+  int commapos     = 0;
+
+  for ( ; in[inpos] != '\0'; inpos++)
+   {
+    if      (in[inpos]=='(') BracketLevel += 1;
+    else if (in[inpos]==')') BracketLevel -= 1;
+    else if ((in[inpos]==',') && (BracketLevel==1))
+     {
+      if ((CommaPositions != NULL) && ((MaxCommaPoses == NULL) || (commapos < *MaxCommaPoses))) *(CommaPositions+commapos) = inpos;
+      commapos++;
+     }
+    if (BracketLevel == 0) break;
+   }
+
+  if (in[inpos] == '\0')
+   {
+    if (Nargs             != NULL) *Nargs             = -1;
+    if (ClosingBracketPos != NULL) *ClosingBracketPos = -1;
+    return;
+   } else {
+    if (Nargs             != NULL) *Nargs             = commapos;
+    if (ClosingBracketPos != NULL) *ClosingBracketPos = inpos;
+    return;
+   }
+ }

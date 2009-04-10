@@ -19,6 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
+// A selection of useful mathematical functions which are not included in the standard C math library
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -42,3 +44,17 @@ int sgn(double x)
   return 1;
  }
 
+double degrees(double rad)
+ {
+  return rad*180/M_PI;
+ }
+
+double radians(double degrees)
+ {
+  return degrees*M_PI/180;
+ }
+
+double frandom()
+ {
+  return (double)rand() / RAND_MAX;
+ }

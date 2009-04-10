@@ -52,18 +52,25 @@ void help_PagerDisplay(char *PageName, xmlNode *node, int interactive)
   int      i, Ncolumns, Nchildren;
   FILE    *PagerHandle;
 
-  sprintf(TextBuffer,"\\\\**** Help Topic: %s****\\\\%s\\\\\\\\\\\\", PageName, node->content);
+  sprintf(TextBuffer,"\\\\**** Help Topic: %s****\\\\", PageName);
   i = strlen(TextBuffer);
+  for (cur_node = node->children; cur_node; cur_node = cur_node->next) // Loop over children
+   if (cur_node->type == XML_TEXT_NODE)
+    {
+     sprintf(TextBuffer+i, "%s", cur_node->content); i += strlen(TextBuffer+i);
+    }
 
+  sprintf(TextBuffer+i, "\\\\\\\\\\\\");
   // Insert information about children
   Nchildren = 0;
   for (cur_node = node->children; cur_node; cur_node = cur_node->next) // Loop over children
-   {
-    if (Nchildren == 0) { sprintf(TextBuffer+i,"This help page has the following subtopics:\\\\\\\\"); i += strlen(TextBuffer+i); }
-    else                { sprintf(TextBuffer+i,", ");                                                  i += strlen(TextBuffer+i); }
-    sprintf(TextBuffer+i,"%s",cur_node->name); i += strlen(TextBuffer+i);
-    Nchildren++;
-   }
+   if (cur_node->type == XML_ELEMENT_NODE)
+    {
+     if (Nchildren == 0) { sprintf(TextBuffer+i,"This help page has the following subtopics:\\\\\\\\"); i += strlen(TextBuffer+i); }
+     else                { sprintf(TextBuffer+i,", ");                                                  i += strlen(TextBuffer+i); }
+     sprintf(TextBuffer+i,"%s",cur_node->name); i += strlen(TextBuffer+i);
+     Nchildren++;
+    }
   if (Nchildren == 0) { sprintf(TextBuffer+i,"This help page has no subtopics.\\\\\\\\"); i += strlen(TextBuffer+i); }
   else                { sprintf(TextBuffer+i,".\\\\\\\\");                                i += strlen(TextBuffer+i); }
 

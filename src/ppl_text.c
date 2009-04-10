@@ -72,7 +72,7 @@ sprintf(txt_init, "\n\
 | |_) | | | |\\  /| |_) | |/ _ \\| __|   %s\n\
 |  __/| |_| |/  \\|  __/| | (_) | |_ \n\
 |_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-9 Dominic Ford\n\
-       |___/                                         2008   Ross Church\n\
+       |___/                                         2008-9 Ross Church\n\
 \n\
 \n\
 Send comments, bug reports, feature requests and coffee supplies to:\n\
