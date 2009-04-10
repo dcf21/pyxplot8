@@ -218,7 +218,9 @@ int StrAutocomplete(char *candidate, char *test, int Nmin)
   int IsAlphanumeric = 1; // Alphanumeric test strings can be terminated by punctuation; others must have spaces after them
   int i,j;
 
-  for (i=0; test[i]!='\0'; i++) if (!(isalnum(test[i]) || (test[i]=='_'))) {IsAlphanumeric=0; break;}
+  if ((candidate==NULL) || (test==NULL)) return -1;
+
+  for (i=0; test[i]!='\0'; i++) if ((test[i]>' ') && (isalnum(test[i])==0) && (test[i]!='_')) {IsAlphanumeric=0; break;}
   for (j=0; ((candidate[j]>'\0') && (candidate[j]<=' ')); j++); // Fastforward over whitespace at beginning of candidate
 
   for (i=0; 1; i++,j++)
@@ -226,7 +228,7 @@ int StrAutocomplete(char *candidate, char *test, int Nmin)
     {
      if (toupper(test[i]) != toupper(candidate[j])) // Candidate string has deviated from test string
       {
-       if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && ((isalnum(candidate[j])!=0) || (candidate[j]=='_')))) // If this is with a space...
+       if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && (isalnum(candidate[j])==0) && (candidate[j]!='_'))) // If this is with a space...
         {
          if (i>=Nmin) return j; // ... it's okay so long as we've already passed enough characters
          return -1;
@@ -234,7 +236,7 @@ int StrAutocomplete(char *candidate, char *test, int Nmin)
        else return -1;
       }
     } else { // We've hit the end of the test string
-     if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && ((isalnum(candidate[j])!=0) || (candidate[j]=='_')))) return j; // If candidate string has a space, it's okay
+     if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && (isalnum(candidate[j])==0) && (candidate[j]!='_'))) return j; // If candidate string has a space, it's okay
      else return -1; // Otherwise it has unexpected characters on the end
     }
  }
@@ -246,14 +248,25 @@ void StrWordWrap(char *in, char *out, int width)
   int WhiteSpace =  1;
   int LastSpace  = -1;
   int LineStart  =  0;
+  int LineFeeds  =  0; // If we meet > 1 linefeed during a period of whitespace, it marks the beginning of a new paragraph
   int i,j;
   for (i=0,j=0 ; in[i]!='\0' ; i++)
    {
-    if ((WhiteSpace==1) && (in[i]<=' ')) continue; // Once we've encountered one space, ignore any further whitespaceness
-    if ((WhiteSpace==0) && (in[i]<=' ')) {out[j]=' '; LastSpace=j++; WhiteSpace=1; continue;} // First whitespace character after a string of letters
+    if ((WhiteSpace==1) && (in[i]<=' ')) // Once we've encountered one space, ignore any further whitespaceness
+     {
+      if (j==0) j++; // If we open document with a new paragraph, we haven't already put down a space character to overwrite
+      if ((in[i]=='\n') && (++LineFeeds==2)) { out[j-1]='\n'; out[j]='\n'; LineStart=j++; LastSpace=-1; } // Two linefeeds in a period of whitespace means a new paragraph
+      continue;
+     }
+    if ((WhiteSpace==0) && (in[i]<=' ')) // First whitespace character after a string of letters
+     {
+      if (in[i]=='\n') LineFeeds=1;
+      out[j]=' '; LastSpace=j++; WhiteSpace=1;
+      continue;
+     }
     if ((in[i]=='\\') && (in[i+1]=='\\')) {i++; out[j]='\n'; LastSpace=j++; WhiteSpace=1; continue;} // Double-backslash implies a hard linebreak.
     if (in[i]=='#') {out[j++]=' '; WhiteSpace=1; continue;} // A hash character implies a hard space character, used to tabulate data
-    WhiteSpace=0;
+    WhiteSpace=0; LineFeeds=0;
     if (((j-LineStart) > width) && (LastSpace != -1)) { out[LastSpace]='\n'; LineStart=LastSpace; LastSpace=-1; } // If line is too line, insert a linebreak
     if (strncmp(in+i, "\\lab"    , 4)==0) {i+=3; out[j++]='<'; continue;} // Macros for left-angle-brackets, etc.
     if (strncmp(in+i, "\\rab"    , 4)==0) {i+=3; out[j++]='>'; continue;}

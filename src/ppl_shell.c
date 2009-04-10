@@ -169,7 +169,7 @@ int ProcessDirective2(char *in)
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
   //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
   command = DictInit();
-  DictAppendString(command, "topic", 0, "blah foo bar plob bolp");
+  DictAppendString(command, "topic", 0, "c set");
   directive_help(command,1);
   return 0;
  }

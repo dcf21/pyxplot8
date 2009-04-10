@@ -100,7 +100,7 @@ $(BINDIR)/pyxplot.install: $(PPL_OBJECTS_INSTALL)
 	mkdir -p $(BINDIR)
 	$(LINK) $(OPTIMISATION) $(PPL_OBJECTS_INSTALL) -o $(BINDIR)/pyxplot.install
 
-$(BINDIR)/testcard.debug:   $(TESTCARD_OBJECTS)
+$(BINDIR)/testcard.debug:  $(TESTCARD_OBJECTS)
 	mkdir -p $(BINDIR)
 	$(LINK) $(OPTIMISATION) $(TESTCARD_OBJECTS)    -o $(BINDIR)/testcard.debug
 

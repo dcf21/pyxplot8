@@ -148,6 +148,17 @@ void ListRemovePtrAll(List *in, void *item)
   return;
  }
 
+void *ListGetItem(List *in, int N)
+ {
+  ListItem *ptr;
+  int   i;
+  if (in==NULL) return NULL;
+  ptr = in->first;
+  for (i=0; ((i<N) && (ptr!=NULL)); i++, ptr=ptr->next);
+  if (ptr==NULL) return NULL;
+  return ptr->data;
+ }
+
 void *ListPop(List *in)
  {
   void *out;

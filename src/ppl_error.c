@@ -63,7 +63,7 @@ void ppl_error(char *msg)
     ppl_error(temp_stringB);
     if (DEBUG) ppl_log(temp_stringB);
    }
-  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDERR_FILENO) == 1))
+  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDIN_FILENO) == 1))
    sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_err , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
                                      temp_stringA,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
@@ -89,7 +89,7 @@ void ppl_warning(char *msg)
  {
   if (msg!=temp_stringA) strcpy(temp_stringA, msg);
   if (DEBUG) { sprintf(temp_stringC, "%s%s", "Warning:\n", temp_stringA); ppl_log(temp_stringC); }
-  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDERR_FILENO) == 1))
+  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDIN_FILENO) == 1))
    sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
                                      temp_stringA,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
@@ -103,7 +103,7 @@ void ppl_report(char *msg)
  {
   if (msg!=temp_stringA) strcpy(temp_stringA, msg);
   if (DEBUG) { sprintf(temp_stringC, "%s%s", "Reporting:\n", temp_stringA); ppl_log(temp_stringC); }
-  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDOUT_FILENO) == 1))
+  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDIN_FILENO) == 1))
    sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
                                      temp_stringA,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );

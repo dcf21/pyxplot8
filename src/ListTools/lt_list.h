@@ -63,6 +63,7 @@ void  ListAppendList   (List *in, List *item);
 void  ListAppendDict   (List *in, Dict *item);
 int   ListRemovePtr    (List *in, void *item);
 void  ListRemovePtrAll (List *in, void *item);
+void *ListGetItem      (List *in, int N);
 void *ListPop          (List *in);
 void *ListLast         (List *in);
 ListIterator *ListIterateInit(List *in);
