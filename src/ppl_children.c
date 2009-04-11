@@ -88,15 +88,15 @@ void  InitialiseCSP()
 
   // Make all log messages appear to come from the CSP
   sprintf(ppl_error_source, "CSP%6d", getpid());
-  setpgid( getpid() , getpid() ); // Make into a process group leader so that we won't catch SIGINT
+  if (setpgid( getpid() , getpid() ) < 0) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
 
   // Make temporary working directory
   fail=0;
-  mkdir(settings_session_default.tempdir , 0700); // Create temporary working directory
-  if (access(settings_session_default.tempdir, F_OK) != 0) { fail=1; } // If temporary directory does not exist, fail.
+  if ((mkdir(settings_session_default.tempdir , 0700) != 0) ||             // Create temporary working directory
+      (access(settings_session_default.tempdir, F_OK) != 0) )  { fail=1; } // If temporary directory does not exist, fail.
   else
    {
-    stat(settings_session_default.tempdir, &statinfo); // Otherwise stat it and make sure it's a directory we own
+    if (stat(settings_session_default.tempdir, &statinfo) <0) fail=1; // Otherwise stat it and make sure it's a directory we own
     if (!S_ISDIR(statinfo.st_mode)) fail=1;
     if (statinfo.st_uid != getuid()) fail=1;
    }
@@ -129,14 +129,14 @@ void CheckForGvOutput()
   if (!FD_ISSET(PipeCSP2MAIN[0] , &readable)) return; // select tells us that pipe from CSP is not readable
 
   pos = strlen(PipeOutputBuffer);
-  read(PipeCSP2MAIN[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5);
-  while (1)
-   {
-    StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
-    if (linebuffer[0]=='\0') break;
-    if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
-    ppl_error(linebuffer);
-   }
+  if (read(PipeCSP2MAIN[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5) > 0)
+   while (1)
+    {
+     StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
+     if (linebuffer[0]=='\0') break;
+     if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
+     ppl_error(linebuffer);
+    }
   return;
  }
 
@@ -205,13 +205,13 @@ void CSPCheckForNewCommands()
   if (!FD_ISSET(PipeMAIN2CSP[0] , &readable)) return; // select tells us that pipe from CSP is not readable
 
   pos = strlen(PipeOutputBuffer);
-  read(PipeMAIN2CSP[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5);
-  while (1)
-   {
-    StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
-    if (linebuffer[0]=='\0') break;
-    CSPProcessCommand(linebuffer);
-   }
+  if (read(PipeMAIN2CSP[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5) > 0)
+   while (1)
+    {
+     StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
+     if (linebuffer[0]=='\0') break;
+     CSPProcessCommand(linebuffer);
+    }
   return;
  }
 
@@ -237,7 +237,7 @@ void CSPProcessCommand(char *in)
      {
       if (DEBUG) { sprintf(temp_err_string, "Received gv_singlewindow request. Putting into existing window with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
       sprintf(cmd, "cp -f %s %s", in+1, GhostView_Fname);
-      system(cmd);
+      if (system(cmd) != 0) if (DEBUG) { ppl_log("Failed to copy postscript document into existing gv_singlewindow session.");}
      }
     else
      {
@@ -281,9 +281,9 @@ int CSPForkNewGv(char *fname, List *gv_list)
       if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
       close(PipeCSP2MAIN[1]);
      }
-    setpgid( getpid() , getpid() ); // Make into a process group leader so that we won't catch SIGINT
+    if (setpgid( getpid() , getpid() )) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
     sprintf(WatchText, "%s%s", GHOSTVIEW_OPT, "watch");
-    execlp(GHOSTVIEW, GHOSTVIEW, WatchText, fname, NULL); // Execute GhostView
+    if (execlp(GHOSTVIEW, GHOSTVIEW, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute GhostView returned error code."); // Execute GhostView
     ppl_fatal(__FILE__,__LINE__,"Execution of GhostView failed."); // execlp call should not return
     exit(1); // ppl_fatal shouldn't either, so something's gone really wrong...
    }

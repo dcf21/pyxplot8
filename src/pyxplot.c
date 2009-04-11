@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
   // Decide upon a path for a temporary directory for us to live in
   if (DEBUG) ppl_log("Finding a filepath for a temporary directory.");
-  if (getcwd( settings_session_default.cwd , FNAME_LENGTH ) < 0) { ppl_fatal(__FILE__,__LINE__,"Could not read current working directory."); } // Store cwd
+  if (getcwd( settings_session_default.cwd , FNAME_LENGTH ) == NULL) { ppl_fatal(__FILE__,__LINE__,"Could not read current working directory."); } // Store cwd
   while (1) { sprintf(tempdirpath, "/tmp/pyxplot_%d_%d", getpid(), tempdirnumber); if (access(tempdirpath, F_OK) != 0) break; tempdirnumber++; } // Find an unused dir path
   strcpy(settings_session_default.tempdir, tempdirpath); // Store our chosen temporary directory path
 

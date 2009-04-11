@@ -112,11 +112,8 @@ void file_readline(FILE *file, char *output)
  char c = '\x07';
  char *outputscan = output;
 
- while (((int)c != 10) && (!feof(file)) && (!ferror(file)))
-  {
-   fscanf(file,"%c",&c);
-   if (((int)c)>31) *(outputscan++) = c;
-  }
+ while (((int)c != '\n') && (!feof(file)) && (!ferror(file)))
+   if ((fscanf(file,"%c",&c)>=0) && (((int)c)>31)) *(outputscan++) = c;
   *(outputscan++) = '\0';
 }
 
