@@ -41,6 +41,7 @@
 #include "ppl_help.h"
 #include "ppl_parser.h"
 #include "ppl_passwd.h"
+#include "ppl_setshow.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_userspace.h"
@@ -177,12 +178,6 @@ int ProcessDirective2(char *in)
   //directive_help(command,1);
 
   ppl_GetQuotedString("'This is a test quoted string'", text, 0, NULL, NULL, NULL, &errpos, ErrText);
-  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
-
-  ppl_GetQuotedString("psi", text, 0, NULL, NULL, NULL, &errpos, ErrText);
-  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
-
-  ppl_GetQuotedString("pi", text, 0, NULL, NULL, NULL, &errpos, ErrText);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
   return 0;

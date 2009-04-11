@@ -25,6 +25,11 @@
 #include "StringTools/str_constants.h"
 #include "ListTools/lt_list.h"
 
+typedef struct with_words {
+ int    colour, fillcolour, linestyle, linetype, pointtype, style;
+ double linewidth, pointlinewidth, pointsize;
+ } with_words;
+
 typedef struct settings_terminal {
  int   backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent;
  float dpi, PaperHeight, PaperWidth;
@@ -34,9 +39,10 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int   aspect, AutoAspect, AxesColour, DataStyle, FontSize, FuncStyle, grid, GridAxisX, GridAxisY, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ int   aspect, AutoAspect, AxesColour, FontSize, grid, GridAxisX, GridAxisY, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
  float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, KeyXOff, KeyYOff, LineWidth, OriginX, OriginY, PointSize, PointLineWidth, TitleXOff, TitleYOff, width;
  char  title[FNAME_LENGTH];
+ with_words DataStyle, FuncStyle;
  } settings_graph;
 
 typedef struct settings_axis {

@@ -85,9 +85,25 @@ void ppl_settings_term_init()
   settings_graph_default.BinWidth   = 1.0;
   settings_graph_default.BoxFrom    = 0.0;
   settings_graph_default.BoxWidth   = 0.0;
-  settings_graph_default.DataStyle  = SW_STYLE_POINTS;
+  settings_graph_default.DataStyle.colour     = -1;
+  settings_graph_default.DataStyle.fillcolour = -1;
+  settings_graph_default.DataStyle.linestyle  = -1;
+  settings_graph_default.DataStyle.linetype   = -1;
+  settings_graph_default.DataStyle.pointtype  = -1;
+  settings_graph_default.DataStyle.style      = SW_STYLE_POINTS;
+  settings_graph_default.DataStyle.linewidth  = -1;
+  settings_graph_default.DataStyle.pointlinewidth = -1;
+  settings_graph_default.DataStyle.pointsize  = -1;
   settings_graph_default.FontSize   = 0;
-  settings_graph_default.FuncStyle  = SW_STYLE_LINES;
+  settings_graph_default.FuncStyle.colour     = -1;
+  settings_graph_default.FuncStyle.fillcolour = -1;
+  settings_graph_default.FuncStyle.linestyle  = -1;
+  settings_graph_default.FuncStyle.linetype   = -1;
+  settings_graph_default.FuncStyle.pointtype  = -1;
+  settings_graph_default.FuncStyle.style      = SW_STYLE_LINES;
+  settings_graph_default.FuncStyle.linewidth  = -1;
+  settings_graph_default.FuncStyle.pointlinewidth = -1;
+  settings_graph_default.FuncStyle.pointsize  = -1;
   settings_graph_default.grid       = SW_ONOFF_OFF;
   settings_graph_default.GridAxisX  = 1;
   settings_graph_default.GridAxisY  = 1;
@@ -240,15 +256,12 @@ void *FetchSettingName(int id, int *id_list, void **name_list)
 
 int FetchSettingByName(char *name, int *id_list, char **name_list)
  {
-  char *UpperName;
-  StrUpper(name, UpperName = (char *)malloc((strlen(name)+8)*sizeof(char)));
   while(1)
    {
     if (*id_list == -1) return -1;
-    if (strcmp(UpperName, *name_list) == 0) { free(UpperName); return *id_list; }
+    if (StrCmpNoCase(name, *name_list) == 0) return *id_list;
     id_list++; name_list++;
    }
-  free(UpperName);
   return -1;
  }
 

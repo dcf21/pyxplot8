@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 double GetFloat                 (char *str, int *Nchars);
+char  *NumericDisplay           (double in, int N);
 void   file_readline            (FILE *file, char *output);
 void   GetWord                  (char *out, char *in, int max);
 char  *NextWord                 (char *in);
@@ -39,6 +40,7 @@ char  *StrCommaSeparatedListScan(char **inscan, char *out);
 int    StrAutocomplete          (char *candidate, char *test, int Nmin);
 void   StrWordWrap              (char *in, char *out, int width);
 void   StrBracketMatch          (char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses);
-
+int    StrCmpNoCase             (char *a, char *b);
+char  *StrEscapify              (char *in, char *out);
 #endif
 

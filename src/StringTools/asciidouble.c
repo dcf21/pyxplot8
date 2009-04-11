@@ -68,6 +68,43 @@ double GetFloat(char *str, int *Nchars)
   return(accumulator);
  }
 
+/* NumericDisplay(): Displays a double in either %f or %e formats */
+
+char *NumericDisplay(double in, int N)
+ {
+  static char outputA[128], outputB[128];
+  char *output;
+  int DecimalLevel;
+  if (N==0) output = outputA;
+  else      output = outputB;
+  if ((fabs(in) < 1e10) && (fabs(in) > 1e-3))
+   {
+    for (DecimalLevel=0; DecimalLevel<12; DecimalLevel++) if ((in - ((floor(in*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - in))<(in*1.00000001)) break;
+    switch(DecimalLevel)
+     {
+      case  0: sprintf(output,"%.0f" ,in); break;
+      case  1: sprintf(output,"%.1f" ,in); break;
+      case  2: sprintf(output,"%.2f" ,in); break;
+      case  3: sprintf(output,"%.3f" ,in); break;
+      case  4: sprintf(output,"%.4f" ,in); break;
+      case  5: sprintf(output,"%.5f" ,in); break;
+      case  6: sprintf(output,"%.6f" ,in); break;
+      case  7: sprintf(output,"%.7f" ,in); break;
+      case  8: sprintf(output,"%.8f" ,in); break;
+      case  9: sprintf(output,"%.9f" ,in); break;
+      case 10: sprintf(output,"%.10f",in); break;
+      case 11: sprintf(output,"%.11f",in); break;
+      case 12: sprintf(output,"%.12f",in); break;
+     }
+   }
+  else
+   {
+    if (in==0) sprintf(output,"0");
+    else       sprintf(output,"%e",in);
+   }
+  return output;
+ }
+
 /* file_readline(): This remarkably useful function forwards a file to the next newline */
 
 void file_readline(FILE *file, char *output)
@@ -315,5 +352,39 @@ void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBrac
     if (ClosingBracketPos != NULL) *ClosingBracketPos = inpos;
     return;
    }
+ }
+
+/* StrCmpNoCase(): A case-insensitive version of the standard strcmp() function */
+
+int StrCmpNoCase(char *a, char *b)
+ {
+  char aU, bU;
+  while (1)
+   {
+    if ((*a == '\0')&&(*b == '\0')) return 0;
+    if (*a == *b) {a++; b++; continue;}
+    if ((*a>='a')&&(*a<='z')) aU=*a-'a'+'A'; else aU=*a;
+    if ((*b>='a')&&(*b<='z')) bU=*b-'a'+'A'; else bU=*b;
+    if (aU==bU) {a++; b++; continue;}
+    if (aU< bU) return -1;
+    return 1;
+   }
+ }
+
+/* StrEscapify(): Inserts escape characters into strings before quote characters */
+
+char  *StrEscapify(char *in, char *out)
+ {
+  char *scanin  = in;
+  char *scanout = out;
+  *scanout++ = '\"';
+  while (*scanin != '\0')
+   {
+    if ((*scanin=='\'')||(*scanin=='\"')||(*scanin=='\\')) *(scanout++) = '\\';
+    *(scanout++) = *(scanin++);
+   }
+  *scanout++ = '\"';
+  *scanout++ = '\0';
+  return out;
  }
 

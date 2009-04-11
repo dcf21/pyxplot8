@@ -127,7 +127,7 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .colour        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR."       , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "DATASTYLE"    )==0)
-        if ((i=FetchSettingByName(setvalue,SW_STYLE_INT, SW_STYLE_STR ))>0) settings_graph_default.DataStyle     = i;
+        if ((i=FetchSettingByName(setvalue,SW_STYLE_INT, SW_STYLE_STR ))>0) settings_graph_default.DataStyle.style = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting DATASTYLE."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "DISPLAY"      )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .display       = i;
@@ -139,7 +139,7 @@ void ReadConfigFile(char *ConfigFname)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.FontSize      = (int)fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting FONTSIZE."     , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "FUNCSTYLE"    )==0)
-        if ((i=FetchSettingByName(setvalue,SW_STYLE_INT, SW_STYLE_STR ))>0) settings_graph_default.FuncStyle     = i;
+        if ((i=FetchSettingByName(setvalue,SW_STYLE_INT, SW_STYLE_STR ))>0) settings_graph_default.FuncStyle.style = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting FUNCSTYLE."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "GRID"         )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_graph_default.grid          = i;
