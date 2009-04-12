@@ -59,7 +59,7 @@ sigjmp_buf *sigjmp_FromSigInt = NULL;
 
 int main(int argc, char **argv)
  {
-  int i,fail;
+  int i,fail=0;
   int tempdirnumber = 1;
   char tempdirpath[FNAME_LENGTH];
   char *EnvDisplay;

@@ -387,6 +387,8 @@ void directive_show(Dict *command, int interactive)
   char          TextBuffer[SSTR_LENGTH];
   int           i=0;
 
+  interactive = ( interactive && (settings_session_default.colour == SW_ONOFF_ON) );
+
   DictLookup(command, "setting_list", NULL, NULL, (void **)&ShowList);
   if (ListLen(ShowList) == 0)
    { ppl_error(txt_show); }

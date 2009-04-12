@@ -155,7 +155,7 @@ int ProcessDirective(char *in, int interactive)
   if ((interactive==0) || (sigsetjmp(sigjmp_ToDirective, 1) == 0))  // Set up SIGINT handler, but only if this is an interactive session
    {
     if (interactive!=0) sigjmp_FromSigInt = &sigjmp_ToDirective;
-    status = ProcessDirective2(in);
+    status = ProcessDirective2(in, interactive);
    } else {
     ppl_error("\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;
@@ -165,7 +165,7 @@ int ProcessDirective(char *in, int interactive)
   return status;
  }
 
-int ProcessDirective2(char *in)
+int ProcessDirective2(char *in, int interactive)
  {
   //Dict *command;
   char text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
@@ -178,6 +178,12 @@ int ProcessDirective2(char *in)
   //directive_help(command,1);
 
   ppl_GetQuotedString("'This is a test quoted string'", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+
+  ppl_GetQuotedString("'x=%f y=%.3e d=%-6d e=%@s f=%d g=%s h=%x'%(1,2,2,3,\"foobar\")", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+
+  ppl_GetQuotedString("'x=%s !'%(\"Hello\")", text, 0, NULL, NULL, NULL, &errpos, ErrText);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
   return 0;

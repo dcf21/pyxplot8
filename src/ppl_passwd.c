@@ -36,8 +36,8 @@ struct passwd *UnixGetPwEntry()
   struct passwd *ptr;
 
   uid = getuid();
-  setpwent();
-  while ((ptr = getpwent()) != NULL)
+  setpwent(); // Memory leak which valgrind reveals here is probably okay; getpwent sets up a static variable with malloc
+  while ((ptr = getpwent()) != NULL) 
    if (ptr->pw_uid == uid) break;
   endpwent();
   return(ptr);
@@ -54,7 +54,7 @@ char *UnixGetHomeDir()
 char *UnixGetUserHomeDir(char *username)
  {
   struct passwd *ptr;
-  setpwent();
+  setpwent(); // Ditto memory leak comment above
   while ((ptr = getpwent()) != NULL)
    if (strcmp(ptr->pw_name , username) == 0) break;
   endpwent();

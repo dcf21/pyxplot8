@@ -33,6 +33,8 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_userspace.h"
+
 #define PPL_USERSPACE_NUMERIC 32000
 #define PPL_USERSPACE_STRING  32001
 
@@ -101,19 +103,28 @@ void ppl_UserSpace_SetFunc(char *name, char *value)
 
 #define MAX_STR_FORMAT_ITEMS 256
 
-void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *NamespaceVars, Dict *NamespaceFuncs, int *errpos, char *errtext)
+void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext)
  {
+  Dict *GlobalVars, *GlobalFuncs;
   char QuoteType;
-  char FormatString[LSTR_LENGTH];
+  char FormatString[LSTR_LENGTH]; // Used to store the string found between quotes, before applying the substitution operator
+  char FormatArg   [LSTR_LENGTH]; // Used to store string arguments in the %(...) part of a quoted string
+  char FormatToken [SSTR_LENGTH];
   int  pos      = start;
   int  outpos   = 0;
   int  UserData = -1;
   int  DataType = -1;
   char *VarData = NULL;
   int  pos2, CommaPositions[MAX_STR_FORMAT_ITEMS], NFormatItems;
+  int  i,j,k,l,ArgCount,RequiredArgs;
+  char AllowedFormats[] = "cdieEfgGosSxX%"; // These tokens are allowed after a % format specifier
 
-  if (NamespaceVars  == NULL) NamespaceVars  = _ppl_UserSpace_Vars;
-  if (NamespaceFuncs == NULL) NamespaceFuncs = _ppl_UserSpace_Funcs;
+  int    arg1i, arg2i; // Integers for passing to sprintf
+  double arg1d, arg2d; // Doubles for passing to sprintf
+  union {double d; int i; char *s; unsigned int u;} argf; // We pass this lump of memory to sprintf
+
+  GlobalVars  = _ppl_UserSpace_Vars;
+  GlobalFuncs = _ppl_UserSpace_Funcs;
 
   while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over preceding spaces
 
@@ -123,8 +134,17 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Namespa
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
     if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Unexpected trailing matter after variable name"); return; } // Have we used up as many characters as we were told we had to?
-    DictLookup(NamespaceVars, FormatString, &UserData, &DataType, (void **)&VarData);
-    if (VarData  ==                 NULL) { *errpos = start; strcpy(errtext, "No such variable"); return; }
+    DictLookup(Local2Vars, FormatString, &UserData, &DataType, (void **)&VarData);
+     if (VarData == NULL)
+      {
+       DictLookup(Local1Vars, FormatString, &UserData, &DataType, (void **)&VarData); // Try looking up variable in Local2, Local1 and Global, in that sequence
+       if (VarData == NULL) 
+        {
+         DictLookup(GlobalVars, FormatString, &UserData, &DataType, (void **)&VarData);
+         if (VarData == NULL)
+          { *errpos = start; strcpy(errtext, "No such variable"); return; }
+        }
+      }
     if (UserData != PPL_USERSPACE_STRING) { *errpos = start; strcpy(errtext, "Type error: this is a numeric variable where a string is expected"); return; }
     *errpos = -1;
     if ((end!=NULL)&&(*end<0)) *end=pos;
@@ -166,15 +186,94 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Namespa
        { *errpos = pos; strcpy(errtext, "Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
 
   // We have now read in a format string, and a bracketed list of format arguments
+  // See <http://www.cplusplus.com/reference/clibrary/cstdio/sprintf/>
+  for (i=j=ArgCount=0; FormatString[i]!='\0'; i++)
+   {
+    if (FormatString[i]!='%') { out[j++] = FormatString[i]; continue; }
+    k=i+1; // k looks ahead to see experimentally if syntax is right
+    RequiredArgs =1; // Normal %f like tokens require 1 argument
+    if ((FormatString[k]=='-')||(FormatString[k]=='-')||(FormatString[k]==' ')||(FormatString[k]=='#')) k++; // optional flag can be <+- #>
+    if (FormatString[k]=='*') { k++; RequiredArgs++; }
+    else while ((FormatString[k]>='0') && (FormatString[k]<='9')) k++; // length can be * or some digits
+    if (FormatString[k]=='.') // precision starts with a . and is followed by * or by digits
+     {
+      k++;
+      if (FormatString[k]=='*') { k++; RequiredArgs++; }
+      else while ((FormatString[k]>='0') && (FormatString[k]<='9')) k++; // length can be * or some digits
+     }
+    // We do not allow user to specify optional length flag, which could potentially be <hlL>
+
+    for (l=0; AllowedFormats[l]!='\0'; l++) if (FormatString[k]==AllowedFormats[l]) break;
+    if ((AllowedFormats[l]=='\0') || ((AllowedFormats[l]=='%')&&(FormatString[k-1]!='%')) || (RequiredArgs > NFormatItems-ArgCount))
+     { out[j++] = FormatString[i]; continue; } // Have not got correct syntax for a format specifier
+
+    if (AllowedFormats[l]=='%')
+     {
+      strcpy(out+j, "%"); // %% just produces a % character
+     } else {
+      StrSlice(FormatString, FormatToken, i, k+1);
+      if (RequiredArgs>1) // Length and/or precision was specified with a *, so we need to take an integer from the list of arguments
+       {
+        ppl_EvaluateAlgebra(in+pos , &arg1d, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext);
+        if (*errpos>=0) { *errpos += pos; return; }
+        arg1i = (int)arg1d;
+       }
+      if (RequiredArgs>2)
+       {
+        ppl_EvaluateAlgebra(in+pos , &arg2d, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], Local1Vars, Local2Vars, errpos, errtext);
+        if (*errpos>=0) { *errpos += pos; return; }
+        arg2i = (int)arg2d;
+       }
+
+      ArgCount += (RequiredArgs-1); // Fastforward ArgCount to point at the number or string argument that we're actually going to substitute
+      if ((AllowedFormats[l]=='c') || (AllowedFormats[l]=='s') || (AllowedFormats[l]=='S'))
+       {
+        ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext);
+        if (*errpos>=0) { *errpos += pos; return; }
+        argf.s = FormatArg;
+        if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s);
+        if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.s);
+        if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.s);
+       }
+      else
+       {
+        ppl_EvaluateAlgebra(in+pos , &argf.d, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext);
+        if (*errpos>=0) { *errpos += pos; return; }
+        if      ((AllowedFormats[l]=='d') || (AllowedFormats[l]=='i') || (AllowedFormats[l]=='o') || (AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
+         {
+          argf.i = (int)argf.d; // sprintf will expect to be passed an int
+          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i);
+          if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
+          if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
+         }
+        else if ((AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
+         {
+          argf.u = (unsigned int)argf.d; // sprintf will expect to be passed an unsigned int
+          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u);
+          if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u);
+          if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u);
+         }
+        else // otherwise, sprintf will expect a double
+         {
+          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d);
+          if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d);
+          if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d);
+         }
+       }
+      ArgCount++;
+     }
+    j += strlen(out+j);
+    i = k;
+   }
+  out[j]  = '\0';
   *errpos = -1;
   if ((end!=NULL)&&(*end<0)) *end=pos+pos2;
-  strcpy(out, FormatString);
   return;
  }
 
-void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, int *errpos, char *errtext)
+void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext)
  {
-  *out = 2.0;
+  *out = 61.0;
   return;
  }
 

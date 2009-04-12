@@ -223,10 +223,8 @@ char  *StrRemoveCompleteLine(char *in, char *out)
 
 char *StrSlice(char *in, char *out, int start, int end)
  {
-  char *scan;
-  int   pos;
-  scan = out;
-  pos  = 0;
+  char *scan = out;
+  int   pos  = 0;
   while ((pos<start) && (in[pos]!='\0')) pos++;
   while ((pos<end  ) && (in[pos]!='\0')) *(scan++) = in[pos++];
   *scan = '\0';
@@ -330,12 +328,20 @@ void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBrac
       continue;
      }
     else if ((in[inpos]=='\'') || (in[inpos]=='\"')) QuoteType     = in[inpos]; // Entering a quoted string
-    else if  (in[inpos]=='(')                        BracketLevel += 1;         // Entering a nested level of brackets
-    else if  (in[inpos]==')')                        { BracketLevel -= 1; if (BracketLevel == 0) break; }
-    else if ((in[inpos]==',') && (BracketLevel==1))
+    else if  (in[inpos]=='(')  // Entering a nested level of brackets
      {
-      if ((CommaPositions != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+commapos) = inpos;
-      commapos++;
+      BracketLevel += 1;
+      if (BracketLevel == 1)
+       if ((CommaPositions != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+(commapos++)) = inpos; // Put ( on comma list
+     }
+    else if  (in[inpos]==')')  // Leaving a nested level of brackets
+     {
+      BracketLevel -= 1;
+      if (BracketLevel == 0) break;
+     }
+    else if ((in[inpos]==',') && (BracketLevel==1)) // Found a new comma-separated item
+     {
+      if ((CommaPositions != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+(commapos++)) = inpos; // Put , on comma list
      }
    }
 
@@ -345,7 +351,8 @@ void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBrac
     if (ClosingBracketPos != NULL) *ClosingBracketPos = -1;
     return;
    } else {
-    if (Nargs             != NULL) *Nargs             = commapos;
+    if ((CommaPositions != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+(commapos++)) = inpos; // Put ) on comma list
+    if (Nargs             != NULL) *Nargs             = commapos-1; // There are N+1 arguments between N commas, but we've also counted ( and ).
     if (ClosingBracketPos != NULL) *ClosingBracketPos = inpos;
     return;
    }
@@ -370,7 +377,7 @@ int StrCmpNoCase(char *a, char *b)
 
 /* StrEscapify(): Inserts escape characters into strings before quote characters */
 
-char  *StrEscapify(char *in, char *out)
+char *StrEscapify(char *in, char *out)
  {
   char *scanin  = in;
   char *scanout = out;
