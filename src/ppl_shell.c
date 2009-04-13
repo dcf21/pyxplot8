@@ -168,7 +168,7 @@ int ProcessDirective(char *in, int interactive)
 int ProcessDirective2(char *in, int interactive)
  {
   //Dict *command;
-  char text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
+  char buffer[LSTR_LENGTH]="", text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
   int  errpos=-1;
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
   //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
@@ -177,13 +177,16 @@ int ProcessDirective2(char *in, int interactive)
   //DictAppendString(command, "topic", 0, "c set");
   //directive_help(command,1);
 
-  ppl_GetQuotedString("'This is a test quoted string'", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  strcpy(buffer, "'This is a test quoted string'");
+  ppl_GetQuotedString(buffer, text, 0, NULL, NULL, NULL, &errpos, ErrText, 0);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
-  ppl_GetQuotedString("'%e'%(4^36)", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  strcpy(buffer, "'%e'%(2*(3+5))");
+  ppl_GetQuotedString(buffer, text, 0, NULL, NULL, NULL, &errpos, ErrText, 0);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
-  ppl_GetQuotedString("'x=%s !'%(\"Hello\")", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  strcpy(buffer, "'x=%s !'%(\"Hello\")");
+  ppl_GetQuotedString(buffer, text, 0, NULL, NULL, NULL, &errpos, ErrText, 0);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
   return 0;
