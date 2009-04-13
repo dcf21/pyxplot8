@@ -31,5 +31,7 @@
 #define ALGEBRA_MAXLENGTH 512 // The maximum length of an algebraic expression
 #define ALGEBRA_MAXITEMS  128 // The number of calculated quantities we can store
 
+#define OPLIST_LEN 15
+
 #endif
 

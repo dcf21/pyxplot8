@@ -180,7 +180,7 @@ int ProcessDirective2(char *in, int interactive)
   ppl_GetQuotedString("'This is a test quoted string'", text, 0, NULL, NULL, NULL, &errpos, ErrText);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
-  ppl_GetQuotedString("'x=%f y=%.3e d=%-6d e=%@s f=%d g=%s h=%x'%(1,2,2,3,\"foobar\")", text, 0, NULL, NULL, NULL, &errpos, ErrText);
+  ppl_GetQuotedString("'%e'%(4^36)", text, 0, NULL, NULL, NULL, &errpos, ErrText);
   if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
 
   ppl_GetQuotedString("'x=%s !'%(\"Hello\")", text, 0, NULL, NULL, NULL, &errpos, ErrText);

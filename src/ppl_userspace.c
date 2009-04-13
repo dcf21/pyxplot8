@@ -293,9 +293,248 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
 
 // ppl_EvaluateAlgebra(): Evaluates an algebraic expression to return a double. All fields as above.
 
+// Order of precedence:
+//  1 f(x)
+//  2 ()
+//    [evaluate numerics and variables]
+//  3 minus signs
+//  4 **
+//  5 *  /  %
+//  6 +  -
+//  7 <<  >>
+//  8 <  <=  >=  >
+//  9 ==  !=  <>
+// 10 &
+// 11 ^
+// 12 |
+// 13 and
+// 14 or
+
+// StatusRow values 20-255 correspond to ResultBuffer values 0-235
+#define BUFFER_OFFSET 20
+
+#define MATCH_ONE(A)       (in[i]==A)
+#define MATCH_TWO(A,B)    ((in[i]==A)&&(in[i+1]==B))
+#define MATCH_THR(A,B,C)  ((in[i]==A)&&(in[i+1]==B)&&(in[i+2]==C))
+
+#define FETCHPREV(VARA,VARB,VARC)  { for (j=p-1,cj=StatusRow[p-1]; ((StatusRow[j]==cj)&&(j>0)); j--); if (cj<BUFFER_OFFSET) {*errpos=i; strcpy(errtext, "Internal Error: Trying to do arithmetic before numeric conversion"); return;}; VARA=j; VARB=(int)(cj-BUFFER_OFFSET); VARC=p-1; }
+#define FETCHNEXT(VARA,VARB,VARC)  { for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++); if ((cj=StatusRow[j])<BUFFER_OFFSET) {*errpos=i; strcpy(errtext, "Internal Error: Trying to do arithmetic before numeric conversion"); return;}; for (k=j; StatusRow[k]==cj; k++); VARA=j; VARB=(int)(cj-BUFFER_OFFSET); VARC=k; }
+#define SETSTATUS(BEG,END,VAL)     { ci = (unsigned char)(VAL+BUFFER_OFFSET); for (j=BEG;j<END;j++) StatusRow[j]=ci; }
+
 void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext)
  {
-  *out = 61.0;
+  unsigned char OpList[OPLIST_LEN];           // A list of what operations this expression contains
+  unsigned char StatusRow[ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
+  double ResultBuffer[ALGEBRA_MAXITEMS];      // A buffer of temporary numerical results
+  int len, CalculatedEnd;
+  int i,p,j,k;
+  int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
+  unsigned char ci,cj;
+  int bufpos = 0;
+
+  *errpos = -1;
+  ppl_GetExpression(in+start, &len, 0, StatusRow, OpList, errpos, errtext);
+  if (*errpos > 0) { (*errpos) += start; return; }
+  CalculatedEnd = start + len;
+  if ((end != NULL) && (*end >  0) && (CalculatedEnd < *end)) { printf("%d %d %d\n",start, CalculatedEnd,*end); *errpos=CalculatedEnd; strcpy(errtext,"Syntax Error: Unexpected trailing matter after algebraic expression"); return; }
+  if ((end != NULL) && (*end <= 0)) *end = CalculatedEnd;
+
+  // PHASE  1: EVALUATION OF FUNCTIONS
+  if (OpList[1]!=0) for (i=0;i<len-1;i++) if ((StatusRow[i]==8)&&(StatusRow[i+1]==3))
+   {
+   }
+  // PHASE  2: EVALUATION OF BRACKETED EXPRESSIONS
+  if (OpList[2]!=0) for (i=0;i<len;i++) if (StatusRow[i]==3)
+   {
+   }
+  // PHASE 2b: EVALUATION OF ALL NUMERICS AND VARIABLES
+  for (i=0;i<len;i++) if (StatusRow[i]==6)
+   {
+    ResultBuffer[bufpos] = GetFloat(in+start+i, &j);
+    for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
+    j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
+    if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant"); return; }
+    bufpos++;
+   }
+  for (i=0;i<len;i++) if (StatusRow[i]==8)
+   {
+   }
+  // PHASE  3: EVALUATION OF MINUS SIGNS
+  if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)
+   {
+    FETCHNEXT(next_start, next_bufno, next_end);
+    ResultBuffer[next_bufno] *= -1;
+    SETSTATUS(p, next_start, next_bufno);
+    i = start + next_start;
+   }
+  // PHASE  4: EVALUATION OF **
+  if (OpList[4]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if (MATCH_TWO('*','*'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ResultBuffer[prev_bufno] = pow(ResultBuffer[prev_bufno], ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE  5: EVALUATION OF *  /  %
+  if (OpList[5]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if ((MATCH_ONE('*'))||(MATCH_ONE('/'))||(MATCH_ONE('%')))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      if      (MATCH_ONE('*')) ResultBuffer[prev_bufno] *= ResultBuffer[next_bufno];
+      else if (MATCH_ONE('/')) ResultBuffer[prev_bufno] /= ResultBuffer[next_bufno];
+      else if (MATCH_ONE('%')) ResultBuffer[prev_bufno] -= floor(ResultBuffer[prev_bufno] / ResultBuffer[next_bufno]) * ResultBuffer[next_bufno];
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE  6: EVALUATION OF +  -
+  if (OpList[6]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if ((MATCH_ONE('+'))||(MATCH_ONE('-')))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      if      (MATCH_ONE('+')) ResultBuffer[prev_bufno] += ResultBuffer[next_bufno];
+      else if (MATCH_ONE('-')) ResultBuffer[prev_bufno] -= ResultBuffer[next_bufno];
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start; 
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE  7: EVALUATION OF << >>
+  if (OpList[7]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if ((MATCH_TWO('<','<'))||(MATCH_TWO('>','>')))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      if      (MATCH_ONE('<')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] << (int)ResultBuffer[next_bufno]);
+      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] << (int)ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE  8: EVALUATION OF < <= >= >
+  if (OpList[8]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if ((MATCH_ONE('<'))||(MATCH_ONE('>')))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] <= ResultBuffer[next_bufno]);
+      else if (MATCH_TWO('>','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] >= ResultBuffer[next_bufno]);
+      else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] <  ResultBuffer[next_bufno]);
+      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] <  ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE  9: EVALUATION OF == !=  <>
+  if (OpList[9]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if ((MATCH_TWO('=','='))||(MATCH_TWO('!','='))||(MATCH_TWO('<','>')))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      if      (MATCH_TWO('=','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] == ResultBuffer[next_bufno]);
+      else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] != ResultBuffer[next_bufno]);
+      else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] != ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE 10: EVALUATION OF &
+  if (OpList[10]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if (MATCH_ONE('&'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] & (int)ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE 11: EVALUATION OF ^
+  if (OpList[11]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if (MATCH_ONE('^'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] ^ (int)ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE 12: EVALUATION OF |
+  if (OpList[12]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if (MATCH_ONE('|'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] | (int)ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE 13: EVALUATION OF and
+  if (OpList[13]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if (MATCH_THR('a','n','d'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] && (int)ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE 14: EVALUATION OF or
+  if (OpList[14]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+   {
+    if (MATCH_TWO('o','r'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] || (int)ResultBuffer[next_bufno]);
+      SETSTATUS(prev_end, next_end, prev_bufno);
+      i = start + next_start;
+     } else {
+      while (StatusRow[i]==7) i++;
+     }
+   }
+  // PHASE 15: RETURN RESULT TO USER
+  for (i=0;i<len;i++) if (StatusRow[i] >= BUFFER_OFFSET) { *out = ResultBuffer[ StatusRow[i] - BUFFER_OFFSET ]; return; }
+  for (i=0;i<len;i++) printf("%c",(StatusRow[i]+'A')); printf("\n"); // DEBUG LINE
+  *errpos = start;
+  strcpy(errtext,"Internal Error: ppl_EvaluateAlgebra failed to evaluate this expression"); // Oops
   return;
  }
 
@@ -325,54 +564,74 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
 // 7 O can be followed by  BDMN V not by E    O
 // 8 V can be followed by EB   O  not by   DMN V
 
-#define MATCH_ONE(A)      (in[scanpos]==A)
-#define MATCH_TWO(A,B)   ((in[scanpos]==A)&&(in[scanpos+1]==B))
-#define MATCH_THR(A,B,C) ((in[scanpos]==A)&&(in[scanpos+1]==B)&&(in[scanpos+2]==C))
-#define MATCH_THRS(A,B,C) ((in[scanpos]==A)&&(in[scanpos+1]==B)&&(in[scanpos+2]==C)&&(!isalpha(in[scanpos+3])))
+#define MATCH_TRACK_ONE(A,OPN)      ((in[scanpos]==A)                                                                    && (OpList[OPN]=1,1))
+#define MATCH_TRACK_TWO(A,B,OPN)    ((in[scanpos]==A)&&(in[scanpos+1]==B)                                                && (OpList[OPN]=1,1))
+#define MATCH_TRACK_THR(A,B,C,OPN)  ((in[scanpos]==A)&&(in[scanpos+1]==B)&&(in[scanpos+2]==C)                            && (OpList[OPN]=1,1))
+#define MATCH_TRACK_THRS(A,B,C,OPN) ((in[scanpos]==A)&&(in[scanpos+1]==B)&&(in[scanpos+2]==C)&&(!isalpha(in[scanpos+3])) && (OpList[OPN]=1,1))
 
-#define NEWSTATE(L) state=trial; for (i=0;i<L;i++) status[scanpos++]=(int)(state-'1')
-#define SAMESTATE                                  status[scanpos++]=(int)(state-'1')
+#define PGE_OVERFLOW { *errpos = scanpos; strcpy(errtext, "Overflow Error: Algebraic expression too long"); *end = -1; return; }
 
-void ppl_GetExpression(char *in, int *end, int dollar_allowed, int *status, int *errpos, char *errtext)
+#define NEWSTATE(L) state=trial; for (i=0;i<L;i++) { status[scanpos++]=(unsigned char)(state-'0') ; if (scanpos>=ALGEBRA_MAXLENGTH) PGE_OVERFLOW; }
+#define SAMESTATE                                  { status[scanpos++]=(unsigned char)(state-'0') ; if (scanpos>=ALGEBRA_MAXLENGTH) PGE_OVERFLOW; }
+
+void ppl_GetExpression(char *in, int *end, int DollarAllowed, unsigned char *status, unsigned char *OpList, int *errpos, char *errtext)
  {
-  static char *AllowedNext[] = {"34568","","72","368","72","34568","34568","372"};
+  static char *AllowedNext[] = {"34568","","72","368","34568","72","34568","372"};
+  static unsigned char DummyOpList[OPLIST_LEN];
   char state='1', oldstate;
   char trial;
   int scanpos=0, trialpos, i, j; // scanpos scans through in.
+
+  if (OpList==NULL) OpList = DummyOpList; // OpList is a table of which operations we've found, for speeding up evaluation. If this output is not requested, we put it in a dummy.
+  for (i=0;i<OPLIST_LEN;i++) OpList[i]=0;
 
   while (state != '2')
    {
     oldstate = state;
     while ((in[scanpos]!='\0') && (in[scanpos]<=' ')) { SAMESTATE; } // Sop up whitespace
 
-    for (trialpos=0; ((trial=AllowedNext[(int)(state-'1')][trialpos])!='\0'); )
+    for (trialpos=0; ((trial=AllowedNext[(int)(state-'1')][trialpos])!='\0'); trialpos++)
      {
       if      (trial=='2') // E
        { NEWSTATE(0); }
-      else if ((trial=='3') && MATCH_ONE('(')) // B
+      else if ((trial=='3') && MATCH_TRACK_ONE('(', 0)) // B
        {
+        if (state=='8') OpList[1]=1; else OpList[2]=1; // We either have a bracketed expression, or a function call
         StrBracketMatch(in+scanpos, NULL, NULL, &j, 0);
-        if (j>0) { NEWSTATE( (j-scanpos) ); }
+        if (j>0) { j++; NEWSTATE(j); }
         else     { *errpos = scanpos; strcpy(errtext, "Syntax Error: Mismatched bracket"); *end = -1; return; }
        }
-      else if ((trial=='4') && MATCH_ONE('$')) // D
+      else if ((trial=='4') && (DollarAllowed != 0) && MATCH_TRACK_ONE('$', 0)) // D
        { NEWSTATE(1); }
       else if (trial=='5') // M
        {
-        if (in[scanpos]=='-')             { NEWSTATE(1); }
-        else if (MATCH_THRS('n','o','t')) { NEWSTATE(3); }
+        if      (MATCH_TRACK_ONE ('-', 3))         { NEWSTATE(1); }
+        else if (MATCH_TRACK_THRS('n','o','t', 3)) { NEWSTATE(3); }
        }
       else if (trial=='6') // N
        {
-        i=scanpos;
+        j=scanpos; i=0;
+        if ((in[j]=='+')||(in[j]=='-')) j++;
+        while (isdigit(in[j])) { j++; i=1; }
+        if (in[j]=='.') { j++; while (isdigit(in[j])) { j++; i=1; } }
+        if (i==0) continue;
+        if ((in[j]=='e')||(in[j]=='E'))
+         {
+          j++;
+          if ((in[j]=='+')||(in[j]=='-')) j++;
+          while (isdigit(in[j])) j++;
+         }
+        j-=scanpos; NEWSTATE(j);
        }
       else if (trial=='7') // O
        {
-        if (MATCH_THRS('a','n','d'))
+        if (MATCH_TRACK_THRS('a','n','d',13))
          { NEWSTATE(3); }
-        else if (MATCH_TWO('*','*')||MATCH_TWO('<','<')||MATCH_TWO('>','>')||MATCH_TWO('<','=')||MATCH_TWO('>','=')||MATCH_TWO('=','=')||MATCH_TWO('!','=')||MATCH_TWO('o','r')||MATCH_TWO('<','>'))
+        else if (MATCH_TRACK_TWO('*','*', 4)||MATCH_TRACK_TWO('<','<', 7)||MATCH_TRACK_TWO('>','>', 7)||MATCH_TRACK_TWO('<','=', 8)||MATCH_TRACK_TWO('>','=', 8)||
+                 MATCH_TRACK_TWO('=','=', 9)||MATCH_TRACK_TWO('!','=', 9)||MATCH_TRACK_TWO('o','r',14)||MATCH_TRACK_TWO('<','>', 9))
          { NEWSTATE(2); }
-        else if (MATCH_ONE('+')||MATCH_ONE('-')||MATCH_ONE('*')||MATCH_ONE('/')||MATCH_ONE('%')||MATCH_ONE('&')||MATCH_ONE('|')||MATCH_ONE('^')||MATCH_ONE('<')||MATCH_ONE('>'))
+        else if (MATCH_TRACK_ONE('+', 6)||MATCH_TRACK_ONE('-', 6)||MATCH_TRACK_ONE('*', 5)||MATCH_TRACK_ONE('/', 5)||MATCH_TRACK_ONE('%', 5)||MATCH_TRACK_ONE('&',10)||
+                 MATCH_TRACK_ONE('|',12)||MATCH_TRACK_ONE('^',11)||MATCH_TRACK_ONE('<', 8)||MATCH_TRACK_ONE('>', 8))
          { NEWSTATE(1); }
        }
       else if ((trial=='8') && (isalpha(in[scanpos]))) // V
@@ -382,26 +641,32 @@ void ppl_GetExpression(char *in, int *end, int dollar_allowed, int *status, int 
        }
       if (state != oldstate) break;
      }
+    if (state == oldstate) break; // We've got stuck
    }
   if (state == '2') // We reached state 2(E)... end of expression
    {
     *errpos = -1; *errtext='\0';
+    status[scanpos]=0;
     *end = scanpos;
+    for (i=0;i<scanpos;i++) printf("%c",in[i]); printf("\n"); // DEBUG LINES
+    for (i=0;i<scanpos;i++) printf("%c",(status[i]+'0')); printf("\n");
+    //for (i=0;i<OPLIST_LEN;i++) printf("%c",(OpList[i]+'0')); printf("\n");
     return;
    }
   *errpos = scanpos; // Error; we didn't reach state 2(E)
   *end    = -1;
   // Now we need to construct an error string
   strcpy(errtext,"Syntax Error: At this point, was expecting "); i=strlen(errtext); j=0;
-  for (trialpos=0; ((trial=AllowedNext[(int)(state-'1')][trialpos])!='\0'); )
+  for (trialpos=0; ((trial=AllowedNext[(int)(state-'1')][trialpos])!='\0'); trialpos++ )
    {
+    if ((trial=='4') && (DollarAllowed == 0)) continue;
     if (j!=0) {strcpy(errtext+i," or "); i+=strlen(errtext+i);} else j=1;
-    if      (trial=='2') { strcpy(errtext+i,"a bracketed expression"); i+=strlen(errtext+i); }
-    else if (trial=='3') { strcpy(errtext+i,"a dollar"); i+=strlen(errtext+i); }
-    else if (trial=='4') { strcpy(errtext+i,"a minus sign"); i+=strlen(errtext+i); }
-    else if (trial=='5') { strcpy(errtext+i,"a numeric value"); i+=strlen(errtext+i); }
-    else if (trial=='6') { strcpy(errtext+i,"an operator"); i+=strlen(errtext+i); }
-    else if (trial=='7') { strcpy(errtext+i,"a variable or function name"); i+=strlen(errtext+i); }
+    if      (trial=='3') { strcpy(errtext+i,"a bracketed expression"); i+=strlen(errtext+i); }
+    else if (trial=='4') { strcpy(errtext+i,"a dollar"); i+=strlen(errtext+i); }
+    else if (trial=='5') { strcpy(errtext+i,"a minus sign"); i+=strlen(errtext+i); }
+    else if (trial=='6') { strcpy(errtext+i,"a numeric value"); i+=strlen(errtext+i); }
+    else if (trial=='7') { strcpy(errtext+i,"an operator"); i+=strlen(errtext+i); }
+    else if (trial=='8') { strcpy(errtext+i,"a variable or function name"); i+=strlen(errtext+i); }
    }
   strcpy(errtext+i,"."); i+=strlen(errtext+i);
   return;
