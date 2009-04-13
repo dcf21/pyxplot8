@@ -26,5 +26,10 @@
 
 #define PATHLINK "/"
 
+#define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator
+
+#define ALGEBRA_MAXLENGTH 512 // The maximum length of an algebraic expression
+#define ALGEBRA_MAXITEMS  128 // The number of calculated quantities we can store
+
 #endif
 

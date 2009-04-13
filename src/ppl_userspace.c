@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <math.h>
 
 #include <gsl/gsl_sf.h>
@@ -33,7 +34,12 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_constants.h"
 #include "ppl_userspace.h"
+
+// -------------------------------------------------------------------
+// Data structures used for storing the user's variables and functions
+// -------------------------------------------------------------------
 
 #define PPL_USERSPACE_NUMERIC 32000
 #define PPL_USERSPACE_STRING  32001
@@ -101,7 +107,17 @@ void ppl_UserSpace_SetFunc(char *name, char *value)
   return;
  }
 
-#define MAX_STR_FORMAT_ITEMS 256
+// ---------------------------------------------------------------------------------
+// ppl_GetQuotedString(): Extract a string from an input of the form "...." % (....)
+//
+// in: pointer to string from which quoted string is to be extracted
+// out: string output is written here
+// start: start scanning at in+start
+// end: If NULL, does nothing. If *end>0, we must use all characters up to this point. If *end<0, last character of string is written here
+// Local?Vars: Local variables which take precedence over global variables. 2 takes precedence over 1
+// errpos: Set >0 if an error is found at (in+errpos).
+// errtext: Error messages are written here
+// ---------------------------------------------------------------------------------
 
 void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext)
  {
@@ -133,7 +149,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
     while ((in[pos]>' ') && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
-    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Unexpected trailing matter after variable name"); return; } // Have we used up as many characters as we were told we had to?
+    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name"); return; } // Have we used up as many characters as we were told we had to?
     DictLookup(Local2Vars, FormatString, &UserData, &DataType, (void **)&VarData);
      if (VarData == NULL)
       {
@@ -145,7 +161,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
           { *errpos = start; strcpy(errtext, "No such variable"); return; }
         }
       }
-    if (UserData != PPL_USERSPACE_STRING) { *errpos = start; strcpy(errtext, "Type error: this is a numeric variable where a string is expected"); return; }
+    if (UserData != PPL_USERSPACE_STRING) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected"); return; }
     *errpos = -1;
     if ((end!=NULL)&&(*end<0)) *end=pos;
     strcpy(out, VarData);
@@ -162,13 +178,13 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
     FormatString[outpos++] = in[pos];
    }
   FormatString[outpos] = '\0';
-  if (in[pos]!=QuoteType) { *errpos = start; strcpy(errtext, "Mismatched quote"); return; }
+  if (in[pos]!=QuoteType) { *errpos = start; strcpy(errtext, "Syntax Error: Mismatched quote"); return; }
   while ((in[++pos]>'\0') && (in[pos]<=' ')); // Fast-forward over trailing spaces
 
   // We have a quoted string with no % operator after it
   if (in[pos]!='%')
    {
-    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
+    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
     *errpos = -1;
     if ((end!=NULL)&&(*end<0)) *end=pos;
     strcpy(out, FormatString);
@@ -178,12 +194,12 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
   // We have read a format string, but have a % operator acting upon it
   pos++; // Skip over % character
   while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over preceding spaces
-  if (in[pos]!='(') { *errpos = pos; strcpy(errtext, "Was expecting an opening bracket"); return; }
+  if (in[pos]!='(') { *errpos = pos; strcpy(errtext, "Syntax Error: An opening bracket was expected here"); return; }
   StrBracketMatch(in+pos, CommaPositions, &NFormatItems, &pos2, MAX_STR_FORMAT_ITEMS);
-  if (pos2<0) { *errpos = pos; strcpy(errtext, "Mismatched bracket"); return; }
-  if (NFormatItems>=MAX_STR_FORMAT_ITEMS) { *errpos = pos; strcpy(errtext, "Too many string formatting arguments"); return; }
+  if (pos2<0) { *errpos = pos; strcpy(errtext, "Syntax Error: Mismatched bracket"); return; }
+  if (NFormatItems>=MAX_STR_FORMAT_ITEMS) { *errpos = pos; strcpy(errtext, "Overflow Error: Too many string formatting arguments"); return; }
   if ((end!=NULL)&&(*end>0)&&(pos+pos2<*end))
-       { *errpos = pos; strcpy(errtext, "Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
+       { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
 
   // We have now read in a format string, and a bracketed list of format arguments
   // See <http://www.cplusplus.com/reference/clibrary/cstdio/sprintf/>
@@ -271,9 +287,123 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
   return;
  }
 
+// ---------------------------------------------
+// Functions for analysing algebraic expressions
+// ---------------------------------------------
+
+// ppl_EvaluateAlgebra(): Evaluates an algebraic expression to return a double. All fields as above.
+
 void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext)
  {
   *out = 61.0;
+  return;
+ }
+
+// ppl_GetExpression(): Extracts a syntactically complete algebraic expression.
+
+// end -- This is an output, and returns the end of the algebraic expression found
+// dollar_allowed -- Indicates whether a dollar-sign is an allowable character in variable names
+// status -- If non-NULL, the atom found at each character position is written here
+
+// Go through string, spotting atoms from the following list:
+
+// 1 S -- the beginning of the string
+// 2 E -- the end of the expression
+// 3 B -- a bracketed () series of characters
+// 4 D -- a dollar sign -- only allowed in using expressions in the plot command as special variable name
+// 5 M -- a minus sign before a numeric value, variable name, or ()
+// 6 N -- a numerical value, e.g. 1.2e-34
+// 7 O -- an operator, + - * ** / % << >> & | ^ < > <= >= == != <>
+// 8 V -- a variable name
+
+// 1 S can be followed by  BDMN V not by E    O
+// 2 E
+// 3 B can be followed by E    O  not by  BDMN V
+// 4 D can be followed by  B  N V not by E DM O
+// 5 M can be followed by  BD N V not by E  M O
+// 6 N can be followed by E    O  not by  BDMN V
+// 7 O can be followed by  BDMN V not by E    O
+// 8 V can be followed by EB   O  not by   DMN V
+
+#define MATCH_ONE(A)      (in[scanpos]==A)
+#define MATCH_TWO(A,B)   ((in[scanpos]==A)&&(in[scanpos+1]==B))
+#define MATCH_THR(A,B,C) ((in[scanpos]==A)&&(in[scanpos+1]==B)&&(in[scanpos+2]==C))
+#define MATCH_THRS(A,B,C) ((in[scanpos]==A)&&(in[scanpos+1]==B)&&(in[scanpos+2]==C)&&(!isalpha(in[scanpos+3])))
+
+#define NEWSTATE(L) state=trial; for (i=0;i<L;i++) status[scanpos++]=(int)(state-'1')
+#define SAMESTATE                                  status[scanpos++]=(int)(state-'1')
+
+void ppl_GetExpression(char *in, int *end, int dollar_allowed, int *status, int *errpos, char *errtext)
+ {
+  static char *AllowedNext[] = {"34568","","72","368","72","34568","34568","372"};
+  char state='1', oldstate;
+  char trial;
+  int scanpos=0, trialpos, i, j; // scanpos scans through in.
+
+  while (state != '2')
+   {
+    oldstate = state;
+    while ((in[scanpos]!='\0') && (in[scanpos]<=' ')) { SAMESTATE; } // Sop up whitespace
+
+    for (trialpos=0; ((trial=AllowedNext[(int)(state-'1')][trialpos])!='\0'); )
+     {
+      if      (trial=='2') // E
+       { NEWSTATE(0); }
+      else if ((trial=='3') && MATCH_ONE('(')) // B
+       {
+        StrBracketMatch(in+scanpos, NULL, NULL, &j, 0);
+        if (j>0) { NEWSTATE( (j-scanpos) ); }
+        else     { *errpos = scanpos; strcpy(errtext, "Syntax Error: Mismatched bracket"); *end = -1; return; }
+       }
+      else if ((trial=='4') && MATCH_ONE('$')) // D
+       { NEWSTATE(1); }
+      else if (trial=='5') // M
+       {
+        if (in[scanpos]=='-')             { NEWSTATE(1); }
+        else if (MATCH_THRS('n','o','t')) { NEWSTATE(3); }
+       }
+      else if (trial=='6') // N
+       {
+        i=scanpos;
+       }
+      else if (trial=='7') // O
+       {
+        if (MATCH_THRS('a','n','d'))
+         { NEWSTATE(3); }
+        else if (MATCH_TWO('*','*')||MATCH_TWO('<','<')||MATCH_TWO('>','>')||MATCH_TWO('<','=')||MATCH_TWO('>','=')||MATCH_TWO('=','=')||MATCH_TWO('!','=')||MATCH_TWO('o','r')||MATCH_TWO('<','>'))
+         { NEWSTATE(2); }
+        else if (MATCH_ONE('+')||MATCH_ONE('-')||MATCH_ONE('*')||MATCH_ONE('/')||MATCH_ONE('%')||MATCH_ONE('&')||MATCH_ONE('|')||MATCH_ONE('^')||MATCH_ONE('<')||MATCH_ONE('>'))
+         { NEWSTATE(1); }
+       }
+      else if ((trial=='8') && (isalpha(in[scanpos]))) // V
+       {
+        NEWSTATE(1);
+        while ((isalnum(in[scanpos])) || (in[scanpos]=='_')) { SAMESTATE; }
+       }
+      if (state != oldstate) break;
+     }
+   }
+  if (state == '2') // We reached state 2(E)... end of expression
+   {
+    *errpos = -1; *errtext='\0';
+    *end = scanpos;
+    return;
+   }
+  *errpos = scanpos; // Error; we didn't reach state 2(E)
+  *end    = -1;
+  // Now we need to construct an error string
+  strcpy(errtext,"Syntax Error: At this point, was expecting "); i=strlen(errtext); j=0;
+  for (trialpos=0; ((trial=AllowedNext[(int)(state-'1')][trialpos])!='\0'); )
+   {
+    if (j!=0) {strcpy(errtext+i," or "); i+=strlen(errtext+i);} else j=1;
+    if      (trial=='2') { strcpy(errtext+i,"a bracketed expression"); i+=strlen(errtext+i); }
+    else if (trial=='3') { strcpy(errtext+i,"a dollar"); i+=strlen(errtext+i); }
+    else if (trial=='4') { strcpy(errtext+i,"a minus sign"); i+=strlen(errtext+i); }
+    else if (trial=='5') { strcpy(errtext+i,"a numeric value"); i+=strlen(errtext+i); }
+    else if (trial=='6') { strcpy(errtext+i,"an operator"); i+=strlen(errtext+i); }
+    else if (trial=='7') { strcpy(errtext+i,"a variable or function name"); i+=strlen(errtext+i); }
+   }
+  strcpy(errtext+i,"."); i+=strlen(errtext+i);
   return;
  }
 
