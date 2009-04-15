@@ -141,7 +141,8 @@ int main(int argc, char **argv)
   if (sigsetjmp(sigjmp_ToMain, 1) == 0)
    {
     sigjmp_FromSigInt = &sigjmp_ToMain;
-    signal(SIGINT, SigIntHandler);
+    if (signal(SIGINT, SIG_IGN)!=SIG_IGN) signal(SIGINT, SigIntHandler);
+    signal(SIGPIPE, SIG_IGN);
 
     // Wait for temporary directory to appear, and change directory into it
     if (DEBUG) ppl_log("Waiting for temporary directory to appear.");

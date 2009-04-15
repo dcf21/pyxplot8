@@ -350,6 +350,7 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
   // PHASE  2: EVALUATION OF BRACKETED EXPRESSIONS
   if (OpList[2]!=0) for (i=0;i<len;i++) if (StatusRow[i]==3)
    {
+    j=-1;
     ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
     if (*errpos > 0) { (*errpos) += start+i; return; }
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;

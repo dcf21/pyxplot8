@@ -88,6 +88,7 @@ void  InitialiseCSP()
 
   // Make all log messages appear to come from the CSP
   sprintf(ppl_error_source, "CSP%6d", getpid());
+  signal(SIGINT, SIG_IGN); // Ignore SIGINT
   if (setpgid( getpid() , getpid() ) < 0) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
 
   // Make temporary working directory
