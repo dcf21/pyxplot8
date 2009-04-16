@@ -179,6 +179,7 @@ int *_fastmalloc_block_alloc_ptr;
 
 // Keep statistics on numbers of malloc calls
 int _fastmalloc_callcount;
+double _fastmalloc_bytecount; // A 32-bit int might overflow...
 int _fastmalloc_malloccount;
 
 static int _fastmalloc_initialised = 0;
@@ -199,6 +200,7 @@ void fastmalloc_init()
     _fastmalloc_block_alloc_ptr[j] =-1;
    }
   _fastmalloc_callcount = 0;
+  _fastmalloc_bytecount = 0.0;
   _fastmalloc_malloccount = 0;
   _fastmalloc_initialised = 1;
  }
@@ -207,7 +209,7 @@ void fastmalloc_close()
  {
   int j;
   if (_fastmalloc_initialised == 0) return;
-  if (DEBUG) { sprintf(temp_merr_string, "FastMalloc shutting down: Reduced %d calls to fastmalloc to %d calls to malloc.", _fastmalloc_callcount, _fastmalloc_malloccount); (*mem_log)(temp_merr_string); }
+  if (DEBUG) { sprintf(temp_merr_string, "FastMalloc shutting down: Reduced %d calls to fastmalloc, for a total of %.0f bytes, to %d calls to malloc.", _fastmalloc_callcount, _fastmalloc_bytecount, _fastmalloc_malloccount); (*mem_log)(temp_merr_string); }
   fastmalloc_freeall(0);
 
   for (j=0; j<PPL_MAX_CONTEXTS; j++) free(_fastmalloc_bufferlist[j]);
@@ -225,6 +227,7 @@ void *fastmalloc(int context, int size)
   void  *out;
 
   _fastmalloc_callcount++;
+  _fastmalloc_bytecount += size;
 
   if ((context<0) || (context>=PPL_MAX_CONTEXTS))
    { sprintf(temp_merr_string, "FastMalloc asked to malloc memory in an unrecognised context %d.", context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
