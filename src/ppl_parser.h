@@ -25,9 +25,9 @@
 #include "ListTools/lt_list.h"
 #include "ListTools/lt_dict.h"
 
-void  ppl_commands_read();
-Dict *parse            (char *line);
-void  parse_descend    (char *line, int linepos, char *expecting, int algebra_linepos, char *algebra_error, List *command, int match, Dict *dict);
+void   ppl_commands_read();
+Dict  *parse             (char *line);
+char **ppl_rl_completion (const char *text, int start, int end);
 
 #endif
 

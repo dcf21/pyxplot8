@@ -39,13 +39,14 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int   aspect, AutoAspect, AxesColour, FontSize, grid, GridAxisX, GridAxisY, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ int   aspect, AutoAspect, AxesColour, FontSize, grid, GridAxisX, GridAxisY, GridAxisZ, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
  float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, KeyXOff, KeyYOff, LineWidth, OriginX, OriginY, PointSize, PointLineWidth, TitleXOff, TitleYOff, width;
  char  title[FNAME_LENGTH];
  with_words DataStyle, FuncStyle;
  } settings_graph;
 
 typedef struct settings_axis {
+ unsigned char enabled;
  int MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
  float LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
  char label[FNAME_LENGTH];

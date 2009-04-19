@@ -41,8 +41,8 @@ LINK    = $(CC) -Wall -g `xml2-config --libs`   -lm -lgsl -lgslcblas -lreadline 
 
 OPTIMISATION = -O0
 
-DEBUG   = -D DEBUG=1 -D MEMDEBUG=1
-NODEBUG = -D DEBUG=0 -D MEMDEBUG=0
+DEBUG   = -D DEBUG=1 -D MEMDEBUG1=1 -D MEMDEBUG2=1
+NODEBUG = -D DEBUG=0 -D MEMDEBUG1=0 -D MEMDEBUG2=0
 
 SRCDIR  = src
 OBJDIR  = obj

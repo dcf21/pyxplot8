@@ -24,6 +24,8 @@
 
 #define PALETTE_LENGTH 512
 
+#define MAX_AXES 512
+
 #define PATHLINK "/"
 
 #define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator

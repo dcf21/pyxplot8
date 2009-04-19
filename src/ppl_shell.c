@@ -94,6 +94,7 @@ void InteractiveSession()
      }
    } else {
     ppl_error("\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
+    if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
    }
   lt_AscendOutOfContext(memcontext);
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
@@ -148,46 +149,42 @@ void ProcessPyXPlotScript(char *input)
 
 int ProcessDirective(char *in, int interactive)
  {
-  int memcontext;
-  int status;
+  int   memcontext;
+  int   status;
+  Dict *command;
 
   memcontext = lt_DescendIntoNewContext();
   if ((interactive==0) || (sigsetjmp(sigjmp_ToDirective, 1) == 0))  // Set up SIGINT handler, but only if this is an interactive session
    {
     if (interactive!=0) sigjmp_FromSigInt = &sigjmp_ToDirective;
-    status = ProcessDirective2(in, interactive);
+    command = parse(in);
+    status  = ProcessDirective2(in, command, interactive);
    } else {
     ppl_error("\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;
    }
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   lt_AscendOutOfContext(memcontext);
+  if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
   return status;
  }
 
-int ProcessDirective2(char *in, int interactive)
+int ProcessDirective2(char *in, Dict *command, int interactive)
  {
-  //Dict *command;
-  char buffer[LSTR_LENGTH]="", text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
-  int  errpos=-1;
+  char buffer[LSTR_LENGTH]=""; //, text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
+  //int  errpos=-1;
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
   //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
 
+  //if (chdir(settings_session_default.tempdir < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
+
   //command = DictInit();
   //DictAppendString(command, "topic", 0, "c set");
-  //directive_help(command,1);
+  //directive_help(command,interactive);
 
-  strcpy(buffer, "'This is a test quoted string'");
-  ppl_GetQuotedString(buffer, text, 0, NULL, NULL, NULL, &errpos, ErrText, 0);
-  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+  //directive_show2("settings",interactive);
 
-  strcpy(buffer, "'%e'%(2*(3+5))");
-  ppl_GetQuotedString(buffer, text, 0, NULL, NULL, NULL, &errpos, ErrText, 0);
-  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
-
-  strcpy(buffer, "'x=%s !'%(\"Hello\")");
-  ppl_GetQuotedString(buffer, text, 0, NULL, NULL, NULL, &errpos, ErrText, 0);
-  if (errpos>=0) ppl_error(ErrText); else ppl_report(text);
+  ppl_report(DictPrint(command, buffer, LSTR_LENGTH));
 
   return 0;
  }

@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ListTools/lt_dict.h"
+
 /* Strings defined in ppl_commands.c */
 extern char ppl_commands[];
 
@@ -35,7 +37,7 @@ extern int  PPL_SHELL_EXITING;
 void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input);
 int         ProcessDirective    (char *in, int interactive);
-int         ProcessDirective2   (char *in, int interactive);
+int         ProcessDirective2   (char *in, Dict *command, int interactive);
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];

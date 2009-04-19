@@ -30,6 +30,9 @@ typedef struct DictItemS
   void             *data;
   int               UserData;
   int               DataType;
+  int               DataSize;
+  unsigned char     MallocedByUs;
+  unsigned char     copyable;
   struct DictItemS *next;
   struct DictItemS *prev;
  } DictItem;
@@ -49,8 +52,10 @@ typedef DictItem DictIterator;
 
 // Functions defined in lt_dict.c
 Dict *DictInit         ();
+Dict *DictCopy         (Dict *in, int deep);
 int   DictLen          (Dict *in);
-void  DictAppendPtr    (Dict *in, char *key, int UserData, void *item);
+void  DictAppendPtr    (Dict *in, char *key, int UserData, void *item, int size, int copyable);
+void  DictAppendPtrCpy (Dict *in, char *key, int UserData, void *item, int size);
 void  DictAppendInt    (Dict *in, char *key, int UserData, int   item);
 void  DictAppendFloat  (Dict *in, char *key, int UserData, double item);
 void  DictAppendString (Dict *in, char *key, int UserData, char *item);
@@ -60,11 +65,13 @@ void  DictLookup       (Dict *in, char *key, int *UserDataOut, int *DataTypeOut,
 int   DictContains     (Dict *in, char *key);
 int   DictRemoveKey    (Dict *in, char *key);
 int   DictRemovePtr    (Dict *in, void *item);
-void _DictRemoveEngine (Dict *in, DictItem *ptr);
 void  DictRemovePtrAll (Dict *in, void *item);
 DictIterator *DictIterateInit(Dict *in);
 DictIterator *DictIterate(DictIterator *in, int *UserDataOut, int *DataTypeOut, void **ptrout);
 char *DictPrint        (Dict *in, char *out, int size);
+
+// Private
+void _DictRemoveEngine (Dict *in, DictItem *ptr);
 
 #endif
 

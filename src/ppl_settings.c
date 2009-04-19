@@ -46,6 +46,10 @@ settings_graph    settings_graph_current;
 
 settings_axis     settings_axis_default;
 
+settings_axis     XAxes [MAX_AXES];
+settings_axis     YAxes [MAX_AXES];
+settings_axis     ZAxes [MAX_AXES];
+
 settings_session  settings_session_default;
 
 int               settings_palette[PALETTE_LENGTH] = {COLOUR_BLACK, COLOUR_RED, COLOUR_BLUE, COLOUR_MAGENTA, COLOUR_CYAN, COLOUR_BROWN, COLOUR_SALMON, COLOUR_GRAY, COLOUR_GREEN, COLOUR_NAVYBLUE, COLOUR_PERIWINKLE, COLOUR_PINEGREEN, COLOUR_SEAGREEN, COLOUR_GREENYELLOW, COLOUR_ORANGE, COLOUR_CARNATIONPINK, COLOUR_PLUM, -1};
@@ -53,7 +57,7 @@ int               settings_palette[PALETTE_LENGTH] = {COLOUR_BLACK, COLOUR_RED, 
 void ppl_settings_term_init()
  {
   FILE  *LocalePipe;
-  int    Nchars;
+  int    Nchars,i;
   double PaperWidth, PaperHeight;
   char   ConfigFname[FNAME_LENGTH];
   char  *PaperSizePtr;
@@ -107,6 +111,7 @@ void ppl_settings_term_init()
   settings_graph_default.grid       = SW_ONOFF_OFF;
   settings_graph_default.GridAxisX  = 1;
   settings_graph_default.GridAxisY  = 1;
+  settings_graph_default.GridAxisZ  = 1;
   settings_graph_default.GridMajColour = COLOUR_GREY60;
   settings_graph_default.GridMinColour = COLOUR_GREY90;
   settings_graph_default.key        = SW_ONOFF_ON;
@@ -129,6 +134,7 @@ void ppl_settings_term_init()
   settings_graph_default.width      = 8.0;
 
   // Default Axis Settings, used whenever a new axis is created
+  settings_axis_default.enabled     = 0;
   settings_axis_default.log         = SW_BOOL_FALSE;
   settings_axis_default.MaxSet      = SW_BOOL_FALSE;
   settings_axis_default.MinSet      = SW_BOOL_FALSE;
@@ -151,6 +157,10 @@ void ppl_settings_term_init()
   settings_axis_default.MTickList   = NULL;
   settings_axis_default.TickList    = NULL;
   strcpy(settings_axis_default.label, "");
+
+  // Set up current axes
+  for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;
+  XAxes[1].enabled = YAxes[1].enabled = ZAxes[1].enabled = 1;
 
   // Setting which affect how we talk to the current interactive session
   settings_session_default.splash    = SW_ONOFF_ON;

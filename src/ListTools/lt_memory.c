@@ -53,7 +53,7 @@ void lt_MemoryInit( void(*mem_fatal_handler)(char *, int, char *) , void(*mem_lo
  {
   mem_fatal = mem_fatal_handler;
   mem_log   = mem_log_handler;
-  if (MEMDEBUG) (*mem_log)("Initialising memory management system.");
+  if (MEMDEBUG1) (*mem_log)("Initialising memory management system.");
   lt_mem_context = 0;
   fastmalloc_init();
   lt_FreeAll(0);
@@ -65,7 +65,7 @@ void lt_MemoryInit( void(*mem_fatal_handler)(char *, int, char *) , void(*mem_lo
 
 void lt_MemoryStop()
  {
-  if (MEMDEBUG) (*mem_log)("Shutting down memory management system.");
+  if (MEMDEBUG1) (*mem_log)("Shutting down memory management system.");
   fastmalloc_close();
   lt_mem_context = -1;
   return;
@@ -79,7 +79,7 @@ int lt_DescendIntoNewContext()
   if (lt_mem_context <                    0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_DescendIntoNewContext() before call to lt_MemoryInit().");
   if (lt_mem_context >= (PPL_MAX_CONTEXTS+1)) (*mem_fatal)(__FILE__,__LINE__,"Too many memory contexts.");
   _lt_SetMemContext(lt_mem_context+1);
-  if (MEMDEBUG) { sprintf(temp_merr_string, "Descended into memory context %d.", lt_mem_context); (*mem_log)(temp_merr_string); }
+  if (MEMDEBUG1) { sprintf(temp_merr_string, "Descended into memory context %d.", lt_mem_context); (*mem_log)(temp_merr_string); }
   return lt_mem_context;
  }
 
@@ -91,7 +91,7 @@ int  lt_AscendOutOfContext(int context)
   if (lt_mem_context <               0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_AscendOutOfContext() before call to lt_MemoryInit().");
   if (context        >  lt_mem_context ) return lt_mem_context;
   if (context        <=              0 ) (*mem_fatal)(__FILE__,__LINE__,"Call to lt_AscendOutOfContext() attempting to ascend out of lowest possible memory context.");
-  if (MEMDEBUG) { sprintf(temp_merr_string, "Ascending out of memory context %d.", lt_mem_context); (*mem_log)(temp_merr_string); }
+  if (MEMDEBUG1) { sprintf(temp_merr_string, "Ascending out of memory context %d.", lt_mem_context); (*mem_log)(temp_merr_string); }
   lt_FreeAll(context);
   _lt_SetMemContext(context-1);
   return lt_mem_context;
@@ -126,7 +126,7 @@ void lt_FreeAll(int context)
   if ((context<0) || (context>=PPL_MAX_CONTEXTS)) 
    { sprintf(temp_merr_string, "lt_FreeAll() passed unrecognised context %d.", context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
 
-  if (MEMDEBUG) { sprintf(temp_merr_string, "Freeing all memory down to level %d.", context); (*mem_log)(temp_merr_string); }
+  if (MEMDEBUG1) { sprintf(temp_merr_string, "Freeing all memory down to level %d.", context); (*mem_log)(temp_merr_string); }
   fastmalloc_freeall(context);
   latch=0;
   return;
@@ -141,7 +141,7 @@ void *lt_malloc(int size)
   if ((lt_mem_context<0) || (lt_mem_context>=PPL_MAX_CONTEXTS)) 
    { sprintf(temp_merr_string, "lt_malloc() using unrecognised context %d.", lt_mem_context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
 
-  if (MEMDEBUG) { sprintf(temp_merr_string, "Request to malloc %d bytes at memory level %d.", size, lt_mem_context); (*mem_log)(temp_merr_string); }
+  if (MEMDEBUG2) { sprintf(temp_merr_string, "Request to malloc %d bytes at memory level %d.", size, lt_mem_context); (*mem_log)(temp_merr_string); }
   out = fastmalloc(lt_mem_context, size);
   if (out == NULL) (*mem_fatal)(__FILE__,__LINE__,"Malloc failure.");
   return out;
@@ -156,7 +156,7 @@ void *lt_malloc_incontext(int size, int context)
   if ((context<0) || (context>=PPL_MAX_CONTEXTS)) 
    { sprintf(temp_merr_string, "lt_malloc_incontext() passed unrecognised context %d.", context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
 
-  if (MEMDEBUG) { sprintf(temp_merr_string, "Request to malloc %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }
+  if (MEMDEBUG2) { sprintf(temp_merr_string, "Request to malloc %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }
   out = fastmalloc(context, size);
   if (out == NULL) (*mem_fatal)(__FILE__,__LINE__,"Malloc failure.");
   return out;
@@ -242,11 +242,11 @@ void *fastmalloc(int context, int size)
     if (*blklist_position == FM_BLOCKMAX-2) {  sprintf(temp_merr_string, "Memory allocation table overflow in context %d.", context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
     if (size > FM_BLOCKMAX)
      {
-      if (MEMDEBUG) { sprintf(temp_merr_string, "Fastmalloc creating block of size %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }
+      if (MEMDEBUG1) { sprintf(temp_merr_string, "Fastmalloc creating block of size %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }
       if ((out = blklist_pointer[(*blklist_position)++] = malloc(size        )) == NULL) (*mem_fatal)(__FILE__,__LINE__,"Malloc failure."); // This is a big malloc which needs to new block to itself
       *blk_current_position=-1;
      } else {
-      if (MEMDEBUG) { sprintf(temp_merr_string, "Fastmalloc creating block of size %d bytes at memory level %d.", FM_BLOCKSIZE, context); (*mem_log)(temp_merr_string); }
+      if (MEMDEBUG1) { sprintf(temp_merr_string, "Fastmalloc creating block of size %d bytes at memory level %d.", FM_BLOCKSIZE, context); (*mem_log)(temp_merr_string); }
       if ((out = blklist_pointer[(*blklist_position)++] = malloc(FM_BLOCKSIZE)) == NULL) (*mem_fatal)(__FILE__,__LINE__,"Malloc failure."); // Malloc a new standard sized block
       *blk_current_position=size;
      }

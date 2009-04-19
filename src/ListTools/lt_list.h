@@ -35,6 +35,8 @@ typedef struct ListItemS
  {
   void             *data;
   int               DataType;
+  int               DataSize;
+  int               copyable;
   struct ListItemS *next;
   struct ListItemS *prev;
  } ListItem;
@@ -54,16 +56,18 @@ typedef ListItem ListIterator;
 
 // Functions defined in lt_list.c
 List *ListInit         ();
+List *ListCopy         (List *in, int deep);
 int   ListLen          (List *in);
-void  ListAppendPtr    (List *in, void *item);
-void  ListAppendInt    (List *in, int   item);
+void  ListAppendPtr    (List *in, void  *item, int size, int copyable);
+void  ListAppendPtrCpy (List *in, void  *item, int size);
+void  ListAppendInt    (List *in, int    item);
 void  ListAppendFloat  (List *in, double item);
-void  ListAppendString (List *in, char *item);
-void  ListAppendList   (List *in, List *item);
-void  ListAppendDict   (List *in, Dict *item);
-int   ListRemovePtr    (List *in, void *item);
-void  ListRemovePtrAll (List *in, void *item);
-void *ListGetItem      (List *in, int N);
+void  ListAppendString (List *in, char  *item);
+void  ListAppendList   (List *in, List  *item);
+void  ListAppendDict   (List *in, Dict  *item);
+int   ListRemovePtr    (List *in, void  *item);
+void  ListRemovePtrAll (List *in, void  *item);
+void *ListGetItem      (List *in, int    N);
 void *ListPop          (List *in);
 void *ListLast         (List *in);
 ListIterator *ListIterateInit(List *in);

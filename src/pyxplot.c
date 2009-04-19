@@ -79,6 +79,10 @@ int main(int argc, char **argv)
   if (DEBUG) ppl_log("Initialising settings.");
   ppl_settings_term_init();
 
+  // Initialise GNU Readline
+  rl_readline_name = "PyXPlot";                          /* Allow conditional parsing of the ~/.inputrc file. */
+  rl_attempted_completion_function = ppl_rl_completion;  /* Tell the completer that we want a crack first. */
+
   // Scan commandline options for any switches
   for (i=1; i<argc; i++)
    {
@@ -155,7 +159,6 @@ int main(int argc, char **argv)
       if (statinfo.st_uid != getuid()) fail=1;
      }
     if (fail==1)                { ppl_fatal(__FILE__,__LINE__,"Failed to create temporary directory." ); }
-    if (chdir(tempdirpath) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
 
     // Read GNU Readline history
     if (DEBUG) ppl_log("Reading GNU Readline history.");

@@ -80,7 +80,7 @@ void directive_show3(char *out, int interactive, char *setting_name, char *setti
 
   if (strcmp(setting_value, "On")==0)
    {
-    sprintf(out+i, "%-45s", setting_name);
+    sprintf(out+i, "%-41s", setting_name);
     i += strlen(out+i);
    }
   else if (strcmp(setting_value, "Off")==0)
@@ -89,13 +89,13 @@ void directive_show3(char *out, int interactive, char *setting_name, char *setti
     for (j=0; j<=k; j++) out[i+j] = setting_name[j];
     out[i+k+1] = 'n'; out[i+k+2] = 'o'; // Insert 'no' after this space
     for (j=k+1; setting_name[j]!='\0'; j++) out[i+j+2] = setting_name[j];
-    for (; j<43; j++) out[i+j+2] = ' '; // Pad with spaces up to 45 characters
+    for (; j<39; j++) out[i+j+2] = ' '; // Pad with spaces up to 45 characters
     out[i+j+2] = '\0';
     i += strlen(out+i);
    }
   else
    {
-    sprintf(out+i, "%-22s %-22s", setting_name, setting_value);
+    sprintf(out+i, "%-16s %-24s", setting_name, setting_value);
     i += strlen(out+i);
    }
 
@@ -178,7 +178,24 @@ void directive_show2(char *word, int interactive)
     directive_show3(out+i, interactive, "FountSize", buf, (settings_graph_default.FontSize == settings_graph_current.FontSize), "Sets the default fount size of text output; -4 is the smallest and 5 is the largest");
     i += strlen(out+i) ; p=1;
    }
-  // GRID
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "grid",1)>=0))
+   {
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_graph_current.grid, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    directive_show3(out+i, interactive, "grid", buf, (settings_graph_default.grid == settings_graph_current.grid), "Selects whether a grid is drawn on plots");
+    i += strlen(out+i) ; p=1;
+    if (settings_graph_current.grid == SW_ONOFF_ON)
+     {
+      sprintf(buf, "x%d", settings_graph_default.GridAxisX);
+      directive_show3(out+i, interactive, "grid", buf, (settings_graph_default.GridAxisX == settings_graph_current.GridAxisX), "Sets the X-axis with whose ticks gridlines are associated");
+      i += strlen(out+i);
+      sprintf(buf, "y%d", settings_graph_default.GridAxisY);
+      directive_show3(out+i, interactive, "grid", buf, (settings_graph_default.GridAxisY == settings_graph_current.GridAxisY), "Sets the Y-axis with whose ticks gridlines are associated");
+      i += strlen(out+i);
+      sprintf(buf, "z%d", settings_graph_default.GridAxisZ);
+      directive_show3(out+i, interactive, "grid", buf, (settings_graph_default.GridAxisZ == settings_graph_current.GridAxisZ), "Sets the Z-axis with whose ticks gridlines are associated");
+      i += strlen(out+i);
+     }
+   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(settings_graph_current.GridMajColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
@@ -198,16 +215,16 @@ void directive_show2(char *word, int interactive)
     directive_show3(out+i, interactive, "key", buf, (settings_graph_default.key == settings_graph_current.key), "Selects whether a legend is included on plots");
     i += strlen(out+i) ; p=1;
    }
+  if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (settings_graph_current.key == SW_ONOFF_ON)  )
+   {
+    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(settings_graph_current.KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),NumericDisplay(settings_graph_current.KeyXOff,0),NumericDisplay(settings_graph_current.KeyYOff,1));
+    directive_show3(out+i, interactive, "key", buf, ((settings_graph_default.KeyPos == settings_graph_current.KeyPos)&&(settings_graph_default.KeyXOff == settings_graph_current.KeyXOff)&&(settings_graph_default.KeyYOff == settings_graph_current.KeyYOff)), "Selects where legends are orientated on graphs");
+    i += strlen(out+i) ; p=1;
+   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "keycolumns",1)>=0))
    { 
     sprintf(buf, "%d", settings_graph_default.KeyColumns);
-    directive_show3(out+i, interactive, "FountSize", buf, (settings_graph_default.KeyColumns == settings_graph_current.KeyColumns), "Sets the number of columns into which legends on graphs are sorted");
-    i += strlen(out+i) ; p=1;
-   }
-  if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (settings_graph_current.key == SW_ONOFF_ON)  )
-   { 
-    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(settings_graph_current.KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),NumericDisplay(settings_graph_current.KeyXOff,0),NumericDisplay(settings_graph_current.KeyYOff,1));
-    directive_show3(out+i, interactive, "key", buf, ((settings_graph_default.KeyPos == settings_graph_current.KeyPos)&&(settings_graph_default.KeyXOff == settings_graph_current.KeyXOff)&&(settings_graph_default.KeyYOff == settings_graph_current.KeyYOff)), "Selects where legends are orientated on graphs");
+    directive_show3(out+i, interactive, "KeyColumns", buf, (settings_graph_default.KeyColumns == settings_graph_current.KeyColumns), "Sets the number of columns into which legends on graphs are sorted");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "linewidth", 1)>=0) || (StrAutocomplete(word, "lw", 2)>=0))

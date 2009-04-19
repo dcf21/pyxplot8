@@ -32,11 +32,48 @@
 Dict *DictInit()
  {
   Dict *out;
-  out = lt_malloc(sizeof(Dict));
+  out = (Dict *)lt_malloc(sizeof(Dict));
   out->first  = NULL;
   out->last   = NULL;
   out->length = 0;
   out->memory_context = lt_GetMemContext();
+  return out;
+ }
+
+Dict *DictCopy(Dict *in, int deep)
+ {
+  DictItem *item, *outitem;
+  Dict     *out;
+  out  = DictInit();
+  item = in->first;
+  while (item != NULL)
+   {
+    outitem           = (DictItem *)lt_malloc(sizeof(DictItem));
+    outitem->prev     = out->last;
+    outitem->next     = NULL;
+    outitem->key      = (char *)lt_malloc_incontext((strlen(item->key)+1)*sizeof(char), out->memory_context);
+    strcpy(outitem->key, item->key);
+    outitem->UserData = item->UserData;
+    outitem->DataSize = item->DataSize;
+    if (item->copyable != 0)
+     {
+      outitem->data     = (void *)lt_malloc_incontext(outitem->DataSize, out->memory_context);
+      memcpy(outitem->data, item->data, outitem->DataSize);
+      outitem->MallocedByUs = 1;
+     } else {
+      if      ((deep!=0)&&(item->DataType == DATATYPE_LIST)) outitem->data = ListCopy((List *)item->data,1);
+      else if ((deep!=0)&&(item->DataType == DATATYPE_DICT)) outitem->data = DictCopy((Dict *)item->data,1);
+      else                                                   outitem->data =                  item->data   ;
+      outitem->MallocedByUs = 0;
+     }
+    outitem->copyable = item->copyable;
+    outitem->DataType = item->DataType;
+    if (out->first == NULL) out->first      = outitem;
+    if (out->last  != NULL) out->last->next = outitem;
+    out->last = outitem;
+    out->length++;
+    item = item->next;
+   }
   return out;
  }
 
@@ -45,38 +82,100 @@ int DictLen(Dict *in)
   return in->length;
  }
 
-void DictAppendPtr(Dict *in, char *key, int UserData, void *item)
+void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int copyable)
  {
-  DictItem *ptrnew;
-  DictRemoveKey(in, key);
-  ptrnew           = lt_malloc(sizeof(DictItem));
-  ptrnew->prev     = in->last;
-  ptrnew->next     = NULL;
-  ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context); strcpy(ptrnew->key, key);
-  ptrnew->UserData = UserData;
-  ptrnew->data     = item;
-  ptrnew->DataType = DATATYPE_VOID;
-  if (in->first == NULL) in->first      = ptrnew;
-  if (in->last  != NULL) in->last->next = ptrnew;
-  in->last = ptrnew;
-  in->length++;
-  return;
+  DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
+  int       cmp = -1;
+
+  ptr = in->first;
+  while (ptr != NULL)
+   {
+    if ((cmp = strcmp(ptr->key, key)) <= 0) break;
+    prev = ptr;
+    ptr  = ptr->next;
+   }
+  if (cmp == 0) // Overwrite an existing entry in dictionary
+   {
+    ptr->data     = item;
+    ptr->DataSize = size;
+    ptr->UserData = UserData;
+    ptr->DataType = DATATYPE_VOID;
+    ptr->copyable = copyable;
+    ptr->MallocedByUs = 0;
+   }
+  else
+   {
+    ptrnew           = (DictItem *)lt_malloc(sizeof(DictItem));
+    ptrnew->prev     = prev;
+    ptrnew->next     = ptr;
+    ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context);
+    strcpy(ptrnew->key, key);
+    ptrnew->UserData = UserData;
+    ptrnew->data     = item;
+    ptrnew->MallocedByUs = 0;
+    ptrnew->DataType = DATATYPE_VOID;
+    ptrnew->copyable = copyable;
+    ptrnew->DataSize = size;
+    if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
+    if (ptr  == NULL) in->last  = ptrnew; else ptr ->prev = ptrnew;
+    in->length++;
+   }
+ }
+
+void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size)
+ {
+  DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
+  int       cmp = -1;
+
+  ptr = in->first;
+  while (ptr != NULL)
+   {
+    if ((cmp = strcmp(ptr->key, key)) <= 0) break;
+    prev = ptr;
+    ptr  = ptr->next;
+   }
+  if (cmp == 0) // Overwrite an existing entry in dictionary
+   {
+    if ((size != ptr->DataSize) || (ptr->MallocedByUs == 0)) 
+     {
+      ptr->data     = (void *)lt_malloc_incontext(size , in->memory_context);
+      ptr->DataSize = size;
+      ptr->MallocedByUs = 1;
+     }
+    memcpy(ptr->data , item, size);
+    ptr->UserData = UserData;
+    ptr->DataType = DATATYPE_VOID;
+   }
+  else
+   {
+    ptrnew           = (DictItem *)lt_malloc(sizeof(DictItem));
+    ptrnew->prev     = prev;
+    ptrnew->next     = ptr;
+    ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context);
+    strcpy(ptrnew->key, key);
+    ptrnew->UserData = UserData;
+    ptrnew->data     = (void *)lt_malloc_incontext(size, in->memory_context);
+    memcpy(ptrnew->data, item, size);
+    ptrnew->MallocedByUs = 1;
+    ptrnew->copyable = 1;
+    ptrnew->DataType = DATATYPE_VOID;
+    ptrnew->DataSize = size;
+    if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
+    if (ptr  == NULL) in->last  = ptrnew; else ptr ->prev = ptrnew;
+    in->length++;
+   }
  }
 
 void DictAppendInt(Dict *in, char *key, int UserData, int item)
  {
-  int *ptr = (int *)lt_malloc_incontext(sizeof(int), in->memory_context);
-  *ptr = item;
-  DictAppendPtr(in, key, UserData, (void *)ptr);
+  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(int));
   in->last->DataType = DATATYPE_INT;
   return;
  }
 
 void DictAppendFloat(Dict *in, char *key, int UserData, double item)
  {
-  double *ptr = (double *)lt_malloc_incontext(sizeof(double), in->memory_context);
-  *ptr = item;
-  DictAppendPtr(in, key, UserData, (void *)ptr);
+  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(double));
   in->last->DataType = DATATYPE_FLOAT;
   return;
  }
@@ -84,23 +183,21 @@ void DictAppendFloat(Dict *in, char *key, int UserData, double item)
 void DictAppendString(Dict *in, char *key, int UserData, char *item)
  {
   int length = strlen(item);
-  char  *ptr = (char *)lt_malloc_incontext((length+1)*sizeof(char), in->memory_context);
-  strcpy(ptr, item);
-  DictAppendPtr(in, key, UserData, (void *)ptr);
+  DictAppendPtrCpy(in, key, UserData, (void *)item, (length+1)*sizeof(char));
   in->last->DataType = DATATYPE_STRING;
   return;
  }
 
 void DictAppendList(Dict *in, char *key, int UserData, List *item)
  {
-  DictAppendPtr(in, key, UserData, (void *)item);
+  DictAppendPtr(in, key, UserData, (void *)item, sizeof(List), 0);
   in->last->DataType = DATATYPE_LIST;
   return;
  }
 
 void DictAppendDict(Dict *in, char *key, int UserData, Dict *item)
  {
-  DictAppendPtr(in, key, UserData, (void *)item);
+  DictAppendPtr(in, key, UserData, (void *)item, sizeof(Dict), 0);
   in->last->DataType = DATATYPE_DICT;
   return;
  }
@@ -108,17 +205,21 @@ void DictAppendDict(Dict *in, char *key, int UserData, Dict *item)
 void DictLookup(Dict *in, char *key, int *UserDataOut, int *DataTypeOut, void **ptrout)
  {
   DictItem *ptr;
+  int       cmp;
+
   if (in==NULL) { *ptrout=NULL; return; }
   ptr = in->first;
   while (ptr != NULL)
    {
-    if (strcmp(ptr->key, key)==0)
+    cmp = strcmp(ptr->key, key);
+    if (cmp==0)
      {
       if (UserDataOut != NULL) *UserDataOut = ptr->UserData;
       if (DataTypeOut != NULL) *DataTypeOut = ptr->DataType ;
       if (ptrout      != NULL) *ptrout = ptr->data;
       return;
      }
+    else if (cmp < 0) break;
     ptr = ptr->next;
    }
   *ptrout = NULL;
@@ -141,15 +242,19 @@ int DictContains(Dict *in, char *key)
 int  DictRemoveKey(Dict *in, char *key)
  {
   DictItem *ptr;
+  int       cmp;
+
   if (in==NULL) return -1;
   ptr = in->first;
   while (ptr != NULL)
    {
-    if (strcmp(ptr->key, key)==0)
+    cmp = strcmp(ptr->key, key);
+    if (cmp==0)
      {
       _DictRemoveEngine(in, ptr);
       return 0;
      }
+    else if (cmp < 0) break;
     ptr = ptr->next;
    }
   return -1;
@@ -185,6 +290,9 @@ void _DictRemoveEngine(Dict *in, DictItem *ptr)
     ptr->key      = ptrnext->key;
     ptr->DataType = ptrnext->DataType;
     ptr->UserData = ptrnext->UserData;
+    ptr->DataSize = ptrnext->DataSize;
+    ptr->copyable = ptrnext->copyable;
+    ptr->MallocedByUs = ptrnext->MallocedByUs;
     ptr->data     = ptrnext->data;
     ptr->next     = ptrnext->next;
     if (in->last == ptrnext) in->last = ptr;
@@ -196,6 +304,9 @@ void _DictRemoveEngine(Dict *in, DictItem *ptr)
     ptr->key      = ptrnext->key;
     ptr->DataType = ptrnext->DataType;
     ptr->UserData = ptrnext->UserData;
+    ptr->DataSize = ptrnext->DataSize;
+    ptr->copyable = ptrnext->copyable;
+    ptr->MallocedByUs = ptrnext->MallocedByUs;
     ptr->data     = ptrnext->data;
     ptr->prev     = ptrnext->prev;
     if (in->first == ptrnext) in->first = ptr;

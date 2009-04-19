@@ -32,11 +32,43 @@
 List *ListInit()
  {
   List *out;
-  out = lt_malloc(sizeof(List));
+  out = (List *)lt_malloc(sizeof(List));
   out->first  = NULL;
   out->last   = NULL;
   out->length = 0;
   out->memory_context = lt_GetMemContext();
+  return out;
+ }
+
+List *ListCopy(List *in, int deep)
+ {
+  ListItem *item, *outitem;
+  List *out;
+  out = ListInit();
+  item = in->first;
+  while (item != NULL)
+   {
+    outitem           = (ListItem *)lt_malloc(sizeof(ListItem));
+    outitem->prev     = out->last;
+    outitem->next     = NULL;
+    outitem->DataSize = item->DataSize;
+    if (item->copyable != 0)
+     {
+      outitem->data     = (void *)lt_malloc_incontext(outitem->DataSize, out->memory_context);
+      memcpy(outitem->data, item->data, outitem->DataSize);
+     } else {
+      if      ((deep!=0)&&(item->DataType == DATATYPE_LIST)) outitem->data = ListCopy((List *)item->data,1);
+      else if ((deep!=0)&&(item->DataType == DATATYPE_DICT)) outitem->data = DictCopy((Dict *)item->data,1);
+      else                                                   outitem->data =                  item->data   ;
+     }
+    outitem->copyable = item->copyable;
+    outitem->DataType = item->DataType;
+    if (out->first == NULL) out->first      = outitem;
+    if (out->last  != NULL) out->last->next = outitem;
+    out->last = outitem;
+    out->length++;
+    item = item->next;
+   }
   return out;
  }
 
@@ -45,14 +77,34 @@ int ListLen(List *in)
   return in->length;
  }
 
-void ListAppendPtr(List *in, void *item)
+void ListAppendPtr(List *in, void *item, int size, int copyable)
  {
   ListItem *ptrnew;
-  ptrnew = lt_malloc(sizeof(ListItem));
-  ptrnew->prev = in->last;
-  ptrnew->next = NULL;
-  ptrnew->data = item;
+  ptrnew           = (ListItem *)lt_malloc_incontext(sizeof(ListItem), in->memory_context);
+  ptrnew->prev     = in->last;
+  ptrnew->next     = NULL;
+  ptrnew->data     = item;
+  ptrnew->DataSize = size;
   ptrnew->DataType = DATATYPE_VOID;
+  ptrnew->copyable = copyable;
+  if (in->first == NULL) in->first = ptrnew;
+  if (in->last  != NULL) in->last->next = ptrnew;
+  in->last = ptrnew;
+  in->length++;
+  return;
+ }
+
+void ListAppendPtrCpy(List *in, void *item, int size)
+ {
+  ListItem *ptrnew;
+  ptrnew           = (ListItem *)lt_malloc_incontext(sizeof(ListItem), in->memory_context);
+  ptrnew->prev     = in->last;
+  ptrnew->next     = NULL;
+  ptrnew->data     = (void *)lt_malloc_incontext(size, in->memory_context);
+  memcpy(ptrnew->data, item, size);
+  ptrnew->DataSize = size;
+  ptrnew->DataType = DATATYPE_VOID;
+  ptrnew->copyable = 1;
   if (in->first == NULL) in->first = ptrnew;
   if (in->last  != NULL) in->last->next = ptrnew;
   in->last = ptrnew;
@@ -62,42 +114,35 @@ void ListAppendPtr(List *in, void *item)
 
 void ListAppendInt(List *in, int item)
  {
-  int *ptr = (int *)lt_malloc_incontext(sizeof(int), in->memory_context);
-  *ptr = item;
-  ListAppendPtr(in, (void *)ptr);
+  ListAppendPtrCpy(in, (void *)&item, sizeof(int));
   in->last->DataType = DATATYPE_INT;
   return;
  }
 
 void ListAppendFloat(List *in, double item)
  {
-  double *ptr = (double *)lt_malloc_incontext(sizeof(double), in->memory_context);
-  *ptr = item;
-  ListAppendPtr(in, (void *)ptr);
+  ListAppendPtrCpy(in, (void *)&item, sizeof(double));
   in->last->DataType = DATATYPE_FLOAT;
   return;
  }
 
 void ListAppendString(List *in, char *item)
  {
-  int length = strlen(item);
-  char  *ptr = (char *)lt_malloc_incontext((length+1)*sizeof(char), in->memory_context);
-  strcpy(ptr, item);
-  ListAppendPtr(in, (void *)ptr);
+  ListAppendPtrCpy(in, (void *)item, (strlen(item)+1)*sizeof(char));
   in->last->DataType = DATATYPE_STRING;
   return;
  }
 
 void ListAppendList(List *in, List *item)
  {
-  ListAppendPtr(in, (void *)item);
+  ListAppendPtr(in, (void *)item, sizeof(List), 0);
   in->last->DataType = DATATYPE_LIST;
   return;
  }
 
 void ListAppendDict(List *in, Dict *item)
  {
-  ListAppendPtr(in, (void *)item);
+  ListAppendPtr(in, (void *)item, sizeof(Dict), 0);
   in->last->DataType = DATATYPE_DICT;
   return;
  }
