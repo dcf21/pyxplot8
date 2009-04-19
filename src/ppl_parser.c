@@ -199,7 +199,7 @@ void ppl_commands_read()
         // foobar @3: plob : bolp
         k=l=m=n=N=-1; // ACL of -1 means no ACL specified
         i=InputPos;
-        while ((ppl_commands[InputPos] > ' ') && (ppl_commands[InputPos] !='@')) InputPos++;
+        while ((ppl_commands[InputPos] > ' ') && (ppl_commands[InputPos] !='@') && ((ppl_commands[InputPos] !=':')||(i==InputPos))) InputPos++;
         j=InputPos;
         if (j==i) ppl_fatal(__FILE__,__LINE__,"ppl_parser found a word of zero length. This should never happen.");
         if (ppl_commands[InputPos] == '@')
@@ -235,7 +235,7 @@ void ppl_commands_read()
         *target = NewNode; // Add new node into hierarchy
        }
      }
-    ListAppendPtr(PplParserCmdList, DefnStack[0], sizeof(ParserNode), 0);
+    ListAppendPtr(PplParserCmdList, DefnStack[0], sizeof(ParserNode), 0, DATATYPE_VOID);
    }
   return;
  }
@@ -313,9 +313,9 @@ Dict *parse(char *line)
 // PARSE_AUTOCOMPLETE(): Make suggestion for words which could come next. number gives the nth possible word.
 
 
-char *ppl_dummy_completer(const char *line, int status) // Because readline is a fucking piece of shit, and you can't turn off the filename autocompleter
- {                                                      // without putting something else in its place
-  return NULL;  // Dear author of readline. Please do the gene pool a service and shoot yourself.
+char *ppl_dummy_completer(const char *line, int status) // This is a replacement for GNU readline's default filename completer when we don't want
+ {                                                      // filenames to be completion options.
+  return NULL;
  }
 
 char *parse_autocomplete(const char *LineConst, int status)
@@ -361,34 +361,32 @@ char *parse_autocomplete(const char *LineConst, int status)
      }
     if (expecting[0] != '\0')
      {
-      output = (char *)malloc((strlen(expecting)+1)*sizeof(char));
+      output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // We have a new completion option; do not iterate through more commands
       strcpy(output, expecting);
       return output;
      }
    }
-  return NULL; // No more matches
+  return NULL; // Tell readline we have no more matches to offer
  }
-
-#define TABCOMPLETES_MAX 1024
 
 char **ppl_rl_completion(const char *text, int start, int end)
  {
   char **matches;
   char  *FirstItem;
 
-  FirstItem = parse_autocomplete(text, -1-start); // Setup parse_autocomplete
+  FirstItem = parse_autocomplete(text, -1-start); // Setup parse_autocomplete to know what string it's working on
 
-  if ((FirstItem!=NULL) && (FirstItem[0]=='\n')) // Trigger filename completion
+  if ((FirstItem!=NULL) && (FirstItem[0]=='\n'))  // We are trying to match a %s:filename field, so turn on filename completion
    {
     free(FirstItem);
-    rl_completion_entry_function = NULL;
+    rl_completion_entry_function = NULL; // NULL means that readline's default filename completer is activated
     return NULL;
    }
   else
    free(FirstItem);
 
   matches = rl_completion_matches(text, parse_autocomplete);
-  rl_completion_entry_function = ppl_dummy_completer;
+  rl_completion_entry_function = ppl_dummy_completer; // We replace readline's filename completer with a dummy, so that filenames are not completion options
   return matches;
  }
 
@@ -410,9 +408,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
                    char *AlgebraError, int *AlgebraLinepos, Dict *output, int *match, int *success)
  {
   unsigned char repeating=0, first=0;
-  int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i;
+  int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, ACLevel;
   union {double _dbl; int _int; char *_str; } MatchVal;
-  char varname[SSTR_LENGTH], SeparatorString[4];
+  char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4];
   Dict *OutputOld, *DictBaby;
   List *DictBabyList;
   ParserNode *NodeIter;
@@ -422,6 +420,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
 
   if      (node->type == PN_TYPE_ITEM)
    {
+    // IF WE ARE RUNNING IN TAB-COMPLETION MODE, SEE IF WE OUGHT TO MAKE TAB COMPLETION SUGGESTIONS BASED ON THIS ITEM
     if ((start != NULL) && ((*start) <  (*linepos))) {(*success)=0; return;} // We have overshot...
     if ((start != NULL) && ((*start) == (*linepos)))
      {
@@ -445,14 +444,79 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       return;
      }
 
-    *success = 0; // PLACEHOLDER
+    if (node->ACLevel == -2)
+     {
+      for (i=0; (node->MatchString[i]>' '); i++)
+       if (toupper(line[*linepos+i])!=toupper(node->MatchString[i]))
+        {
+         (*success)=0; break; // We don't match this string
+        }
+      if (*success!=0)
+       {
+        linepos += i; // We do match this string: advance by i spaces
+        MatchType = DATATYPE_STRING;
+        MatchVal._str = node->MatchString;
+       }
+     }
+    else
+     {
+      ACLevel = node->ACLevel;
+      if (ACLevel == -1) ACLevel = strlen(node->MatchString);
+      if      (strcmp(node->MatchString, "=")==0)
+       { *match=1; }
+      else if (strcmp(node->MatchString, "%r")==0)
+       {
+        MatchType = DATATYPE_STRING;
+        MatchVal._str = line + *linepos;
+        *linepos += strlen(line + *linepos);
+       }
+      else if (strcmp(node->MatchString, "%s")==0)
+       {
+        for (i=0; (isalpha(line[*linepos+i])); i++);
+        if (i>0)
+         {
+          strncpy(TempMatchStr, line + *linepos, i);
+          TempMatchStr[i] = '\0';
+          MatchType = DATATYPE_STRING;
+          MatchVal._str = TempMatchStr;
+          *linepos += i;
+         }
+        else *success=0;
+       }
+      else if (strcmp(node->MatchString, "%S")==0)
+       {
+        for (i=0; ((line[*linepos+i]>' ')&&(line[*linepos+i]!='\'')&&(line[*linepos+i]!='\"')); i++);
+        if (i>0)
+         {
+          strncpy(TempMatchStr, line + *linepos, i);
+          TempMatchStr[i] = '\0';
+          MatchType = DATATYPE_STRING;
+          MatchVal._str = TempMatchStr;
+          *linepos += i;
+         }
+        else *success=0;
+       }
+      else // Anything else matches itself
+       {
+        i = StrAutocomplete(line + *linepos, node->MatchString, ACLevel);
+        if (i<0)
+         { *success=0; }
+        else
+         {
+          *linepos += i;
+          MatchType = DATATYPE_STRING;
+          MatchVal._str = node->MatchString;
+         }
+       }
+     }
 
+    // IF WE'RE NOT RUNNING IN TAB COMPLETION MODE, WE MAY WANT TO SET SOME OUTPUT VARIABLES NOW
     if (start == NULL)
      {
       if (*success != 0)
        {
         expecting[0]   = '\0'; *ExpectingPos  =0;
-        AlgebraError[0]= '\0'; *AlgebraLinepos=0;
+        AlgebraError[0]= '\0'; *AlgebraLinepos=-1;
         if ((node->VarName     != NULL) && (node->VarName[0]    != '\0'))
          {
           if ((node->VarSetVal != NULL) && (node->VarSetVal[0]  != '\0'))  DictAppendString(output , node->VarName , 0 , node->VarSetVal);
@@ -464,7 +528,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
            }
          }
        }
-      else
+      else // If we failed to match this item, add something to 'expecting' about what the user could have typed here
        {
         if (*ExpectingPos != 0) { strcpy(expecting+*ExpectingPos, ", or "); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         if ((node->VarName != NULL) && (node->VarName[0] != '\0'))  sprintf(varname, " (%s)", node->VarName);
@@ -505,30 +569,27 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
     repeating = 1; first = 1; DictBabyList = ListInit();
     SeparatorString[0] = node->VarName[strlen(node->VarName)-1];
     if ((SeparatorString[0]!=',')&&(SeparatorString[0]!=':')) SeparatorString[0]='\0';
-    SeparatorString[1]='\0';
-    SeparatorNode.MatchString=SeparatorString;
+    SeparatorString[1] = '\0';
 
     while (repeating != 0)
      {
       DictBaby = DictInit();
       LinePosOld = *linepos;
-      if (output != NULL) OutputOld = DictCopy(output,1);
+      SeparatorNode.MatchString = SeparatorString;
       if ((first==0)&&(SeparatorString[0]!='\0'))
        {
-        parse_descend(&SeparatorNode, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, output, match, success);
+        parse_descend(&SeparatorNode, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, DictBaby, match, success);
         if (*success==2) return;
        }
-      first = 0;
       if (*success!=0)
        {
         NodeIter = node->FirstChild;
         while (NodeIter != NULL)
          {
-          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, output, match, success);
+          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, DictBaby, match, success);
           if (*success==2) return;
           if (*success==0)
            {
-            if ((output != NULL)&&(*linepos!=LinePosOld)) *output = *OutputOld; // Don't need to do another deepcopy; just overwrite top Dict struct
             *linepos = LinePosOld;
             *success = 1; // Optional items are allowed to fail
             repeating= 0; // But we don't do any more work after we get one
@@ -541,9 +602,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         *success = 1; repeating = 0; // We didn't get a repeat separator
        }
-      if (repeating!=0) ListAppendDict(DictBabyList, DictBaby);
+      if (repeating!=0) { ListAppendDict(DictBabyList, DictBaby); first = 0; }
      }
-    DictAppendList(output , node->VarName , 0 , DictBabyList);
+    if (first==0) DictAppendList(output , node->VarName , 0 , DictBabyList); // Only append list if we matched at least once
    }
   else if (node->type == PN_TYPE_OPT)
    {

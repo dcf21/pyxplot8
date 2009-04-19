@@ -82,7 +82,7 @@ int DictLen(Dict *in)
   return in->length;
  }
 
-void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int copyable)
+void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int copyable, int DataType)
  {
   DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
   int       cmp = -1;
@@ -99,7 +99,7 @@ void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int 
     ptr->data     = item;
     ptr->DataSize = size;
     ptr->UserData = UserData;
-    ptr->DataType = DATATYPE_VOID;
+    ptr->DataType = DataType;
     ptr->copyable = copyable;
     ptr->MallocedByUs = 0;
    }
@@ -113,7 +113,7 @@ void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int 
     ptrnew->UserData = UserData;
     ptrnew->data     = item;
     ptrnew->MallocedByUs = 0;
-    ptrnew->DataType = DATATYPE_VOID;
+    ptrnew->DataType = DataType;
     ptrnew->copyable = copyable;
     ptrnew->DataSize = size;
     if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
@@ -122,7 +122,7 @@ void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int 
    }
  }
 
-void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size)
+void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size, int DataType)
  {
   DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
   int       cmp = -1;
@@ -144,7 +144,7 @@ void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size)
      }
     memcpy(ptr->data , item, size);
     ptr->UserData = UserData;
-    ptr->DataType = DATATYPE_VOID;
+    ptr->DataType = DataType;
    }
   else
    {
@@ -158,7 +158,7 @@ void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size)
     memcpy(ptrnew->data, item, size);
     ptrnew->MallocedByUs = 1;
     ptrnew->copyable = 1;
-    ptrnew->DataType = DATATYPE_VOID;
+    ptrnew->DataType = DataType;
     ptrnew->DataSize = size;
     if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
     if (ptr  == NULL) in->last  = ptrnew; else ptr ->prev = ptrnew;
@@ -168,37 +168,32 @@ void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size)
 
 void DictAppendInt(Dict *in, char *key, int UserData, int item)
  {
-  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(int));
-  in->last->DataType = DATATYPE_INT;
+  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(int), DATATYPE_INT);
   return;
  }
 
 void DictAppendFloat(Dict *in, char *key, int UserData, double item)
  {
-  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(double));
-  in->last->DataType = DATATYPE_FLOAT;
+  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(double), DATATYPE_FLOAT);
   return;
  }
 
 void DictAppendString(Dict *in, char *key, int UserData, char *item)
  {
   int length = strlen(item);
-  DictAppendPtrCpy(in, key, UserData, (void *)item, (length+1)*sizeof(char));
-  in->last->DataType = DATATYPE_STRING;
+  DictAppendPtrCpy(in, key, UserData, (void *)item, (length+1)*sizeof(char), DATATYPE_STRING);
   return;
  }
 
 void DictAppendList(Dict *in, char *key, int UserData, List *item)
  {
-  DictAppendPtr(in, key, UserData, (void *)item, sizeof(List), 0);
-  in->last->DataType = DATATYPE_LIST;
+  DictAppendPtr(in, key, UserData, (void *)item, sizeof(List), 0, DATATYPE_LIST);
   return;
  }
 
 void DictAppendDict(Dict *in, char *key, int UserData, Dict *item)
  {
-  DictAppendPtr(in, key, UserData, (void *)item, sizeof(Dict), 0);
-  in->last->DataType = DATATYPE_DICT;
+  DictAppendPtr(in, key, UserData, (void *)item, sizeof(Dict), 0, DATATYPE_DICT);
   return;
  }
 
@@ -359,14 +354,14 @@ char *DictPrint(Dict *in, char *out, int size)
     else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s':[%d,'%s']", iter->key, iter->UserData,  ((char   *)iter->data)); }
     else if (iter->DataType == DATATYPE_LIST  )
      {
-      sprintf(out+pos, "%s:[%d,", iter->key, iter->UserData);
+      sprintf(out+pos, "'%s':[%d,", iter->key, iter->UserData);
       pos += strlen(out+pos);
       ListPrint( ((List *)iter->data), out+pos, size-pos);
       pos += strlen(out+pos); strcpy(out+pos, "]");
      }
     else if (iter->DataType == DATATYPE_DICT  )
       {
-       sprintf(out+pos, "%s:[%d,", iter->key, iter->UserData);
+       sprintf(out+pos, "'%s':[%d,", iter->key, iter->UserData);
        pos += strlen(out+pos);
        DictPrint( ((Dict *)iter->data), out+pos, size-pos);
        pos += strlen(out+pos); strcpy(out+pos, "]");

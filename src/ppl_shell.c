@@ -158,7 +158,7 @@ int ProcessDirective(char *in, int interactive)
    {
     if (interactive!=0) sigjmp_FromSigInt = &sigjmp_ToDirective;
     command = parse(in);
-    status  = ProcessDirective2(in, command, interactive);
+    if (command != NULL) status  = ProcessDirective2(in, command, interactive); // If command is NULL, we had a syntax error
    } else {
     ppl_error("\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;

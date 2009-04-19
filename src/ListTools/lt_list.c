@@ -77,7 +77,7 @@ int ListLen(List *in)
   return in->length;
  }
 
-void ListAppendPtr(List *in, void *item, int size, int copyable)
+void ListAppendPtr(List *in, void *item, int size, int copyable, int DataType)
  {
   ListItem *ptrnew;
   ptrnew           = (ListItem *)lt_malloc_incontext(sizeof(ListItem), in->memory_context);
@@ -85,7 +85,7 @@ void ListAppendPtr(List *in, void *item, int size, int copyable)
   ptrnew->next     = NULL;
   ptrnew->data     = item;
   ptrnew->DataSize = size;
-  ptrnew->DataType = DATATYPE_VOID;
+  ptrnew->DataType = DataType;
   ptrnew->copyable = copyable;
   if (in->first == NULL) in->first = ptrnew;
   if (in->last  != NULL) in->last->next = ptrnew;
@@ -94,7 +94,7 @@ void ListAppendPtr(List *in, void *item, int size, int copyable)
   return;
  }
 
-void ListAppendPtrCpy(List *in, void *item, int size)
+void ListAppendPtrCpy(List *in, void *item, int size, int DataType)
  {
   ListItem *ptrnew;
   ptrnew           = (ListItem *)lt_malloc_incontext(sizeof(ListItem), in->memory_context);
@@ -103,7 +103,7 @@ void ListAppendPtrCpy(List *in, void *item, int size)
   ptrnew->data     = (void *)lt_malloc_incontext(size, in->memory_context);
   memcpy(ptrnew->data, item, size);
   ptrnew->DataSize = size;
-  ptrnew->DataType = DATATYPE_VOID;
+  ptrnew->DataType = DataType;
   ptrnew->copyable = 1;
   if (in->first == NULL) in->first = ptrnew;
   if (in->last  != NULL) in->last->next = ptrnew;
@@ -114,36 +114,31 @@ void ListAppendPtrCpy(List *in, void *item, int size)
 
 void ListAppendInt(List *in, int item)
  {
-  ListAppendPtrCpy(in, (void *)&item, sizeof(int));
-  in->last->DataType = DATATYPE_INT;
+  ListAppendPtrCpy(in, (void *)&item, sizeof(int), DATATYPE_INT);
   return;
  }
 
 void ListAppendFloat(List *in, double item)
  {
-  ListAppendPtrCpy(in, (void *)&item, sizeof(double));
-  in->last->DataType = DATATYPE_FLOAT;
+  ListAppendPtrCpy(in, (void *)&item, sizeof(double), DATATYPE_FLOAT);
   return;
  }
 
 void ListAppendString(List *in, char *item)
  {
-  ListAppendPtrCpy(in, (void *)item, (strlen(item)+1)*sizeof(char));
-  in->last->DataType = DATATYPE_STRING;
+  ListAppendPtrCpy(in, (void *)item, (strlen(item)+1)*sizeof(char), DATATYPE_STRING);
   return;
  }
 
 void ListAppendList(List *in, List *item)
  {
-  ListAppendPtr(in, (void *)item, sizeof(List), 0);
-  in->last->DataType = DATATYPE_LIST;
+  ListAppendPtr(in, (void *)item, sizeof(List), 0, DATATYPE_LIST);
   return;
  }
 
 void ListAppendDict(List *in, Dict *item)
  {
-  ListAppendPtr(in, (void *)item, sizeof(Dict), 0);
-  in->last->DataType = DATATYPE_DICT;
+  ListAppendPtr(in, (void *)item, sizeof(Dict), 0, DATATYPE_DICT);
   return;
  }
 
