@@ -593,14 +593,15 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
    }
   else if ((node->type == PN_TYPE_REP) || (node->type == PN_TYPE_REP2))
    {
-    repeating = 1; first = 1; DictBabyList = ListInit();
+    repeating = 1; first = 1;
+    if (output != NULL) DictBabyList = ListInit();
     SeparatorString[0] = node->VarName[strlen(node->VarName)-1];
     if ((SeparatorString[0]!=',')&&(SeparatorString[0]!=':')) SeparatorString[0]='\0';
     SeparatorString[1] = '\0';
 
     while (repeating != 0)
      {
-      DictBaby = DictInit();
+      if (output != NULL) DictBaby = DictInit();
       LinePosOld = *linepos;
       SeparatorNode.MatchString = SeparatorString;
       if ((first==0)&&(SeparatorString[0]!='\0'))
@@ -631,9 +632,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         *success = 1; repeating = 0; // We didn't get a repeat separator
        }
-      if (repeating!=0) { ListAppendDict(DictBabyList, DictBaby); first = 0; }
+      if ((repeating!=0) && (output != NULL)) { ListAppendDict(DictBabyList, DictBaby); first = 0; }
      }
-    if (first==0) DictAppendList(output , node->VarName , 0 , DictBabyList); // Only append list if we matched at least once
+    if ((first==0) && (output != NULL)) DictAppendList(output , node->VarName , 0 , DictBabyList); // Only append list if we matched at least once
     else if (node->type == PN_TYPE_REP) *success=0; // We needed at least one item, but got none
    }
   else if (node->type == PN_TYPE_OPT)
