@@ -29,7 +29,7 @@
 void with_words_print(with_words *defn, char *out);
 void directive_set(Dict *command);
 void directive_show2(char *word, int interactive);
-void directive_show(Dict *command);
+void directive_show(Dict *command, int interactive);
 
 #endif
 

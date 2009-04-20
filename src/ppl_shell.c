@@ -171,9 +171,28 @@ int ProcessDirective(char *in, int interactive)
 
 int ProcessDirective2(char *in, Dict *command, int interactive)
  {
-  char buffer[LSTR_LENGTH]=""; //, text[LSTR_LENGTH]="", ErrText[LSTR_LENGTH]="";
-  //int  errpos=-1;
+  char *directive;
+  char buffer[LSTR_LENGTH]="";
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
+
+  DictLookup(command,"directive",NULL,NULL,(void **)(&directive));
+
+  if      (strcmp(directive, "pling")==0)
+   {
+    DictLookup(command,"cmd",NULL,NULL,(void **)(&directive));
+    system(directive);
+   }
+  else if (strcmp(directive, "help")==0)
+   directive_help(command, interactive);
+  else if (strcmp(directive, "pwd")==0)
+   ppl_report(settings_session_default.cwd);
+  else if (strcmp(directive, "quit")==0)
+   PPL_SHELL_EXITING = 1;
+  else if (strcmp(directive, "show")==0)
+   directive_show(command, interactive);
+  else
+   ppl_report(DictPrint(command, buffer, LSTR_LENGTH));
+
   //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
 
   //if (chdir(settings_session_default.tempdir < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
@@ -183,8 +202,6 @@ int ProcessDirective2(char *in, Dict *command, int interactive)
   //directive_help(command,interactive);
 
   //directive_show2("settings",interactive);
-
-  ppl_report(DictPrint(command, buffer, LSTR_LENGTH));
 
   return 0;
  }

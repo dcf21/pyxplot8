@@ -38,10 +38,11 @@
 
 #define PN_TYPE_SEQ  21000
 #define PN_TYPE_OPT  21001
-#define PN_TYPE_REP  21002
-#define PN_TYPE_PER  21003
-#define PN_TYPE_ORA  21004
-#define PN_TYPE_ITEM 21005
+#define PN_TYPE_REP  21002 // Must have at least one repeat item
+#define PN_TYPE_REP2 21003 // Can have zero items
+#define PN_TYPE_PER  21004
+#define PN_TYPE_ORA  21005
+#define PN_TYPE_ITEM 21006
 
 typedef struct ParserNode {
   int   type;
@@ -55,7 +56,7 @@ typedef struct ParserNode {
 
 ParserNode SeparatorNode = {PN_TYPE_ITEM, NULL, 1, NULL, NULL, NULL, NULL};
 
-void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, char *AlgebraError, int *AlgebraLinepos, Dict *output, int *match, int *success);
+void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, Dict *output, int *match, int *success);
 
 // --------------------------------------------------------------------------
 // PART I: READ SYNTAX SPECIFICATION
@@ -115,13 +116,14 @@ void RollBack(ParserNode **DefnStack, int *i, int type, char *PplCommandsText, i
    { sprintf(temp_err_string, "Incorrect nesting of types in command specification -- expected %d, but got %d.", type, DefnStack[(*i)-1]->type); ppl_fatal(__FILE__,__LINE__, temp_err_string); }
 
   if (PplCommandsText[j]==':') j++;
+  if ((PplCommandsText[j]=='@') && (type==PN_TYPE_REP)) { type=PN_TYPE_REP2; DefnStack[(*i)-1]->type=type; j++; } // A REP2 item
   if (PplCommandsText[j]> ' ')
    {
     VarNameBegin = j;
     while (PplCommandsText[j]> ' ') j++; // FFW over variable name
     VarNameEnd   = j;
    }
-  while ((PplCommandsText[j]!='\0') && (PplCommandsText[j]<' ')) j++; // FFW over trailing whitespace
+  while ((PplCommandsText[j]!='\0') && (PplCommandsText[j]!='\n') && (PplCommandsText[j]<' ')) j++; // FFW over trailing whitespace
 
   if (VarNameBegin > -1)
    {
@@ -251,7 +253,7 @@ Dict *parse(char *line)
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
   Dict         *output;
-  int           match, success, AlgebraLinepos, linepos, ExpectingPos, ErrPos, i;
+  int           match, success, AlgebraLinepos, linepos, ExpectingPos, ExpectingLinePos, ErrPos, i;
   char          expecting   [LSTR_LENGTH];
   char          ErrText     [LSTR_LENGTH];
   char          AlgebraError[LSTR_LENGTH];
@@ -265,12 +267,14 @@ Dict *parse(char *line)
     linepos         = 0;
     AlgebraLinepos  =-1;
     ExpectingPos    = 0;
+    ExpectingLinePos= 0;
     expecting[0]    = '\0';
     ErrText[0]      = '\0';
     AlgebraError[0] = '\0';
     output          = DictInit();
 
-    parse_descend(CmdDescriptor, line, &linepos, NULL, NULL, expecting, &ExpectingPos, AlgebraError, &AlgebraLinepos, output, &match, &success);
+    parse_descend(CmdDescriptor, line, &linepos, NULL, NULL, expecting, &ExpectingPos, &ExpectingLinePos,
+                  AlgebraError, &AlgebraLinepos, output, &match, &success);
 
     if (match==0) continue; // This command did not even begin to match
 
@@ -278,25 +282,27 @@ Dict *parse(char *line)
 
     if ((success==0) || (line[linepos]!='\0'))
      {
-      if (AlgebraLinepos >= 0) strcpy(ErrText, "\nSyntax Error: ");
-      else                     strcpy(ErrText, "\nAt this point, was ");
+      if (AlgebraLinepos < 0) strcpy(ErrText, "\nSyntax Error: ");
+      else                    strcpy(ErrText, "\nAt this point, was ");
       ErrPos = strlen(ErrText);
       if (success==0) { sprintf(ErrText+ErrPos, "expecting %s.\n",expecting); ErrPos += strlen(ErrText+ErrPos); }
       else
        {
-        if (expecting[0]=='\0') { sprintf(ErrText+ErrPos, "unexpected trailing matter at the end of command.\n"); ErrPos += strlen(ErrText+ErrPos); }
-        else                    { sprintf(ErrText+ErrPos, "expecting %s or end of command.\n",expecting); ErrPos += strlen(ErrText+ErrPos); }
+        if (expecting[0]=='\0')
+         { sprintf(ErrText+ErrPos, "unexpected trailing matter at the end of command.\n"); ErrPos += strlen(ErrText+ErrPos); ExpectingLinePos=linepos; }
+        else
+         { sprintf(ErrText+ErrPos, "expecting %s or end of command.\n",expecting); ErrPos += strlen(ErrText+ErrPos); }
        }
-      for (i=0;i<linepos;i++) ErrText[ErrPos++] = ' ';
+      for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
       strcpy(ErrText+ErrPos, " |\n");                    ErrPos += strlen(ErrText+ErrPos);
-      for (i=0;i<linepos;i++) ErrText[ErrPos++] = ' ';
+      for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
       sprintf(ErrText+ErrPos, "\\|/\n %s", line);        ErrPos += strlen(ErrText+ErrPos);
       if (AlgebraLinepos >= 0)
        {
         ErrText[ErrPos++] = '\n';
-        for (i=0;i<linepos;i++) ErrText[ErrPos++] = ' ';
+        for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
         strcpy(ErrText+ErrPos, "/|\\\n");                ErrPos += strlen(ErrText+ErrPos);
-        for (i=0;i<linepos;i++) ErrText[ErrPos++] = ' ';
+        for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
         sprintf(ErrText+ErrPos, " |\n%s", AlgebraError); ErrPos += strlen(ErrText+ErrPos);
        }
       strcpy(ErrText+ErrPos, "\n"); ErrPos += strlen(ErrText+ErrPos);
@@ -320,51 +326,62 @@ char *ppl_dummy_completer(const char *line, int status) // This is a replacement
 
 char *parse_autocomplete(const char *LineConst, int status)
  {
-  static int number, start;
+  static int   number, start;
 
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
-  int           match, success, AlgebraLinepos, linepos, ExpectingPos, NumberCpy;
+  int           match, success, AlgebraLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
   static char   expecting   [SSTR_LENGTH];
   char          ErrText     [LSTR_LENGTH];
   char          AlgebraError[LSTR_LENGTH];
-  char         *output, *line;
-
-  line = (char *)LineConst;
+  char         *output;
 
   if (status<0)
    {
-    start = -status-1; number = -1;
+    start = -status-1; number = -1; // We are called once with negative status to set up static varaibles, before readline calls us with status>=0
    }
 
-  NumberCpy = number++;
-  if (NumberCpy<0) NumberCpy=0; // Return first item twice
-  CmdIterator = ListIterateInit(PplParserCmdList);
-  while (CmdIterator != NULL)
+  while (1)
    {
-    CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
-    match           = 0;
-    success         = 1;
-    linepos         = 0;
-    AlgebraLinepos  = -1;
-    expecting[0]    = '\0';
-    ErrText[0]      = '\0';
-    AlgebraError[0] = '\0';
-
-    parse_descend(CmdDescriptor, line, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, AlgebraError, &AlgebraLinepos, NULL, &match, &success);
-
-    if (expecting[0] == '\n')
+    NumberCpy = number++;
+    if (NumberCpy<0) NumberCpy=0; // Return first item twice
+    CmdIterator = ListIterateInit(PplParserCmdList);
+    while (CmdIterator != NULL)
      {
-      output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // Special case: use Readline's filename tab completion
-      strcpy(output, expecting);
-      return output;
+      CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
+      match           = 0;
+      success         = 1;
+      linepos         = 0;
+      AlgebraLinepos  = -1;
+      ExpectingPos    = 0;
+      ExpectingLinePos= 0;
+      expecting[0]    = '\0';
+      ErrText[0]      = '\0';
+      AlgebraError[0] = '\0';
+
+      parse_descend(CmdDescriptor, rl_line_buffer, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, &ExpectingLinePos,
+                    AlgebraError, &AlgebraLinepos, NULL, &match, &success);
+
+      if (expecting[0] == '\n')
+       {
+        if (status < 0)
+         {
+          output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // Special case: use Readline's filename tab completion
+          strcpy(output, expecting);
+          return output;
+         } else {
+          break;
+         }
+       }
+      if (expecting[0] != '\0')
+       {
+        output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // We have a new completion option; do not iterate through more commands
+        strcpy(output, expecting);
+        return output;
+       }
      }
-    if (expecting[0] != '\0')
-     {
-      output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // We have a new completion option; do not iterate through more commands
-      strcpy(output, expecting);
-      return output;
-     }
+    if (expecting[0] == '\n') continue; // We've been asked to match filenames, but have already made other PyXPlot syntax suggestions
+    else                      break;
    }
   return NULL; // Tell readline we have no more matches to offer
  }
@@ -379,7 +396,7 @@ char **ppl_rl_completion(const char *text, int start, int end)
   if ((FirstItem!=NULL) && (FirstItem[0]=='\n'))  // We are trying to match a %s:filename field, so turn on filename completion
    {
     free(FirstItem);
-    rl_completion_entry_function = NULL; // NULL means that readline's default filename completer is activated
+    rl_completion_entry_function  = NULL; // NULL means that readline's default filename completer is activated
     return NULL;
    }
   else
@@ -404,7 +421,7 @@ char **ppl_rl_completion(const char *text, int start, int end)
 
 #define PER_MAXSIZE 32
 
-void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos,
+void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos,
                    char *AlgebraError, int *AlgebraLinepos, Dict *output, int *match, int *success)
  {
   unsigned char repeating=0, first=0;
@@ -422,26 +439,35 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
    {
     // IF WE ARE RUNNING IN TAB-COMPLETION MODE, SEE IF WE OUGHT TO MAKE TAB COMPLETION SUGGESTIONS BASED ON THIS ITEM
     if ((start != NULL) && ((*start) <  (*linepos))) {(*success)=0; return;} // We have overshot...
-    if ((start != NULL) && ((*start) == (*linepos)))
+    if ((start != NULL) && ( ((*start) == (*linepos)) || ((*start) == (*linepos)+1) ) )
      {
-      if ((*number)!=0) {(*success)=0; (*number)--; return;}
       if (node->MatchString[0]=='%')
        {
-        if ((node->VarName != NULL) && ((strcmp(node->VarName,"filename")==0)||(strcmp(node->VarName,"directory"))))
+        if ((node->VarName != NULL) && ((strcmp(node->VarName,"filename")==0)||(strcmp(node->VarName,"directory")==0)))
          { // Expecting a filename
+          if ((*number)!=0) {(*success)=0; (*number)--; return;}
           (*success)=2; strcpy(expecting, "\n"); (*number)--; return;
          }
         (*success)=0; return; // Expecting a float or string, which we don't tab complete... move along and look for something else
        }
-      for (i=0; ((line[*linepos+i]>' ') && (node->MatchString[i]>' ')); i++)
-       if (toupper(line[*linepos+i])!=toupper(node->MatchString[i]))
-        {
-         (*success)=0; return; // We don't match the beginning of this string
-        }
-      (*success)=2;
-      strcpy(expecting, node->MatchString); // Matchstring should match itself
-      (*number)--;
-      return;
+      if ((*start) == (*linepos))
+       {
+        if (node->MatchString[0]=='=')
+         {
+          (*success)=1; return; // Ignore match character
+         }
+      
+        for (i=0; ((line[*linepos+i]>' ') && (node->MatchString[i]>' ')); i++)
+         if (toupper(line[*linepos+i])!=toupper(node->MatchString[i]))
+          {
+           (*success)=0; return; // We don't match the beginning of this string
+          }
+        if ((*number)!=0) {(*success)=0; (*number)--; return;}
+        (*success)=2;
+        strcpy(expecting, node->MatchString); // Matchstring should match itself
+        (*number)--;
+        return;
+       }
      }
 
     if (node->ACLevel == -2)
@@ -453,7 +479,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
         }
       if (*success!=0)
        {
-        linepos += i; // We do match this string: advance by i spaces
+        *linepos += i; // We do match this string: advance by i spaces
         MatchType = DATATYPE_STRING;
         MatchVal._str = node->MatchString;
        }
@@ -528,8 +554,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
            }
          }
        }
-      else // If we failed to match this item, add something to 'expecting' about what the user could have typed here
+      else if (*ExpectingLinePos <= *linepos) // If we failed to match this item, add something to 'expecting' about what the user could have typed here
        {
+        if ((*ExpectingLinePos) < (*linepos)) { *ExpectingLinePos = *linepos; *ExpectingPos = 0; expecting[0] = '\0'; } // Wipe old expecting string
         if (*ExpectingPos != 0) { strcpy(expecting+*ExpectingPos, ", or "); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         if ((node->VarName != NULL) && (node->VarName[0] != '\0'))  sprintf(varname, " (%s)", node->VarName);
         else                                                        varname[0]='\0';
@@ -558,13 +585,13 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
     NodeIter = node->FirstChild;
     while (NodeIter != NULL)
      {
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, output, match, success);
+      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos, AlgebraError, AlgebraLinepos, output, match, success);
       if (*success==2) return;
       NodeIter = NodeIter->NextSibling;
       if (*success==0) break;
      }
    }
-  else if (node->type == PN_TYPE_REP)
+  else if ((node->type == PN_TYPE_REP) || (node->type == PN_TYPE_REP2))
    {
     repeating = 1; first = 1; DictBabyList = ListInit();
     SeparatorString[0] = node->VarName[strlen(node->VarName)-1];
@@ -578,7 +605,8 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       SeparatorNode.MatchString = SeparatorString;
       if ((first==0)&&(SeparatorString[0]!='\0'))
        {
-        parse_descend(&SeparatorNode, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, DictBaby, match, success);
+        parse_descend(&SeparatorNode, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+                      AlgebraError, AlgebraLinepos, DictBaby, match, success);
         if (*success==2) return;
        }
       if (*success!=0)
@@ -586,7 +614,8 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
         NodeIter = node->FirstChild;
         while (NodeIter != NULL)
          {
-          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, DictBaby, match, success);
+          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+                        AlgebraError, AlgebraLinepos, DictBaby, match, success);
           if (*success==2) return;
           if (*success==0)
            {
@@ -605,6 +634,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       if (repeating!=0) { ListAppendDict(DictBabyList, DictBaby); first = 0; }
      }
     if (first==0) DictAppendList(output , node->VarName , 0 , DictBabyList); // Only append list if we matched at least once
+    else if (node->type == PN_TYPE_REP) *success=0; // We needed at least one item, but got none
    }
   else if (node->type == PN_TYPE_OPT)
    {
@@ -613,7 +643,8 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
     NodeIter = node->FirstChild;
     while (NodeIter != NULL)
      {
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, output, match, success);
+      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+                    AlgebraError, AlgebraLinepos, output, match, success);
       if (*success==2) return;
       if (*success==0)
        {
@@ -639,7 +670,8 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         if (excluded[i]==0)
          {
-          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, output, match, success);
+          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+                        AlgebraError, AlgebraLinepos, output, match, success);
           if (*success==2) return;
           if (*success!=0)
            { excluded[i]=1; repeating=1; break; } // This item worked; flag it and loop again
@@ -666,7 +698,8 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
     while (NodeIter != NULL)
      {
       *success = 1;
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, AlgebraError, AlgebraLinepos, output, match, success);
+      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+                    AlgebraError, AlgebraLinepos, output, match, success);
       if (*success==2) return;
       if (*success==0) // Reset output and try the next ORA item
        {

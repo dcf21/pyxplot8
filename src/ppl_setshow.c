@@ -116,6 +116,7 @@ void directive_show2(char *word, int interactive)
   int   i=0, p=0,j,k;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
+  out[0] = buf[0] = '\0';
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_graph_current.AxesColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
@@ -400,6 +401,7 @@ void directive_show(Dict *command, int interactive)
  {
   List         *ShowList;
   ListIterator *ShowIterate;
+  Dict         *ShowWordDict;
   char         *ShowWord;
   char          TextBuffer[SSTR_LENGTH];
   int           i=0;
@@ -420,8 +422,8 @@ void directive_show(Dict *command, int interactive)
              );
       i += strlen(TextBuffer+i);
       sprintf(TextBuffer+i,"%sSettings which have been changed by the user are shown in %s.%s\n",
-              (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-              (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_STR),
+              (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
+              (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_STR),
               (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT)
              );
       i += strlen(TextBuffer+i);
@@ -430,7 +432,8 @@ void directive_show(Dict *command, int interactive)
     ShowIterate = ListIterateInit(ShowList);
     while (ShowIterate != NULL)
      {
-      ShowIterate = ListIterate(ShowIterate, (void **)&ShowWord);
+      ShowIterate = ListIterate(ShowIterate, (void **)&ShowWordDict);
+      DictLookup(ShowWordDict,"setting",NULL,NULL,(void **)&ShowWord);
       if (StrAutocomplete(ShowWord,"all",1)>=0)
        {
         directive_show2("settings"  ,interactive);
