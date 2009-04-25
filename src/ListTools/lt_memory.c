@@ -240,7 +240,7 @@ void *fastmalloc(int context, int size)
    {
     _fastmalloc_malloccount++;
     if (*blklist_position == FM_BLOCKMAX-2) {  sprintf(temp_merr_string, "Memory allocation table overflow in context %d.", context); (*mem_fatal)(__FILE__,__LINE__,temp_merr_string); }
-    if (size > FM_BLOCKMAX)
+    if (size > FM_BLOCKSIZE)
      {
       if (MEMDEBUG1) { sprintf(temp_merr_string, "Fastmalloc creating block of size %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }
       if ((out = blklist_pointer[(*blklist_position)++] = malloc(size        )) == NULL) (*mem_fatal)(__FILE__,__LINE__,"Malloc failure."); // This is a big malloc which needs to new block to itself

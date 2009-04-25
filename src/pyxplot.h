@@ -33,11 +33,15 @@ extern char ppl_commands[];
 /* Functions defined in ppl_shell.c */
 #ifndef _PPL_SHELL_C
 extern int  PPL_SHELL_EXITING;
+extern char *DirectiveLinebuffer;
 #endif
 void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input);
 int         ProcessDirective    (char *in, int interactive);
-int         ProcessDirective2   (char *in, Dict *command, int interactive);
+int         ProcessDirective2   (char *in, int interactive);
+int         ProcessDirective3   (char *in, Dict *command, int interactive);
+void        directive_cd        (Dict *command);
+void        directive_print     (Dict *command);
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];

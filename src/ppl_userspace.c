@@ -281,7 +281,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
    }
   out[j]  = '\0';
   *errpos = -1;
-  if ((end!=NULL)&&(*end<0)) *end=pos+pos2;
+  if ((end!=NULL)&&(*end<0)) *end=pos+pos2+1;
   return;
  }
 
@@ -369,7 +369,8 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
    }
   for (i=0;i<len;i++) if ((StatusRow[i]==8) || (StatusRow[i]==4))
    {
-    for (j=i;((StatusRow[j]==8)||(StatusRow[i]==4));j++); for (;(in[start+j]<=' ');j--);
+    for (j=i;((StatusRow[j]==8)||(StatusRow[i]==4));j++);
+    while ((j>i) && (in[start+j-1]<=' ')) j--;
     ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
     DictLookup(Local2Vars, in+start+i, &UserData, &DataType, (void **)&VarData);
     if (VarData == NULL)
@@ -450,7 +451,7 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if      (MATCH_ONE('<')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] << (int)ResultBuffer[next_bufno]);
-      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] << (int)ResultBuffer[next_bufno]);
+      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] >> (int)ResultBuffer[next_bufno]);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {

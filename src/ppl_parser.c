@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include <readline/readline.h>
 
 #include "StringTools/asciidouble.h"
@@ -32,8 +33,10 @@
 #include "ListTools/lt_dict.h"
 #include "ListTools/lt_memory.h"
 
+#include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_parser.h"
+#include "ppl_userspace.h"
 #include "pyxplot.h"
 
 #define PN_TYPE_SEQ  21000
@@ -300,9 +303,9 @@ Dict *parse(char *line)
       if (AlgebraLinepos >= 0)
        {
         ErrText[ErrPos++] = '\n';
-        for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
+        for (i=0;i<AlgebraLinepos;i++) ErrText[ErrPos++] = ' ';
         strcpy(ErrText+ErrPos, "/|\\\n");                ErrPos += strlen(ErrText+ErrPos);
-        for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
+        for (i=0;i<AlgebraLinepos;i++) ErrText[ErrPos++] = ' ';
         sprintf(ErrText+ErrPos, " |\n%s", AlgebraError); ErrPos += strlen(ErrText+ErrPos);
        }
       strcpy(ErrText+ErrPos, "\n"); ErrPos += strlen(ErrText+ErrPos);
@@ -330,7 +333,8 @@ char *parse_autocomplete(const char *LineConst, int status)
 
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
-  int           match, success, AlgebraLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
+  int           i, match, success, AlgebraLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
+  static char  *line = NULL, *linep = NULL;
   static char   expecting   [SSTR_LENGTH];
   char          ErrText     [LSTR_LENGTH];
   char          AlgebraError[LSTR_LENGTH];
@@ -339,6 +343,19 @@ char *parse_autocomplete(const char *LineConst, int status)
   if (status<0)
    {
     start = -status-1; number = -1; // We are called once with negative status to set up static varaibles, before readline calls us with status>=0
+    if (line != NULL) {free(line); line=NULL;}
+    if (DirectiveLinebuffer == NULL) // If we're on the second line of a continued line, add DirectiveLinebuffer to beginning of line
+     { linep = rl_line_buffer; }
+    else
+     {
+      i = strlen(rl_line_buffer) + strlen(DirectiveLinebuffer);
+      line = (char *)malloc((i+1)*sizeof(char));
+      strcpy(line, DirectiveLinebuffer);
+      strcpy(line+strlen(line) , rl_line_buffer);
+      line[i] = '\0';
+      linep = line;
+      start += strlen(DirectiveLinebuffer);
+     }
    }
 
   while (1)
@@ -359,7 +376,7 @@ char *parse_autocomplete(const char *LineConst, int status)
       ErrText[0]      = '\0';
       AlgebraError[0] = '\0';
 
-      parse_descend(CmdDescriptor, rl_line_buffer, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, &ExpectingLinePos,
+      parse_descend(CmdDescriptor, linep, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, &ExpectingLinePos,
                     AlgebraError, &AlgebraLinepos, NULL, &match, &success);
 
       if (expecting[0] == '\n')
@@ -428,6 +445,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
   int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, ACLevel;
   union {double _dbl; int _int; char *_str; } MatchVal;
   char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4];
+  unsigned char DummyStatus[ALGEBRA_MAXLENGTH];
   Dict *OutputOld, *DictBaby;
   List *DictBabyList;
   ParserNode *NodeIter;
@@ -521,6 +539,91 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           *linepos += i;
          }
         else *success=0;
+       }
+      else if (strcmp(node->MatchString, "%q")==0)
+       {
+        if ((line[*linepos]=='\'') || (line[*linepos]=='\"'))
+         {
+          i=-1;
+          ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
+          if (*AlgebraLinepos >= 0) *success=0;
+          else
+           {
+            MatchType     = DATATYPE_STRING;
+            MatchVal._str = TempMatchStr;
+            *linepos      = i;
+           }
+         } else {
+          *success = 0;
+         }
+       }
+      else if (strcmp(node->MatchString, "%Q")==0)
+       {
+        *success = 0; // Redundant now that %q also matches string variable names
+       }
+      else if (strcmp(node->MatchString, "%a")==0)
+       {
+        if      ((line[*linepos]=='x')||(line[*linepos]=='X')) TempMatchStr[0]='x';
+        else if ((line[*linepos]=='y')||(line[*linepos]=='Y')) TempMatchStr[0]='y';
+        else if ((line[*linepos]=='z')||(line[*linepos]=='Z')) TempMatchStr[0]='z';
+        else                                                   *success = 0;
+
+        if (*success!=0)
+         {
+          (*linepos)++;
+          i = -1;
+          ppl_EvaluateAlgebra(line, &MatchVal._dbl, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
+          if (*AlgebraLinepos >= 0) { TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraLinepos = -1; }
+          else
+           {
+            sprintf(TempMatchStr+1, "%d", (int)floor(MatchVal._dbl));
+            *linepos = i;
+           }
+          MatchVal._str = TempMatchStr;
+          MatchType = DATATYPE_STRING;
+         }
+       }
+      else if (strcmp(node->MatchString, "%v")==0)
+       {
+        if (!isalpha(line[*linepos])) *success=0;
+        else
+         {
+          for (i=0; ((isalnum(line[*linepos])) || (line[*linepos]=='_')); i++,(*linepos)++) TempMatchStr[i] = line[*linepos];
+          TempMatchStr[i]='\0';
+          MatchType     = DATATYPE_STRING;
+          MatchVal._str = TempMatchStr;
+         }
+       }
+      else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0))
+       {
+        i = -1;
+        ppl_GetExpression(line, &i, 0, DummyStatus, NULL, AlgebraLinepos, AlgebraError);
+        if (*AlgebraLinepos >= 0) *success=0;
+        else
+         {
+          strncpy(TempMatchStr, line+*linepos, i-*linepos);
+          TempMatchStr[i-*linepos] = '\0';
+          MatchType     = DATATYPE_STRING;
+          MatchVal._str = TempMatchStr;
+          *linepos      = i;
+         }
+       }
+      else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%d")==0))
+       {
+        i = -1;
+        ppl_EvaluateAlgebra(line, &MatchVal._dbl, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
+        if (*AlgebraLinepos >= 0) *success=0;
+        else
+         {
+          if (strcmp(node->MatchString, "%d")==0)
+           {
+            MatchVal._int = (int)floor(MatchVal._dbl);
+            MatchType     = DATATYPE_INT;
+           } else {
+            MatchType     = DATATYPE_FLOAT;
+           }
+          *linepos      = i;
+         }
        }
       else // Anything else matches itself
        {

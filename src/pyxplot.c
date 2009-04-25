@@ -46,6 +46,7 @@
 #include "ppl_parser.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_units.h"
 #include "ppl_userspace.h"
 
 int WillBeInteractive;
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
   lt_MemoryInit(&ppl_fatal, &ppl_log);
+  ppl_units_init();
   ppl_PaperSizeInit();
   ppl_UserSpaceInit();
   ppl_text_init();
