@@ -37,6 +37,7 @@
 #include "ppl_passwd.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_units.h"
 
 settings_terminal settings_term_default;
 settings_terminal settings_term_current;
@@ -71,9 +72,13 @@ void ppl_settings_term_init()
   strcpy(settings_term_default.LatexPreamble, "");
   settings_term_default.multiplot = SW_ONOFF_OFF;
   strcpy(settings_term_default.output, "");
-  settings_term_default.PaperHeight= 297.0;
+  ppl_units_zero(&(settings_term_default.PaperHeight));
+  settings_term_default.PaperHeight.number = 297.0;
+  settings_term_default.PaperHeight.dimensionless = 0; settings_term_default.PaperHeight.exponent[UNIT_LENGTH] = 1;
   strcpy(settings_term_default.PaperName, "A4");
-  settings_term_default.PaperWidth = 210.0;
+  ppl_units_zero(&(settings_term_default.PaperWidth));
+  settings_term_default.PaperWidth.number = 210.0;
+  settings_term_default.PaperHeight.dimensionless = 0; settings_term_default.PaperWidth.exponent[UNIT_LENGTH] = 1;
   settings_term_default.TermAntiAlias = SW_ONOFF_ON;
   settings_term_default.TermType      = SW_TERMTYPE_X11S;
   settings_term_default.TermEnlarge   = SW_ONOFF_OFF;
@@ -117,11 +122,19 @@ void ppl_settings_term_init()
   settings_graph_default.key        = SW_ONOFF_ON;
   settings_graph_default.KeyColumns = 1;
   settings_graph_default.KeyPos     = SW_KEYPOS_TR;
-  settings_graph_default.KeyXOff    = 0.0;
-  settings_graph_default.KeyYOff    = 0.0;
+  ppl_units_zero(&(settings_graph_default.KeyXOff));
+  settings_graph_default.KeyXOff.number = 0.0;
+  settings_graph_default.KeyXOff.dimensionless = 0; settings_graph_default.KeyXOff.exponent[UNIT_LENGTH] = 1;
+  ppl_units_zero(&(settings_graph_default.KeyYOff));
+  settings_graph_default.KeyYOff.number = 0.0;
+  settings_graph_default.KeyYOff.dimensionless = 0; settings_graph_default.KeyYOff.exponent[UNIT_LENGTH] = 1;
   settings_graph_default.LineWidth  = 1.0;
-  settings_graph_default.OriginX    = 0.0;
-  settings_graph_default.OriginY    = 0.0;
+  ppl_units_zero(&(settings_graph_default.OriginX));
+  settings_graph_default.OriginX.number = 0.0;
+  settings_graph_default.OriginX.dimensionless = 0; settings_graph_default.OriginX.exponent[UNIT_LENGTH] = 1;
+  ppl_units_zero(&(settings_graph_default.OriginY));
+  settings_graph_default.OriginY.number = 0.0;
+  settings_graph_default.OriginY.dimensionless = 0; settings_graph_default.OriginY.exponent[UNIT_LENGTH] = 1;
   settings_graph_default.PointSize  = 1.0;
   settings_graph_default.PointLineWidth = 1.0;
   settings_graph_default.samples    = 250;
@@ -129,9 +142,15 @@ void ppl_settings_term_init()
   settings_graph_default.TextHAlign = SW_HALIGN_LEFT;
   settings_graph_default.TextVAlign = SW_VALIGN_BOT;
   strcpy(settings_graph_default.title, "");
-  settings_graph_default.TitleXOff  = 0.0;
-  settings_graph_default.TitleYOff  = 0.0;
-  settings_graph_default.width      = 8.0;
+  ppl_units_zero(&(settings_graph_default.TitleXOff));
+  settings_graph_default.TitleXOff.number = 0.0;
+  settings_graph_default.TitleXOff.dimensionless = 0; settings_graph_default.TitleXOff.exponent[UNIT_LENGTH] = 1;
+  ppl_units_zero(&(settings_graph_default.TitleYOff));
+  settings_graph_default.TitleYOff.number = 0.0;
+  settings_graph_default.TitleYOff.dimensionless = 0; settings_graph_default.TitleYOff.exponent[UNIT_LENGTH] = 1;
+  ppl_units_zero(&(settings_graph_default.width));
+  settings_graph_default.width.number = 0.0;
+  settings_graph_default.width.dimensionless = 0; settings_graph_default.width.exponent[UNIT_LENGTH] = 1;
 
   // Default Axis Settings, used whenever a new axis is created
   settings_axis_default.enabled     = 0;
@@ -185,8 +204,8 @@ void ppl_settings_term_init()
     PaperWidth  = GetFloat(ConfigFname, &Nchars);
     if (Nchars != strlen(ConfigFname)) goto LC_PAPERSIZE_DONE;
     if (DEBUG) { sprintf(temp_err_string, "Read papersize %f x %f", PaperWidth, PaperHeight); ppl_log(temp_err_string); }
-    settings_term_default.PaperHeight = PaperHeight;
-    settings_term_default.PaperWidth  = PaperWidth;
+    settings_term_default.PaperHeight.number = PaperHeight/1000;
+    settings_term_default.PaperWidth.number  = PaperWidth /1000;
     if (0) { LC_PAPERSIZE_DONE: if (DEBUG) ppl_log("Failed to read papersize from the locale command."); }
     pclose(LocalePipe);
    }
@@ -202,8 +221,8 @@ void ppl_settings_term_init()
     if (PaperHeight > 0)
      {
       if (DEBUG) { sprintf(temp_err_string, "Read papersize %s, with dimensions %f x %f", ConfigFname, PaperWidth, PaperHeight); ppl_log(temp_err_string); }
-      settings_term_default.PaperHeight = PaperHeight;
-      settings_term_default.PaperWidth  = PaperWidth;
+      settings_term_default.PaperHeight.number = PaperHeight/1000;
+      settings_term_default.PaperWidth.number  = PaperWidth /1000;
      } else {
       if (DEBUG) ppl_log("/etc/papersize returned an unrecognised papersize.");
      }
@@ -221,8 +240,8 @@ void ppl_settings_term_init()
     if (PaperHeight > 0)
      {
       if (DEBUG) { sprintf(temp_err_string, "Read papersize %s, with dimensions %f x %f", PaperSizePtr, PaperWidth, PaperHeight); ppl_log(temp_err_string); }
-      settings_term_default.PaperHeight = PaperHeight;
-      settings_term_default.PaperWidth  = PaperWidth;
+      settings_term_default.PaperHeight.number = PaperHeight/1000;
+      settings_term_default.PaperWidth.number  = PaperWidth /1000;
      } else {
       if (DEBUG) ppl_log("$PAPERSIZE returned an unrecognised paper size."); 
      }

@@ -25,6 +25,8 @@
 #include "StringTools/str_constants.h"
 #include "ListTools/lt_list.h"
 
+#include "ppl_units.h"
+
 typedef struct with_words {
  int    colour, fillcolour, linestyle, linetype, pointtype, style;
  double linewidth, pointlinewidth, pointsize;
@@ -32,7 +34,8 @@ typedef struct with_words {
 
 typedef struct settings_terminal {
  int   backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent;
- float dpi, PaperHeight, PaperWidth;
+ float dpi;
+ value PaperHeight, PaperWidth;
  char  output[FNAME_LENGTH];
  char  PaperName[FNAME_LENGTH];
  char  LatexPreamble[FNAME_LENGTH];
@@ -40,7 +43,8 @@ typedef struct settings_terminal {
 
 typedef struct settings_graph {
  int   aspect, AutoAspect, AxesColour, FontSize, grid, GridAxisX, GridAxisY, GridAxisZ, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
- float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, KeyXOff, KeyYOff, LineWidth, OriginX, OriginY, PointSize, PointLineWidth, TitleXOff, TitleYOff, width;
+ float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, LineWidth, PointSize, PointLineWidth;
+ value KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, width;
  char  title[FNAME_LENGTH];
  with_words DataStyle, FuncStyle;
  } settings_graph;

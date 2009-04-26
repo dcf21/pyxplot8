@@ -38,9 +38,9 @@
 
 typedef struct unit
  {
-  char         *name1, *name2, *name3, *comment;
+  char         *name1, *name2, *name3, *comment, *quantity;
   double        multiplier, offset;
-  unsigned char si, cgs, imperial, us, ancient;
+  unsigned char si, cgs, imperial, us, ancient, UserSel;
   int           MaxPrefix;
   int           MinPrefix;
   int           exponent[UNITS_MAX_BASEUNITS];
@@ -49,6 +49,7 @@ typedef struct unit
 typedef struct value
  {
   double number;
+  unsigned char dimensionless;
   int    exponent[UNITS_MAX_BASEUNITS];
  } value;
 
@@ -56,6 +57,10 @@ typedef struct value
 extern unit *ppl_unit_database;
 #endif
 
-void ppl_units_init();
+value *ppl_units_zero(value *in);
+char  *ppl_units_NumericDisplay(value in, int N, int typeable);
+value *ppl_unit_string_evaluate(char *in);
+void   ppl_units_init();
 
 #endif
+

@@ -29,6 +29,8 @@
 #include "lt_list.h"
 #include "lt_memory.h"
 
+#include "ppl_units.h"
+
 Dict *DictInit()
  {
   Dict *out;
@@ -175,6 +177,12 @@ void DictAppendInt(Dict *in, char *key, int UserData, int item)
 void DictAppendFloat(Dict *in, char *key, int UserData, double item)
  {
   DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(double), DATATYPE_FLOAT);
+  return;
+ }
+
+void DictAppendValue(Dict *in, char *key, int UserData, value item)
+ {
+  DictAppendPtrCpy(in, key, UserData, (void *)&item, sizeof(value), DATATYPE_VALUE);
   return;
  }
 
@@ -351,6 +359,7 @@ char *DictPrint(Dict *in, char *out, int size)
     if      (iter->DataType == DATATYPE_VOID  ) { sprintf(out+pos, "'%s':[%d,void]", iter->key, iter->UserData                         ); }
     else if (iter->DataType == DATATYPE_INT   ) { sprintf(out+pos, "'%s':[%d,%d]"  , iter->key, iter->UserData, *((int    *)iter->data)); }
     else if (iter->DataType == DATATYPE_FLOAT ) { sprintf(out+pos, "'%s':[%d,%e]"  , iter->key, iter->UserData, *((double *)iter->data)); }
+    else if (iter->DataType == DATATYPE_VALUE ) { sprintf(out+pos, "'%s':[%d,%e <unit>]", iter->key, iter->UserData, ((value *)iter->data)->number); }
     else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s':[%d,'%s']", iter->key, iter->UserData,  ((char   *)iter->data)); }
     else if (iter->DataType == DATATYPE_LIST  )
      {

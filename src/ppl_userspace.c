@@ -35,6 +35,7 @@
 #include "ListTools/lt_dict.h"
 
 #include "ppl_constants.h"
+#include "ppl_units.h"
 #include "ppl_userspace.h"
 
 // -------------------------------------------------------------------
@@ -53,12 +54,86 @@ Dict *_ppl_UserSpace_Funcs;
 
 void ppl_UserSpaceInit()
  {
+  value v;
+
   _ppl_UserSpace_Vars  = DictInit();
   _ppl_UserSpace_Funcs = DictInit();
 
-  DictAppendFloat(_ppl_UserSpace_Vars , "pi"     , PPL_USERSPACE_NUMERIC , M_PI);
-  DictAppendFloat(_ppl_UserSpace_Vars , "e"      , PPL_USERSPACE_NUMERIC , M_E );
+  // Set up default variables
+  ppl_units_zero(&v);
+  v.number = M_PI;
+  DictAppendValue(_ppl_UserSpace_Vars , "pi"            , PPL_USERSPACE_NUMERIC , v);
+  v.number = M_E;
+  DictAppendValue(_ppl_UserSpace_Vars , "e"             , PPL_USERSPACE_NUMERIC , v);
+  v.number = 299792458.0;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH]=1 ; v.exponent[UNIT_TIME]=-1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_c"         , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 4e-7*M_PI;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH] = 1; v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] = -2; v.exponent[UNIT_CURRENT] = -2;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_0"      , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 8.8541878176e-12;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH] =-3; v.exponent[UNIT_MASS] =-1; v.exponent[UNIT_TIME] =  4; v.exponent[UNIT_CURRENT] =  2;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_epsilon_0" , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 1.60217646e-19;
+  v.dimensionless = 0;
+  v.exponent[UNIT_CURRENT] = 1; v.exponent[UNIT_TIME] = 1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_q"         , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 6.626068e-34;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-1; 
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_h"         , PPL_USERSPACE_NUMERIC , v);
+  v.number = 1.0546e-34;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_hbar"      , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 6.0221415e23;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MOLE] = -1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_NA"        , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 1.66053886e-27;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_u"       , PPL_USERSPACE_NUMERIC , v);
+  v.number = 1.67262158e-27;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , PPL_USERSPACE_NUMERIC , v);
+  v.number = 1.67492729e-27;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 9.27400949e-24;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_CURRENT] = 1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_b"      , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 8.314472;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1; v.exponent[UNIT_MOLE] =-1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_R"         , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 1.3806503e-23;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_kB"        , PPL_USERSPACE_NUMERIC , v);
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2;
+  ppl_units_zero(&v);
+  v.number = 5.6704e-8;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] =-3; v.exponent[UNIT_TEMPERATURE] =-4;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_sigma"     , PPL_USERSPACE_NUMERIC , v);
+  ppl_units_zero(&v);
+  v.number = 6.67300e-11;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-2;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , PPL_USERSPACE_NUMERIC , v);
 
+  // Set up default mathematical functions
   DictAppendPtr  (_ppl_UserSpace_Funcs, "acos"   , PPL_USERSPACE_SYSTEM+1, (void *)&acos        ,0,0, DATATYPE_VOID); // 1 indicates that function takes (double)
   DictAppendPtr  (_ppl_UserSpace_Funcs, "asin"   , PPL_USERSPACE_SYSTEM+1, (void *)&asin        ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "atan"   , PPL_USERSPACE_SYSTEM+1, (void *)&atan        ,0,0, DATATYPE_VOID);

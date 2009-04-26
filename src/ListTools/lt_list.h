@@ -27,9 +27,10 @@
 #define DATATYPE_VOID   31000
 #define DATATYPE_INT    31001
 #define DATATYPE_FLOAT  31002
-#define DATATYPE_STRING 31003
-#define DATATYPE_LIST   31004
-#define DATATYPE_DICT   31005
+#define DATATYPE_VALUE  31003
+#define DATATYPE_STRING 31004
+#define DATATYPE_LIST   31005
+#define DATATYPE_DICT   31006
 
 typedef struct ListItemS
  {
@@ -54,6 +55,8 @@ typedef ListItem ListIterator;
 
 #include "lt_dict.h"
 
+#include "ppl_units.h"
+
 // Functions defined in lt_list.c
 List *ListInit         ();
 List *ListCopy         (List *in, int deep);
@@ -62,6 +65,7 @@ void  ListAppendPtr    (List *in, void  *item, int size, int copyable, int DataT
 void  ListAppendPtrCpy (List *in, void  *item, int size, int DataType);
 void  ListAppendInt    (List *in, int    item);
 void  ListAppendFloat  (List *in, double item);
+void  ListAppendValue  (List *in, value  item);
 void  ListAppendString (List *in, char  *item);
 void  ListAppendList   (List *in, List  *item);
 void  ListAppendDict   (List *in, Dict  *item);

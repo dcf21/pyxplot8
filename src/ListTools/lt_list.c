@@ -29,6 +29,8 @@
 #include "lt_list.h"
 #include "lt_memory.h"
 
+#include "ppl_units.h"
+
 List *ListInit()
  {
   List *out;
@@ -121,6 +123,12 @@ void ListAppendInt(List *in, int item)
 void ListAppendFloat(List *in, double item)
  {
   ListAppendPtrCpy(in, (void *)&item, sizeof(double), DATATYPE_FLOAT);
+  return;
+ }
+
+void ListAppendValue(List *in, value item)
+ {
+  ListAppendPtrCpy(in, (void *)&item, sizeof(value), DATATYPE_VALUE);
   return;
  }
 
@@ -248,6 +256,7 @@ char *ListPrint(List *in, char *out, int size)
     if      (iter->DataType == DATATYPE_VOID  ) { strcpy (out+pos, "void"                         ); }
     else if (iter->DataType == DATATYPE_INT   ) { sprintf(out+pos, "%d"  , *((int    *)iter->data)); }
     else if (iter->DataType == DATATYPE_FLOAT ) { sprintf(out+pos, "%e"  , *((double *)iter->data)); }
+    else if (iter->DataType == DATATYPE_VALUE ) { sprintf(out+pos, "%e <unit>", ((value *)iter->data)->number); }
     else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s'",  ((char   *)iter->data)); }
     else if (iter->DataType == DATATYPE_LIST  ) { ListPrint( ((List *)iter->data), out+pos, size-pos); }
     else if (iter->DataType == DATATYPE_DICT  ) { DictPrint( ((Dict *)iter->data), out+pos, size-pos); } 

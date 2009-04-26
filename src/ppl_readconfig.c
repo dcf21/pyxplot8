@@ -166,10 +166,10 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_KEYPOS_INT,SW_KEYPOS_STR))>0) settings_graph_default.KeyPos        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting KEYPOS."       , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "KEY_XOFF"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyXOff       = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyXOff.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting KEY_XOFF."     , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "KEY_YOFF"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyYOff       = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyYOff.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting KEY_YOFF."     , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "LANDSCAPE"    )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .landscape     = i;
@@ -181,25 +181,25 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .multiplot     = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting MULTIPLOT."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINX"      )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX       = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINX."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINY"      )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginY       = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginY.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINY."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "OUTPUT"       )==0)
         strcpy(settings_term_default.output , setvalue);
       else if (strcmp(setkey, "PAPER_HEIGHT" )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperHeight   = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperHeight.number= fl/1000;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting PAPER_HEIGHT." , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "PAPER_NAME"   )==0)
         {
          ppl_PaperSizeByName(setvalue, &PaperHeight, &PaperWidth);
          if (PaperHeight <= 0) {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnrecognised papersize specified for setting PAPER_NAME."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
-         settings_term_default.PaperHeight = PaperHeight;
-         settings_term_default.PaperWidth  = PaperWidth;
+         settings_term_default.PaperHeight.number = PaperHeight/1000;
+         settings_term_default.PaperWidth.number  = PaperWidth/1000;
         }
       else if (strcmp(setkey, "PAPER_WIDTH"  )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperWidth    = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperWidth.number= fl/1000;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting PAPER_WIDTH."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "POINTLINEWIDTH")==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.PointLineWidth= fl;
@@ -237,13 +237,13 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "TITLE"        )==0)
         strcpy(settings_graph_default.title  , setvalue);
       else if (strcmp(setkey, "TITLE_XOFF"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleXOff     = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleXOff.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_XOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "TITLE_YOFF"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff     = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_YOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "WIDTH"        )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.width         = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.width.number    = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting WIDTH."        , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else
        { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnrecognised setting name '%s'.", linecounter, ConfigFname, setkey); ppl_warning(temp_err_string); continue; }

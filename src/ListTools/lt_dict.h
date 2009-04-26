@@ -49,6 +49,7 @@ typedef struct DictS
 typedef DictItem DictIterator;
 
 #include "lt_list.h"
+#include "ppl_units.h"
 
 // Functions defined in lt_dict.c
 Dict *DictInit         ();
@@ -58,6 +59,7 @@ void  DictAppendPtr    (Dict *in, char *key, int UserData, void *item, int size,
 void  DictAppendPtrCpy (Dict *in, char *key, int UserData, void *item, int size, int DataType);
 void  DictAppendInt    (Dict *in, char *key, int UserData, int   item);
 void  DictAppendFloat  (Dict *in, char *key, int UserData, double item);
+void  DictAppendValue  (Dict *in, char *key, int UserData, value  item);
 void  DictAppendString (Dict *in, char *key, int UserData, char *item);
 void  DictAppendList   (Dict *in, char *key, int UserData, List *item);
 void  DictAppendDict   (Dict *in, char *key, int UserData, Dict *item);
