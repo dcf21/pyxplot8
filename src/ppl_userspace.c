@@ -210,8 +210,8 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
   char AllowedFormats[] = "cdieEfgGosSxX%"; // These tokens are allowed after a % format specifier
 
   int    arg1i, arg2i; // Integers for passing to sprintf
-  double arg1d, arg2d; // Doubles for passing to sprintf
-  union {double d; int i; char *s; unsigned int u;} argf; // We pass this lump of memory to sprintf
+  value  arg1v, arg2v; // Doubles (well, actually values with units) for passing to sprintf
+  struct {double d; int i; char *s; unsigned int u; value v; } argf; // We pass this lump of memory to sprintf
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
 
@@ -303,15 +303,17 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
       StrSlice(FormatString, FormatToken, i, k+1);
       if (RequiredArgs>1) // Length and/or precision was specified with a *, so we need to take an integer from the list of arguments
        {
-        ppl_EvaluateAlgebra(in+pos , &arg1d, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &arg1v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
-        arg1i = (int)arg1d;
+        if (arg1v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of %s.", ppl_units_GetUnitStr(&arg1v, NULL, 0, 0) ); return; }
+        arg1i = (int)(arg1v.number);
        }
       if (RequiredArgs>2)
        {
-        ppl_EvaluateAlgebra(in+pos , &arg2d, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &arg2v, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
-        arg2i = (int)arg2d;
+        if (arg2v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of %s.", ppl_units_GetUnitStr(&arg2v, NULL, 0, 0) ); return; }
+        arg2i = (int)(arg2v.number);
        }
 
       ArgCount += (RequiredArgs-1); // Fastforward ArgCount to point at the number or string argument that we're actually going to substitute
@@ -320,18 +322,19 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
         ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         argf.s = FormatArg;
-        if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s);
+        if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s); // Print a string variable
         if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.s);
         if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.s);
        }
       else
        {
-        ppl_EvaluateAlgebra(in+pos , &argf.d, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
+        argf.s = ppl_units_GetUnitStr(&argf.v, &argf.d, 0, 0);
         if      ((AllowedFormats[l]=='d') || (AllowedFormats[l]=='i') || (AllowedFormats[l]=='o') || (AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
          {
           argf.i = (int)argf.d; // sprintf will expect to be passed an int
-          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i);
+          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i); // Print an integer variable
           if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
           if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
          }
@@ -347,6 +350,11 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
           if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d);
           if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d);
           if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d);
+         }
+        if (argf.v.dimensionless != 0)
+         {
+          j += strlen(out+j);
+          strcpy(out+j, argf.s); // Print dimensions of this value
          }
        }
       ArgCount++;
@@ -394,11 +402,11 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
 #define FETCHNEXT(VARA,VARB,VARC)  { for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++); if ((cj=StatusRow[j])<BUFFER_OFFSET) {*errpos=i; strcpy(errtext, "Internal Error: Trying to do arithmetic before numeric conversion"); return;}; for (k=j; StatusRow[k]==cj; k++); VARA=j; VARB=(int)(cj-BUFFER_OFFSET); VARC=k; }
 #define SETSTATUS(BEG,END,VAL)     { ci = (unsigned char)(VAL+BUFFER_OFFSET); for (j=BEG;j<END;j++) StatusRow[j]=ci; }
 
-void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth)
+void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth)
  {
   unsigned char OpList[OPLIST_LEN];           // A list of what operations this expression contains
   unsigned char StatusRow[ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
-  double ResultBuffer[ALGEBRA_MAXITEMS];      // A buffer of temporary numerical results
+  value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
   int len, CalculatedEnd;
   int i,p,j,k;
   int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
@@ -407,7 +415,8 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
   int bufpos = 0;
   int     UserData = -1;
   int     DataType = -1; 
-  double *VarData  = NULL;
+  value  *VarData  = NULL;
+  double  TempDbl;
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
 
@@ -436,7 +445,8 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
   // PHASE 2b: EVALUATION OF ALL NUMERICS AND VARIABLES
   for (i=0;i<len;i++) if (StatusRow[i]==6)
    {
-    ResultBuffer[bufpos] = GetFloat(in+start+i, &j);
+    ppl_units_zero(ResultBuffer+bufpos);
+    ResultBuffer[bufpos].number = GetFloat(in+start+i, &j);
     for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant"); return; }
@@ -469,7 +479,7 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
   if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)
    {
     FETCHNEXT(next_start, next_bufno, next_end);
-    ResultBuffer[next_bufno] *= -1;
+    ResultBuffer[next_bufno].number *= -1;
     SETSTATUS(p, next_start, next_bufno);
     i = start + next_start;
    }
@@ -480,7 +490,8 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      ResultBuffer[prev_bufno] = pow(ResultBuffer[prev_bufno], ResultBuffer[next_bufno]);
+      ppl_units_pow(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -494,9 +505,10 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      if      (MATCH_ONE('*')) ResultBuffer[prev_bufno] *= ResultBuffer[next_bufno];
-      else if (MATCH_ONE('/')) ResultBuffer[prev_bufno] /= ResultBuffer[next_bufno];
-      else if (MATCH_ONE('%')) ResultBuffer[prev_bufno] -= floor(ResultBuffer[prev_bufno] / ResultBuffer[next_bufno]) * ResultBuffer[next_bufno];
+      if      (MATCH_ONE('*')) ppl_units_mult(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      else if (MATCH_ONE('/')) ppl_units_div (ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      else if (MATCH_ONE('%')) ppl_units_mod (ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -510,8 +522,9 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      if      (MATCH_ONE('+')) ResultBuffer[prev_bufno] += ResultBuffer[next_bufno];
-      else if (MATCH_ONE('-')) ResultBuffer[prev_bufno] -= ResultBuffer[next_bufno];
+      if      (MATCH_ONE('+')) ppl_units_add(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      else if (MATCH_ONE('-')) ppl_units_sub(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start; 
      } else {
@@ -525,8 +538,10 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      if      (MATCH_ONE('<')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] << (int)ResultBuffer[next_bufno]);
-      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] >> (int)ResultBuffer[next_bufno]);
+      if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
+       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+      if      (MATCH_ONE('<')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number << (int)ResultBuffer[next_bufno].number);
+      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number >> (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -540,10 +555,14 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] <= ResultBuffer[next_bufno]);
-      else if (MATCH_TWO('>','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] >= ResultBuffer[next_bufno]);
-      else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] <  ResultBuffer[next_bufno]);
-      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] <  ResultBuffer[next_bufno]);
+      if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
+       { *errpos=i; sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); return; }
+      TempDbl = ResultBuffer[prev_bufno].number;
+      ppl_units_zero(ResultBuffer+prev_bufno);
+      if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl <= ResultBuffer[next_bufno].number);
+      else if (MATCH_TWO('>','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl >= ResultBuffer[next_bufno].number);
+      else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
+      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -557,9 +576,13 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      if      (MATCH_TWO('=','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] == ResultBuffer[next_bufno]);
-      else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] != ResultBuffer[next_bufno]);
-      else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno] = (double)(ResultBuffer[prev_bufno] != ResultBuffer[next_bufno]);
+      if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
+       { *errpos=i; sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); return; }
+      TempDbl = ResultBuffer[prev_bufno].number;
+      ppl_units_zero(ResultBuffer+prev_bufno);
+      if      (MATCH_TWO('=','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl == ResultBuffer[next_bufno].number);
+      else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl != ResultBuffer[next_bufno].number);
+      else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno].number = (double)(TempDbl != ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -573,7 +596,9 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] & (int)ResultBuffer[next_bufno]);
+      if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
+       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number & (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -587,7 +612,9 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] ^ (int)ResultBuffer[next_bufno]);
+      if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
+       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number ^ (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -601,7 +628,9 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] | (int)ResultBuffer[next_bufno]);
+      if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
+       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number | (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -615,7 +644,9 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] && (int)ResultBuffer[next_bufno]);
+      if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
+       { *errpos=i; strcpy(errtext, "Logical operators can only be applied to two dimensionless operands."); return; }
+      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number && (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {
@@ -629,7 +660,9 @@ void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
-      ResultBuffer[prev_bufno] = (double)((int)ResultBuffer[prev_bufno] || (int)ResultBuffer[next_bufno]);
+      if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
+       { *errpos=i; strcpy(errtext, "Logical operators can only be applied to two dimensionless operands."); return; }
+      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number || (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
      } else {

@@ -44,9 +44,13 @@ value *ppl_units_zero(value *in)
   return in;
  }
 
-char *ppl_units_NumericDisplay(value in, int N, int typeable)
+char *ppl_units_NumericDisplay(value *in, int N, int typeable)
  {
-  return NumericDisplay(in.number, N);
+  return NumericDisplay(in->number, N);
+ }
+
+char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
+ {
   // In selecting display units to use, criteria are:
   // 1. A unit which matches as many as possible of the dimensions of X
   // 2. A unit which is user-prefered
@@ -56,11 +60,47 @@ char *ppl_units_NumericDisplay(value in, int N, int typeable)
   // If there is a unit raised to power of one which we can append a prefix to, do so
 
   // Display units in order of decreasing exponent
+  *NumberOut = in->number;
+  return "foo";
  }
 
-value *ppl_unit_string_evaluate(char *in)
+value *ppl_units_StringEvaluate(char *in)
  {
   return NULL;
+ }
+
+// ARITHMETIC OPERATIONS ON VALUES
+
+void ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext)
+ {
+ }
+
+void ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext)
+ {
+ }
+
+void ppl_units_div (value *a, value *b, value *o, int *status, char *errtext)
+ {
+ }
+
+void ppl_units_add (value *a, value *b, value *o, int *status, char *errtext)
+ {
+ }
+
+void ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext)
+ {
+ }
+
+void ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext)
+ {
+  // ResultBuffer[prev_bufno] -= floor(ResultBuffer[prev_bufno] / ResultBuffer[next_bufno]) * ResultBuffer[next_bufno];
+ }
+
+int ppl_units_DimEqual(value *a, value *b)
+ {
+  int j;
+  for (j=0; j<UNITS_MAX_BASEUNITS; j++) if (a->exponent[j] != b->exponent[j]) return 0;
+  return 1;
  }
 
 // ----------------------------------------------------------------------

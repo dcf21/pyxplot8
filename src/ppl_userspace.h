@@ -30,7 +30,7 @@ void ppl_UserSpace_SetVarNumeric(char *name, double  value);
 void ppl_UserSpace_SetFunc      (char *name, char   *value);
 
 void ppl_GetQuotedString(char *in, char   *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);
-void ppl_EvaluateAlgebra(char *in, double *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);
+void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);
 void ppl_GetExpression  (char *in, int *end, int DollarAllowed, unsigned char *status, unsigned char *OpList, int *errpos, char *errtext);
 
 #endif

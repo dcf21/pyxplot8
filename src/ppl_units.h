@@ -57,9 +57,17 @@ typedef struct value
 extern unit *ppl_unit_database;
 #endif
 
-value *ppl_units_zero(value *in);
-char  *ppl_units_NumericDisplay(value in, int N, int typeable);
-value *ppl_unit_string_evaluate(char *in);
+value *ppl_units_zero          (value *in);
+char  *ppl_units_NumericDisplay(value *in, int N, int typeable);
+char  *ppl_units_GetUnitStr    (value *in, double *NumberOut, int N, int typeable);
+value *ppl_units_StringEvaluate(char *in);
+void   ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext);
+void   ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext);
+void   ppl_units_div (value *a, value *b, value *o, int *status, char *errtext);
+void   ppl_units_add (value *a, value *b, value *o, int *status, char *errtext);
+void   ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext);
+void   ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext);
+int    ppl_units_DimEqual(value *a, value *b);
 void   ppl_units_init();
 
 #endif
