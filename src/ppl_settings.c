@@ -84,6 +84,9 @@ void ppl_settings_term_init()
   settings_term_default.TermEnlarge   = SW_ONOFF_OFF;
   settings_term_default.TermInvert    = SW_ONOFF_OFF;
   settings_term_default.TermTransparent = SW_ONOFF_OFF;
+  settings_term_default.UnitScheme    = SW_UNITSCH_SI;
+  settings_term_default.UnitDisplayTypeable = SW_ONOFF_OFF;
+  settings_term_default.UnitDisplayPrefix   = SW_ONOFF_ON;
 
   // Default Graph Settings, used when these values are not changed by any configuration files
   settings_graph_default.aspect     = 1.0;

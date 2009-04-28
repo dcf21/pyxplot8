@@ -35,8 +35,12 @@
 #include "ListTools/lt_dict.h"
 
 #include "ppl_constants.h"
-#include "ppl_units.h"
 #include "ppl_userspace.h"
+
+// Include <ppl_units.c> as a part of this source file to allow inline
+// compilation of arithmetic functions.
+
+#include "ppl_units.c"
 
 // -------------------------------------------------------------------
 // Data structures used for storing the user's variables and functions

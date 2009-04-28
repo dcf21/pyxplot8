@@ -148,4 +148,16 @@ extern int   SW_TERMCOL_ACL[];
 extern int   SW_TERMCOL_INT[];
 extern char *SW_TERMCOL_TXT[];
 
+// Schemes in which units can be displayed
+
+#define SW_UNITSCH_SI  18001
+#define SW_UNITSCH_CGS 18002
+#define SW_UNITSCH_ANC 18003
+#define SW_UNITSCH_IMP 18004
+#define SW_UNITSCH_US  18005
+
+extern char *SW_UNITSCH_STR[];
+extern int   SW_UNITSCH_ACL[];
+extern int   SW_UNITSCH_INT[];
+
 #endif

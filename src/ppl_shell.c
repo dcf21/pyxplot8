@@ -366,7 +366,7 @@ void directive_print(Dict *command)
   List         *ItemList;
   Dict         *ItemSubDict;
   char         *item_str;
-  double       *item_dbl;
+  value        *item_val;
   ListIterator *ItemIterate;
   char          PrintString[LSTR_LENGTH] = "\0";
   int           i=0;
@@ -379,8 +379,8 @@ void directive_print(Dict *command)
     ItemIterate = ListIterate(ItemIterate , (void **)&ItemSubDict);
     DictLookup(ItemSubDict,"string",NULL,NULL,(void **)&item_str);
     if (item_str != NULL) { strcpy(PrintString+i, item_str); i+=strlen(PrintString+i); }
-    DictLookup(ItemSubDict,"expression",NULL,NULL,(void **)&item_dbl);
-    if (item_dbl != NULL) { strcpy(PrintString+i, NumericDisplay(*item_dbl, LSTR_LENGTH-i)); i+=strlen(PrintString+i); }
+    DictLookup(ItemSubDict,"expression",NULL,NULL,(void **)&item_val);
+    if (item_val != NULL) { strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0)); i+=strlen(PrintString+i); }
    }
   ppl_report(PrintString);
   return;

@@ -36,6 +36,7 @@
 #include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_parser.h"
+#include "ppl_units.h"
 #include "ppl_userspace.h"
 #include "pyxplot.h"
 
@@ -443,7 +444,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
  {
   unsigned char repeating=0, first=0;
   int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, ACLevel;
-  union {double _dbl; int _int; char *_str; } MatchVal;
+  union {double _dbl; int _int; char *_str; value _val; } MatchVal;
   char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4];
   unsigned char DummyStatus[ALGEBRA_MAXLENGTH];
   Dict *OutputOld, *DictBaby;
@@ -572,15 +573,28 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          {
           (*linepos)++;
           i = -1;
-          ppl_EvaluateAlgebra(line, &MatchVal._dbl, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
+          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
           if (*AlgebraLinepos >= 0) { TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraLinepos = -1; }
           else
            {
-            sprintf(TempMatchStr+1, "%d", (int)floor(MatchVal._dbl));
-            *linepos = i;
+            if (MatchVal._val.dimensionless == 0)
+             {
+              sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of %s.", ppl_units_GetUnitStr(&MatchVal._val,NULL,0,0));
+              *AlgebraLinepos = *linepos;
+              *match          = 1; // Fudge to make sure error is displayed
+              *success        = 0;
+             }
+            else
+             {
+              sprintf(TempMatchStr+1, "%d", (int)floor(MatchVal._dbl));
+              *linepos = i;
+             }
            }
-          MatchVal._str = TempMatchStr;
-          MatchType = DATATYPE_STRING;
+          if (*success!=0)
+           {
+            MatchVal._str = TempMatchStr;
+            MatchType = DATATYPE_STRING;
+           }
          }
        }
       else if (strcmp(node->MatchString, "%v")==0)
@@ -608,21 +622,34 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           *linepos      = i;
          }
        }
-      else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%d")==0))
+      else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fu")==0) || (strcmp(node->MatchString, "%d")==0))
        {
         i = -1;
-        ppl_EvaluateAlgebra(line, &MatchVal._dbl, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
+        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
         if (*AlgebraLinepos >= 0) *success=0;
         else
          {
+          if ((strcmp(node->MatchString, "%fu")!=0) && (MatchVal._val.dimensionless == 0))
+           {
+            sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of %s.", ppl_units_GetUnitStr(&MatchVal._val,NULL,0,0));
+            *AlgebraLinepos = *linepos;
+            *success        = 0;
+           }
           if (strcmp(node->MatchString, "%d")==0)
            {
-            MatchVal._int = (int)floor(MatchVal._dbl);
+            MatchVal._int = (int)floor(MatchVal._val.number);
             MatchType     = DATATYPE_INT;
-           } else {
+           }
+          else if (strcmp(node->MatchString, "%f")==0)
+           {
+            MatchVal._dbl = MatchVal._val.number;
             MatchType     = DATATYPE_FLOAT;
            }
-          *linepos      = i;
+          else
+           {
+            MatchType    = DATATYPE_VALUE;
+           }
+          if (*success!=0) *linepos = i;
          }
        }
       else // Anything else matches itself
@@ -653,6 +680,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
            {
             if      (MatchType == DATATYPE_INT)    DictAppendInt   (output , node->VarName , 0 , MatchVal._int);
             else if (MatchType == DATATYPE_FLOAT)  DictAppendFloat (output , node->VarName , 0 , MatchVal._dbl);
+            else if (MatchType == DATATYPE_VALUE)  DictAppendValue (output , node->VarName , 0 , MatchVal._val);
             else if (MatchType == DATATYPE_STRING) DictAppendString(output , node->VarName , 0 , MatchVal._str);
            }
          }

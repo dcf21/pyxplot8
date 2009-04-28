@@ -19,6 +19,10 @@
 
 // ----------------------------------------------------------------------------
 
+// NB: This source file is not included in the PyXPlot Makefile, but is
+// included as a part of ppl_userspace.c. This allows some functions to be
+// compiled inline for speed.
+
 #define _PPL_UNITS_C 1
 
 #include <stdlib.h>
@@ -60,7 +64,7 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
   // If there is a unit raised to power of one which we can append a prefix to, do so
 
   // Display units in order of decreasing exponent
-  *NumberOut = in->number;
+  if (NumberOut != NULL) *NumberOut = in->number;
   return "foo";
  }
 
@@ -71,32 +75,32 @@ value *ppl_units_StringEvaluate(char *in)
 
 // ARITHMETIC OPERATIONS ON VALUES
 
-void ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext)
  {
  }
 
-void ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext)
  {
  }
 
-void ppl_units_div (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *errtext)
  {
  }
 
-void ppl_units_add (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_add (value *a, value *b, value *o, int *status, char *errtext)
  {
  }
 
-void ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext)
  {
  }
 
-void ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext)
  {
   // ResultBuffer[prev_bufno] -= floor(ResultBuffer[prev_bufno] / ResultBuffer[next_bufno]) * ResultBuffer[next_bufno];
  }
 
-int ppl_units_DimEqual(value *a, value *b)
+int __inline__ ppl_units_DimEqual(value *a, value *b)
  {
   int j;
   for (j=0; j<UNITS_MAX_BASEUNITS; j++) if (a->exponent[j] != b->exponent[j]) return 0;
