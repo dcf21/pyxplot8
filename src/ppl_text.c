@@ -105,8 +105,8 @@ sprintf(txt_valid_show_options, "\n\
 'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linestyle',\n\
 'linewidth', 'logscale', 'multiplot', 'origin', 'output', 'palette',\n\
 'papersize', 'pointlinewidth', 'pointsize', 'preamble', 'samples', 'size',\n\
-'terminal', 'textcolour', 'texthalign', 'textvalign', 'title', 'width',\n\
-'[xyz]<n>label', '[xyz]<n>range', '[xyz]<n>ticdir', '[xyz]<n>tics'\n\
+'terminal', 'textcolour', 'texthalign', 'textvalign', 'title', 'unit',\n\
+'width', '[xyz]<n>label', '[xyz]<n>range', '[xyz]<n>ticdir', '[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set_noword, "\n\
@@ -132,8 +132,8 @@ Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 'nogrid', 'nokey', 'nolabel', 'nolinestyle', 'nolinewidth', 'nologscale',\n\
 'nomultiplot', 'no<m>[xyz]<n>tics', 'origin', 'output', 'palette', 'papersize',\n\
 'pointlinewidth', 'pointsize', 'preamble', 'samples', 'size', 'terminal',\n\
-'textcolour', 'texthalign', 'textvalign', 'title', 'width', '[xyz]<n>label',\n\
-'[xyz]<n>range', '[xyz]<n>ticdir', '<m>[xyz]<n>tics'\n\
+'textcolour', 'texthalign', 'textvalign', 'title', 'unit', 'width',\n\
+'[xyz]<n>label', '[xyz]<n>range', '[xyz]<n>ticdir', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set, "\n\

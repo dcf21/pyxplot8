@@ -43,18 +43,19 @@ typedef struct unit
   unsigned char si, cgs, imperial, us, ancient, UserSel;
   int           MaxPrefix;
   int           MinPrefix;
-  int           exponent[UNITS_MAX_BASEUNITS];
+  double        exponent[UNITS_MAX_BASEUNITS];
  } unit;
 
 typedef struct value
  {
-  double number;
+  double        number;
   unsigned char dimensionless;
-  int    exponent[UNITS_MAX_BASEUNITS];
+  double        exponent[UNITS_MAX_BASEUNITS];
  } value;
 
 #ifndef _PPL_UNITS_C
 extern unit *ppl_unit_database;
+extern int   ppl_unit_pos;
 #endif
 
 value *ppl_units_zero          (value *in);

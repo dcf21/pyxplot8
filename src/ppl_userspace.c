@@ -138,35 +138,37 @@ void ppl_UserSpaceInit()
   DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , PPL_USERSPACE_NUMERIC , v);
 
   // Set up default mathematical functions
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "acos"   , PPL_USERSPACE_SYSTEM+1, (void *)&acos        ,0,0, DATATYPE_VOID); // 1 indicates that function takes (double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "asin"   , PPL_USERSPACE_SYSTEM+1, (void *)&asin        ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan"   , PPL_USERSPACE_SYSTEM+1, (void *)&atan        ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan2"  , PPL_USERSPACE_SYSTEM+2, (void *)&atan2       ,0,0, DATATYPE_VOID); // 2 indicates that function takes (double, double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "ceil"   , PPL_USERSPACE_SYSTEM+1, (void *)&ceil        ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "cos"    , PPL_USERSPACE_SYSTEM+1, (void *)&cos         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "cosh"   , PPL_USERSPACE_SYSTEM+1, (void *)&cosh        ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "degrees", PPL_USERSPACE_SYSTEM+1, (void *)&degrees     ,0,0, DATATYPE_VOID);
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "ceil"   , PPL_USERSPACE_SYSTEM+1, (void *)&ceil        ,0,0, DATATYPE_VOID); // 1 indicates that function takes (double)
   DictAppendPtr  (_ppl_UserSpace_Funcs, "erf"    , PPL_USERSPACE_SYSTEM+1, (void *)&gsl_sf_erf  ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "exp"    , PPL_USERSPACE_SYSTEM+1, (void *)&exp         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "fabs"   , PPL_USERSPACE_SYSTEM+1, (void *)&fabs        ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "floor"  , PPL_USERSPACE_SYSTEM+1, (void *)&floor       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "fmod"   , PPL_USERSPACE_SYSTEM+2, (void *)&fmod        ,0,0, DATATYPE_VOID);
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "fmod"   , PPL_USERSPACE_SYSTEM+2, (void *)&fmod        ,0,0, DATATYPE_VOID); // 2 indicates that function takes (double, double)
   DictAppendPtr  (_ppl_UserSpace_Funcs, "frexp"  , PPL_USERSPACE_SYSTEM+3, (void *)&frexp       ,0,0, DATATYPE_VOID); // 3 indicates that these functions take (double, int)
   DictAppendPtr  (_ppl_UserSpace_Funcs, "gamma"  , PPL_USERSPACE_SYSTEM+1, (void *)&gsl_sf_gamma,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "hypot"  , PPL_USERSPACE_SYSTEM+2, (void *)&hypot       ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "ldexp"  , PPL_USERSPACE_SYSTEM+3, (void *)&ldexp       ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "log"    , PPL_USERSPACE_SYSTEM+1, (void *)&log         ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "log10"  , PPL_USERSPACE_SYSTEM+1, (void *)&log10       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "max"    , PPL_USERSPACE_SYSTEM+2, (void *)&max         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "min"    , PPL_USERSPACE_SYSTEM+2, (void *)&min         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "pow"    , PPL_USERSPACE_SYSTEM+2, (void *)&pow         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "radians", PPL_USERSPACE_SYSTEM+1, (void *)&radians     ,0,0, DATATYPE_VOID);
   DictAppendPtr  (_ppl_UserSpace_Funcs, "random" , PPL_USERSPACE_SYSTEM+0, (void *)&frandom     ,0,0, DATATYPE_VOID); // 0 indicates that this function takes no arguments
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sin"    , PPL_USERSPACE_SYSTEM+1, (void *)&sin         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sinh"   , PPL_USERSPACE_SYSTEM+1, (void *)&sinh        ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sqrt"   , PPL_USERSPACE_SYSTEM+1, (void *)&sqrt        ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "tan"    , PPL_USERSPACE_SYSTEM+1, (void *)&tan         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "tanh"   , PPL_USERSPACE_SYSTEM+1, (void *)&tanh        ,0,0, DATATYPE_VOID);
+
+  // These functions need replacing with unit-friendly versions
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "acos"   , PPL_USERSPACE_SYSTEM+1, (void *)&acos        ,0,0, DATATYPE_VOID); // // 1 indicates that function takes (double)
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "asin"   , PPL_USERSPACE_SYSTEM+1, (void *)&asin        ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan"   , PPL_USERSPACE_SYSTEM+1, (void *)&atan        ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan2"  , PPL_USERSPACE_SYSTEM+2, (void *)&atan2       ,0,0, DATATYPE_VOID); // // 2 indicates that function takes (double, double)
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "cos"    , PPL_USERSPACE_SYSTEM+1, (void *)&cos         ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "cosh"   , PPL_USERSPACE_SYSTEM+1, (void *)&cosh        ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "degrees", PPL_USERSPACE_SYSTEM+1, (void *)&degrees     ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "fabs"   , PPL_USERSPACE_SYSTEM+1, (void *)&fabs        ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "hypot"  , PPL_USERSPACE_SYSTEM+2, (void *)&hypot       ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "max"    , PPL_USERSPACE_SYSTEM+2, (void *)&max         ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "min"    , PPL_USERSPACE_SYSTEM+2, (void *)&min         ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "pow"    , PPL_USERSPACE_SYSTEM+2, (void *)&pow         ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "radians", PPL_USERSPACE_SYSTEM+1, (void *)&radians     ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "sin"    , PPL_USERSPACE_SYSTEM+1, (void *)&sin         ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "sinh"   , PPL_USERSPACE_SYSTEM+1, (void *)&sinh        ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "sqrt"   , PPL_USERSPACE_SYSTEM+1, (void *)&sqrt        ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "tan"    , PPL_USERSPACE_SYSTEM+1, (void *)&tan         ,0,0, DATATYPE_VOID); //
+  DictAppendPtr  (_ppl_UserSpace_Funcs, "tanh"   , PPL_USERSPACE_SYSTEM+1, (void *)&tanh        ,0,0, DATATYPE_VOID); //
 
   return;
  }
@@ -543,7 +545,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
-       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+       {
+        if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+        else if (ResultBuffer[prev_bufno].dimensionless == 0)
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+        else
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+       }
       if      (MATCH_ONE('<')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number << (int)ResultBuffer[next_bufno].number);
       else if (MATCH_ONE('>')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number >> (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
@@ -601,7 +610,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
-       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+       {
+        if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+        else if (ResultBuffer[prev_bufno].dimensionless == 0)
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+        else
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+       }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number & (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
@@ -617,7 +633,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
-       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+       {
+        if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+        else if (ResultBuffer[prev_bufno].dimensionless == 0)
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+        else
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+       }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number ^ (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
@@ -633,7 +656,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
-       { *errpos=i; strcpy(errtext, "Binary operators can only be applied to two dimensionless operands."); return; }
+       {
+        if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+        else if (ResultBuffer[prev_bufno].dimensionless == 0)
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+        else
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+       }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number | (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
@@ -649,7 +679,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
-       { *errpos=i; strcpy(errtext, "Logical operators can only be applied to two dimensionless operands."); return; }
+       {
+        if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+        else if (ResultBuffer[prev_bufno].dimensionless == 0)
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+        else
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+       }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number && (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;
@@ -665,7 +702,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
-       { *errpos=i; strcpy(errtext, "Logical operators can only be applied to two dimensionless operands."); return; }
+       {
+        if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+        else if (ResultBuffer[prev_bufno].dimensionless == 0)
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+        else
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+       }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number || (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start;

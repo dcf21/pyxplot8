@@ -26,6 +26,7 @@
 
 double GetFloat                 (char *str, int *Nchars);
 char  *NumericDisplay           (double in, int N);
+unsigned char DblEqual          (double a, double b);
 void   file_readline            (FILE *file, char *output);
 void   GetWord                  (char *out, char *in, int max);
 char  *NextWord                 (char *in);

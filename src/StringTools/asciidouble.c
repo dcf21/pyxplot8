@@ -105,6 +105,13 @@ char *NumericDisplay(double in, int N)
   return output;
  }
 
+unsigned char DblEqual(double a, double b)
+ {
+  if ( (fabs(a) < 1e-100) && (fabs(b) < 1e-100) ) return 1;
+  if ( (fabs(a-b) < fabs(1e-7*a)) && (fabs(a-b) < fabs(1e-7*b)) ) return 1;
+  return 0;
+ }
+
 /* file_readline(): This remarkably useful function forwards a file to the next newline */
 
 void file_readline(FILE *file, char *output)
