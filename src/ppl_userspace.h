@@ -24,6 +24,18 @@
 
 #include "ListTools/lt_dict.h"
 
+#define PPL_USERSPACE_NUMERIC 32000
+#define PPL_USERSPACE_STRING  32001
+
+#define PPL_USERSPACE_USERDEF 32100
+#define PPL_USERSPACE_SYSTEM  32200
+#define PPL_USERSPACE_SPLINE  32300
+
+#ifndef _PPL_USERSPACE_C
+extern Dict *_ppl_UserSpace_Vars;
+extern Dict *_ppl_UserSpace_Funcs;
+#endif
+
 void ppl_UserSpaceInit          ();
 void ppl_UserSpace_SetVarStr    (char *name, char   *value);
 void ppl_UserSpace_SetVarNumeric(char *name, double  value);

@@ -87,6 +87,7 @@ void ppl_settings_term_init()
   settings_term_default.UnitScheme    = SW_UNITSCH_SI;
   settings_term_default.UnitDisplayTypeable = SW_ONOFF_OFF;
   settings_term_default.UnitDisplayPrefix   = SW_ONOFF_ON;
+  settings_term_default.UnitDisplayAbbrev   = SW_ONOFF_ON;
 
   // Default Graph Settings, used when these values are not changed by any configuration files
   settings_graph_default.aspect     = 1.0;

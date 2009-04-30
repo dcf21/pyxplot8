@@ -73,13 +73,15 @@ double GetFloat(char *str, int *Nchars)
 char *NumericDisplay(double in, int N)
  {
   static char outputA[128], outputB[128];
+  double x;
   char *output;
   int DecimalLevel;
   if (N==0) output = outputA;
   else      output = outputB;
   if ((fabs(in) < 1e10) && (fabs(in) > 1e-3))
    {
-    for (DecimalLevel=0; DecimalLevel<12; DecimalLevel++) if ((in - ((floor(in*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - in))<(in*1.00000001)) break;
+    x = fabs(in);
+    for (DecimalLevel=0; DecimalLevel<12; DecimalLevel++) if ((x - ((floor(x*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - x))<(x*1.00000001)) break;
     switch(DecimalLevel)
      {
       case  0: sprintf(output,"%.0f" ,in); break;

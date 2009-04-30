@@ -19,159 +19,32 @@
 
 // ----------------------------------------------------------------------------
 
+#define _PPL_USERSPACE 1
+
+// Include <ppl_units.c> as a part of this source file to allow inline
+// compilation of arithmetic functions.
+#include "ppl_units.c"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
 
-#include <gsl/gsl_sf.h>
-
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
-
-#include "MathsTools/dcfmath.h"
 
 #include "ListTools/lt_dict.h"
 
 #include "ppl_constants.h"
 #include "ppl_userspace.h"
 
-// Include <ppl_units.c> as a part of this source file to allow inline
-// compilation of arithmetic functions.
-
-#include "ppl_units.c"
-
 // -------------------------------------------------------------------
 // Data structures used for storing the user's variables and functions
 // -------------------------------------------------------------------
 
-#define PPL_USERSPACE_NUMERIC 32000
-#define PPL_USERSPACE_STRING  32001
-
-#define PPL_USERSPACE_USERDEF 32100
-#define PPL_USERSPACE_SYSTEM  32200
-#define PPL_USERSPACE_SPLINE  32300
-
 Dict *_ppl_UserSpace_Vars;
 Dict *_ppl_UserSpace_Funcs;
-
-void ppl_UserSpaceInit()
- {
-  value v;
-
-  _ppl_UserSpace_Vars  = DictInit();
-  _ppl_UserSpace_Funcs = DictInit();
-
-  // Set up default variables
-  ppl_units_zero(&v);
-  v.number = M_PI;
-  DictAppendValue(_ppl_UserSpace_Vars , "pi"            , PPL_USERSPACE_NUMERIC , v);
-  v.number = M_E;
-  DictAppendValue(_ppl_UserSpace_Vars , "e"             , PPL_USERSPACE_NUMERIC , v);
-  v.number = 299792458.0;
-  v.dimensionless = 0;
-  v.exponent[UNIT_LENGTH]=1 ; v.exponent[UNIT_TIME]=-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_c"         , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 4e-7*M_PI;
-  v.dimensionless = 0;
-  v.exponent[UNIT_LENGTH] = 1; v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] = -2; v.exponent[UNIT_CURRENT] = -2;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_0"      , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 8.8541878176e-12;
-  v.dimensionless = 0;
-  v.exponent[UNIT_LENGTH] =-3; v.exponent[UNIT_MASS] =-1; v.exponent[UNIT_TIME] =  4; v.exponent[UNIT_CURRENT] =  2;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_epsilon_0" , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 1.60217646e-19;
-  v.dimensionless = 0;
-  v.exponent[UNIT_CURRENT] = 1; v.exponent[UNIT_TIME] = 1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_q"         , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 6.626068e-34;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-1; 
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_h"         , PPL_USERSPACE_NUMERIC , v);
-  v.number = 1.0546e-34;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_hbar"      , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 6.0221415e23;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MOLE] = -1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_NA"        , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 1.66053886e-27;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_u"       , PPL_USERSPACE_NUMERIC , v);
-  v.number = 1.67262158e-27;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , PPL_USERSPACE_NUMERIC , v);
-  v.number = 1.67492729e-27;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 9.27400949e-24;
-  v.dimensionless = 0;
-  v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_CURRENT] = 1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_b"      , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 8.314472;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1; v.exponent[UNIT_MOLE] =-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_R"         , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 1.3806503e-23;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_kB"        , PPL_USERSPACE_NUMERIC , v);
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2;
-  ppl_units_zero(&v);
-  v.number = 5.6704e-8;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] =-3; v.exponent[UNIT_TEMPERATURE] =-4;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_sigma"     , PPL_USERSPACE_NUMERIC , v);
-  ppl_units_zero(&v);
-  v.number = 6.67300e-11;
-  v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-2;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , PPL_USERSPACE_NUMERIC , v);
-
-  // Set up default mathematical functions
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "ceil"   , PPL_USERSPACE_SYSTEM+1, (void *)&ceil        ,0,0, DATATYPE_VOID); // 1 indicates that function takes (double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "erf"    , PPL_USERSPACE_SYSTEM+1, (void *)&gsl_sf_erf  ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "exp"    , PPL_USERSPACE_SYSTEM+1, (void *)&exp         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "floor"  , PPL_USERSPACE_SYSTEM+1, (void *)&floor       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "fmod"   , PPL_USERSPACE_SYSTEM+2, (void *)&fmod        ,0,0, DATATYPE_VOID); // 2 indicates that function takes (double, double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "frexp"  , PPL_USERSPACE_SYSTEM+3, (void *)&frexp       ,0,0, DATATYPE_VOID); // 3 indicates that these functions take (double, int)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "gamma"  , PPL_USERSPACE_SYSTEM+1, (void *)&gsl_sf_gamma,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "ldexp"  , PPL_USERSPACE_SYSTEM+3, (void *)&ldexp       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "log"    , PPL_USERSPACE_SYSTEM+1, (void *)&log         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "log10"  , PPL_USERSPACE_SYSTEM+1, (void *)&log10       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "random" , PPL_USERSPACE_SYSTEM+0, (void *)&frandom     ,0,0, DATATYPE_VOID); // 0 indicates that this function takes no arguments
-
-  // These functions need replacing with unit-friendly versions
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "acos"   , PPL_USERSPACE_SYSTEM+1, (void *)&acos        ,0,0, DATATYPE_VOID); // // 1 indicates that function takes (double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "asin"   , PPL_USERSPACE_SYSTEM+1, (void *)&asin        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan"   , PPL_USERSPACE_SYSTEM+1, (void *)&atan        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan2"  , PPL_USERSPACE_SYSTEM+2, (void *)&atan2       ,0,0, DATATYPE_VOID); // // 2 indicates that function takes (double, double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "cos"    , PPL_USERSPACE_SYSTEM+1, (void *)&cos         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "cosh"   , PPL_USERSPACE_SYSTEM+1, (void *)&cosh        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "degrees", PPL_USERSPACE_SYSTEM+1, (void *)&degrees     ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "fabs"   , PPL_USERSPACE_SYSTEM+1, (void *)&fabs        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "hypot"  , PPL_USERSPACE_SYSTEM+2, (void *)&hypot       ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "max"    , PPL_USERSPACE_SYSTEM+2, (void *)&max         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "min"    , PPL_USERSPACE_SYSTEM+2, (void *)&min         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "pow"    , PPL_USERSPACE_SYSTEM+2, (void *)&pow         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "radians", PPL_USERSPACE_SYSTEM+1, (void *)&radians     ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sin"    , PPL_USERSPACE_SYSTEM+1, (void *)&sin         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sinh"   , PPL_USERSPACE_SYSTEM+1, (void *)&sinh        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sqrt"   , PPL_USERSPACE_SYSTEM+1, (void *)&sqrt        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "tan"    , PPL_USERSPACE_SYSTEM+1, (void *)&tan         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "tanh"   , PPL_USERSPACE_SYSTEM+1, (void *)&tanh        ,0,0, DATATYPE_VOID); //
-
-  return;
- }
 
 void ppl_UserSpace_SetVarStr(char *name, char *value)
  {
@@ -488,6 +361,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
     ResultBuffer[next_bufno].number *= -1;
     SETSTATUS(p, next_start, next_bufno);
     i = start + next_start;
+    i--; p=i-start;
    }
   // PHASE  4: EVALUATION OF **
   if (OpList[4]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -503,6 +377,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE  5: EVALUATION OF *  /  %
   if (OpList[5]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -520,6 +395,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE  6: EVALUATION OF +  -
   if (OpList[6]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -536,6 +412,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE  7: EVALUATION OF << >>
   if (OpList[7]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -560,6 +437,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE  8: EVALUATION OF < <= >= >
   if (OpList[8]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -581,6 +459,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE  9: EVALUATION OF == !=  <>
   if (OpList[9]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -601,6 +480,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE 10: EVALUATION OF &
   if (OpList[10]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -624,6 +504,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE 11: EVALUATION OF ^
   if (OpList[11]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -647,6 +528,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE 12: EVALUATION OF |
   if (OpList[12]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -670,6 +552,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE 13: EVALUATION OF and
   if (OpList[13]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -693,6 +576,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE 14: EVALUATION OF or
   if (OpList[14]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -716,6 +600,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
      } else {
       while (StatusRow[i]==7) i++;
      }
+    i--; p=i-start;
    }
   // PHASE 15: RETURN RESULT TO USER
   for (i=0;i<len;i++) if (StatusRow[i] >= BUFFER_OFFSET) { *out = ResultBuffer[ StatusRow[i] - BUFFER_OFFSET ]; return; }

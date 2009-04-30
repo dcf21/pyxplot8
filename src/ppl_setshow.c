@@ -388,11 +388,14 @@ void directive_show2(char *word, int interactive)
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "units", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayTypeable, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, interactive, "unit display typeable", buf, (settings_term_default.UnitDisplayTypeable==settings_term_current.UnitDisplayTypeable), "Selects whether units are displayed in a way which can be copied into a terminal");
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    directive_show3(out+i, interactive, "unit display abbreviated", buf, (settings_term_default.UnitDisplayAbbrev==settings_term_current.UnitDisplayAbbrev), "Selects whether units are displayed in abbreviated form ('m' vs. 'metres')");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayPrefix, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
     directive_show3(out+i, interactive, "unit display prefix", buf, (settings_term_default.UnitDisplayPrefix==settings_term_current.UnitDisplayPrefix), "Selects whether SI units are displayed with prefixes");
+    i += strlen(out+i) ; p=1;
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayTypeable, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    directive_show3(out+i, interactive, "unit display typeable", buf, (settings_term_default.UnitDisplayTypeable==settings_term_current.UnitDisplayTypeable), "Selects whether units are displayed in a way which can be copied into a terminal");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitScheme, SW_UNITSCH_INT, (void **)SW_UNITSCH_STR));
     directive_show3(out+i, interactive, "unit scheme", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the scheme (e.g. SI or Imperial) of prefered units");
@@ -400,7 +403,7 @@ void directive_show2(char *word, int interactive)
     for (j=0; j<ppl_unit_pos; j++) if (ppl_unit_database[j].UserSel != 0)
      {
       sprintf(buf, "unit of %s", ppl_unit_database[j].quantity);
-      directive_show3(out+i, interactive, buf, ppl_unit_database[j].name1, 0, "Selects a user-prefered unit for a particular quantity");
+      directive_show3(out+i, interactive, buf, ppl_unit_database[j].nameFs, 0, "Selects a user-prefered unit for a particular quantity");
       i += strlen(out+i) ; p=1;
      }
    }
