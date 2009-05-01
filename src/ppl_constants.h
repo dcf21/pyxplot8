@@ -22,6 +22,8 @@
 #ifndef _PPL_CONSTANTS_H
 #define _PPL_CONSTANTS_H 1
 
+#define MULTIPLOT_MAXINDEX 8192
+
 #define PALETTE_LENGTH 512
 
 #define MAX_AXES 512

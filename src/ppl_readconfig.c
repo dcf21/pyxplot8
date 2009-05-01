@@ -63,10 +63,13 @@ void _ReadConfig_FetchValue(char *line, char *out)
 void ReadConfigFile(char *ConfigFname)
  {
   char  linebuffer[LSTR_LENGTH], setkey[LSTR_LENGTH], setvalue[LSTR_LENGTH], ColourName[SSTR_LENGTH], *StringScan;
+  char  errtext[LSTR_LENGTH], setstring[LSTR_LENGTH];
+  value setnumeric;
   FILE *infile;
   int   state=-1;
   int   linecounter=0;
   int   i, PalettePos, ColourNumber;
+  int   errpos, end;
   double fl, PaperHeight, PaperWidth;
 
   if (DEBUG) { sprintf(temp_err_string, "Scanning configuration file %s.", ConfigFname); ppl_log(temp_err_string); }
@@ -314,7 +317,16 @@ void ReadConfigFile(char *ConfigFname)
      }
     else if (state == 5) // [variables] section
      {
-      ppl_UserSpace_SetVarStr(setkey, setvalue);
+      errpos = -1; end = strlen(setvalue);
+      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_GetQuotedString(setvalue, setstring , 0, &end, NULL, NULL, &errpos, errtext, 0);
+      else                                            ppl_EvaluateAlgebra(setvalue,&setnumeric, 0, &end, NULL, NULL, &errpos, errtext, 0);
+      if (errpos >= 0)
+       {
+        sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s.", linecounter, ConfigFname, errtext);
+        ppl_warning(temp_err_string); continue;
+       }
+      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_UserSpace_SetVarStr    (setkey, setstring);
+      else                                            ppl_UserSpace_SetVarNumeric(setkey,&setnumeric);
      }
     else if (state == 6) // [functions] section
      {

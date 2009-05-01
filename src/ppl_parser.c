@@ -471,7 +471,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        }
       if ((*start) == (*linepos))
        {
-        if (node->MatchString[0]=='=')
+        if ((node->MatchString[0]=='=') && (node->MatchString[1]=='\0'))
          {
           (*success)=1; return; // Ignore match character
          }
@@ -611,15 +611,15 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0))
        {
         i = -1;
-        ppl_GetExpression(line, &i, 0, DummyStatus, NULL, AlgebraLinepos, AlgebraError);
-        if (*AlgebraLinepos >= 0) *success=0;
+        ppl_GetExpression(line+*linepos, &i, 0, DummyStatus, NULL, AlgebraLinepos, AlgebraError);
+        if (*AlgebraLinepos >= 0) { *success=0; (*AlgebraLinepos)+=*linepos; }
         else
          {
-          strncpy(TempMatchStr, line+*linepos, i-*linepos);
+          strncpy(TempMatchStr, line+*linepos, i);
           TempMatchStr[i-*linepos] = '\0';
           MatchType     = DATATYPE_STRING;
           MatchVal._str = TempMatchStr;
-          *linepos      = i;
+          *linepos     += i;
          }
        }
       else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fu")==0) || (strcmp(node->MatchString, "%d")==0))
@@ -698,7 +698,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          { sprintf(expecting+*ExpectingPos, "an integer value or expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0))
          { sprintf(expecting+*ExpectingPos, "an algebraic expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
-        else if  (strcmp(node->MatchString, "%f")==0)
+        else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fu")==0))
          { sprintf(expecting+*ExpectingPos, "a numeric value or expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         else if ((strcmp(node->MatchString, "%s")==0) || (strcmp(node->MatchString, "%S")==0) || (strcmp(node->MatchString, "%r")==0))
          { sprintf(expecting+*ExpectingPos, "a string%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }

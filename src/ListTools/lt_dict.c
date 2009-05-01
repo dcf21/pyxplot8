@@ -50,7 +50,7 @@ Dict *DictCopy(Dict *in, int deep)
   item = in->first;
   while (item != NULL)
    {
-    outitem           = (DictItem *)lt_malloc(sizeof(DictItem));
+    outitem           = (DictItem *)lt_malloc_incontext(sizeof(DictItem), out->memory_context);
     outitem->prev     = out->last;
     outitem->next     = NULL;
     outitem->key      = (char *)lt_malloc_incontext((strlen(item->key)+1)*sizeof(char), out->memory_context);
@@ -107,7 +107,7 @@ void DictAppendPtr(Dict *in, char *key, int UserData, void *item, int size, int 
    }
   else
    {
-    ptrnew           = (DictItem *)lt_malloc(sizeof(DictItem));
+    ptrnew           = (DictItem *)lt_malloc_incontext(sizeof(DictItem), in->memory_context);
     ptrnew->prev     = prev;
     ptrnew->next     = ptr;
     ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context);
@@ -150,7 +150,7 @@ void DictAppendPtrCpy(Dict *in, char *key, int UserData, void *item, int size, i
    }
   else
    {
-    ptrnew           = (DictItem *)lt_malloc(sizeof(DictItem));
+    ptrnew           = (DictItem *)lt_malloc_incontext(sizeof(DictItem), in->memory_context);
     ptrnew->prev     = prev;
     ptrnew->next     = ptr;
     ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context);

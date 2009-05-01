@@ -24,6 +24,8 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_units.h"
+
 #define PPL_USERSPACE_NUMERIC 32000
 #define PPL_USERSPACE_STRING  32001
 
@@ -37,9 +39,11 @@ extern Dict *_ppl_UserSpace_Funcs;
 #endif
 
 void ppl_UserSpaceInit          ();
-void ppl_UserSpace_SetVarStr    (char *name, char   *value);
-void ppl_UserSpace_SetVarNumeric(char *name, double  value);
-void ppl_UserSpace_SetFunc      (char *name, char   *value);
+void ppl_UserSpace_SetVarStr    (char *name, char   *inval);
+void ppl_UserSpace_SetVarNumeric(char *name, value  *inval);
+void ppl_UserSpace_UnsetVar     (char *name);
+void ppl_UserSpace_SetFunc      (char *name, char   *inval);
+void ppl_UserSpace_UnsetFunc    (char *name);
 
 void ppl_GetQuotedString(char *in, char   *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);
 void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);

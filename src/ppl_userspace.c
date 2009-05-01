@@ -46,18 +46,34 @@
 Dict *_ppl_UserSpace_Vars;
 Dict *_ppl_UserSpace_Funcs;
 
-void ppl_UserSpace_SetVarStr(char *name, char *value)
+void ppl_UserSpace_SetVarStr(char *name, char *inval)
+ {
+  DictAppendString(_ppl_UserSpace_Vars , name , PPL_USERSPACE_STRING, inval);
+  return;
+ }
+
+void ppl_UserSpace_SetVarNumeric(char *name, value *inval)
+ {
+  DictAppendValue(_ppl_UserSpace_Vars , name , PPL_USERSPACE_NUMERIC , *inval);
+  return;
+ }
+
+void ppl_UserSpace_UnsetVar(char *name)
+ {
+  DictRemoveKey(_ppl_UserSpace_Vars , name);
+  return;
+ }
+
+void ppl_UserSpace_SetFunc(char *name, char *inval)
  {
   return;
  }
 
-void ppl_UserSpace_SetVarNumeric(char *name, double value)
+void ppl_UserSpace_UnsetFunc(char *name)
  {
-  return;
- }
-
-void ppl_UserSpace_SetFunc(char *name, char *value)
- {
+  if (strcmp(name,"unit")==0)     { ppl_error("Cannot undefine the built-in function unit()."); return; }
+  if (strncmp(name,"int_d",5)==0) { ppl_error("Cannot undefine a built-in integration function."); return; }
+  DictRemoveKey(_ppl_UserSpace_Funcs , name);
   return;
  }
 
@@ -447,7 +463,16 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
-       { *errpos=i; sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); return; }
+       {
+        *errpos=i;
+        if      (ResultBuffer[prev_bufno].dimensionless)
+         { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+        else if (ResultBuffer[next_bufno].dimensionless)
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one which is dimensionless.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0)); }
+        else
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+        return;
+       }
       TempDbl = ResultBuffer[prev_bufno].number;
       ppl_units_zero(ResultBuffer+prev_bufno);
       if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl <= ResultBuffer[next_bufno].number);
@@ -469,7 +494,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
       if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
-       { *errpos=i; sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); return; }
+      if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
+       { 
+        *errpos=i; 
+        if      (ResultBuffer[prev_bufno].dimensionless)
+         { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+        else if (ResultBuffer[next_bufno].dimensionless)
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one which is dimensionless.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0)); }
+        else
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+        return;
+       }
       TempDbl = ResultBuffer[prev_bufno].number;
       ppl_units_zero(ResultBuffer+prev_bufno);
       if      (MATCH_TWO('=','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl == ResultBuffer[next_bufno].number);

@@ -292,7 +292,8 @@ int ProcessDirective2(char *in, int interactive)
 
 int ProcessDirective3(char *in, Dict *command, int interactive)
  {
-  char *directive;
+  char  *directive, *varname, *varstrval;
+  value *varnumval;
   char buffer[LSTR_LENGTH]="";
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
 
@@ -302,6 +303,15 @@ int ProcessDirective3(char *in, Dict *command, int interactive)
    {
     DictLookup(command,"cmd",NULL,NULL,(void **)(&directive));
     system(directive);
+   }
+  else if (strcmp(directive, "var_set")==0)
+   {
+    DictLookup(command,"varname"     ,NULL,NULL,(void **)(&varname));
+    DictLookup(command,"string_value",NULL,NULL,(void **)(&varstrval));
+    if (varstrval != NULL) { ppl_UserSpace_SetVarStr(varname, varstrval); return 0; }
+    DictLookup(command,"numeric_value",NULL,NULL,(void **)(&varnumval));
+    if (varnumval != NULL) { ppl_UserSpace_SetVarNumeric(varname, varnumval); return 0; }
+    ppl_UserSpace_UnsetVar(varname);
    }
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);

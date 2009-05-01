@@ -50,7 +50,7 @@ List *ListCopy(List *in, int deep)
   item = in->first;
   while (item != NULL)
    {
-    outitem           = (ListItem *)lt_malloc(sizeof(ListItem));
+    outitem           = (ListItem *)lt_malloc_incontext(sizeof(ListItem), out->memory_context);
     outitem->prev     = out->last;
     outitem->next     = NULL;
     outitem->DataSize = item->DataSize;

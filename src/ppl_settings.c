@@ -73,12 +73,12 @@ void ppl_settings_term_init()
   settings_term_default.multiplot = SW_ONOFF_OFF;
   strcpy(settings_term_default.output, "");
   ppl_units_zero(&(settings_term_default.PaperHeight));
-  settings_term_default.PaperHeight.number = 297.0;
+  settings_term_default.PaperHeight.number = 297.0 / 1000;
   settings_term_default.PaperHeight.dimensionless = 0; settings_term_default.PaperHeight.exponent[UNIT_LENGTH] = 1;
   strcpy(settings_term_default.PaperName, "A4");
   ppl_units_zero(&(settings_term_default.PaperWidth));
-  settings_term_default.PaperWidth.number = 210.0;
-  settings_term_default.PaperHeight.dimensionless = 0; settings_term_default.PaperWidth.exponent[UNIT_LENGTH] = 1;
+  settings_term_default.PaperWidth.number = 210.0 / 1000;
+  settings_term_default.PaperWidth.dimensionless = 0; settings_term_default.PaperWidth.exponent[UNIT_LENGTH] = 1;
   settings_term_default.TermAntiAlias = SW_ONOFF_ON;
   settings_term_default.TermType      = SW_TERMTYPE_X11S;
   settings_term_default.TermEnlarge   = SW_ONOFF_OFF;

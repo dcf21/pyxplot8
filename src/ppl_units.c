@@ -62,6 +62,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (N==0) output = outputA;
   else      output = outputB;
 
+  if (settings_term_default.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
   unitstr = ppl_units_GetUnitStr(in, &NumberOut, N, typeable);
   if (unitstr[0]=='\0') return NumericDisplay(NumberOut, N);
   else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOut, N), unitstr);
@@ -228,6 +229,8 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
   int           pos=0, OutputPos=0;
   int           i, j, found, first;
 
+  if (settings_term_default.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+
   if (N==0) output = outputA;
   else      output = outputB;
 
@@ -385,7 +388,15 @@ void __inline__ ppl_units_add (value *a, value *b, value *o, int *status, char *
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) return;
 
   if (ppl_units_DimEqual(a, b) == 0)
-   { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); *status = 1; return; }
+   {
+    if (a->dimensionless)
+     { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of '%s'.", ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
+    else if (b->dimensionless)
+     { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of '%s', while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, 0, 0) ); }
+    else
+     { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
+    *status = 1; return;
+   }
   return;
  }
 
@@ -396,7 +407,15 @@ void __inline__ ppl_units_sub (value *a, value *b, value *o, int *status, char *
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) return;
 
   if (ppl_units_DimEqual(a, b) == 0)
-   { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); *status = 1; return; }
+   {
+    if (a->dimensionless)
+     { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of '%s'.", ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
+    else if (b->dimensionless)
+     { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of '%s', while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, 0, 0) ); }
+    else
+     { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
+    *status = 1; return;
+   }
   return;
  }
 
@@ -406,7 +425,12 @@ void __inline__ ppl_units_mod (value *a, value *b, value *o, int *status, char *
   if ((o != a) && (o != b)) ppl_units_DimCpy(o,a);
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) return;
 
-  sprintf(errtext, "Mod operator can only be applied to dimensionless operands; left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) );
+  if (a->dimensionless)
+   { sprintf(errtext, "Mod operator can only be applied to dimensionless operands; right operand has units of '%s'.", ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
+  else if (b->dimensionless)
+   { sprintf(errtext, "Mod operator can only be applied to dimensionless operands; left operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0) ); }
+  else
+   { sprintf(errtext, "Mod operator can only be applied to dimensionless operands; left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
   *status = 1;
   return;
  }
