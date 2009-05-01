@@ -36,10 +36,10 @@ extern int  PPL_SHELL_EXITING;
 extern char *DirectiveLinebuffer;
 #endif
 void        InteractiveSession  ();
-void        ProcessPyXPlotScript(char *input);
-int         ProcessDirective    (char *in, int interactive);
-int         ProcessDirective2   (char *in, int interactive);
-int         ProcessDirective3   (char *in, Dict *command, int interactive);
+void        ProcessPyXPlotScript(char *input, int IterLevel);
+int         ProcessDirective    (char *in, int interactive, int IterLevel);
+int         ProcessDirective2   (char *in, int interactive, int IterLevel);
+int         ProcessDirective3   (char *in, Dict *command, int interactive, int memcontext, int IterLevel);
 void        directive_cd        (Dict *command);
 void        directive_print     (Dict *command);
 

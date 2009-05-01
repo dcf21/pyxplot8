@@ -81,11 +81,11 @@ void InteractiveSession()
         if (line_ptr == NULL) { PPL_SHELL_EXITING = 1; continue; }
         add_history(line_ptr);
         strcpy(linebuffer, line_ptr) ; free(line_ptr);
-        ProcessDirective(linebuffer, 1);
+        ProcessDirective(linebuffer, 1, 0);
        } else {
         ppl_error_setstreaminfo(linenumber, "piped input");
         file_readline(stdin, linebuffer);
-        ProcessDirective(linebuffer, 0);
+        ProcessDirective(linebuffer, 0, 0);
         ppl_error_setstreaminfo(0, "");
         linenumber++;
         if (feof(stdin) || ferror(stdin)) PPL_SHELL_EXITING = 1;
@@ -108,7 +108,7 @@ void InteractiveSession()
   return;
  }
 
-void ProcessPyXPlotScript(char *input)
+void ProcessPyXPlotScript(char *input, int IterLevel)
  {
   int  memcontext;
   int  linenumber = 1;
@@ -139,7 +139,7 @@ void ProcessPyXPlotScript(char *input)
     if (StrStrip(linebuffer,linebuffer)[0] != '\0')
      {
       ppl_error_setstreaminfo(linenumber, filename_description); 
-      status = ProcessDirective(linebuffer, 0);
+      status = ProcessDirective(linebuffer, 0, IterLevel);
       ppl_error_setstreaminfo(0, "");
       if ((ProcessedALine==0) && (status!=0)) // If an error occurs on the first line of a script, aborted processing it
        {
@@ -158,7 +158,7 @@ void ProcessPyXPlotScript(char *input)
   return;
  }
 
-int ProcessDirective(char *in, int interactive)
+int ProcessDirective(char *in, int interactive, int IterLevel)
  {
   int   i, j, status;
   char *line = NULL;
@@ -203,19 +203,19 @@ int ProcessDirective(char *in, int interactive)
     else if ((QuoteChar=='\0') && (in[i]==';' )                   )
      {
       in[i]='\0';
-      status = ProcessDirective2(in+j,interactive);
+      status = ProcessDirective2(in+j,interactive,IterLevel);
       if (status!=0) { if (line != NULL) free(line); return status; }
       j=i+1;
      }
     else if ((QuoteChar=='\0') && (in[i]=='#' )                   ) break;
    }
   in[i] = '\0';
-  status = ProcessDirective2(in+j,interactive);
+  status = ProcessDirective2(in+j,interactive,IterLevel);
   if (line != NULL) free(line);
   return status;
  }
 
-int ProcessDirective2(char *in, int interactive)
+int ProcessDirective2(char *in, int interactive, int IterLevel)
  {
   int   memcontext, i, is, j, l;
   int   status=0;
@@ -277,7 +277,8 @@ int ProcessDirective2(char *in, int interactive)
     if (status==0)
      {
       command = parse(DirectiveLinebuffer2);
-      if (command != NULL) status  = ProcessDirective3(DirectiveLinebuffer2, command, interactive); // If command is NULL, we had a syntax error
+      if (command != NULL) status  = ProcessDirective3(DirectiveLinebuffer2, command, interactive, memcontext, IterLevel);
+      // If command is NULL, we had a syntax error
      }
    } else {
     ppl_error("\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
@@ -290,12 +291,14 @@ int ProcessDirective2(char *in, int interactive)
   return status;
  }
 
-int ProcessDirective3(char *in, Dict *command, int interactive)
+int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, int IterLevel)
  {
   char  *directive, *varname, *varstrval;
   value *varnumval;
   char buffer[LSTR_LENGTH]="";
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
+
+  if (IterLevel > 100) { ppl_error("Maximum recursion depth exceeded."); return 1; }
 
   DictLookup(command,"directive",NULL,NULL,(void **)(&directive));
 
@@ -315,6 +318,13 @@ int ProcessDirective3(char *in, Dict *command, int interactive)
    }
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
+  else if (strcmp(directive, "exec")==0)
+   {
+    DictLookup(command,"command",NULL,NULL,(void **)(&varstrval));
+    lt_AscendOutOfContext(memcontext); command = NULL;
+    ProcessDirective2(varstrval, interactive, IterLevel+1);
+    return 0;
+   }
   else if (strcmp(directive, "help")==0)
    directive_help(command, interactive);
   else if (strcmp(directive, "print")==0)

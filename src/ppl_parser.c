@@ -60,7 +60,7 @@ typedef struct ParserNode {
 
 ParserNode SeparatorNode = {PN_TYPE_ITEM, NULL, 1, NULL, NULL, NULL, NULL};
 
-void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, Dict *output, int *match, int *success);
+void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos, Dict *output, int *match, int *success);
 
 // --------------------------------------------------------------------------
 // PART I: READ SYNTAX SPECIFICATION
@@ -257,10 +257,11 @@ Dict *parse(char *line)
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
   Dict         *output;
-  int           match, success, AlgebraLinepos, linepos, ExpectingPos, ExpectingLinePos, ErrPos, i;
-  char          expecting   [LSTR_LENGTH];
-  char          ErrText     [LSTR_LENGTH];
-  char          AlgebraError[LSTR_LENGTH];
+  int           match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, ErrPos, i;
+  char          expecting      [LSTR_LENGTH];
+  char          ErrText        [LSTR_LENGTH];
+  char          AlgebraError   [LSTR_LENGTH];
+  char          AlgebraNewError[LSTR_LENGTH];
 
   CmdIterator = ListIterateInit(PplParserCmdList);
   while (CmdIterator != NULL)
@@ -270,15 +271,17 @@ Dict *parse(char *line)
     success         = 1;
     linepos         = 0;
     AlgebraLinepos  =-1;
+    AlgebraNewLinepos  =-1;
     ExpectingPos    = 0;
     ExpectingLinePos= 0;
     expecting[0]    = '\0';
     ErrText[0]      = '\0';
     AlgebraError[0] = '\0';
+    AlgebraNewError[0] = '\0';
     output          = DictInit();
 
     parse_descend(CmdDescriptor, line, &linepos, NULL, NULL, expecting, &ExpectingPos, &ExpectingLinePos,
-                  AlgebraError, &AlgebraLinepos, output, &match, &success);
+                  AlgebraError, &AlgebraLinepos, AlgebraNewError, &AlgebraNewLinepos, output, &match, &success);
 
     if (match==0) continue; // This command did not even begin to match
 
@@ -334,11 +337,12 @@ char *parse_autocomplete(const char *LineConst, int status)
 
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
-  int           i, match, success, AlgebraLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
+  int           i, match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
   static char  *line = NULL, *linep = NULL;
-  static char   expecting   [SSTR_LENGTH];
-  char          ErrText     [LSTR_LENGTH];
-  char          AlgebraError[LSTR_LENGTH];
+  static char   expecting      [SSTR_LENGTH];
+  char          ErrText        [LSTR_LENGTH];
+  char          AlgebraError   [LSTR_LENGTH];
+  char          AlgebraNewError[LSTR_LENGTH];
   char         *output;
 
   if (status<0)
@@ -371,6 +375,7 @@ char *parse_autocomplete(const char *LineConst, int status)
       success         = 1;
       linepos         = 0;
       AlgebraLinepos  = -1;
+      AlgebraNewLinepos = -1;
       ExpectingPos    = 0;
       ExpectingLinePos= 0;
       expecting[0]    = '\0';
@@ -378,7 +383,7 @@ char *parse_autocomplete(const char *LineConst, int status)
       AlgebraError[0] = '\0';
 
       parse_descend(CmdDescriptor, linep, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, &ExpectingLinePos,
-                    AlgebraError, &AlgebraLinepos, NULL, &match, &success);
+                    AlgebraError, &AlgebraLinepos, AlgebraNewError, &AlgebraNewLinepos, NULL, &match, &success);
 
       if (expecting[0] == '\n')
        {
@@ -440,7 +445,8 @@ char **ppl_rl_completion(const char *text, int start, int end)
 #define PER_MAXSIZE 32
 
 void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos,
-                   char *AlgebraError, int *AlgebraLinepos, Dict *output, int *match, int *success)
+                   char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos,
+                   Dict *output, int *match, int *success)
  {
   unsigned char repeating=0, first=0;
   int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, ACLevel;
@@ -543,19 +549,20 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        }
       else if (strcmp(node->MatchString, "%q")==0)
        {
-        if ((line[*linepos]=='\'') || (line[*linepos]=='\"'))
+        i=-1;
+        *AlgebraNewLinepos=-1;
+        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, NULL, NULL, AlgebraNewLinepos, AlgebraNewError, 0);
+        if (*AlgebraNewLinepos >= 0)
          {
-          i=-1;
-          ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
-          if (*AlgebraLinepos >= 0) *success=0;
-          else
-           {
-            MatchType     = DATATYPE_STRING;
-            MatchVal._str = TempMatchStr;
-            *linepos      = i;
-           }
-         } else {
-          *success = 0;
+          *success=0;
+          if (*AlgebraNewLinepos > *AlgebraLinepos)
+            { *AlgebraLinepos=*AlgebraNewLinepos; strcpy(AlgebraError, AlgebraNewError); }
+         }
+        else
+         {
+          MatchType     = DATATYPE_STRING;
+          MatchVal._str = TempMatchStr;
+          *linepos      = i;
          }
        }
       else if (strcmp(node->MatchString, "%Q")==0)
@@ -573,8 +580,12 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          {
           (*linepos)++;
           i = -1;
-          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
-          if (*AlgebraLinepos >= 0) { TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraLinepos = -1; }
+          *AlgebraNewLinepos = -1;
+          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraNewLinepos, AlgebraNewError, 0);
+          if (*AlgebraNewLinepos >= 0)
+           {
+            TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraNewLinepos = -1;
+           }
           else
            {
             if (MatchVal._val.dimensionless == 0)
@@ -611,8 +622,15 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0))
        {
         i = -1;
-        ppl_GetExpression(line+*linepos, &i, 0, DummyStatus, NULL, AlgebraLinepos, AlgebraError);
-        if (*AlgebraLinepos >= 0) { *success=0; (*AlgebraLinepos)+=*linepos; }
+        *AlgebraNewLinepos=-1;
+        ppl_GetExpression(line+*linepos, &i, 0, DummyStatus, NULL, AlgebraNewLinepos, AlgebraNewError);
+        if (*AlgebraNewLinepos >= 0)
+         {
+          *success=0;
+          (*AlgebraNewLinepos)+=*linepos;
+          if (*AlgebraNewLinepos > *AlgebraLinepos) 
+            { *AlgebraLinepos=*AlgebraNewLinepos; strcpy(AlgebraError, AlgebraNewError); }
+         }
         else
          {
           strncpy(TempMatchStr, line+*linepos, i);
@@ -625,8 +643,14 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fu")==0) || (strcmp(node->MatchString, "%d")==0))
        {
         i = -1;
-        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraLinepos, AlgebraError, 0);
-        if (*AlgebraLinepos >= 0) *success=0;
+        *AlgebraNewLinepos=-1;
+        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraNewLinepos, AlgebraNewError, 0);
+        if (*AlgebraNewLinepos >= 0)
+         {
+          *success=0;  
+          if (*AlgebraNewLinepos > *AlgebraLinepos)  
+            { *AlgebraLinepos=*AlgebraNewLinepos; strcpy(AlgebraError, AlgebraNewError); }
+         }
         else
          {
           if ((strcmp(node->MatchString, "%fu")!=0) && (MatchVal._val.dimensionless == 0))
@@ -716,7 +740,8 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
     NodeIter = node->FirstChild;
     while (NodeIter != NULL)
      {
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos, AlgebraError, AlgebraLinepos, output, match, success);
+      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+                    AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
       if (*success==2) return;
       NodeIter = NodeIter->NextSibling;
       if (*success==0) break;
@@ -738,7 +763,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
       if ((first==0)&&(SeparatorString[0]!='\0'))
        {
         parse_descend(&SeparatorNode, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
-                      AlgebraError, AlgebraLinepos, DictBaby, match, success);
+                      AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, DictBaby, match, success);
         if (*success==2) return;
        }
       if (*success!=0)
@@ -747,7 +772,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
         while (NodeIter != NULL)
          {
           parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
-                        AlgebraError, AlgebraLinepos, DictBaby, match, success);
+                        AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, DictBaby, match, success);
           if (*success==2) return;
           if (*success==0)
            {
@@ -776,7 +801,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
     while (NodeIter != NULL)
      {
       parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
-                    AlgebraError, AlgebraLinepos, output, match, success);
+                    AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
       if (*success==2) return;
       if (*success==0)
        {
@@ -803,7 +828,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
         if (excluded[i]==0)
          {
           parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
-                        AlgebraError, AlgebraLinepos, output, match, success);
+                        AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
           if (*success==2) return;
           if (*success!=0)
            { excluded[i]=1; repeating=1; break; } // This item worked; flag it and loop again
@@ -831,7 +856,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
      {
       *success = 1;
       parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
-                    AlgebraError, AlgebraLinepos, output, match, success);
+                    AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
       if (*success==2) return;
       if (*success==0) // Reset output and try the next ORA item
        {

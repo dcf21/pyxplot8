@@ -365,7 +365,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
        }
      }
     in[start+j] = ck;
-    if (UserData != PPL_USERSPACE_NUMERIC) { *errpos = start; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected"); return; }
+    if (UserData != PPL_USERSPACE_NUMERIC) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected"); return; }
     ResultBuffer[bufpos] = *VarData;
     for (k=i; ((StatusRow[k]==8)||(StatusRow[k]==4)); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++;

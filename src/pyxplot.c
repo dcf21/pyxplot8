@@ -188,7 +188,7 @@ int main(int argc, char **argv)
         if (argv[i][1]=='\0') InteractiveSession();
         continue;
        }
-      ProcessPyXPlotScript(argv[i]);
+      ProcessPyXPlotScript(argv[i], 0);
      }
     if (WillBeInteractive==1) InteractiveSession();
 
