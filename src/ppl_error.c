@@ -52,8 +52,8 @@ void ppl_error_setstreaminfo(int linenumber,char *filename)
 
 void ppl_error(char *msg)
  {
-  if (msg!=temp_stringA) strcpy(temp_stringA, msg);
-  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Error:\n", temp_stringA); ppl_log(temp_stringC); }
+  if ((msg!=temp_stringA) && (msg!=temp_stringB)) { strcpy(temp_stringA, msg); msg = temp_stringA; }
+  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Error:\n", msg); ppl_log(temp_stringC); }
   if ( ((       ppl_error_input_linenumber    != -1) && (       ppl_error_input_linenumber                         != ppl_error_last_linenumber)) ||
        ((strcmp(ppl_error_input_filename, "") !=  0) && (strcmp(ppl_error_input_filename, ppl_error_last_filename) !=                         0))   )
    {
@@ -65,10 +65,10 @@ void ppl_error(char *msg)
    }
   if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDIN_FILENO) == 1))
    sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_err , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-                                     temp_stringA,
+                                     msg,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
   else
-   sprintf(temp_stringC, "%s\n", temp_stringA);
+   sprintf(temp_stringC, "%s\n", msg);
   fputs(temp_stringC, stderr);
   return; 
  }

@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <glob.h>
 #include <setjmp.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -53,12 +54,10 @@ char *DirectiveLinebuffer2 = NULL;
 
 void InteractiveSession()
  {
-  int   memcontext;
   int   linenumber = 1;
   char *line_ptr;
   char  linebuffer[LSTR_LENGTH];
 
-  memcontext = lt_DescendIntoNewContext();
   PPL_SHELL_EXITING = 0;
   if (DirectiveLinebuffer  != NULL) { free(DirectiveLinebuffer ); DirectiveLinebuffer =NULL; }
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
@@ -86,7 +85,7 @@ void InteractiveSession()
         ppl_error_setstreaminfo(linenumber, "piped input");
         file_readline(stdin, linebuffer);
         ProcessDirective(linebuffer, 0, 0);
-        ppl_error_setstreaminfo(0, "");
+        ppl_error_setstreaminfo(-1, "");
         linenumber++;
         if (feof(stdin) || ferror(stdin)) PPL_SHELL_EXITING = 1;
        }
@@ -103,14 +102,12 @@ void InteractiveSession()
    }
   if (DirectiveLinebuffer  != NULL) { free(DirectiveLinebuffer ); DirectiveLinebuffer =NULL; }
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
-  lt_AscendOutOfContext(memcontext);
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   return;
  }
 
 void ProcessPyXPlotScript(char *input, int IterLevel)
  {
-  int  memcontext;
   int  linenumber = 1;
   int  status;
   int  ProcessedALine = 0;
@@ -119,7 +116,6 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   char linebuffer[LSTR_LENGTH];
   FILE *infile;
 
-  memcontext = lt_DescendIntoNewContext();
   PPL_SHELL_EXITING = 0;
   if (DirectiveLinebuffer  != NULL) { free(DirectiveLinebuffer ); DirectiveLinebuffer =NULL; }
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
@@ -129,7 +125,6 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   if ((infile=fopen(full_filename,"r")) == NULL)
    {
     sprintf(temp_err_string, "PyXPlot Error: Could not find command file '%s'\nSkipping on to next command file", full_filename); ppl_error(temp_err_string);
-    lt_AscendOutOfContext(memcontext);
     return;
    }
 
@@ -138,15 +133,15 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
     file_readline(infile, linebuffer);
     if (StrStrip(linebuffer,linebuffer)[0] != '\0')
      {
-      ppl_error_setstreaminfo(linenumber, filename_description); 
+      ppl_error_setstreaminfo(linenumber, filename_description);
       status = ProcessDirective(linebuffer, 0, IterLevel);
-      ppl_error_setstreaminfo(0, "");
-      if ((ProcessedALine==0) && (status!=0)) // If an error occurs on the first line of a script, aborted processing it
+      ppl_error_setstreaminfo(-1, "");
+      if ((ProcessedALine==0) && (status>0)) // If an error occurs on the first line of a script, aborted processing it
        {
         ppl_error("Error on first line of commandfile: Is this is valid script?\nAborting");
         break;
        }
-      ProcessedALine = 1;
+      if (status==0) ProcessedALine = 1;
      }
     linenumber++;
    }
@@ -154,7 +149,6 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
   fclose(infile);
   CheckForGvOutput();
-  lt_AscendOutOfContext(memcontext);
   return;
  }
 
@@ -179,7 +173,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
       strncpy(DirectiveLinebuffer+j, in, i);
       DirectiveLinebuffer[j+i+1]='\0';
      }
-    return 0;
+    return -1; // Done nothing
    }
 
   // Add previous backslashed lines to the beginning of this one
@@ -204,7 +198,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
      {
       in[i]='\0';
       status = ProcessDirective2(in+j,interactive,IterLevel);
-      if (status!=0) { if (line != NULL) free(line); return status; }
+      if (status>0) { if (line != NULL) free(line); return status; }
       j=i+1;
      }
     else if ((QuoteChar=='\0') && (in[i]=='#' )                   ) break;
@@ -225,12 +219,12 @@ int ProcessDirective2(char *in, int interactive, int IterLevel)
 
   // If this line is blank, ignore it
   for (i=0; in[i]!='\0'; i++); for (; ((i>0)&&(in[i]<=' ')); i--);
-  if ((i==0) && (in[i]<=' ')) return 0;
+  if ((i==0) && (in[i]<=' ')) return -1;
 
   memcontext = lt_DescendIntoNewContext();
-  if ((interactive==0) || (sigsetjmp(sigjmp_ToDirective, 1) == 0))  // Set up SIGINT handler, but only if this is an interactive session
+  if ((interactive==0) || (IterLevel > 0) || (sigsetjmp(sigjmp_ToDirective, 1) == 0))  // Set up SIGINT handler, but only if this is an interactive session
    {
-    if (interactive!=0) sigjmp_FromSigInt = &sigjmp_ToDirective;
+    if ((interactive!=0) && (IterLevel == 0)) sigjmp_FromSigInt = &sigjmp_ToDirective;
 
     // Do `` substitution
     l = strlen(in+1);
@@ -277,14 +271,15 @@ int ProcessDirective2(char *in, int interactive, int IterLevel)
     if (status==0)
      {
       command = parse(DirectiveLinebuffer2);
-      if (command != NULL) status  = ProcessDirective3(DirectiveLinebuffer2, command, interactive, memcontext, IterLevel);
+      if (command != NULL) status = ProcessDirective3(DirectiveLinebuffer2, command, interactive, memcontext, IterLevel);
+      else                 status = 1;
       // If command is NULL, we had a syntax error
      }
    } else {
     ppl_error("\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;
    }
-  sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
+  if (IterLevel == 0) sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   lt_AscendOutOfContext(memcontext);
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
@@ -295,7 +290,10 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
  {
   char  *directive, *varname, *varstrval;
   value *varnumval;
-  char buffer[LSTR_LENGTH]="";
+  glob_t GlobData;
+  char   buffer[LSTR_LENGTH]="";
+  int    i;
+
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
 
   if (IterLevel > 100) { ppl_error("Maximum recursion depth exceeded."); return 1; }
@@ -327,6 +325,15 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "help")==0)
    directive_help(command, interactive);
+  else if (strcmp(directive, "load")==0)
+   {
+    DictLookup(command,"filename",NULL,NULL,(void **)(&varstrval));
+    if (glob(varstrval, 0, NULL, &GlobData) != 0) { ppl_error("Could not glob this filename."); return 1; }
+    lt_AscendOutOfContext(memcontext); command = NULL;
+    for (i=0; i<GlobData.gl_pathc; i++) ProcessPyXPlotScript(GlobData.gl_pathv[i], IterLevel+1);
+    globfree(&GlobData);
+    return 0;
+   }
   else if (strcmp(directive, "print")==0)
    directive_print(command);
   else if (strcmp(directive, "pwd")==0)
