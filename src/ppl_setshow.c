@@ -433,7 +433,7 @@ void directive_show(Dict *command, int interactive)
 
   interactive = ( interactive && (settings_session_default.colour == SW_ONOFF_ON) );
 
-  DictLookup(command, "editno"      , NULL, NULL, (void **)&EditNo);
+  DictLookup(command, "editno"      , NULL, (void **)&EditNo);
   if (EditNo == NULL)
    {
     sg = &settings_graph_current;
@@ -446,7 +446,7 @@ void directive_show(Dict *command, int interactive)
     sprintf(ItemSet, "item %d ", *EditNo);
    }
 
-  DictLookup(command, "setting_list", NULL, NULL, (void **)&ShowList);
+  DictLookup(command, "setting_list", NULL, (void **)&ShowList);
   if ((ShowList==NULL) || (ListLen(ShowList) == 0))
    { ppl_error(txt_show); }
   else
@@ -471,7 +471,7 @@ void directive_show(Dict *command, int interactive)
     while (ShowIterate != NULL)
      {
       ShowIterate = ListIterate(ShowIterate, (void **)&ShowWordDict);
-      DictLookup(ShowWordDict,"setting",NULL,NULL,(void **)&ShowWord);
+      DictLookup(ShowWordDict,"setting",NULL,(void **)&ShowWord);
       if (StrAutocomplete(ShowWord,"all",1)>=0)
        {
         directive_show2("settings"  ,ItemSet, interactive, sg, xa, ya, za);

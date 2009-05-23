@@ -41,112 +41,139 @@ void ppl_UserSpaceInit()
   _ppl_UserSpace_Vars  = DictInit();
   _ppl_UserSpace_Funcs = DictInit();
 
+  FunctionDescriptor fd_acos   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_acos };
+  FunctionDescriptor fd_asin   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_asin };
+  FunctionDescriptor fd_atan   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_atan };
+  FunctionDescriptor fd_atan2  = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_atan2 };
+  FunctionDescriptor fd_ceil   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_ceil };
+  FunctionDescriptor fd_cos    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_cos  };
+  FunctionDescriptor fd_cosh   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_cosh };
+  FunctionDescriptor fd_degrees= { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_degrees };
+  FunctionDescriptor fd_erf    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_gsl_sf_erf };
+  FunctionDescriptor fd_exp    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_exp  };
+  FunctionDescriptor fd_fabs   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_fabs };
+  FunctionDescriptor fd_floor  = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_floor };
+  FunctionDescriptor fd_fmod   = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_fmod };
+  FunctionDescriptor fd_frexp  = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_frexp };
+  FunctionDescriptor fd_gamma  = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_gsl_sf_gamma };
+  FunctionDescriptor fd_hypot  = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_hypot };
+  FunctionDescriptor fd_ldexp  = { PPL_USERSPACE_SYSTEM , 3 , (void *)&dcfmath_ldexp };
+  FunctionDescriptor fd_log    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_log  };
+  FunctionDescriptor fd_log10  = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_log10 };
+  FunctionDescriptor fd_max    = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_max  };
+  FunctionDescriptor fd_min    = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_min  };
+  FunctionDescriptor fd_pow    = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_pow  };
+  FunctionDescriptor fd_radians= { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_radians };
+  FunctionDescriptor fd_random = { PPL_USERSPACE_SYSTEM , 0 , (void *)&dcfmath_frandom };
+  FunctionDescriptor fd_sin    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_sin  };
+  FunctionDescriptor fd_sinh   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_sinh };
+  FunctionDescriptor fd_sqrt   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_sqrt };
+  FunctionDescriptor fd_tan    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_tan  };
+  FunctionDescriptor fd_tanh   = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_tanh };
+
   // Set up default variables
   ppl_units_zero(&v);
   v.number = M_PI;
-  DictAppendValue(_ppl_UserSpace_Vars , "pi"            , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "pi"            , v);
   v.number = M_E;
-  DictAppendValue(_ppl_UserSpace_Vars , "e"             , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "e"             , v);
   v.number = 299792458.0;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH]=1 ; v.exponent[UNIT_TIME]=-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_c"         , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_c"         , v);
   ppl_units_zero(&v);
   v.number = 4e-7*M_PI;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 1; v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] = -2; v.exponent[UNIT_CURRENT] = -2;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_0"      , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_0"      , v);
   ppl_units_zero(&v);
   v.number = 8.8541878176e-12;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] =-3; v.exponent[UNIT_MASS] =-1; v.exponent[UNIT_TIME] =  4; v.exponent[UNIT_CURRENT] =  2;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_epsilon_0" , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_epsilon_0" , v);
   ppl_units_zero(&v);
   v.number = 1.60217646e-19;
   v.dimensionless = 0;
   v.exponent[UNIT_CURRENT] = 1; v.exponent[UNIT_TIME] = 1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_q"         , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_q"         , v);
   ppl_units_zero(&v);
   v.number = 6.626068e-34;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_h"         , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_h"         , v);
   v.number = 1.0546e-34;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_hbar"      , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_hbar"      , v);
   ppl_units_zero(&v);
   v.number = 6.0221415e23;
   v.dimensionless = 0;
   v.exponent[UNIT_MOLE] = -1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_NA"        , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_NA"        , v);
   ppl_units_zero(&v);
   v.number = 1.66053886e-27;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_u"       , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_u"       , v);
   v.number = 1.67262158e-27;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , v);
   v.number = 1.67492729e-27;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , v);
   ppl_units_zero(&v);
   v.number = 9.27400949e-24;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_CURRENT] = 1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_b"      , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_b"      , v);
   ppl_units_zero(&v);
   v.number = 8.314472;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1; v.exponent[UNIT_MOLE] =-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_R"         , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_R"         , v);
   ppl_units_zero(&v);
   v.number = 1.3806503e-23;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_kB"        , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_kB"        , v);
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2;
   ppl_units_zero(&v);
   v.number = 5.6704e-8;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] =-3; v.exponent[UNIT_TEMPERATURE] =-4;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_sigma"     , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_sigma"     , v);
   ppl_units_zero(&v);
   v.number = 6.67300e-11;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-2;
-  DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , PPL_USERSPACE_NUMERIC , v);
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , v);
 
-  // Set up default mathematical functions
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "ceil"   , PPL_USERSPACE_SYSTEM+1, (void *)&ceil        ,0,0, DATATYPE_VOID); // 1 indicates that function takes (double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "erf"    , PPL_USERSPACE_SYSTEM+1, (void *)&gsl_sf_erf  ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "exp"    , PPL_USERSPACE_SYSTEM+1, (void *)&exp         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "floor"  , PPL_USERSPACE_SYSTEM+1, (void *)&floor       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "fmod"   , PPL_USERSPACE_SYSTEM+2, (void *)&fmod        ,0,0, DATATYPE_VOID); // 2 indicates that function takes (double, double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "frexp"  , PPL_USERSPACE_SYSTEM+3, (void *)&frexp       ,0,0, DATATYPE_VOID); // 3 indicates that these functions take (double, int)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "gamma"  , PPL_USERSPACE_SYSTEM+1, (void *)&gsl_sf_gamma,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "ldexp"  , PPL_USERSPACE_SYSTEM+3, (void *)&ldexp       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "log"    , PPL_USERSPACE_SYSTEM+1, (void *)&log         ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "log10"  , PPL_USERSPACE_SYSTEM+1, (void *)&log10       ,0,0, DATATYPE_VOID);
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "random" , PPL_USERSPACE_SYSTEM+0, (void *)&frandom     ,0,0, DATATYPE_VOID); // 0 indicates that this function takes no arguments
-
-  // These functions need replacing with unit-friendly versions
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "acos"   , PPL_USERSPACE_SYSTEM+1, (void *)&acos        ,0,0, DATATYPE_VOID); // // 1 indicates that function takes (double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "asin"   , PPL_USERSPACE_SYSTEM+1, (void *)&asin        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan"   , PPL_USERSPACE_SYSTEM+1, (void *)&atan        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "atan2"  , PPL_USERSPACE_SYSTEM+2, (void *)&atan2       ,0,0, DATATYPE_VOID); // // 2 indicates that function takes (double, double)
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "cos"    , PPL_USERSPACE_SYSTEM+1, (void *)&cos         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "cosh"   , PPL_USERSPACE_SYSTEM+1, (void *)&cosh        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "degrees", PPL_USERSPACE_SYSTEM+1, (void *)&degrees     ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "fabs"   , PPL_USERSPACE_SYSTEM+1, (void *)&fabs        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "hypot"  , PPL_USERSPACE_SYSTEM+2, (void *)&hypot       ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "max"    , PPL_USERSPACE_SYSTEM+2, (void *)&max         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "min"    , PPL_USERSPACE_SYSTEM+2, (void *)&min         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "pow"    , PPL_USERSPACE_SYSTEM+2, (void *)&pow         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "radians", PPL_USERSPACE_SYSTEM+1, (void *)&radians     ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sin"    , PPL_USERSPACE_SYSTEM+1, (void *)&sin         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sinh"   , PPL_USERSPACE_SYSTEM+1, (void *)&sinh        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "sqrt"   , PPL_USERSPACE_SYSTEM+1, (void *)&sqrt        ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "tan"    , PPL_USERSPACE_SYSTEM+1, (void *)&tan         ,0,0, DATATYPE_VOID); //
-  DictAppendPtr  (_ppl_UserSpace_Funcs, "tanh"   , PPL_USERSPACE_SYSTEM+1, (void *)&tanh        ,0,0, DATATYPE_VOID); //
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acos"   , (void *)&fd_acos        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asin"   , (void *)&fd_asin        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan"   , (void *)&fd_atan        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan2"  , (void *)&fd_atan2       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ceil"   , (void *)&fd_ceil        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cos"    , (void *)&fd_cos         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cosh"   , (void *)&fd_cosh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "degrees", (void *)&fd_degrees     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "erf"    , (void *)&fd_erf         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "exp"    , (void *)&fd_exp         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "fabs"   , (void *)&fd_fabs        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "floor"  , (void *)&fd_floor       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "fmod"   , (void *)&fd_fmod        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "frexp"  , (void *)&fd_frexp       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gamma"  , (void *)&fd_gamma       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hypot"  , (void *)&fd_hypot       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ldexp"  , (void *)&fd_ldexp       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "log"    , (void *)&fd_log         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "log10"  , (void *)&fd_log10       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "max"    , (void *)&fd_max         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "min"    , (void *)&fd_min         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "pow"    , (void *)&fd_pow         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "radians", (void *)&fd_radians     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "random" , (void *)&fd_random      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sin"    , (void *)&fd_sin         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sinh"   , (void *)&fd_sinh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"   , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tan"    , (void *)&fd_tan         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tanh"   , (void *)&fd_tanh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
 
   return;
  }

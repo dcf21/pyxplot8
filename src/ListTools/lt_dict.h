@@ -28,7 +28,6 @@ typedef struct DictItemS
  {
   char             *key;
   void             *data;
-  int               UserData;
   int               DataType;
   int               DataSize;
   unsigned char     MallocedByUs;
@@ -55,21 +54,21 @@ typedef DictItem DictIterator;
 Dict *DictInit         ();
 Dict *DictCopy         (Dict *in, int deep);
 int   DictLen          (Dict *in);
-void  DictAppendPtr    (Dict *in, char *key, int UserData, void *item, int size, int copyable, int DataType);
-void  DictAppendPtrCpy (Dict *in, char *key, int UserData, void *item, int size, int DataType);
-void  DictAppendInt    (Dict *in, char *key, int UserData, int   item);
-void  DictAppendFloat  (Dict *in, char *key, int UserData, double item);
-void  DictAppendValue  (Dict *in, char *key, int UserData, value  item);
-void  DictAppendString (Dict *in, char *key, int UserData, char *item);
-void  DictAppendList   (Dict *in, char *key, int UserData, List *item);
-void  DictAppendDict   (Dict *in, char *key, int UserData, Dict *item);
-void  DictLookup       (Dict *in, char *key, int *UserDataOut, int *DataTypeOut, void **ptrout);
+void  DictAppendPtr    (Dict *in, char *key, void *item, int size, int copyable, int DataType);
+void  DictAppendPtrCpy (Dict *in, char *key, void *item, int size, int DataType);
+void  DictAppendInt    (Dict *in, char *key, int   item);
+void  DictAppendFloat  (Dict *in, char *key, double item);
+void  DictAppendValue  (Dict *in, char *key, value  item);
+void  DictAppendString (Dict *in, char *key, char *item);
+void  DictAppendList   (Dict *in, char *key, List *item);
+void  DictAppendDict   (Dict *in, char *key, Dict *item);
+void  DictLookup       (Dict *in, char *key, int *DataTypeOut, void **ptrout);
 int   DictContains     (Dict *in, char *key);
 int   DictRemoveKey    (Dict *in, char *key);
 int   DictRemovePtr    (Dict *in, void *item);
 void  DictRemovePtrAll (Dict *in, void *item);
 DictIterator *DictIterateInit(Dict *in);
-DictIterator *DictIterate(DictIterator *in, int *UserDataOut, int *DataTypeOut, void **ptrout);
+DictIterator *DictIterate(DictIterator *in, int *DataTypeOut, void **ptrout);
 char *DictPrint        (Dict *in, char *out, int size);
 
 // Private

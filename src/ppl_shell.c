@@ -298,19 +298,19 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
 
   if (IterLevel > 100) { ppl_error("Maximum recursion depth exceeded."); return 1; }
 
-  DictLookup(command,"directive",NULL,NULL,(void **)(&directive));
+  DictLookup(command,"directive",NULL,(void **)(&directive));
 
   if      (strcmp(directive, "pling")==0)
    {
-    DictLookup(command,"cmd",NULL,NULL,(void **)(&directive));
+    DictLookup(command,"cmd",NULL,(void **)(&directive));
     system(directive);
    }
   else if (strcmp(directive, "var_set")==0)
    {
-    DictLookup(command,"varname"     ,NULL,NULL,(void **)(&varname));
-    DictLookup(command,"string_value",NULL,NULL,(void **)(&varstrval));
+    DictLookup(command,"varname"     ,NULL,(void **)(&varname));
+    DictLookup(command,"string_value",NULL,(void **)(&varstrval));
     if (varstrval != NULL) { ppl_UserSpace_SetVarStr(varname, varstrval); return 0; }
-    DictLookup(command,"numeric_value",NULL,NULL,(void **)(&varnumval));
+    DictLookup(command,"numeric_value",NULL,(void **)(&varnumval));
     if (varnumval != NULL) { ppl_UserSpace_SetVarNumeric(varname, varnumval); return 0; }
     ppl_UserSpace_UnsetVar(varname);
    }
@@ -318,7 +318,7 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    directive_cd(command);
   else if (strcmp(directive, "exec")==0)
    {
-    DictLookup(command,"command",NULL,NULL,(void **)(&varstrval));
+    DictLookup(command,"command",NULL,(void **)(&varstrval));
     lt_AscendOutOfContext(memcontext); command = NULL;
     ProcessDirective2(varstrval, interactive, IterLevel+1);
     return 0;
@@ -327,7 +327,7 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    directive_help(command, interactive);
   else if (strcmp(directive, "load")==0)
    {
-    DictLookup(command,"filename",NULL,NULL,(void **)(&varstrval));
+    DictLookup(command,"filename",NULL,(void **)(&varstrval));
     if (glob(varstrval, 0, NULL, &GlobData) != 0) { ppl_error("Could not glob this filename."); return 1; }
     lt_AscendOutOfContext(memcontext); command = NULL;
     for (i=0; i<GlobData.gl_pathc; i++) ProcessPyXPlotScript(GlobData.gl_pathv[i], IterLevel+1);
@@ -371,12 +371,12 @@ void directive_cd(Dict *command)
   char         *DirName;
   ListIterator *CDIterate;
 
-  DictLookup(command,"path",NULL,NULL,(void **)(&DirList));
+  DictLookup(command,"path",NULL,(void **)(&DirList));
   CDIterate = ListIterateInit(DirList);
   while (CDIterate != NULL)
    {
     CDIterate = ListIterate(CDIterate , (void **)&DirNameDict);
-    DictLookup(DirNameDict,"directory",NULL,NULL,(void **)&DirName);
+    DictLookup(DirNameDict,"directory",NULL,(void **)&DirName);
     if (chdir(DirName) < 0)
      {
       sprintf(temp_err_string, "Could not change into directory '%s'.", DirName);
@@ -398,15 +398,15 @@ void directive_print(Dict *command)
   char          PrintString[LSTR_LENGTH] = "\0";
   int           i=0;
 
-  DictLookup(command,"print_list,",NULL,NULL,(void **)(&ItemList));
+  DictLookup(command,"print_list,",NULL,(void **)(&ItemList));
   if (ItemList != NULL) ItemIterate = ListIterateInit(ItemList);
   else                  ItemIterate = NULL;
   while (ItemIterate != NULL)
    {
     ItemIterate = ListIterate(ItemIterate , (void **)&ItemSubDict);
-    DictLookup(ItemSubDict,"string",NULL,NULL,(void **)&item_str);
+    DictLookup(ItemSubDict,"string",NULL,(void **)&item_str);
     if (item_str != NULL) { strcpy(PrintString+i, item_str); i+=strlen(PrintString+i); }
-    DictLookup(ItemSubDict,"expression",NULL,NULL,(void **)&item_val);
+    DictLookup(ItemSubDict,"expression",NULL,(void **)&item_val);
     if (item_val != NULL) { strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0)); i+=strlen(PrintString+i); }
    }
   ppl_report(PrintString);

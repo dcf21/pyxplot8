@@ -29,9 +29,15 @@
 #define PPL_USERSPACE_NUMERIC 32000
 #define PPL_USERSPACE_STRING  32001
 
-#define PPL_USERSPACE_USERDEF 32100
-#define PPL_USERSPACE_SYSTEM  32200
-#define PPL_USERSPACE_SPLINE  32300
+#define PPL_USERSPACE_USERDEF 32050
+#define PPL_USERSPACE_SYSTEM  32051
+#define PPL_USERSPACE_SPLINE  32052
+
+typedef struct FunctionDescriptor {
+ int FunctionType;
+ int NumberArguments;
+ void *FunctionPtr;
+ } FunctionDescriptor;
 
 #ifndef _PPL_USERSPACE_C
 extern Dict *_ppl_UserSpace_Vars;
@@ -45,8 +51,8 @@ void ppl_UserSpace_UnsetVar     (char *name);
 void ppl_UserSpace_SetFunc      (char *name, char   *inval);
 void ppl_UserSpace_UnsetFunc    (char *name);
 
-void ppl_GetQuotedString(char *in, char   *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);
-void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth);
+void ppl_GetQuotedString(char *in, char   *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);
+void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);
 void ppl_GetExpression  (char *in, int *end, int DollarAllowed, unsigned char *status, unsigned char *OpList, int *errpos, char *errtext);
 
 #endif

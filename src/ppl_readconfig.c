@@ -318,8 +318,8 @@ void ReadConfigFile(char *ConfigFname)
     else if (state == 5) // [variables] section
      {
       errpos = -1; end = strlen(setvalue);
-      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_GetQuotedString(setvalue, setstring , 0, &end, NULL, NULL, &errpos, errtext, 0);
-      else                                            ppl_EvaluateAlgebra(setvalue,&setnumeric, 0, &end, NULL, NULL, &errpos, errtext, 0);
+      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_GetQuotedString(setvalue, setstring , 0, &end, &errpos, errtext, 0);
+      else                                            ppl_EvaluateAlgebra(setvalue,&setnumeric, 0, &end, &errpos, errtext, 0);
       if (errpos >= 0)
        {
         sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s.", linecounter, ConfigFname, errtext);

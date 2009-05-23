@@ -48,13 +48,13 @@ Dict *_ppl_UserSpace_Funcs;
 
 void ppl_UserSpace_SetVarStr(char *name, char *inval)
  {
-  DictAppendString(_ppl_UserSpace_Vars , name , PPL_USERSPACE_STRING, inval);
+  DictAppendString(_ppl_UserSpace_Vars , name , inval);
   return;
  }
 
 void ppl_UserSpace_SetVarNumeric(char *name, value *inval)
  {
-  DictAppendValue(_ppl_UserSpace_Vars , name , PPL_USERSPACE_NUMERIC , *inval);
+  DictAppendValue(_ppl_UserSpace_Vars , name , *inval);
   return;
  }
 
@@ -89,7 +89,7 @@ void ppl_UserSpace_UnsetFunc(char *name)
 // errtext: Error messages are written here
 // ---------------------------------------------------------------------------------
 
-void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth)
+void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth)
  {
   char QuoteType;
   char FormatString[LSTR_LENGTH]; // Used to store the string found between quotes, before applying the substitution operator
@@ -97,7 +97,6 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
   char FormatToken [SSTR_LENGTH];
   int  pos      = start;
   int  outpos   = 0;
-  int  UserData = -1;
   int  DataType = -1;
   char *VarData = NULL;
   int  pos2, CommaPositions[MAX_STR_FORMAT_ITEMS], NFormatItems;
@@ -118,18 +117,9 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
     if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name"); return; } // Have we used up as many characters as we were told we had to?
-    DictLookup(Local2Vars, FormatString, &UserData, &DataType, (void **)&VarData);
-     if (VarData == NULL)
-      {
-       DictLookup(Local1Vars, FormatString, &UserData, &DataType, (void **)&VarData); // Try looking up variable in Local2, Local1 and Global, in that sequence
-       if (VarData == NULL) 
-        {
-         DictLookup(_ppl_UserSpace_Vars, FormatString, &UserData, &DataType, (void **)&VarData); // Global variables
-         if (VarData == NULL)
-          { *errpos = start; strcpy(errtext, "No such variable"); return; }
-        }
-      }
-    if (UserData != PPL_USERSPACE_STRING) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected"); return; }
+    DictLookup(_ppl_UserSpace_Vars, FormatString, &DataType, (void **)&VarData); // Global variables
+    if (VarData == NULL)             { *errpos = start; strcpy(errtext, "No such variable"); return; }
+    if (DataType != DATATYPE_STRING) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected"); return; }
     *errpos = -1;
     if ((end!=NULL)&&(*end<0)) *end=pos;
     strcpy(out, VarData);
@@ -198,14 +188,14 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
       StrSlice(FormatString, FormatToken, i, k+1);
       if (RequiredArgs>1) // Length and/or precision was specified with a *, so we need to take an integer from the list of arguments
        {
-        ppl_EvaluateAlgebra(in+pos , &arg1v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &arg1v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         if (arg1v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of %s.", ppl_units_GetUnitStr(&arg1v, NULL, 0, 0) ); return; }
         arg1i = (int)(arg1v.number);
        }
       if (RequiredArgs>2)
        {
-        ppl_EvaluateAlgebra(in+pos , &arg2v, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &arg2v, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         if (arg2v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of %s.", ppl_units_GetUnitStr(&arg2v, NULL, 0, 0) ); return; }
         arg2i = (int)(arg2v.number);
@@ -214,7 +204,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
       ArgCount += (RequiredArgs-1); // Fastforward ArgCount to point at the number or string argument that we're actually going to substitute
       if ((AllowedFormats[l]=='c') || (AllowedFormats[l]=='s') || (AllowedFormats[l]=='S'))
        {
-        ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         argf.s = FormatArg;
         if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s); // Print a string variable
@@ -223,7 +213,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
        }
       else
        {
-        ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         argf.s = ppl_units_GetUnitStr(&argf.v, &argf.d, 0, 0);
         if      ((AllowedFormats[l]=='d') || (AllowedFormats[l]=='i') || (AllowedFormats[l]=='o') || (AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
@@ -297,7 +287,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, Dict *Local1V
 #define FETCHNEXT(VARA,VARB,VARC)  { for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++); if ((cj=StatusRow[j])<BUFFER_OFFSET) {*errpos=i; strcpy(errtext, "Internal Error: Trying to do arithmetic before numeric conversion"); return;}; for (k=j; StatusRow[k]==cj; k++); VARA=j; VARB=(int)(cj-BUFFER_OFFSET); VARC=k; }
 #define SETSTATUS(BEG,END,VAL)     { ci = (unsigned char)(VAL+BUFFER_OFFSET); for (j=BEG;j<END;j++) StatusRow[j]=ci; }
 
-void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1Vars, Dict *Local2Vars, int *errpos, char *errtext, int RecursionDepth)
+void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth)
  {
   unsigned char OpList[OPLIST_LEN];           // A list of what operations this expression contains
   unsigned char StatusRow[ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
@@ -308,7 +298,6 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
   unsigned char ci,cj;
   char ck;
   int bufpos = 0;
-  int     UserData = -1;
   int     DataType = -1; 
   value  *VarData  = NULL;
   double  TempDbl;
@@ -330,7 +319,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
   if (OpList[2]!=0) for (i=0;i<len;i++) if (StatusRow[i]==3)
    {
     j=-1;
-    ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, Local1Vars, Local2Vars, errpos, errtext, RecursionDepth+1);
+    ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, errpos, errtext, RecursionDepth+1);
     if (*errpos > 0) { (*errpos) += start+i; return; }
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (in[start+j]!=')') { *errpos=start+j; strcpy(errtext,"Syntax Error: Unexpected trailing matter within brackets"); return; }
@@ -352,20 +341,11 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, Dict *Local1
     for (j=i;((StatusRow[j]==8)||(StatusRow[i]==4));j++);
     while ((j>i) && (in[start+j-1]<=' ')) j--;
     ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
-    DictLookup(Local2Vars, in+start+i, &UserData, &DataType, (void **)&VarData);
-    if (VarData == NULL)
-     {
-      DictLookup(Local1Vars, in+start+i, &UserData, &DataType, (void **)&VarData); // Try looking up variable in Local2, Local1 and Global, in that sequence
-      if (VarData == NULL)
-       {
-        DictLookup(_ppl_UserSpace_Vars, in+start+i, &UserData, &DataType, (void **)&VarData);
-        in[start+j] = ck;
-        if (VarData == NULL)
-         { *errpos = start+i; strcpy(errtext, "No such variable"); return; } 
-       }
-     }
+    DictLookup(_ppl_UserSpace_Vars, in+start+i, &DataType, (void **)&VarData);
     in[start+j] = ck;
-    if (UserData != PPL_USERSPACE_NUMERIC) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected"); return; }
+    if (VarData == NULL) { *errpos = start+i; strcpy(errtext, "No such variable"); return; } 
+    in[start+j] = ck;
+    if (DataType != DATATYPE_VALUE) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected"); return; }
     ResultBuffer[bufpos] = *VarData;
     for (k=i; ((StatusRow[k]==8)||(StatusRow[k]==4)); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++;

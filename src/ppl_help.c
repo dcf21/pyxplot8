@@ -190,7 +190,7 @@ void directive_help(Dict *command, int interactive)
   int      Nmatches     = 0; // Counts the number of pages the user's request matches
   int      i;
 
-  DictLookup(command, "topic", NULL, NULL, (void **)&TopicString); // Make a list of the requested topic words in TopicWords
+  DictLookup(command, "topic", NULL, (void **)&TopicString); // Make a list of the requested topic words in TopicWords
   TopicWords = StrSplit( TopicString );
 
   sprintf(filename, "%s%s%s", SRCDIR, PATHLINK, "ppl_help.xml"); // Find ppl_help.xml

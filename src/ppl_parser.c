@@ -319,7 +319,7 @@ Dict *parse(char *line)
     return output;
    }
   output = DictInit();
-  DictAppendString(output, "directive", 0, "unrecognised");
+  DictAppendString(output, "directive" , "unrecognised");
   return output;
  }
 
@@ -551,7 +551,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         i=-1;
         *AlgebraNewLinepos=-1;
-        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, NULL, NULL, AlgebraNewLinepos, AlgebraNewError, 0);
+        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, AlgebraNewLinepos, AlgebraNewError, 0);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;
@@ -581,7 +581,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           (*linepos)++;
           i = -1;
           *AlgebraNewLinepos = -1;
-          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraNewLinepos, AlgebraNewError, 0);
+          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, AlgebraNewLinepos, AlgebraNewError, 0);
           if (*AlgebraNewLinepos >= 0)
            {
             TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraNewLinepos = -1;
@@ -644,7 +644,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         i = -1;
         *AlgebraNewLinepos=-1;
-        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, NULL, NULL, AlgebraNewLinepos, AlgebraNewError, 0);
+        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, AlgebraNewLinepos, AlgebraNewError, 0);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;  
@@ -699,13 +699,13 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
         AlgebraError[0]= '\0'; *AlgebraLinepos=-1;
         if ((node->VarName     != NULL) && (node->VarName[0]    != '\0'))
          {
-          if ((node->VarSetVal != NULL) && (node->VarSetVal[0]  != '\0'))  DictAppendString(output , node->VarName , 0 , node->VarSetVal);
+          if ((node->VarSetVal != NULL) && (node->VarSetVal[0]  != '\0'))  DictAppendString(output , node->VarName , node->VarSetVal);
           else
            {
-            if      (MatchType == DATATYPE_INT)    DictAppendInt   (output , node->VarName , 0 , MatchVal._int);
-            else if (MatchType == DATATYPE_FLOAT)  DictAppendFloat (output , node->VarName , 0 , MatchVal._dbl);
-            else if (MatchType == DATATYPE_VALUE)  DictAppendValue (output , node->VarName , 0 , MatchVal._val);
-            else if (MatchType == DATATYPE_STRING) DictAppendString(output , node->VarName , 0 , MatchVal._str);
+            if      (MatchType == DATATYPE_INT)    DictAppendInt   (output , node->VarName , MatchVal._int);
+            else if (MatchType == DATATYPE_FLOAT)  DictAppendFloat (output , node->VarName , MatchVal._dbl);
+            else if (MatchType == DATATYPE_VALUE)  DictAppendValue (output , node->VarName , MatchVal._val);
+            else if (MatchType == DATATYPE_STRING) DictAppendString(output , node->VarName , MatchVal._str);
            }
          }
        }
@@ -790,7 +790,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        }
       if ((repeating!=0) && (output != NULL)) { ListAppendDict(DictBabyList, DictBaby); first = 0; }
      }
-    if ((first==0) && (output != NULL)) DictAppendList(output , node->VarName , 0 , DictBabyList); // Only append list if we matched at least once
+    if ((first==0) && (output != NULL)) DictAppendList(output , node->VarName , DictBabyList); // Only append list if we matched at least once
     else if (node->type == PN_TYPE_REP) *success=0; // We needed at least one item, but got none
    }
   else if (node->type == PN_TYPE_OPT)
