@@ -34,9 +34,10 @@
 #define PPL_USERSPACE_SPLINE  32052
 
 typedef struct FunctionDescriptor {
- int FunctionType;
- int NumberArguments;
+ int   FunctionType;
+ int   NumberArguments;
  void *FunctionPtr;
+ char *description;
  } FunctionDescriptor;
 
 #ifndef _PPL_USERSPACE_C

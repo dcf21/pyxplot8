@@ -24,6 +24,7 @@
 // Include <ppl_units.c> as a part of this source file to allow inline
 // compilation of arithmetic functions.
 #include "ppl_units.c"
+#include "MathsTools/dcfmath.c"
 
 #include <stdlib.h>
 #include <stdio.h>

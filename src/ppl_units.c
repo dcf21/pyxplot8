@@ -98,6 +98,13 @@ int __inline__ ppl_units_DimEqual(value *a, value *b)
   return 1;
  }
 
+int __inline__ ppl_units_DimEqual2(value *a, unit *b)
+ {
+  int j;
+  for (j=0; j<UNITS_MAX_BASEUNITS; j++) if (ppl_units_DblEqual(a->exponent[j] , b->exponent[j]) == 0) return 0;
+  return 1;
+ }
+
 int __inline__ ppl_units_UnitDimEqual(unit *a, unit *b)
  {
   int j;
