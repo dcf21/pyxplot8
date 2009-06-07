@@ -70,7 +70,7 @@ int           __inline__ ppl_units_UnitDimEqual(unit  *a, unit  *b);
 
 
 char  *ppl_units_GetUnitStr    (value *in, double *NumberOut, int N, int typeable);
-value *ppl_units_StringEvaluate(char *in);
+void   ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext);
 
 void   ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext);
 void   ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext);

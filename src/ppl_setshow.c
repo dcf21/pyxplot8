@@ -463,11 +463,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        {
         sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
        }
-      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SPLINE)
+      else if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SPLINE)
        {
         sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
        }
-      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SYSTEM)
+      else
        {
         sprintf(out+i, "%-15s: %s.\n", DictIter->key, ((FunctionDescriptor *)DictIter->data)->description);
        }

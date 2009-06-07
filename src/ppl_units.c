@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <math.h>
 #include <string.h>
 
@@ -316,9 +317,55 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
 // Function to evaluate strings of the form "m/s"
 // ------------------------------------------------
 
-value *ppl_units_StringEvaluate(char *in)
+void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext)
  {
-  return NULL;
+  int i=0,j,k,p;
+  double power=1.0, powerneg=1.0;
+  ppl_units_zero(out);
+  out->number = 1;
+  while (powerneg!=0.0)
+   {
+    p=0;
+    while ((in[i]<=' ')&&(in[i]!='\0')) i++;
+    for (j=0; j<ppl_unit_pos; j++)
+     {
+      if (p==0) { for (k=0; ((ppl_unit_database[j].nameAp[k]!='\0') && (ppl_unit_database[j].nameAp[k]==in[i+k])); k++);
+                  if ((ppl_unit_database[j].nameAp[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
+      if (p==0) { for (k=0; ((ppl_unit_database[j].nameAs[k]!='\0') && (ppl_unit_database[j].nameAs[k]==in[i+k])); k++);
+                  if ((ppl_unit_database[j].nameAs[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
+      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFp[k]!='\0') && (ppl_unit_database[j].nameFp[k]==in[i+k])); k++);
+                  if ((ppl_unit_database[j].nameFp[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
+      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFs[k]!='\0') && (ppl_unit_database[j].nameFs[k]==in[i+k])); k++);
+                  if ((ppl_unit_database[j].nameFs[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
+      if (p==0)   continue;
+      i+=k;
+      while ((in[i]<=' ')&&(in[i]!='\0')) i++;
+      if (((in[i]=='^') && (i++,1)) || (((in[i]=='*') && (in[i+1]=='*')) && (i+=2,1)))
+       {
+        power = GetFloat(in+i,&k);
+        if (k<=0) { *errpos=i; strcpy(errtext, "Syntax error: Was expecting a numerical constant here."); return; }
+        i+=k;
+        while ((in[i]<=' ')&&(in[i]!='\0')) i++;
+       }
+      for (k=0; k<UNITS_MAX_BASEUNITS; k++) out->exponent[k] += ppl_unit_database[j].exponent[k] * power * powerneg;
+      out->number *= pow( ppl_unit_database[j].multiplier , power*powerneg );
+      power = 1.0;
+      if      (in[i]=='*') { powerneg= 1.0; i++; }
+      else if (in[i]=='/') { powerneg=-1.0; i++; }
+      else                 { powerneg= 0.0;      }
+      break;
+     }
+    if (p==0)
+     {
+      if (in[i]==')') { powerneg=0.0; }
+      else            { *errpos=i; strcpy(errtext, "No such unit."); return; }
+     }
+   }
+  j=1;
+  for (k=0; k<UNITS_MAX_BASEUNITS; k++) if (ppl_units_DblEqual(out->exponent[k], 0) == 0) j=0;
+  out->dimensionless = j;
+  if (end != NULL) *end=i;
+  return;
  }
 
 // -------------------------------

@@ -81,6 +81,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_sqrt     = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_sqrt        , "sqrt(x) returns the square root of x"};
   FunctionDescriptor fd_tan      = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_tan         , "tan(x) returns the tangent of x (measured in radians)"};
   FunctionDescriptor fd_tanh     = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_tanh        , "tanh(x) returns the hyperbolic tangent of x"};
+  FunctionDescriptor fd_unit     = { PPL_USERSPACE_UNIT   ,-1 , NULL                         , "unit(...) multiplies a number by a physical unit"};
+  FunctionDescriptor fd_int      = { PPL_USERSPACE_INT    ,-1 , NULL                         , "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
 
   // Set up default variables
   ppl_units_zero(&v);
@@ -196,6 +198,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"   , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tan"    , (void *)&fd_tan         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tanh"   , (void *)&fd_tanh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "unit"   , (void *)&fd_unit        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "int_d?" , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
 
   return;
  }
@@ -651,7 +655,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "frequency";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "B";  // bytes

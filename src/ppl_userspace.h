@@ -32,6 +32,8 @@
 #define PPL_USERSPACE_USERDEF 32050
 #define PPL_USERSPACE_SYSTEM  32051
 #define PPL_USERSPACE_SPLINE  32052
+#define PPL_USERSPACE_UNIT    32053
+#define PPL_USERSPACE_INT     32054
 
 typedef struct FunctionDescriptor {
  int   FunctionType;

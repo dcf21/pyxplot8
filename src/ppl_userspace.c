@@ -294,7 +294,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   unsigned char StatusRow[ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
   value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
   int len, CalculatedEnd;
-  int i,p,j,k;
+  int i,p,j,k,FunctionType;
   int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
   unsigned char ci,cj;
   char ck;
@@ -342,21 +342,31 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
          }
         bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
        }
-      if (in[start+i] != ')')
+      FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
+      if ((FunctionType != PPL_USERSPACE_UNIT) && (FunctionType != PPL_USERSPACE_INT) && (in[start+i] != ')'))
        {
         (*errpos) = start+i;
         if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
         else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
         return;
        }
-      while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--;
-      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SYSTEM)
+      if (FunctionType == PPL_USERSPACE_SYSTEM)
        {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
         j=0;
         if      (((FunctionDescriptor *)DictIter->data)->NumberArguments==0) ((void(*)(value*              ,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos,&j,errtext);
         else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==1) ((void(*)(value*,value*       ,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
         else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==2) ((void(*)(value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
         if (j>0) { *errpos = start+i; return; }
+       }
+      else if (FunctionType == PPL_USERSPACE_UNIT)
+       {
+        j=-1;
+        ppl_units_StringEvaluate(in+start+i, ResultBuffer+bufpos, &k, &j, errtext);
+        if (j>=0) { *errpos = start+i+j; return; }
+        i+=k; while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
+        if (in[start+i] != ')') { (*errpos) = start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter."); return; }
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
        }
       for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
       for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
