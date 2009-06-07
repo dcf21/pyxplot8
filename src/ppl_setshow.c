@@ -36,6 +36,7 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_units.h"
+#include "ppl_userspace.h"
 #include "pyxplot.h"
 
 int with_words_compare(with_words *a, with_words *b)
@@ -113,8 +114,9 @@ void directive_show3(char *out, char *ItemSet, int interactive, char *setting_na
 
 int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *sg, settings_axis *xa, settings_axis *ya, settings_axis *za)
  {
-  char *out, *buf;
+  char *out, *buf, *bufp;
   int   i=0, p=0,j,k;
+  DictIterator * DictIter;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   out[0] = buf[0] = '\0';
@@ -187,14 +189,31 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
     if (sg->grid == SW_ONOFF_ON)
      {
-      sprintf(buf, "x%d", sg->GridAxisX);
-      directive_show3(out+i, ItemSet, interactive, "grid", buf, (settings_graph_default.GridAxisX == sg->GridAxisX), "Sets the X-axis with whose ticks gridlines are associated");
+      bufp = buf; k=1;
+      for (j=0; j<MAX_AXES; j++)
+       {
+        if (sg->GridAxisX[j] != 0                                   ) { sprintf(bufp, "x%d", j); bufp += strlen(bufp); }
+        if (sg->GridAxisX[j] != settings_graph_default.GridAxisX[j] ) k=0;
+       }
+      if (bufp != buf) directive_show3(out+i, ItemSet, interactive, "grid", buf, k, "Sets the x axis with whose ticks gridlines are associated");
       i += strlen(out+i);
-      sprintf(buf, "y%d", sg->GridAxisY);
-      directive_show3(out+i, ItemSet, interactive, "grid", buf, (settings_graph_default.GridAxisY == sg->GridAxisY), "Sets the Y-axis with whose ticks gridlines are associated");
+
+      bufp = buf; k=1;
+      for (j=0; j<MAX_AXES; j++)
+       {
+        if (sg->GridAxisY[j] != 0                                   ) { sprintf(bufp, "y%d", j); bufp += strlen(bufp); }
+        if (sg->GridAxisY[j] != settings_graph_default.GridAxisY[j] ) k=0;
+       }
+      if (bufp != buf) directive_show3(out+i, ItemSet, interactive, "grid", buf, k, "Sets the y axis with whose ticks gridlines are associated");
       i += strlen(out+i);
-      sprintf(buf, "z%d", sg->GridAxisZ);
-      directive_show3(out+i, ItemSet, interactive, "grid", buf, (settings_graph_default.GridAxisZ == sg->GridAxisZ), "Sets the Z-axis with whose ticks gridlines are associated");
+
+      bufp = buf; k=1;
+      for (j=0; j<MAX_AXES; j++)
+       {
+        if (sg->GridAxisZ[j] != 0                                   ) { sprintf(bufp, "z%d", j); bufp += strlen(bufp); }
+        if (sg->GridAxisZ[j] != settings_graph_default.GridAxisZ[j] ) k=0;
+       }
+      if (bufp != buf) directive_show3(out+i, ItemSet, interactive, "grid", buf, k, "Sets the z axis with whose ticks gridlines are associated");
       i += strlen(out+i);
      }
    }
@@ -412,6 +431,49 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 1));
     directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.number==sg->width.number), "The width, in cm, of graphs");
     i += strlen(out+i) ; p=1;
+   }
+
+  if (StrAutocomplete(word, "variables", 1)>=0)
+   {
+    sprintf(out+i, "\nVariables:\n\n"); i += strlen(out+i); p=1;
+    DictIter = DictIterateInit(_ppl_UserSpace_Vars);
+    while (DictIter != NULL)
+     {
+      sprintf(out+i, "%s", DictIter->key); i += strlen(out+i);
+      if (DictIter->DataType == DATATYPE_STRING)
+       {
+        StrEscapify((char *)DictIter->data, buf);
+        sprintf(out+i, " = \"%s\"\n", buf);
+       }
+      if (DictIter->DataType == DATATYPE_VALUE)
+       {
+        sprintf(out+i, " = %s\n", ppl_units_NumericDisplay((value *)DictIter->data, 0, 0));
+       }
+      i += strlen(out+i);
+      DictIter = DictIterate(DictIter, NULL, NULL);
+     }
+   }
+  if (StrAutocomplete(word, "functions", 1)>=0)
+   {
+    sprintf(out+i, "\nFunctions:\n\n"); i += strlen(out+i); p=1;
+    DictIter = DictIterateInit(_ppl_UserSpace_Funcs);
+    while (DictIter != NULL)
+     {
+      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_USERDEF)
+       {
+        sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
+       }
+      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SPLINE)
+       {
+        sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
+       }
+      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SYSTEM)
+       {
+        sprintf(out+i, "%-15s: %s.\n", DictIter->key, ((FunctionDescriptor *)DictIter->data)->description);
+       }
+      i += strlen(out+i);
+      DictIter = DictIterate(DictIter, NULL, NULL);
+     }
    }
 
   if (p!=0) ppl_report(out);

@@ -148,11 +148,26 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_graph_default.grid          = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting GRID."         , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "GRISAXISX"    )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.GridAxisX     = (int)fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue) && (fl>=0) && (fl<=MAX_AXES)))
+         {
+          settings_graph_default.GridAxisX[1]       = 0;
+          settings_graph_default.GridAxisX[(int)fl] = 1;
+         }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting GRIDAXISX."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "GRISAXISY"    )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.GridAxisY     = (int)fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue) && (fl>=0) && (fl<=MAX_AXES)))               
+         {               
+          settings_graph_default.GridAxisY[1]       = 0;
+          settings_graph_default.GridAxisY[(int)fl] = 1;
+         }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting GRIDAXISY."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "GRISAXISZ"    )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue) && (fl>=0) && (fl<=MAX_AXES)))               
+         {               
+          settings_graph_default.GridAxisZ[1]       = 0;
+          settings_graph_default.GridAxisZ[(int)fl] = 1;
+         }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting GRIDAXISZ."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "GRIDMAJCOLOUR")==0)
         if ((i=FetchSettingByName(setvalue,SW_COLOUR_INT,SW_COLOUR_STR))>0) settings_graph_default.GridMajColour = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting GRIDMAJCOLOUR.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }

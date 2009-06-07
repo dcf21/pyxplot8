@@ -25,6 +25,7 @@
 #include "StringTools/str_constants.h"
 #include "ListTools/lt_list.h"
 
+#include "ppl_constants.h"
 #include "ppl_units.h"
 
 typedef struct with_words {
@@ -42,8 +43,9 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int   aspect, AutoAspect, AxesColour, FontSize, grid, GridAxisX, GridAxisY, GridAxisZ, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ int   aspect, AutoAspect, AxesColour, FontSize, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
  float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, LineWidth, PointSize, PointLineWidth;
+ unsigned int GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  value KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, width;
  char  title[FNAME_LENGTH];
  with_words DataStyle, FuncStyle;

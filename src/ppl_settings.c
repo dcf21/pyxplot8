@@ -118,9 +118,12 @@ void ppl_settings_term_init()
   settings_graph_default.FuncStyle.pointlinewidth = -1;
   settings_graph_default.FuncStyle.pointsize  = -1;
   settings_graph_default.grid       = SW_ONOFF_OFF;
-  settings_graph_default.GridAxisX  = 1;
-  settings_graph_default.GridAxisY  = 1;
-  settings_graph_default.GridAxisZ  = 1;
+  for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisX[i] = 0;
+  for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisY[i] = 0;
+  for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisZ[i] = 0;
+  settings_graph_default.GridAxisX[1]  = 1;
+  settings_graph_default.GridAxisY[1]  = 1;
+  settings_graph_default.GridAxisZ[1]  = 1;
   settings_graph_default.GridMajColour = COLOUR_GREY60;
   settings_graph_default.GridMinColour = COLOUR_GREY90;
   settings_graph_default.key        = SW_ONOFF_ON;

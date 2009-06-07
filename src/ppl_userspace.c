@@ -302,12 +302,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   int     DataType = -1; 
   value  *VarData  = NULL;
   double  TempDbl;
+  DictIterator *DictIter;
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
 
   *errpos = -1;
   ppl_GetExpression(in+start, &len, 0, StatusRow, OpList, errpos, errtext);
-  if (*errpos > 0) { (*errpos) += start; return; }
+  if (*errpos >= 0) { (*errpos) += start; return; }
   CalculatedEnd = start + len;
   if ((end != NULL) && (*end >  0) && (CalculatedEnd < *end)) { *errpos=CalculatedEnd; strcpy(errtext,"Syntax Error: Unexpected trailing matter after algebraic expression"); return; }
   if ((end != NULL) && (*end <= 0)) *end = CalculatedEnd;
@@ -315,17 +316,64 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   // PHASE  1: EVALUATION OF FUNCTIONS
   if (OpList[1]!=0) for (i=0;i<len-1;i++) if ((StatusRow[i]==8)&&(StatusRow[i+1]==3))
    {
+    for (j=i;((j>0)&&(StatusRow[j-1]==8));j--); // Rewind to beginning of function name
+    p=0;
+    for ( DictIter=DictIterateInit(_ppl_UserSpace_Funcs) ; ((DictIter!=NULL)&&(p==0)) ; DictIter=DictIterate(DictIter,NULL,NULL) )
+     {
+      for (k=0; ((DictIter->key[k]>' ')&&(DictIter->key[k]==in[start+j+k])); k++);
+      if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue;
+      p=1; i+=2;
+      for (k=0; k<((FunctionDescriptor *)DictIter->data)->NumberArguments; k++)
+       {
+        while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
+        if (in[start+i]==')') { *errpos = start+i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
+        j=-1;
+        ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 0, &j, errpos, errtext, RecursionDepth+1);
+        if (*errpos >= 0) { (*errpos) += start+i; return; }
+        i+=j; while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
+        if (k < ((FunctionDescriptor *)DictIter->data)->NumberArguments-1)
+         {
+          if (in[start+i] != ',')
+           {
+            *errpos = start+i;
+            strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+            return;
+           } else { i++; }
+         }
+        bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+       }
+      if (in[start+i] != ')')
+       {
+        (*errpos) = start+i;
+        if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
+        else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+        return;
+       }
+      while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--;
+      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SYSTEM)
+       {
+        j=0;
+        if      (((FunctionDescriptor *)DictIter->data)->NumberArguments==0) ((void(*)(value*              ,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos,&j,errtext);
+        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==1) ((void(*)(value*,value*       ,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
+        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==2) ((void(*)(value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
+        if (j>0) { *errpos = start+i; return; }
+       }
+      for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
+      for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
+      bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+     }
+    if (p==0) { *errpos=start+j; strcpy(errtext,"No such function"); return; }
    }
   // PHASE  2: EVALUATION OF BRACKETED EXPRESSIONS
   if (OpList[2]!=0) for (i=0;i<len;i++) if (StatusRow[i]==3)
    {
     j=-1;
     ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, errpos, errtext, RecursionDepth+1);
-    if (*errpos > 0) { (*errpos) += start+i; return; }
+    if (*errpos >= 0) { (*errpos) += start+i; return; }
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (in[start+j]!=')') { *errpos=start+j; strcpy(errtext,"Syntax Error: Unexpected trailing matter within brackets"); return; }
     for (k=i; StatusRow[k]==3; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
-    bufpos++;
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
   // PHASE 2b: EVALUATION OF ALL NUMERICS AND VARIABLES
   for (i=0;i<len;i++) if (StatusRow[i]==6)
@@ -335,7 +383,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant"); return; }
-    bufpos++;
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
   for (i=0;i<len;i++) if ((StatusRow[i]==8) || (StatusRow[i]==4))
    {
@@ -349,7 +397,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     if (DataType != DATATYPE_VALUE) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected"); return; }
     ResultBuffer[bufpos] = *VarData;
     for (k=i; ((StatusRow[k]==8)||(StatusRow[k]==4)); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
-    bufpos++;
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
   // PHASE  3: EVALUATION OF MINUS SIGNS
   if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)
