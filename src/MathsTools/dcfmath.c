@@ -25,13 +25,17 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <gsl/gsl_cdf.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_sf_erf.h>
+#include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_legendre.h>
+#include <gsl/gsl_sf_zeta.h>
 
 #include "ppl_units.h"
 
@@ -281,6 +285,20 @@ void dcfmath_besselY(value *in1, value *in2, value *output, int *status, char *e
   return;
  }
 
+void dcfmath_beta(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The beta() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_sf_beta(in1->number, in2->number);
+  return;
+ }
+
 void dcfmath_ceil(value *in, value *output, int *status, char *errtext)
  {
   *status = 0;
@@ -350,6 +368,48 @@ void dcfmath_degrees(value *in, value *output, int *status, char *errtext)
   return;
  }
 
+void dcfmath_ellK(value *in, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The ellipticalintK() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_sf_ellint_Kcomp(in->number , GSL_PREC_DOUBLE);
+  return;
+ }
+
+void dcfmath_ellE(value *in, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The ellipticalintE() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_sf_ellint_Ecomp(in->number , GSL_PREC_DOUBLE);
+  return;
+ }
+
+void dcfmath_ellP(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if ((!(in1->dimensionless && in2->dimensionless)) && (!(ppl_units_DimEqual(in1, in2))))
+   {
+    *status = 1;
+    sprintf(errtext, "The ellipticalintP() function can only act upon inputs with matching dimensions. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_sf_ellint_Pcomp(in1->number , in2->number , GSL_PREC_DOUBLE);
+  return;
+ }
+
 void dcfmath_erf(value *in, value *output, int *status, char *errtext)
  {
   *status = 0;
@@ -357,10 +417,24 @@ void dcfmath_erf(value *in, value *output, int *status, char *errtext)
   if (!(in->dimensionless))
    {
     *status = 1;
-    sprintf(errtext, "The gsl_sf_erf() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    sprintf(errtext, "The erf() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
     return;
    }
   output->number = gsl_sf_erf(in->number);
+  return;
+ }
+
+void dcfmath_erfc(value *in, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The erfc() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_sf_erfc(in->number);
   return;
  }
 
@@ -375,6 +449,26 @@ void dcfmath_exp (value *in, value *output, int *status, char *errtext)
     return;
    }
   output->number = exp(in->number);
+  return;
+ }
+
+void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The expint() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  if ( (in1->number <= INT_MIN) || (in1->number >= INT_MAX) )
+   {
+    *status = 1;
+    sprintf(errtext, "The expint(n,x) function can only evaluate exponential integrals of order %d < l < %d", INT_MIN, INT_MAX);
+    return;
+   }
+  output->number = gsl_sf_expint_En((int)in1->number, in2->number);
   return;
  }
 
@@ -418,10 +512,52 @@ void dcfmath_gamma(value *in, value *output, int *status, char *errtext)
   if (!(in->dimensionless))
    {
     *status = 1;
-    sprintf(errtext, "The gsl_sf_gamma() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    sprintf(errtext, "The gamma() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
     return;
    }
   output->number = gsl_sf_gamma(in->number);
+  return;
+ }
+
+void dcfmath_gaussianPDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The gaussianPDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_gaussian_pdf(in1->number, in2->number);
+  return;
+ }
+
+void dcfmath_gaussianCDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The gaussianCDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_gaussian_P(in1->number, in2->number);
+  return;
+ }
+
+void dcfmath_gaussianCDFi(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The gaussianCDFi() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_gaussian_Pinv(in1->number, in2->number);
   return;
  }
 
@@ -522,6 +658,48 @@ void dcfmath_log10(value *in, value *output, int *status, char *errtext)
   return;
  }
 
+void dcfmath_lognormalPDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The lognormalPDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_lognormal_pdf(in1->number, in2->number, in3->number);
+  return;
+ }
+
+void dcfmath_lognormalCDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The lognormalCDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_lognormal_P(in1->number, in2->number, in3->number);
+  return;
+ }
+
+void dcfmath_lognormalCDFi(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The lognormalCDFi() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_lognormal_Pinv(in1->number, in2->number, in3->number);
+  return;
+ }
+
 void dcfmath_max (value *in1, value *in2, value *output, int *status, char *errtext)
  {
   *status = 0;
@@ -595,12 +773,35 @@ void dcfmath_frandom(value *output, int *status, char *errtext)
   return;
  }
 
-void dcfmath_frandomg(value *output, int *status, char *errtext)
+static gsl_rng *rndgen = NULL; // Random number generator for next two functions
+
+void dcfmath_frandomg(value *in, value *output, int *status, char *errtext)
  {
-  static gsl_rng *rndgen = NULL;
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
   ppl_units_zero(output);
-  output->number = gsl_ran_gaussian(rndgen, 1.0);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The randomGaussian() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_gaussian(rndgen, in->number);
+ }
+
+void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  *status = 0;
+  ppl_units_zero(output);
+  if ((!(in1->dimensionless && in2->dimensionless)) && (!(ppl_units_DimEqual(in1, in2))))
+   {
+    *status = 1;
+    sprintf(errtext, "The randomLogNormal() function can only act upon inputs with matching dimensions. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_lognormal(rndgen, in1->number, in2->number);
+  ppl_units_DimCpy(output, in1);
+  return;
  }
 
 void dcfmath_sin (value *in, value *output, int *status, char *errtext)
@@ -683,6 +884,20 @@ void dcfmath_tanh(value *in, value *output, int *status, char *errtext)
       return;
      }
   output->number = tanh(in->number);
+  return;
+ }
+
+void dcfmath_zeta(value *in, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The zeta() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_sf_zeta(in->number);
   return;
  }
 

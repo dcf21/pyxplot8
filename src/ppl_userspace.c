@@ -68,6 +68,10 @@ void ppl_UserSpace_UnsetVar(char *name)
 
 void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *errtext)
  {
+  int i=0, name_i=0, args_i=0, expression_i=0;
+  char name[LSTR_LENGTH] , args[LSTR_LENGTH] , expression[LSTR_LENGTH];
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  while ((definition[i]>'\0')&&(((name_i==0)&&isalpha(definition[i]))||((name_i!=0)&&(isalnum(definition[i])||(definition[i]=='_'))))) name[name_i++] = definition[i++];
   return;
  }
 
@@ -356,9 +360,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
         j=0;
-        if      (((FunctionDescriptor *)DictIter->data)->NumberArguments==0) ((void(*)(value*              ,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos,&j,errtext);
-        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==1) ((void(*)(value*,value*       ,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
-        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==2) ((void(*)(value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
+        if      (((FunctionDescriptor *)DictIter->data)->NumberArguments==0) ((void(*)(value*,                     int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos,&j,errtext);
+        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==1) ((void(*)(value*,value*,              int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
+        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==2) ((void(*)(value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
+        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==3) ((void(*)(value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos-3,ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_UNIT)
