@@ -31,10 +31,9 @@
 #define UNIT_CURRENT     3
 #define UNIT_TEMPERATURE 4
 #define UNIT_MOLE        5
-#define UNIT_CANDELA     6
-#define UNIT_ANGLE       7
-#define UNIT_BIT         8
-#define UNIT_COST        9
+#define UNIT_ANGLE       6
+#define UNIT_BIT         7
+#define UNIT_COST        8
 
 typedef struct unit
  {

@@ -29,6 +29,8 @@
 #include "lt_list.h"
 #include "lt_memory.h"
 
+#include "StringTools/asciidouble.h"
+
 #include "ppl_units.h"
 
 Dict *DictInit()
@@ -91,7 +93,7 @@ void DictAppendPtr(Dict *in, char *key, void *item, int size, int copyable, int 
   ptr = in->first;
   while (ptr != NULL)
    {
-    if ((cmp = strcmp(ptr->key, key)) <= 0) break;
+    if ( ((cmp = StrCmpNoCase(ptr->key, key)) > 0) || ((cmp = strcmp(ptr->key, key)) == 0) ) break;
     prev = ptr;
     ptr  = ptr->next;
    }
@@ -129,7 +131,7 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
   ptr = in->first;
   while (ptr != NULL)
    {
-    if ((cmp = strcmp(ptr->key, key)) <= 0) break;
+    if ( ((cmp = StrCmpNoCase(ptr->key, key)) > 0) || ((cmp = strcmp(ptr->key, key)) == 0) ) break;
     prev = ptr;
     ptr  = ptr->next;
    }
@@ -203,20 +205,18 @@ void DictAppendDict(Dict *in, char *key, Dict *item)
 void DictLookup(Dict *in, char *key, int *DataTypeOut, void **ptrout)
  {
   DictItem *ptr;
-  int       cmp;
 
   if (in==NULL) { *ptrout=NULL; return; }
   ptr = in->first;
   while (ptr != NULL)
    {
-    cmp = strcmp(ptr->key, key);
-    if (cmp==0)
+    if (strcmp(ptr->key, key) == 0)
      {
       if (DataTypeOut != NULL) *DataTypeOut = ptr->DataType ;
       if (ptrout      != NULL) *ptrout = ptr->data;
       return;
      }
-    else if (cmp < 0) break;
+    else if (StrCmpNoCase(ptr->key, key) > 0) break;
     ptr = ptr->next;
    }
   *ptrout = NULL;
@@ -239,19 +239,17 @@ int DictContains(Dict *in, char *key)
 int  DictRemoveKey(Dict *in, char *key)
  {
   DictItem *ptr;
-  int       cmp;
 
   if (in==NULL) return -1;
   ptr = in->first;
   while (ptr != NULL)
    {
-    cmp = strcmp(ptr->key, key);
-    if (cmp==0)
+    if (strcmp(ptr->key, key)==0)
      {
       _DictRemoveEngine(in, ptr);
       return 0;
      }
-    else if (cmp < 0) break;
+    else if (StrCmpNoCase(ptr->key, key) > 0) break;
     ptr = ptr->next;
    }
   return -1;

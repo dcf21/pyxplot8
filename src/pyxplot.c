@@ -32,6 +32,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include <gsl/gsl_errno.h>
+
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
@@ -83,6 +85,9 @@ int main(int argc, char **argv)
   // Initialise GNU Readline
   rl_readline_name = "PyXPlot";                          /* Allow conditional parsing of the ~/.inputrc file. */
   rl_attempted_completion_function = ppl_rl_completion;  /* Tell the completer that we want a crack first. */
+
+  // Turn off GSL's automatic error handler
+  gsl_set_error_handler_off();
 
   // Scan commandline options for any switches
   for (i=1; i<argc; i++)

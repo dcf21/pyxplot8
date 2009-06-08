@@ -115,7 +115,7 @@ void directive_show3(char *out, char *ItemSet, int interactive, char *setting_na
 int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *sg, settings_axis *xa, settings_axis *ya, settings_axis *za)
  {
   char *out, *buf, *bufp;
-  int   i=0, p=0,j,k;
+  int   i=0, p=0,j,k,l,m;
   DictIterator * DictIter;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
@@ -435,7 +435,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
   if (StrAutocomplete(word, "variables", 1)>=0)
    {
-    sprintf(out+i, "\nVariables:\n\n"); i += strlen(out+i); p=1;
+    sprintf(out+i, "\n# Variables:\n\n"); i += strlen(out+i); p=1;
     DictIter = DictIterateInit(_ppl_UserSpace_Vars);
     while (DictIter != NULL)
      {
@@ -455,7 +455,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if (StrAutocomplete(word, "functions", 1)>=0)
    {
-    sprintf(out+i, "\nFunctions:\n\n"); i += strlen(out+i); p=1;
+    sprintf(out+i, "\n# Functions:\n\n"); i += strlen(out+i); p=1;
     DictIter = DictIterateInit(_ppl_UserSpace_Funcs);
     while (DictIter != NULL)
      {
@@ -469,11 +469,41 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        }
       else
        {
-        sprintf(out+i, "%-15s: %s.\n", DictIter->key, ((FunctionDescriptor *)DictIter->data)->description);
+        sprintf(out+i, "# %-15s: %s.\n", DictIter->key, ((FunctionDescriptor *)DictIter->data)->description);
        }
       i += strlen(out+i);
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
+   }
+  if (StrAutocomplete(word, "units", 1)>=0)
+   {
+    sprintf(out+i, "\n# Recognised Physical Units:\n\n"); i += strlen(out+i); p=1;
+    l=-1;
+    do
+     {
+      m=-1;
+      for (j=0; j<ppl_unit_pos; j++)
+       {
+        if      ( (l==-1) && (m==-1)                                                                                                                                                               ) m=j;
+        else if ( (l==-1) && (StrCmpNoCase(ppl_unit_database[j].nameFs , ppl_unit_database[m].nameFs)<0)                                                                                           ) m=j;
+        else if ( (l>= 0) && (m==-1) &&                                                                                (StrCmpNoCase(ppl_unit_database[j].nameFs , ppl_unit_database[l].nameFs)>0) ) m=j;
+        else if ( (l>= 0) && (m>= 0) && (StrCmpNoCase(ppl_unit_database[j].nameFs , ppl_unit_database[m].nameFs)<0) && (StrCmpNoCase(ppl_unit_database[j].nameFs , ppl_unit_database[l].nameFs)>0) ) m=j;
+       }
+      l=m;
+      if (m!=-1)
+       {
+        k=0;
+        sprintf(out+i, "# The '%s', also known as", ppl_unit_database[m].nameFs); i+=strlen(out+i);
+        if (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }
+        if (strcmp(ppl_unit_database[m].nameAs, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAs); i+=strlen(out+i); k=1; }
+        if (strcmp(ppl_unit_database[m].nameAp, ppl_unit_database[m].nameAs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAp); i+=strlen(out+i); k=1; }
+        if (k==0) { i-=16; } else { i-=3; out[i++]=','; }
+        sprintf(out+i, " is a unit of %s", ppl_unit_database[m].quantity); i += strlen(out+i);
+        if (ppl_unit_database[m].comment != NULL) { sprintf(out+i, " (%s)", ppl_unit_database[m].comment); i += strlen(out+i); }
+        sprintf(out+i, ".\n"); i += strlen(out+i);
+       }
+     }
+    while (m!=-1);
    }
 
   if (p!=0) ppl_report(out);
@@ -541,6 +571,7 @@ void directive_show(Dict *command, int interactive)
         directive_show2("linestyles",ItemSet, interactive, sg, xa, ya, za);
         directive_show2("variables" ,ItemSet, interactive, sg, xa, ya, za);
         directive_show2("functions" ,ItemSet, interactive, sg, xa, ya, za);
+        directive_show2("units"     ,ItemSet, interactive, sg, xa, ya, za);
        }
       else
        {

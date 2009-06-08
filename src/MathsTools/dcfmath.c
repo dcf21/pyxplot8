@@ -84,6 +84,7 @@ void dcfmath_asin(value *in, value *output, int *status, char *errtext)
     return;
    }
   output->number = asin(in->number);
+  output->dimensionless = 0;
   output->exponent[UNIT_ANGLE] = 1;
   return;
  }
@@ -99,6 +100,7 @@ void dcfmath_atan(value *in, value *output, int *status, char *errtext)
     return;
    }
   output->number = atan(in->number);
+  output->dimensionless = 0;
   output->exponent[UNIT_ANGLE] = 1;
   return;
  }
@@ -114,6 +116,7 @@ void dcfmath_atan2(value *in1, value *in2, value *output, int *status, char *err
     return;
    }
   output->number = atan2(in1->number, in2->number);
+  output->dimensionless = 0;
   output->exponent[UNIT_ANGLE] = 1;
   return;
  }

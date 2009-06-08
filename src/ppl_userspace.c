@@ -336,7 +336,8 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
           if (in[start+i] != ',')
            {
             *errpos = start+i;
-            strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+            if (in[start+i] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
+            else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
             return;
            } else { i++; }
          }

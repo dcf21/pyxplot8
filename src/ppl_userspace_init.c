@@ -64,7 +64,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_floor    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_floor       , "floor(x) returns the largest integer value smaller than or equal to x"};
   FunctionDescriptor fd_gamma    = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_gamma       , "gamma(x) evaluates the gamma function at x"};
   FunctionDescriptor fd_hypot    = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_hypot       , "hypot(x,y) returns the quadrature sum of x and y"};
-  FunctionDescriptor fd_ldexp    = { PPL_USERSPACE_SYSTEM , 3 , (void *)&dcfmath_ldexp       , "ldexp(x) returns 2 to the power of x"};
+  FunctionDescriptor fd_ldexp    = { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_ldexp       , "ldexp(x,y) returns x times 2 to the power of an integer y"};
   FunctionDescriptor fd_legendreP= { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_legendreP   , "legendreP(l,x) evaluates the lth Legendre polynomial at x"};
   FunctionDescriptor fd_legendreQ= { PPL_USERSPACE_SYSTEM , 2 , (void *)&dcfmath_legendreQ   , "legendreQ(l,x) evaluates the lth Legendre function at x"};
   FunctionDescriptor fd_log      = { PPL_USERSPACE_SYSTEM , 1 , (void *)&dcfmath_log         , "log(x) returns the natural logarithm of x"};
@@ -122,6 +122,11 @@ void ppl_UserSpaceInit()
   v.exponent[UNIT_MOLE] = -1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_NA"        , v); // The Avogadro constant
   ppl_units_zero(&v);
+  v.number = 3.839e26;
+  v.dimensionless = 0;
+  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-3;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_Lsun"      , v); // The solar luminosity
+  ppl_units_zero(&v);
   v.number = 1.66053886e-27;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1;
@@ -130,6 +135,8 @@ void ppl_UserSpaceInit()
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , v); // The proton mass
   v.number = 1.67492729e-27;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , v); // The neutron mass
+  v.number = 1.98892e30;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_Msun"      , v); // The solar mass
   ppl_units_zero(&v);
   v.number = 9.27400949e-24;
   v.dimensionless = 0;
@@ -336,12 +343,21 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "au";   // Astronomical unit
-  ppl_unit_database[ppl_unit_pos].nameAp     = "au";   // Astronomical unit
+  ppl_unit_database[ppl_unit_pos].nameAs     = "AU";   // Astronomical unit
+  ppl_unit_database[ppl_unit_pos].nameAp     = "AU";   // Astronomical unit
   ppl_unit_database[ppl_unit_pos].nameFs     = "astronomical_unit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "astronomical_units";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
   ppl_unit_database[ppl_unit_pos].multiplier = 149598e6;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lyr";   // Lightyear
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lyr";   // Lightyear
+  ppl_unit_database[ppl_unit_pos].nameFs     = "light_year";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "light_years";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 9.4605284e15;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
@@ -497,11 +513,42 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mina";  // Mina
+  ppl_unit_database[ppl_unit_pos].nameAp     = "minas"; // Mina
+  ppl_unit_database[ppl_unit_pos].nameFs     = "mina";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "minas";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.011 * 60;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "talent";  // Talent
+  ppl_unit_database[ppl_unit_pos].nameAp     = "talents"; // Talent
+  ppl_unit_database[ppl_unit_pos].nameFs     = "talent";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "talents";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.011 * 360;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Msun";   // Solar mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Msolar"; // Solar mass
+  ppl_unit_database[ppl_unit_pos].nameFs     = "solar_mass";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "solar_masses";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.98892e30;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "A"; // Ampere
   ppl_unit_database[ppl_unit_pos].nameAp     = "A"; // Ampere
   ppl_unit_database[ppl_unit_pos].nameFs     = "ampere";
   ppl_unit_database[ppl_unit_pos].nameFp     = "amperes";
   ppl_unit_database[ppl_unit_pos].quantity   = "current";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT]=1;
   ppl_unit_pos++;
@@ -511,6 +558,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "amp";
   ppl_unit_database[ppl_unit_pos].nameFp     = "amps";
   ppl_unit_database[ppl_unit_pos].quantity   = "current";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT]=1;
   ppl_unit_pos++;
 
@@ -519,6 +568,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "kelvin";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kelvin";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].si         = 1;
   ppl_unit_database[ppl_unit_pos].cgs        = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
@@ -559,6 +609,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "moles";
   ppl_unit_database[ppl_unit_pos].quantity   = "moles";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MOLE]=1;
   ppl_unit_pos++;
@@ -568,9 +620,14 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "candela";
   ppl_unit_database[ppl_unit_pos].nameFp     = "candelas";
   ppl_unit_database[ppl_unit_pos].quantity   = "light_intensity";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0/683;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = 1;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CANDELA]=1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]  =-2;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "candlepower";   // candlepower
@@ -578,9 +635,49 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "candlepower";
   ppl_unit_database[ppl_unit_pos].nameFp     = "candlepower";
   ppl_unit_database[ppl_unit_pos].quantity   = "light_intensity";
-  ppl_unit_database[ppl_unit_pos].multiplier = 0.981;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0/683/0.981;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CANDELA]=1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1; 
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2; 
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]  =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lm";   // lumen
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lm";   // lumen
+  ppl_unit_database[ppl_unit_pos].nameFs     = "lumen";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "lumens";
+  ppl_unit_database[ppl_unit_pos].quantity   = "power";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0/683;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1; 
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2; 
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lx";   // lux
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lx";   // lux
+  ppl_unit_database[ppl_unit_pos].nameFs     = "lux";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "luxs";
+  ppl_unit_database[ppl_unit_pos].quantity   = "power";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0/683;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Jy";   // jansky
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Jy";   // jansky
+  ppl_unit_database[ppl_unit_pos].nameFs     = "jansky";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "janskys";
+  ppl_unit_database[ppl_unit_pos].quantity   = "flux_density";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-26;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "rad";  // radians
@@ -598,7 +695,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "degree";
   ppl_unit_database[ppl_unit_pos].nameFp     = "degrees";
   ppl_unit_database[ppl_unit_pos].quantity   = "angle";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = M_PI / 180;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
   ppl_unit_pos++;
@@ -609,6 +706,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "bits";
   ppl_unit_database[ppl_unit_pos].quantity   = "bits";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -619,6 +717,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "euros";
   ppl_unit_database[ppl_unit_pos].quantity   = "cost";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_COST]=1;
   ppl_unit_pos++;
@@ -654,6 +753,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "hertz";
   ppl_unit_database[ppl_unit_pos].quantity   = "frequency";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
   ppl_unit_pos++;
@@ -664,6 +764,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "bytes";
   ppl_unit_database[ppl_unit_pos].quantity   = "bits";
   ppl_unit_database[ppl_unit_pos].multiplier = 8.0;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -674,6 +775,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "newtons";
   ppl_unit_database[ppl_unit_pos].quantity   = "force";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 1;
@@ -686,6 +789,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "joules";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
@@ -710,6 +815,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "calories";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
   ppl_unit_database[ppl_unit_pos].multiplier = 4200;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  3;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
@@ -733,6 +839,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "watts";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
@@ -751,12 +859,25 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Lsun";    // Solar luminosity
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Lsolar";  // Solar luminosity
+  ppl_unit_database[ppl_unit_pos].nameFs     = "solar_luminosity";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "solar_luminosities";
+  ppl_unit_database[ppl_unit_pos].quantity   = "power";
+  ppl_unit_database[ppl_unit_pos].multiplier = 3.839e26;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "C";  // coulomb
   ppl_unit_database[ppl_unit_pos].nameAp     = "C";  // coulomb
   ppl_unit_database[ppl_unit_pos].nameFs     = "coulomb";
   ppl_unit_database[ppl_unit_pos].nameFp     = "coulombs";
   ppl_unit_database[ppl_unit_pos].quantity   = "charge";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 1;
@@ -768,6 +889,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "farad";
   ppl_unit_database[ppl_unit_pos].quantity   = "capacitance";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  =-2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    =-1;
@@ -781,6 +904,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "henry";
   ppl_unit_database[ppl_unit_pos].quantity   = "inductance";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  = 2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;
@@ -794,6 +919,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "tesla";
   ppl_unit_database[ppl_unit_pos].quantity   = "magnetic_field";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    =-2;
@@ -806,6 +933,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "weber";
   ppl_unit_database[ppl_unit_pos].quantity   = "magnetic_flux";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  = 2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;

@@ -319,8 +319,8 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
 
 void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext)
  {
-  int i=0,j,k,p;
-  double power=1.0, powerneg=1.0;
+  int i=0,j,k,l,m,p;
+  double power=1.0, powerneg=1.0, multiplier;
   ppl_units_zero(out);
   out->number = 1;
   while (powerneg!=0.0)
@@ -329,14 +329,38 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
     while ((in[i]<=' ')&&(in[i]!='\0')) i++;
     for (j=0; j<ppl_unit_pos; j++)
      {
+      multiplier = 1.0;
       if (p==0) { for (k=0; ((ppl_unit_database[j].nameAp[k]!='\0') && (ppl_unit_database[j].nameAp[k]==in[i+k])); k++);
                   if ((ppl_unit_database[j].nameAp[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
       if (p==0) { for (k=0; ((ppl_unit_database[j].nameAs[k]!='\0') && (ppl_unit_database[j].nameAs[k]==in[i+k])); k++);
                   if ((ppl_unit_database[j].nameAs[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
-      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFp[k]!='\0') && (ppl_unit_database[j].nameFp[k]==in[i+k])); k++);
+      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFp[k]!='\0') && (toupper(ppl_unit_database[j].nameFp[k])==toupper(in[i+k]))); k++);
                   if ((ppl_unit_database[j].nameFp[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
-      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFs[k]!='\0') && (ppl_unit_database[j].nameFs[k]==in[i+k])); k++);
+      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFs[k]!='\0') && (toupper(ppl_unit_database[j].nameFs[k])==toupper(in[i+k]))); k++);
                   if ((ppl_unit_database[j].nameFs[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
+      if (p==0)
+       {
+        for (l=ppl_unit_database[j].MinPrefix/3+8; l<=ppl_unit_database[j].MaxPrefix/3+8; l++)
+         {
+          if (l==8) continue;
+          for (k=0; ((SIprefixes_full[l][k]!='\0') && (toupper(SIprefixes_full[l][k])==toupper(in[i+k]))); k++);
+          if (SIprefixes_full[l][k]=='\0')
+           {
+            for (m=0; ((ppl_unit_database[j].nameFp[m]!='\0') && (toupper(ppl_unit_database[j].nameFp[m])==toupper(in[i+k+m]))); m++);
+            if ((ppl_unit_database[j].nameFp[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            for (m=0; ((ppl_unit_database[j].nameFs[m]!='\0') && (toupper(ppl_unit_database[j].nameFs[m])==toupper(in[i+k+m]))); m++);
+            if ((ppl_unit_database[j].nameFs[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+           }
+          for (k=0; ((SIprefixes_abbrev[l][k]!='\0') && (SIprefixes_abbrev[l][k]==in[i+k])); k++);
+          if (SIprefixes_abbrev[l][k]=='\0')
+           {
+            for (m=0; ((ppl_unit_database[j].nameAp[m]!='\0') && (ppl_unit_database[j].nameAp[m]==in[i+k+m])); m++);
+            if ((ppl_unit_database[j].nameAp[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            for (m=0; ((ppl_unit_database[j].nameAs[m]!='\0') && (ppl_unit_database[j].nameAs[m]==in[i+k+m])); m++);
+            if ((ppl_unit_database[j].nameAs[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+           }
+         }
+       }
       if (p==0)   continue;
       i+=k;
       while ((in[i]<=' ')&&(in[i]!='\0')) i++;
@@ -348,7 +372,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
         while ((in[i]<=' ')&&(in[i]!='\0')) i++;
        }
       for (k=0; k<UNITS_MAX_BASEUNITS; k++) out->exponent[k] += ppl_unit_database[j].exponent[k] * power * powerneg;
-      out->number *= pow( ppl_unit_database[j].multiplier , power*powerneg );
+      out->number *= multiplier * pow( ppl_unit_database[j].multiplier , power*powerneg );
       power = 1.0;
       if      (in[i]=='*') { powerneg= 1.0; i++; }
       else if (in[i]=='/') { powerneg=-1.0; i++; }
