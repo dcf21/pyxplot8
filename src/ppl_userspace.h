@@ -40,6 +40,7 @@ typedef struct FunctionDescriptor {
  unsigned char modified;
  int   NumberArguments;
  void *FunctionPtr;
+ char *ArgList;
  char *description;
  } FunctionDescriptor;
 

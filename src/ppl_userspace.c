@@ -68,10 +68,60 @@ void ppl_UserSpace_UnsetVar(char *name)
 
 void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *errtext)
  {
-  int i=0, name_i=0, args_i=0, expression_i=0;
-  char name[LSTR_LENGTH] , args[LSTR_LENGTH] , expression[LSTR_LENGTH];
+  int i=0, j=0, name_i=0, Nargs=0, args_i=0, args_j=0;
+  char name[LSTR_LENGTH] , args[LSTR_LENGTH];
+  FunctionDescriptor *OldFuncPtr, NewFuncPtr;
   while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
   while ((definition[i]>'\0')&&(((name_i==0)&&isalpha(definition[i]))||((name_i!=0)&&(isalnum(definition[i])||(definition[i]=='_'))))) name[name_i++] = definition[i++];
+  name[name_i++] = '\0';
+  if (name_i==0) { *status=1 ; strcpy(errtext, "Could not read function name"); return; }
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  if (definition[i]!='(') { *status=1 ; strcpy(errtext, "Function name should be followed by ()"); return; }
+  i++;
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  while (definition[i]!=')')
+   {
+    args_j=0;
+    while ((definition[i]>'\0')&&(((args_j==0)&&isalpha(definition[i]))||((args_j!=0)&&(isalnum(definition[i])||(definition[i]=='_'))))) args[args_i + (args_j++)] = definition[i++];
+    args[args_i + (args_j++)] = '\0';
+    if (args_j==0) { *status=1 ; strcpy(errtext, "Unexpected characters in list of arguments"); return; }
+    Nargs++; args_i += args_j;
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+    if (definition[i]!=',') break;
+    i++;
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+   }
+  if (definition[i]!=')') { *status=1 ; strcpy(errtext, "Mismatched bracket in list of function arguments"); return; }
+  i++;
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  if (definition[i]!='=') { *status=1 ; strcpy(errtext, "Unexpected characters when searching for = in function definition"); return; }
+  i++;
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  DictLookup(_ppl_UserSpace_Funcs, name, NULL, (void *)&OldFuncPtr); // Check whether we are going to overwrite an existing function
+  if (OldFuncPtr != NULL)
+   {
+    if ((OldFuncPtr->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncPtr->FunctionType==PPL_USERSPACE_UNIT))
+     { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
+    if (OldFuncPtr->FunctionPtr!=NULL) free(OldFuncPtr->FunctionPtr);
+    if (OldFuncPtr->ArgList    !=NULL) free(OldFuncPtr->ArgList);
+    if (OldFuncPtr->description!=NULL) free(OldFuncPtr->description);
+   }
+  NewFuncPtr.FunctionType    = PPL_USERSPACE_USERDEF;
+  NewFuncPtr.modified        = modified;
+  NewFuncPtr.NumberArguments = Nargs;
+  NewFuncPtr.FunctionPtr     = (char *)malloc(strlen(definition+i)+1); strcpy(NewFuncPtr.FunctionPtr , definition+i);
+  NewFuncPtr.ArgList         = (char *)malloc(args_i                ); memcpy(NewFuncPtr.ArgList, args, args_i     );
+  NewFuncPtr.description     = (char *)malloc(strlen(definition  )+1);
+  sprintf(NewFuncPtr.description+j,"%s(",name); j+=strlen(NewFuncPtr.description+j);
+  for (args_j=0; args_j<args_i-1; args_j++)
+   {
+    if (args[args_j]=='\0') NewFuncPtr.description[j+args_j] = ',';
+    else                    NewFuncPtr.description[j+args_j] = args[args_j];
+   }
+  j+=args_i;
+  if (args_i>0) j--; // Remove final comma
+  sprintf(NewFuncPtr.description+j,")=%s",definition+i); j+=strlen(NewFuncPtr.description+j);
+  DictAppendPtrCpy(_ppl_UserSpace_Funcs, name, (void *)&NewFuncPtr, sizeof(FunctionDescriptor), DATATYPE_VOID);
   return;
  }
 
@@ -435,11 +485,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       ppl_units_pow(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
       if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE  5: EVALUATION OF *  /  %
   if (OpList[5]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -453,11 +502,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       else if (MATCH_ONE('%')) ppl_units_mod (ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
       if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE  6: EVALUATION OF +  -
   if (OpList[6]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -470,11 +518,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       else if (MATCH_ONE('-')) ppl_units_sub(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
       if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start; 
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE  7: EVALUATION OF << >>
   if (OpList[7]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -495,11 +542,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if      (MATCH_ONE('<')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number << (int)ResultBuffer[next_bufno].number);
       else if (MATCH_ONE('>')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number >> (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE  8: EVALUATION OF < <= >= >
   if (OpList[8]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -526,11 +572,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
       else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE  9: EVALUATION OF == !=  <>
   if (OpList[9]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -557,11 +602,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl != ResultBuffer[next_bufno].number);
       else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno].number = (double)(TempDbl != ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE 10: EVALUATION OF &
   if (OpList[10]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -581,11 +625,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number & (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE 11: EVALUATION OF ^
   if (OpList[11]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -605,11 +648,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number ^ (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE 12: EVALUATION OF |
   if (OpList[12]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -629,11 +671,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number | (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE 13: EVALUATION OF and
   if (OpList[13]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -653,11 +694,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number && (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE 14: EVALUATION OF or
   if (OpList[14]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
@@ -677,11 +717,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        }
       ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number || (int)ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start;
+      i = start + next_start - 1; p=i-start;
      } else {
       while (StatusRow[i]==7) i++;
      }
-    i--; p=i-start;
    }
   // PHASE 15: RETURN RESULT TO USER
   for (i=0;i<len;i++) if (StatusRow[i] >= BUFFER_OFFSET) { *out = ResultBuffer[ StatusRow[i] - BUFFER_OFFSET ]; return; }
