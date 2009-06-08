@@ -37,6 +37,7 @@
 
 typedef struct FunctionDescriptor {
  int   FunctionType;
+ unsigned char modified;
  int   NumberArguments;
  void *FunctionPtr;
  char *description;
@@ -48,10 +49,10 @@ extern Dict *_ppl_UserSpace_Funcs;
 #endif
 
 void ppl_UserSpaceInit          ();
-void ppl_UserSpace_SetVarStr    (char *name, char   *inval);
-void ppl_UserSpace_SetVarNumeric(char *name, value  *inval);
+void ppl_UserSpace_SetVarStr    (char *name, char   *inval, int modified);
+void ppl_UserSpace_SetVarNumeric(char *name, value  *inval, int modified);
 void ppl_UserSpace_UnsetVar     (char *name);
-void ppl_UserSpace_SetFunc      (char *name, char   *inval);
+void ppl_UserSpace_SetFunc      (char *definition, int modified, int *status, char *errtext);
 void ppl_UserSpace_UnsetFunc    (char *name);
 
 void ppl_GetQuotedString(char *in, char   *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);

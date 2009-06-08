@@ -149,8 +149,8 @@ Error: Invalid unset option '%%s'.\n\
 sprintf(txt_show, "\n\
 Valid 'show' options are:\n\
 \n\
-'all', 'arrows', 'axes', 'settings', 'labels', 'linestyles', 'variables',\n\
-'functions'\n\
+'all', 'arrows', 'axes', 'functions', 'settings', 'labels', 'linestyles',\n\
+'units', 'variables'\n\
 \n\
 or any of the following set options:\n\
 %s", txt_valid_show_options);

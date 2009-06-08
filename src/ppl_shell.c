@@ -309,10 +309,16 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    {
     DictLookup(command,"varname"     ,NULL,(void **)(&varname));
     DictLookup(command,"string_value",NULL,(void **)(&varstrval));
-    if (varstrval != NULL) { ppl_UserSpace_SetVarStr(varname, varstrval); return 0; }
+    if (varstrval != NULL) { ppl_UserSpace_SetVarStr(varname, varstrval, 1); return 0; }
     DictLookup(command,"numeric_value",NULL,(void **)(&varnumval));
-    if (varnumval != NULL) { ppl_UserSpace_SetVarNumeric(varname, varnumval); return 0; }
+    if (varnumval != NULL) { ppl_UserSpace_SetVarNumeric(varname, varnumval, 1); return 0; }
     ppl_UserSpace_UnsetVar(varname);
+   }
+  else if (strcmp(directive, "func_set")==0)
+   {
+    i=-1;
+    ppl_UserSpace_SetFunc(in, 1, &i, buffer);
+    if (i >= 0) ppl_error(buffer);
    }
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);

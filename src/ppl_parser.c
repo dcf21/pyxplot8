@@ -58,7 +58,7 @@ typedef struct ParserNode {
   struct ParserNode *NextSibling;
  } ParserNode;
 
-ParserNode SeparatorNode = {PN_TYPE_ITEM, NULL, 1, NULL, NULL, NULL, NULL};
+ParserNode SeparatorNode = {PN_TYPE_ITEM, NULL,-2, NULL, NULL, NULL, NULL};
 
 void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos, Dict *output, int *match, int *success);
 

@@ -67,16 +67,27 @@ void directive_set(Dict *command)
  {
  }
 
+#define SHOW_HIGHLIGHT(modified) \
+if (interactive!=0) /* On interactive sessions, highlight those settings which have been manually set by the user */ \
+ { \
+  if (modified == 0) strcpy(out+i, (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) ); \
+  else               strcpy(out+i, (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) ); \
+  i += strlen(out+i); \
+ }
+
+#define SHOW_DEHIGHLIGHT \
+if (interactive!=0) /* On interactive sessions, highlight those settings which have been manually set by the user */ \
+ { \
+  strcpy(out+i, (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) ); \
+  i += strlen(out+i); \
+ } \
+
+
 void directive_show3(char *out, char *ItemSet, int interactive, char *setting_name, char *setting_value, int modified, char *description)
  {
   int i=0,j,k;
 
-  if (interactive!=0) // On interactive sessions, highlight those settings which have been manually set by the user
-   {
-    if (modified == 0) strcpy(out+i, (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
-    else               strcpy(out+i, (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
-    i += strlen(out+i);
-   }
+  SHOW_HIGHLIGHT(modified);
 
   sprintf(out+i, "set %s", ItemSet); i += strlen(out+i); // Start off with a set command
 
@@ -104,11 +115,7 @@ void directive_show3(char *out, char *ItemSet, int interactive, char *setting_na
   if (description!=NULL) { sprintf(out+i, " # %s.", description); i += strlen(out+i); } // Finally put a decriptive comment after the setting
   strcpy(out+i, "\n"); i += strlen(out+i); // and a linefeed
 
-  if (interactive!=0) // On interactive sessions, highlight those settings which have been manually set by the user
-   {
-    strcpy(out+i, (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
-    i += strlen(out+i);
-   }
+  SHOW_DEHIGHLIGHT;
   return;
  }
 
@@ -435,30 +442,40 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
   if (StrAutocomplete(word, "variables", 1)>=0)
    {
+    SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Variables:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
     DictIter = DictIterateInit(_ppl_UserSpace_Vars);
     while (DictIter != NULL)
      {
-      sprintf(out+i, "%s", DictIter->key); i += strlen(out+i);
       if (DictIter->DataType == DATATYPE_STRING)
        {
+        SHOW_HIGHLIGHT(0);
         StrEscapify((char *)DictIter->data, buf);
-        sprintf(out+i, " = \"%s\"\n", buf);
+        sprintf(out+i, "%s = \"%s\"\n", DictIter->key, buf);
+        i += strlen(out+i);
+        SHOW_DEHIGHLIGHT;
        }
-      if (DictIter->DataType == DATATYPE_VALUE)
+      else if (DictIter->DataType == DATATYPE_VALUE)
        {
-        sprintf(out+i, " = %s\n", ppl_units_NumericDisplay((value *)DictIter->data, 0, 0));
+        SHOW_HIGHLIGHT((((value *)DictIter->data)->modified==0));
+        sprintf(out+i, "%s = %s\n", DictIter->key, ppl_units_NumericDisplay((value *)DictIter->data, 0, 0));
+        i += strlen(out+i);
+        SHOW_DEHIGHLIGHT;
        }
-      i += strlen(out+i);
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
   if (StrAutocomplete(word, "functions", 1)>=0)
    {
+    SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Functions:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
+
     DictIter = DictIterateInit(_ppl_UserSpace_Funcs);
     while (DictIter != NULL)
      {
+      SHOW_HIGHLIGHT((((FunctionDescriptor *)DictIter->data)->modified==0));
       if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_USERDEF)
        {
         sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
@@ -472,12 +489,15 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         sprintf(out+i, "# %-15s: %s.\n", DictIter->key, ((FunctionDescriptor *)DictIter->data)->description);
        }
       i += strlen(out+i);
+      SHOW_DEHIGHLIGHT;
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
   if (StrAutocomplete(word, "units", 1)>=0)
    {
+    SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Recognised Physical Units:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
     l=-1;
     do
      {
@@ -493,6 +513,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       if (m!=-1)
        {
         k=0;
+        SHOW_HIGHLIGHT((ppl_unit_database[m].modified==0));
         sprintf(out+i, "# The '%s', also known as", ppl_unit_database[m].nameFs); i+=strlen(out+i);
         if (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }
         if (strcmp(ppl_unit_database[m].nameAs, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAs); i+=strlen(out+i); k=1; }
@@ -501,6 +522,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         sprintf(out+i, " is a unit of %s", ppl_unit_database[m].quantity); i += strlen(out+i);
         if (ppl_unit_database[m].comment != NULL) { sprintf(out+i, " (%s)", ppl_unit_database[m].comment); i += strlen(out+i); }
         sprintf(out+i, ".\n"); i += strlen(out+i);
+        SHOW_DEHIGHLIGHT;
        }
      }
     while (m!=-1);
@@ -572,6 +594,7 @@ void directive_show(Dict *command, int interactive)
         directive_show2("variables" ,ItemSet, interactive, sg, xa, ya, za);
         directive_show2("functions" ,ItemSet, interactive, sg, xa, ya, za);
         directive_show2("units"     ,ItemSet, interactive, sg, xa, ya, za);
+        p=1;
        }
       else
        {

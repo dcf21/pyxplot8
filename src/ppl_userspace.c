@@ -47,14 +47,15 @@
 Dict *_ppl_UserSpace_Vars;
 Dict *_ppl_UserSpace_Funcs;
 
-void ppl_UserSpace_SetVarStr(char *name, char *inval)
+void ppl_UserSpace_SetVarStr(char *name, char *inval, int modified)
  {
   DictAppendString(_ppl_UserSpace_Vars , name , inval);
   return;
  }
 
-void ppl_UserSpace_SetVarNumeric(char *name, value *inval)
+void ppl_UserSpace_SetVarNumeric(char *name, value *inval, int modified)
  {
+  inval->modified = modified;
   DictAppendValue(_ppl_UserSpace_Vars , name , *inval);
   return;
  }
@@ -65,7 +66,7 @@ void ppl_UserSpace_UnsetVar(char *name)
   return;
  }
 
-void ppl_UserSpace_SetFunc(char *name, char *inval)
+void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *errtext)
  {
   return;
  }

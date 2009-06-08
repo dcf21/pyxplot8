@@ -50,6 +50,7 @@ value *ppl_units_zero(value *in)
   int i;
   in->number = 0.0;
   in->dimensionless = 1;
+  in->modified = 0;
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) in->exponent[i]=0;
   return in;
  }

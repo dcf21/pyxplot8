@@ -92,6 +92,7 @@ void ReadConfigFile(char *ConfigFname)
     else if (strcmp(linebuffer, "[latex]"    )==0) {state=4; continue;}
     else if (strcmp(linebuffer, "[variables]")==0) {state=5; continue;}
     else if (strcmp(linebuffer, "[functions]")==0) {state=6; continue;}
+    else if (strcmp(linebuffer, "[units]"    )==0) {state=7; continue;}
 
     _ReadConfig_FetchKey  (linebuffer, setkey  );
     _ReadConfig_FetchValue(linebuffer, setvalue);
@@ -340,12 +341,21 @@ void ReadConfigFile(char *ConfigFname)
         sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s.", linecounter, ConfigFname, errtext);
         ppl_warning(temp_err_string); continue;
        }
-      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_UserSpace_SetVarStr    (setkey, setstring);
-      else                                            ppl_UserSpace_SetVarNumeric(setkey,&setnumeric);
+      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_UserSpace_SetVarStr    (setkey, setstring , 0);
+      else                                            ppl_UserSpace_SetVarNumeric(setkey,&setnumeric, 0);
      }
     else if (state == 6) // [functions] section
      {
-      ppl_UserSpace_SetFunc(setkey, setvalue);
+      errpos = -1;
+      ppl_UserSpace_SetFunc(linebuffer, 0, &errpos, errtext);
+      if (errpos >= 0)
+       {
+        sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s.", linecounter, ConfigFname, errtext);
+        ppl_warning(temp_err_string); continue;
+       }
+     }
+    else if (state == 7) // [units] section
+     {
      }
     else
      {
