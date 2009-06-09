@@ -190,6 +190,6 @@ unset@3:directive { item@1 %d:editno } width@1:set_option =\n\
 unset@3:directive:unset_error = { item@1 %d:editno } { %s:set_option } %r:restofline\n\
 { < let@3 | set@3 > } %v:varname \\=~@n:directive:var_set_regex = s@n %r:regex\n\
 { < let@3 | set@3 > } %v:varname \\=@n:directive:var_set = { < %fu:numeric_value | %Q:string_value | %q:string_value > }\n\
-%v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n \\=@n:directive:func_set = %e:definition\n\
+%v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list \\=@n:directive:func_set = %e:definition\n\
 ";
 

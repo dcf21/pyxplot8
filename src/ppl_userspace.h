@@ -41,6 +41,9 @@ typedef struct FunctionDescriptor {
  int   NumberArguments;
  void *FunctionPtr;
  char *ArgList;
+ value *min, *max; // Range of values over which this function definition can be used; used in function splicing
+ unsigned char *MinActive, *MaxActive;
+ struct FunctionDescriptor *next; // A linked list of spliced alternative function definitions
  char *description;
  } FunctionDescriptor;
 
@@ -54,7 +57,6 @@ void ppl_UserSpace_SetVarStr    (char *name, char   *inval, int modified);
 void ppl_UserSpace_SetVarNumeric(char *name, value  *inval, int modified);
 void ppl_UserSpace_UnsetVar     (char *name);
 void ppl_UserSpace_SetFunc      (char *definition, int modified, int *status, char *errtext);
-void ppl_UserSpace_UnsetFunc    (char *name);
 
 void ppl_GetQuotedString(char *in, char   *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);
 void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);

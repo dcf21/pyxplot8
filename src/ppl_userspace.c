@@ -70,7 +70,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
  {
   int i=0, j=0, name_i=0, Nargs=0, args_i=0, args_j=0;
   char name[LSTR_LENGTH] , args[LSTR_LENGTH];
-  FunctionDescriptor *OldFuncPtr, NewFuncPtr;
+  FunctionDescriptor *OldFuncPtr, *OldFuncIter, *temp, NewFuncPtr;
   while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
   while ((definition[i]>'\0')&&(((name_i==0)&&isalpha(definition[i]))||((name_i!=0)&&(isalnum(definition[i])||(definition[i]=='_'))))) name[name_i++] = definition[i++];
   name[name_i++] = '\0';
@@ -98,14 +98,22 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   i++;
   while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
   DictLookup(_ppl_UserSpace_Funcs, name, NULL, (void *)&OldFuncPtr); // Check whether we are going to overwrite an existing function
-  if (OldFuncPtr != NULL)
+  OldFuncIter = OldFuncPtr;
+  while (OldFuncIter != NULL)
    {
-    if ((OldFuncPtr->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncPtr->FunctionType==PPL_USERSPACE_UNIT))
-     { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
-    if (OldFuncPtr->FunctionPtr!=NULL) free(OldFuncPtr->FunctionPtr);
-    if (OldFuncPtr->ArgList    !=NULL) free(OldFuncPtr->ArgList);
-    if (OldFuncPtr->description!=NULL) free(OldFuncPtr->description);
+    if ((OldFuncIter->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncIter->FunctionType==PPL_USERSPACE_UNIT)) { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
+    if (OldFuncIter->FunctionPtr!=NULL) free(OldFuncIter->FunctionPtr);
+    if (OldFuncIter->ArgList    !=NULL) free(OldFuncIter->ArgList);
+    if (OldFuncIter->min        !=NULL) free(OldFuncIter->min);
+    if (OldFuncIter->max        !=NULL) free(OldFuncIter->max);
+    if (OldFuncIter->MinActive  !=NULL) free(OldFuncIter->MinActive);
+    if (OldFuncIter->MaxActive  !=NULL) free(OldFuncIter->MaxActive);
+    if (OldFuncIter->description!=NULL) free(OldFuncIter->description);
+    temp=OldFuncIter->next;
+    if (OldFuncIter != OldFuncPtr) free(OldFuncIter);
+    OldFuncIter=temp;
    }
+  if (strlen(definition+i)==0) { DictRemoveKey(_ppl_UserSpace_Funcs, name); return; } // Blank definition -- remove function definition
   NewFuncPtr.FunctionType    = PPL_USERSPACE_USERDEF;
   NewFuncPtr.modified        = modified;
   NewFuncPtr.NumberArguments = Nargs;
@@ -122,14 +130,6 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   if (args_i>0) j--; // Remove final comma
   sprintf(NewFuncPtr.description+j,")=%s",definition+i); j+=strlen(NewFuncPtr.description+j);
   DictAppendPtrCpy(_ppl_UserSpace_Funcs, name, (void *)&NewFuncPtr, sizeof(FunctionDescriptor), DATATYPE_VOID);
-  return;
- }
-
-void ppl_UserSpace_UnsetFunc(char *name)
- {
-  if (strcmp(name,"unit")==0)     { ppl_error("Cannot undefine the built-in function unit()."); return; }
-  if (strncmp(name,"int_d",5)==0) { ppl_error("Cannot undefine a built-in integration function."); return; }
-  DictRemoveKey(_ppl_UserSpace_Funcs , name);
   return;
  }
 

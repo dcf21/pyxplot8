@@ -31,6 +31,7 @@ double degrees(double rad);
 double radians(double degrees);
 double frandom();
 
+void dcfmath_abs(value *in, value *output, int *status, char *errtext);
 void dcfmath_acos(value *in, value *output, int *status, char *errtext);
 void dcfmath_asin(value *in, value *output, int *status, char *errtext);
 void dcfmath_atan(value *in, value *output, int *status, char *errtext);
@@ -55,14 +56,13 @@ void dcfmath_erf(value *in, value *output, int *status, char *errtext);
 void dcfmath_erfc(value *in, value *output, int *status, char *errtext);
 void dcfmath_exp (value *in, value *output, int *status, char *errtext);
 void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *errtext);
-void dcfmath_fabs(value *in, value *output, int *status, char *errtext);
 void dcfmath_floor(value *in, value *output, int *status, char *errtext);
-void dcfmath_fmod(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_frexp(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_gamma(value *in, value *output, int *status, char *errtext);
 void dcfmath_gaussianPDF(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_gaussianCDF(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_gaussianCDFi(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_heaviside(value *in, value *output, int *status, char *errtext);
 void dcfmath_hypot(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_ldexp(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_legendreP(value *in1, value *in2, value *output, int *status, char *errtext);
@@ -74,6 +74,7 @@ void dcfmath_lognormalCDF(value *in1, value *in2, value *in3, value *output, int
 void dcfmath_lognormalCDFi(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_max (value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_min (value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_mod (value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_pow (value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_radians(value *in, value *output, int *status, char *errtext);
 void dcfmath_frandom(value *output, int *status, char *errtext);
@@ -84,6 +85,7 @@ void dcfmath_sinh(value *in, value *output, int *status, char *errtext);
 void dcfmath_sqrt(value *in, value *output, int *status, char *errtext);
 void dcfmath_tan (value *in, value *output, int *status, char *errtext);
 void dcfmath_tanh(value *in, value *output, int *status, char *errtext);
+void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext);
 
 #endif

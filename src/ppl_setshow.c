@@ -123,7 +123,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
  {
   char *out, *buf, *bufp;
   int   i=0, p=0,j,k,l,m;
-  DictIterator * DictIter;
+  DictIterator *DictIter;
+  FunctionDescriptor *FDiter;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   out[0] = buf[0] = '\0';
@@ -469,27 +470,46 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if (StrAutocomplete(word, "functions", 1)>=0)
    {
     SHOW_HIGHLIGHT(1);
-    sprintf(out+i, "\n# Functions:\n\n"); i += strlen(out+i); p=1;
+    sprintf(out+i, "\n# System-Defined Functions:\n\n"); i += strlen(out+i); p=1;
     SHOW_DEHIGHLIGHT;
 
     DictIter = DictIterateInit(_ppl_UserSpace_Funcs);
     while (DictIter != NULL)
      {
-      SHOW_HIGHLIGHT((((FunctionDescriptor *)DictIter->data)->modified==0));
-      if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_USERDEF)
+      FDiter = (FunctionDescriptor *)DictIter->data;
+      SHOW_HIGHLIGHT((FDiter->modified==0));
+      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) )
        {
-        sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
-       }
-      else if (((FunctionDescriptor *)DictIter->data)->FunctionType == PPL_USERSPACE_SPLINE)
-       {
-        sprintf(out+i, "%s\n", ((FunctionDescriptor *)DictIter->data)->description);
-       }
-      else
-       {
-        sprintf(out+i, "# %-15s: %s.\n", DictIter->key, ((FunctionDescriptor *)DictIter->data)->description);
+        sprintf(out+i, "# %-15s: %s.\n", DictIter->key, FDiter->description);
        }
       i += strlen(out+i);
       SHOW_DEHIGHLIGHT;
+      DictIter = DictIterate(DictIter, NULL, NULL);
+     }
+
+    SHOW_HIGHLIGHT(1);
+    sprintf(out+i, "\n# User-Defined Functions:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
+
+    DictIter = DictIterateInit(_ppl_UserSpace_Funcs);
+    while (DictIter != NULL)
+     {
+      FDiter = (FunctionDescriptor *)DictIter->data;
+      while (FDiter != NULL)
+       {
+        SHOW_HIGHLIGHT((FDiter->modified==0));
+        if (FDiter->FunctionType == PPL_USERSPACE_USERDEF)
+         {
+          sprintf(out+i, "%s\n", FDiter->description);
+         }
+        else if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
+         {
+          sprintf(out+i, "%s\n", FDiter->description);
+         }
+        i += strlen(out+i);
+        SHOW_DEHIGHLIGHT;
+        FDiter = FDiter->next;
+       }
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
