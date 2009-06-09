@@ -246,7 +246,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (sg->key == SW_ONOFF_ON)  )
    {
-    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,1),ppl_units_NumericDisplay(&(sg->KeyYOff),1,1));
+    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0));
     directive_show3(out+i, ItemSet, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.number == sg->KeyXOff.number)&&(settings_graph_default.KeyYOff.number == sg->KeyYOff.number)), "Selects where legends are orientated on graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -270,7 +270,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
    { 
-    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,1), ppl_units_NumericDisplay(&(sg->OriginY),1,1));
+    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0));
     directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.number == sg->OriginX.number)&&(settings_graph_default.OriginY.number == sg->OriginY.number)), "Selects where, in cm, the bottom-left corners of graphs are located on multiplot pages");
     i += strlen(out+i) ; p=1;
    }
@@ -292,7 +292,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "papersize", 1)>=0))
    {
-    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(settings_term_current.PaperWidth),0,1), ppl_units_NumericDisplay(&(settings_term_current.PaperHeight),1,1));
+    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(settings_term_current.PaperWidth),0,0), ppl_units_NumericDisplay(&(settings_term_current.PaperHeight),1,0));
     directive_show3(out+i, ItemSet, interactive, "PaperSize", buf, ((settings_term_default.PaperWidth.number==settings_term_current.PaperWidth.number)&&(settings_term_default.PaperHeight.number==settings_term_current.PaperHeight.number)), "The current papersize for postscript output, in mm");
     i += strlen(out+i) ; p=1;
     if (StrAutocomplete("user", settings_term_current.PaperName, 1)<0)
@@ -409,7 +409,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "title", 1)>=0))
    {
     StrEscapify(sg->title, buf); k = strlen(buf);
-    sprintf(buf+k, " %s , %s", ppl_units_NumericDisplay(&(sg->TitleXOff), 0, 1), ppl_units_NumericDisplay(&(sg->TitleYOff), 1, 1));
+    sprintf(buf+k, " %s , %s", ppl_units_NumericDisplay(&(sg->TitleXOff), 0, 0), ppl_units_NumericDisplay(&(sg->TitleYOff), 1, 0));
     directive_show3(out+i, ItemSet, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.number==sg->TitleXOff.number)&&(settings_graph_default.TitleYOff.number==sg->TitleYOff.number)), "A title to be display above graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -436,7 +436,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
    { 
-    sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 1));
+    sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0));
     directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.number==sg->width.number), "The width, in cm, of graphs");
     i += strlen(out+i) ; p=1;
    }

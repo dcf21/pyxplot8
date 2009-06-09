@@ -47,12 +47,14 @@
 Dict *_ppl_UserSpace_Vars;
 Dict *_ppl_UserSpace_Funcs;
 
+// ppl_UserSpace_SetVarStr(): Called to define a new string variable within the user's variable space
 void ppl_UserSpace_SetVarStr(char *name, char *inval, int modified)
  {
   DictAppendString(_ppl_UserSpace_Vars , name , inval);
   return;
  }
 
+// ppl_UserSpace_SetVarNumeric(): Called to define a new numeric variable within the user's variable space
 void ppl_UserSpace_SetVarNumeric(char *name, value *inval, int modified)
  {
   inval->modified = modified;
@@ -60,18 +62,26 @@ void ppl_UserSpace_SetVarNumeric(char *name, value *inval, int modified)
   return;
  }
 
+// ppl_UserSpace_UnsetVar(): Called to unset a variable definition
 void ppl_UserSpace_UnsetVar(char *name)
  {
   DictRemoveKey(_ppl_UserSpace_Vars , name);
   return;
  }
 
+// ppl_UserSpace_SetFunc(): Called to define a new algebraic function definition.
 void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *errtext)
  {
-  int i=0, j=0, name_i=0, Nargs=0, args_i=0, args_j=0;
+  int i=0, j, k, supersede, name_i=0, Nargs=0, args_i=0, args_j=0, lcount=0;
   char name[LSTR_LENGTH] , args[LSTR_LENGTH];
-  FunctionDescriptor *OldFuncPtr, *OldFuncIter, *temp, NewFuncPtr;
-  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  value min[ALGEBRA_MAXITEMS], max[ALGEBRA_MAXITEMS];
+  unsigned char MinActive[ALGEBRA_MAXITEMS], MaxActive[ALGEBRA_MAXITEMS];
+  FunctionDescriptor *OldFuncPtr, *OldFuncIter, **OldFuncPrev, *NewFuncPtr, *temp, NewFuncDes;
+
+  for (j=0; j<ALGEBRA_MAXITEMS; j++) MinActive[j]=0; // By default, function definition has no limits to the range over which it is applicable
+  for (j=0; j<ALGEBRA_MAXITEMS; j++) MaxActive[j]=0;
+
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++; // First of all, read the name of the new function into name[]
   while ((definition[i]>'\0')&&(((name_i==0)&&isalpha(definition[i]))||((name_i!=0)&&(isalnum(definition[i])||(definition[i]=='_'))))) name[name_i++] = definition[i++];
   name[name_i++] = '\0';
   if (name_i==0) { *status=1 ; strcpy(errtext, "Could not read function name"); return; }
@@ -79,13 +89,14 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   if (definition[i]!='(') { *status=1 ; strcpy(errtext, "Function name should be followed by ()"); return; }
   i++;
   while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
-  while (definition[i]!=')')
+  while (definition[i]!=')') // Loop over a comma-separated list of argument names within ()
    {
-    args_j=0;
+    args_j=0; // Read the names into args[], separated by \0 characters. The number of arguments read is Nargs.
     while ((definition[i]>'\0')&&(((args_j==0)&&isalpha(definition[i]))||((args_j!=0)&&(isalnum(definition[i])||(definition[i]=='_'))))) args[args_i + (args_j++)] = definition[i++];
     args[args_i + (args_j++)] = '\0';
     if (args_j==0) { *status=1 ; strcpy(errtext, "Unexpected characters in list of arguments"); return; }
     Nargs++; args_i += args_j;
+    if (Nargs>ALGEBRA_MAXITEMS) { *status=1 ; sprintf(errtext, "Functions are not permitted to take more than %d arguments", ALGEBRA_MAXITEMS); return; }
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
     if (definition[i]!=',') break;
     i++;
@@ -94,42 +105,123 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   if (definition[i]!=')') { *status=1 ; strcpy(errtext, "Mismatched bracket in list of function arguments"); return; }
   i++;
   while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  while (definition[i]=='[') // Loop over a set of ranges specified with the syntax, for example [1:2]
+   {
+    if (lcount==Nargs) { *status=1 ; strcpy(errtext, "Function definition contains more range specifications than arguments to apply them to"); return; }
+    i++;
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+    if      (definition[i]==':') {} // Is we have a :, the user has not specified a minimum bound
+    else if (definition[i]=='*') { i++; }
+    else
+     {
+      *status=-1; args_j=0;
+      ppl_EvaluateAlgebra(definition+i, min+lcount, 0, &args_j, status, errtext, 0);
+      if (*status >= 0) return;
+      i+=args_j;
+      MinActive[lcount]=1;
+     }
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+    if       (definition[i]==':')                            i++;
+    else if ((definition[i]=='t') && (definition[i+1]=='o')) i+=2;
+    else       { *status=1 ; strcpy(errtext, "Unexpected characters when searching for : in range specification"); return; }
+    if      (definition[i]==']') {} // If we have a ], the user has not specified a maximum bound
+    else if (definition[i]=='*') { i++; }
+    else
+     {
+      *status=-1; args_j=0;
+      ppl_EvaluateAlgebra(definition+i, max+lcount, 0, &args_j, status, errtext, 0);
+      if (*status >= 0) return;
+      i+=args_j;
+      if ((MinActive[lcount]) && (!ppl_units_DimEqual(min+k , max+k))) { *status=1; sprintf(errtext, "The range specified for argument number %d to this function has a minimum with dimensions of <%s>, and a maximum with dimensions of <%s>. This is not allowed: both must have the same dimensions.",lcount+1,ppl_units_GetUnitStr(min+k,NULL,0,0),ppl_units_GetUnitStr(max+k,NULL,1,0)); return; }
+      MaxActive[lcount]=1;
+     }
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+    if (definition[i]!=']') { *status=1 ; strcpy(errtext, "Unexpected characters when searching for ] in range specification"); return; }
+    i++;
+    lcount++;
+   }
   if (definition[i]!='=') { *status=1 ; strcpy(errtext, "Unexpected characters when searching for = in function definition"); return; }
   i++;
-  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+  while ((definition[i]>'\0')&&(definition[i]<=' ')) i++; // definition+i now points to the algebraic definition of the function
+
+  // Redefine lcount to be the number of ranges _used_ by this function definition
+  lcount=-1;
+  for (k=0; k<ALGEBRA_MAXITEMS; k++) if (MinActive[k] || MaxActive[k]) lcount=k;
+
   DictLookup(_ppl_UserSpace_Funcs, name, NULL, (void *)&OldFuncPtr); // Check whether we are going to overwrite an existing function
-  OldFuncIter = OldFuncPtr;
+  OldFuncIter =  OldFuncPtr;
+  OldFuncPrev = &OldFuncPtr;
   while (OldFuncIter != NULL)
    {
     if ((OldFuncIter->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncIter->FunctionType==PPL_USERSPACE_UNIT)) { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
-    if (OldFuncIter->FunctionPtr!=NULL) free(OldFuncIter->FunctionPtr);
-    if (OldFuncIter->ArgList    !=NULL) free(OldFuncIter->ArgList);
-    if (OldFuncIter->min        !=NULL) free(OldFuncIter->min);
-    if (OldFuncIter->max        !=NULL) free(OldFuncIter->max);
-    if (OldFuncIter->MinActive  !=NULL) free(OldFuncIter->MinActive);
-    if (OldFuncIter->MaxActive  !=NULL) free(OldFuncIter->MaxActive);
-    if (OldFuncIter->description!=NULL) free(OldFuncIter->description);
+    supersede = 1;
+    if (OldFuncIter->NumberArguments != Nargs) supersede=2; // If old function has different number of arguments, we cannot splice with it; supersede it
+
+    // If old function has dimensionally incompatible limits with us, we cannot splice with it; supersede it
+    if (supersede==1) for (k=0; k<Nargs; k++) if ( ((MinActive[k]==1)&&(OldFuncIter->MinActive[k]==1)&&(!ppl_units_DimEqual(min+k , OldFuncIter->min+k))) ||
+                                                   ((MaxActive[k]==1)&&(OldFuncIter->MaxActive[k]==1)&&(!ppl_units_DimEqual(max+k , OldFuncIter->max+k)))    ) supersede=2;
+
+    // If old function has ranges which extend outside our range, we should not supersede it
+    if (supersede==1) for (k=0; k<Nargs; k++) if ( ((MinActive[k]==1)&&((OldFuncIter->MinActive[k]==0)||(OldFuncIter->min[k].number<min[k].number))) ||
+                                                   ((MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].number>max[k].number)))    ) supersede=0;
+
+    if (supersede > 0) // Remove entry from linked list
+     {
+      if (OldFuncIter->FunctionPtr!=NULL) free(OldFuncIter->FunctionPtr);
+      if (OldFuncIter->ArgList    !=NULL) free(OldFuncIter->ArgList);
+      if (OldFuncIter->min        !=NULL) free(OldFuncIter->min);
+      if (OldFuncIter->max        !=NULL) free(OldFuncIter->max);
+      if (OldFuncIter->MinActive  !=NULL) free(OldFuncIter->MinActive);
+      if (OldFuncIter->MaxActive  !=NULL) free(OldFuncIter->MaxActive);
+      if (OldFuncIter->description!=NULL) free(OldFuncIter->description);
+      *OldFuncPrev = OldFuncIter->next;
+     }
     temp=OldFuncIter->next;
-    if (OldFuncIter != OldFuncPtr) free(OldFuncIter);
+    if (supersede > 0) { free(OldFuncIter); } else { OldFuncPrev = &(OldFuncIter->next); }
     OldFuncIter=temp;
    }
-  if (strlen(definition+i)==0) { DictRemoveKey(_ppl_UserSpace_Funcs, name); return; } // Blank definition -- remove function definition
-  NewFuncPtr.FunctionType    = PPL_USERSPACE_USERDEF;
-  NewFuncPtr.modified        = modified;
-  NewFuncPtr.NumberArguments = Nargs;
-  NewFuncPtr.FunctionPtr     = (char *)malloc(strlen(definition+i)+1); strcpy(NewFuncPtr.FunctionPtr , definition+i);
-  NewFuncPtr.ArgList         = (char *)malloc(args_i                ); memcpy(NewFuncPtr.ArgList, args, args_i     );
-  NewFuncPtr.description     = (char *)malloc(strlen(definition  )+1);
-  sprintf(NewFuncPtr.description+j,"%s(",name); j+=strlen(NewFuncPtr.description+j);
+
+  // If we have a blank algebraic expression for this function, do not add any new definition for this function
+  if (strlen(definition+i)==0)
+   {
+    if (OldFuncPtr == NULL) DictRemoveKey(_ppl_UserSpace_Funcs, name);
+    else                    DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)OldFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
+    return;
+   }
+
+  // Make a new function descriptor with the details of the new expression for this function
+  NewFuncDes.FunctionType    = PPL_USERSPACE_USERDEF;
+  NewFuncDes.modified        = modified;
+  NewFuncDes.NumberArguments = Nargs;
+  NewFuncDes.FunctionPtr     = (char *)malloc(strlen(definition+i)+1); strcpy(NewFuncDes.FunctionPtr, definition+i );
+  NewFuncDes.ArgList         = (char *)malloc(args_i                ); memcpy(NewFuncDes.ArgList    , args        , args_i );
+  NewFuncDes.min             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncDes.min        , min         , Nargs*sizeof(value));
+  NewFuncDes.max             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncDes.max        , max         , Nargs*sizeof(value));
+  NewFuncDes.MinActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncDes.MinActive  , MinActive   , Nargs);
+  NewFuncDes.MaxActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncDes.MaxActive  , MaxActive   , Nargs);
+  NewFuncDes.next            = OldFuncPtr;
+  NewFuncDes.description     = (char *)malloc(strlen(definition  )+1024);
+  j=0;
+  sprintf(NewFuncDes.description+j,"%s(",name); j+=strlen(NewFuncDes.description+j); // Write a textual description of this function definition
   for (args_j=0; args_j<args_i-1; args_j++)
    {
-    if (args[args_j]=='\0') NewFuncPtr.description[j+args_j] = ',';
-    else                    NewFuncPtr.description[j+args_j] = args[args_j];
+    if (args[args_j]=='\0') NewFuncDes.description[j+args_j] = ',';
+    else                    NewFuncDes.description[j+args_j] = args[args_j];
    }
   j+=args_i;
-  if (args_i>0) j--; // Remove final comma
-  sprintf(NewFuncPtr.description+j,")=%s",definition+i); j+=strlen(NewFuncPtr.description+j);
-  DictAppendPtrCpy(_ppl_UserSpace_Funcs, name, (void *)&NewFuncPtr, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  if (args_i>0) j--; // Remove final comma from list of arguments
+  strcpy(NewFuncDes.description+j,")"); j+=strlen(NewFuncDes.description+j);
+  for (k=0; k<=lcount; k++)
+   {
+    strcpy(NewFuncDes.description+j,"["); j+=strlen(NewFuncDes.description+j);
+    if (MinActive[k]) { sprintf(NewFuncDes.description+j,"%s", ppl_units_NumericDisplay(min+k, 0, 1)); j+=strlen(NewFuncDes.description+j); }
+    strcpy(NewFuncDes.description+j,":"); j+=strlen(NewFuncDes.description+j);
+    if (MaxActive[k]) { sprintf(NewFuncDes.description+j,"%s", ppl_units_NumericDisplay(max+k, 0, 1)); j+=strlen(NewFuncDes.description+j); }
+    strcpy(NewFuncDes.description+j,"]"); j+=strlen(NewFuncDes.description+j);
+   }
+  sprintf(NewFuncDes.description+j,"=%s",definition+i); j+=strlen(NewFuncDes.description+j);
+  NewFuncPtr = (FunctionDescriptor *)malloc(sizeof(FunctionDescriptor)); memcpy(NewFuncPtr , &NewFuncDes , sizeof(FunctionDescriptor));
+  DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)NewFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
   return;
  }
 

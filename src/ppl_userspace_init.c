@@ -95,10 +95,11 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "sqrt(x) returns the square root of x"};
   FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "tan(x) returns the tangent of x (measured in radians)"};
   FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "tanh(x) returns the hyperbolic tangent of x"};
-  FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "tanh(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
+  FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
   FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "unit(...) multiplies a number by a physical unit"};
   FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "zeta(x) evaluates the Riemann zeta function at x"};
   FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
+  FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "diff_dx(e,a) numerically differentiates an expression e wrt x at a"};
 
   // Set up default variables
   ppl_units_zero(&v);
@@ -215,8 +216,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "heaviside"      , (void *)&fd_heaviside   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hypot"          , (void *)&fd_hypot       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ldexp"          , (void *)&fd_ldexp       , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreP"      ,(void *)&fd_legendreP    , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreQ"      ,(void *)&fd_legendreQ    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreP"      , (void *)&fd_legendreP   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreQ"      , (void *)&fd_legendreQ   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "log"            , (void *)&fd_log         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "log10"          , (void *)&fd_log10       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "lognormalPDF"   , (void *)&fd_lognormalPDF, sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -239,6 +240,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "unit"           , (void *)&fd_unit        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zeta"           , (void *)&fd_zeta        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "diff_d?"        , (void *)&fd_diff        , sizeof(FunctionDescriptor), DATATYPE_VOID);
 
   return;
  }
