@@ -76,7 +76,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   char name[LSTR_LENGTH] , args[LSTR_LENGTH];
   value min[ALGEBRA_MAXITEMS], max[ALGEBRA_MAXITEMS];
   unsigned char MinActive[ALGEBRA_MAXITEMS], MaxActive[ALGEBRA_MAXITEMS];
-  FunctionDescriptor *OldFuncPtr, *OldFuncIter, **OldFuncPrev, *NewFuncPtr, *temp, NewFuncDes;
+  FunctionDescriptor *OldFuncPtr, *OldFuncIter, **OldFuncPrev, *NewFuncPtr, *temp;
 
   for (j=0; j<ALGEBRA_MAXITEMS; j++) MinActive[j]=0; // By default, function definition has no limits to the range over which it is applicable
   for (j=0; j<ALGEBRA_MAXITEMS; j++) MaxActive[j]=0;
@@ -110,8 +110,9 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     if (lcount==Nargs) { *status=1 ; strcpy(errtext, "Function definition contains more range specifications than arguments to apply them to"); return; }
     i++;
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
-    if      (definition[i]==':') {} // Is we have a :, the user has not specified a minimum bound
-    else if (definition[i]=='*') { i++; }
+    if       (definition[i]==':')                            {} // Is we have a :, the user has not specified a minimum bound
+    else if ((definition[i]=='t') && (definition[i+1]=='o')) {}
+    else if  (definition[i]=='*')                            { i++; }
     else
      {
       *status=-1; args_j=0;
@@ -121,9 +122,12 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
       MinActive[lcount]=1;
      }
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+
     if       (definition[i]==':')                            i++;
     else if ((definition[i]=='t') && (definition[i+1]=='o')) i+=2;
     else       { *status=1 ; strcpy(errtext, "Unexpected characters when searching for : in range specification"); return; }
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+
     if      (definition[i]==']') {} // If we have a ], the user has not specified a maximum bound
     else if (definition[i]=='*') { i++; }
     else
@@ -136,17 +140,16 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
       MaxActive[lcount]=1;
      }
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
+
     if (definition[i]!=']') { *status=1 ; strcpy(errtext, "Unexpected characters when searching for ] in range specification"); return; }
     i++;
     lcount++;
+    while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
    }
+
   if (definition[i]!='=') { *status=1 ; strcpy(errtext, "Unexpected characters when searching for = in function definition"); return; }
   i++;
   while ((definition[i]>'\0')&&(definition[i]<=' ')) i++; // definition+i now points to the algebraic definition of the function
-
-  // Redefine lcount to be the number of ranges _used_ by this function definition
-  lcount=-1;
-  for (k=0; k<ALGEBRA_MAXITEMS; k++) if (MinActive[k] || MaxActive[k]) lcount=k;
 
   DictLookup(_ppl_UserSpace_Funcs, name, NULL, (void *)&OldFuncPtr); // Check whether we are going to overwrite an existing function
   OldFuncIter =  OldFuncPtr;
@@ -190,37 +193,18 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
    }
 
   // Make a new function descriptor with the details of the new expression for this function
-  NewFuncDes.FunctionType    = PPL_USERSPACE_USERDEF;
-  NewFuncDes.modified        = modified;
-  NewFuncDes.NumberArguments = Nargs;
-  NewFuncDes.FunctionPtr     = (char *)malloc(strlen(definition+i)+1); strcpy(NewFuncDes.FunctionPtr, definition+i );
-  NewFuncDes.ArgList         = (char *)malloc(args_i                ); memcpy(NewFuncDes.ArgList    , args        , args_i );
-  NewFuncDes.min             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncDes.min        , min         , Nargs*sizeof(value));
-  NewFuncDes.max             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncDes.max        , max         , Nargs*sizeof(value));
-  NewFuncDes.MinActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncDes.MinActive  , MinActive   , Nargs);
-  NewFuncDes.MaxActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncDes.MaxActive  , MaxActive   , Nargs);
-  NewFuncDes.next            = OldFuncPtr;
-  NewFuncDes.description     = (char *)malloc(strlen(definition  )+1024);
-  j=0;
-  sprintf(NewFuncDes.description+j,"%s(",name); j+=strlen(NewFuncDes.description+j); // Write a textual description of this function definition
-  for (args_j=0; args_j<args_i-1; args_j++)
-   {
-    if (args[args_j]=='\0') NewFuncDes.description[j+args_j] = ',';
-    else                    NewFuncDes.description[j+args_j] = args[args_j];
-   }
-  j+=args_i;
-  if (args_i>0) j--; // Remove final comma from list of arguments
-  strcpy(NewFuncDes.description+j,")"); j+=strlen(NewFuncDes.description+j);
-  for (k=0; k<=lcount; k++)
-   {
-    strcpy(NewFuncDes.description+j,"["); j+=strlen(NewFuncDes.description+j);
-    if (MinActive[k]) { sprintf(NewFuncDes.description+j,"%s", ppl_units_NumericDisplay(min+k, 0, 1)); j+=strlen(NewFuncDes.description+j); }
-    strcpy(NewFuncDes.description+j,":"); j+=strlen(NewFuncDes.description+j);
-    if (MaxActive[k]) { sprintf(NewFuncDes.description+j,"%s", ppl_units_NumericDisplay(max+k, 0, 1)); j+=strlen(NewFuncDes.description+j); }
-    strcpy(NewFuncDes.description+j,"]"); j+=strlen(NewFuncDes.description+j);
-   }
-  sprintf(NewFuncDes.description+j,"=%s",definition+i); j+=strlen(NewFuncDes.description+j);
-  NewFuncPtr = (FunctionDescriptor *)malloc(sizeof(FunctionDescriptor)); memcpy(NewFuncPtr , &NewFuncDes , sizeof(FunctionDescriptor));
+  NewFuncPtr = (FunctionDescriptor *)malloc(sizeof(FunctionDescriptor));
+  NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
+  NewFuncPtr->modified        = modified;
+  NewFuncPtr->NumberArguments = Nargs;
+  NewFuncPtr->FunctionPtr     = (char *)malloc(strlen(definition+i)+1); strcpy(NewFuncPtr->FunctionPtr, definition+i );
+  NewFuncPtr->ArgList         = (char *)malloc(args_i                ); memcpy(NewFuncPtr->ArgList    , args        , args_i );
+  NewFuncPtr->min             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncPtr->min        , min         , Nargs*sizeof(value));
+  NewFuncPtr->max             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncPtr->max        , max         , Nargs*sizeof(value));
+  NewFuncPtr->MinActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncPtr->MinActive  , MinActive   , Nargs);
+  NewFuncPtr->MaxActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncPtr->MaxActive  , MaxActive   , Nargs);
+  NewFuncPtr->next            = OldFuncPtr;
+  NewFuncPtr->description     = NULL;
   DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)NewFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
   return;
  }

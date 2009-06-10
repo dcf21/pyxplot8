@@ -308,6 +308,58 @@ void dcfmath_beta(value *in1, value *in2, value *output, int *status, char *errt
   return;
  }
 
+void dcfmath_binomialPDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The binomialPDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  if ((in1->number < 0) || (in1->number >= INT_MAX))
+   {
+    *status = 1;
+    sprintf(errtext, "The binomialPDF() function's first parameter must be in the range 0 <= k < %d.",INT_MAX);
+    return;
+   }
+  if ((in2->number < 0) || (in2->number >= INT_MAX))
+   {
+    *status = 1;
+    sprintf(errtext, "The binomialPDF() function's 3rd parameter must be in the range 0 <= n < %d.",INT_MAX);
+    return;
+   }
+  output->number = gsl_ran_binomial_pdf((unsigned int)in1->number, in2->number, (unsigned int)in3->number);
+  return;
+ }
+
+void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The binomialCDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  if ((in1->number < 0) || (in1->number >= INT_MAX))
+   {
+    *status = 1;
+    sprintf(errtext, "The binomialCDF() function's first parameter must be in the range 0 <= k < %d.",INT_MAX);
+    return;
+   }
+  if ((in2->number < 0) || (in2->number >= INT_MAX))
+   {
+    *status = 1;
+    sprintf(errtext, "The binomialCDF() function's 3rd parameter must be in the range 0 <= n < %d.",INT_MAX);
+    return;
+   }
+  output->number = gsl_cdf_binomial_P((unsigned int)in1->number, in2->number, (unsigned int)in3->number);
+  return;
+ }
+
 void dcfmath_ceil(value *in, value *output, int *status, char *errtext)
  {
   *status = 0;
@@ -319,6 +371,48 @@ void dcfmath_ceil(value *in, value *output, int *status, char *errtext)
     return;
    }
   output->number = ceil(in->number);
+  return;
+ }
+
+void dcfmath_chisqPDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The chisqPDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_chisq_pdf(in1->number , in2->number);
+  return;
+ }
+
+void dcfmath_chisqCDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The chisqCDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_chisq_P(in1->number , in2->number);
+  return;
+ }
+
+void dcfmath_chisqCDFi(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The chisqCDFi() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_chisq_Pinv(in1->number , in2->number);
   return;
  }
 
@@ -746,6 +840,34 @@ void dcfmath_mod(value *in1, value *in2, value *output, int *status, char *errte
   return;
  }
 
+void dcfmath_poissonPDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The poissonPDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_poisson_pdf(in1->number , in2->number);
+  return;
+ }
+
+void dcfmath_poissonCDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The poissonCDF() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_cdf_poisson_P(in1->number , in2->number);
+  return;
+ }
+
 void dcfmath_pow (value *in1, value *in2, value *output, int *status, char *errtext)
  {
   int j;
@@ -791,7 +913,40 @@ void dcfmath_frandom(value *output, int *status, char *errtext)
   return;
  }
 
-static gsl_rng *rndgen = NULL; // Random number generator for next two functions
+static gsl_rng *rndgen = NULL; // Random number generator for next five functions
+
+void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  ppl_units_zero(output);
+  if (!(in1->dimensionless && in2->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The randomBinomial() function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", ppl_units_GetUnitStr(in1, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, 1, 0));
+    return;
+   }
+  if ((in2->number < 0) || (in2->number >= INT_MAX))
+   {
+    *status = 1;
+    sprintf(errtext, "The randomBinomial() function's 2nd parameter must be in the range 0 <= n < %d.",INT_MAX);
+    return;
+   }
+  output->number = gsl_ran_binomial(rndgen, in1->number, (unsigned int)in2->number);
+  return;
+ }
+
+void dcfmath_frandomcs(value *in, value *output, int *status, char *errtext)
+ {
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The randomChiSq() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_chisq(rndgen, in->number);
+ }
 
 void dcfmath_frandomg(value *in, value *output, int *status, char *errtext)
  {
@@ -820,6 +975,19 @@ void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char 
   output->number = gsl_ran_lognormal(rndgen, in1->number, in2->number);
   ppl_units_DimCpy(output, in1);
   return;
+ }
+
+void dcfmath_frandomp(value *in, value *output, int *status, char *errtext)
+ {
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The randomPoisson() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = gsl_ran_poisson(rndgen, in->number);
  }
 
 void dcfmath_sin (value *in, value *output, int *status, char *errtext)

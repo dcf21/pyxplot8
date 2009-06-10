@@ -500,7 +500,28 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         SHOW_HIGHLIGHT((FDiter->modified==0));
         if (FDiter->FunctionType == PPL_USERSPACE_USERDEF)
          {
-          sprintf(out+i, "%s\n", FDiter->description);
+          // Let j be the number of ranges _used_ by this function definition
+          j=-1;
+          for (k=0; k<FDiter->NumberArguments; k++) if (FDiter->MinActive[k] || FDiter->MaxActive[k]) j=k;
+
+          // Now compose a textual description of this function definition
+          sprintf(out+i,"%s(",DictIter->key); i+=strlen(out+i);
+          for (l=0, m=0; l<FDiter->NumberArguments; l++, m++)
+           {
+            for ( ; FDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = FDiter->ArgList[m];
+            *(out+(i++)) = ',';
+           }
+          if (FDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
+          *(out+(i++)) = ')';
+          for (k=0; k<=j; k++)
+           {
+            *(out+(i++)) = '[';
+            if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0)); i+=strlen(out+i); }
+            *(out+(i++)) = ':';
+            if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0)); i+=strlen(out+i); }
+            *(out+(i++)) = ']';
+           }
+          sprintf(out+i,"=%s\n",(char *)FDiter->FunctionPtr); i+=strlen(out+i);
          }
         else if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
          {
@@ -538,7 +559,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         if (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }
         if (strcmp(ppl_unit_database[m].nameAs, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAs); i+=strlen(out+i); k=1; }
         if (strcmp(ppl_unit_database[m].nameAp, ppl_unit_database[m].nameAs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAp); i+=strlen(out+i); k=1; }
-        if (k==0) { i-=16; } else { i-=3; out[i++]=','; }
+        if (k==0) { i-=15; } else { i-=3; out[i++]=','; }
         sprintf(out+i, " is a unit of %s", ppl_unit_database[m].quantity); i += strlen(out+i);
         if (ppl_unit_database[m].comment != NULL) { sprintf(out+i, " (%s)", ppl_unit_database[m].comment); i += strlen(out+i); }
         sprintf(out+i, ".\n"); i += strlen(out+i);
