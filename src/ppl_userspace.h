@@ -57,6 +57,8 @@ void ppl_UserSpace_SetVarStr    (char *name, char   *inval, int modified);
 void ppl_UserSpace_SetVarNumeric(char *name, value  *inval, int modified);
 void ppl_UserSpace_UnsetVar     (char *name);
 void ppl_UserSpace_SetFunc      (char *definition, int modified, int *status, char *errtext);
+void ppl_UserSpace_FuncDestroy  (FunctionDescriptor *in);
+void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified);
 
 void ppl_GetQuotedString(char *in, char   *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);
 void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);

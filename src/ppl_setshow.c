@@ -498,36 +498,29 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       while (FDiter != NULL)
        {
         SHOW_HIGHLIGHT((FDiter->modified==0));
-        if (FDiter->FunctionType == PPL_USERSPACE_USERDEF)
-         {
-          // Let j be the number of ranges _used_ by this function definition
-          j=-1;
-          for (k=0; k<FDiter->NumberArguments; k++) if (FDiter->MinActive[k] || FDiter->MaxActive[k]) j=k;
 
-          // Now compose a textual description of this function definition
-          sprintf(out+i,"%s(",DictIter->key); i+=strlen(out+i);
-          for (l=0, m=0; l<FDiter->NumberArguments; l++, m++)
-           {
-            for ( ; FDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = FDiter->ArgList[m];
-            *(out+(i++)) = ',';
-           }
-          if (FDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
-          *(out+(i++)) = ')';
-          for (k=0; k<=j; k++)
-           {
-            *(out+(i++)) = '[';
-            if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0)); i+=strlen(out+i); }
-            *(out+(i++)) = ':';
-            if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0)); i+=strlen(out+i); }
-            *(out+(i++)) = ']';
-           }
-          sprintf(out+i,"=%s\n",(char *)FDiter->FunctionPtr); i+=strlen(out+i);
-         }
-        else if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
+        // Let j be the number of ranges _used_ by this function definition
+        j=-1;
+        for (k=0; k<FDiter->NumberArguments; k++) if (FDiter->MinActive[k] || FDiter->MaxActive[k]) j=k;
+
+        // Now compose a textual description of this function definition
+        sprintf(out+i,"%s(",DictIter->key); i+=strlen(out+i);
+        for (l=0, m=0; l<FDiter->NumberArguments; l++, m++)
          {
-          sprintf(out+i, "%s\n", FDiter->description);
+          for ( ; FDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = FDiter->ArgList[m];
+          *(out+(i++)) = ',';
          }
-        i += strlen(out+i);
+        if (FDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
+        *(out+(i++)) = ')';
+        for (k=0; k<=j; k++)
+         {
+          *(out+(i++)) = '[';
+          if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0)); i+=strlen(out+i); }
+          *(out+(i++)) = ':';
+          if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0)); i+=strlen(out+i); }
+          *(out+(i++)) = ']';
+         }
+        sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
         SHOW_DEHIGHLIGHT;
         FDiter = FDiter->next;
        }

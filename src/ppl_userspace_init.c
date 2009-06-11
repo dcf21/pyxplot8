@@ -421,6 +421,33 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "rod"; // Rod
+  ppl_unit_database[ppl_unit_pos].nameAp     = "rods";// Rod
+  ppl_unit_database[ppl_unit_pos].nameFs     = "rod";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "rods";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.02920;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "perch";  // Perch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "perches";// Perch
+  ppl_unit_database[ppl_unit_pos].nameFs     = "perch";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "perches";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.02920;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pole"; // Pole
+  ppl_unit_database[ppl_unit_pos].nameAp     = "poles";// Pole
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pole";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "poles";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.02920;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "AU";   // Astronomical unit
   ppl_unit_database[ppl_unit_pos].nameAp     = "AU";   // Astronomical unit
   ppl_unit_database[ppl_unit_pos].nameFs     = "astronomical_unit";
@@ -577,6 +604,16 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 1016;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lb";  // Pound
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lbs"; // Pound
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pound";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pounds";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.45359237;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
@@ -805,6 +842,239 @@ void ppl_units_init()
   // Derived units
   // -------------
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "acre";  // acre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "acres"; // acre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "acre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "acres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 4046.85642;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "hectare";  // hectare
+  ppl_unit_database[ppl_unit_pos].nameAp     = "hectares"; // hectare
+  ppl_unit_database[ppl_unit_pos].nameFs     = "hectare";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "hectares";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e5;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sq_mi"; // square mile
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_mi"; // square mile
+  ppl_unit_database[ppl_unit_pos].nameFs     = "square_mile";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "square_miles";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 2.589988110336e6;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sq_km"; // square kilometre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_km"; // square kilometre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "square_kilometre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "square_kilometres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e6;
+  ppl_unit_database[ppl_unit_pos].si         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sq_m"; // square metre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_m"; // square metre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "square_metre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "square_metres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].si         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sq_cm"; // square centimetre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_cm"; // square centimetre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "square_centimetre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "square_centimetres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-4;
+  ppl_unit_database[ppl_unit_pos].cgs        = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sq_ft"; // square foot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_ft"; // square foot
+  ppl_unit_database[ppl_unit_pos].nameFs     = "square_foot";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "square_feet";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.09290304;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sq_in"; // square inch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_in"; // square inch
+  ppl_unit_database[ppl_unit_pos].nameFs     = "square_inch";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "square_inches";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.00064516;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_m"; // cubic metre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_m"; // cubic metre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_metre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_metres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].si         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_cm"; // cubic centimetre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_cm"; // cubic centimetre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_centimetre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_centimetres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-6;
+  ppl_unit_database[ppl_unit_pos].cgs        = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_ft"; // cubic foot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_ft"; // cubic foot
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_foot";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_feet";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.028316846592;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_in"; // cubic inch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_in"; // cubic inch
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_inch";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_inches";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.000016387064;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "l"; // litre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "l"; // litre
+  ppl_unit_database[ppl_unit_pos].nameFs     = "litre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "litres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_(UK)"; // fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_(UK)"; // fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(UK)";
+  ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 28.4130625e-6;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_(US)"; // fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_(US)"; // fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_(US)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(US)";
+  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 29.5735295625e-6;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(UK)";  // pint
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(UK)"; // pint
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(UK)";
+  ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 568.26125e-6;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(US)";  // pint
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(US)"; // pint
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(US)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(US)";
+  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 473.176473e-6;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(UK)";  // gallon 
+  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(UK)"; // gallon
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(UK)";
+  ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 4.54609e-3;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(US)";  // gallon 
+  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(US)"; // gallon 
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(US)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(US)";
+  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 3.785411784e-3;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cup_(US)";  // cup
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cups_(US)"; // cup
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cup_(US)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cups_(US)";
+  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 236.5882365e-6;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "teaspoon";  // teaspoon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "teaspoons"; // teaspoon
+  ppl_unit_database[ppl_unit_pos].nameFs     = "teaspoon";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "teaspoons";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 4.92892159375e-6;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "tablespoon";  // tablespoon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "tablespoons"; // tablespoon
+  ppl_unit_database[ppl_unit_pos].nameFs     = "tablespoon";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "tablespoons";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 4.92892159375e-6 * 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "sterad";  // steradians
   ppl_unit_database[ppl_unit_pos].nameAp     = "sterad";  // steradians
   ppl_unit_database[ppl_unit_pos].nameFs     = "steradian";
@@ -855,9 +1125,62 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
-  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lbf";  // pound force
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lbf";  // pound force
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pound_force";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pounds_force";
+  ppl_unit_database[ppl_unit_pos].quantity   = "force";
+  ppl_unit_database[ppl_unit_pos].multiplier = 4.4482216152605;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Pa";  // pascal
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Pa";  // pascal
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pascal";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pascals";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].si = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "atm";  // atmosphere
+  ppl_unit_database[ppl_unit_pos].nameAp     = "atms"; // atmosphere
+  ppl_unit_database[ppl_unit_pos].nameFs     = "atmosphere";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "atmospheres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = 101325;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bar";  // bar
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bars"; // bar
+  ppl_unit_database[ppl_unit_pos].nameFs     = "bar";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "bars";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e5;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 

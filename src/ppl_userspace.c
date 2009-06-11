@@ -32,6 +32,8 @@
 #include <ctype.h>
 #include <math.h>
 
+#include <gsl/gsl_spline.h>
+
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
@@ -158,7 +160,9 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
    {
     if ((OldFuncIter->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncIter->FunctionType==PPL_USERSPACE_UNIT)) { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
     supersede = 1;
-    if (OldFuncIter->NumberArguments != Nargs) supersede=2; // If old function has different number of arguments, we cannot splice with it; supersede it
+    if ((supersede==1) && (OldFuncIter->FunctionType!=PPL_USERSPACE_USERDEF)) supersede=2; // Do not splice user-defined functions with splines
+
+    if ((supersede==1) && (OldFuncIter->NumberArguments != Nargs)) supersede=2; // If old function has different number of arguments, we cannot splice with it; supersede it
 
     // If old function has dimensionally incompatible limits with us, we cannot splice with it; supersede it
     if (supersede==1) for (k=0; k<Nargs; k++) if ( ((MinActive[k]==1)&&(OldFuncIter->MinActive[k]==1)&&(!ppl_units_DimEqual(min+k , OldFuncIter->min+k))) ||
@@ -170,13 +174,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
 
     if (supersede > 0) // Remove entry from linked list
      {
-      if (OldFuncIter->FunctionPtr!=NULL) free(OldFuncIter->FunctionPtr);
-      if (OldFuncIter->ArgList    !=NULL) free(OldFuncIter->ArgList);
-      if (OldFuncIter->min        !=NULL) free(OldFuncIter->min);
-      if (OldFuncIter->max        !=NULL) free(OldFuncIter->max);
-      if (OldFuncIter->MinActive  !=NULL) free(OldFuncIter->MinActive);
-      if (OldFuncIter->MaxActive  !=NULL) free(OldFuncIter->MaxActive);
-      if (OldFuncIter->description!=NULL) free(OldFuncIter->description);
+      ppl_UserSpace_FuncDestroy(OldFuncIter);
       *OldFuncPrev = OldFuncIter->next;
      }
     temp=OldFuncIter->next;
@@ -197,15 +195,66 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
   NewFuncPtr->modified        = modified;
   NewFuncPtr->NumberArguments = Nargs;
-  NewFuncPtr->FunctionPtr     = (char *)malloc(strlen(definition+i)+1); strcpy(NewFuncPtr->FunctionPtr, definition+i );
-  NewFuncPtr->ArgList         = (char *)malloc(args_i                ); memcpy(NewFuncPtr->ArgList    , args        , args_i );
-  NewFuncPtr->min             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncPtr->min        , min         , Nargs*sizeof(value));
-  NewFuncPtr->max             = (value *)malloc(Nargs * sizeof(value)); memcpy(NewFuncPtr->max        , max         , Nargs*sizeof(value));
-  NewFuncPtr->MinActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncPtr->MinActive  , MinActive   , Nargs);
-  NewFuncPtr->MaxActive       = (unsigned char *)malloc(Nargs);         memcpy(NewFuncPtr->MaxActive  , MaxActive   , Nargs);
+  NewFuncPtr->FunctionPtr     =          malloc(strlen(definition+i)+1); strcpy((char *)NewFuncPtr->FunctionPtr, definition+i );
+  NewFuncPtr->ArgList         = (char  *)malloc(args_i                ); memcpy(        NewFuncPtr->ArgList    , args        , args_i );
+  NewFuncPtr->min             = (value *)malloc(Nargs * sizeof(value));  memcpy(        NewFuncPtr->min        , min         , Nargs*sizeof(value));
+  NewFuncPtr->max             = (value *)malloc(Nargs * sizeof(value));  memcpy(        NewFuncPtr->max        , max         , Nargs*sizeof(value));
+  NewFuncPtr->MinActive       = (unsigned char *)malloc(Nargs);          memcpy(        NewFuncPtr->MinActive  , MinActive   , Nargs);
+  NewFuncPtr->MaxActive       = (unsigned char *)malloc(Nargs);          memcpy(        NewFuncPtr->MaxActive  , MaxActive   , Nargs);
   NewFuncPtr->next            = OldFuncPtr;
-  NewFuncPtr->description     = NULL;
+  NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
   DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)NewFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
+  return;
+ }
+
+// Free the data stored in a function descriptor
+void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
+ {
+  if (in->FunctionType == PPL_USERSPACE_USERDEF)
+   {
+    if (in->FunctionPtr!=NULL) free(in->FunctionPtr);
+   }
+  else if (in->FunctionType == PPL_USERSPACE_SPLINE)
+   {
+    if (in->FunctionPtr!=NULL) gsl_spline_free((gsl_spline *)in->FunctionPtr);
+   }
+  else
+   {
+    ppl_fatal(__FILE__,__LINE__,"Attempt to destroy a function descriptor which is neither a user-defined function, nor a spline.");
+   }
+  if (in->ArgList    !=NULL) free(in->ArgList);
+  if (in->min        !=NULL) free(in->min);
+  if (in->max        !=NULL) free(in->max);
+  if (in->MinActive  !=NULL) free(in->MinActive);
+  if (in->MaxActive  !=NULL) free(in->MaxActive);
+  if ( (in->description!=NULL) && (in->description!=(char *)in->FunctionPtr) ) free(in->description);
+  return;
+ }
+
+// Duplicate a user-defined function descriptor
+void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
+ {
+  FunctionDescriptor *NewFuncPtr;
+  int i,j;
+  int Nargs;
+  if (in->FunctionType != PPL_USERSPACE_USERDEF) ppl_fatal(__FILE__,__LINE__,"Attempt to duplicate a function descriptor which is not a user-defined function.");
+
+  Nargs=in->NumberArguments;
+  for (j=0,i=0;i<Nargs;i++) while (in->ArgList[j++]!='\0')
+
+  NewFuncPtr = (FunctionDescriptor *)malloc(sizeof(FunctionDescriptor));
+  NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
+  NewFuncPtr->modified        = modified;
+  NewFuncPtr->NumberArguments = in->NumberArguments;
+  NewFuncPtr->FunctionPtr     =          malloc(strlen(in->FunctionPtr)+1); strcpy((char *)NewFuncPtr->FunctionPtr, (char *)in->FunctionPtr );
+  NewFuncPtr->ArgList         = (char  *)malloc(j);                         memcpy(        NewFuncPtr->ArgList    , in->ArgList     , j );
+  NewFuncPtr->min             = (value *)malloc(Nargs * sizeof(value));     memcpy(        NewFuncPtr->min        , in->min         , Nargs*sizeof(value));
+  NewFuncPtr->max             = (value *)malloc(Nargs * sizeof(value));     memcpy(        NewFuncPtr->max        , in->max         , Nargs*sizeof(value));
+  NewFuncPtr->MinActive       = (unsigned char *)malloc(Nargs);             memcpy(        NewFuncPtr->MinActive  , in->MinActive   , Nargs);
+  NewFuncPtr->MaxActive       = (unsigned char *)malloc(Nargs);             memcpy(        NewFuncPtr->MaxActive  , in->MaxActive   , Nargs);
+  NewFuncPtr->next            = in->next;
+  NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
+  in->next                    = NewFuncPtr;
   return;
  }
 
