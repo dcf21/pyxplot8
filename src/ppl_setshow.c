@@ -65,6 +65,300 @@ void with_words_print(with_words *defn, char *out)
 
 void directive_set(Dict *command)
  {
+  char   *directive, *setoption;
+  int    *tempint;
+  double *tempdbl;
+  DictLookup(command,"directive",NULL,(void **)(&directive));
+  DictLookup(command,"set_option",NULL,(void **)(&setoption));
+
+  if      ((strcmp(directive,"set")==0) && (strcmp(setoption,"arrow")==0)) /* set arrow */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"arrow")==0)) /* unset arrow */
+   {
+   }
+  else if ((strcmp(setoption,"autoscale")==0)) /* set autoscale | unset autoscale */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"axis")==0)) /* set axis */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"axis")==0)) /* unset axis */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"backup")==0)) /* set backup */
+   {
+    settings_term_current.backup = SW_ONOFF_ON;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"backup")==0)) /* unset backup */
+   {
+    settings_term_current.backup = settings_term_default.backup;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"bar")==0)) /* set bar */
+   {
+    DictLookup(command,"bar_size",NULL,(void **)&tempdbl);
+    settings_graph_current.bar = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"bar")==0)) /* unset bar */
+   {
+    settings_graph_current.bar = settings_graph_default.bar;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
+   {
+    DictLookup(command,"bin_origin",NULL,(void **)&tempdbl);
+    settings_graph_current.BinOrigin = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binorigin")==0)) /* unset binorigin */
+   {
+    settings_graph_current.BinOrigin = settings_graph_default.BinOrigin;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
+   {
+    DictLookup(command,"bin_width",NULL,(void **)&tempdbl);
+    if (*tempdbl <= 0.0) { ppl_error("Error: width of histogram bins must be greater than zero."); return; }
+    settings_graph_current.BinWidth = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
+   {
+    settings_graph_current.BinWidth = settings_graph_default.BinWidth;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
+   {
+    DictLookup(command,"box_from",NULL,(void **)&tempdbl);
+    settings_graph_current.BoxFrom = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxfrom")==0)) /* unset boxfrom */
+   {
+    settings_graph_current.BoxFrom = settings_graph_default.BoxFrom;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxwidth")==0)) /* set boxwidth */
+   {
+    DictLookup(command,"box_width",NULL,(void **)&tempdbl);
+    settings_graph_current.BoxWidth = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxwidth")==0)) /* unset boxwidth */
+   {
+    settings_graph_current.BoxWidth = settings_graph_default.BoxWidth;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"display")==0)) /* set display */
+   {
+    settings_term_current.display = SW_ONOFF_ON;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"display")==0)) /* unset display */
+   {
+    settings_term_current.display = settings_term_default.display;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"dpi")==0)) /* set dpi */
+   {
+    DictLookup(command,"dpi",NULL,(void **)&tempdbl);
+    if (*tempdbl <= 2.0) { ppl_error("Error: output image resolutions below two dots per inch are not supported."); return; }
+    settings_term_current.dpi = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"dpi")==0)) /* unset dpi */
+   {
+    settings_term_current.dpi = settings_term_default.dpi;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
+   {
+    DictLookup(command,"fontsize",NULL,(void **)&tempdbl);
+    if (*tempdbl <= 0.0) { ppl_error("Error: font sizes are not allowed to be less than or equal to zero."); return; }
+    settings_graph_current.FontSize = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"fontsize")==0)) /* unset fontsize */
+   {
+    settings_graph_current.FontSize = settings_graph_default.FontSize;
+   }
+  else if ((strcmp(setoption,"axescolour")==0) || (strcmp(setoption,"gridmajcolour")==0) || (strcmp(setoption,"gridmincolour")==0) || (strcmp(setoption,"textcolour")==0)) /* set axescolour | set gridmajcolour | set gridmincolour */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"grid")==0)) /* set grid */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"grid")==0)) /* unset grid */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"key")==0)) /* set key */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"key")==0)) /* unset key */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
+   {
+    DictLookup(command,"key_columns",NULL,(void **)&tempint);
+    if (*tempdbl <= 0.0) { ppl_error("Error: keys cannot have fewer than one columns."); return; }
+    settings_graph_current.KeyColumns = *tempint;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"keycolumns")==0)) /* unset keycolumns */
+   {
+    settings_graph_current.KeyColumns = settings_graph_default.KeyColumns;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"label")==0)) /* set label */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linestyle")==0)) /* set linestyle */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linestyle")==0)) /* unset linestyle */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
+   {
+    DictLookup(command,"",NULL,(void **)&tempdbl);
+    if (*tempdbl <= 0.0) { ppl_error("Error: line widths are not allowed to be less than or equal to zero."); return; }
+    settings_graph_current.LineWidth = *tempdbl;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
+   {
+    settings_graph_current.LineWidth = settings_graph_default.LineWidth;
+   }
+  else if ((strcmp(setoption,"logscale")==0))         /* set logscale */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"multiplot")==0)) /* unset multiplot */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nobackup")==0)) /* set nobackup */
+   {
+    settings_term_current.backup = SW_ONOFF_OFF;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nodisplay")==0)) /* set nodisplay */
+   {
+    settings_term_current.display = SW_ONOFF_OFF;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nogrid")==0)) /* set nogrid */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nokey")==0)) /* set nokey */
+   {
+    settings_graph_current.key = SW_ONOFF_OFF;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"label")==0)) /* set nolabel | unset label */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
+   {
+    settings_term_current.multiplot = SW_ONOFF_OFF;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notics")==0)) /* set notics */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"origin")==0)) /* set origin */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"origin")==0)) /* unset origin */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"output")==0)) /* set output */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"output")==0)) /* unset output */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"palette")==0)) /* set palette */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"palette")==0)) /* unset palette */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"papersize")==0)) /* set papersize */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"papersize")==0)) /* unset papersize */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"preamble")==0)) /* set preamble */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"preamble")==0)) /* unset preamble */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"size")==0)) /* unset size */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"terminal")==0)) /* set terminal */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"terminal")==0)) /* unset terminal */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"texthalign")==0)) /* set texthalign */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"texthalign")==0)) /* unset texthalign */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"textvalign")==0)) /* set textvalign */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"textvalign")==0)) /* unset textvalign */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"tics")==0)) /* set tics */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"tics")==0)) /* unset tics */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"ticdir")==0)) /* set ticdir */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"ticdir")==0)) /* unset ticdir */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"title")==0)) /* set title */
+   {
+   }
+  else if ( ((strcmp(directive,"set")==0) && (strcmp(setoption,"notitle")==0)) || ((strcmp(directive,"unset")==0) && (strcmp(setoption,"title")==0)) ) /* unset title */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
+   {
+   }
+  else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
+   {
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"range")==0)) /* set xrange */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"range")==0)) /* unset xrange */
+   {
+   }
+  else
+   {
+    ppl_error("Internal Error in PyXPlot's set command: could not find handler for this set command.");
+   }
+  return;
  }
 
 #define SHOW_HIGHLIGHT(modified) \
@@ -186,8 +480,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "fontsize",1)>=0) || (StrAutocomplete(word, "fountsize",1)>=0))
    { 
-    sprintf(buf, "%d", sg->FontSize);
-    directive_show3(out+i, ItemSet, interactive, "FountSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the default fount size of text output; -4 is the smallest and 5 is the largest");
+    sprintf(buf, "%s", (char *)NumericDisplay(sg->FontSize,0));
+    directive_show3(out+i, ItemSet, interactive, "FountSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the fount size of text output: 1.0 is the default, and other values multiply this default size");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "grid",1)>=0))
@@ -486,7 +780,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       SHOW_DEHIGHLIGHT;
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
-
+   }
+  if ((StrAutocomplete(word, "functions", 1)>=0) || (StrAutocomplete(word, "userfunctions", 1)>=0))
+   {
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# User-Defined Functions:\n\n"); i += strlen(out+i); p=1;
     SHOW_DEHIGHLIGHT;
@@ -497,31 +793,33 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       FDiter = (FunctionDescriptor *)DictIter->data;
       while (FDiter != NULL)
        {
-        SHOW_HIGHLIGHT((FDiter->modified==0));
-
-        // Let j be the number of ranges _used_ by this function definition
-        j=-1;
-        for (k=0; k<FDiter->NumberArguments; k++) if (FDiter->MinActive[k] || FDiter->MaxActive[k]) j=k;
-
-        // Now compose a textual description of this function definition
-        sprintf(out+i,"%s(",DictIter->key); i+=strlen(out+i);
-        for (l=0, m=0; l<FDiter->NumberArguments; l++, m++)
+        if ( (FDiter->FunctionType == PPL_USERSPACE_USERDEF) || (FDiter->FunctionType == PPL_USERSPACE_SPLINE) )
          {
-          for ( ; FDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = FDiter->ArgList[m];
-          *(out+(i++)) = ',';
+          SHOW_HIGHLIGHT((FDiter->modified==0));
+          // Let j be the number of ranges _used_ by this function definition
+          j=-1;
+          for (k=0; k<FDiter->NumberArguments; k++) if (FDiter->MinActive[k] || FDiter->MaxActive[k]) j=k;
+
+          // Now compose a textual description of this function definition
+          sprintf(out+i,"%s(",DictIter->key); i+=strlen(out+i);
+          for (l=0, m=0; l<FDiter->NumberArguments; l++, m++)
+           {
+            for ( ; FDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = FDiter->ArgList[m];
+            *(out+(i++)) = ',';
+           }
+          if (FDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
+          *(out+(i++)) = ')';
+          for (k=0; k<=j; k++)
+           {
+            *(out+(i++)) = '[';
+            if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0)); i+=strlen(out+i); }
+            *(out+(i++)) = ':';
+            if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0)); i+=strlen(out+i); }
+            *(out+(i++)) = ']';
+           }
+          sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
+          SHOW_DEHIGHLIGHT;
          }
-        if (FDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
-        *(out+(i++)) = ')';
-        for (k=0; k<=j; k++)
-         {
-          *(out+(i++)) = '[';
-          if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0)); i+=strlen(out+i); }
-          *(out+(i++)) = ':';
-          if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0)); i+=strlen(out+i); }
-          *(out+(i++)) = ']';
-         }
-        sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
-        SHOW_DEHIGHLIGHT;
         FDiter = FDiter->next;
        }
       DictIter = DictIterate(DictIter, NULL, NULL);

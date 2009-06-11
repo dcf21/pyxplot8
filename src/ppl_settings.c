@@ -107,7 +107,7 @@ void ppl_settings_term_init()
   settings_graph_default.DataStyle.linewidth  = -1;
   settings_graph_default.DataStyle.pointlinewidth = -1;
   settings_graph_default.DataStyle.pointsize  = -1;
-  settings_graph_default.FontSize   = 0;
+  settings_graph_default.FontSize   = 1.0;
   settings_graph_default.FuncStyle.colour     = -1;
   settings_graph_default.FuncStyle.fillcolour = -1;
   settings_graph_default.FuncStyle.linestyle  = -1;

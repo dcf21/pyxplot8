@@ -331,6 +331,8 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "help")==0)
    directive_help(command, interactive);
+  else if (strcmp(directive, "history")==0)
+   directive_history(command);
   else if (strcmp(directive, "load")==0)
    {
     DictLookup(command,"filename",NULL,(void **)(&varstrval));
@@ -346,8 +348,12 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    ppl_report(settings_session_default.cwd);
   else if (strcmp(directive, "quit")==0)
    PPL_SHELL_EXITING = 1;
+  else if (strcmp(directive, "set")==0)
+   directive_set(command);
   else if (strcmp(directive, "show")==0)
    directive_show(command, interactive);
+  else if (strcmp(directive, "unset")==0)
+   directive_set(command);
   else if (strcmp(directive, "unrecognised")==0)
    {
     sprintf(temp_err_string, txt_invalid, in);
@@ -391,6 +397,22 @@ void directive_cd(Dict *command)
      }
    }
   if (getcwd( settings_session_default.cwd , FNAME_LENGTH ) == NULL) { ppl_fatal(__FILE__,__LINE__,"Could not read current working directory."); } // Store cwd
+  return;
+ }
+
+void directive_history(Dict *command)
+ {
+  int start=0,endpos,k,*Nlines;
+  HIST_ENTRY **history_data;
+
+  endpos       = where_history();
+  history_data = history_list();
+
+  DictLookup(command,"number_lines",NULL,(void **)&Nlines);
+  if (Nlines != NULL) start = endpos - *Nlines;
+  if (start < 0) start=0;
+
+  for (k=start; k<endpos; k++) ppl_report(history_data[k]->line);
   return;
  }
 

@@ -75,6 +75,8 @@ void ppl_UserSpace_UnsetVar(char *name)
 void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *errtext)
  {
   int i=0, j, k, supersede, name_i=0, Nargs=0, args_i=0, args_j=0, lcount=0;
+  int Nsupersede, Noverlap, Nmiss, LastOverlapType, LastOverlapK, NeedToStoreNan;
+  double tempdbl;
   char name[LSTR_LENGTH] , args[LSTR_LENGTH];
   value min[ALGEBRA_MAXITEMS], max[ALGEBRA_MAXITEMS];
   unsigned char MinActive[ALGEBRA_MAXITEMS], MaxActive[ALGEBRA_MAXITEMS];
@@ -145,6 +147,15 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
 
     if (definition[i]!=']') { *status=1 ; strcpy(errtext, "Unexpected characters when searching for ] in range specification"); return; }
     i++;
+
+    // Swap min/max limits if they are given the wrong way around
+    if ((MinActive[lcount]==1)&&(MaxActive[lcount]==1)&&(min[lcount].number>max[lcount].number))
+     {
+      tempdbl            = max[lcount].number;
+      max[lcount].number = min[lcount].number;
+      min[lcount].number = tempdbl; 
+     }
+
     lcount++;
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
    }
@@ -156,34 +167,64 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   DictLookup(_ppl_UserSpace_Funcs, name, NULL, (void *)&OldFuncPtr); // Check whether we are going to overwrite an existing function
   OldFuncIter =  OldFuncPtr;
   OldFuncPrev = &OldFuncPtr;
+  NeedToStoreNan = 0;
   while (OldFuncIter != NULL)
    {
     if ((OldFuncIter->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncIter->FunctionType==PPL_USERSPACE_UNIT)) { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
-    supersede = 1;
-    if ((supersede==1) && (OldFuncIter->FunctionType!=PPL_USERSPACE_USERDEF)) supersede=2; // Do not splice user-defined functions with splines
+    supersede = 0;
+    if ((supersede==0) && (OldFuncIter->FunctionType!=PPL_USERSPACE_USERDEF)) supersede=1; // Do not splice user-defined functions with splines
 
-    if ((supersede==1) && (OldFuncIter->NumberArguments != Nargs)) supersede=2; // If old function has different number of arguments, we cannot splice with it; supersede it
+    if ((supersede==0) && (OldFuncIter->NumberArguments != Nargs)) supersede=1; // If old function has different number of arguments, we cannot splice with it; supersede it
 
     // If old function has dimensionally incompatible limits with us, we cannot splice with it; supersede it
-    if (supersede==1) for (k=0; k<Nargs; k++) if ( ((MinActive[k]==1)&&(OldFuncIter->MinActive[k]==1)&&(!ppl_units_DimEqual(min+k , OldFuncIter->min+k))) ||
-                                                   ((MaxActive[k]==1)&&(OldFuncIter->MaxActive[k]==1)&&(!ppl_units_DimEqual(max+k , OldFuncIter->max+k)))    ) supersede=2;
+    if (supersede==0) for (k=0; k<Nargs; k++) if ( ((MinActive[k]==1)&&(OldFuncIter->MinActive[k]==1)&&(!ppl_units_DimEqual(min+k , OldFuncIter->min+k))) ||
+                                                   ((MaxActive[k]==1)&&(OldFuncIter->MaxActive[k]==1)&&(!ppl_units_DimEqual(max+k , OldFuncIter->max+k)))    ) supersede=1;
 
     // If old function has ranges which extend outside our range, we should not supersede it
-    if (supersede==1) for (k=0; k<Nargs; k++) if ( ((MinActive[k]==1)&&((OldFuncIter->MinActive[k]==0)||(OldFuncIter->min[k].number<min[k].number))) ||
-                                                   ((MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].number>max[k].number)))    ) supersede=0;
+    Nsupersede = Noverlap = Nmiss = LastOverlapType = LastOverlapK = 0;
+    if (supersede==0) for (k=0; k<Nargs; k++) // Looping over all dimensions, count how new ranges miss/overlap/supersede old ranges
+     {
+      if      ( ((MinActive[k]==0)||((OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number>=min[k].number))) &&
+                ((MaxActive[k]==0)||((OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number<=max[k].number)))    ) Nsupersede++; // New min/max range completely encompasses old
+      else if ( ((MinActive[k]==1)&& (OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number<=min[k].number) ) ||
+                ((MaxActive[k]==1)&& (OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number>=max[k].number) )    ) Nmiss++; // New min/max range completely outside old
+      else if (  (MinActive[k]==1)&&((OldFuncIter->MinActive[k]==0)||(OldFuncIter->min[k].number< min[k].number)) &&
+                 (MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].number> max[k].number))     ) { Noverlap++; LastOverlapType = 2; LastOverlapK = k; } // New range in middle of old
+      else if (  (MinActive[k]==1)&& (OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number> min[k].number)  &&
+                                                                     (OldFuncIter->max[k].number<=max[k].number)      ) { Noverlap++; LastOverlapType = 3; LastOverlapK = k; } // New range goes off top of old
+      else if (  (MaxActive[k]==1)&& (OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number< max[k].number)      ) { Noverlap++; LastOverlapType = 1; LastOverlapK = k; } // New range goes off bottom of old
+      else  ppl_fatal(__FILE__,__LINE__,"Could not work out how the ranges of two functions overlap");
+     }
 
-    if (supersede > 0) // Remove entry from linked list
+    if ((supersede > 0) || ((Nmiss==0) && (Noverlap==0))) // Remove entry from linked list; either old definition is incompatible, or we supersede its range on all axes
      {
       ppl_UserSpace_FuncDestroy(OldFuncIter);
       *OldFuncPrev = OldFuncIter->next;
+      supersede = 1;
      }
+    else if ((Nmiss==0) && (Noverlap==1)) // we should reduce the range of the function we overlap with
+     {
+      if      (LastOverlapType == 1) { OldFuncIter->min[LastOverlapK].number = max[LastOverlapK].number; } // Bring lower limit of old definition up above maximum for this new definition
+      else if (LastOverlapType == 3) { OldFuncIter->max[LastOverlapK].number = min[LastOverlapK].number; } // Bring upper limit of old definition down below minimum for this new definition
+      else
+       {
+        ppl_UserSpace_FuncDuplicate(OldFuncIter , modified); // Old definition is cut in two by the new definition; duplicate it.
+        OldFuncIter->max[LastOverlapK].number       = min[LastOverlapK].number;
+        OldFuncIter->next->min[LastOverlapK].number = max[LastOverlapK].number;
+       }
+     }
+    else if ((strlen(definition+i)==0) && (Nmiss==0) && (Noverlap>1)) // We are trying to undefine the function, but overlap is complicated along > 1 axis. Best we can do is store the undefinition.
+     {
+      NeedToStoreNan = 1;
+     }
+
     temp=OldFuncIter->next;
     if (supersede > 0) { free(OldFuncIter); } else { OldFuncPrev = &(OldFuncIter->next); }
     OldFuncIter=temp;
    }
 
-  // If we have a blank algebraic expression for this function, do not add any new definition for this function
-  if (strlen(definition+i)==0)
+  // If we have a blank algebraic expression for this function, do not add any new definition for this function, unless we have complicated overlap issues
+  if ((strlen(definition+i)==0) && (NeedToStoreNan == 0))
    {
     if (OldFuncPtr == NULL) DictRemoveKey(_ppl_UserSpace_Funcs, name);
     else                    DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)OldFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
@@ -255,6 +296,7 @@ void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
   NewFuncPtr->next            = in->next;
   NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
   in->next                    = NewFuncPtr;
+  in->modified                = modified;
   return;
  }
 

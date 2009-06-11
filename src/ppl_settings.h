@@ -34,29 +34,29 @@ typedef struct with_words {
  } with_words;
 
 typedef struct settings_terminal {
- int   backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayTypeable, UnitDisplayPrefix, UnitDisplayAbbrev;
- float dpi;
- value PaperHeight, PaperWidth;
- char  output[FNAME_LENGTH];
- char  PaperName[FNAME_LENGTH];
- char  LatexPreamble[FNAME_LENGTH];
+ int    backup, colour, display, landscape, multiplot, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayTypeable, UnitDisplayPrefix, UnitDisplayAbbrev;
+ double dpi;
+ value  PaperHeight, PaperWidth;
+ char   output[FNAME_LENGTH];
+ char   PaperName[FNAME_LENGTH];
+ char   LatexPreamble[FNAME_LENGTH];
  } settings_terminal;
 
 typedef struct settings_graph {
- int   aspect, AutoAspect, AxesColour, FontSize, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
- float bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, LineWidth, PointSize, PointLineWidth;
+ int          aspect, AutoAspect, AxesColour, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ double       bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, FontSize, LineWidth, PointSize, PointLineWidth;
  unsigned int GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
- value KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, width;
- char  title[FNAME_LENGTH];
- with_words DataStyle, FuncStyle;
+ value        KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, width;
+ char         title[FNAME_LENGTH];
+ with_words   DataStyle, FuncStyle;
  } settings_graph;
 
 typedef struct settings_axis {
  unsigned char enabled;
- int MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
- float LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
- char label[FNAME_LENGTH];
- List *MTickList, *TickList;
+ int    MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
+ double LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
+ char   label[FNAME_LENGTH];
+ List   *MTickList, *TickList;
  } settings_axis;
 
 typedef struct settings_session {
