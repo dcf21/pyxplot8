@@ -79,6 +79,8 @@ extern int   SW_STYLE_INT[];
 #define SW_TERMTYPE_PNG  13007
 #define SW_TERMTYPE_JPG  13008
 #define SW_TERMTYPE_GIF  13009
+#define SW_TERMTYPE_BMP  13010
+#define SW_TERMTYPE_TIF  13011
 
 extern char *SW_TERMTYPE_STR[];
 extern int   SW_TERMTYPE_ACL[];
