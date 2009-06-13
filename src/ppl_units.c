@@ -64,7 +64,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (N==0) output = outputA;
   else      output = outputB;
 
-  if (settings_term_default.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+  if (settings_term_current.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
   unitstr = ppl_units_GetUnitStr(in, &NumberOut, N, typeable);
   if (unitstr[0]=='\0') return NumericDisplay(NumberOut, N);
   else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOut, N), unitstr);
@@ -118,11 +118,11 @@ int __inline__ ppl_units_UnitDimEqual(unit *a, unit *b)
 // Routines for printing units
 // -------------------------------------------------------------------
 
-#define UNIT_INSCHEME(X)  (  ((X).si       && (settings_term_default.UnitScheme == SW_UNITSCH_SI  )) \
-                          || ((X).cgs      && (settings_term_default.UnitScheme == SW_UNITSCH_CGS )) \
-                          || ((X).imperial && (settings_term_default.UnitScheme == SW_UNITSCH_IMP )) \
-                          || ((X).us       && (settings_term_default.UnitScheme == SW_UNITSCH_US  )) \
-                          || ((X).ancient  && (settings_term_default.UnitScheme == SW_UNITSCH_ANC ))  )
+#define UNIT_INSCHEME(X)  (  ((X).si       && (settings_term_current.UnitScheme == SW_UNITSCH_SI  )) \
+                          || ((X).cgs      && (settings_term_current.UnitScheme == SW_UNITSCH_CGS )) \
+                          || ((X).imperial && (settings_term_current.UnitScheme == SW_UNITSCH_IMP )) \
+                          || ((X).us       && (settings_term_current.UnitScheme == SW_UNITSCH_US  )) \
+                          || ((X).ancient  && (settings_term_current.UnitScheme == SW_UNITSCH_ANC ))  )
 
 
 void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
@@ -179,7 +179,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
 
   // Search for alternative dimensionally-equivalent units which give a smaller value
   for (i=0; i<Nunits; i++)
-   for (j=0; j<UNITS_MAX_BASEUNITS; j++)
+   for (j=0; j<ppl_unit_pos; j++)
     if (ppl_units_UnitDimEqual(UnitList[i] , ppl_unit_database + j))
      {
       NewValue = in->number * pow(UnitList[i]->multiplier / ppl_unit_database[j].multiplier , UnitPow[i]);
@@ -201,20 +201,27 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
         { UnitList[i] = ppl_unit_database+j; in->number = NewValue; }
      }
 
+  // Apply unit multiplier which arise from user-preferred SI prefixes, for example, millimetres
+  for (i=0; i<Nunits; i++)
+   if (UnitList[i]->UserSel)
+    {
+     in->number /= pow(10,(UnitList[i]->UserSelPrefix-8)*3);
+     UnitPref[i] = UnitList[i]->UserSelPrefix-8;
+    }
+
   // Search for an SI prefix we can use to reduce the size of this number
   if (settings_term_current.UnitDisplayPrefix == SW_ONOFF_ON)
    {
     PrefixBestPos = -1;
     PrefixBestVal = in->number;
     for (i=0; i<Nunits; i++) if (ppl_units_DblEqual(UnitPow[i] , 1))
-     {
+     if (UnitList[i]->UserSel == 0)
       for (j=UnitList[i]->MinPrefix; j<=UnitList[i]->MaxPrefix; j+=3)
        {
         NewValue = in->number / pow(10,j);
         if ( (NewValue >= 1) && ((NewValue < PrefixBestVal) || (PrefixBestVal<1)) )
          { PrefixBestPos = i; BestPrefix = j; PrefixBestVal = NewValue; }
        }
-     }
     if (PrefixBestPos>=0)
      {
       in->number = PrefixBestVal;
@@ -238,7 +245,7 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
   int           pos=0, OutputPos=0;
   int           i, j, found, first;
 
-  if (settings_term_default.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+  if (settings_term_current.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
 
   if (N==0) output = outputA;
   else      output = outputB;
@@ -261,9 +268,6 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
     if (ppl_units_DblEqual(UnitPow[pos],0)!=0) break;
     pos++;
    }
-
-  // If user-preferred units in list have preferred prefixes (e.g. mm), apply exponents now
-  for (i=0; i<pos; i++) if (UnitList[i]->UserSel != 0) residual.number /= pow(10,UnitList[i]->UserSelPrefix);
 
   // Go through list of units and fix prefixes / unit choice to minimise displayed number
   ppl_units_PrefixFix(&residual, UnitList, UnitPow, UnitPref, pos);

@@ -231,6 +231,7 @@ void *ListLast(List *in)
 
 ListIterator *ListIterateInit(List *in)
  {
+  if (in==NULL) return NULL;
   return in->first;
  }
 

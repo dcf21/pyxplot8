@@ -77,7 +77,8 @@ extern settings_axis     XAxes[];
 extern settings_axis     YAxes[];
 extern settings_axis     ZAxes[];
 extern settings_session  settings_session_default;
-extern int               settings_palette[];
+extern int               settings_palette_current[];
+extern int               settings_palette_default[];
 
 void  ppl_settings_term_init();
 void *FetchSettingName      (int id, int *id_list, void **name_list);

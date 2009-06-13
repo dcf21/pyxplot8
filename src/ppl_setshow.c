@@ -22,7 +22,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "StringTools/asciidouble.h"
 
@@ -66,12 +68,16 @@ void with_words_print(with_words *defn, char *out)
 
 void directive_set(Dict *command)
  {
-  int     i;
+  int     i, j, k, l, m, p, pp, errpos, multiplier;
   char   *directive, *setoption;
+  value   valobj;
   value  *tempval, *tempval2;
-  int    *tempint;
+  int    *tempint, *tempint2;
   double *tempdbl;
-  char   *tempstr;
+  char   *tempstr, *tempstr2;
+  List   *templist;
+  Dict   *tempdict;
+  ListIterator *listiter;
   with_words *tempstyle;
   DictLookup(command,"directive",NULL,(void **)(&directive));
   DictLookup(command,"set_option",NULL,(void **)(&setoption));
@@ -175,6 +181,35 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(setoption,"axescolour")==0) || (strcmp(setoption,"gridmajcolour")==0) || (strcmp(setoption,"gridmincolour")==0) || (strcmp(setoption,"textcolour")==0)) /* set axescolour | set gridmajcolour | set gridmincolour */
    {
+    if (strcmp(setoption,"axescolour"   )==0) { tempint = &settings_graph_current.AxesColour    ; tempint2 = &settings_graph_default.AxesColour;    }
+    if (strcmp(setoption,"gridmajcolour")==0) { tempint = &settings_graph_current.GridMajColour ; tempint2 = &settings_graph_default.GridMajColour; }
+    if (strcmp(setoption,"gridmincolour")==0) { tempint = &settings_graph_current.GridMinColour ; tempint2 = &settings_graph_default.GridMinColour; }
+    if (strcmp(setoption,"textcolour"   )==0) { tempint = &settings_graph_current.TextColour    ; tempint2 = &settings_graph_default.TextColour;    }
+
+    if (strcmp(directive,"unset")==0)
+     {
+      *tempint = *tempint2;
+     }
+    else
+     {
+      DictLookup(command,"colour",NULL,(void **)&tempstr);
+      i = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
+      if (i >= 0)
+       {
+        *tempint = i;
+       }
+      else
+       {
+        j = strlen(tempstr);
+        errpos = -1;
+        ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, &errpos, temp_err_string, 0);
+        if (errpos>=0) { ppl_error(temp_err_string); return; }
+        if (!valobj.dimensionless) { sprintf(temp_err_string, "Error: colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, 1, 0)); ppl_error(temp_err_string); return; }
+        if ((valobj.number <= INT_MIN) || (valobj.number >= INT_MAX)) { sprintf(temp_err_string, "Error: colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(temp_err_string); return; }
+        for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
+        *tempint = settings_palette_current[((int)valobj.number)%j];
+       }
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"grid")==0)) /* set grid */
    {
@@ -309,9 +344,25 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"palette")==0)) /* set palette */
    {
+    DictLookup(command,"palette,",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    i=0;
+    while (listiter != NULL)
+     {
+      if (i == PALETTE_LENGTH-1) { ppl_warning("Warning: The set palette command has been passed a palette which is too long; truncating it."); break; }
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"colour",NULL,(void **)&tempstr);
+      j = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
+      if (j<0) { sprintf(temp_err_string, "Warning: The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(temp_err_string); }
+      else     { settings_palette_current[i++] = j; }
+      listiter = ListIterate(listiter, NULL);
+     }
+    if (i==0) { ppl_error("Error: The set palette command has been passed a palette which does not contain any colours."); return; }
+    settings_palette_current[i] = -1;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"palette")==0)) /* unset palette */
    {
+    for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"papersize")==0)) /* set papersize */
    {
@@ -518,6 +569,94 @@ void directive_set(Dict *command)
     settings_graph_current.TitleXOff = settings_graph_default.TitleXOff;
     settings_graph_current.TitleYOff = settings_graph_default.TitleYOff;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"unit")==0)) /* set unit */
+   {
+    DictLookup(command,"abbrev"   , NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.UnitDisplayAbbrev   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
+    DictLookup(command,"typeable", NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.UnitDisplayTypeable = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
+    DictLookup(command,"prefix"  , NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.UnitDisplayPrefix   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
+    DictLookup(command,"scheme"  , NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.UnitScheme          = FetchSettingByName(tempstr, SW_UNITSCH_INT, SW_UNITSCH_STR);
+
+    DictLookup(command,"prefered_units,",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    while (listiter != NULL)
+     {
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"quantity",NULL,(void **)&tempstr);
+      DictLookup(tempdict,"unit"    ,NULL,(void **)&tempstr2);
+      i=0; // Quantity recognised
+      pp=p=0; // Unit recognised
+      for (j=0; j<ppl_unit_pos; j++)
+       {
+        if (i>1) i=1;
+        if ((ppl_unit_database[j].quantity != NULL) && (StrCmpNoCase(ppl_unit_database[j].quantity , tempstr) == 0))
+         {
+          i=2;
+          ppl_unit_database[j].UserSel = 0;
+         }
+
+        if (pp!=0) continue;
+        multiplier = 8;
+        if (p==0) { for (k=0; ((ppl_unit_database[j].nameAp[k]!='\0') && (ppl_unit_database[j].nameAp[k]==tempstr2[k])); k++);
+                    if ((ppl_unit_database[j].nameAp[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
+        if (p==0) { for (k=0; ((ppl_unit_database[j].nameAs[k]!='\0') && (ppl_unit_database[j].nameAs[k]==tempstr2[k])); k++);
+                    if ((ppl_unit_database[j].nameAs[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
+        if (p==0) { for (k=0; ((ppl_unit_database[j].nameFp[k]!='\0') && (toupper(ppl_unit_database[j].nameFp[k])==toupper(tempstr2[k]))); k++);
+                    if ((ppl_unit_database[j].nameFp[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
+        if (p==0) { for (k=0; ((ppl_unit_database[j].nameFs[k]!='\0') && (toupper(ppl_unit_database[j].nameFs[k])==toupper(tempstr2[k]))); k++);
+                    if ((ppl_unit_database[j].nameFs[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
+        if (p==0)
+         {
+          for (l=ppl_unit_database[j].MinPrefix/3+8; l<=ppl_unit_database[j].MaxPrefix/3+8; l++)
+           {
+            if (l==8) continue;
+            for (k=0; ((SIprefixes_full[l][k]!='\0') && (toupper(SIprefixes_full[l][k])==toupper(tempstr2[k]))); k++);
+            if (SIprefixes_full[l][k]=='\0')
+             {
+              for (m=0; ((ppl_unit_database[j].nameFp[m]!='\0') && (toupper(ppl_unit_database[j].nameFp[m])==toupper(tempstr2[k+m]))); m++);
+              if ((ppl_unit_database[j].nameFp[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
+              for (m=0; ((ppl_unit_database[j].nameFs[m]!='\0') && (toupper(ppl_unit_database[j].nameFs[m])==toupper(tempstr2[k+m]))); m++);
+              if ((ppl_unit_database[j].nameFs[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
+             }
+            for (k=0; ((SIprefixes_abbrev[l][k]!='\0') && (SIprefixes_abbrev[l][k]==tempstr2[k])); k++);
+            if (SIprefixes_abbrev[l][k]=='\0')
+             {
+              for (m=0; ((ppl_unit_database[j].nameAp[m]!='\0') && (ppl_unit_database[j].nameAp[m]==tempstr2[k+m])); m++);
+              if ((ppl_unit_database[j].nameAp[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
+              for (m=0; ((ppl_unit_database[j].nameAs[m]!='\0') && (ppl_unit_database[j].nameAs[m]==tempstr2[k+m])); m++);
+              if ((ppl_unit_database[j].nameAs[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
+             }
+           }
+         }
+        if (p==0) continue;
+        if (i!=2)
+         {
+          if ((ppl_unit_database[j].quantity!=NULL) && (ppl_unit_database[j].quantity[0]!='\0'))
+           { sprintf(temp_err_string, "Warning: '%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_warning(temp_err_string); }
+          else
+           { sprintf(temp_err_string, "Warning: '%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_warning(temp_err_string); }
+         }
+        ppl_unit_database[j].UserSel = 1;
+        ppl_unit_database[j].UserSelPrefix = multiplier;
+        pp=1;
+       }
+      if (i==0) { sprintf(temp_err_string, "Warning: No such quantity as a '%s'.", tempstr); ppl_warning(temp_err_string); }
+      if (p==0) { sprintf(temp_err_string, "Warning: No such unit as a '%s'.", tempstr2); ppl_warning(temp_err_string); }
+      listiter = ListIterate(listiter, NULL);
+     }
+
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit")==0)) /* unset unit */
+   {
+    settings_term_current.UnitDisplayAbbrev   = settings_term_default.UnitDisplayAbbrev;
+    settings_term_current.UnitDisplayTypeable = settings_term_default.UnitDisplayTypeable;
+    settings_term_current.UnitDisplayPrefix   = settings_term_default.UnitDisplayPrefix;
+    settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
+    for (i=0; i<ppl_unit_pos; i++) ppl_unit_database[i].UserSel = 0;
+   }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
    {
     settings_graph_current.width.number = settings_graph_default.width.number;
@@ -592,12 +731,13 @@ void directive_show3(char *out, char *ItemSet, int interactive, char *setting_na
 
 int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *sg, settings_axis *xa, settings_axis *ya, settings_axis *za)
  {
-  char *out, *buf, *bufp;
+  char *out, *buf, *buf2, *bufp;
   int   i=0, p=0,j,k,l,m;
   DictIterator *DictIter;
   FunctionDescriptor *FDiter;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
+  buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
   out[0] = buf[0] = '\0';
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
    {
@@ -742,7 +882,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
    { 
     sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0));
-    directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.number == sg->OriginX.number)&&(settings_graph_default.OriginY.number == sg->OriginY.number)), "Selects where, in cm, the bottom-left corners of graphs are located on multiplot pages");
+    directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.number == sg->OriginX.number)&&(settings_graph_default.OriginY.number == sg->OriginY.number)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "output", 1)>=0))
@@ -753,12 +893,19 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "palette",1)>=0))
    {
-    for (j=k=0; settings_palette[j]>0; j++)
+    l=0;
+    for (j=0; j<PALETTE_LENGTH; j++) // Check whether the palette has been changed from its default setting
+     {
+      if ((settings_palette_current[j] == -1) && (settings_palette_default[j] == -1)) break;
+      if  (settings_palette_current[j] == settings_palette_default[j]) continue;
+      l=1; break;
+     }
+    for (j=k=0; settings_palette_current[j]>0; j++)
      {
       if (j>0) { sprintf(buf+k, ", "); k+=strlen(buf+k); }
-      sprintf(buf+k, "%s", (char *)FetchSettingName(settings_palette[j], SW_COLOUR_INT, (void **)SW_COLOUR_STR)); k+=strlen(buf+k);
+      sprintf(buf+k, "%s", (char *)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void **)SW_COLOUR_STR)); k+=strlen(buf+k);
      }
-    directive_show3(out+i, ItemSet, interactive, "palette", buf, (0==0), "The sequence of colours used to plot datasets on colour graphs");
+    directive_show3(out+i, ItemSet, interactive, "palette", buf, !l, "The sequence of colours used to plot datasets on colour graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "papersize", 1)>=0))
@@ -901,14 +1048,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     for (j=0; j<ppl_unit_pos; j++) if (ppl_unit_database[j].UserSel != 0)
      {
       sprintf(buf, "unit of %s", ppl_unit_database[j].quantity);
-      directive_show3(out+i, ItemSet, interactive, buf, ppl_unit_database[j].nameFs, 0, "Selects a user-prefered unit for a particular quantity");
+      if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON) sprintf(buf2, "%s%s", SIprefixes_abbrev[ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameAs);
+      else                                                        sprintf(buf2, "%s%s", SIprefixes_full  [ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameFs);
+      directive_show3(out+i, ItemSet, interactive, buf, buf2, 0, "Selects a user-prefered unit for a particular quantity");
       i += strlen(out+i) ; p=1;
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
    { 
     sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0));
-    directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.number==sg->width.number), "The width, in cm, of graphs");
+    directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.number==sg->width.number), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
 

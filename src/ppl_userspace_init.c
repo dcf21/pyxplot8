@@ -546,6 +546,16 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gramme
+  ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gramme
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gramme";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "grammes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-3;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gram
   ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gram
   ppl_unit_database[ppl_unit_pos].nameFs     = "gram";
@@ -553,16 +563,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e-3;
   ppl_unit_database[ppl_unit_pos].cgs        = 1;
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
-  ppl_unit_pos++;
-
-  ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gramme
-  ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gramme
-  ppl_unit_database[ppl_unit_pos].nameFs     = "gramme";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "grammes";
-  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1e-3;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;

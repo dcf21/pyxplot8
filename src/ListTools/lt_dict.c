@@ -322,6 +322,7 @@ void DictRemovePtrAll(Dict *in, void *item)
 
 DictIterator *DictIterateInit(Dict *in)
  {
+  if (in==NULL) return NULL;
   return in->first;
  }
 

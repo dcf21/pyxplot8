@@ -54,6 +54,9 @@ typedef struct value
  } value;
 
 #ifndef _PPL_UNITS_C
+extern char *SIprefixes_full  [];
+extern char *SIprefixes_abbrev[];
+
 extern unit  *ppl_unit_database;
 extern int    ppl_unit_pos;
 #endif

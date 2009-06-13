@@ -300,7 +300,7 @@ void ReadConfigFile(char *ConfigFname)
           if (PalettePos == PALETTE_LENGTH-1)
            {
             sprintf(temp_err_string, "Error in line %d of configuration file %s:\nSpecified palette is too long.", linecounter, ConfigFname); ppl_warning(temp_err_string);
-            settings_palette[PalettePos] = -1;
+            settings_palette_default[PalettePos] = -1;
             continue;
            } else {
             StrUpper(ColourName,ColourName);
@@ -309,13 +309,13 @@ void ReadConfigFile(char *ConfigFname)
              {
               sprintf(temp_err_string, "Error in line %d of configuration file %s:\nColour '%s' not recognised.", linecounter, ConfigFname, ColourName); ppl_warning(temp_err_string);
              } else {
-              settings_palette[PalettePos++] = ColourNumber;
+              settings_palette_default[PalettePos++] = ColourNumber;
              }
            }
          }
         if (PalettePos > 0)
          {
-          settings_palette[PalettePos] = -1;
+          settings_palette_default[PalettePos] = -1;
          } else {
           sprintf(temp_err_string, "Error in line %d of configuration file %s:\nThe specified palette does not contain any colours.", linecounter, ConfigFname); ppl_warning(temp_err_string);
          }
