@@ -40,6 +40,7 @@
 
 unit *ppl_unit_database;
 int   ppl_unit_pos = 0;
+int   ppl_baseunit_pos = UNIT_FIRSTUSER; 
 
 char *SIprefixes_full  [] = {"yocto","zepto","atto","femto","pico","nano","micro","milli","","kilo","mega","giga","tera","peta","exa","zetta","yotta"};
 char *SIprefixes_abbrev[] = {"y","z","a","f","p","n","u","m","","k","M","G","T","P","E","Z","Y"};
@@ -157,6 +158,8 @@ void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
       // A unit which matches more dimensions wins
       if (score > BestScore)
         { *best = ppl_unit_database+i; *pow = power; BestScore = score; continue; }
+      if ((score == BestScore) && (ppl_units_DblEqual(fabs(power), 1.0) && (!ppl_units_DblEqual(fabs(*pow), 1.0))) )
+        { *best = ppl_unit_database+i; *pow = power; continue; }
       if (score < BestScore)
         continue;
      }
@@ -325,10 +328,23 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
 
 void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext)
  {
-  int i=0,j,k,l,m,p;
+  int i=0,j=0,k,l,m,p;
   double power=1.0, powerneg=1.0, multiplier;
   ppl_units_zero(out);
-  out->number = 1;
+
+  while ((in[i]<=' ')&&(in[i]!='\0')) i++;
+  out->number = GetFloat(in+i , &j); // Unit strings can have numbers out the front
+  if (j<0) j=0;
+  i+=j;
+  if (j==0)
+   { out->number = 1.0; }
+  else 
+   {
+    while ((in[i]<=' ')&&(in[i]!='\0')) i++;
+    if      (in[i]=='*')   i++;
+    else if (in[i]=='/') { i++; powerneg=-1.0; }
+   }
+
   while (powerneg!=0.0)
    {
     p=0;
@@ -387,8 +403,8 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
      }
     if (p==0)
      {
-      if (in[i]==')') { powerneg=0.0; }
-      else            { *errpos=i; strcpy(errtext, "No such unit."); return; }
+      if ((in[i]==')') || (in[i]=='\0'))  { powerneg=0.0; }
+      else                                { *errpos=i; strcpy(errtext, "No such unit."); return; }
      }
    }
   j=1;

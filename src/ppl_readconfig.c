@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "StringTools/asciidouble.h"
 
@@ -68,7 +69,7 @@ void ReadConfigFile(char *ConfigFname)
   FILE *infile;
   int   state=-1;
   int   linecounter=0;
-  int   i, PalettePos, ColourNumber;
+  int   i, j, k, PalettePos, ColourNumber;
   int   errpos, end;
   double fl, PaperHeight, PaperWidth;
 
@@ -356,6 +357,46 @@ void ReadConfigFile(char *ConfigFname)
      }
     else if (state == 7) // [units] section
      {
+
+#define GET_UNITNAME(output, last, type, sep) \
+      if (isalpha(setkey[i])) do { i++; } while ((isalnum(setkey[i])) || (setkey[i]=='_')); \
+      if (i==j) \
+       { \
+        if (last==output) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal %s name.", linecounter, ConfigFname, type); ppl_warning(temp_err_string); continue; } \
+        else { output = (char *)malloc(strlen(last)+1); strcpy(output, last); } \
+       } else { \
+        output = (char *)malloc(i-j+1); \
+        strncpy(output, setkey+j, i-j); output[i-j]='\0'; \
+       } \
+      while ((setkey[i]<=' ')&&(setkey[i]!='\0')) i++; \
+      if (setkey[i]==sep) i++; \
+      while ((setkey[i]<=' ')&&(setkey[i]!='\0')) i++; \
+      j=i;
+
+      i=j=0;
+      if (ppl_unit_pos == UNITS_MAX) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnit definition list full.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFp  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAp  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , ':' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].quantity, ppl_unit_database[ppl_unit_pos].quantity, "quantity", ' ' );
+
+      if (setvalue[0]=='\0')
+       {
+        if (ppl_baseunit_pos == UNITS_MAX_BASEUNITS) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nBase unit definition list full.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+        ppl_unit_database[ppl_unit_pos++].exponent[ppl_baseunit_pos++] = 1;
+       }
+      else 
+       {
+        j = k = -1;
+        ppl_units_StringEvaluate(setvalue, &setnumeric, &k, &j, errtext);
+        if (j >= 0) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s", linecounter, ConfigFname, errtext); ppl_warning(temp_err_string); continue; }
+        if (setvalue[k]!='\0') { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnexpected trailing matter in definition", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+        for (j=0; j<UNITS_MAX_BASEUNITS; j++) ppl_unit_database[ppl_unit_pos].exponent[j] = setnumeric.exponent[j];
+        ppl_unit_database[ppl_unit_pos].multiplier = setnumeric.number;
+        ppl_unit_pos++;
+       }
      }
     else
      {

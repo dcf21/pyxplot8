@@ -34,6 +34,7 @@
 #define UNIT_ANGLE       6
 #define UNIT_BIT         7
 #define UNIT_COST        8
+#define UNIT_FIRSTUSER   9
 
 typedef struct unit
  {
@@ -59,6 +60,7 @@ extern char *SIprefixes_abbrev[];
 
 extern unit  *ppl_unit_database;
 extern int    ppl_unit_pos;
+extern int    ppl_baseunit_pos;
 #endif
 
 value *ppl_units_zero          (value *in);

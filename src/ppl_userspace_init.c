@@ -166,6 +166,11 @@ void ppl_UserSpaceInit()
   v.number = 1.98892e30;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Msun"      , v); // The solar mass
   ppl_units_zero(&v);
+  v.number = 6.955e8;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH] = 1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_Rsun"      , v); // The solar radius
+  ppl_units_zero(&v);
   v.number = 9.27400949e-24;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_CURRENT] = 1;
@@ -279,6 +284,8 @@ void ppl_units_init()
     ppl_unit_database[i].nameAp     = NULL;
     ppl_unit_database[i].nameFs     = NULL;
     ppl_unit_database[i].nameFp     = NULL;
+    ppl_unit_database[i].quantity   = NULL;
+    ppl_unit_database[i].comment    = NULL;
     ppl_unit_database[i].multiplier = 1.0;
     ppl_unit_database[i].offset     = 0.0;
     ppl_unit_database[i].UserSel    = 0;
@@ -514,6 +521,42 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Rsun";   // Solar radii
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Rsolar"; // Solar radii
+  ppl_unit_database[ppl_unit_pos].nameFs     = "solar_radius";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "solar_radii";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 6.955e8;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Rearth"; // Earth radii
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Rearth"; // Earth radii
+  ppl_unit_database[ppl_unit_pos].nameFs     = "earth_radius";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "earth_radii";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 6371000;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Rjove";   // Jupiter radii
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Rjovian"; // Jupiter radii
+  ppl_unit_database[ppl_unit_pos].nameFs     = "jupiter_radius";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "jupiter_radii";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 71492000;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lunar_distance";  // Lunar distances
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lunar_distances"; // Lunar distances
+  ppl_unit_database[ppl_unit_pos].nameFs     = "lunar_distance";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "lunar_distances";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 384403000;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "s";    // Second
   ppl_unit_database[ppl_unit_pos].nameAp     = "s";    // Second
   ppl_unit_database[ppl_unit_pos].nameFs     = "second";
@@ -742,6 +785,24 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_masses";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.98892e30;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Mearth"; // Earth mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Mearth"; // Earth mass
+  ppl_unit_database[ppl_unit_pos].nameFs     = "earth_mass";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "earth_masses";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.9742e24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Mjove";    // Jupiter mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Mjupiter"; // Jupiter mass
+  ppl_unit_database[ppl_unit_pos].nameFs     = "jupiter_mass";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "jupiter_masses";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.8986e27;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
@@ -1726,8 +1787,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Temp_planck"; // Planck Temperature
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Temp_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameAs     = "K_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameAp     = "K_planck"; // Planck Temperature
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_temperature";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_temperature";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
