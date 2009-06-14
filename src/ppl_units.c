@@ -122,6 +122,7 @@ int __inline__ ppl_units_UnitDimEqual(unit *a, unit *b)
                           || ((X).cgs      && (settings_term_current.UnitScheme == SW_UNITSCH_CGS )) \
                           || ((X).imperial && (settings_term_current.UnitScheme == SW_UNITSCH_IMP )) \
                           || ((X).us       && (settings_term_current.UnitScheme == SW_UNITSCH_US  )) \
+                          || ((X).planck   && (settings_term_current.UnitScheme == SW_UNITSCH_PLK )) \
                           || ((X).ancient  && (settings_term_current.UnitScheme == SW_UNITSCH_ANC ))  )
 
 

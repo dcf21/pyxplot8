@@ -39,7 +39,7 @@ typedef struct unit
  {
   char         *nameAs, *nameAp, *nameFs, *nameFp, *comment, *quantity;
   double        multiplier, offset;
-  unsigned char si, cgs, imperial, us, ancient, UserSel, modified;
+  unsigned char si, cgs, imperial, us, planck, ancient, UserSel, modified;
   int           MaxPrefix;
   int           MinPrefix;
   int           UserSelPrefix;

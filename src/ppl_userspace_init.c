@@ -31,6 +31,7 @@
 
 #include "ListTools/lt_memory.h"
 
+#include "ppl_error.h"
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
@@ -189,7 +190,7 @@ void ppl_UserSpaceInit()
   ppl_units_zero(&v);
   v.number = 6.67300e-11;
   v.dimensionless = 0;
-  v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-2;
+  v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , v); // The gravitational constant
 
   // Copy function descriptors for core mathematical functions into function namespace
@@ -281,7 +282,8 @@ void ppl_units_init()
     ppl_unit_database[i].multiplier = 1.0;
     ppl_unit_database[i].offset     = 0.0;
     ppl_unit_database[i].UserSel    = 0;
-    ppl_unit_database[i].si         = ppl_unit_database[i].imperial  = ppl_unit_database[i].us = ppl_unit_database[i].ancient = ppl_unit_database[i].modified = 0;
+    ppl_unit_database[i].si         = ppl_unit_database[i].imperial  = ppl_unit_database[i].us = ppl_unit_database[i].planck =
+    ppl_unit_database[i].ancient    = ppl_unit_database[i].modified  = 0;
     ppl_unit_database[i].MaxPrefix  = ppl_unit_database[i].MinPrefix = 0;
     for (j=0; j<UNITS_MAX_BASEUNITS; j++) ppl_unit_database[i].exponent[j] = 0;
    }
@@ -389,7 +391,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "furlong";
   ppl_unit_database[ppl_unit_pos].nameFp     = "furlongs";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
-  ppl_unit_database[ppl_unit_pos].multiplier = 201.17;
+  ppl_unit_database[ppl_unit_pos].multiplier = 201.168;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
@@ -398,7 +400,43 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "chain";
   ppl_unit_database[ppl_unit_pos].nameFp     = "chains";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
-  ppl_unit_database[ppl_unit_pos].multiplier = 20.12;
+  ppl_unit_database[ppl_unit_pos].multiplier = 20.1168;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "link"; // Link
+  ppl_unit_database[ppl_unit_pos].nameAp     = "links";// Link
+  ppl_unit_database[ppl_unit_pos].nameFs     = "link";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "links";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.201168;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cable"; // Cable
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cables";// Cable
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cable";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cables";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 185.3184;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "fathom"; // Fathom
+  ppl_unit_database[ppl_unit_pos].nameAp     = "fathoms";// Fathom
+  ppl_unit_database[ppl_unit_pos].nameFs     = "fathom";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "fathoms";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.853184;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "league"; // League
+  ppl_unit_database[ppl_unit_pos].nameAp     = "leagues";// League
+  ppl_unit_database[ppl_unit_pos].nameFs     = "league";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "leagues";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 4828.032;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
@@ -407,7 +445,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "nautical_mile";
   ppl_unit_database[ppl_unit_pos].nameFp     = "nautical_miles";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1850;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1852;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
@@ -608,13 +646,63 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "oz"; // Ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "oz"; // Ounce
+  ppl_unit_database[ppl_unit_pos].nameFs     = "ounce";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "ounces";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 28.349523125e-3;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "lb";  // Pound
   ppl_unit_database[ppl_unit_pos].nameAp     = "lbs"; // Pound
   ppl_unit_database[ppl_unit_pos].nameFs     = "pound";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pounds";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 0.45359237;
-  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "stone"; // Stone
+  ppl_unit_database[ppl_unit_pos].nameAp     = "stone"; // Stone
+  ppl_unit_database[ppl_unit_pos].nameFs     = "stone";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "stone";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 6.35029318;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cwt"; // hundredweight
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cwt"; // hundredweight
+  ppl_unit_database[ppl_unit_pos].nameFs     = "hundredweight";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "hundredweight";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 50.80234544;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "drachm";  // drachm
+  ppl_unit_database[ppl_unit_pos].nameAp     = "drachms"; // drachm
+  ppl_unit_database[ppl_unit_pos].nameFs     = "drachm";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "drachms";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.7718451953125e-3;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "grain";  // grain
+  ppl_unit_database[ppl_unit_pos].nameAp     = "grains"; // grain
+  ppl_unit_database[ppl_unit_pos].nameFs     = "grain";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "grains";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 64.79891e-6;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
@@ -714,7 +802,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.8;
   ppl_unit_database[ppl_unit_pos].offset     = 459.67;
- ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
   ppl_unit_pos++;
 
@@ -738,7 +826,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0/683;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
-  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = 1;
+  ppl_unit_database[ppl_unit_pos].si = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
@@ -815,6 +903,24 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "arcmin";  // arcminute
+  ppl_unit_database[ppl_unit_pos].nameAp     = "arcmins"; // arcminute
+  ppl_unit_database[ppl_unit_pos].nameFs     = "arcminute";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "arcminutes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "angle";
+  ppl_unit_database[ppl_unit_pos].multiplier = M_PI / 180 / 60;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "arcsec";  // arcsecond
+  ppl_unit_database[ppl_unit_pos].nameAp     = "arcsecs"; // arcsecond
+  ppl_unit_database[ppl_unit_pos].nameFs     = "arcsecond";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "arcseconds";
+  ppl_unit_database[ppl_unit_pos].quantity   = "angle";
+  ppl_unit_database[ppl_unit_pos].multiplier = M_PI / 180 / 3600;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "bit";  // bit
   ppl_unit_database[ppl_unit_pos].nameAp     = "bits"; // bit
   ppl_unit_database[ppl_unit_pos].nameFs     = "bit";
@@ -842,6 +948,16 @@ void ppl_units_init()
   // Derived units
   // -------------
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "knot";  // knot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "knots"; // knot
+  ppl_unit_database[ppl_unit_pos].nameFs     = "knot";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "knots";
+  ppl_unit_database[ppl_unit_pos].quantity   = "velocity";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.5144444444444444444;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]= 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "acre";  // acre
   ppl_unit_database[ppl_unit_pos].nameAp     = "acres"; // acre
   ppl_unit_database[ppl_unit_pos].nameFs     = "acre";
@@ -849,6 +965,24 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = 4046.85642;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "are";  // are
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ares"; // are
+  ppl_unit_database[ppl_unit_pos].nameFs     = "are";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "ares";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 100;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "barn";  // barn
+  ppl_unit_database[ppl_unit_pos].nameAp     = "barns"; // barn
+  ppl_unit_database[ppl_unit_pos].nameFs     = "barn";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "barns";
+  ppl_unit_database[ppl_unit_pos].quantity   = "area";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-28;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1019,7 +1153,31 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(UK)";  // gallon 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "quart_(UK)";  // quart
+  ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_(UK)"; // quart
+  ppl_unit_database[ppl_unit_pos].nameFs     = "quart_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(UK)";
+  ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1136.5225e-6;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "quart_(US)";  // quart
+  ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_(US)"; // quart
+  ppl_unit_database[ppl_unit_pos].nameFs     = "quart_(US)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(US)";
+  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 946.352946e-6;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(UK)";  // gallon
   ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(UK)"; // gallon
   ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(UK)";
@@ -1031,14 +1189,38 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(US)";  // gallon 
-  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(US)"; // gallon 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(US)";  // gallon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(US)"; // gallon
   ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
   ppl_unit_database[ppl_unit_pos].multiplier = 3.785411784e-3;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_(UK)";  // bushel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_(UK)"; // bushel
+  ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(UK)";
+  ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 36.36872e-3;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_(US)";  // bushel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_(US)"; // bushel
+  ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_(US)";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(US)";
+  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
+  ppl_unit_database[ppl_unit_pos].multiplier = 35.23907016688e-3;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1106,6 +1288,16 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Bq";  // becquerel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Bq";  // becquerel
+  ppl_unit_database[ppl_unit_pos].nameFs     = "becquerel";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "becquerel";
+  ppl_unit_database[ppl_unit_pos].quantity   = "frequency";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "B";  // bytes
   ppl_unit_database[ppl_unit_pos].nameAp     = "B";  // bytes
   ppl_unit_database[ppl_unit_pos].nameFs     = "byte";
@@ -1125,7 +1317,19 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
-  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = 1;
+  ppl_unit_database[ppl_unit_pos].si = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "dyn";  // dyne
+  ppl_unit_database[ppl_unit_pos].nameAp     = "dyn";  // dyne
+  ppl_unit_database[ppl_unit_pos].nameFs     = "dyne";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "dynes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "force";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-5;
+  ppl_unit_database[ppl_unit_pos].cgs = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
@@ -1152,6 +1356,18 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Ba";  // barye
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Ba";  // barye
+  ppl_unit_database[ppl_unit_pos].nameFs     = "barye";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "baryes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.1;
+  ppl_unit_database[ppl_unit_pos].cgs = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
@@ -1193,6 +1409,19 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "eV";  // electronvolt
+  ppl_unit_database[ppl_unit_pos].nameAp     = "eV";  // electronvolt
+  ppl_unit_database[ppl_unit_pos].nameFs     = "electronvolt";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "electronvolts";
+  ppl_unit_database[ppl_unit_pos].quantity   = "energy";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
@@ -1271,6 +1500,59 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Gy";  // gray
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Gy";  // gray
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gray";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gray";
+  ppl_unit_database[ppl_unit_pos].quantity   = "radiation_dose";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Sv";  // sievert
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Sv";  // sievert
+  ppl_unit_database[ppl_unit_pos].nameFs     = "sievert";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "sieverts";
+  ppl_unit_database[ppl_unit_pos].quantity   = "radiation_dose";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kat";  // katal
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kat";  // katal
+  ppl_unit_database[ppl_unit_pos].nameFs     = "katal";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "katals";
+  ppl_unit_database[ppl_unit_pos].quantity   = "catalytic_activity";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MOLE] = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME] =-1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "P";  // poise
+  ppl_unit_database[ppl_unit_pos].nameAp     = "P";  // poise
+  ppl_unit_database[ppl_unit_pos].nameFs     = "poise";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "poises";
+  ppl_unit_database[ppl_unit_pos].quantity   = "viscosity";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.1;
+  ppl_unit_database[ppl_unit_pos].cgs = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kayser";  // kayser
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kaysers"; // kayser
+  ppl_unit_database[ppl_unit_pos].nameFs     = "kayser";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "kaysers";
+  ppl_unit_database[ppl_unit_pos].quantity   = "wavenumber";
+  ppl_unit_database[ppl_unit_pos].multiplier = 100;
+  ppl_unit_database[ppl_unit_pos].cgs = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "C";  // coulomb
   ppl_unit_database[ppl_unit_pos].nameAp     = "C";  // coulomb
   ppl_unit_database[ppl_unit_pos].nameFs     = "coulomb";
@@ -1282,6 +1564,65 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "V";  // volt
+  ppl_unit_database[ppl_unit_pos].nameAp     = "V";  // volt
+  ppl_unit_database[ppl_unit_pos].nameFs     = "volt";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "volts";
+  ppl_unit_database[ppl_unit_pos].quantity   = "potential";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    =-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "ohm";  // ohm
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ohms"; // ohm
+  ppl_unit_database[ppl_unit_pos].nameFs     = "ohm";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "ohms";
+  ppl_unit_database[ppl_unit_pos].quantity   = "resistance";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    =-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "S"; // siemens
+  ppl_unit_database[ppl_unit_pos].nameAp     = "S"; // siemens
+  ppl_unit_database[ppl_unit_pos].nameFs     = "siemens";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "siemens";
+  ppl_unit_database[ppl_unit_pos].quantity   = "conductance";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  =-2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    = 3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mho";  // mho
+  ppl_unit_database[ppl_unit_pos].nameAp     = "mhos"; // mho
+  ppl_unit_database[ppl_unit_pos].nameFs     = "mho";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "mhos";
+  ppl_unit_database[ppl_unit_pos].quantity   = "conductance";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  =-2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    = 3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 2;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "F";  // farad
@@ -1342,6 +1683,144 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    =-2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
   ppl_unit_pos++;
+
+  // Planck Units
+  ppl_unit_database[ppl_unit_pos].nameAs     = "L_planck"; // Planck Length
+  ppl_unit_database[ppl_unit_pos].nameAp     = "L_planck"; // Planck Length
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_length";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_lengths";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.61625281e-35;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "M_planck"; // Planck Mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "M_planck"; // Planck Mass
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_mass";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_masses";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 2.1764411e-8;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "T_planck"; // Planck Time
+  ppl_unit_database[ppl_unit_pos].nameAp     = "T_planck"; // Planck Time
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_time";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_times";
+  ppl_unit_database[ppl_unit_pos].quantity   = "time";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.3912427e-44;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Q_planck"; // Planck Charge
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Q_planck"; // Planck Charge
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_charge";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_charges";
+  ppl_unit_database[ppl_unit_pos].quantity   = "charge";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.87554587047e-18;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT]=1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Temp_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Temp_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_temperature";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_temperature";
+  ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.41678571e32;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "P_planck"; // Planck Momentum
+  ppl_unit_database[ppl_unit_pos].nameAp     = "P_planck"; // Planck Momentum
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_momentum";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_momentum";
+  ppl_unit_database[ppl_unit_pos].quantity   = "momentum";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 6.5248018674330712229902929;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]  = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]= 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "E_planck"; // Planck Energy
+  ppl_unit_database[ppl_unit_pos].nameAp     = "E_planck"; // Planck Energy
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_energy";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_energy";
+  ppl_unit_database[ppl_unit_pos].quantity   = "energy";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1956085069.7617356777191162109375;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]  = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]= 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "F_planck"; // Planck Force
+  ppl_unit_database[ppl_unit_pos].nameAp     = "F_planck"; // Planck Force
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_force";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_force";
+  ppl_unit_database[ppl_unit_pos].quantity   = "force";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.2102593465942594902618273e+44;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]  = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]= 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "P_planck"; // Planck Power
+  ppl_unit_database[ppl_unit_pos].nameAp     = "P_planck"; // Planck Power
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_power";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_power";
+  ppl_unit_database[ppl_unit_pos].quantity   = "power";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 3.6282637948422090509290910e+52;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]  = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]= 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "I_planck"; // Planck Current
+  ppl_unit_database[ppl_unit_pos].nameAp     = "I_planck"; // Planck Current
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_current";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_current";
+  ppl_unit_database[ppl_unit_pos].quantity   = "current";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 3.4788748621352181073707008e+25;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT]= 1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "V_planck"; // Planck Voltage
+  ppl_unit_database[ppl_unit_pos].nameAp     = "V_planck"; // Planck Voltage
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_voltage";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_voltage";
+  ppl_unit_database[ppl_unit_pos].quantity   = "potential";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0429417379546963190438953e+27;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    =-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Z_planck"; // Planck Impedence
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Z_planck"; // Planck Impedence
+  ppl_unit_database[ppl_unit_pos].nameFs     = "planck_impedence";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "planck_impedence";
+  ppl_unit_database[ppl_unit_pos].quantity   = "resistance";
+  ppl_unit_database[ppl_unit_pos].planck     = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 2.9979282937316497736901511e+01;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]  = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]    =-3;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-2;
+  ppl_unit_pos++;
+
+  if (DEBUG) { sprintf(temp_err_string, "%d system default units loaded.", ppl_unit_pos); ppl_log(temp_err_string); }
 
   return;
  }

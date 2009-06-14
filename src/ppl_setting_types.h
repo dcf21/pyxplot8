@@ -157,6 +157,7 @@ extern char *SW_TERMCOL_TXT[];
 #define SW_UNITSCH_ANC 18003
 #define SW_UNITSCH_IMP 18004
 #define SW_UNITSCH_US  18005
+#define SW_UNITSCH_PLK 18006
 
 extern char *SW_UNITSCH_STR[];
 extern int   SW_UNITSCH_ACL[];

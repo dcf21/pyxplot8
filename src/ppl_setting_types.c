@@ -58,7 +58,7 @@ int   SW_TERMCOL_ACL[] = {1              , 1              , 1              , 2  
 int   SW_TERMCOL_INT[] = {SW_TERMCOL_NOR , SW_TERMCOL_RED , SW_TERMCOL_GRN , SW_TERMCOL_BRN , SW_TERMCOL_BLU , SW_TERMCOL_MAG , SW_TERMCOL_CYN , SW_TERMCOL_WHT , -1}; 
 char *SW_TERMCOL_TXT[] = {"\x1b[0m"      , "\x1b[01;31m"  , "\x1b[01;32m"  , "\x1b[01;33m"  , "\x1b[01;34m"  , "\x1b[01;35m"  , "\x1b[01;36m"  , "\x1b[01;37m"  };
 
-char *SW_UNITSCH_STR[] = {"si"          , "cgs"          , "ancient"      , "imperial"     , "USImperial"};
-int   SW_UNITSCH_INT[] = {SW_UNITSCH_SI , SW_UNITSCH_CGS , SW_UNITSCH_ANC , SW_UNITSCH_IMP , SW_UNITSCH_US , -1};
-int   SW_UNITSCH_ACL[] = {1             , 1              , 1              , 1              , 1             , -1};
+char *SW_UNITSCH_STR[] = {"si"          , "cgs"          , "ancient"      , "imperial"     , "USImperial"  , "planck"       };
+int   SW_UNITSCH_INT[] = {SW_UNITSCH_SI , SW_UNITSCH_CGS , SW_UNITSCH_ANC , SW_UNITSCH_IMP , SW_UNITSCH_US , SW_UNITSCH_PLK , -1};
+int   SW_UNITSCH_ACL[] = {1             , 1              , 1              , 1              , 1             , 1              , -1};
 
