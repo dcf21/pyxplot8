@@ -52,7 +52,11 @@ Dict *_ppl_UserSpace_Funcs;
 // ppl_UserSpace_SetVarStr(): Called to define a new string variable within the user's variable space
 void ppl_UserSpace_SetVarStr(char *name, char *inval, int modified)
  {
-  DictAppendString(_ppl_UserSpace_Vars , name , inval);
+  value v;
+  ppl_units_zero(&v);
+  v.modified = modified;
+  v.string   = inval;
+  DictAppendValue(_ppl_UserSpace_Vars , name , v);
   return;
  }
 
@@ -140,7 +144,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
       ppl_EvaluateAlgebra(definition+i, max+lcount, 0, &args_j, status, errtext, 0);
       if (*status >= 0) return;
       i+=args_j;
-      if ((MinActive[lcount]) && (!ppl_units_DimEqual(min+k , max+k))) { *status=1; sprintf(errtext, "The range specified for argument number %d to this function has a minimum with dimensions of <%s>, and a maximum with dimensions of <%s>. This is not allowed: both must have the same dimensions.",lcount+1,ppl_units_GetUnitStr(min+k,NULL,0,0),ppl_units_GetUnitStr(max+k,NULL,1,0)); return; }
+      if ((MinActive[lcount]) && (!ppl_units_DimEqual(min+lcount , max+lcount))) { *status=1; sprintf(errtext, "The range specified for argument number %d to this function has a minimum with dimensions of <%s>, and a maximum with dimensions of <%s>. This is not allowed: both must have the same dimensions.",lcount+1,ppl_units_GetUnitStr(min+lcount,NULL,0,0),ppl_units_GetUnitStr(max+lcount,NULL,1,0)); return; }
       MaxActive[lcount]=1;
      }
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
@@ -189,10 +193,13 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
       else if ( ((MinActive[k]==1)&& (OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number<=min[k].number) ) ||
                 ((MaxActive[k]==1)&& (OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number>=max[k].number) )    ) Nmiss++; // New min/max range completely outside old
       else if (  (MinActive[k]==1)&&((OldFuncIter->MinActive[k]==0)||(OldFuncIter->min[k].number< min[k].number)) &&
-                 (MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].number> max[k].number))     ) { Noverlap++; LastOverlapType = 2; LastOverlapK = k; } // New range in middle of old
-      else if (  (MinActive[k]==1)&& (OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number> min[k].number)  &&
-                                                                     (OldFuncIter->max[k].number<=max[k].number)      ) { Noverlap++; LastOverlapType = 3; LastOverlapK = k; } // New range goes off top of old
-      else if (  (MaxActive[k]==1)&& (OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number< max[k].number)      ) { Noverlap++; LastOverlapType = 1; LastOverlapK = k; } // New range goes off bottom of old
+                 (MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].number> max[k].number))     )  { Noverlap++; LastOverlapType = 2; LastOverlapK = k; } // New range in middle of old
+      else if (  (MinActive[k]==1)&&(((OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number> min[k].number)  &&
+                                     ((MaxActive[k]             ==0)||(OldFuncIter->max[k].number<=max[k].number)))||
+                                     ((OldFuncIter->MaxActive[k]==0)&&(MaxActive[k]              == 0           ))    )) { Noverlap++; LastOverlapType = 3; LastOverlapK = k; } // New range goes off top of old
+      else if (  (MaxActive[k]==1)&&(((OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number< max[k].number)  &&
+                                     ((MinActive[k]             ==0)||(OldFuncIter->min[k].number>=min[k].number)))||
+                                     ((OldFuncIter->MinActive[k]==0)&&(MinActive[k]              == 0           ))    )) { Noverlap++; LastOverlapType = 1; LastOverlapK = k; } // New range goes off bottom of old
       else  ppl_fatal(__FILE__,__LINE__,"Could not work out how the ranges of two functions overlap");
      }
 
@@ -204,13 +211,17 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
      }
     else if ((Nmiss==0) && (Noverlap==1)) // we should reduce the range of the function we overlap with
      {
-      if      (LastOverlapType == 1) { OldFuncIter->min[LastOverlapK].number = max[LastOverlapK].number; } // Bring lower limit of old definition up above maximum for this new definition
-      else if (LastOverlapType == 3) { OldFuncIter->max[LastOverlapK].number = min[LastOverlapK].number; } // Bring upper limit of old definition down below minimum for this new definition
+      if      (LastOverlapType == 1) // Bring lower limit of old definition up above maximum for this new definition
+       { OldFuncIter->min[LastOverlapK].number = max[LastOverlapK].number; OldFuncIter->MinActive[LastOverlapK] = 1; }
+      else if (LastOverlapType == 3) // Bring upper limit of old definition down below minimum for this new definition
+       { OldFuncIter->max[LastOverlapK].number = min[LastOverlapK].number; OldFuncIter->MaxActive[LastOverlapK] = 1; }
       else
        {
         ppl_UserSpace_FuncDuplicate(OldFuncIter , modified); // Old definition is cut in two by the new definition; duplicate it.
         OldFuncIter->max[LastOverlapK].number       = min[LastOverlapK].number;
+        OldFuncIter->MaxActive[LastOverlapK]        = 1;
         OldFuncIter->next->min[LastOverlapK].number = max[LastOverlapK].number;
+        OldFuncIter->next->MinActive[LastOverlapK]  = 1;
        }
      }
     else if ((strlen(definition+i)==0) && (Nmiss==0) && (Noverlap>1)) // We are trying to undefine the function, but overlap is complicated along > 1 axis. Best we can do is store the undefinition.
@@ -320,8 +331,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
   char FormatToken [SSTR_LENGTH];
   int  pos      = start;
   int  outpos   = 0;
-  int  DataType = -1;
-  char *VarData = NULL;
+  value *VarData = NULL;
   int  pos2, CommaPositions[MAX_STR_FORMAT_ITEMS], NFormatItems;
   int  i,j,k,l,ArgCount,RequiredArgs;
   char AllowedFormats[] = "cdieEfgGosSxX%"; // These tokens are allowed after a % format specifier
@@ -330,7 +340,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
   value  arg1v, arg2v; // Doubles (well, actually values with units) for passing to sprintf
   struct {double d; int i; char *s; unsigned int u; value v; } argf; // We pass this lump of memory to sprintf
 
-  if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
+  if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded."); return; }
 
   while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over preceding spaces
 
@@ -339,13 +349,13 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
     while ((in[pos]>' ') && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
-    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name"); return; } // Have we used up as many characters as we were told we had to?
-    DictLookup(_ppl_UserSpace_Vars, FormatString, &DataType, (void **)&VarData); // Global variables
-    if (VarData == NULL)             { *errpos = start; strcpy(errtext, "No such variable"); return; }
-    if (DataType != DATATYPE_STRING) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected"); return; }
+    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name."); return; } // Have we used up as many characters as we were told we had to?
+    DictLookup(_ppl_UserSpace_Vars, FormatString, NULL, (void **)&VarData); // Global variables
+    if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start; sprintf(errtext, "No such variable, '%s'.", FormatString); return; }
+    if (VarData->string == NULL) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected."); return; }
     *errpos = -1;
     if ((end!=NULL)&&(*end<0)) *end=pos;
-    strcpy(out, VarData);
+    strcpy(out, VarData->string);
     return;
    }
 
@@ -516,13 +526,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   unsigned char StatusRow[ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
   value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
   int len, CalculatedEnd;
-  int i,p,j,k,FunctionType;
+  int i,p,j,k,l,FunctionType, NArgs;
   int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
   unsigned char ci,cj;
   char ck;
   int bufpos = 0;
-  int     DataType = -1; 
   value  *VarData  = NULL;
+  FunctionDescriptor *FuncDef = NULL;
   double  TempDbl;
   DictIterator *DictIter;
 
@@ -542,18 +552,20 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     p=0;
     for ( DictIter=DictIterateInit(_ppl_UserSpace_Funcs) ; ((DictIter!=NULL)&&(p==0)) ; DictIter=DictIterate(DictIter,NULL,NULL) )
      {
-      for (k=0; ((DictIter->key[k]>' ')&&(DictIter->key[k]==in[start+j+k])); k++);
-      if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue;
+      for (k=0; ((DictIter->key[k]>' ')&&(DictIter->key[k]==in[start+j+k])); k++); // See if string we have matches the name of this function
+      if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue; // Nope...
       p=1; i+=2;
-      for (k=0; k<((FunctionDescriptor *)DictIter->data)->NumberArguments; k++)
+      NArgs = ((FunctionDescriptor *)DictIter->data)->NumberArguments;
+      for (k=0; k<NArgs; k++) // Now collect together numeric arguments
        {
+        if (bufpos+k+2 >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
         while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
         if (in[start+i]==')') { *errpos = start+i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
         j=-1;
-        ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 0, &j, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos+k+2, 0, &j, errpos, errtext, RecursionDepth+1);
         if (*errpos >= 0) { (*errpos) += start+i; return; }
         i+=j; while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
-        if (k < ((FunctionDescriptor *)DictIter->data)->NumberArguments-1)
+        if (k < NArgs-1)
          {
           if (in[start+i] != ',')
            {
@@ -563,10 +575,9 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
             return;
            } else { i++; }
          }
-        bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
        }
       FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
-      if ((FunctionType != PPL_USERSPACE_UNIT) && (FunctionType != PPL_USERSPACE_INT) && (in[start+i] != ')'))
+      if ((FunctionType != PPL_USERSPACE_UNIT) && (FunctionType != PPL_USERSPACE_INT) && (in[start+i] != ')')) // Unit and int funcs deal with args themselves
        {
         (*errpos) = start+i;
         if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
@@ -575,12 +586,12 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        }
       if (FunctionType == PPL_USERSPACE_SYSTEM)
        {
-        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
-        if      (((FunctionDescriptor *)DictIter->data)->NumberArguments==0) ((void(*)(value*,                     int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos,&j,errtext);
-        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==1) ((void(*)(value*,value*,              int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
-        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==2) ((void(*)(value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
-        else if (((FunctionDescriptor *)DictIter->data)->NumberArguments==3) ((void(*)(value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos-3,ResultBuffer+bufpos-2,ResultBuffer+bufpos-1,ResultBuffer+bufpos,&j,errtext);
+        if      (NArgs==0) ((void(*)(value*,                     int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==1) ((void(*)(value*,value*,              int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos+2,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==2) ((void(*)(value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==3) ((void(*)(value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos,&j,errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_UNIT)
@@ -591,6 +602,80 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
         i+=k; while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
         if (in[start+i] != ')') { (*errpos) = start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter."); return; }
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
+       }
+      else if (FunctionType == PPL_USERSPACE_USERDEF)
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
+        FuncDef = (FunctionDescriptor *)DictIter->data;
+        j=0;
+        while (FuncDef != NULL) // Check whether supplied arguments are within the range of this definition
+         {
+          l=1;
+          for (k=0; ((k<NArgs)&&(l==1)); k++)
+           {
+            if (FuncDef->MinActive[k]!=0)
+             {
+              if (j==0)
+               {
+                if (!ppl_units_DimEqual(FuncDef->min+k , ResultBuffer+bufpos+k+2))
+                 {
+                  *errpos = start+i;
+                  sprintf(errtext,"Argument %d supplied to function are dimensionally with specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,0,0),ppl_units_GetUnitStr(FuncDef->min+k,NULL,1,0));
+                  return;
+                 } else { j=1; }
+               }
+              if (ResultBuffer[bufpos+k+2].number < FuncDef->min[k].number) { FuncDef=FuncDef->next; l=0; continue; }
+             }
+            if (FuncDef->MaxActive[k]!=0)
+             { 
+              if (j==0)
+               {
+                if (!ppl_units_DimEqual(FuncDef->max+k , ResultBuffer+bufpos+k+2))
+                 {
+                  *errpos = start+i;
+                  sprintf(errtext,"Argument %d supplied to function are dimensionally with specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,0,0),ppl_units_GetUnitStr(FuncDef->max+k,NULL,1,0));
+                  return;
+                 } else { j=1; }
+               }
+              if (ResultBuffer[bufpos+k+2].number > FuncDef->max[k].number) { FuncDef=FuncDef->next; l=0; continue; }
+             }
+           }
+          if (l==1) break;
+         }
+        if (FuncDef==NULL)
+         {
+          ppl_units_zero(ResultBuffer+bufpos);
+          ResultBuffer[bufpos].number = HUGE_VAL;
+         } else {
+          j=0;
+          for (k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
+           {
+            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictIter->data)->ArgList+j, NULL, (void **)&VarData);
+            if (VarData!=NULL)
+             {
+              memcpy(ResultBuffer+bufpos+k+1, VarData, sizeof(value));
+              memcpy(VarData, ResultBuffer+bufpos+k+2, sizeof(value));
+             }
+            else
+             {
+              ppl_units_zero(ResultBuffer+bufpos+k+1);
+              ResultBuffer[bufpos+k+1].modified=2;
+              DictAppendValue(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictIter->data)->ArgList+j, ResultBuffer[bufpos+k+2]);
+             }
+            j += strlen(((FunctionDescriptor *)DictIter->data)->ArgList+j)+1;
+           }
+          j=-1;
+          ppl_EvaluateAlgebra((char *)FuncDef->FunctionPtr, ResultBuffer+bufpos, 0, &j, errpos, errtext, RecursionDepth+1);
+          if (((char *)FuncDef->FunctionPtr)[j]!='\0') { *errpos=1; strcpy(errtext,"Unexpected trailing matter in function definition."); }
+          j=0;
+          for (k=0; k<NArgs; k++) // Swap old arguments for new in global dictionary
+           {
+            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictIter->data)->ArgList+j, NULL, (void **)&VarData);
+            memcpy(VarData, ResultBuffer+bufpos+k+1, sizeof(value));
+            j += strlen(((FunctionDescriptor *)DictIter->data)->ArgList+j)+1;
+           }
+          if (*errpos >= 0) { (*errpos) = start+i; return; }
+         }
        }
       for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
       for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
@@ -605,7 +690,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, errpos, errtext, RecursionDepth+1);
     if (*errpos >= 0) { (*errpos) += start+i; return; }
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
-    if (in[start+j]!=')') { *errpos=start+j; strcpy(errtext,"Syntax Error: Unexpected trailing matter within brackets"); return; }
+    if (in[start+j]!=')') { *errpos=start+j; strcpy(errtext,"Syntax Error: Unexpected trailing matter within brackets."); return; }
     for (k=i; StatusRow[k]==3; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
@@ -616,7 +701,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     ResultBuffer[bufpos].number = GetFloat(in+start+i, &j);
     for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
-    if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant"); return; }
+    if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant."); return; }
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
   for (i=0;i<len;i++) if ((StatusRow[i]==8) || (StatusRow[i]==4))
@@ -624,11 +709,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     for (j=i;((StatusRow[j]==8)||(StatusRow[i]==4));j++);
     while ((j>i) && (in[start+j-1]<=' ')) j--;
     ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
-    DictLookup(_ppl_UserSpace_Vars, in+start+i, &DataType, (void **)&VarData);
+    DictLookup(_ppl_UserSpace_Vars, in+start+i, NULL, (void **)&VarData);
+    if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start+i; sprintf(errtext, "No such variable, '%s'.", in+start+i); in[start+j] = ck; return; } 
     in[start+j] = ck;
-    if (VarData == NULL) { *errpos = start+i; strcpy(errtext, "No such variable"); return; } 
-    in[start+j] = ck;
-    if (DataType != DATATYPE_VALUE) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected"); return; }
+    if (VarData->string != NULL) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected."); return; }
     ResultBuffer[bufpos] = *VarData;
     for (k=i; ((StatusRow[k]==8)||(StatusRow[k]==4)); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }

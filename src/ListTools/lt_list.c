@@ -99,6 +99,8 @@ void ListAppendPtr(List *in, void *item, int size, int copyable, int DataType)
 void ListAppendPtrCpy(List *in, void *item, int size, int DataType)
  {
   ListItem *ptrnew;
+  char *newstr;
+
   ptrnew           = (ListItem *)lt_malloc_incontext(sizeof(ListItem), in->memory_context);
   ptrnew->prev     = in->last;
   ptrnew->next     = NULL;
@@ -111,6 +113,12 @@ void ListAppendPtrCpy(List *in, void *item, int size, int DataType)
   if (in->last  != NULL) in->last->next = ptrnew;
   in->last = ptrnew;
   in->length++;
+  if ((ptrnew->DataType == DATATYPE_VALUE) && (((value *)ptrnew->data)->string != NULL))
+   {
+    newstr = (char *)lt_malloc_incontext(strlen(((value *)ptrnew->data)->string)+1, in->memory_context); // Copy strings in string values
+    strcpy(newstr, ((value *)ptrnew->data)->string);
+    ((value *)ptrnew->data)->string = newstr;
+   }
   return;
  }
 

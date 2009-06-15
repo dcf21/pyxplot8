@@ -126,6 +126,7 @@ void DictAppendPtr(Dict *in, char *key, void *item, int size, int copyable, int 
 void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
  {
   DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
+  char     *newstr;
   int       cmp = -1;
 
   ptr = in->first;
@@ -145,6 +146,7 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
      }
     memcpy(ptr->data , item, size);
     ptr->DataType = DataType;
+    ptrnew = ptr;
    }
   else
    {
@@ -162,6 +164,12 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
     if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
     if (ptr  == NULL) in->last  = ptrnew; else ptr ->prev = ptrnew;
     in->length++;
+   }
+  if ((ptrnew->DataType == DATATYPE_VALUE) && (((value *)ptrnew->data)->string != NULL))
+   {
+    newstr = (char *)lt_malloc_incontext(strlen(((value *)ptrnew->data)->string)+1, in->memory_context); // Copy strings in string values
+    strcpy(newstr, ((value *)ptrnew->data)->string);
+    ((value *)ptrnew->data)->string = newstr;
    }
  }
 

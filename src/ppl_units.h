@@ -51,6 +51,7 @@ typedef struct value
  {
   double        number;
   unsigned char dimensionless, modified;
+  char         *string;
   double        exponent[UNITS_MAX_BASEUNITS];
  } value;
 

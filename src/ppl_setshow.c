@@ -1069,18 +1069,18 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     DictIter = DictIterateInit(_ppl_UserSpace_Vars);
     while (DictIter != NULL)
      {
-      if (DictIter->DataType == DATATYPE_STRING)
-       {
-        SHOW_HIGHLIGHT(0);
-        StrEscapify((char *)DictIter->data, buf);
-        sprintf(out+i, "%s = \"%s\"\n", DictIter->key, buf);
-        i += strlen(out+i);
-        SHOW_DEHIGHLIGHT;
-       }
-      else if (DictIter->DataType == DATATYPE_VALUE)
+      if (((value *)DictIter->data)->modified!=2)
        {
         SHOW_HIGHLIGHT((((value *)DictIter->data)->modified==0));
-        sprintf(out+i, "%s = %s\n", DictIter->key, ppl_units_NumericDisplay((value *)DictIter->data, 0, 0));
+        if (((value *)DictIter->data)->string!=NULL)
+         {
+          StrEscapify(((value *)DictIter->data)->string, buf);
+          sprintf(out+i, "%s = %s\n", DictIter->key, buf);
+         }
+        else
+         {
+          sprintf(out+i, "%s = %s\n", DictIter->key, ppl_units_NumericDisplay((value *)DictIter->data, 0, 0));
+         }
         i += strlen(out+i);
         SHOW_DEHIGHLIGHT;
        }

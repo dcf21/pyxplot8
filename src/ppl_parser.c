@@ -634,7 +634,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
         else
          {
           strncpy(TempMatchStr, line+*linepos, i);
-          TempMatchStr[i-*linepos] = '\0';
+          TempMatchStr[i] = '\0';
           MatchType     = DATATYPE_STRING;
           MatchVal._str = TempMatchStr;
           *linepos     += i;

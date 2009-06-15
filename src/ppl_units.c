@@ -52,6 +52,7 @@ value *ppl_units_zero(value *in)
   in->number = 0.0;
   in->dimensionless = 1;
   in->modified = 0;
+  in->string = NULL;
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) in->exponent[i]=0;
   return in;
  }
