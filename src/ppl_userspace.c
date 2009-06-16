@@ -39,6 +39,7 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_calculus.h"
 #include "ppl_constants.h"
 #include "ppl_userspace.h"
 
@@ -529,7 +530,8 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   int i,p,j,k,l,FunctionType, NArgs;
   int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
   unsigned char ci,cj;
-  char ck;
+  char dummy[DUMMYVAR_MAXLEN];
+  char ck, *integrand;
   int bufpos = 0;
   value  *VarData  = NULL;
   FunctionDescriptor *FuncDef = NULL;
@@ -552,19 +554,44 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     p=0;
     for ( DictIter=DictIterateInit(_ppl_UserSpace_Funcs) ; ((DictIter!=NULL)&&(p==0)) ; DictIter=DictIterate(DictIter,NULL,NULL) )
      {
-      for (k=0; ((DictIter->key[k]>' ')&&(DictIter->key[k]==in[start+j+k])); k++); // See if string we have matches the name of this function
-      if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue; // Nope...
+      for (k=0; ((DictIter->key[k]>' ')&&(DictIter->key[k]!='?')&&(DictIter->key[k]==in[start+j+k])); k++); // See if string we have matches the name of this function
+      if (DictIter->key[k]=='?') // This function name, e.g. int_dx, ends with a dummy variable name
+       {
+        for (l=0; ((isalnum(in[start+j+k+l]) || (in[start+j+k+l]=='_')) && (l<DUMMYVAR_MAXLEN)); l++) dummy[l]=in[start+j+k+l];
+        if (l==DUMMYVAR_MAXLEN) continue; // Dummy variable name was too long
+        dummy[l]='\0';
+       } else { // Otherwise, we have to match function name exactly
+        if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue; // Nope...
+       }
       p=1; i+=2;
       NArgs = ((FunctionDescriptor *)DictIter->data)->NumberArguments;
+      FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
       for (k=0; k<NArgs; k++) // Now collect together numeric arguments
        {
         if (bufpos+k+2 >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
         while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
         if (in[start+i]==')') { *errpos = start+i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
         j=-1;
-        ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos+k+2, 0, &j, errpos, errtext, RecursionDepth+1);
-        if (*errpos >= 0) { (*errpos) += start+i; return; }
-        i+=j; while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
+        if ((k==0)&&(FunctionType == PPL_USERSPACE_INT)) // First argument is an integrand, which we should not evaluate
+         {
+          if ((in[start+i]=='\'') || (in[start+i]=='\"')) { ck=in[start+i]; i++; } else { ck='\0'; }
+          while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
+          integrand = in+start+i; // Integrand starts here
+          ppl_GetExpression(in+start+i, &j, 0, NULL, NULL, errpos, errtext);
+          if (*errpos >= 0) { (*errpos) += start+i; return; }
+          i+=j;
+          while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
+          if (ck>'\0')
+           {
+            if (in[start+i]!=ck) { *errpos = start+i; strcpy(errtext,"Syntax Error: Was expecting a closing quote."); return; }
+            else                    i++;
+           }
+         } else { // otherwise, we evaluate the argument straight away
+          ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos+k+2, 0, &j, errpos, errtext, RecursionDepth+1);
+          if (*errpos >= 0) { (*errpos) += start+i; return; }
+          i+=j;
+         }
+        while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
         if (k < NArgs-1)
          {
           if (in[start+i] != ',')
@@ -576,8 +603,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
            } else { i++; }
          }
        }
-      FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
-      if ((FunctionType != PPL_USERSPACE_UNIT) && (FunctionType != PPL_USERSPACE_INT) && (in[start+i] != ')')) // Unit and int funcs deal with args themselves
+      if ((FunctionType != PPL_USERSPACE_UNIT) && (in[start+i] != ')')) // Unit function deals with arguments itself
        {
         (*errpos) = start+i;
         if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
@@ -677,6 +703,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
           if (*errpos >= 0) { (*errpos) = start+i; return; }
          }
        }
+      else if (FunctionType == PPL_USERSPACE_INT)
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
+        if (DictIter->key[0]=='i') Integrate    ( integrand , dummy , ResultBuffer+bufpos+3 , ResultBuffer+bufpos+4 , ResultBuffer+bufpos , errpos , errtext , RecursionDepth );
+        else                       Differentiate( integrand , dummy , ResultBuffer+bufpos+3 , ResultBuffer+bufpos+4 , ResultBuffer+bufpos , errpos , errtext , RecursionDepth );
+        if (*errpos >= 0) { (*errpos) = start+i; return; }
+       }
       for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
       for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
       bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
@@ -738,7 +771,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE  5: EVALUATION OF *  /  %
@@ -755,7 +788,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE  6: EVALUATION OF +  -
@@ -771,7 +804,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE  7: EVALUATION OF << >>
@@ -795,7 +828,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE  8: EVALUATION OF < <= >= >
@@ -825,7 +858,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE  9: EVALUATION OF == !=  <>
@@ -855,7 +888,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE 10: EVALUATION OF &
@@ -878,7 +911,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE 11: EVALUATION OF ^
@@ -901,7 +934,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE 12: EVALUATION OF |
@@ -924,7 +957,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE 13: EVALUATION OF and
@@ -947,7 +980,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE 14: EVALUATION OF or
@@ -970,7 +1003,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) i++;
+      while (StatusRow[i]==7) { i++; p++; }
      }
    }
   // PHASE 15: RETURN RESULT TO USER
@@ -1021,11 +1054,13 @@ void ppl_GetExpression(char *in, int *end, int DollarAllowed, unsigned char *sta
  {
   static char *AllowedNext[] = {"34568","","72","368","34568","72","34568","372"};
   static unsigned char DummyOpList[OPLIST_LEN];
+  static unsigned char DummyStatusRow[ALGEBRA_MAXLENGTH];
   char state='1', oldstate;
   char trial;
   int scanpos=0, trialpos, i, j; // scanpos scans through in.
 
   if (OpList==NULL) OpList = DummyOpList; // OpList is a table of which operations we've found, for speeding up evaluation. If this output is not requested, we put it in a dummy.
+  if (status==NULL) status = DummyStatusRow;
   for (i=0;i<OPLIST_LEN;i++) OpList[i]=0;
 
   while (state != '2')

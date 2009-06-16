@@ -523,7 +523,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        }
       else if (strcmp(node->MatchString, "%s")==0)
        {
-        for (i=0; (isalpha(line[*linepos+i])); i++);
+        for (i=0; (isalpha(line[*linepos+i]) || (line[*linepos+i]=='_')); i++);
         if (i>0)
          {
           strncpy(TempMatchStr, line + *linepos, i);

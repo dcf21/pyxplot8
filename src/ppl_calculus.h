@@ -1,4 +1,4 @@
-// ppl_constants.h
+// ppl_calculus.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,26 +19,13 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CONSTANTS_H
-#define _PPL_CONSTANTS_H 1
+#ifndef _PPL_CALCULUS_H
+#define _PPL_CALCULUS_H 1
 
-#define MULTIPLOT_MAXINDEX 8192
+#include "ppl_units.h"
 
-#define PALETTE_LENGTH 512
-
-#define MAX_AXES 512
-
-#define PATHLINK "/"
-
-#define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator
-
-#define ALGEBRA_MAXLENGTH 512 // The maximum length of an algebraic expression
-#define ALGEBRA_MAXITEMS  128 // The number of calculated quantities we can store
-#define MAX_RECURSION_DEPTH 50 // The maximum recursion depth
-
-#define DUMMYVAR_MAXLEN 16 // Maximum number of characters in a dummy variable name for integration / differentiation
-
-#define OPLIST_LEN 15
+void Integrate    (char *expr, char *dummy, value *min  , value *max , value *out, int *errpos, char *errtext, int RecursionDepth);
+void Differentiate(char *expr, char *dummy, value *point, value *step, value *out, int *errpos, char *errtext, int RecursionDepth);
 
 #endif
 

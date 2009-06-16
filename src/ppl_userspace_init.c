@@ -111,8 +111,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
   FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "unit(...) multiplies a number by a physical unit"};
   FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "zeta(x) evaluates the Riemann zeta function at x"};
-  FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
-  FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "diff_dx(e,a) numerically differentiates an expression e wrt x at a"};
+  FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
+  FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "diff_da(e,x,step) numerically differentiates an expression e wrt a at x, using a step size of step. 'a' can be any variable name with fewer than 16 characters."};
 
   // Set up default variables
   ppl_units_zero(&v);
