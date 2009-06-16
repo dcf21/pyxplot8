@@ -38,6 +38,8 @@
 
 #define DUMMYVAR_MAXLEN 16 // Maximum number of characters in a dummy variable name for integration / differentiation
 
+#define EQNSOLVE_MAXDIMS 16 // Maximum number of via variables when equation solving / fitting
+
 #define OPLIST_LEN 15
 
 #endif

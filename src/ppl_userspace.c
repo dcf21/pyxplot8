@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <math.h>
 
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_spline.h>
 
 #include "StringTools/asciidouble.h"
@@ -671,7 +672,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
         if (FuncDef==NULL)
          {
           ppl_units_zero(ResultBuffer+bufpos);
-          ResultBuffer[bufpos].number = HUGE_VAL;
+          ResultBuffer[bufpos].number = GSL_NAN;
          } else {
           j=0;
           for (k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary

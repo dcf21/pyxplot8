@@ -28,6 +28,7 @@
 
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_math.h>
 
 #include "ppl_units.h"
 #include "ppl_userspace.h"
@@ -47,7 +48,7 @@ double CalculusSlave(double x, void *params)
   value output;
   IntComm *data = (IntComm *)params;
 
-  if (*(data->errpos)>=0) return HUGE_VAL; // We've previously had an error... so don't do any more work
+  if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
 
   data->dummy->number = x;
   ppl_EvaluateAlgebra(data->expr, &output, 0, NULL, data->errpos, data->errtext, data->RecursionDepth+1);
@@ -61,7 +62,7 @@ double CalculusSlave(double x, void *params)
      {
       *(data->errpos)=0;
       strcpy(data->errtext, "Error: This operand does not have consistent units across the range where calculus is being attempted.");
-      return HUGE_VAL;
+      return GSL_NAN;
      }
    }
   return output.number;

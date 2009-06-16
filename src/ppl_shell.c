@@ -38,6 +38,7 @@
 
 #include "pyxplot.h"
 #include "ppl_children.h"
+#include "ppl_eqnsolve.h"
 #include "ppl_error.h"
 #include "ppl_help.h"
 #include "ppl_parser.h"
@@ -342,6 +343,10 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
     globfree(&GlobData);
     return 0;
    }
+  else if (strcmp(directive, "maximise")==0)
+   directive_maximise(command);
+  else if (strcmp(directive, "minimise")==0)
+   directive_minimise(command);
   else if (strcmp(directive, "print")==0)
    directive_print(command);
   else if (strcmp(directive, "pwd")==0)
