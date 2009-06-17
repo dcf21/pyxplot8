@@ -42,5 +42,9 @@ int   CSPForkNewGv             (char *fname, List *gv_list);
 void  CSPKillAllGvs            ();
 void  CSPKillLatestSinglewindow();
 
+// Functions for spawning helper processes
+
+void  ForkSed                  (char *cmd, int *pidout, int *fstdin, int *fstdout);
+
 #endif
 

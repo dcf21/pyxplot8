@@ -29,6 +29,8 @@
 #include <setjmp.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <sys/select.h>
+#include <sys/wait.h>
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -321,6 +323,8 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
     ppl_UserSpace_SetFunc(in, 1, &i, buffer);
     if (i >= 0) ppl_error(buffer);
    }
+  else if (strcmp(directive, "var_set_regex")==0)
+   return directive_regex(command);
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
   else if (strcmp(directive, "exec")==0)
@@ -446,5 +450,63 @@ void directive_print(Dict *command)
    }
   ppl_report(PrintString);
   return;
+ }
+
+int directive_regex(Dict *command)
+ {
+  char  *varname;
+  char   cmd[LSTR_LENGTH];
+  value *varnumval;
+  int    i, j, fstdin, fstdout, pid, status;
+  char   ci;
+  struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
+  fd_set          readable;
+
+  // Extract the name of the variable we're going to perform regular expression upon
+  DictLookup(command, "varname", NULL, (void **)(&varname));
+  DictLookup(_ppl_UserSpace_Vars, varname, NULL, (void **)(&varnumval));
+  if (varnumval == NULL)
+   {
+    sprintf(temp_err_string, "No such variable as '%s'.", varname);
+    ppl_error(temp_err_string);
+    return 1;
+   }
+  if (varnumval->string == NULL) // ... which must be a string variable
+   {
+    sprintf(temp_err_string, "Variable '%s' is not a string variable; regular expressions cannot be applied to it.", varname); 
+    ppl_error(temp_err_string);
+    return 1;
+   }
+
+  // Copy the regular expression we're going to use into cmd, adding s onto the front
+  DictLookup(command, "regex", NULL, (void **)(&varname));
+  strcpy(cmd, "s"); i=strlen(cmd);
+  for (j=0; (ci=varname[j])!='\0'; j++) cmd[i++] = ci;
+  cmd[i++] = '\0';
+
+  // Fork a child sed process with the regular expression on the command line, and send variable contents to it
+  ForkSed(cmd, &pid, &fstdin, &fstdout);
+  if (write(fstdin, varnumval->string, strlen(varnumval->string)) != strlen(varnumval->string)) ppl_fatal(__FILE__,__LINE__,"Could not write to pipe to sed");
+  close(fstdin);
+
+  // Wait for sed process's stdout to become readable. Get bored if this takes more than a second.
+  waitperiod.tv_sec  = 1; waitperiod.tv_nsec = 0;
+  FD_ZERO(&readable); FD_SET(fstdout, &readable);
+  pselect(fstdout+1, &readable, NULL, NULL, &waitperiod, NULL);
+  if (!FD_ISSET(fstdout , &readable)) { ppl_error("Error: Got bored waiting for sed to return data."); return 0; }
+
+  // Read data back from sed process
+  if ((i = read(fstdout, cmd, LSTR_LENGTH)) < 0) { ppl_error("Error: Could not read from pipe to sed."); return 0; }
+  cmd[i] = '\0';
+  close(fstdout);
+
+  // Get exit status back from sed process and check that it is zero
+  if (waitpid(pid, &status, 0) <= 0) { ppl_error("Error: Could not read exit status from sed."); return 0; }
+  if ((!WIFEXITED(status)) || (WEXITSTATUS(status)!=0)) { return 0; } // Error message will get sent to stderr, we assume
+
+  // Copy string into string variable
+  varnumval->string = (char *)lt_malloc_incontext(strlen(cmd)+1, _ppl_UserSpace_Vars->memory_context);
+  strcpy(varnumval->string, cmd);
+  return 0;
  }
 

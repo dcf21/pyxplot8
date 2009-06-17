@@ -34,19 +34,43 @@ case `echo "testing\c"; echo 1,2,3`,`echo -n testing; echo 1,2,3` in
   *)       ECHO_N= ECHO_C='\c' ECHO_T= ;;
 esac
 
-# 2. CHECK FOR DEPENDENCIES
+# 2. CHECK FOR LATEX
 
-for prog in "latex  " "convert"
- do
-  echo $ECHO_N "Checking for ${prog}           ............. $ECHO_C"
-  whichout=`which ${prog} 2> /dev/null`
-  if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-  if [ "$whichout" != "" ] ; then echo "YES"
-  else echo "NO" ; echo "ERROR: Required program ${prog} could not be found." ; exit
-  fi
- done
+echo $ECHO_N "Checking for latex             ............. $ECHO_C"
+whichout=`which latex 2> /dev/null`
+if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
+if [ "$whichout" != "" ] ; then
+ echo "YES"
+ echo "LATEX_COMMAND=${whichout}" >> Makefile
+else
+ echo "NO" ; echo "ERROR: Required program latex could not be found." ; exit
+fi
 
-# 3. FIND GHOSTVIEW
+# 3. CHECK FOR CONVERT
+
+echo $ECHO_N "Checking for ImageMagick convert............ $ECHO_C"
+whichout=`which convert 2> /dev/null`
+if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
+if [ "$whichout" != "" ] ; then
+ echo "YES"
+ echo "CONVERT_COMMAND=${whichout}" >> Makefile
+else 
+ echo "NO" ; echo "ERROR: Required program convert could not be found." ; exit
+fi
+
+# 4. CHECK FOR SED
+
+echo $ECHO_N "Checking for sed               ............. $ECHO_C"
+whichout=`which sed 2> /dev/null`
+if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
+if [ "$whichout" != "" ] ; then
+ echo "YES"
+ echo "SED_COMMAND=${whichout}" >> Makefile
+else 
+ echo "NO" ; echo "ERROR: Required program sed could not be found." ; exit
+fi
+
+# 5. FIND GHOSTVIEW
 
 echo $ECHO_N "Checking for ghostview         ............. $ECHO_C"
 whichout_gv=`which gv 2> /dev/null`
@@ -73,7 +97,7 @@ else
  echo "WARNING: Ghostview could not be found. Installation will proceed, but X11 terminal will not be available in PyXPlot. If required, install either ghostview (gv) or Gnome-ghostview (ggv), and then re-install PyXPlot."
 fi
 
-# 4. FIND MAKE
+# 6. FIND MAKE
 
 echo $ECHO_N "Checking for GNU make          ............. $ECHO_C"
 whichout_make=`which make 2> /dev/null`
@@ -94,9 +118,10 @@ else
  exit
 fi
 
-# 6. OUTPUT MAKEFILE
+# 7. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 
 echo "Configuration successful."
 echo "To continue installation, type '${MAKE_COMMAND}'."
+

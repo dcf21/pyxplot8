@@ -77,8 +77,8 @@ void  InitialiseCSP()
   if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for the CSP.");
   else if ( pid        != 0)
    {
-    close(PipeCSP2MAIN[1]); // Parent process; close CSP's ends of pipes
-    close(PipeMAIN2CSP[0]);
+    close(PipeMAIN2CSP[0]); // Parent process; close CSP's ends of pipes
+    //close(PipeCSP2MAIN[1]); // Leave this pipe open so that sed can return error messages down it
     return; // Parent process returns
    }
 
@@ -136,7 +136,8 @@ void CheckForGvOutput()
      StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
      if (linebuffer[0]=='\0') break;
      if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
-     ppl_error(linebuffer);
+     if (strncmp(linebuffer, SED, strlen(SED))==0) ppl_error("Error: A problem was encounter with the supplied regular expression.");
+     else ppl_error(linebuffer);
     }
   return;
  }
@@ -312,6 +313,52 @@ void CSPKillLatestSinglewindow()
   if (DEBUG) { sprintf(temp_err_string, "Killing latest GhostView singlewindow process with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
   if (GhostView_pid > 1) kill(GhostView_pid, SIGTERM);
   GhostView_pid = 0;
+  return;
+ }
+
+void ForkSed(char *cmd, int *pidout, int *fstdin, int *fstdout)
+ {
+  int fd0[2], fd1[2];
+  int pid;
+
+  if ((pipe(fd0)<0) || (pipe(fd1)<0)) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
+
+  if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for the CSP.");
+  else if ( pid        != 0)
+   {
+    // Parent process
+    close(fd0[0]); *fstdin  = fd0[1];
+    close(fd1[1]); *fstdout = fd1[0];
+    *pidout = pid;
+    return;
+   }
+  else 
+   {
+    // Child process
+    close(fd0[1]); close(fd1[0]);
+    close(PipeCSP2MAIN[0]);
+    close(PipeMAIN2CSP[1]);
+    sprintf(ppl_error_source, "SED%6d", getpid());
+    if (DEBUG) { sprintf(temp_err_string, "New sed process alive; going to run command \"%s\".", cmd); ppl_log(temp_err_string); }
+    if (fd0[0] != STDIN_FILENO) // Redirect stdin to pipe
+     {
+      if (dup2(fd0[0], STDIN_FILENO) != STDIN_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdin to pipe.");
+      close(fd0[0]);         
+     }
+    if (fd1[1] != STDOUT_FILENO) // Redirect stdout to pipe
+     {
+      if (dup2(fd1[1], STDOUT_FILENO) != STDOUT_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdout to pipe.");
+      close(fd1[1]);         
+     }
+    if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe
+     {
+      if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
+      close(PipeCSP2MAIN[1]);
+     }
+    if (execl(SED, SED, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
+    ppl_fatal(__FILE__,__LINE__,"Execution of sed failed."); // execlp call should not return
+    exit(1); // ppl_fatal shouldn't either, so something's gone really wrong... 
+   }
   return;
  }
 

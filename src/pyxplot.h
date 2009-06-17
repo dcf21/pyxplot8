@@ -43,6 +43,7 @@ int         ProcessDirective3   (char *in, Dict *command, int interactive, int m
 void        directive_cd        (Dict *command);
 void        directive_history   (Dict *command);
 void        directive_print     (Dict *command);
+int         directive_regex     (Dict *command);
 
 /* Strings defined in ppl_text.c */
 extern char txt_version[];
