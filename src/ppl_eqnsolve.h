@@ -24,6 +24,7 @@
 
 #include "ListTools/lt_dict.h"
 
+void directive_solve   (Dict *command);
 void directive_minimise(Dict *command);
 void directive_maximise(Dict *command);
 

@@ -67,7 +67,7 @@ void dcfmath_abs(value *in, value *output, int *status, char *errtext)
  {
   *status = 0;
   ppl_units_zero(output);
-  output->number = abs(in->number);
+  output->number = fabs(in->number);
   ppl_units_DimCpy(output, in);
   return;
  }

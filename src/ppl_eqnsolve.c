@@ -95,20 +95,75 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   return accumulator * data->sign;
  }
 
+void MultiMinIterate(MMComm *commlink, int *status)
+ {
+  size_t                              iter = 0,iter2 = 0;
+  int                                 i;
+  double                              size=0,sizelast=0,sizelast2=0;
+  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+  gsl_multimin_fminimizer            *s;
+  gsl_vector                         *x, *ss;
+  gsl_multimin_function               fn;
+
+  fn.n = commlink->Nfitvars;           
+  fn.f = &MultiMinSlave;              
+  fn.params = (void *)commlink;      
+  
+  x  = gsl_vector_alloc( commlink->Nfitvars );
+  ss = gsl_vector_alloc( commlink->Nfitvars );
+
+  iter2=0;
+  do
+   {
+    iter2++;
+    sizelast2 = size;
+
+    for (i=0; i<commlink->Nfitvars; i++) gsl_vector_set(x , i,     commlink->fitvar[i]->number);
+    for (i=0; i<commlink->Nfitvars; i++)
+     {
+      if (fabs(commlink->fitvar[i]->number)>1e-6) gsl_vector_set(ss, i, 0.1*fabs(commlink->fitvar[i]->number));
+      else                                        gsl_vector_set(ss, i, 0.1                                  ); // Avoid having a stepsize of zero
+     }
+
+    s = gsl_multimin_fminimizer_alloc (T, fn.n);
+    gsl_multimin_fminimizer_set (s, &fn, x, ss);
+
+    iter              = 0;
+    commlink->GoneNaN = 0;
+    do 
+     {
+      iter++;
+      for (i=0; i<2+commlink->Nfitvars*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
+       {
+        *status = gsl_multimin_fminimizer_iterate(s);
+        if (*status) break;
+       }
+      if (*status) break;
+      sizelast = size;
+      size     = gsl_multimin_fminimizer_minimum(s);
+     }
+    while ((iter < 10) || ((size < sizelast) && (iter < 50))); // Iterate 10 times, and then see whether size carries on getting smaller
+
+    gsl_multimin_fminimizer_free(s);
+
+   }
+  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!*status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
+
+  if (iter2>=20) *status=1;
+
+  gsl_vector_free(x);
+  gsl_vector_free(ss);
+  return;
+ }
+
 void MinOrMax(Dict *command, double sign)
  {
-  MMComm                             commlink;
-  char    /*   -    -    -    - */  *VarName;
-  List                              *ViaList;
-  ListIterator                      *ListIter;
-  value                             *DummyVar, DummyTemp;
-  size_t                             iter = 0;
-  int                                i, status, errpos=-1;
-  double                             size=0,sizelast=0;
-  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
-  gsl_multimin_fminimizer           *s;
-  gsl_vector                        *x, *ss;
-  gsl_multimin_function              fn;
+  MMComm        commlink;
+  char         *VarName;
+  List         *ViaList;
+  ListIterator *ListIter;
+  value        *DummyVar, DummyTemp;
+  int           i, status=0, errpos=-1;
 
   ppl_units_zero(&DummyTemp);
   DummyTemp.number  = 1.0; // Default starting point is 1.0
@@ -152,42 +207,94 @@ void MinOrMax(Dict *command, double sign)
   commlink.GoneNaN    = 0;
   ppl_units_zero(&commlink.first[0]);
 
-  fn.n = commlink.Nfitvars;
-  fn.f = &MultiMinSlave;
-  fn.params = (void *)&commlink;
-
-  x = gsl_vector_alloc( commlink.Nfitvars );
-  ss = gsl_vector_alloc( commlink.Nfitvars );
-
-  for (i=0; i<commlink.Nfitvars; i++) gsl_vector_set(x , i,     commlink.fitvar[i]->number);
-  for (i=0; i<commlink.Nfitvars; i++) gsl_vector_set(ss, i, 0.1*commlink.fitvar[i]->number);
-
-  s = gsl_multimin_fminimizer_alloc (T, fn.n);
-  gsl_multimin_fminimizer_set (s, &fn, x, ss);
-
-  do
-   {
-    iter++;
-    for (i=0; i<2+commlink.Nfitvars*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
-     {
-      status = gsl_multimin_fminimizer_iterate(s);           
-      if (status) break;
-     }
-    if (status) break;
-    if (iter == 8) commlink.GoneNaN=0;
-    sizelast = size;   
-    size     = gsl_multimin_fminimizer_minimum(s);
-   }
-  while ((iter < 10) || ((size < sizelast) && (iter < 100))); // Iterate 10 times, and then see whether size carries on getting smaller
-
-  gsl_multimin_fminimizer_free(s);
-
-  gsl_vector_free(x);
-  gsl_vector_free(ss);
+  MultiMinIterate(&commlink, &status);
 
   if (errpos >= 0) ppl_error(commlink.errtext);
 
-  if ((status) || (errpos >= 0) || (iter>=100) || (commlink.GoneNaN==1))
+  if ((status) || (errpos >= 0) || (commlink.GoneNaN==1))
+   {
+    for (i=0; i<commlink.Nfitvars; i++) commlink.fitvar[i]->number=GSL_NAN; // We didn't produce a sensible answer
+   }
+
+  return;
+ }
+
+void directive_solve(Dict *command)
+ {
+  MMComm        commlink;
+  char         *VarName;
+  List         *ViaList;
+  ListIterator *ListIter;
+  value        *DummyVar, DummyTemp;
+  int           i, status=0, errpos=-1;
+
+  ppl_units_zero(&DummyTemp);
+  DummyTemp.number  = 1.0; // Default starting point is 1.0
+  commlink.Nfitvars = 0;
+  commlink.Nexprs   = 0;
+
+  DictLookup(command, "fit_variables,", NULL, (void *)&ViaList);
+  ListIter = ListIterateInit(ViaList);
+  while (ListIter != NULL)
+   {
+    DictLookup(ListIter->data, "fit_variable", NULL, (void *)&VarName);
+    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
+
+    if (DummyVar!=NULL)
+     {
+      if (DummyVar->string != NULL) { ppl_units_zero(DummyVar); DummyVar->number=1.0; } // Turn string variables into floats
+      commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
+     }
+    else
+     {
+      DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
+      DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
+      commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
+     }
+
+    commlink.Nfitvars += 1;
+    ListIter = ListIterate(ListIter, NULL);
+    if (commlink.Nfitvars >= EQNSOLVE_MAXDIMS)
+     {
+      sprintf(temp_err_string, "Error: Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
+      ppl_error(temp_err_string);
+      return;
+     }
+   }
+
+  DictLookup(command, "expressions,", NULL, (void *)&ViaList);
+  ListIter = ListIterateInit(ViaList);
+  while (ListIter != NULL)
+   {
+    DictLookup(ListIter->data, "left_expression" , NULL, (void *)&commlink.expr1[ commlink.Nexprs ]);
+    DictLookup(ListIter->data, "right_expression", NULL, (void *)&commlink.expr2[ commlink.Nexprs ]);
+    commlink.Nexprs += 1;
+    ListIter = ListIterate(ListIter, NULL);
+    if (commlink.Nexprs >= EQNSOLVE_MAXDIMS)
+     {
+      sprintf(temp_err_string, "Error: Too many simultaneous equations to solve; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
+      ppl_error(temp_err_string);
+      return;
+     }
+   }
+
+ if (commlink.Nexprs < 1)
+  {
+   sprintf(temp_err_string, "Error: No equations supplied to sove.");
+    ppl_error(temp_err_string);
+    return;
+   }
+
+  commlink.sign       = 1.0;
+  commlink.errpos     = &errpos;
+  commlink.GoneNaN    = 0;
+  for (i=0; i<commlink.Nexprs; i++) { commlink.IsFirst[i]=1; ppl_units_zero(&commlink.first[i]); }
+
+  MultiMinIterate(&commlink, &status);
+
+  if (errpos >= 0) ppl_error(commlink.errtext);
+
+  if ((status) || (errpos >= 0) || (commlink.GoneNaN==1))
    {
     for (i=0; i<commlink.Nfitvars; i++) commlink.fitvar[i]->number=GSL_NAN; // We didn't produce a sensible answer
    }

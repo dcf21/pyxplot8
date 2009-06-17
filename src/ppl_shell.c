@@ -357,6 +357,8 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    directive_set(command);
   else if (strcmp(directive, "show")==0)
    directive_show(command, interactive);
+  else if (strcmp(directive, "solve")==0)
+   directive_solve(command);
   else if (strcmp(directive, "unset")==0)
    directive_set(command);
   else if (strcmp(directive, "unrecognised")==0)
