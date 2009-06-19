@@ -42,6 +42,7 @@
 #include "ppl_children.h"
 #include "ppl_eqnsolve.h"
 #include "ppl_error.h"
+#include "ppl_flowctrl.h"
 #include "ppl_help.h"
 #include "ppl_parser.h"
 #include "ppl_passwd.h"
@@ -76,22 +77,16 @@ void InteractiveSession()
     while (PPL_SHELL_EXITING == 0)
      {
       CheckForGvOutput();
-      if (isatty(STDIN_FILENO) == 1)
-       {
-        if (DirectiveLinebuffer == NULL) line_ptr = readline("pyxplot> ");
-        else                             line_ptr = readline(".......> ");
-        if (line_ptr == NULL) { PPL_SHELL_EXITING = 1; continue; }
-        add_history(line_ptr);
-        strcpy(linebuffer, line_ptr) ; free(line_ptr);
-        ProcessDirective(linebuffer, 1, 0);
-       } else {
-        ppl_error_setstreaminfo(linenumber, "piped input");
-        file_readline(stdin, linebuffer);
-        ProcessDirective(linebuffer, 0, 0);
-        ppl_error_setstreaminfo(-1, "");
-        linenumber++;
-        if (feof(stdin) || ferror(stdin)) PPL_SHELL_EXITING = 1;
-       }
+
+      if (isatty(STDIN_FILENO) == 1) FetchInputLine(NULL, 0, NULL , &linenumber, NULL         , NULL);
+      else                           FetchInputLine(NULL, 1, stdin, &linenumber, "piped input", NULL);
+
+      if (DirectiveLinebuffer == NULL) line_ptr = FetchInputLine(linebuffer, -1, NULL, NULL, NULL, "pyxplot> ");
+      else                             line_ptr = FetchInputLine(linebuffer, -1, NULL, NULL, NULL, ".......> ");
+
+      if (line_ptr == NULL) break;
+      ProcessDirective(linebuffer, isatty(STDIN_FILENO), 0);
+      ppl_error_setstreaminfo(-1, "");
      }
 
     if (isatty(STDIN_FILENO) == 1) 
@@ -103,6 +98,7 @@ void InteractiveSession()
     ppl_error("\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
     if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
    }
+  PPL_SHELL_EXITING = 0;
   if (DirectiveLinebuffer  != NULL) { free(DirectiveLinebuffer ); DirectiveLinebuffer =NULL; }
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
@@ -116,7 +112,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   int  ProcessedALine = 0;
   char full_filename[FNAME_LENGTH];
   char filename_description[FNAME_LENGTH];
-  char linebuffer[LSTR_LENGTH];
+  char linebuffer[LSTR_LENGTH], *line_ptr;
   FILE *infile;
 
   PPL_SHELL_EXITING = 0;
@@ -131,12 +127,12 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
     return;
    }
 
-  while ((PPL_SHELL_EXITING == 0) && (!feof(infile)) && (!ferror(infile)))
+  while (PPL_SHELL_EXITING == 0)
    {
-    file_readline(infile, linebuffer);
+    line_ptr = FetchInputLine(linebuffer, 1, infile, &linenumber, filename_description, NULL);
+    if (line_ptr == NULL) break;
     if (StrStrip(linebuffer,linebuffer)[0] != '\0')
      {
-      ppl_error_setstreaminfo(linenumber, filename_description);
       status = ProcessDirective(linebuffer, 0, IterLevel);
       ppl_error_setstreaminfo(-1, "");
       if ((ProcessedALine==0) && (status>0)) // If an error occurs on the first line of a script, aborted processing it
@@ -146,8 +142,9 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
        }
       if (status==0) ProcessedALine = 1;
      }
-    linenumber++;
    }
+
+  PPL_SHELL_EXITING = 0;
   if (DirectiveLinebuffer  != NULL) { free(DirectiveLinebuffer ); DirectiveLinebuffer =NULL; }
   if (DirectiveLinebuffer2 != NULL) { free(DirectiveLinebuffer2); DirectiveLinebuffer2=NULL; }
   fclose(infile);
@@ -155,11 +152,56 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   return;
  }
 
+char *FetchInputLine(char *output, int mode_, FILE *infile_, int *linenumber_, char *filename_description_, char *prompt)
+ {
+  static FILE *infile = NULL;
+  static int   mode = -1;
+  static int  *linenumber = NULL;
+  static char *filename_description = NULL;
+
+  char        *line_ptr;
+
+  if (mode_ >= 0)
+   {
+    infile               = infile_;
+    mode                 = mode_;
+    linenumber           = linenumber_;
+    filename_description = filename_description_;
+   }
+  if (output == NULL) return NULL;
+
+  if (mode == 0)
+   {
+    ppl_error_setstreaminfo(-1, "");
+    line_ptr = readline(prompt);
+    if (line_ptr==NULL) return NULL;
+    add_history(line_ptr);
+    strcpy(output, line_ptr);
+    free(line_ptr);
+    return output;
+   }
+  else if (mode == 1)
+   {
+    ppl_error_setstreaminfo(*linenumber, filename_description);
+    if ((feof(infile)) || (ferror(infile))) return NULL;
+    file_readline(infile, output);
+    (*linenumber)++;
+    return output;
+   }
+  else
+   ppl_fatal(__FILE__,__LINE__,"Illegal setting for input mode.");
+  return NULL;
+ }
+
 int ProcessDirective(char *in, int interactive, int IterLevel)
  {
+  static int interactive_last=0;
   int   i, j, status;
   char *line = NULL;
   char  QuoteChar = '\0';
+
+  if (interactive < 0) interactive      = interactive_last;
+  else                 interactive_last = interactive;
 
   // Join together lines that end in backslashes
   for (i=0; in[i]!='\0'; i++); for (; ((i>0)&&(in[i]<=' ')); i--);
@@ -325,8 +367,26 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
+  else if (strcmp(directive, "break")==0)
+   {
+    if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_BROKEN=1;
+    else                        ppl_error("The break statement can only be placed inside a loop structure.");
+   }
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
+  else if (strcmp(directive, "continue")==0)
+   {
+    if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_CONTINUED=1;
+    else                        ppl_error("The continue statement can only be placed inside a loop structure.");
+   }
+  else if (strcmp(directive, "do")==0)
+   directive_do(command);
+  else if (strcmp(directive, "for")==0)
+   directive_for(command);
+  else if (strcmp(directive, "foreach")==0)
+   directive_foreach(command);
+  else if (strcmp(directive, "else")==0)
+   ppl_error("This else statement does not match any earlier if statement.");
   else if (strcmp(directive, "exec")==0)
    {
     DictLookup(command,"command",NULL,(void **)(&varstrval));
@@ -365,6 +425,12 @@ int ProcessDirective3(char *in, Dict *command, int interactive, int memcontext, 
    directive_solve(command);
   else if (strcmp(directive, "unset")==0)
    directive_set(command);
+  else if (strcmp(directive, "while")==0)
+   {
+    DictLookup(command,"close_brace",NULL,(void **)(&varstrval));
+    if (varstrval == NULL) directive_while(command);
+    else                   ppl_error("This while statement does not match any earlier do statement.");
+   }
   else if (strcmp(directive, "unrecognised")==0)
    {
     sprintf(temp_err_string, txt_invalid, in);

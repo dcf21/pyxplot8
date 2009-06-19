@@ -37,6 +37,7 @@ extern char *DirectiveLinebuffer;
 #endif
 void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input, int IterLevel);
+char       *FetchInputLine      (char *output, int mode_, FILE *infile_, int *linenumber_, char *filename_description_, char *prompt);
 int         ProcessDirective    (char *in, int interactive, int IterLevel);
 int         ProcessDirective2   (char *in, int interactive, int IterLevel);
 int         ProcessDirective3   (char *in, Dict *command, int interactive, int memcontext, int IterLevel);

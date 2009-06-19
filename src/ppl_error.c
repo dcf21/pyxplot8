@@ -46,7 +46,7 @@ char temp_err_string[FNAME_LENGTH];
 void ppl_error_setstreaminfo(int linenumber,char *filename)
  {
   ppl_error_input_linenumber = linenumber;
-  strcpy(ppl_error_input_filename, filename);
+  if (filename != NULL) strcpy(ppl_error_input_filename, filename);
   return;
  }
 
