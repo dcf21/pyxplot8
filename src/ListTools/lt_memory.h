@@ -37,7 +37,7 @@ void *lt_malloc_incontext      (int size, int context);
 
 // Fastmalloc functions
 
-// Allocate memory in 256kb blocks
+// Allocate memory in 256kb blocks (262144 bytes)
 #define FM_BLOCKSIZE  262144
 #define FM_BLOCKMAX    65536
 

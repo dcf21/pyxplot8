@@ -35,6 +35,7 @@
 
 #include "ppl_constants.h"
 #include "ppl_error.h"
+#include "ppl_input.h"
 #include "ppl_parser.h"
 #include "ppl_units.h"
 #include "ppl_userspace.h"
@@ -349,17 +350,17 @@ char *parse_autocomplete(const char *LineConst, int status)
    {
     start = -status-1; number = -1; // We are called once with negative status to set up static varaibles, before readline calls us with status>=0
     if (line != NULL) {free(line); line=NULL;}
-    if (DirectiveLinebuffer == NULL) // If we're on the second line of a continued line, add DirectiveLinebuffer to beginning of line
+    if (InputLineAddBuffer == NULL) // If we're on the second line of a continued line, add InputLineAddBuffer to beginning of line
      { linep = rl_line_buffer; }
     else
      {
-      i = strlen(rl_line_buffer) + strlen(DirectiveLinebuffer);
+      i = strlen(rl_line_buffer) + strlen(InputLineAddBuffer);
       line = (char *)malloc((i+1)*sizeof(char));
-      strcpy(line, DirectiveLinebuffer);
+      strcpy(line, InputLineAddBuffer);
       strcpy(line+strlen(line) , rl_line_buffer);
       line[i] = '\0';
       linep = line;
-      start += strlen(DirectiveLinebuffer);
+      start += strlen(InputLineAddBuffer);
      }
    }
 

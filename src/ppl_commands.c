@@ -47,8 +47,8 @@ eps@2:directive = { item@1 %d:editno } < %q:filename | %Q:filename | %S:filename
 exec@3:directive: = < %q:command | %Q:command >\n\
 exit@2:directive:quit =\n\
 fit@3:directive = [ \\[@n { { < %f:min | \\*@n:minauto > } < :@n | to@n > { < %f:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:fit_function \\(@n [ %v:inputvar ]:@operands, \\)@n < %q:filename | %Q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %f:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ %E:using_item ]:using_list: ) via@1 [ %v:fit_variable ]:fit_variables,\n\
-for@2:directive = %v:var_name \\=@n %f:start_value to@n %f:final_value ( step@2:step %f:step_size ) ( \\{@n:brace ( %r:command ) )\n\
-foreach@4:directive = %v:var_name in@n:in < \\(@n [ < %f:value | %s:string > ]:item_list, \\)@n | %s:filename >  ( \\{@n:brace ( %r:command ) )\n\
+for@2:directive = %v:var_name \\=@n %fu:start_value to@n %fu:final_value ( step@2:step %fu:step_size ) ( \\{@n:brace ( %r:command ) )\n\
+foreach@4:directive = %v:var_name in@n:in < \\(@n [ < %fu:value | %q:string | %Q:string | %S:string > ]:item_list, \\)@n | %q:filename | %Q:filename | %S:filename >  ( \\{@n:brace ( %r:command ) )\n\
 help@2:directive = %r:topic\n\
 history@6:directive = { %d:number_lines }\n\
 histogram@2:directive = [ \\[@n { { < %f:min | \\*@n:minauto > } < :@n | to@n > { < %f:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:hist_function \\()@2 < %q:filename | %Q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %f:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ %E:using_item ]:using_list: ~ binwidth@4 %f:binwidth ~ binorigin@4 %f:binorigin ~ bins@n \\(@n [ %f:x ]:bin_list, \\)@n )\n\

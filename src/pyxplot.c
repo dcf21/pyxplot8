@@ -44,6 +44,7 @@
 #include "ppl_children.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
+#include "ppl_input.h"
 #include "ppl_papersize.h"
 #include "ppl_parser.h"
 #include "ppl_settings.h"
@@ -75,6 +76,7 @@ int main(int argc, char **argv)
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
   lt_MemoryInit(&ppl_fatal, &ppl_log);
+  ClearInputSource();
   ppl_units_init();
   ppl_PaperSizeInit();
   ppl_UserSpaceInit();

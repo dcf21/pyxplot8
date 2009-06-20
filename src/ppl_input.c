@@ -23,6 +23,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
+
+#include "ppl_error.h"
+#include "ppl_flowctrl.h"
 
 #define INPUT_PIPE       101
 #define INPUT_READLINE   102
@@ -34,6 +43,7 @@ static FILE      *infile = NULL;
 static cmd_chain *inchain = NULL;
 static int        mode = -1;
 static int       *linenumber = NULL;
+static char      *instr = NULL;
 static int       *inpos = NULL;
 static char      *filename_description = NULL;
 
@@ -43,19 +53,21 @@ void SetInputSourcePipe(int *linenumber_, char *filename_description_)
   inchain              = NULL;
   mode                 = INPUT_PIPE;
   linenumber           = linenumber_;
+  instr                = NULL;
   inpos                = NULL;
   filename_description = filename_description_;
   return;
  }
 
-void SetInputSourceReadline(int *linenumber_, char *filename_description_)
+void SetInputSourceReadline(int *linenumber_)
  {
   infile               = NULL;
   inchain              = NULL;
   mode                 = INPUT_READLINE;
   linenumber           = linenumber_;
+  instr                = NULL;
   inpos                = NULL;
-  filename_description = filename_description_;
+  filename_description = NULL;
   return;
  }
 
@@ -65,6 +77,7 @@ void SetInputSourceFile(FILE *infile_, int *linenumber_, char *filename_descript
   inchain              = NULL;
   mode                 = INPUT_FILE;
   linenumber           = linenumber_;
+  instr                = NULL;
   inpos                = NULL;
   filename_description = filename_description_;
   return;
@@ -74,14 +87,15 @@ void SetInputSourceLoop(cmd_chain *inchain_)
  {
   infile               = NULL;
   inchain              = inchain_;
-  mode                 = INPUT_CHAIN;
+  mode                 = INPUT_LOOPCHAIN;
   linenumber           = NULL;
+  instr                = NULL;
   inpos                = NULL;
   filename_description = NULL;
   return;
  }
 
-void SetInputSourceString(char *instr, int *inpos_)
+void SetInputSourceString(char *instr_, int *inpos_)
  {
   infile               = NULL;
   inchain              = NULL;
@@ -95,7 +109,7 @@ void SetInputSourceString(char *instr, int *inpos_)
 void GetInputSource(int **lineno, char **descr)
  {
   *lineno = linenumber;
-  *descr  = filename_description
+  *descr  = filename_description;
   return;
  }
 
@@ -122,18 +136,19 @@ char *FetchInputLine(char *output, char *prompt)
     (*linenumber)++;
     return output;
    }
-  else if (mode == INPUT_CHAIN)
+  else if (mode == INPUT_LOOPCHAIN)
    {
-    if (inchain == NULL) return NULL;
-    ppl_error_setstreaminfo(inchain->linenumber , inchain->description);
-    strcpy(output, inchain->line);
-    inchain = inchain->next;
+    if ((inchain == NULL) || (*inchain == NULL)) return NULL;
+    if ((*inchain)->description != NULL) ppl_error_setstreaminfo((*inchain)->linenumber , (*inchain)->description);
+    else                                 ppl_error_setstreaminfo(-1                     , ""                     );
+    strcpy(output, (*inchain)->line);
+    *inchain = (*inchain)->next;
     return output;
    }
   else if (mode == INPUT_STRING)
    {
     if (instr[*inpos]=='\0') return NULL;
-    for (i=0; instr[*inpos]>=' '; i++,inpos++) output[i]=instr[*inpos];
+    for (i=0; instr[*inpos]>=' '; i++,(*inpos)++) output[i]=instr[*inpos];
     output[i++]='\0';
     while ((instr[*inpos]!='\0')&&(instr[*inpos]<' ')) (*inpos)++;
     return output;
@@ -143,7 +158,88 @@ char *FetchInputLine(char *output, char *prompt)
   return NULL;
  }
 
-char *FetchInputStatement(char *output, 
+// Higher level routines for fetching input with ; and \ characters already used to split/join lines
 
-int FetchAndExecuteLoop(
+char *InputLineBuffer    = NULL;
+char *InputLineAddBuffer = NULL;
+char *InputLineBufferPos = NULL;
+
+void ClearInputSource()
+ {
+  if (InputLineBuffer    == NULL) InputLineBuffer = (char *)malloc(LSTR_LENGTH);
+  if (InputLineAddBuffer != NULL) { free(InputLineAddBuffer); InputLineAddBuffer=NULL; }
+  InputLineBufferPos = NULL;
+  return;
+ }
+
+char *FetchInputStatement(char *prompt1, char *prompt2)
+ {
+  int   i, j;
+  char *line = NULL;
+  char  QuoteChar = '\0';
+
+  if (InputLineBufferPos==NULL)
+   {
+    if (InputLineAddBuffer != NULL) { free(InputLineAddBuffer); InputLineAddBuffer=NULL; }
+
+    // Join together lines that end in backslashes
+    while (1)
+     {
+      if (InputLineAddBuffer == NULL) line = FetchInputLine(InputLineBuffer, prompt1);
+      else                            line = FetchInputLine(InputLineBuffer, prompt2);
+      if (line == NULL) { i=0; InputLineBuffer[0]='\0'; break; }
+      for (i=0; InputLineBuffer[i]!='\0'; i++); for (; ((i>0)&&(InputLineBuffer[i]<=' ')); i--);
+      if (InputLineBuffer[i]!='\\') break;
+       {
+        if (InputLineAddBuffer==NULL)
+         {
+          InputLineAddBuffer = (char *)malloc(i+1);
+          strncpy(InputLineAddBuffer, InputLineBuffer, i);
+          InputLineAddBuffer[i]='\0';
+         } else {
+          j = strlen(InputLineAddBuffer);
+          InputLineAddBuffer = (char *)realloc((void *)InputLineAddBuffer, j+i+1);
+          strncpy(InputLineAddBuffer+j, InputLineBuffer, i);
+          InputLineAddBuffer[j+i]='\0';
+         }
+       }
+     }
+
+    // Add previous backslashed lines to the beginning of this one
+    if (InputLineAddBuffer!=NULL)
+     {
+      j = strlen(InputLineAddBuffer);
+      InputLineAddBuffer = (char *)realloc((void *)InputLineAddBuffer, j+i+2);
+      strncpy(InputLineAddBuffer+j, InputLineBuffer, i+1);
+      InputLineAddBuffer[j+i+1]='\0';
+      InputLineBufferPos = InputLineAddBuffer;
+     }
+    else
+     {
+      if (line == NULL) return NULL;
+      InputLineBufferPos = InputLineBuffer;
+     }
+   }
+
+  // Cut comments off the ends of lines and split it on semicolons
+  line = InputLineBufferPos;
+  for (i=0; line[i]!='\0'; i++)
+   {
+    if      ((QuoteChar=='\0') && (line[i]=='\'')                     ) QuoteChar = '\'';
+    else if ((QuoteChar=='\0') && (line[i]=='\"')                     ) QuoteChar = '\"';
+    else if ((QuoteChar=='\'') && (line[i]=='\'') && (line[i-1]!='\\')) QuoteChar = '\0';
+    else if ((QuoteChar=='\"') && (line[i]=='\"') && (line[i-1]!='\\')) QuoteChar = '\0';
+    else if ((QuoteChar=='\0') && (line[i]==';' )                     )
+     {
+      line[i]='\0';
+      if (line[i+1]=='\0') InputLineBufferPos = NULL;
+      else                 InputLineBufferPos = line+i+1;
+      return line;
+     }
+    else if ((QuoteChar=='\0') && (line[i]=='#' )                     ) break;
+   }
+  line[i] = '\0';
+  InputLineBufferPos = NULL;
+  return line;
+ }
 

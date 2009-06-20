@@ -24,13 +24,22 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_flowctrl.h"
+
 void SetInputSourcePipe(int *linenumber_, char *filename_description_);
-void SetInputSourceReadline(int *linenumber_, char *filename_description_);
+void SetInputSourceReadline(int *linenumber_);
 void SetInputSourceFile(FILE *infile_, int *linenumber_, char *filename_description_);
 void SetInputSourceLoop(cmd_chain *inchain_);
-void SetInputSourceString(char *instr, int *inpos_);
+void SetInputSourceString(char *instr_, int *inpos_);
 void GetInputSource(int **lineno, char **descr);
 char *FetchInputLine(char *output, char *prompt);
+
+#ifndef _PPL_INPUT_C
+extern char *InputLineAddBuffer;
+#endif
+
+void ClearInputSource();
+char *FetchInputStatement(char *prompt1, char *prompt2);
 
 #endif
 

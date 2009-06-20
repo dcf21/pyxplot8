@@ -24,17 +24,26 @@
 
 #include "ListTools/lt_dict.h"
 
+typedef struct cmd_chain_item {
+ char *line;
+ struct cmd_chain_item *next;
+ int linenumber;
+ char *description;
+} cmd_chain_item;
+
+typedef struct cmd_chain_item *cmd_chain;
+
 #ifndef _PPL_FLOWCTRL_C
 extern int PPL_FLOWCTRL_BREAKABLE;
 extern int PPL_FLOWCTRL_BROKEN;
 extern int PPL_FLOWCTRL_CONTINUED;
 #endif
 
-void directive_do     (Dict *command);
-void directive_for    (Dict *command);
-void directive_foreach(Dict *command);
-void directive_if     (Dict *command);
-void directive_while  (Dict *command);
+int directive_do     (Dict *command, int IterLevel);
+int directive_for    (Dict *command, int IterLevel);
+int directive_foreach(Dict *command, int IterLevel);
+int directive_if     (Dict *command, int IterLevel);
+int directive_while  (Dict *command, int IterLevel);
 
 #endif
 

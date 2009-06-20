@@ -23,120 +23,402 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <glob.h>
+
+#include "StringTools/asciidouble.h"
 
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
 
 #include "pyxplot.h"
+#include "ppl_error.h"
+#include "ppl_input.h"
+#include "ppl_parser.h"
 #include "ppl_units.h"
+#include "ppl_userspace.h"
 
 int PPL_FLOWCTRL_BREAKABLE = 0;
 int PPL_FLOWCTRL_BROKEN    = 0;
 int PPL_FLOWCTRL_CONTINUED = 0;
 
-typedef struct cmd_chain_item {
- char *line;
- struct cmd_chain_item *next;
- int linenumber;
- char *description;
-} cmd_chain_item;
-
-typedef struct cmd_chain_item *cmd_chain;
-
 void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *status)
  {
-  int i,j;
+  int i,*j;
+  char *desc;
+  i=0; while ((line[i]!='\0')&&(line[i]<=' ')) i++;
+  if (line[i]=='\0') return;
+
+  // If we haven't already had a {, we need to make sure we cut one off the beginning of this string
   if (!*bracegot)
    {
-    i=0; while ((line[i]!='\0')&&(line[i]<=' '));
-    if (line[i]=='\0') return;
-    if (line[i]!='{' ) { *status = 1; return; }
-    else { *bracegot=1; line=line+i+1; }
+    if (line[i]!='{' ) { *status = 1; return; } // We haven't got a {
+    else               { *bracegot=1; i++; }
    }
-  i=0; while ((line[i]!='\0')&&(line[i]<=' '));
-  if (line[i]=='\0') return;
-  ppl_error_getstreaminfo(&j, NULL);
-  **cmd_put = (cmd_chain_item *)lt_malloc(sizeof(cmd_chain_item));
-  (**cmd_put)->line = (char *)lt_malloc(strlen(line+i)+1);
+
+  // If this line starts with a }, we've reached the end of the loop
+  if (line[i]=='}')
+   {
+    i++; while ((line[i]!='\0')&&(line[i]<=' ')) i++;
+    if (line[i]=='\0') { *status = -2; return; }
+    else               { *status = -1; return; }
+   }
+
+  // Add this line into the loop chain
+  GetInputSource(&j, &desc);
+  **cmd_put = (cmd_chain_item *)lt_malloc(sizeof(cmd_chain_item)); // Make a new chain element
+  (**cmd_put)->line = (char *)lt_malloc(strlen(line+i)+1); // Write command line
   strcpy( (**cmd_put)->line , line+i );
-  (**cmd_put)->linenumber = j;
-  (**cmd_put)->next       = NULL;
-  *cmd_put               = (**cmd_put)->next;
+  if (j==NULL) (**cmd_put)->linenumber  = -1; // Write source line number
+  else         (**cmd_put)->linenumber  = *j;
+  (**cmd_put)->next        = NULL; // Put null next tag in linked list
+  if (desc == NULL)
+   { (**cmd_put)->description = NULL; } // Write source filename description
+  else
+   {
+    (**cmd_put)->description = (char *)lt_malloc(strlen(desc)+1);
+    strcpy((**cmd_put)->description, desc);
+   }
+  *cmd_put                 = &((**cmd_put)->next); // Update where we're going to write the next line of looped commandline
   return;
  }
 
-void directive_do(Dict *command, int IterLevel)
+// Execute a loop chain once through
+int loop_execute(cmd_chain *chain, int IterLevel)
  {
+  int   status=0;
+  char *line_ptr;
+
+  ClearInputSource();
+  while ((!status) && (PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
+   {
+    SetInputSourceLoop(chain);
+    line_ptr = FetchInputStatement("","");
+    if (line_ptr == NULL) break;
+    if (StrStrip(line_ptr,line_ptr)[0] != '\0') status = ProcessDirective(line_ptr, 0, IterLevel);
+   }
+  ClearInputSource();
+  return status;
  }
 
-void directive_for(Dict *command, int IterLevel)
+// Main entry point for the do statement
+int directive_do(Dict *command, int IterLevel)
  {
- }
-
-void directive_foreach(Dict *command, int IterLevel)
- {
- }
-
-void directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don't do this, haven't worked), = 1 (do do this), = 2 (have already worked)
- {
-  int        bracegot=0, status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
-  double    *criterion;
-  char      *cptr, linebuffer[LSTR_LENGTH];
+  int        bracegot=0; // becomes one after we parse opening {
+  int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  char      *criterion; // The value of the while (...) criterion
+  value      criterion_val;
+  int        i, j;
+  char      *cptr;
   Dict      *cmd2;
-  cmd_chain  chain   = NULL;
-  cmd_chain *cmd_put = NULL;
+  cmd_chain  chain     = NULL;
+  cmd_chain  chainiter = NULL;
+  cmd_chain *cmd_put   = NULL;
   cmd_put = &chain;
+
+  // Check whether if statement had { and/or first command on same line
   DictLookup(command,"brace",NULL,(void **)(&cptr));
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+
+  // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputLine(linebuffer, -1, NULL, NULL, NULL, "if ... > ");
+    cptr = FetchInputStatement("do ... > ",".......> ");
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
-    else            { ppl_error("Error: Unterminated if clause."); return; }
+    else            { ppl_error("Error: Unterminated do clause."); return 1; }
    }
-  if      (status== 1)
-   { ppl_error("Error: if statement should be followed by { ... }."); return; }
-  else if (status==-1)
+
+  // Check whether we found a statement before we found a {
+  if      (status ==  1) { ppl_error("Error: do statement should be followed by { ... }."); return 1; }
+  else if (status == -2) { ppl_error("Error: do clause should be terminated with a while statement."); return 1; }
+
+  // Check that final line has a while clause on it
+  cmd2 = parse(cptr);
+  if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
+  DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
+  if (strcmp(cptr,"while")!=0) { ppl_error("Error: only the statement 'while' can be placed after a } here."); return 1; }
+  DictLookup(cmd2,"criterion",NULL,(void **)(&criterion));
+
+  // Execute this do loop repeatedly
+  do
+   {
+    chainiter = chain;
+    status = loop_execute(&chainiter, IterLevel);
+    if (status) break;
+    i=-1; j=-1;
+    ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
+    if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+   }
+  while ((!status) && (!ppl_units_DblEqual(criterion_val.number,0.0)));
+  return status;
+ }
+
+// Main entry point for the while command
+int directive_while(Dict *command, int IterLevel)
+ {
+  int        bracegot=0; // becomes one after we parse opening {
+  int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  char      *criterion; // The value of the while (...) criterion
+  value      criterion_val;
+  int        i, j;
+  char      *cptr;
+  cmd_chain  chain     = NULL;
+  cmd_chain  chainiter = NULL;
+  cmd_chain *cmd_put   = NULL;
+  cmd_put = &chain;
+
+  // Check whether if statement had { and/or first command on same line
+  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  if (cptr!=NULL) bracegot = 1;
+  DictLookup(command,"command",NULL,(void **)(&cptr));
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  DictLookup(command,"criterion",NULL,(void **)(&criterion));
+
+  // Fetch lines and add them into loop chain until we get a }
+  while (status==0)
+   {
+    cptr = FetchInputStatement("while .> ",".......> ");
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    else            { ppl_error("Error: Unterminated while loop."); return 1; }
+   }
+
+  // Check whether we found a statement before we found a {
+  if      (status ==  1) { ppl_error("Error: while statement should be followed by { ... }."); return 1; }
+  else if (status == -1) { ppl_error("Error: while clause should be terminated with a }."); return 1; }
+
+  // Execute this while loop repeatedly
+  do
+   {
+    i=-1; j=-1;
+    ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
+    if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+    if (ppl_units_DblEqual(criterion_val.number,0.0)) break;
+    chainiter = chain;
+    status = loop_execute(&chainiter, IterLevel);
+   }
+  while (!status);
+  return status;
+ }
+
+// Main entry point for the for statement
+int directive_for(Dict *command, int IterLevel)
+ {
+  int        bracegot=0; // becomes one after we parse opening {
+  int        status=0;   // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  char      *loopvar;    // The loop variable
+  value     *start;
+  value     *end;
+  value     *step;
+  value     *iterval;
+  value      step_dummy;
+  unsigned char backwards;
+  char      *cptr;
+  cmd_chain  chain     = NULL;
+  cmd_chain  chainiter = NULL;
+  cmd_chain *cmd_put   = NULL;
+  cmd_put = &chain;
+
+  // Check whether if statement had { and/or first command on same line
+  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  if (cptr!=NULL) bracegot = 1;
+  DictLookup(command,"command",NULL,(void **)(&cptr));
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  DictLookup(command,"var_name",NULL,(void **)(&loopvar));
+  DictLookup(command,"start_value",NULL,(void **)(&start));
+  DictLookup(command,"final_value",NULL,(void **)(&end));
+  DictLookup(command,"step_size",NULL,(void **)(&step));
+
+  if (step == NULL)
+   {
+    step = &step_dummy;
+    memcpy(&step_dummy, start, sizeof(value));
+    step_dummy.number = 1.0;
+   }
+
+  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "Error: The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, 0, 0), ppl_units_GetUnitStr(end, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "Error: The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, 0, 0), ppl_units_GetUnitStr(step, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+
+  if (start->number < end->number) backwards=0;
+  else                             backwards=1;
+
+  if (((!backwards) && (step->number<=0)) || ((backwards) && (step->number>=0))) { sprintf(temp_err_string, "Error: The projected number of steps in this for loop is infinite."); ppl_error(temp_err_string); return 1; }
+
+  // Fetch lines and add them into loop chain until we get a }
+  while (status==0)
+   {
+    cptr = FetchInputStatement("for... > ",".......> ");
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    else            { ppl_error("Error: Unterminated for loop."); return 1; }
+   }
+
+  // Check whether we found a statement before we found a {
+  if      (status ==  1) { ppl_error("Error: for statement should be followed by { ... }."); return 1; }
+  else if (status == -1) { ppl_error("Error: for loop should be terminated with a }."); return 1; }
+
+  DictAppendValue(_ppl_UserSpace_Vars , loopvar , *start);
+  DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval);
+
+  // Execute this while loop repeatedly
+  status = 0;
+  while (((!backwards)&&(iterval->number < end->number)) || ((backwards)&&(iterval->number > end->number)))
+   {
+    chainiter = chain;
+    status = loop_execute(&chainiter, IterLevel);
+    if (status) break;
+    iterval->number += step->number;
+   }
+  return status;
+ }
+
+// Main entry point for the foreach statement
+int directive_foreach(Dict *command, int IterLevel)
+ {
+  int        bracegot=0; // becomes one after we parse opening {
+  int        i,status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  char      *loopvar;    // The loop variable
+  value     *iterval, *valptr;
+  value      dummy;
+  char      *cptr, *strptr;
+  List      *listptr;
+  Dict      *dictptr;
+  ListIterator *listiter;
+  cmd_chain  chain     = NULL;
+  cmd_chain  chainiter = NULL;
+  cmd_chain *cmd_put   = NULL;
+  glob_t     GlobData;
+
+  cmd_put = &chain;
+
+  // Check whether if statement had { and/or first command on same line
+  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  if (cptr!=NULL) bracegot = 1;
+  DictLookup(command,"command",NULL,(void **)(&cptr));
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  DictLookup(command,"var_name",NULL,(void **)(&loopvar));
+
+  // Fetch lines and add them into loop chain until we get a }
+  while (status==0)
+   {
+    cptr = FetchInputStatement("for... > ",".......> ");
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    else            { ppl_error("Error: Unterminated for loop."); return 1; }
+   }
+
+  // Check whether we found a statement before we found a {
+  if      (status ==  1) { ppl_error("Error: for statement should be followed by { ... }."); return 1; }
+  else if (status == -1) { ppl_error("Error: for loop should be terminated with a }."); return 1; }
+
+  ppl_units_zero(&dummy);
+  DictAppendValue(_ppl_UserSpace_Vars , loopvar , dummy);
+  DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval);
+
+  // See if we're iterating over a globbed filename
+  DictLookup     (command,"filename",NULL,(void **)(&cptr));
+  if (cptr != NULL)
+   {
+    status=0;
+    if (glob(cptr, 0, NULL, &GlobData) != 0) { ppl_error("Could not glob supplied filename."); return 1; }
+    for (i=0; i<GlobData.gl_pathc; i++)
+     {
+      iterval->string = GlobData.gl_pathv[i];
+      chainiter = chain;
+      status = loop_execute(&chainiter, IterLevel);
+      if (status) break;
+     }
+    globfree(&GlobData);
+    return status;
+   }
+
+  // ... otherwise we're looping over a provided list
+  DictLookup     (command,"item_list,",NULL,(void **)(&listptr));
+  listiter = ListIterateInit(listptr);
+  while (listiter != NULL)
+   {
+    dictptr = (Dict *)listiter->data;
+    DictLookup(dictptr,"value",NULL,(void **)&valptr);
+    if (valptr != NULL)
+     { memcpy(iterval, valptr, sizeof(value)); }
+    else
+     {
+      DictLookup(dictptr,"string",NULL,(void **)&strptr);
+      iterval->string = strptr;
+     }
+    chainiter = chain;
+    status = loop_execute(&chainiter, IterLevel);
+    if (status) break;
+    listiter = ListIterate(listiter, NULL);
+   }
+  return status;
+ }
+
+// Handles a single clause in an if ... else if ... else ... structure
+int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don't do this, haven't worked), = 1 (do do this), = 2 (have already worked)
+ {
+  int        bracegot=0; // becomes one after we parse opening {
+  int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  double    *criterion; // The value of the if (...) criterion
+  char      *cptr;
+  Dict      *cmd2;
+  cmd_chain  chain   = NULL;
+  cmd_chain *cmd_put = NULL;
+  cmd_put = &chain;
+
+  // Check whether if statement had { and/or first command on same line
+  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  if (cptr!=NULL) bracegot = 1;
+  DictLookup(command,"command",NULL,(void **)(&cptr));
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+
+  // Fetch lines and add them into loop chain until we get a }
+  while (status==0)
+   {
+    cptr = FetchInputStatement("if ... > ",".......> ");
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    else            { ppl_error("Error: Unterminated if clause."); return 1; }
+   }
+
+  // Check whether we found a statement before we found a {
+  if (status == 1)
+   {
+    ppl_error("Error: if statement should be followed by { ... }."); return 1;
+   }
+
+  // See whether final line has an else clause on it
+  if (status == -1)
    {
     cmd2 = parse(cptr);
-    if (cmd2 == NULL) return;
+    if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
     DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
-    if (strcmp(cptr,"else")!=0) { ppl_error("Error: only the statement 'else' can be placed after a } here."); return; }
+    if (strcmp(cptr,"else")!=0) { ppl_error("Error: only the statement 'else' can be placed after a } here."); return 1; }
     DictLookup(cmd2,"if",NULL,(void **)(&cptr));
     if (cptr == NULL)
      {
-      directive_ifelse(cmd2, state==0, IterLevel+1);
+      directive_ifelse(cmd2, state==0, IterLevel+1); // We have an else clause
      } else {
-      DictLookup(cmd2,"criterion",NULL,(void **)(&criterion));
-      if ppl_units_DblEqual(criterion, 0.0) directive_ifelse(cmd2, (state>0)*2, IterLevel);
-      else                                  directive_ifelse(cmd2, (state>0)+1, IterLevel);
+      DictLookup(cmd2,"criterion",NULL,(void **)(&criterion)); // We have an 'else if' clause
+      if (ppl_units_DblEqual(*criterion, 0.0)) directive_ifelse(cmd2, (state>0)*2, IterLevel);
+      else                                     directive_ifelse(cmd2, (state>0)+1, IterLevel);
      }
    }
-  if (state == 1)
-   {
-    cmd_put = &chain;
-    while (*cmd_put != NULL)
-     {
-      status = ProcessDirective((*cmd_put)->line, -1, IterLevel+1);
-      if (status) break;
-      cmd_put = &((*cmd_put)->next);
-     }
-   }
-  return;
+
+  // If we were going to do this if ( ) codeblock, execute it now
+  if (state == 1) status = loop_execute(&chain, IterLevel);
+  return status;
  }
 
-void directive_if(Dict *command, int IterLevel)
+// Main entry point for the if statement
+int directive_if(Dict *command, int IterLevel)
  {
   double *criterion;
-  DictLookup(command,"criterion",NULL,(void **)(&criterion));
-  if ppl_units_DblEqual(criterion, 0.0) directive_ifelse(command, 0, IterLevel);
-  else                                  directive_ifelse(command, 1, IterLevel);
-  return
- }
+  int     status=0;
 
-void directive_while(Dict *command, int IterLevel)
- {
+  DictLookup(command,"criterion",NULL,(void **)(&criterion));
+  if (ppl_units_DblEqual(*criterion, 0.0)) status = directive_ifelse(command, 0, IterLevel);
+  else                                     status = directive_ifelse(command, 1, IterLevel);
+  return status;
  }
 
