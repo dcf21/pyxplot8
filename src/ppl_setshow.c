@@ -334,12 +334,12 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"output")==0)) /* set output */
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
-    strncpy(settings_graph_current.title, tempstr, FNAME_LENGTH-4);
+    strncpy(settings_term_current.output, tempstr, FNAME_LENGTH-4);
     settings_graph_current.title[FNAME_LENGTH-4]='\0';
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"output")==0)) /* unset output */
    {
-    strncpy(settings_graph_current.title, settings_graph_default.title, FNAME_LENGTH-4);
+    strncpy(settings_term_current.output, settings_term_default.output, FNAME_LENGTH-4);
     settings_graph_current.title[FNAME_LENGTH-4]='\0';
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"palette")==0)) /* set palette */
