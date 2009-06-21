@@ -42,35 +42,54 @@ int PPL_FLOWCTRL_BREAKABLE = 0;
 int PPL_FLOWCTRL_BROKEN    = 0;
 int PPL_FLOWCTRL_CONTINUED = 0;
 
-void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *status)
+void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel, int *status)
  {
-  int i,*j;
-  char *desc;
+  int i,j,*k;
+  char *desc, QuoteType='\0';
+
+  // Ignore any whitespace at the beginning of this line
   i=0; while ((line[i]!='\0')&&(line[i]<=' ')) i++;
   if (line[i]=='\0') return;
 
   // If we haven't already had a {, we need to make sure we cut one off the beginning of this string
   if (!*bracegot)
    {
-    if (line[i]!='{' ) { *status = 1; return; } // We haven't got a {
-    else               { *bracegot=1; i++; }
+    if (line[i]!='{') { *status   = 1; return; } // We haven't got a {
+    else              { *bracegot = 1; i++; }
    }
 
-  // If this line starts with a }, we've reached the end of the loop
-  if (line[i]=='}')
+  // If this line starts with a }, and bracelevel is zero, we've reached the end of the loop
+  while ((line[i]!='\0')&&(line[i]<=' ')) i++;
+  if ((line[i]=='}') && (*bracelevel <= 0))
    {
     i++; while ((line[i]!='\0')&&(line[i]<=' ')) i++;
     if (line[i]=='\0') { *status = -2; return; }
     else               { *status = -1; return; }
    }
 
+  // Check for any unquoted {s on this line, which mean we need to increase bracelevel
+  for (j=i ; line[j] != '\0'; j++)
+   {
+    if (QuoteType != '\0') // Do not pay attention to brackets inside quoted strings
+     {
+      if ((line[j]==QuoteType) && (j!=0) && (line[j-1]!='\\')) QuoteType='\0';
+      continue;
+     }
+    else if ((line[j]=='\'') || (line[j]=='\"')) // We are entering a quoted string
+     { QuoteType = line[j]; }
+    else if  (line[j]=='{')
+     { (*bracelevel)++; }
+    else if  (line[j]=='}')
+     { (*bracelevel)--; }
+   }
+
   // Add this line into the loop chain
-  GetInputSource(&j, &desc);
+  GetInputSource(&k, &desc);
   **cmd_put = (cmd_chain_item *)lt_malloc(sizeof(cmd_chain_item)); // Make a new chain element
   (**cmd_put)->line = (char *)lt_malloc(strlen(line+i)+1); // Write command line
   strcpy( (**cmd_put)->line , line+i );
-  if (j==NULL) (**cmd_put)->linenumber  = -1; // Write source line number
-  else         (**cmd_put)->linenumber  = *j;
+  if (k==NULL) (**cmd_put)->linenumber  = -1; // Write source line number
+  else         (**cmd_put)->linenumber  = *k;
   (**cmd_put)->next        = NULL; // Put null next tag in linked list
   if (desc == NULL)
    { (**cmd_put)->description = NULL; } // Write source filename description
@@ -105,6 +124,7 @@ int loop_execute(cmd_chain *chain, int IterLevel)
 int directive_do(Dict *command, int IterLevel)
  {
   int        bracegot=0; // becomes one after we parse opening {
+  int        bracelevel=0;
   int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   char      *criterion; // The value of the while (...) criterion
   value      criterion_val;
@@ -120,13 +140,13 @@ int directive_do(Dict *command, int IterLevel)
   DictLookup(command,"brace",NULL,(void **)(&cptr));
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
-  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
     cptr = FetchInputStatement("do ... > ",".......> ");
-    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error("Error: Unterminated do clause."); return 1; }
    }
 
@@ -160,6 +180,7 @@ int directive_do(Dict *command, int IterLevel)
 int directive_while(Dict *command, int IterLevel)
  {
   int        bracegot=0; // becomes one after we parse opening {
+  int        bracelevel=0;
   int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   char      *criterion; // The value of the while (...) criterion
   value      criterion_val;
@@ -174,14 +195,14 @@ int directive_while(Dict *command, int IterLevel)
   DictLookup(command,"brace",NULL,(void **)(&cptr));
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
-  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
   DictLookup(command,"criterion",NULL,(void **)(&criterion));
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
     cptr = FetchInputStatement("while .> ",".......> ");
-    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error("Error: Unterminated while loop."); return 1; }
    }
 
@@ -192,7 +213,7 @@ int directive_while(Dict *command, int IterLevel)
   // Execute this while loop repeatedly
   do
    {
-    i=-1; j=-1;
+    i=-1; j=-1; status=0;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
     if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
     if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
@@ -208,6 +229,7 @@ int directive_while(Dict *command, int IterLevel)
 int directive_for(Dict *command, int IterLevel)
  {
   int        bracegot=0; // becomes one after we parse opening {
+  int        bracelevel=0;
   int        status=0;   // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   char      *loopvar;    // The loop variable
   value     *start;
@@ -226,7 +248,7 @@ int directive_for(Dict *command, int IterLevel)
   DictLookup(command,"brace",NULL,(void **)(&cptr));
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
-  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
   DictLookup(command,"var_name",NULL,(void **)(&loopvar));
   DictLookup(command,"start_value",NULL,(void **)(&start));
   DictLookup(command,"final_value",NULL,(void **)(&end));
@@ -251,7 +273,7 @@ int directive_for(Dict *command, int IterLevel)
   while (status==0)
    {
     cptr = FetchInputStatement("for... > ",".......> ");
-    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error("Error: Unterminated for loop."); return 1; }
    }
 
@@ -278,6 +300,7 @@ int directive_for(Dict *command, int IterLevel)
 int directive_foreach(Dict *command, int IterLevel)
  {
   int        bracegot=0; // becomes one after we parse opening {
+  int        bracelevel=0;
   int        i,status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   char      *loopvar;    // The loop variable
   value     *iterval, *valptr;
@@ -297,14 +320,14 @@ int directive_foreach(Dict *command, int IterLevel)
   DictLookup(command,"brace",NULL,(void **)(&cptr));
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
-  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
   DictLookup(command,"var_name",NULL,(void **)(&loopvar));
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
     cptr = FetchInputStatement("for... > ",".......> ");
-    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error("Error: Unterminated for loop."); return 1; }
    }
 
@@ -359,6 +382,7 @@ int directive_foreach(Dict *command, int IterLevel)
 int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don't do this, haven't worked), = 1 (do do this), = 2 (have already worked)
  {
   int        bracegot=0; // becomes one after we parse opening {
+  int        bracelevel=0;
   int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   double    *criterion; // The value of the if (...) criterion
   char      *cptr;
@@ -371,13 +395,13 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
   DictLookup(command,"brace",NULL,(void **)(&cptr));
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
-  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
     cptr = FetchInputStatement("if ... > ",".......> ");
-    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &status);
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error("Error: Unterminated if clause."); return 1; }
    }
 
@@ -406,6 +430,7 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
    }
 
   // If we were going to do this if ( ) codeblock, execute it now
+  status = 0;
   if (state == 1) status = loop_execute(&chain, IterLevel);
   return status;
  }
