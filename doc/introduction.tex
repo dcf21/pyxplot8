@@ -44,19 +44,20 @@ website\footnote{\url{http://www.pyxplot.org.uk/}}.
 
 The ability to represent data visually, usually as some form of graph, is a
 requirement for any scientific or mathematical work.  Historically, a very
-widely-used open-source plotting programme has been \gnuplot, the principal
+widely-used open-source plotting program has been \gnuplot, the principal
 attraction of which is its easy-to-use command-line interface, which allows
 \datafile s to be turned into graphs within seconds. One of its main rivals has
 been {\sc Pgplot}\index{Pgplot}, which is somewhat more flexible, but much less
-easy to use; it can only be called from within a programme, and so code must be
+easy to use; it can only be called from within a program, and so code must be
 written to produce each plot.  This is potentially time consuming, and it is
 necessary for the user to have some programming experience.
 
 Alongside these, several commercial packages have existed, including {\sc
-Maple}\index{Maple}, {\sc Mathematica}\index{Mathematica} and {\sc
-SuperMongo}\index{SuperMongo}.  These can typically produce prettier results
-than their free counterparts, but carry with them considerable price tags and
-licensing restrictions. Moreover, none of these are as easy to use as \gnuplot.
+Maple}\index{Maple}, {\sc Mathematica}\index{Mathematica}, {\sc
+Origin}\index{Origin}, and {\sc SuperMongo}\index{SuperMongo}.  These can
+typically produce prettier results than their free counterparts, but carry with
+them considerable price tags and licensing restrictions. Moreover, none of
+these are as easy to use as \gnuplot.
 
 Both \gnuplot\ and Pgplot were developed in the mid-1980s. At that time, the
 quality of their output seemed state-of-the-art. But this is less true today.
@@ -83,13 +84,13 @@ We argue that \gnuplot's interface brings another distinct advantage to PyXPlot
 in comparison with plotting packages which insist upon being called from within
 a programming language. PyXPlot requires that data be written to a file on disk
 before it can be plotted. When plotting is done from within a programming
-language, this can tempt the user into writing programmes which both perform
+language, this can tempt the user into writing programs which both perform
 calculations and plot the results immediately.  This sounds neat, but it can be
 a dangerous temptation. Remembering to store a copy of the data used to produce
 a graph becomes a secondary priority.  Months later, when the need arises to
 replot the same data in a different form, or to compare it with newer data,
-remembering how to use a hurriedly written programme can prove tricky --
-especially if the programme was originally written by someone else. But a simple
+remembering how to use a hurriedly written program can prove tricky --
+especially if the program was originally written by someone else. But a simple
 \datafile\ is quite straightforward to plot.
 
 The similarity of PyXPlot's interface to that of \gnuplot\ is such that simple
@@ -136,38 +137,21 @@ should work on other similar systems. It requires that the following software
 packages (not included) be installed:\index{system requirements}
 
 \vspace{0.5cm}
-\begin{tabular}{ll}
-Python       & (Version 2.3 or later)\index{python} \\
-Latex        & (Used for all textual labels)\index{latex} \\
-\imagemagick & (needed for the gif, png and jpg terminals)\index{ImageMagick} \\
-\end{tabular}
+\begin{itemize}
+\item Ghostview (or {\tt ggv}) \index{Ghostview}
+\item The Gnu Scientific Library (version 1.10+) \index{gsl}
+\item The Gnu Readline Library (version 5+) \index{readline}
+\item latex (version $2\epsilon$) \index{latex}
+\item libxml2 (version 2.6+) \index{libxml}
+\item libjpeg (version 6.2+) \index{libjpeg}
+\end{itemize}
 \vspace{0.5cm}
 
-\noindent The following package is not {\it required} for installation, but
-many PyXPlot features are disabled when it is not present, including the {\tt
-fit} and {\tt spline} commands and the integration of functions. It is very
-strongly recommended:\indcmd{fit}\indcmd{spline}
-
-\vspace{0.5cm}
-\begin{tabular}{ll} 
-Scipy        & (Python Scientific Library)\index{scipy} \\
-\end{tabular}
-\vspace{0.5cm}
-
-\noindent The following package is not {\it required} for installation, but it
-is not possible to use the X11 terminal, i.e.\ to display plots on the screen,
-without it:
-
-\vspace{0.5cm}
-\begin{tabular}{ll}
-\ghostview   & (used for the X11 terminal)\index{Ghostview} \\
-\end{tabular}
-\vspace{0.5cm}
-
-Debian and Ubuntu users can find the above software in the packages {\tt
-texlive}, {\tt gv}, {\tt imagemagick}, {\tt python2.3}, {\tt
-python2.3-scipy}.\index{Debian Linux}\index{Ubuntu
-Linux}\index{installation!under Debian}\index{installation!under Ubuntu}
+Debian and Ubuntu users can find the above software in the packages {\tt gv},
+{\tt imagemagick}, {\tt libgsl0-dev}, {\tt libjpeg62-dev}, {\tt
+libreadline5-dev}, {\tt libxml2-dev}, {\tt tetex-extra}.\index{Debian
+Linux}\index{Ubuntu Linux}\index{installation!under
+Debian}\index{installation!under Ubuntu}
 
 \section{Installation}
 \index{installation}
@@ -187,7 +171,7 @@ they are using the latest version, Debian and Ubuntu users can download the
 package from the PyXPlot website and install it manually by typing:
 
 \begin{verbatim}
-dpkg -i pyxplot_0.7.0.deb
+dpkg -i pyxplot_0.8.0.deb
 \end{verbatim}
 
 \subsection{Installation as User}
@@ -202,7 +186,7 @@ administrator.\index{installation!user-level}
 \item Unpack the distributed .tar.gz:
 
 \begin{verbatim}
-tar xvfz pyxplot_0.7.0.tar.gz
+tar xvfz pyxplot_0.8.0.tar.gz
 cd pyxplot
 \end{verbatim}
 
@@ -216,7 +200,7 @@ make
 \item Finally, start PyXPlot:
 
 \begin{verbatim}
-./pyxplot
+./bin/pyxplot
 \end{verbatim}
 
 \end{itemize}
@@ -244,18 +228,18 @@ pyxplot
 
 \section{Credits}
 
-We would like to express our gratitude to several people who have contributed
-to PyXPlot -- first and foremost to J\"org Lehmann\index{Lehmann, J\"org},
-Andr\'e Wobst\index{Wobst, Andr\'e} and Michael Schindler\index{Schindler,
-Michael} for writing the PyX\index{PyX} graphics library for Python, upon which
-this software is heavily built. We would also like to think all of the users
-who have got in touch with us by email since PyXPlot was first released on the
-web.  Your feedback and suggestions have been gratefully received.
+%We would like to express our gratitude to several people who have contributed
+%to PyXPlot -- first and foremost to J\"org Lehmann\index{Lehmann, J\"org},
+%Andr\'e Wobst\index{Wobst, Andr\'e} and Michael Schindler\index{Schindler,
+%Michael} for writing the PyX\index{PyX} graphics library for Python, upon which
+%this software is heavily built. We would also like to think all of the users
+%who have got in touch with us by email since PyXPlot was first released on the
+%web.  Your feedback and suggestions have been gratefully received.
 
-\section{Legal Blurb}
+\section{License}
 
 This manual and the software which it describes are both copyright \copyright\
-Dominic Ford 2006-8, Ross Church 2008. They are distributed under the GNU
+Dominic Ford 2006-9, Ross Church 2009. They are distributed under the GNU
 General Public License (GPL) Version~2, a copy of which is provided in the {\tt
 COPYING} file in this distribution.\index{General Public
 License}\index{license} Alternatively, it may be downloaded from the web, from

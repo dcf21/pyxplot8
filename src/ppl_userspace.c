@@ -42,6 +42,7 @@
 
 #include "ppl_calculus.h"
 #include "ppl_constants.h"
+#include "ppl_interpolation.h"
 #include "ppl_userspace.h"
 
 // -------------------------------------------------------------------

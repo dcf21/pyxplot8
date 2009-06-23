@@ -58,9 +58,11 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_besselK       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselK     , NULL, NULL, NULL, NULL, NULL, NULL, "besselK(l,x) evaluates the lth irregular modified cylindrical Bessel function at x"};
   FunctionDescriptor fd_bessely       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_bessely     , NULL, NULL, NULL, NULL, NULL, NULL, "bessely(l,x) evaluates the lth irregular spherical Bessel function at x"};
   FunctionDescriptor fd_besselY       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselY     , NULL, NULL, NULL, NULL, NULL, NULL, "besselY(l,x) evaluates the lth irregular cylindrical Bessel function at x"};
-  FunctionDescriptor fd_beta          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_beta        , NULL, NULL, NULL, NULL, NULL, NULL, "beta(a,b) evaluates the Beta Function B(a,b)"};
+  FunctionDescriptor fd_beta          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_beta        , NULL, NULL, NULL, NULL, NULL, NULL, "beta(a,b) evaluates the beta function B(a,b)"};
   FunctionDescriptor fd_binomialPDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialPDF , NULL, NULL, NULL, NULL, NULL, NULL, "binomialPDF(k,p,n) evaulates the probability of getting k successes out of n trials in a binomial distribution with success probability p"};
   FunctionDescriptor fd_binomialCDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialCDF , NULL, NULL, NULL, NULL, NULL, NULL, "binomialCDF(k,p,n) evaulates the probability of getting fewer than or exactly k successes out of n trials in a binomial distribution with success probability p"};
+  FunctionDescriptor fd_Bv            = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_planck_Bv   , NULL, NULL, NULL, NULL, NULL, NULL, "Bv(nu,T) returns the emitted power of a blackbody of temperature T per unit area, per unit solid angle, and per unit frequency"};
+  FunctionDescriptor fd_Bvmax         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_planck_Bvmax, NULL, NULL, NULL, NULL, NULL, NULL, "Bvmax(T) returns the frequency of the maximum of the function Bv(nu,T)"};
   FunctionDescriptor fd_ceil          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ceil        , NULL, NULL, NULL, NULL, NULL, NULL, "ceil(x) returns the smallest integer value greater than or equal to x"};
   FunctionDescriptor fd_chisqPDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqPDF    , NULL, NULL, NULL, NULL, NULL, NULL, "chisqPDF(x,nu) returns the probability desity at x in a chi-squared distribution with nu degrees of freedom"};
   FunctionDescriptor fd_chisqCDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDF    , NULL, NULL, NULL, NULL, NULL, NULL, "chisqCDF(x,nu) returns the cumulative probability desity at x in a chi-squared distribution with nu degrees of freedom"};
@@ -74,9 +76,10 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_erf           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erf         , NULL, NULL, NULL, NULL, NULL, NULL, "erf(x) evaluates the error function at x"};
   FunctionDescriptor fd_erfc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erfc        , NULL, NULL, NULL, NULL, NULL, NULL, "erfc(x) evaluates the complimentary error function at x"};
   FunctionDescriptor fd_exp           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_exp         , NULL, NULL, NULL, NULL, NULL, NULL, "exp(x) returns e to the power of x"};
+  FunctionDescriptor fd_expm1         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_expm1       , NULL, NULL, NULL, NULL, NULL, NULL, "expm1(x) accurately evaluates exp(x)-1"};
   FunctionDescriptor fd_expint        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_expint      , NULL, NULL, NULL, NULL, NULL, NULL, "expint(n,x) evaluates the integral of exp(-xt)/t**n between one and infinity"};
   FunctionDescriptor fd_floor         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_floor       , NULL, NULL, NULL, NULL, NULL, NULL, "floor(x) returns the largest integer value smaller than or equal to x"};
-  FunctionDescriptor fd_gamma         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_gamma       , NULL, NULL, NULL, NULL, NULL, NULL, "gamma(x) evaluates the Gamma Function at x"};
+  FunctionDescriptor fd_gamma         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_gamma       , NULL, NULL, NULL, NULL, NULL, NULL, "gamma(x) evaluates the gamma function at x"};
   FunctionDescriptor fd_gaussianPDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianPDF , NULL, NULL, NULL, NULL, NULL, NULL, "gaussianPDF(x,sigma) evaluates the Gaussian probability density function of standard deviation sigma at x"};
   FunctionDescriptor fd_gaussianCDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDF , NULL, NULL, NULL, NULL, NULL, NULL, "gaussianCDF(x,sigma) evaluates the Gaussian cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_gaussianCDFi  = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDFi, NULL, NULL, NULL, NULL, NULL, NULL, "gaussianCDFi(x,sigma) evaluates the inverse Gaussian cumulative distribution function of standard deviation sigma at x"};
@@ -87,9 +90,9 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_legendreQ     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreQ   , NULL, NULL, NULL, NULL, NULL, NULL, "legendreQ(l,x) evaluates the lth Legendre function at x"};
   FunctionDescriptor fd_log           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log         , NULL, NULL, NULL, NULL, NULL, NULL, "log(x) returns the natural logarithm of x"};
   FunctionDescriptor fd_log10         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log10       , NULL, NULL, NULL, NULL, NULL, NULL, "log10(x) returns the logarithm to base 10 of x"};
-  FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalPDF(x,sigma) evaluates the Log Normal probability density function of standard deviation sigma at x"};
-  FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDF(x,sigma) evaluates the Log Normal cumulative distribution function of standard deviation sigma at x"};
-  FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDFi(x,sigma) evaluates the inverse Log Normal cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalPDF(x,sigma) evaluates the log normal probability density function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDF(x,sigma) evaluates the log normal cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDFi(x,sigma) evaluates the inverse log normal cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_max           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_max         , NULL, NULL, NULL, NULL, NULL, NULL, "max(x,y) returns the greater of the two values x and y"};
   FunctionDescriptor fd_min           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_min         , NULL, NULL, NULL, NULL, NULL, NULL, "min(x,y) returns the lesser of the two values x and y"};
   FunctionDescriptor fd_mod           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_mod         , NULL, NULL, NULL, NULL, NULL, NULL, "mod(x,y) returns the remainder of x/y"};
@@ -98,10 +101,10 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_pow           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_pow         , NULL, NULL, NULL, NULL, NULL, NULL, "pow(x,y) returns x to the power of y"};
   FunctionDescriptor fd_radians       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_radians     , NULL, NULL, NULL, NULL, NULL, NULL, "radians(x) converts angles measured in degrees into radians"};
   FunctionDescriptor fd_random        = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcfmath_frandom     , NULL, NULL, NULL, NULL, NULL, NULL, "random(x) returns a random number between 0 and 1"};
-  FunctionDescriptor fd_randombin     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandombin  , NULL, NULL, NULL, NULL, NULL, NULL, "randomBinomial(p,n) returns a random sample from a Binomial distribution with n independent trials and a success probability p"};
-  FunctionDescriptor fd_randomcs      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomcs   , NULL, NULL, NULL, NULL, NULL, NULL, "randomChiSq(mu) returns a random sample from a Chi-Squared distribution with mu degrees of freedom"};
+  FunctionDescriptor fd_randombin     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandombin  , NULL, NULL, NULL, NULL, NULL, NULL, "randomBinomial(p,n) returns a random sample from a binomial distribution with n independent trials and a success probability p"};
+  FunctionDescriptor fd_randomcs      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomcs   , NULL, NULL, NULL, NULL, NULL, NULL, "randomChiSq(mu) returns a random sample from a chi-squared distribution with mu degrees of freedom"};
   FunctionDescriptor fd_randomg       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomg    , NULL, NULL, NULL, NULL, NULL, NULL, "randomGaussian(sigma) returns a random sample from a Gaussian (normal) distribution of standard deviation sigma"};
-  FunctionDescriptor fd_randomln      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandomln   , NULL, NULL, NULL, NULL, NULL, NULL, "randomLogNormal(zeta,sigma) returns a random sample from the Log Normal distribution centred on zeta, and of width sigma"};
+  FunctionDescriptor fd_randomln      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandomln   , NULL, NULL, NULL, NULL, NULL, NULL, "randomLogNormal(zeta,sigma) returns a random sample from the log normal distribution centred on zeta, and of width sigma"};
   FunctionDescriptor fd_randomp       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomp    , NULL, NULL, NULL, NULL, NULL, NULL, "randomPoisson(n) returns a random integer from a Poisson distribution with mean n"};
   FunctionDescriptor fd_sin           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sin         , NULL, NULL, NULL, NULL, NULL, NULL, "sin(x) returns the sine of x (measured in radians)"};
   FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "sinh(x) returns the hyperbolic sine of x"};
@@ -217,6 +220,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "beta"           , (void *)&fd_beta        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "binomialPDF"    , (void *)&fd_binomialPDF , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "binomialCDF"    , (void *)&fd_binomialCDF , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Bv"             , (void *)&fd_Bv          , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Bvmax"          , (void *)&fd_Bvmax       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ceil"           , (void *)&fd_ceil        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqPDF"       , (void *)&fd_chisqPDF    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqCDF"       , (void *)&fd_chisqCDF    , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -230,6 +235,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "erf"            , (void *)&fd_erf         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "erfc"           , (void *)&fd_erfc        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "exp"            , (void *)&fd_exp         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "expm1"          , (void *)&fd_expm1       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "expint"         , (void *)&fd_expint      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "floor"          , (void *)&fd_floor       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gamma"          , (void *)&fd_gamma       , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -751,6 +757,15 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "CD";  // carat
+  ppl_unit_database[ppl_unit_pos].nameAp     = "CDs"; // carat
+  ppl_unit_database[ppl_unit_pos].nameFs     = "carat";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "carats";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 200e-6;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "shekel";  // Shekel
   ppl_unit_database[ppl_unit_pos].nameAp     = "shekels"; // Shekel
   ppl_unit_database[ppl_unit_pos].nameFs     = "shekel";
@@ -942,7 +957,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].multiplier = 1e-26;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1; // Watt per square metre per Hz (NOT per steradian!)
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 

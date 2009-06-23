@@ -27,9 +27,11 @@
 #include <math.h>
 
 #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_const_mksa.h>
+#include <gsl/gsl_const_num.h>
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_sf_erf.h>
@@ -361,6 +363,50 @@ void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int 
   return;
  }
 
+void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  int i;
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in1->dimensionless))
+   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+    if (in1->exponent[i] != -(i==UNIT_TIME))
+     {
+      *status = 1;
+      sprintf(errtext, "The first argument to the Bv() function must be a frequency. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in1, NULL, 1, 0));
+      return;
+     }
+  if (!(in2->dimensionless))
+   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+    if (in2->exponent[i] != (i==UNIT_TEMPERATURE))
+     {
+      *status = 1;
+      sprintf(errtext, "The second argument to the Bv() function must be a temperature. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in2, NULL, 1, 0));
+      return;
+     }
+  output->exponent[UNIT_MASS] =  1;
+  output->exponent[UNIT_TIME] = -2;
+  output->exponent[UNIT_ANGLE]= -2;
+  output->number              =  2 * GSL_CONST_MKSA_PLANCKS_CONSTANT_H / pow(GSL_CONST_MKSA_SPEED_OF_LIGHT, 2) * pow(in1->number,3) / expm1(GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in1->number / GSL_CONST_MKSA_BOLTZMANN / in2->number);
+ }
+
+void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext)
+ {
+  int i;
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+    if (in->exponent[i] != (i==UNIT_TEMPERATURE))
+     {
+      *status = 1;
+      sprintf(errtext, "The Bvmax() function can only act upon temperatures. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+      return;
+     }
+  output->exponent[UNIT_TIME] = -1;
+  output->number = 2.821439 * GSL_CONST_MKSA_BOLTZMANN / GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in->number; // Wien displacement law
+ }
+
 void dcfmath_ceil(value *in, value *output, int *status, char *errtext)
  {
   *status = 0;
@@ -542,7 +588,7 @@ void dcfmath_erfc(value *in, value *output, int *status, char *errtext)
   return;
  }
 
-void dcfmath_exp (value *in, value *output, int *status, char *errtext)
+void dcfmath_exp(value *in, value *output, int *status, char *errtext)
  {
   *status = 0;
   ppl_units_zero(output);
@@ -553,6 +599,20 @@ void dcfmath_exp (value *in, value *output, int *status, char *errtext)
     return;
    }
   output->number = exp(in->number);
+  return;
+ }
+
+void dcfmath_expm1(value *in, value *output, int *status, char *errtext)
+ {
+  *status = 0;
+  ppl_units_zero(output);
+  if (!(in->dimensionless))
+   {
+    *status = 1;
+    sprintf(errtext, "The expm1() function can only act upon dimensionless inputs. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
+    return;
+   }
+  output->number = expm1(in->number);
   return;
  }
 

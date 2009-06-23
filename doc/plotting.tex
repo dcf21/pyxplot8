@@ -27,6 +27,244 @@ In this chapter, we continue to explore the various options of the {\tt plot}
 command. Specifically, we turn to those aspects which differ from \gnuplot's
 {\tt plot} command.
 
+\section{Formatting and Terminals}
+\label{set_terminal2}
+
+In this section, we describe the commands used to control the format of the
+graphic output produced by PyXPlot. This continues the discussion from
+Section~\ref{directing_output} of how the \indcmdt{set terminal} can be used to
+produce plots in various graphic formats, such as postscript files, jpeg
+images, etc.
+
+Many of these {\it terminals} -- the word we use to describe an output format
+-- accept additional parameters which configure the exact appearance of the
+output produced.  For example, the default terminal, {\tt X11}, which displays
+plots on the screen, has such settings. By default, each time a new plot is
+generated, if the previous plot is still open on the display, the old plot is
+replaced with the new one. This way, only one plot window is open at any one
+time.  This behaviour has the advantage that the desktop does not become
+flooded with plot windows.
+
+If this is not desired, however -- for example if you want to compare two plots
+-- old graphs can be kept visible when plotting further graphs by using the the
+{\tt X11\_multiwindow} terminal:\index{X11 terminal}\index{multiple windows}
+
+\begin{verbatim} 
+set terminal X11_singlewindow
+plot sin(x)
+plot cos(x)  <-- first plot window disappears
+\end{verbatim}
+
+\noindent c.f.:
+
+\begin{verbatim} 
+set terminal X11_multiwindow
+plot sin(x)
+plot cos(x)  <-- first plot window remains
+\end{verbatim}
+
+As an additional option, the {\tt X11\_persist} terminal keeps plot windows
+open after PyXPlot exits; the above two terminals close all plot windows upon
+exit.
+
+If the {\tt enlarge} modifier is used with the \indcmdt{set terminal} then the
+whole plot is enlarged, or, in the case of large plots, shrunk, to the current
+paper size, minus a small margin. The aspect ratio of the plot is preserved.
+This is most useful with the {\tt postscript} terminal, when preparing a plot
+to send directly to a printer.
+
+As there are many changes to the options accepted by the {\tt set terminal}
+command in comparison to those understood by \gnuplot, the syntax of PyXPlot's
+command is given below, followed by a list of the recognised settings:
+
+\begin{verbatim} 
+set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
+               postscript | eps | pdf | gif | png | jpg }
+             { colour | color | monochrome }
+             { portrait | landscape }
+             { invert | noinvert }
+             { transparent | solid }
+             { antialias | noantialias }
+             { enlarge | noenlarge }
+\end{verbatim}
+
+\newpage %%% WHY IS THIS NECESSARY?
+
+\begin{longtable}{p{3cm}p{9cm}}
+{\tt x11\_singlewindow} & Displays plots on the screen (in X11 windows, using \ghostview). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
+{\tt x11\_multiwindow} & As above, but each new plot appears in a new window, and the old plots remain visible. As many plots as may be desired can be left on the desktop simultaneously.\\
+{\tt x11\_persist} & As above, but plot windows remain open after PyXPlot closes.\\
+{\tt postscript} & Sends output to a postscript file. The filename for this file should be set using {\tt set output}. {\bf [default when running non-interactively; see below]}\index{postscript output}\\
+{\tt eps} & As above, but produces encapsulated postscript.\index{encapsulated postscript}\index{postscript!encapsulated}\\
+{\tt pdf} & As above, but produces pdf output.\index{pdf output}\\
+{\tt gif} & Sends output to a gif image file; as above, the filename should be set using {\tt set output}.\index{gif output}\\
+{\tt png} & As above, but produces a png image.\index{png output}\\
+{\tt jpg} & As above, but produces a jpeg image.\index{jpeg output}\\
+{\tt colour} & Allows datasets to be plotted in colour. Automatically they will be displayed in a series of different colours, or alternatively colours may be specified using the {\tt with colour} plot modifier (see below). {\bf [default]}\index{colour output}\\
+{\tt color} & Equivalent to the above; provided for users of nationalities which can't spell. \smiley \\
+{\tt monochrome} & Opposite to the above; all datasets will be plotted in black.\index{monochrome output}\\
+{\tt portrait} & Sets plots to be displayed in upright (normal) orientation. {\bf [default]}\index{portrait orientation}\\
+{\tt landscape} & Opposite of the above; produces side-ways plots. Not very useful when displayed on the screen, but you fit more on a sheet of paper that way around.\index{landscape orientation}\\
+{\tt invert} & Modifier for the gif, png and jpg terminals; produces output with inverted colours.\footnote{This terminal setting is useful for producing plots to embed in talk slideshows, which often contain bright text on a dark background. It only works when producing bitmapped output, though a similar effect can be achieved in postscript using the {\tt set textcolour} and {\tt set axescolour} commands (see Section~\ref{set_colours}).}\index{colours!inverting}\\
+{\tt noinvert} & Modifier for the gif, png and jpg terminals; opposite to the above. {\bf [default]}\\
+{\tt transparent} & Modifier for the gif and png terminals; produces output with a transparent background.\index{transparent terminal}\index{gif output!transparency}\index{png output!transparency}\\
+{\tt solid} & Modifier for the gif and png terminals; opposite to the above. {\bf [default]}\\
+{\tt antialias} & Modifier for the gif, jpg and png terminals; produces antialiased output, with colour boundaries smoothed to disguise the effects of pixelisation {\bf [default]}\\
+{\tt noantialias} & Modifier for the gif, jpg and png terminals; opposite to the
+above\\
+{\tt enlarge} & Enlarge or shrink contents to fit the current paper
+size.\index{enlarging output}\\
+{\tt noenlarge} & Do not enlarge output; opposite to the above. {\bf [default]}\\
+\end{longtable}
+\label{terminals}
+
+The default terminal is normally {\tt x11\_singlewindow}, matching
+approximately the behaviour of \gnuplot. However, there is an exception to this.
+When PyXPlot is used non-interactively -- i.e.\ one or more command scripts are
+specified on the command line, and PyXPlot exits as soon as it finishes
+executing them -- the {\tt x11\_singlewindow} is not a very sensible
+terminal to use: any plot window would close as soon as PyXPlot exited. The
+default terminal in this case changes to {\tt postscript}.
+
+This rule does not apply when the special `--' filename is specified in a list
+of command scripts on the command line, to produce an interactive terminal
+between running a series of scripts. In this case, PyXPlot detects that the
+session will be interactive, and defaults to the usual
+{\tt x11\_singlewindow} terminal.
+
+An additional exception is on machines where the {\tt DISPLAY} environment
+variable\index{display environment variable@{\tt DISPLAY} environment
+variable} is not set. In this case, PyXPlot detects that it has access to no
+X-terminal on which to display plots, and defaults to the {\tt postscript}
+terminal.
+
+The {\tt gif}, {\tt png} and {\tt jpg} terminals result in some loss of image
+quality, since the plot has to be sampled into a bitmapped graphic format.  By
+default, this sampling is performed at $300\,\mathrm{dpi}$, though this may be
+changed using the command {\tt set dpi <value>}. Alternatively, it may be
+changed using the {\tt DPI} option in the {\tt settings} section of a
+configuration file (see Section~\ref{configuration}).\indcmd{set dpi}
+\index{bitmap output!resolution}\index{image resolution}
+
+\section{Backing Up Over-Written Files}
+
+\index{overwriting files}\index{backup files}\label{filebackup}
+
+By default, when graphical output is sent to a file -- i.e.\ a postscript file or
+a bitmap image -- pre-existing files are overwritten if their filenames match
+that of the file which PyXPlot generates. This behaviour may be changed with
+the \indcmdt{set backup}, which has the syntax:
+
+\begin{verbatim}
+set backup
+set nobackup
+\end{verbatim}
+
+When this switch is turned on, pre-existing files will be renamed with a tilde
+appended to their filenames, rather than being overwritten.
+
+\section{Paper Sizes}
+
+By default, when the postscript terminal produces printable, i.e.\ not
+encapsulated, output, the paper size for this output is read from the user's
+system locale settings. It may be changed, however, with \indcmdt{set
+papersize}, which may be followed either by the name of a recognised paper
+size, or by the dimensions of a user-defined size, specified as a {\tt height},
+{\tt width} pair, both being measured in millimetres. For example:
+
+\begin{verbatim}
+set papersize a4
+set papersize 100,100
+\end{verbatim}
+
+\noindent A list of recognised paper size names is given in
+Figure~\ref{paper_sizes}.\footnote{For everything that you ever wanted to know
+about international paper sizes, see Marcus Kuhn's excellent treatise:
+\url{http://www.cl.cam.ac.uk/~mgk25/iso-paper.html}. If you still want to know
+more, then Wikipedia has a good article on the Swedish extensions to this
+system and the Japanese B-series:
+\url{http://en.wikipedia.org/wiki/Paper_size}.}\index{Kuhn, Marcus}\index{paper
+sizes}
+
+\begin{figure}
+\tiny \center
+\begin{tabular}{|rrr|rrr|}
+\hline
+{\bf Name} & {\bf $h$/mm} & {\bf $w$/mm} & {\bf Name} & {\bf $h$/mm} & {\bf $w$/mm} \\
+\hline
+                       2a0 &   1681 &   1189 &           medium &    584 &    457 \\
+                       4a0 &   2378 &   1681 &          monarch &    267 &    184 \\
+                        a0 &   1189 &    840 &             post &    489 &    394 \\
+                        a1 &    840 &    594 &        quad\_demy &   1143 &   889 \\
+                       a10 &     37 &     26 &           quarto &    254 &    203 \\
+                        a2 &    594 &    420 &            royal &    635 &    508 \\
+                        a3 &    420 &    297 &        statement &    216 &    140 \\
+                        a4 &    297 &    210 &       swedish\_d0 &   1542 &   1090 \\
+                        a5 &    210 &    148 &       swedish\_d1 &   1090 &    771 \\
+                        a6 &    148 &    105 &      swedish\_d10 &     48 &     34 \\
+                        a7 &    105 &     74 &       swedish\_d2 &    771 &    545 \\
+                        a8 &     74 &     52 &       swedish\_d3 &    545 &    385 \\
+                        a9 &     52 &     37 &       swedish\_d4 &    385 &    272 \\
+                        b0 &   1414 &    999 &       swedish\_d5 &    272 &    192 \\
+                        b1 &    999 &    707 &       swedish\_d6 &    192 &    136 \\
+                       b10 &     44 &     31 &       swedish\_d7 &    136 &     96 \\
+                        b2 &    707 &    499 &       swedish\_d8 &     96 &     68 \\
+                        b3 &    499 &    353 &       swedish\_d9 &     68 &     48 \\
+                        b4 &    353 &    249 &       swedish\_e0 &   1241 &    878 \\
+                        b5 &    249 &    176 &       swedish\_e1 &    878 &    620 \\
+                        b6 &    176 &    124 &      swedish\_e10 &     38 &     27 \\
+                        b7 &    124 &     88 &       swedish\_e2 &    620 &    439 \\
+                        b8 &     88 &     62 &       swedish\_e3 &    439 &    310 \\
+                        b9 &     62 &     44 &       swedish\_e4 &    310 &    219 \\
+                        c0 &   1296 &    917 &       swedish\_e5 &    219 &    155 \\
+                        c1 &    917 &    648 &       swedish\_e6 &    155 &    109 \\
+                       c10 &     40 &     28 &       swedish\_e7 &    109 &     77 \\
+                        c2 &    648 &    458 &       swedish\_e8 &     77 &     54 \\
+                        c3 &    458 &    324 &       swedish\_e9 &     54 &     38 \\
+                        c4 &    324 &    229 &       swedish\_f0 &   1476 &   1044 \\
+                        c5 &    229 &    162 &       swedish\_f1 &   1044 &    738 \\
+                        c6 &    162 &    114 &      swedish\_f10 &     46 &     32 \\
+                        c7 &    114 &     81 &       swedish\_f2 &    738 &    522 \\
+                        c8 &     81 &     57 &       swedish\_f3 &    522 &    369 \\
+                        c9 &     57 &     40 &       swedish\_f4 &    369 &    261 \\
+                     crown &    508 &    381 &       swedish\_f5 &    261 &    184 \\
+                      demy &    572 &    445 &       swedish\_f6 &    184 &    130 \\
+               double\_demy &    889 &    597 &       swedish\_f7 &    130 &     92 \\
+                  elephant &    711 &    584 &       swedish\_f8 &     92 &     65 \\
+               envelope\_dl &    110 &    220 &       swedish\_f9 &     65 &     46 \\
+                 executive &    267 &    184 &       swedish\_g0 &   1354 &    957 \\
+                  foolscap &    330 &    203 &       swedish\_g1 &    957 &    677 \\
+         government\_letter &    267 &    203 &      swedish\_g10 &     42 &     29 \\
+international\_businesscard &     85 &     53 &       swedish\_g2 &    677 &    478 \\
+               japanese\_b0 &   1435 &   1015 &       swedish\_g3 &    478 &    338 \\
+               japanese\_b1 &   1015 &    717 &       swedish\_g4 &    338 &    239 \\
+              japanese\_b10 &     44 &     31 &       swedish\_g5 &    239 &    169 \\
+               japanese\_b2 &    717 &    507 &       swedish\_g6 &    169 &    119 \\
+               japanese\_b3 &    507 &    358 &       swedish\_g7 &    119 &     84 \\
+               japanese\_b4 &    358 &    253 &       swedish\_g8 &     84 &     59 \\
+               japanese\_b5 &    253 &    179 &       swedish\_g9 &     59 &     42 \\
+               japanese\_b6 &    179 &    126 &       swedish\_h0 &   1610 &   1138 \\
+               japanese\_b7 &    126 &     89 &       swedish\_h1 &   1138 &    805 \\
+               japanese\_b8 &     89 &     63 &      swedish\_h10 &     50 &     35 \\
+               japanese\_b9 &     63 &     44 &       swedish\_h2 &    805 &    569 \\
+            japanese\_kiku4 &    306 &    227 &       swedish\_h3 &    569 &    402 \\
+            japanese\_kiku5 &    227 &    151 &       swedish\_h4 &    402 &    284 \\
+         japanese\_shiroku4 &    379 &    264 &       swedish\_h5 &    284 &    201 \\
+         japanese\_shiroku5 &    262 &    189 &       swedish\_h6 &    201 &    142 \\
+         japanese\_shiroku6 &    188 &    127 &       swedish\_h7 &    142 &    100 \\
+                large\_post &    533 &    419 &       swedish\_h8 &    100 &     71 \\
+                    ledger &    432 &    279 &       swedish\_h9 &     71 &     50 \\
+                     legal &    356 &    216 &          tabloid &    432 &    279 \\
+                    letter &    279 &    216 &  us\_businesscard &     89 &     51 \\
+\hline
+\end{tabular}
+\caption[A list of all of the named paper sizes recognised by the {\tt set
+papersize} command]
+{A list of all of the named paper sizes recognised by the \indcmdt{set
+papersize}, with their heights, $h$, and widths, $w$, measured in millimetres.}
+\label{paper_sizes}
+\end{figure}
+
 \section{A Tour of PyXPlot's Plot Styles}
 
 We begin by reviewing the various plot styles which are available in PyXPlot.
@@ -399,6 +637,18 @@ plot 'data.dat' using rows 1:2 every 2::3::9
 \noindent would plot the data in row 2 against that in row 1, using only the
 values in every other column, between columns 3 and 9.
 
+\section{Reading data from a pipe}
+
+PyXPlot usually reads data from a file, but it possible to read data via a pipe
+from standard input.  To do this one uses the magic filename `{\tt -}':
+
+\begin{verbatim}
+plot '-' with lines
+\end{verbatim}
+
+This facility should be used with caution; it is generally preferable to write
+data to a file in order that it can be perused at a later date.
+
 \section{Configuring Axes}
 \label{axis_extensions}\label{ranges_multiaxes}\label{multiple_axes}
 
@@ -720,20 +970,207 @@ plot '*.dat' using 1:2, '' using 2:3
 The {\tt *} and {\tt ?} wildcards can be used in a similar fashion in the
 \indcmdt{load}.
 
-\section{Backing Up Over-Written Files}
+\subsection{Arrows}
 
-\index{overwriting files}\index{backup files}\label{filebackup}
-
-By default, when graphical output is sent to a file -- i.e.\ a postscript file or
-a bitmap image -- pre-existing files are overwritten if their filenames match
-that of the file which PyXPlot generates. This behaviour may be changed with
-the \indcmdt{set backup}, which has the syntax:
+\label{set_arrow}\index{arrows} Arrows may be placed on plots using the
+\indcmdt{set arrow}. A simple example would be:
 
 \begin{verbatim}
-set backup
-set nobackup
+set arrow 1 from 0,0 to 1,1
 \end{verbatim}
 
-When this switch is turned on, pre-existing files will be renamed with a tilde
-appended to their filenames, rather than being overwritten.
+\noindent The number {\tt 1} immediately following \indcmdts{set arrow}
+specifies an identification number for the arrow, allowing it to be
+subsequently removed via the command:
+
+\begin{verbatim}
+unset arrow 1
+\end{verbatim}
+
+\noindent or equivalently, via:\indcmd{set noarrow}
+
+\begin{verbatim}
+set noarrow 1
+\end{verbatim}
+
+The {\tt set arrow} command can be followed by the keyword {\tt with} to
+specify the style of the arrow. For example, the keywords \indkeyt{nohead},
+\indkeyt{head} and \indkeyt{twohead}, placed after the keyword {\tt with}, can
+be used to generate arrows with no arrow heads, normal arrow heads, or two
+arrow heads.  \indkeyt{twoway} is an alias for \indkeyt{twohead}.  For example:
+
+\begin{verbatim}
+set arrow 1 from 0,0 to 1,1 with nohead
+\end{verbatim}
+
+\noindent Line types and colours can also be specified after the keyword {\tt
+with}:
+
+\begin{verbatim}
+set arrow 1 from 0,0 to 1,1 with nohead \
+linetype 1 c blue
+\end{verbatim}
+
+As in \gnuplot, the co-ordinates for the start and end points of the arrow can
+be specified in a range of co-ordinate systems. The co-ordinate system to be
+used should be specified immediately before the co-ordinate value. The default
+system, \indcot{first} measures the graph using the $x$- and $y$-axes. The
+\indcot{second} system uses the $x2$- and $y2$-axes. The \indcot{screen} and
+\indcot{graph} systems both measure in centimetres from the origin of the
+graph. In the following example, we use these specifiers, and specify
+co-ordinates using variables rather than doing so explicitly:
+
+\begin{verbatim}
+x0 = 0.0
+y0 = 0.0
+x1 = 1.0
+y1 = 1.0
+set arrow 1 from first  x0, first  y0 \
+            to   screen x1, screen y1 \
+            with nohead
+\end{verbatim}
+
+In addition to these four options, which are those available in \gnuplot, the
+syntax `\indcot{axis{\it n}}' may also be used, to use the $n\,$th $x$- or
+$y$-axis -- for example, `{\tt axis3}'.\indcmd{set arrow} This allows arrows to
+reference any arbitrary axis on plots which make use of large numbers of
+parallel axes (see Section~\ref{multiple_axes}).
+
+\subsection{Text Labels}
+
+Text labels may be placed on plots using the \indcmdt{set label}. As with all
+textual labels in PyXPlot, these are rendered in \LaTeX:
+
+\begin{verbatim}
+set label 1 'Hello World' at 0,0
+\end{verbatim}
+
+As in the previous section, the number {\tt 1} is a reference number, which
+allows the label to be removed by either of the following two commands:
+
+\begin{verbatim}
+set nolabel 1
+unset label 1
+\end{verbatim}
+
+\noindent The positional co-ordinates for the text label, placed after the {\tt
+at} keyword, can be specified in any of the co-ordinate systems described for
+arrows above. A rotation angle may optionally be specified after the keyword
+\indkeyt{rotate}, to rotate text counter-clockwise by a given angle, measured
+in degrees. For example, the following would produce upward-running text:
+
+\begin{verbatim}
+set label 1 'Hello World' at axis3 3.0, axis4 2.7 rotate 90
+\end{verbatim}
+
+A colour can also be specified, if desired, using the {\tt with colour}
+modifier.  For example, the following would produce a green label at the origin:
+
+\begin{verbatim}
+set label 2 'This label is green' at 0, 0 with colour green
+\end{verbatim}
+
+\index{fontsize}\index{text!size} The fontsize of these text labels can be set
+globally using the \indcmdt{set fontsize}. This applies not only to the {\tt
+set label} command, but also to plot titles, axis labels, keys, etc. The value
+given should be an integer in the range $-4 \leq x \leq 5$. The default is
+zero, which corresponds to \LaTeX's {\tt normalsize}; $-4$ corresponds to {\tt
+tiny} and 5 to {\tt Huge}.
+
+\index{text!colour}\index{colours!text} The \indcmdt{set textcolour} can be
+used to globally set the colour of all text output, and applies to all of the
+text that the {\tt set fontsize} command does. It is especially useful when
+producing plots to be embedded in presentation slideshows, where bright text on
+a dark background may be desired. It should be followed either by an integer,
+to set a colour from the present palette, or by a colour name. A list of the
+recognised colour names can be found in Section~\ref{colour_names}.  For
+example:
+
+\begin{verbatim}
+set textcolour 2
+set textcolour blue
+\end{verbatim}
+
+\index{text!alignment}\index{alignment!text}By default, each label's specified
+position corresponds to its bottom left corner. This alignment may be changed
+with the \indcmdts{set texthalign} and \indcmdts{set textvalign} commands. The
+former takes the options \indkeyt{left}, \indkeyt{centre} or \indkeyt{right},
+and the latter takes the options \indkeyt{bottom}, \indkeyt{centre} or
+\indkeyt{top}, for example:
+
+\begin{verbatim}
+set texthalign right
+set textvalign top
+\end{verbatim}
+
+An example of a somewhat unconventional plot containing many labels and lines can be found in Figure~\ref{fig:ex_map}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{examples/eps/ex_map.eps}
+\end{center}
+\caption[A map of Australia, plotted using PyXPlot]
+{A map of Australia, plotted using PyXPlot.  The data were obtained
+from \protect\url{http://www.maproom.psu.edu/dcw/} (for the coastal outlines
+and state boundaries) and \protect\url{http://en.wikipedia.org} (for the city
+locations).  The data files and script used to produce this map can be
+downloaded from the PyXPlot website at
+\protect\url{http://www.pyxplot.org.uk/examples/Manual/08map/}.}
+\label{fig:ex_map}
+\end{figure}
+
+\section{Gridlines}
+
+Gridlines may be placed on a plot and subsequently removed via the statements:
+
+\begin{verbatim}
+set grid
+set nogrid
+\end{verbatim}
+
+\noindent respectively. The following commands are also valid:
+
+\begin{verbatim}
+unset grid
+unset nogrid
+\end{verbatim}
+
+\noindent By default, gridlines are drawn from the major and minor ticks of the
+default $x$- and $y$-axes (which are the first $x$- and $y$-axes unless set
+otherwise in the configuration file; see Chapter~\ref{configuration}). However,
+the axes which should be used may be specified after the \indcmdt{set
+grid}\index{grid}:
+
+\begin{verbatim}
+set grid x2y2
+set grid x x2y2
+\end{verbatim}
+
+\noindent The top example would connect the gridlines to the ticks of the $x2$-
+and $y2$-axes, whilst the lower would draw gridlines from both the $x$- and the
+$x2$-axes.
+
+If one of the specified axes does not exist, then no gridlines will be drawn in
+that direction.  Gridlines can subsequently be removed selectively from some
+axes via:
+
+\begin{verbatim}
+unset grid x2x3
+\end{verbatim}
+
+The colours of gridlines\index{grid!colour}\index{colours!grid} can be
+controlled via the \indcmdts{set gridmajcolour} and \indcmdts{set
+gridmincolour} commands, which control the gridlines emanating from major and
+minor axis ticks respectively. An example would be:
+
+\begin{verbatim}
+set gridmincolour blue
+\end{verbatim}
+
+\noindent Any of the colour names listed in Section~\ref{colour_names} can be
+used.
+
+A related command\index{axes!colour}\index{colours!axes} is \indcmdts{set
+axescolour}, which has a syntax similar to that above, and sets the colour of
+the graph's axes.\label{set_colours}
 

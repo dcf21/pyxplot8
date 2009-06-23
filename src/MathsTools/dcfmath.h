@@ -47,6 +47,8 @@ void dcfmath_besselY(value *in1, value *in2, value *output, int *status, char *e
 void dcfmath_beta(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_binomialPDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
+void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext);
 void dcfmath_ceil(value *in, value *output, int *status, char *errtext);
 void dcfmath_chisqPDF(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_chisqCDF(value *in1, value *in2, value *output, int *status, char *errtext);
@@ -59,7 +61,8 @@ void dcfmath_ellE(value *in, value *output, int *status, char *errtext);
 void dcfmath_ellP(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_erf(value *in, value *output, int *status, char *errtext);
 void dcfmath_erfc(value *in, value *output, int *status, char *errtext);
-void dcfmath_exp (value *in, value *output, int *status, char *errtext);
+void dcfmath_exp(value *in, value *output, int *status, char *errtext);
+void dcfmath_expm1(value *in, value *output, int *status, char *errtext);
 void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_floor(value *in, value *output, int *status, char *errtext);
 void dcfmath_frexp(value *in1, value *in2, value *output, int *status, char *errtext);

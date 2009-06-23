@@ -27,145 +27,6 @@
 In this chapter, we outline the facilities provided for simple numerical
 analysis and data processing within PyXPlot.
 
-\section{Function Splicing}
-\index{function splicing}
-\index{splicing functions}
-
-In PyXPlot, as in \gnuplot, user-defined functions may be declared on the
-command line:
-
-\begin{verbatim}
-f(x) = x*sin(x)
-\end{verbatim}
-
-\noindent It is also possible to declare functions which are valid only over
-certain ranges of argument space. For example, the following function would
-only be valid within the range $-2<x<2$:\footnote{The syntax {\tt [-2:2]} can
-also be written {\tt [-2 to 2]}.}
-
-\begin{verbatim}
-f(x)[-2:2] = x*sin(x)
-\end{verbatim}
-
-\noindent The following function would only be valid when all of ${a,b,c}$ were
-in the range $-1 \to 1$:
-
-\begin{verbatim}
-f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
-\end{verbatim}
-
-If an attempt is made to evaluate a function outside of its specified range,
-then an error results. This may be useful, for example, for plotting a function
-only within some specified range. The following would plot the function
-$\sinc(x)$, but only in the range $-2<x<7$:
-
-\begin{verbatim}
-f(x)[-2:7] = sin(x)/x
-plot f(x)
-\end{verbatim}
-
-\begin{figure}
-\begin{center}
-\includegraphics{examples/eps/ex_funcsplice1.eps}
-\end{center}
-\caption[A simple example of the use of function splicing to truncate a function]
-{A simple example of the use of function splicing to truncate the function $\sinc(x)$ at $x=-2$ and $x=7$. See details in the text.}
-\label{fig:ex_funcsplice1}
-\end{figure}
-
-\label{splice} \noindent The output of this particular example can be seen in
-Figure~\ref{fig:ex_funcsplice1}. A similar effect could also have been achieved
-with the {\tt select} keyword; see Section~\ref{select_modifier}.
-
-It is possible to make multiple declarations of the same function, over
-different regions of argument space; if there is an overlap in the valid
-argument space for multiple definitions, then later declarations take
-precedence. This makes it possible to use different functional forms for
-functions in different parts of parameter space, and is especially useful when
-fitting functions to data, if different functional forms are to be spliced
-together to fit different regimes in the data.
-
-Another application of function splicing is to work with functions which do not
-have analytic forms, or which are, by definition, discontinuous, such as
-top-hat functions or Heaviside functions. The following example would define
-$f(x)$ to be a Heaviside function:
-
-\begin{verbatim}
-f(x) = 0
-f(x)[0:] = 1
-\end{verbatim}
-
-\noindent The following example would define $f(x)$ to follow the Fibonacci
-sequence, though it is not at all computationally efficient, and it is
-inadvisable to evaluate it for $x\gtrsim8$:
-
-\begin{verbatim}
-f(x) = 1
-f(x)[2:] = f(x-1) + f(x-2)
-plot [0:8] f(x)
-\end{verbatim}
-
-\begin{figure}
-\begin{center}
-\includegraphics{examples/eps/ex_funcsplice2.eps}
-\end{center}
-\caption[An example of the use of function splicing to define a function which does not have an analytic form]
-{An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.}
-\label{fig:ex_funcsplice2}
-\end{figure}
-
-\noindent The output of this example can be seen in Figure~\ref{fig:ex_funcsplice2}
-
-\section{Datafile Interpolation: Spline Fitting}
-\label{spline_command}
-\index{best fit lines}
-
-Gnuplot allows data to be interpolated using its \indpst{csplines} plot style,
-for example:\indps{acsplines}
-
-\begin{verbatim}
-plot 'data.dat' with csplines
-plot 'data.dat' with acsplines
-\end{verbatim}
-
-\noindent where the upper statement fits a spline through all of the
-datapoints, and the lower applies some smoothing to the data first. This syntax
-also is supported in PyXPlot, though splines may also be fit through data using
-a new, more powerful, \indcmdt{spline}. This has a syntax similar to that of
-the \indcmdt{fit}, for example:
-
-\begin{verbatim}
-spline f() 'data.dat' index 1 using 2:3
-\end{verbatim}
-
-\noindent In this example, the function $f(x)$ now becomes a special function,
-representing a spline fit to the given datafile. It can be plotted or otherwise
-used in exactly the same way as any other function. This approach is more
-flexible than \gnuplot's syntax, as the spline $f(x)$ can subsequently be
-spliced together with other functions (see the previous section), or used in
-any mathematical operation.  The following code snippet, for example, would fit
-splines through two datasets, and then plot the interpolated differences
-between them, regardless, for example, of whether the two datasets were sampled
-at exactly the same $x$ co-ordinates:
-
-\begin{verbatim}
-spline f() 'data1.dat'
-spline g() 'data2.dat'
-plot f(x)-g(x)
-\end{verbatim}
-
-Smoothed splines can also be produced:
-
-\begin{verbatim}
-spline f() 'data1.dat' smooth 1.0
-\end{verbatim}
-
-\noindent where the value $1.0$ determines the degree of smoothing to apply;
-the higher the value, the more smoothing is applied. The default behaviour is
-not to smooth at all -- equivalent to {\tt smooth 0.0} -- and a value of $1.0$
-corresponds to the default amount of smoothing applied in \gnuplot's {\tt
-acsplines} plot style.
-
 \section{Tabulating Functions and Slicing Data Files}
 
 PyXPlot's \indcmdt{tabulate} can be used to produce a text file containing the
@@ -233,6 +94,58 @@ If there are not enough columns present in the supplied format statement it
 will be repeated in a cyclic fashion; e.g. in the example above the single
 supplied format is used for both columns.
 
+\section{Datafile Interpolation}
+\label{spline_command}
+\index{best fit lines}
+
+Gnuplot allows data to be interpolated using its \indpst{csplines} plot style,
+for example:\indps{acsplines}
+
+\begin{verbatim}
+plot 'data.dat' with csplines
+plot 'data.dat' with acsplines
+\end{verbatim}
+
+\noindent where the upper statement fits a spline through all of the
+datapoints, and the lower applies some smoothing to the data first. This syntax
+also is supported in PyXPlot, though splines may also be fit through data using
+a new, more powerful, \indcmdt{spline}. This has a syntax similar to that of
+the \indcmdt{fit}, for example:
+
+\begin{verbatim}
+spline f() 'data.dat' index 1 using 2:3
+\end{verbatim}
+
+\noindent In this example, the function $f(x)$ now becomes a special function,
+representing a spline fit to the given datafile. It can be plotted or otherwise
+used in exactly the same way as any other function. This approach is more
+flexible than \gnuplot's syntax, as the spline $f(x)$ can subsequently be
+spliced together with other functions (see the previous section), or used in
+any mathematical operation.  The following code snippet, for example, would fit
+splines through two datasets, and then plot the interpolated differences
+between them, regardless, for example, of whether the two datasets were sampled
+at exactly the same $x$ co-ordinates:
+
+\begin{verbatim}
+spline f() 'data1.dat'
+spline g() 'data2.dat'
+plot f(x)-g(x)
+\end{verbatim}
+
+Smoothed splines can also be produced:
+
+\begin{verbatim}
+spline f() 'data1.dat' smooth 1.0
+\end{verbatim}
+
+\noindent where the value $1.0$ determines the degree of smoothing to apply;
+the higher the value, the more smoothing is applied. The default behaviour is
+not to smooth at all -- equivalent to {\tt smooth 0.0} -- and a value of $1.0$
+corresponds to the default amount of smoothing applied in \gnuplot's {\tt
+acsplines} plot style.
+
+{\bf Add information about linear interpolation, etc.}
+
 \section{Numerical Integration and Differentiation}
 
 \index{differentiation}\index{integration} Special functions are available for
@@ -278,6 +191,8 @@ Advanced users may be interested to know that integration is performed using
 the {\tt quad} function of the {\tt integrate} package of the
 {\tt scipy} numerical toolkit for Python -- a general purpose integration
 routine.\index{scipy}
+
+\section{Equation Solving and Searching for Minima and Maxima}
 
 \section{Histograms}
 

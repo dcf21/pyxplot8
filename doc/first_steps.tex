@@ -94,24 +94,48 @@ Usually a text editor is used to produce PyXPlot command scripts, but the
 \indcmdt{save} may also assist. This stores a history of the commands executed
 in the present interactive session to file.
 
-Command files can include comment lines, which should begin with a hash
-character, for example:\index{comment lines}\index{command scripts!comment
-lines}
+\begin{figure}
+From the shell command line, PyXPlot accepts the following switches which
+modify its behaviour:\index{command line syntax}
+\vspace{0.5cm}
+
+\begin{tabular}{p{3.5cm}p{8.5cm}}
+{\tt -h --help} & Display a short help message listing the available command-line switches.\\
+{\tt -v --version} & Display the current version number of PyXPlot.\\
+{\tt -q --quiet} & Turn off the display of the welcome message on startup. \\
+{\tt -V --verbose} & Display the welcome message on startup, as happens by default. \\
+{\tt -c --colour} & Use colour highlighting\footnote{This will only function on terminals which support colour output.} to display output in green, warning messages in amber, and error messages in red.\footnote{The authors apologise to those members of the population who are red/green colourblind, but draws their attention to the following sentence.} These colours can be changed in the {\tt terminal} section of the configuration file; see Section~\ref{configuration} for more details. \\
+{\tt -m --monochrome} & Do not use colour highlighting, as happens by default. \\
+\end{tabular}
+\caption{A list of the command line options accepted by PyXPlot.}
+\label{command_switches}
+\end{figure}
+
+\begin{figure}
+When PyXPlot is used interactively, its command-line environment is based upon
+the GNU Readline Library.  This means that the up and down arrow keys can be
+used to repeat or modify previously executed commands. Each user's command
+history is stored in his homespace in a history file called {\tt
+.pyxplot\_history}, which allows PyXPlot to remember command histories between
+sessions. Additionally, a \indcmdt{save} is provided, allowing the user to save
+his command history from the present session to a text file; this has the
+following syntax:
 
 \begin{verbatim}
-# This is a comment
+save 'output_filename.ppl'
 \end{verbatim}
 
-\noindent Comments may also be placed on the same line as commands, for
-example:
+The related \indcmdt{history} outputs the history to the terminal. This outputs
+not only the history of the present session, but also commands entered in
+previous sessions, which can be up to several hundred lines long. It can
+optionally be followed by a number, to display the last $n$ commands, e.g.:
 
 \begin{verbatim}
-set nokey # I'll have no key on _my_ plot
+history 20
 \end{verbatim}
-
-Long commands may be split over multiple lines in the script by terminating
-each line of it with a backslash character, whereupon the following line will
-be appended to it.
+\caption{The storage of command histories in PyXPlot.}
+\label{command_history}
+\end{figure}
 
 \section{First Plots}
 \label{first_plots}
@@ -165,6 +189,27 @@ variables}
 a =
 f(x) =
 \end{verbatim}
+
+\section{Comments}
+
+Command files can include comment lines, which should begin with a hash
+character, for example:\index{comment lines}\index{command scripts!comment
+lines}
+
+\begin{verbatim}
+# This is a comment
+\end{verbatim}
+
+\noindent Comments may also be placed on the same line as commands, for
+example:
+
+\begin{verbatim}
+set nokey # I'll have no key on _my_ plot
+\end{verbatim}
+
+Long commands may be split over multiple lines in the script by terminating
+each line of it with a backslash character, whereupon the following line will
+be appended to it.
 
 \section{Printing Text}
 \label{string_subs_op}
@@ -257,9 +302,9 @@ considers $\backslash$ an escape character. To render the example string above,
 one would type:\index{escape characters}\index{backslash
 character}\index{accented characters}
 
-\begin{verbatim}
+\begin{dodo}
 set xlabel "J\\"org's Data"
-\end{verbatim}
+\end{dodo}
 
 \noindent In this example, two backslashes are required.  The first is the
 \LaTeX\ escape character used to produce the umlaut; the second is a PyXPlot

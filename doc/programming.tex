@@ -1,0 +1,237 @@
+% PROGRAMMING.TEX
+%
+% The documentation in this file is part of PyXPlot
+% <http://www.pyxplot.org.uk>
+%
+% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
+%               2008   Ross Church
+%
+% $Id$
+%
+% PyXPlot is free software; you can redistribute it and/or modify it under the
+% terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+%
+% You should have received a copy of the GNU General Public License along with
+% PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+% Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+% ----------------------------------------------------------------------------
+
+% LaTeX source for the PyXPlot Users' Guide
+
+\chapter{PyXPlot as a programming language}
+\label{gnuplot_ext_first}
+
+This chapter describes ways of programming PyXPlot.
+
+\section{Variables}
+
+As has already been hinted at in Section~\ref{string_subs_op}, PyXPlot
+recognises two types of variables: numeric variables and string variables.  The
+former can be assigned using any valid mathematical expression. For example:
+
+\begin{verbatim}
+a = 5.2 * sqrt(64)
+\end{verbatim}
+
+\noindent would assign the value 41.6 to the variable {\tt a}.  Numerical variables can
+subsequently be used in mathematical expressions themselves, for example:
+
+\begin{verbatim}
+a=2*pi
+plot [0:1] sin(a*x)
+\end{verbatim}
+
+\noindent String variables can be assigned in an analogous manner, by enclosing
+the string in quotation marks. They can then be used wherever a quoted string
+could be used, for example as a filename or a plot title, as
+in:\index{variables!string}
+
+\begin{verbatim}
+plotname = "The Growth of a Rabbit Population"
+set title plotname
+\end{verbatim}
+
+String variables can be modified using the search-and-replace string
+operator\index{string operators!search and replace}\footnote{Programmers with
+experience of {\tt perl} will recognise this syntax.}, =$\sim$\index{=$\sim$
+operator}, which takes a regular expression with a syntax similar to that
+expected by the shell command {\tt sed}\index{sed shell command@{\tt sed} shell
+command} and applies it to the relevant string.\footnote{Regular expression
+syntax is a massive subject, and is beyond the scope of this manual. The
+official GNU documentation for the {\tt sed} command is heavy reading, but
+there are many more accessible tutorials on the web.}\index{regular
+expressions} For example:
+
+\begin{verbatim}
+twister="seven silver soda syphons"
+twister =~ s/s/th/
+print twister
+\end{verbatim}
+
+Note that only the {\tt s} (substitute) command of {\tt sed} is implemented in
+PyXPlot. Any character can be used in place of the {\tt /} characters in the
+above example, for example:
+
+\begin{verbatim}
+twister =~ s@s@th@
+\end{verbatim}
+
+\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, for example:
+
+\begin{verbatim}
+twister =~ s@s@th@g
+\end{verbatim}
+
+\noindent Table~\ref{re_flags} lists all of the regular expression flags
+recognised by the =$\sim$ operator.
+
+\begin{table}
+\begin{tabular}{p{2cm}p{10.5cm}}
+\hline
+{\tt g} & Replace {\it all} matches of the pattern; by default, only the first match is replaced. \\
+{\tt i} & Perform case-insensitive matching, such that expressions like {\tt [A-Z]} will match lowercase letters, too. \\
+{\tt l} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the current locale. \\
+{\tt m} & When specified, the pattern character {\tt \^{}} matches the beginning of the string and the beginning of each line immediately following each newline. The pattern character {\tt \$} matches at the end of the string and the end of each line immediately preceding each newline. By default, {\tt \^{}} matches only the beginning of the string, and {\tt \$} only the end of the string and immediately before the newline, if present, at the end of the string. \\
+{\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
+{\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
+{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through the end of the line are ignored. \\
+\hline
+\end{tabular}
+\caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful. This table is adapted from Guido van Rossum's\index{van Rossum, Guido} {\it Python Library Reference}\index{Python Library Reference}: \protect\url{http://docs.python.org/lib/node46.html}.}
+\label{re_flags}
+\end{table}
+
+Strings may also be put together using the string substitution operator, {\tt
+\%}\index{\% operator@{\tt \%} operator}, which works in a similar fashion to
+Python string substitution operator\index{string operators!substitution}. This
+is described in detail in Section~\ref{string_subs_op}.  For example, to
+concatenate the two strings contained in variables {\tt a} and {\tt b} into
+variable {\tt c} one would run:\index{string operators!concatenation}
+
+\begin{verbatim}
+c = "%s%s"%(a,b)
+\end{verbatim}
+
+One common practical application of these string operators is to label plots
+with the title of the \datafile\ being plotted, as in:
+
+\begin{verbatim}
+filename="data_file.dat"
+title="A plot of the data in {\tt %s}."%(filename)
+title=~s/_/\_/g # Underscore is a reserved character in LaTeX
+set title title
+plot filename
+\end{verbatim}
+
+\section{The \indcmdt{exec}}
+
+The \indcmdt{exec} can be used to execute PyXPlot commands contained within
+string variables. For example:
+
+\begin{verbatim}
+terminal="eps"
+exec "set terminal %s"%(terminal)
+\end{verbatim}
+
+It can also be used to write obfuscated PyXPlot scripts.
+
+\section{Function Splicing}
+\index{function splicing}
+\index{splicing functions}
+
+In PyXPlot, as in \gnuplot, user-defined functions may be declared on the
+command line:
+
+\begin{verbatim}
+f(x) = x*sin(x)
+\end{verbatim}
+
+\noindent It is also possible to declare functions which are valid only over
+certain ranges of argument space. For example, the following function would
+only be valid within the range $-2<x<2$:\footnote{The syntax {\tt [-2:2]} can
+also be written {\tt [-2 to 2]}.}
+
+\begin{verbatim}
+f(x)[-2:2] = x*sin(x)
+\end{verbatim}
+
+\noindent The following function would only be valid when all of ${a,b,c}$ were
+in the range $-1 \to 1$:
+
+\begin{verbatim}
+f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
+\end{verbatim}
+
+If an attempt is made to evaluate a function outside of its specified range,
+then an error results. This may be useful, for example, for plotting a function
+only within some specified range. The following would plot the function
+$\sinc(x)$, but only in the range $-2<x<7$:
+
+\begin{verbatim}
+f(x)[-2:7] = sin(x)/x
+plot f(x)
+\end{verbatim}
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_funcsplice1.eps}
+\end{center}
+\caption[A simple example of the use of function splicing to truncate a function]
+{A simple example of the use of function splicing to truncate the function $\sinc(x)$ at $x=-2$ and $x=7$. See details in the text.}
+\label{fig:ex_funcsplice1}
+\end{figure}
+
+\label{splice} \noindent The output of this particular example can be seen in
+Figure~\ref{fig:ex_funcsplice1}. A similar effect could also have been achieved
+with the {\tt select} keyword; see Section~\ref{select_modifier}.
+
+It is possible to make multiple declarations of the same function, over
+different regions of argument space; if there is an overlap in the valid
+argument space for multiple definitions, then later declarations take
+precedence. This makes it possible to use different functional forms for
+functions in different parts of parameter space, and is especially useful when
+fitting functions to data, if different functional forms are to be spliced
+together to fit different regimes in the data.
+
+Another application of function splicing is to work with functions which do not
+have analytic forms, or which are, by definition, discontinuous, such as
+top-hat functions or Heaviside functions. The following example would define
+$f(x)$ to be a Heaviside function:
+
+\begin{verbatim}
+f(x) = 0
+f(x)[0:] = 1
+\end{verbatim}
+
+\noindent The following example would define $f(x)$ to follow the Fibonacci
+sequence, though it is not at all computationally efficient, and it is
+inadvisable to evaluate it for $x\gtrsim8$:
+
+\begin{verbatim}
+f(x) = 1
+f(x)[2:] = f(x-1) + f(x-2)
+plot [0:8] f(x)
+\end{verbatim}
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_funcsplice2.eps}
+\end{center}
+\caption[An example of the use of function splicing to define a function which does not have an analytic form]
+{An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.}
+\label{fig:ex_funcsplice2}
+\end{figure}
+
+\noindent The output of this example can be seen in Figure~\ref{fig:ex_funcsplice2}
+
+\section{Working with physical units}
+
+units schemes
+
+\section{Physical constants}
+
+\section{Flow control}
+

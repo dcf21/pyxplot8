@@ -38,6 +38,7 @@
 #include "ListTools/lt_memory.h"
 
 #include "pyxplot.h"
+#include "ppl_canvasitems.h"
 #include "ppl_children.h"
 #include "ppl_eqnsolve.h"
 #include "ppl_error.h"
@@ -262,6 +263,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
+  else if (strcmp(directive, "arrow")==0)
+   directive_arrow(command, interactive);
   else if (strcmp(directive, "break")==0)
    {
     if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_BROKEN=1;
@@ -269,6 +272,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
+  else if (strcmp(directive, "clear")==0)
+   { directive_clear(); SendCommandToCSP("A"); }
   else if (strcmp(directive, "continue")==0)
    {
     if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_CONTINUED=1;
@@ -290,6 +295,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_history(command);
   else if (strcmp(directive, "if")==0)
    return directive_if(command, IterLevel+1);
+  else if (strcmp(directive, "jpeg")==0)
+   directive_jpeg(command, interactive);
   else if (strcmp(directive, "load")==0)
    {
     DictLookup(command,"filename",NULL,(void **)(&varstrval));
@@ -309,12 +316,22 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    ppl_report(settings_session_default.cwd);
   else if (strcmp(directive, "quit")==0)
    PPL_SHELL_EXITING = 1;
+  else if (strcmp(directive, "reset")==0)
+   {
+    settings_term_current  = settings_term_default;
+    settings_graph_current = settings_graph_default;
+    for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+    directive_clear();
+    SendCommandToCSP("A");
+   }
   else if (strcmp(directive, "set")==0)
    directive_set(command);
   else if (strcmp(directive, "show")==0)
    directive_show(command, interactive);
   else if (strcmp(directive, "solve")==0)
    directive_solve(command);
+  else if (strcmp(directive, "text")==0)
+   directive_text(command, interactive);
   else if (strcmp(directive, "unset")==0)
    directive_set(command);
   else if (strcmp(directive, "while")==0)

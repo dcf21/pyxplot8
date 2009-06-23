@@ -48,9 +48,9 @@ SRCDIR  = src
 OBJDIR  = obj
 BINDIR  = bin
 
-PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c ppl_calculus.c ppl_children.c ppl_commands.c ppl_eqnsolve.c ppl_error.c ppl_flowctrl.c ppl_help.c ppl_input.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_setshow.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_text.c ppl_userspace.c ppl_userspace_init.c pyxplot.c StringTools/asciidouble.c
+PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c ppl_calculus.c ppl_canvasdraw.c ppl_canvasitems.c ppl_children.c ppl_commands.c ppl_datafile.c ppl_eqnsolve.c ppl_error.c ppl_flowctrl.c ppl_help.c ppl_input.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_setshow.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_interpolation.c ppl_text.c ppl_userspace.c ppl_userspace_init.c pyxplot.c StringTools/asciidouble.c
 
-PPL_HEADERS = ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h MathsTools/dcfmath.h ppl_calculus.h ppl_children.h ppl_constants.h ppl_eqnsolve.h ppl_error.h ppl_flowctrl.h ppl_input.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_units.h ppl_userspace.h ppl_userspace_init.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
+PPL_HEADERS = ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h MathsTools/dcfmath.h ppl_calculus.h ppl_canvasdraw.h ppl_canvasitems.h ppl_children.h ppl_constants.h ppl_datafile.h ppl_eqnsolve.h ppl_error.h ppl_flowctrl.h ppl_input.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_interpolation.h ppl_units.h ppl_userspace.h ppl_userspace_init.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
 
 TESTCARD_FILES = EPSMaker/eps_colours.c EPSMaker/eps_hub.c EPSMaker/eps_latex.c EPSMaker/eps_testcard.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c StringTools/asciidouble.c
 
