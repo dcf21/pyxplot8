@@ -235,3 +235,40 @@ units schemes
 
 \section{Flow control}
 
+\section{Script Watching: pyxplot\_watch}
+
+PyXPlot includes a simple tool for watching command script files and executing
+them whenever they are modified. This may be useful when developing a command
+script, if one wants to make small modifications to it and see the results in a
+semi-live fashion. This tool is invoked by calling the {\tt
+pyxplot\_watch}\index{pyxplot\_watch}\index{watching scripts} command from a
+shell prompt. The command-line syntax of {\tt pyxplot\_watch} is similar to
+that of PyXPlot itself, for example:
+
+\begin{verbatim}
+pyxplot_watch script.ppl
+\end{verbatim}
+
+\noindent would set {\tt pyxplot\_watch} to watch the command script file
+{\tt script.ppl}. One difference, however, is that if multiple script files are
+specified on the command line, they are watched and executed independently,
+\textit{not} sequentially, as PyXPlot itself would do. Wildcard characters can
+also be used to set {\tt pyxplot\_watch} to watch multiple
+files.\footnote{Note that {\tt pyxplot\_watch *.script} and
+{\tt pyxplot\_watch $\backslash$*.script} will behave differently in most
+UNIX shells.  In the first case, the wildcard is expanded by your shell, and a
+list of files passed to {\tt pyxplot\_watch}. Any files matching the
+wildcard, created after running {\tt pyxplot\_watch}, will not be picked up.
+In the latter case, the wildcard is expanded by {\tt pyxplot\_watch} itself,
+which {\it will} pick up any newly created files.}
+
+This is especially useful when combined with \ghostview's\index{Ghostview}
+watch facility. For example, suppose that a script {\tt foo.ppl} produces
+postscript output {\tt foo.ps}. The following two commands could be used to
+give a live view of the result of executing this script:
+
+\begin{verbatim}
+gv --watch foo.ps &
+pyxplot_watch foo.ppl
+\end{verbatim}
+
