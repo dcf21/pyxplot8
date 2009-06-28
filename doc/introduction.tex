@@ -24,74 +24,100 @@
 
 \label{introduction}
 
-\section{Overview}
+\section{Introduction to PyXPlot and Ode to \gnuplot}
 
 {\sc PyXPlot} is a stand-alone command-line graphing package that is simple to
 use yet produces high-quality attractive output suitable for use in
-publications. For ease of use, its interface is based heavily upon that of the
-popular {\sc \gnuplot}\index{gnuplot} plotting package, so users do not need to
-learn a whole new scripting language. However, it uses the PyX graphics library
-to produce its output, allowing the quality of its output to reach modern
-standards.  The command-line interface has also been extended by addition of
-tools to carry out some commonly-required data-processing.  An attempt has been
-made to rectify frequently-noted flaws in \gnuplot; for example, all text is
-now rendered automatically in the \LaTeX\ typesetting environment, making it
-straightforward to label graphs with mathematical expressions. The multiplot
-environment has been re-designed from scratch, making it easy to produce
-galleries of plots with basic vector graphics around them.  For some samples of
-the results of which PyXPlot is capable, the reader is referred to the project
-website\footnote{\url{http://www.pyxplot.org.uk/}}.
+publications. For ease of use, its interface is based loosely upon that of the
+ever-popular {\sc \gnuplot}\index{gnuplot} plotting program. This means that
+\gnuplot\ users will find most simple tasks can be achieved with the same
+commands that they are used to in PyXPlot, and that they can get started
+straight away. However, PyXPlot produces considerably neater output than
+\gnuplot; for example, it renders all text labels automatically in the \LaTeX\
+typesetting environment, making it straightforward to label graphs with
+mathematical expressions and to use the same fonts which you use elsewhere.
+PyXPlot also extends \gnuplot's interface to provide new commands to make it a
+powerful tool for producing vector graphics, and to automate many
+commonly-required data-processing and numerical computing tasks.  Later in this
+manual, we will see that PyXPlot may even be useful as a simple calculator to
+users who have no intention of using its plotting facilities: it can perform
+dimensional analysis on equations and convert quantities between different
+units -- for example, between kilograms and ounces -- in a way which most other
+simple calculators cannot.
 
-The ability to represent data visually, usually as some form of graph, is a
-requirement for any scientific or mathematical work.  Historically, a very
-widely-used open-source plotting program has been \gnuplot, the principal
-attraction of which is its easy-to-use command-line interface, which allows
-\datafile s to be turned into graphs within seconds. One of its main rivals has
-been {\sc Pgplot}\index{Pgplot}, which is somewhat more flexible, but much less
-easy to use; it can only be called from within a program, and so code must be
-written to produce each plot.  This is potentially time consuming, and it is
-necessary for the user to have some programming experience.
+So, perhaps you're wondering why we've been so mad as to write a plotting
+program which borrows its interface from another, 25-year-old program. Isn't it
+time for a shiny new twenty-first century plotting package? Well, yes and no.
+\gnuplot\ may have its flaws, but its interface isn't one of them. It's telling
+that, 25 years after its first appearance, \gnuplot\ remains the default choice
+for so many people. Part of that may be because it's so readily available as a
+free component of most Linux systems, but it also has a uniquely simple and
+intuitive interface. If you have a datafile called {\tt data.dat} that you'd
+like to plot, you can make a first attempt at plotting it by simply typing:
+\begin{verbatim}
+plot 'data.dat'
+\end{verbatim}
+That's very short and easy to remember, and if it's still too much typing for
+you, you're even allowed to abbreviate {\tt plot} to {\tt p}. More advanced commands are barely any more difficult to remember, and there are no prizes for guessing what
+\begin{verbatim}
+set title 'A plot of the population of London against time'
+\end{verbatim}
+might do.
 
-Alongside these, several commercial packages have existed, including {\sc
-Maple}\index{Maple}, {\sc Mathematica}\index{Mathematica}, {\sc
-Origin}\index{Origin}, and {\sc SuperMongo}\index{SuperMongo}.  These can
-typically produce prettier results than their free counterparts, but carry with
-them considerable price tags and licensing restrictions. Moreover, none of
-these are as easy to use as \gnuplot.
+The strengths of \gnuplot\ become particularly apparent when it is compared
+with some of its commercial rivals, for example, {\sc Maple}\index{Maple}, {\sc
+Mathematica}\index{Mathematica}, {\sc Origin}\index{Origin}, and {\sc
+SuperMongo}\index{SuperMongo}. It has to be granted that with a bit of work,
+these can almost invariably produce prettier results than \gnuplot, though, of
+course, the come with considerable price tags and licensing restrictions. But
+as well as being more powerful, these tools are also considerably more fiddly
+and time-consuming to use.
 
-Both \gnuplot\ and Pgplot were developed in the mid-1980s. At that time, the
-quality of their output seemed state-of-the-art. But this is less true today.
-In most journal articles today, the text and equations are rendered with a high
-degree of professionalism by the \LaTeX\ typesetting system. But all too often,
-the graphs are less neat.  The same is often true of the slides used in
-presentations: graphs are often rendered with less professionalism than the
-text around them.
+Of course, \gnuplot\ also has some open-source rivals. Back in the 1980s, one
+of its main rivals was {\sc Pgplot}\index{Pgplot}: a somewhat more flexible
+program, but one which could only be called from within another program. The
+user was expected to have some programming experience, and required to put it
+into practice to produce every plot. The same is true of several of \gnuplot's
+more modern rivals, including the {\sc MatPlotLib}\index{MatPlotLib} and {\sc
+PyX}\index{PyX} packages for the Python programming language. Both of these
+significantly improve upon the quality of the plots produced by \gnuplot, but
+both of these have interfaces more akin to programming languages than a simple
+command language.
 
-In the early 2000s, several new free graphing packages emerged, among them {\sc
-MatPlotLib}\index{MatPlotLib} and {\sc PyX}\index{PyX}.  These have
-significantly improved upon the quality of the plots produced by \gnuplot\ and
-Pgplot. However, both are libraries which can be called from within the Python
-programming language, rather than stand-alone plotting packages. They are not
-as easy to use as \gnuplot.  For visualising data at speed, \gnuplot\ remains the
-best option.
+So, in conclusion, we heartily congratulate the authors of \gnuplot\ for the
+work they did back in the mid-1980s, and our borrowing of some parts of their
+interface is a tribute to their work. The graphic output which \gnuplot\
+produces may not be the most attractive, but its interface is a fine piece of
+design.
 
-The command-line interface of \gnuplot\ is very flexible: it can be controlled
-interactively, by typing commands into a terminal, it can read a list of
-commands in from a file, or it can receive commands through a UNIX pipe from
-another process. These modes of use are all possible in PyXPlot too.
+\section{The geekier reasons why \gnuplot\ is great}
 
-We argue that \gnuplot's interface brings another distinct advantage to PyXPlot
-in comparison with plotting packages which insist upon being called from within
-a programming language. PyXPlot requires that data be written to a file on disk
-before it can be plotted. When plotting is done from within a programming
-language, this can tempt the user into writing programs which both perform
-calculations and plot the results immediately.  This sounds neat, but it can be
-a dangerous temptation. Remembering to store a copy of the data used to produce
-a graph becomes a secondary priority.  Months later, when the need arises to
-replot the same data in a different form, or to compare it with newer data,
-remembering how to use a hurriedly written program can prove tricky --
-especially if the program was originally written by someone else. But a simple
-\datafile\ is quite straightforward to plot.
+We wouldn't want to give the impression that the only reason why we like
+\gnuplot's interface is its ease of use. There are some subtler reasons why it
+turns out to work very well in practice. First of all, as with any
+command-driven UNIX program, it can be controlled in many different ways
+depending upon what you want to do. The user can type commands into a live
+terminal when experimenting to begin with, and then later speed up the process
+by writing a series of commands into a text file to be run as a script. The
+really brave can send \gnuplot\ commands through a UNIX pipe from another
+process. In this sense, \gnuplot\ wins over many of its graphically-driven
+rivals, which rarely have facilities to automatically produce a hundred similar
+plots of a hundred similar \datafile s.
+
+\gnuplot's interface also has another distinct advantage over other plotting
+packages which insist upon being called from within a programming language. It
+requires that data be written to a file on disk before it can be plotted. By
+contrast, when plotting is done from within a programming language, it is often
+tempting for the user to write programs which both perform calculations and
+plot the results immediately. This sounds really neat, but it can also be
+dangerous. Remembering to store a copy of the data used to produce a graph
+becomes a secondary priority. Months later, when the need arises to replot the
+same data in a different form, or to compare it with newer data, remembering
+how to use a hurriedly written program can prove tricky -- especially if the
+program was originally written by someone else. But a simple \datafile\ is
+quite straightforward to plot.
+
+\section{The structure of this manual}
 
 The similarity of PyXPlot's interface to that of \gnuplot\ is such that simple
 scripts written for \gnuplot\ should work with PyXPlot with minimal
@@ -133,8 +159,8 @@ Short Guide to \LaTeX $2\epsilon$, The}\footnote{Download from:\\
 
 PyXPlot works on most UNIX-like operating systems. We have tested it under
 Linux, Solaris\index{Solaris} and MacOS X\index{MacOS X}, and believe that it
-should work on other similar systems. It requires that the following software
-packages (not included) be installed:\index{system requirements}
+should work on other similar POSIX systems. It requires that the following
+software packages (not included) be installed:\index{system requirements}
 
 \vspace{0.5cm}
 \begin{itemize}
@@ -147,8 +173,16 @@ packages (not included) be installed:\index{system requirements}
 \end{itemize}
 \vspace{0.5cm}
 
-Debian and Ubuntu users can find the above software in the packages {\tt gv},
-{\tt imagemagick}, {\tt libgsl0-dev}, {\tt libjpeg62-dev}, {\tt
+\noindent In order for PyXPlot to display plots live on the screen, it is also neccessary to install the following package, though it is still possible for PyXPlot to generate image files on disk without it:
+
+\vspace{0.5cm}
+\begin{itemize}
+\item GhostScript
+\end{itemize}
+\vspace{0.5cm}
+
+Debian and Ubuntu users can find the above software in the packages {\tt gs},
+{\tt gv}, {\tt imagemagick}, {\tt libgsl0-dev}, {\tt libjpeg62-dev}, {\tt
 libreadline5-dev}, {\tt libxml2-dev}, {\tt tetex-extra}.\index{Debian
 Linux}\index{Ubuntu Linux}\index{installation!under
 Debian}\index{installation!under Ubuntu}
