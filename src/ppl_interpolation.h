@@ -30,7 +30,7 @@
 #define INTERP_AKIMA  23004
 #define INTERP_POLYN  23005
 
-int directive_spline(Dict *command, int mode);
+int directive_interpolate(Dict *command, int mode);
 
 #endif
 

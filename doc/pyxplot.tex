@@ -27,6 +27,16 @@
 \makeindex
 \input{definitions}
 
+% Make box and example float environments
+\usepackage{float}
+\floatstyle{boxed}
+\newfloat{boxout}{thp}{lop}
+\floatname{boxout}{Box}
+
+\usepackage{example}
+\newfloat{example}{thp}{lop}
+\floatname{example}{Example}
+
 \begin{document}
 
 \begin{titlepage}
@@ -62,6 +72,7 @@
 \tableofcontents
 
 \listoffigures
+\listof{boxout}{List of Examples}
 
 \include{introduction}
 \include{first_steps}

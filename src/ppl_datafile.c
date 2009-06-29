@@ -21,7 +21,15 @@
 
 #define _PPL_DATAFILE_C 1
 
-void DataFile_read()
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "StringTools/asciidouble.h"
+
+#include "ppl_datafile.h"
+
+void DataFile_read(DataTable *output, char *filename, int index, int UsingRowCol, char **UsingList, int **EveryList, char *SelectCriterion, int continuity, int *ErrCounter)
  {
  }
 

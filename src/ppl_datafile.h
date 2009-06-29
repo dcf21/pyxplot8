@@ -22,7 +22,31 @@
 #ifndef _PPL_DATAFILE_H
 #define _PPL_DATAFILE_H 1
 
-void DataFile_read();
+#define DATAFILE_CONTINUOUS     24001
+#define DATAFILE_DISCONTINUOUS  24002
+#define DATAFILE_SORTED         24003
+#define DATAFILE_SORTEDLOGLOG   24004
+
+#define DATAFILE_ROW 24101
+#define DATAFILE_COL 24102
+
+#include "ppl_units.h"
+
+typedef struct DataBlock {
+  double          **data;  // Array of Ncolumns x array of length BlockLength
+  unsigned char    *split; // Array of length BlockLength; TRUE if we should break data before this next datapoint
+  int               BlockLength;
+  struct DataBlock *next;
+ } DataBlock;
+
+typedef struct DataTable {
+  int    Ncolumns;
+  int    Nrows;
+  value *FirstEntries; // Array of size Ncolumns
+  struct DataBlock *next;
+ } DataTable;
+
+void DataFile_read(DataTable *output, char *filename, int index, int UsingRowCol, char **UsingList, int **EveryList, char *SelectCriterion, int continuity, int *ErrCounter);
 
 #endif
 

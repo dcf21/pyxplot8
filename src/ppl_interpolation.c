@@ -31,7 +31,7 @@
 
 #include "ppl_datafile.h"
 
-int directive_spline(Dict *command, int mode)
+int directive_interpolate(Dict *command, int mode)
  {
   return 0;
  }

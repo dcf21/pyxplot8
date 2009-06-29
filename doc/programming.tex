@@ -89,8 +89,8 @@ twister =~ s@s@th@g
 recognised by the =$\sim$ operator.
 
 \begin{table}
-\begin{tabular}{p{2cm}p{10.5cm}}
-\hline
+\framebox[\textwidth]{\footnotesize
+\begin{tabular}{p{5mm}p{10.5cm}}
 {\tt g} & Replace {\it all} matches of the pattern; by default, only the first match is replaced. \\
 {\tt i} & Perform case-insensitive matching, such that expressions like {\tt [A-Z]} will match lowercase letters, too. \\
 {\tt l} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the current locale. \\
@@ -98,8 +98,7 @@ recognised by the =$\sim$ operator.
 {\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
 {\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
 {\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through the end of the line are ignored. \\
-\hline
-\end{tabular}
+\end{tabular}}
 \caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful. This table is adapted from Guido van Rossum's\index{van Rossum, Guido} {\it Python Library Reference}\index{Python Library Reference}: \protect\url{http://docs.python.org/lib/node46.html}.}
 \label{re_flags}
 \end{table}
@@ -175,14 +174,14 @@ f(x)[-2:7] = sin(x)/x
 plot f(x)
 \end{verbatim}
 
-\begin{figure}
+\begin{example}
 \begin{center}
 \includegraphics{examples/eps/ex_funcsplice1.eps}
 \end{center}
 \caption[A simple example of the use of function splicing to truncate a function]
 {A simple example of the use of function splicing to truncate the function $\sinc(x)$ at $x=-2$ and $x=7$. See details in the text.}
 \label{fig:ex_funcsplice1}
-\end{figure}
+\end{example}
 
 \label{splice} \noindent The output of this particular example can be seen in
 Figure~\ref{fig:ex_funcsplice1}. A similar effect could also have been achieved
@@ -216,14 +215,14 @@ f(x)[2:] = f(x-1) + f(x-2)
 plot [0:8] f(x)
 \end{verbatim}
 
-\begin{figure}
+\begin{example}
 \begin{center}
 \includegraphics{examples/eps/ex_funcsplice2.eps}
 \end{center}
 \caption[An example of the use of function splicing to define a function which does not have an analytic form]
 {An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.}
 \label{fig:ex_funcsplice2}
-\end{figure}
+\end{example}
 
 \noindent The output of this example can be seen in Figure~\ref{fig:ex_funcsplice2}
 

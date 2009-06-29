@@ -45,6 +45,7 @@
 #include "ppl_flowctrl.h"
 #include "ppl_help.h"
 #include "ppl_input.h"
+#include "ppl_interpolation.h"
 #include "ppl_parser.h"
 #include "ppl_passwd.h"
 #include "ppl_setshow.h"
@@ -297,6 +298,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_if(command, IterLevel+1);
   else if (strcmp(directive, "jpeg")==0)
    directive_jpeg(command, interactive);
+  else if (strcmp(directive, "linear")==0)
+   return directive_interpolate(command,INTERP_LINEAR);
   else if (strcmp(directive, "load")==0)
    {
     DictLookup(command,"filename",NULL,(void **)(&varstrval));
@@ -306,10 +309,14 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
     globfree(&GlobData);
     return 0;
    }
+  else if (strcmp(directive, "loglinear")==0)
+   return directive_interpolate(command,INTERP_LOGLIN);
   else if (strcmp(directive, "maximise")==0)
    directive_maximise(command);
   else if (strcmp(directive, "minimise")==0)
    directive_minimise(command);
+  else if (strcmp(directive, "polynomial")==0)
+   return directive_interpolate(command,INTERP_POLYN);
   else if (strcmp(directive, "print")==0)
    directive_print(command);
   else if (strcmp(directive, "pwd")==0)
@@ -330,6 +337,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_show(command, interactive);
   else if (strcmp(directive, "solve")==0)
    directive_solve(command);
+  else if (strcmp(directive, "spline")==0)
+   return directive_interpolate(command,INTERP_SPLINE);
   else if (strcmp(directive, "text")==0)
    directive_text(command, interactive);
   else if (strcmp(directive, "unset")==0)
