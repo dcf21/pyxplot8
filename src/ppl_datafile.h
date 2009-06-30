@@ -30,11 +30,15 @@
 #define DATAFILE_ROW 24101
 #define DATAFILE_COL 24102
 
+#define USING_ITEMS_MAX 32
+
 #include "ppl_units.h"
 
 typedef struct DataBlock {
-  double          **data;  // Array of Ncolumns x array of length BlockLength
-  unsigned char    *split; // Array of length BlockLength; TRUE if we should break data before this next datapoint
+  double          **data;     // Array of Ncolumns x array of length BlockLength
+  long int        **FileLine; // For each double above... store the line number in the data file that it came from
+  long int        **FileCol;  // For each double above... store the column number that it came from
+  unsigned char    *split;    // Array of length BlockLength; TRUE if we should break data before this next datapoint
   int               BlockLength;
   struct DataBlock *next;
  } DataBlock;
@@ -46,7 +50,7 @@ typedef struct DataTable {
   struct DataBlock *next;
  } DataTable;
 
-void DataFile_read(DataTable *output, char *filename, int index, int UsingRowCol, char **UsingList, int **EveryList, char *SelectCriterion, int continuity, int *ErrCounter);
+void DataFile_read(DataTable *output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
 
 #endif
 
