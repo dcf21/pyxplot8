@@ -637,6 +637,8 @@ plot 'data.dat' using rows 1:2 every 2::3::9
 \noindent would plot the data in row 2 against that in row 1, using only the
 values in every other column, between columns 3 and 9.
 
+\section{Input filters}
+
 \section{Reading data from a pipe}
 
 PyXPlot usually reads data from a file, but it possible to read data via a pipe
@@ -648,6 +650,8 @@ plot '-' with lines
 
 This facility should be used with caution; it is generally preferable to write
 data to a file in order that it can be perused at a later date.
+
+\section{Including data within PyXPlot command scripts}
 
 \section{Configuring Axes}
 \label{axis_extensions}\label{ranges_multiaxes}\label{multiple_axes}
@@ -808,7 +812,7 @@ set ytics autofreq
 set noy2tics
 \end{verbatim}
 
-\begin{figure}
+\begin{example}
 \begin{center}
 \includegraphics{examples/eps/ex_axistics.eps}
 \end{center}
@@ -817,7 +821,7 @@ set noy2tics
 $\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this
 plot are as given in the text.}
 \label{fig:ex_axistics}
-\end{figure}
+\end{example}
 
 Minor tick marks can be placed on axes with the \indcmdt{set mxtics}, which has
 the same syntax as above.
@@ -877,7 +881,7 @@ set keycolumns 2
 \noindent An example of a plot with a two-column legend is given in
 Figure~\ref{fig:ex_legends}.
 
-\begin{figure}
+\begin{example}
 \begin{center}
 \includegraphics{examples/eps/ex_legends.eps}
 \end{center}
@@ -888,7 +892,7 @@ with a two-column legend, positioned below the plot using {\tt set key below}.
 The complete script used to produce the plot can be found on the PyXPlot
 website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.}
 \label{fig:ex_legends}
-\end{figure}
+\end{example}
 
 \section{The {\tt linestyle} Keyword}
 
