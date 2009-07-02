@@ -63,6 +63,9 @@ PPLW_FILES   = Helpers/pyxplot_watch.c ListTools/lt_dict.c ListTools/lt_list.c L
 
 PPLW_HEADERS =                         ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h ListTools/lt_StringProc.h StringTools/asciidouble.h ppl_error.h ppl_setting_types.h ppl_settings.h
 
+FITSHELP_FILES   = Helpers/pyxplot_fitshelper.c StringTools/asciidouble.c
+FITSHELP_HEADERS =                              StringTools/asciidouble.h StringTools/str_constants.h
+
 PPL_SOURCES         = $(PPL_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
 PPL_OBJECTS         = $(PPL_FILES:%.c=$(LOCAL_OBJDIR)/%.o)
 PPL_OBJECTS_DEBUG   = $(PPL_OBJECTS:%.o=%.debug.o)
@@ -79,13 +82,18 @@ PPLW_OBJECTS_DEBUG  = $(PPLW_OBJECTS:%.o=%.debug.o)
 PPLW_OBJECTS_INSTALL= $(PPLW_OBJECTS:%.o=%.install.o)
 PPLW_HFILES         = $(PPLW_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
 
-ALL_HFILES = $(PPL_HFILES) $(TESTCARD_HFILES) $(PPLW_HFILES)
+FITSHELP_SOURCES    = $(FITSHELP_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
+FITSHELP_OBJECTS    = $(FITSHELP_FILES:%.c=$(LOCAL_OBJDIR)/%.o)
+FITSHELP_OBJECTS_INSTALL = $(FITSHELP_OBJECTS:%.o=%.install.o)
+FITSHELP_HFILES     = $(FITSHELP_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
 
-NOINSTALL_SWITCHES  = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot\"  -D LATEX=\"$(LATEX_COMMAND)\"  -D CONVERT=\"$(CONVERT_COMMAND)\"  -D SED=\"$(SED_COMMAND)\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
-INSTALL_SWITCHES    = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(SRCDIR)\"   -D DOCDIR=\"$(DOCDIR)\"   -D PPLBINARY=\"$(BINDIR)/pyxplot\"  -D LATEX=\"$(LATEX_COMMAND)\"  -D CONVERT=\"$(CONVERT_COMMAND)\"  -D SED=\"$(SED_COMMAND)\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
-DEBUG_SWITCHES      = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/debug/pyxplot\"  -D LATEX=\"$(LATEX_COMMAND)\"  -D CONVERT=\"$(CONVERT_COMMAND)\"  -D SED=\"$(SED_COMMAND)\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
+ALL_HFILES = $(PPL_HFILES) $(TESTCARD_HFILES) $(PPLW_HFILES) $(FITSHELP_HFILES)
 
-all: $(LOCAL_BINDIR)/pyxplot $(LOCAL_BINDIR)/pyxplot_watch $(LOCAL_BINDIR)/debug/pyxplot $(LOCAL_BINDIR)/debug/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot $(LOCAL_BINDIR)/install/pyxplot_watch
+NOINSTALL_SWITCHES  = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot\"  -D FITSHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_fitshelper\"  -D HAVE_READLINE=\"$(HAVE_READLINE)\"  -D HAVE_FITSIO=\"$(HAVE_FITSIO)\"  -D LATEX=\"$(LATEX_COMMAND)\"  -D CONVERT=\"$(CONVERT_COMMAND)\"  -D SED=\"$(SED_COMMAND)\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
+INSTALL_SWITCHES    = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(SRCDIR)\"   -D DOCDIR=\"$(DOCDIR)\"   -D PPLBINARY=\"$(BINDIR)/pyxplot\"  -D FITSHELPER=\"$(BINDIR)/pyxplot_fitshelper\"  -D HAVE_READLINE=\"$(HAVE_READLINE)\"  -D HAVE_FITSIO=\"$(HAVE_FITSIO)\"  -D LATEX=\"$(LATEX_COMMAND)\"  -D CONVERT=\"$(CONVERT_COMMAND)\"  -D SED=\"$(SED_COMMAND)\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
+DEBUG_SWITCHES      = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/debug/pyxplot\"  -D FITSHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_fitshelper\"  -D HAVE_READLINE=\"$(HAVE_READLINE)\"  -D HAVE_FITSIO=\"$(HAVE_FITSIO)\"  -D LATEX=\"$(LATEX_COMMAND)\"  -D CONVERT=\"$(CONVERT_COMMAND)\"  -D SED=\"$(SED_COMMAND)\"  -D GHOSTVIEW=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
+
+all: $(LOCAL_BINDIR)/pyxplot $(LOCAL_BINDIR)/pyxplot_watch $(LOCAL_BINDIR)/pyxplot_fitshelper $(LOCAL_BINDIR)/debug/pyxplot $(LOCAL_BINDIR)/debug/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot $(LOCAL_BINDIR)/install/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot_fitshelper
 
 testcard: $(LOCAL_BINDIR)/testcard.debug
 
@@ -141,6 +149,18 @@ $(LOCAL_BINDIR)/debug/pyxplot_watch:   $(PPLW_OBJECTS_DEBUG)
 $(LOCAL_BINDIR)/install/pyxplot_watch: $(PPLW_OBJECTS_INSTALL)
 	mkdir -p $(LOCAL_BINDIR)/install
 	$(LINK) $(OPTIMISATION) $(PPLW_OBJECTS_INSTALL) -o $(LOCAL_BINDIR)/install/pyxplot_watch
+
+#
+# Make fits helper binaries
+#
+
+$(LOCAL_BINDIR)/pyxplot_fitshelper:         $(FITSHELP_OBJECTS)
+	mkdir -p $(LOCAL_BINDIR)
+	$(LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS)         -o $(LOCAL_BINDIR)/pyxplot_fitshelper
+
+$(LOCAL_BINDIR)/install/pyxplot_fitshelper: $(FITSHELP_OBJECTS_INSTALL)
+	mkdir -p $(LOCAL_BINDIR)/install
+	$(LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS_INSTALL) -o $(LOCAL_BINDIR)/install/pyxplot_fitshelper
 
 #
 # Make the testcard for the EPS library

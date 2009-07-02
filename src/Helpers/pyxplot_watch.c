@@ -135,24 +135,30 @@ Send comments, bug reports, feature requests and coffee supplies to:\n\
       HaveFilenames=1;
       continue;
      }
-    if      (strcmp(argv[i], "-q"         )==0) settings_session_default.splash = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-quiet"     )==0) settings_session_default.splash = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-V"         )==0) settings_session_default.splash = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-verbose"   )==0) settings_session_default.splash = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-c"         )==0) settings_session_default.colour = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-colour"    )==0) settings_session_default.colour = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-color"     )==0) settings_session_default.colour = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-m"         )==0) settings_session_default.colour = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-mono"      )==0) settings_session_default.colour = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-monochrome")==0) settings_session_default.colour = SW_ONOFF_OFF;
-    else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0))
+    if      (strcmp(argv[i], "-q"          )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-quiet"      )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "--quiet"     )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-V"          )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-verbose"    )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "--verbose"   )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-c"          )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-colour"     )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "--colour"    )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-color"      )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "--color"     )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-m"          )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-mono"       )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "--mono"      )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-monochrome" )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "--monochrome")==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0) || (strcmp(argv[i], "--version")==0))
      {
       ppl_report(version_string);
       if (DEBUG) ppl_log("Reported version number as requested.");
       lt_FreeAll(0); lt_MemoryStop();
       return 0;
      }
-    else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0))
+    else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0) || (strcmp(argv[i], "--help")==0))
      {
       ppl_report(help_string);
       if (DEBUG) ppl_log("Reported help text as requested.");
@@ -161,7 +167,7 @@ Send comments, bug reports, feature requests and coffee supplies to:\n\
      }
     else
     {
-     sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot -help' for a list of available commandline options.", argv[i]);
+     sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot_watch -help' for a list of available commandline options.", argv[i]);
      ppl_error(temp_err_string);
      if (DEBUG) ppl_log("Received unexpected commandline switch.");
      lt_FreeAll(0); lt_MemoryStop();

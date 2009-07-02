@@ -100,25 +100,31 @@ int main(int argc, char **argv)
       if (WillBeInteractive==1) WillBeInteractive=0;
       continue;
      }
-    if      (strcmp(argv[i], "-q"         )==0) settings_session_default.splash = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-quiet"     )==0) settings_session_default.splash = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-V"         )==0) settings_session_default.splash = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-verbose"   )==0) settings_session_default.splash = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-c"         )==0) settings_session_default.colour = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-colour"    )==0) settings_session_default.colour = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-color"     )==0) settings_session_default.colour = SW_ONOFF_ON;
-    else if (strcmp(argv[i], "-m"         )==0) settings_session_default.colour = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-mono"      )==0) settings_session_default.colour = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-monochrome")==0) settings_session_default.colour = SW_ONOFF_OFF;
-    else if (strcmp(argv[i], "-"          )==0) WillBeInteractive=2;
-    else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0))
+    if      (strcmp(argv[i], "-q"          )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-quiet"      )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "--quiet"     )==0) settings_session_default.splash = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-V"          )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-verbose"    )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "--verbose"   )==0) settings_session_default.splash = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-c"          )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-colour"     )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "--colour"    )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-color"      )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "--color"     )==0) settings_session_default.colour = SW_ONOFF_ON;
+    else if (strcmp(argv[i], "-m"          )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-mono"       )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "--mono"      )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-monochrome" )==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "--monochrome")==0) settings_session_default.colour = SW_ONOFF_OFF;
+    else if (strcmp(argv[i], "-"           )==0) WillBeInteractive=2;
+    else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0) || (strcmp(argv[i], "--version")==0))
      {
       ppl_report(txt_version);
       if (DEBUG) ppl_log("Reported version number as requested.");
       lt_FreeAll(0); lt_MemoryStop();
       return 0;
      }
-    else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0))
+    else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0) || (strcmp(argv[i], "--help")==0))
      {
       ppl_report(txt_help);
       if (DEBUG) ppl_log("Reported help text as requested.");

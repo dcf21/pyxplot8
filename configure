@@ -119,7 +119,31 @@ else
  exit
 fi
 
-# 7. OUTPUT MAKEFILE
+# 7. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
+
+echo $ECHO_N "Checking for libreadline-dev   ............. $ECHO_C"
+if printf '#include <stdio.h>\n#include <readline/readline.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
+then
+ echo "YES"
+ echo "HAVE_READLINE=1" >> Makefile
+else
+ echo "NO"
+ echo "HAVE_READLINE=0" >> Makefile
+fi
+
+# 8. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
+
+echo $ECHO_N "Checking for libcfitsio-dev    ............. $ECHO_C"
+if printf '#include <stdio.h>\n#include <fitsio.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
+then
+ echo "YES"
+ echo "HAVE_FITSIO=1" >> Makefile
+else
+ echo "NO"
+ echo "HAVE_FITSIO=0" >> Makefile
+fi
+
+# 9. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 
