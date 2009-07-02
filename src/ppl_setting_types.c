@@ -19,6 +19,13 @@
 
 // ----------------------------------------------------------------------------
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "StringTools/asciidouble.h"
+
+#include "ppl_error.h"
 #include "ppl_setting_types.h"
 
 char *SW_BOOL_STR[] = {"True"       , "False"      };
@@ -61,4 +68,40 @@ char *SW_TERMCOL_TXT[] = {"\x1b[0m"      , "\x1b[01;31m"  , "\x1b[01;32m"  , "\x
 char *SW_UNITSCH_STR[] = {"si"          , "cgs"          , "ancient"      , "imperial"     , "USImperial"  , "planck"       };
 int   SW_UNITSCH_INT[] = {SW_UNITSCH_SI , SW_UNITSCH_CGS , SW_UNITSCH_ANC , SW_UNITSCH_IMP , SW_UNITSCH_US , SW_UNITSCH_PLK , -1};
 int   SW_UNITSCH_ACL[] = {1             , 1              , 1              , 1              , 1             , 1              , -1};
+
+void *FetchSettingName(int id, int *id_list, void **name_list)
+ {
+  int first;
+  static int latch=0;
+  static char *dummyout = "";
+  first = *id_list;
+  while(1)
+   {
+    if (*id_list == id) return *name_list;
+    if (*id_list == -1)
+     {
+      if (latch==1) return dummyout; // Prevent recursive calling
+      latch=1;
+      sprintf(temp_err_string, "Setting with illegal value %d; should have had a value of type %d.", id, first);
+      ppl_fatal(__FILE__, __LINE__, temp_err_string);
+     }
+    id_list++; name_list++;
+   }
+  if (latch==1) return dummyout;
+  latch=1;
+  sprintf(temp_err_string, "Setting has illegal value %d.", id);
+  ppl_fatal(__FILE__, __LINE__, temp_err_string);
+  return NULL;
+ }
+
+int FetchSettingByName(char *name, int *id_list, char **name_list)
+ {
+  while(1)
+   {
+    if (*id_list == -1) return -1;
+    if (StrCmpNoCase(name, *name_list) == 0) return *id_list;
+    id_list++; name_list++;
+   }
+  return -1;
+ }
 

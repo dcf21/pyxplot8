@@ -81,8 +81,6 @@ extern int               settings_palette_current[];
 extern int               settings_palette_default[];
 
 void  ppl_settings_term_init();
-void *FetchSettingName      (int id, int *id_list, void **name_list);
-int   FetchSettingByName    (char *name, int *id_list, char **name_list);
 #endif
 
 // Functions defined in ppl_readconfig.c

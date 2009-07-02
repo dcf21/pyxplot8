@@ -28,8 +28,6 @@
 
 #define MAX_AXES 512
 
-#define PATHLINK "/"
-
 #define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator
 
 #define ALGEBRA_MAXLENGTH 512 // The maximum length of an algebraic expression

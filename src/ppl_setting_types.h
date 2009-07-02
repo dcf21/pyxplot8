@@ -163,4 +163,7 @@ extern char *SW_UNITSCH_STR[];
 extern int   SW_UNITSCH_ACL[];
 extern int   SW_UNITSCH_INT[];
 
+void *FetchSettingName      (int id, int *id_list, void **name_list);
+int   FetchSettingByName    (char *name, int *id_list, char **name_list);
+
 #endif
