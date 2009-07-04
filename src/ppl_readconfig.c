@@ -200,6 +200,18 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "MULTIPLOT"    )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .multiplot     = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting MULTIPLOT."    , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "NUMCOMPLEX"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .ComplexNumbers= i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMCOMPLEX."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "NUMERR"       )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .ExplicitErrors= i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMERR."       , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "NUMSF"        )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .SignificantFigures = min(max((int)fl, 1), 30);
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMSF."        , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "NUMTYPEABLE"  )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .NumDisplayTypeable = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMTYPEABLE."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINX"      )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINX."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
@@ -256,12 +268,21 @@ void ReadConfigFile(char *ConfigFname)
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TEXTVALIGN."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "TITLE"        )==0)
         strcpy(settings_graph_default.title  , setvalue);
-      else if (strcmp(setkey, "TITLE_XOFF"     )==0)
+      else if (strcmp(setkey, "TITLE_XOFF"   )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleXOff.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_XOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
-      else if (strcmp(setkey, "TITLE_YOFF"     )==0)
+      else if (strcmp(setkey, "TITLE_YOFF"   )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff.number= fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_YOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "UNITABBREV"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .UnitDisplayAbbrev= i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting UNITABBREV."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "UNITPREFIX"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .UnitDisplayPrefix= i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting UNITPREFIX."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "UNITSCHEME"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_UNITSCH_INT,SW_UNITSCH_STR))>0) settings_term_default.UnitScheme = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting UNITSCHEME."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "WIDTH"        )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.width.number    = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting WIDTH."        , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }

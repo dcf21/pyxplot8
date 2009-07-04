@@ -65,28 +65,31 @@ void ppl_settings_term_init()
   char  *PaperSizePtr;
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
-  settings_term_default.backup    = SW_ONOFF_OFF;
-  settings_term_default.colour    = SW_ONOFF_ON;
-  settings_term_default.display   = SW_ONOFF_ON;
-  settings_term_default.dpi       = 300.0;
-  settings_term_default.landscape = SW_ONOFF_OFF;
+  settings_term_default.backup              = SW_ONOFF_OFF;
+  settings_term_default.colour              = SW_ONOFF_ON;
+  settings_term_default.ComplexNumbers      = SW_ONOFF_OFF;
+  settings_term_default.display             = SW_ONOFF_ON;
+  settings_term_default.dpi                 = 300.0;
+  settings_term_default.ExplicitErrors      = SW_ONOFF_ON;
+  settings_term_default.landscape           = SW_ONOFF_OFF;
   strcpy(settings_term_default.LatexPreamble, "");
-  settings_term_default.multiplot = SW_ONOFF_OFF;
+  settings_term_default.multiplot           = SW_ONOFF_OFF;
+  settings_term_default.NumDisplayTypeable  = SW_ONOFF_OFF;
   strcpy(settings_term_default.output, "");
   ppl_units_zero(&(settings_term_default.PaperHeight));
-  settings_term_default.PaperHeight.number = 297.0 / 1000;
+  settings_term_default.PaperHeight.number  = 297.0 / 1000;
   settings_term_default.PaperHeight.dimensionless = 0; settings_term_default.PaperHeight.exponent[UNIT_LENGTH] = 1;
   strcpy(settings_term_default.PaperName, "A4");
   ppl_units_zero(&(settings_term_default.PaperWidth));
-  settings_term_default.PaperWidth.number = 210.0 / 1000;
+  settings_term_default.PaperWidth.number   = 210.0 / 1000;
   settings_term_default.PaperWidth.dimensionless = 0; settings_term_default.PaperWidth.exponent[UNIT_LENGTH] = 1;
-  settings_term_default.TermAntiAlias = SW_ONOFF_ON;
-  settings_term_default.TermType      = SW_TERMTYPE_X11S;
-  settings_term_default.TermEnlarge   = SW_ONOFF_OFF;
-  settings_term_default.TermInvert    = SW_ONOFF_OFF;
-  settings_term_default.TermTransparent = SW_ONOFF_OFF;
-  settings_term_default.UnitScheme    = SW_UNITSCH_SI;
-  settings_term_default.UnitDisplayTypeable = SW_ONOFF_OFF;
+  settings_term_default.SignificantFigures  = 8;
+  settings_term_default.TermAntiAlias       = SW_ONOFF_ON;
+  settings_term_default.TermType            = SW_TERMTYPE_X11S;
+  settings_term_default.TermEnlarge         = SW_ONOFF_OFF;
+  settings_term_default.TermInvert          = SW_ONOFF_OFF;
+  settings_term_default.TermTransparent     = SW_ONOFF_OFF;
+  settings_term_default.UnitScheme          = SW_UNITSCH_SI;
   settings_term_default.UnitDisplayPrefix   = SW_ONOFF_ON;
   settings_term_default.UnitDisplayAbbrev   = SW_ONOFF_ON;
 

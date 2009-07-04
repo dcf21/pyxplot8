@@ -29,7 +29,7 @@
 
 #include "lt_memory.h"
 
-#define PPL_MAX_CONTEXTS 16
+#define PPL_MAX_CONTEXTS 120
 
 // lt_memory functions
 // These provide simple wrapper for fastmalloc which keep track of the current memory allocation context
@@ -254,6 +254,8 @@ void *fastmalloc(int context, int size)
    } else { // There is room for this malloc in the old block
     out = blklist_pointer[*(blklist_position)-1] + *blk_current_position;
     *blk_current_position += size;
+    *blk_current_position += 7; // Ensure mallocs remain 8-byte aligned to get fast operations on doubles on x86 processors
+    *blk_current_position -= (*blk_current_position) % 8;
     return out;
    }
   return NULL;

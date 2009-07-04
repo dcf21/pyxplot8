@@ -66,11 +66,11 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (N==0) output = outputA;
   else      output = outputB;
 
-  if (settings_term_current.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+  if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
   unitstr = ppl_units_GetUnitStr(in, &NumberOut, N, typeable);
-  if (unitstr[0]=='\0') return NumericDisplay(NumberOut, N);
-  else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOut, N), unitstr);
-  else                  sprintf(output, "%s%s" , NumericDisplay(NumberOut, N), unitstr);
+  if (unitstr[0]=='\0') return NumericDisplay(NumberOut, N, settings_term_current.SignificantFigures);
+  else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOut, N, settings_term_current.SignificantFigures), unitstr);
+  else                  sprintf(output, "%s%s" , NumericDisplay(NumberOut, N, settings_term_current.SignificantFigures), unitstr);
 
   return output;
  }
@@ -250,7 +250,7 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
   int           pos=0, OutputPos=0;
   int           i, j, found, first;
 
-  if (settings_term_current.UnitDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+  if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
 
   if (N==0) output = outputA;
   else      output = outputB;
@@ -308,8 +308,8 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
     if ( (first && (!ppl_units_DblEqual(UnitPow[j],1))) || ((!first) && (!ppl_units_DblEqual(fabs(UnitPow[j]),1))) ) // Print power
      {
       output[OutputPos++]='*'; output[OutputPos++]='*';
-      if (first) sprintf(output+OutputPos, "%s", NumericDisplay(     UnitPow[j] , N));
-      else       sprintf(output+OutputPos, "%s", NumericDisplay(fabs(UnitPow[j]), N));
+      if (first) sprintf(output+OutputPos, "%s", NumericDisplay(     UnitPow[j] , N, settings_term_current.SignificantFigures));
+      else       sprintf(output+OutputPos, "%s", NumericDisplay(fabs(UnitPow[j]), N, settings_term_current.SignificantFigures));
       OutputPos+=strlen(output+OutputPos);
      }
     UnitDisp[j] = 1;

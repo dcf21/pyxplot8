@@ -70,40 +70,46 @@ double GetFloat(char *str, int *Nchars)
 
 /* NumericDisplay(): Displays a double in either %f or %e formats */
 
-char *NumericDisplay(double in, int N)
+char *NumericDisplay(double in, int N, int SigFig)
  {
-  static char outputA[128], outputB[128];
-  double x;
+  static char format[16], outputA[128], outputB[128];
+  double x, AccLevel;
   char *output;
-  int DecimalLevel;
+  int DecimalLevel, DPmax, i, j, k;
   if (N==0) output = outputA;
   else      output = outputB;
   if ((fabs(in) < 1e10) && (fabs(in) > 1e-3))
    {
     x = fabs(in);
-    for (DecimalLevel=0; DecimalLevel<12; DecimalLevel++) if ((x - ((floor(x*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - x))<(x*1.00000001)) break;
-    switch(DecimalLevel)
-     {
-      case  0: sprintf(output,"%.0f" ,in); break;
-      case  1: sprintf(output,"%.1f" ,in); break;
-      case  2: sprintf(output,"%.2f" ,in); break;
-      case  3: sprintf(output,"%.3f" ,in); break;
-      case  4: sprintf(output,"%.4f" ,in); break;
-      case  5: sprintf(output,"%.5f" ,in); break;
-      case  6: sprintf(output,"%.6f" ,in); break;
-      case  7: sprintf(output,"%.7f" ,in); break;
-      case  8: sprintf(output,"%.8f" ,in); break;
-      case  9: sprintf(output,"%.9f" ,in); break;
-      case 10: sprintf(output,"%.10f",in); break;
-      case 11: sprintf(output,"%.11f",in); break;
-      case 12: sprintf(output,"%.12f",in); break;
-     }
+    AccLevel = x*(1.0+pow(10,-SigFig));
+    DPmax    = SigFig-log10(in);
+    for (DecimalLevel=0; DecimalLevel<DPmax; DecimalLevel++) if ((x - ((floor(x*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - x))<AccLevel) break;
+    sprintf(format,"%%.%df",DecimalLevel);
+    sprintf(output,format,in);
    }
   else
    {
-    if (in==0) sprintf(output,"0");
-    else       sprintf(output,"%e",in);
+    if (in==0)
+     { sprintf(output,"0"); }
+    else
+     {
+      x  = fabs(in);
+      x /= pow(10,(int)log10(x));
+      AccLevel = x*(1.0+pow(10,-SigFig));
+      for (DecimalLevel=0; DecimalLevel<SigFig; DecimalLevel++) if ((x - ((floor(x*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - x))<AccLevel) break;
+      sprintf(format,"%%.%de",DecimalLevel);
+      sprintf(output,format,in);
+     }
    }
+  for (i=0; ((output[i]!='\0')&&(output[i]!='.')); i++); // If we have trailing decimal zeros, get rid of them
+  if (output[i]!='.') return output;
+  for (j=i+1; isdigit(output[j]); j++);
+  if (i==j) return output;
+  for (k=j-1; output[k]=='0'; k--);
+  if (k==i) k--;
+  k++;
+  if (k==j) return output;
+  strcpy(output+k , output+j);
   return output;
  }
 
