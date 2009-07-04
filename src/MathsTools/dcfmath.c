@@ -85,6 +85,7 @@ void dcfmath_acos(value *in, value *output, int *status, char *errtext)
     return;
    }
   output->number = acos(in->number);
+  output->dimensionless = 0;
   output->exponent[UNIT_ANGLE] = 1;
   return;
  }
@@ -384,6 +385,7 @@ void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char 
       sprintf(errtext, "The second argument to the Bv() function must be a temperature. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in2, NULL, 1, 0));
       return;
      }
+  output->dimensionless = 0;
   output->exponent[UNIT_MASS] =  1;
   output->exponent[UNIT_TIME] = -2;
   output->exponent[UNIT_ANGLE]= -2;
@@ -403,6 +405,7 @@ void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext)
       sprintf(errtext, "The Bvmax() function can only act upon temperatures. Supplied input has dimensions of %s.", ppl_units_GetUnitStr(in, NULL, 1, 0));
       return;
      }
+  output->dimensionless = 0;
   output->exponent[UNIT_TIME] = -1;
   output->number = 2.821439 * GSL_CONST_MKSA_BOLTZMANN / GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in->number; // Wien displacement law
  }

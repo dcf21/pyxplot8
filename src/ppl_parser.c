@@ -454,9 +454,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
   union {double _dbl; int _int; char *_str; value _val; } MatchVal;
   char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4];
   unsigned char DummyStatus[ALGEBRA_MAXLENGTH];
-  Dict *OutputOld, *DictBaby;
-  List *DictBabyList;
-  ParserNode *NodeIter;
+  Dict *OutputOld=NULL, *DictBaby=NULL;
+  List *DictBabyList=NULL;
+  ParserNode *NodeIter=NULL;
 
   while ((line[*linepos]!='\0') && (line[*linepos]<=' ')) (*linepos)++; // FFW over spaces
   *success = 1; // We are successful until proven otherwise

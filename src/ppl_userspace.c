@@ -856,7 +856,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl <= ResultBuffer[next_bufno].number);
       else if (MATCH_TWO('>','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl >= ResultBuffer[next_bufno].number);
       else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
-      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
+      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl >  ResultBuffer[next_bufno].number);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {

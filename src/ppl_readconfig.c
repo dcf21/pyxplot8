@@ -352,7 +352,7 @@ void ReadConfigFile(char *ConfigFname)
      {
       i=0;
       if (isalpha(setkey[0])) for (i=1;isalnum(setkey[i]);i++);
-      if ((i==0)||(setkey[i]!='\0')) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal function name\n", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      if ((i==0)||(setkey[i]!='(')) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal function name\n", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       errpos = -1;
       ppl_UserSpace_SetFunc(linebuffer, 0, &errpos, errtext);
       if (errpos >= 0)

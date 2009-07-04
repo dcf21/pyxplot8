@@ -164,12 +164,25 @@ void ppl_UserSpaceInit()
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_u"       , v); // The universal mass constant
+  v.number = GSL_CONST_MKSA_MASS_ELECTRON;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_e"       , v); // The electron mass
   v.number = GSL_CONST_MKSA_MASS_PROTON;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , v); // The proton mass
   v.number = GSL_CONST_MKSA_MASS_NEUTRON;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , v); // The neutron mass
+  v.number = GSL_CONST_MKSA_MASS_MUON;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_m_muon"    , v); // The muon mass
   v.number = GSL_CONST_MKSA_SOLAR_MASS;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Msun"      , v); // The solar mass
+  ppl_units_zero(&v);
+  v.number = GSL_CONST_MKSA_RYDBERG;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH] = -1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_Ry"        , v); // The Rydberg constant
+  ppl_units_zero(&v);
+  v.number = GSL_CONST_NUM_FINE_STRUCTURE;
+  v.dimensionless = 1;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_alpha"     , v); // The fine structure constant
   ppl_units_zero(&v);
   v.number = 6.955e8;
   v.dimensionless = 0;
