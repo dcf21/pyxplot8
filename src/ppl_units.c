@@ -31,6 +31,10 @@
 #include <math.h>
 #include <string.h>
 
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
+#include <gsl/gsl_math.h>
+
 #include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
@@ -49,9 +53,9 @@ char *SIprefixes_abbrev[] = {"y","z","a","f","p","n","u","m","","k","M","G","T",
 value *ppl_units_zero(value *in)
  {
   int i;
-  in->number = 0.0;
+  in->real = in->imag = 0.0;
   in->dimensionless = 1;
-  in->modified = 0;
+  in->modified = in->FlagComplex = 0;
   in->string = NULL;
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) in->exponent[i]=0;
   return in;
@@ -61,16 +65,34 @@ value *ppl_units_zero(value *in)
 char *ppl_units_NumericDisplay(value *in, int N, int typeable)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH];
-  double NumberOut;
-  char *output, *unitstr;
+  double NumberOutReal, NumberOutImag;
+  char *output, *unitstr, AddComplex[2]="+";
   if (N==0) output = outputA;
   else      output = outputB;
 
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) return NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures);
+
   if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
-  unitstr = ppl_units_GetUnitStr(in, &NumberOut, N, typeable);
-  if (unitstr[0]=='\0') return NumericDisplay(NumberOut, N, settings_term_current.SignificantFigures);
-  else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOut, N, settings_term_current.SignificantFigures), unitstr);
-  else                  sprintf(output, "%s%s" , NumericDisplay(NumberOut, N, settings_term_current.SignificantFigures), unitstr);
+  unitstr = ppl_units_GetUnitStr(in, &NumberOutReal, &NumberOutImag, N, typeable);
+
+  if (in->FlagComplex==0)
+   {
+    if (unitstr[0]=='\0') return NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures);
+    else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures), unitstr);
+    else                  sprintf(output, "%s%s" , NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures), unitstr);
+   }
+  else
+   {
+    if (NumberOutImag<0) AddComplex[0]='\0'; // Minus sign on complex number means we don't need to write a PLUS b i
+    if ((unitstr[0]=='\0') && (typeable==0)) sprintf(output,"%s%s%si", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
+                                                                       NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
+    else if (unitstr[0]=='\0')               sprintf(output,"%s%s%s*sqrt(-1)", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
+                                                                               NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
+    else if (typeable==0) sprintf(output, "(%s%s%si) %s", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
+                                                          NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
+    else                  sprintf(output, "(%s%s%s*sqrt(-1))%s" , NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
+                                                                  NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
+   }
 
   return output;
  }
@@ -176,60 +198,71 @@ void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
 void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitPref, int Nunits)
  {
   int     i,j;
-  double  NewValue, PrefixBestVal;
+  double  NewValueReal, NewValueImag, PrefixBestVal, NewMagnitude, OldMagnitude;
   int     PrefixBestPos, BestPrefix;
 
   // Apply unit multipliers to the value we're going to display
-  for (i=0; i<Nunits; i++) { in->number /= pow(UnitList[i]->multiplier , UnitPow[i]); UnitPref[i]=0; }
+  for (i=0; i<Nunits; i++)
+   {
+    in->real /= pow(UnitList[i]->multiplier , UnitPow[i]);
+    in->imag /= pow(UnitList[i]->multiplier , UnitPow[i]);
+    UnitPref[i]=0;
+   }
 
   // Search for alternative dimensionally-equivalent units which give a smaller value
   for (i=0; i<Nunits; i++)
    for (j=0; j<ppl_unit_pos; j++)
     if (ppl_units_UnitDimEqual(UnitList[i] , ppl_unit_database + j))
      {
-      NewValue = in->number * pow(UnitList[i]->multiplier / ppl_unit_database[j].multiplier , UnitPow[i]);
+      OldMagnitude = hypot(in->real , in->imag);
+      NewValueReal = in->real * pow(UnitList[i]->multiplier / ppl_unit_database[j].multiplier , UnitPow[i]);
+      NewValueImag = in->imag * pow(UnitList[i]->multiplier / ppl_unit_database[j].multiplier , UnitPow[i]);
+      NewMagnitude = hypot(NewValueReal , NewValueImag);
 
       // A user-preferred unit always beats a non-user preferred unit
       if ( ( (ppl_unit_database[j].UserSel)) && (!(UnitList[i]->UserSel)) )
-       { UnitList[i] = ppl_unit_database+j; in->number = NewValue; continue; }
+       { UnitList[i] = ppl_unit_database+j; in->real = NewValueReal; in->imag = NewValueImag; continue; }
       if ( (!(ppl_unit_database[j].UserSel)) && ( (UnitList[i]->UserSel)) )
        continue;
 
       // A unit in the current scheme always beats one which is not
       if (( UNIT_INSCHEME(ppl_unit_database[j])) && (!UNIT_INSCHEME(*(UnitList[i]))))
-        { UnitList[i] = ppl_unit_database+j; in->number = NewValue; continue; }
+        { UnitList[i] = ppl_unit_database+j; in->real = NewValueReal; in->imag = NewValueImag; continue; }
       if ((!UNIT_INSCHEME(ppl_unit_database[j])) && ( UNIT_INSCHEME(*(UnitList[i]))))
         continue;
 
       // Otherwise, a unit with a smaller display value wins
-      if ((NewValue < (in->number)) && (NewValue >= 1))
-        { UnitList[i] = ppl_unit_database+j; in->number = NewValue; }
+      if ((NewMagnitude < OldMagnitude) && (NewMagnitude >= 1))
+        { UnitList[i] = ppl_unit_database+j; in->real = NewValueReal; in->imag = NewValueImag; }
      }
 
   // Apply unit multiplier which arise from user-preferred SI prefixes, for example, millimetres
   for (i=0; i<Nunits; i++)
    if (UnitList[i]->UserSel)
     {
-     in->number /= pow(10,(UnitList[i]->UserSelPrefix-8)*3);
+     in->real /= pow(10,(UnitList[i]->UserSelPrefix-8)*3);
+     in->imag /= pow(10,(UnitList[i]->UserSelPrefix-8)*3);
      UnitPref[i] = UnitList[i]->UserSelPrefix-8;
     }
 
   // Search for an SI prefix we can use to reduce the size of this number
   if (settings_term_current.UnitDisplayPrefix == SW_ONOFF_ON)
    {
+    OldMagnitude = hypot(in->real , in->imag);
     PrefixBestPos = -1;
-    PrefixBestVal = in->number;
+    PrefixBestVal = OldMagnitude;
     for (i=0; i<Nunits; i++) if (ppl_units_DblEqual(UnitPow[i] , 1))
      if (UnitList[i]->UserSel == 0)
       for (j=UnitList[i]->MinPrefix; j<=UnitList[i]->MaxPrefix; j+=3)
        {
-        NewValue = in->number / pow(10,j);
-        if ( (NewValue >= 1) && ((NewValue < PrefixBestVal) || (PrefixBestVal<1)) )
-         { PrefixBestPos = i; BestPrefix = j; PrefixBestVal = NewValue; }
+        NewMagnitude = OldMagnitude / pow(10,j);
+        if ( (NewMagnitude >= 1) && ((NewMagnitude < PrefixBestVal) || (PrefixBestVal<1)) )
+         { PrefixBestPos = i; BestPrefix = j; PrefixBestVal = NewMagnitude; }
        }
     if (PrefixBestPos>=0)
      {
-      in->number = PrefixBestVal;
+      in->real /= pow(10,BestPrefix);
+      in->imag /= pow(10,BestPrefix);
       UnitPref[PrefixBestPos] = BestPrefix/3;
      }
    }
@@ -237,7 +270,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
  }
 
 // Main entry point for printing units
-char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
+char *ppl_units_GetUnitStr(value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH];
   char  *output;
@@ -258,7 +291,8 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
   if (in->dimensionless != 0)
    {
     output[0]='\0';
-    if (NumberOut != NULL) *NumberOut = in->number;
+    if (NumberOutReal != NULL) *NumberOutReal = in->real;
+    if (NumberOutImag != NULL) *NumberOutImag = in->imag;
     return output;
    }
 
@@ -319,7 +353,8 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOut, int N, int typeable)
   // Clean up and return
   if (typeable) output[OutputPos++] = ')';
   output[OutputPos] = '\0';
-  if (NumberOut != NULL) *NumberOut = residual.number;
+  if (NumberOutReal != NULL) *NumberOutReal = residual.real;
+  if (NumberOutImag != NULL) *NumberOutImag = residual.imag;
   return output;
  }
 
@@ -334,11 +369,11 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
   ppl_units_zero(out);
 
   while ((in[i]<=' ')&&(in[i]!='\0')) i++;
-  out->number = GetFloat(in+i , &j); // Unit strings can have numbers out the front
+  out->real = GetFloat(in+i , &j); // Unit strings can have numbers out the front
   if (j<0) j=0;
   i+=j;
   if (j==0)
-   { out->number = 1.0; }
+   { out->real = 1.0; }
   else 
    {
     while ((in[i]<=' ')&&(in[i]!='\0')) i++;
@@ -395,7 +430,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
         while ((in[i]<=' ')&&(in[i]!='\0')) i++;
        }
       for (k=0; k<UNITS_MAX_BASEUNITS; k++) out->exponent[k] += ppl_unit_database[j].exponent[k] * power * powerneg;
-      out->number *= multiplier * pow( ppl_unit_database[j].multiplier , power*powerneg );
+      out->real *= multiplier * pow( ppl_unit_database[j].multiplier , power*powerneg );
       power = 1.0;
       if      (in[i]=='*') { powerneg= 1.0; i++; }
       else if (in[i]=='/') { powerneg=-1.0; i++; }
@@ -422,24 +457,61 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
 void __inline__ ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext)
  {
   int i;
-  double exponent;
+  double exponent=0;
+  gsl_complex ac, bc;
   unsigned char DimLess=1;
 
   if (b->dimensionless == 0)
    {
-    sprintf(errtext, "Exponent should be dimensionless, but instead has dimensions of %s.", ppl_units_GetUnitStr(b, NULL, 0, 0));
-    *status = 1;
-    return;
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+    else { sprintf(errtext, "Exponent should be dimensionless, but instead has dimensions of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 0, 0)); *status = 1; return; }
    }
-  exponent = b->number;
-  o->number = pow( a->number , exponent );
+
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real pow()
+   {
+    if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; }
+    else                                  { exponent = b->real; o->real = pow(a->real, exponent); }
+    o->imag = 0.0;
+    o->FlagComplex=0;
+   }
+  else // Complex pow()
+   {
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+    else if (a->dimensionless == 0)
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+      else { sprintf(errtext, "Raising quantities with physical units to complex powers produces quantities with complex physical dimensions, which is forbidden. The operand in question has dimensions of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0)); *status = 1; return; }
+     }
+    else
+     {
+      if (!b->FlagComplex)
+       {
+        GSL_SET_COMPLEX(&ac, a->real, a->imag);
+        ac = gsl_complex_pow_real(ac, b->real);
+       }
+      else
+       {
+        GSL_SET_COMPLEX(&ac, a->real, a->imag);
+        GSL_SET_COMPLEX(&bc, b->real, b->imag);
+        ac = gsl_complex_pow(ac, bc);
+       }
+      o->real = GSL_REAL(ac);
+      o->imag = GSL_IMAG(ac);
+      o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+     }
+   }
+
   if (a->dimensionless != 0) { if ((o != a) && (o != b)) ppl_units_DimCpy(o,a); return; }
 
   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
    {
     o->exponent[i] = a->exponent[i] * exponent;
     if (ppl_units_DblEqual(o->exponent[i], 0) == 0) DimLess=0;
-    if (fabs(o->exponent[i]) > 20000 ) { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
+    if (fabs(o->exponent[i]) > 20000 )
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+      else { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
+     }
    }
   o->dimensionless = DimLess;
   return;
@@ -448,16 +520,39 @@ void __inline__ ppl_units_pow (value *a, value *b, value *o, int *status, char *
 void __inline__ ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext)
  {
   int i;
+  double tmp;
   unsigned char DimLess=1;
 
-  o->number = a->number * b->number;
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real multiplication
+   {
+    if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; }
+    else                                  { o->real = a->real * b->real; }
+    o->imag = 0.0;
+    o->FlagComplex=0;
+   }
+  else // Complex multiplication
+   {
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+    else
+     {
+      tmp            = (a->real * b->real - a->imag * b->imag);
+      o->imag        = (a->imag * b->real + a->real * b->imag);
+      o->real        = tmp;
+      o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+     }
+   }
+
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) { if ((o != a) && (o != b)) ppl_units_DimCpy(o,a); return; }
 
   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
    {
     o->exponent[i] = a->exponent[i] + b->exponent[i];
     if (ppl_units_DblEqual(o->exponent[i], 0) == 0) DimLess=0;
-    if (fabs(o->exponent[i]) > 20000 ) { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
+    if (fabs(o->exponent[i]) > 20000 )
+     { 
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+      else { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
+     }
    }
   o->dimensionless = DimLess;
   return;
@@ -466,17 +561,55 @@ void __inline__ ppl_units_mult(value *a, value *b, value *o, int *status, char *
 void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *errtext)
  {
   int i;
+  double mag, tmp;
   unsigned char DimLess=1;
 
-  if (fabs(b->number) < 1e-200) { sprintf(errtext, "Division by zero error."); *status = 1; return; }
-  o->number = a->number / b->number;
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real division
+   {
+    if (fabs(b->real) < 1e-200)
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+      else                                                      { sprintf(errtext, "Division by zero error."); *status = 1; return; }
+     }
+    else
+     {
+      if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; }
+      else                                  { o->real = a->real / b->real; }
+      o->imag = 0.0;
+      o->FlagComplex=0;
+     }
+   }
+  else // Complex division
+   {
+    if ((mag = pow(b->real,2)+pow(b->imag,2)) < 1e-200)
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+      else                                                      { sprintf(errtext, "Division by zero error."); *status = 1; return; }
+     }
+    else
+     {
+      if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+      else
+       {
+        tmp            = (a->real * b->real + a->imag * b->imag) / mag;
+        o->imag        = (a->imag * b->real - a->real * b->imag) / mag;
+        o->real        = tmp;
+        o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+       }
+     }
+   }
+
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) { if ((o != a) && (o != b)) ppl_units_DimCpy(o,a); return; }
 
   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
    {
     o->exponent[i] = a->exponent[i] - b->exponent[i];
     if (ppl_units_DblEqual(o->exponent[i], 0) == 0) DimLess=0;
-    if (fabs(o->exponent[i]) > 20000 ) { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
+    if (fabs(o->exponent[i]) > 20000 )
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+      else { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
+     }
    }
   o->dimensionless = DimLess;
   return;
@@ -484,55 +617,81 @@ void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *
 
 void __inline__ ppl_units_add (value *a, value *b, value *o, int *status, char *errtext)
  {
-  o->number = a->number + b->number;
-  if ((o != a) && (o != b)) ppl_units_DimCpy(o,a);
-  if ((a->dimensionless != 0) && (b->dimensionless != 0)) return;
-
-  if (ppl_units_DimEqual(a, b) == 0)
+  o->real = a->real + b->real;
+  if ((o != a) && (o != b)) { ppl_units_DimCpy(o,a); o->imag = 0.0; o->FlagComplex=0; }
+  if ((a->dimensionless == 0) || (b->dimensionless == 0))
    {
-    if (a->dimensionless)
-     { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of '%s'.", ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
-    else if (b->dimensionless)
-     { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of '%s', while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, 0, 0) ); }
-    else
-     { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
-    *status = 1; return;
+    if (ppl_units_DimEqual(a, b) == 0)
+     {
+      if (a->dimensionless)
+       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+      else if (b->dimensionless)
+       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0) ); }
+      else
+       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+      *status = 1; return;
+     }
+   }
+
+  if (a->FlagComplex || b->FlagComplex)
+   {
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+    o->imag = a->imag + b->imag;
+    o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
    }
   return;
  }
 
 void __inline__ ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext)
  {
-  o->number = a->number - b->number;
-  if ((o != a) && (o != b)) ppl_units_DimCpy(o,a);
-  if ((a->dimensionless != 0) && (b->dimensionless != 0)) return;
-
-  if (ppl_units_DimEqual(a, b) == 0)
+  o->real = a->real - b->real;
+  if ((o != a) && (o != b)) { ppl_units_DimCpy(o,a); o->imag = 0.0; o->FlagComplex=0; }
+  if ((a->dimensionless == 0) || (b->dimensionless == 0))
    {
-    if (a->dimensionless)
-     { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of '%s'.", ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
-    else if (b->dimensionless)
-     { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of '%s', while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, 0, 0) ); }
-    else
-     { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
-    *status = 1; return;
+    if (ppl_units_DimEqual(a, b) == 0)
+     {
+      if (a->dimensionless)
+       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+      else if (b->dimensionless)
+       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0) ); }
+      else
+       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+      *status = 1; return;
+     }
+   }
+
+  if (a->FlagComplex || b->FlagComplex)
+   {
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+    o->imag = a->imag - b->imag;
+    o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
    }
   return;
  }
 
 void __inline__ ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext)
  {
-  o->number = a->number - floor(a->number / b->number) * b->number;
-  if ((o != a) && (o != b)) ppl_units_DimCpy(o,a);
-  if ((a->dimensionless != 0) && (b->dimensionless != 0)) return;
-
-  if (a->dimensionless)
-   { sprintf(errtext, "Mod operator can only be applied to dimensionless operands; right operand has units of '%s'.", ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
-  else if (b->dimensionless)
-   { sprintf(errtext, "Mod operator can only be applied to dimensionless operands; left operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0) ); }
-  else
-   { sprintf(errtext, "Mod operator can only be applied to dimensionless operands; left operand has units of '%s', while right operand has units of '%s'.", ppl_units_GetUnitStr(a, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, 1, 0) ); }
-  *status = 1;
+  o->real = a->real - floor(a->real / b->real) * b->real;
+  if ((o != a) && (o != b)) { ppl_units_DimCpy(o,a); o->imag = 0.0; o->FlagComplex=0; }
+  if ((a->dimensionless == 0) || (b->dimensionless == 0))
+   {
+    if (ppl_units_DimEqual(a, b) == 0)
+     {
+      if (a->dimensionless)
+       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+      else if (b->dimensionless)
+       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0) ); }
+      else
+       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+      *status = 1; return;
+     }
+   }
+  if (a->FlagComplex || b->FlagComplex)
+   {
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+    sprintf(errtext, "Mod operator can only be applied to real operands; complex operands supplied.");
+    *status = 1; return;
+   }
   return;
  }
 

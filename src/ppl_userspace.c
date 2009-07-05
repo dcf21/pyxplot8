@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
 
 #include <gsl/gsl_math.h>
@@ -130,6 +131,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
       ppl_EvaluateAlgebra(definition+i, min+lcount, 0, &args_j, status, errtext, 0);
       if (*status >= 0) return;
       i+=args_j;
+      if (min[lcount].FlagComplex) { *status=1; sprintf(errtext, "Where ranges are specified for function arguments, these must be real numbers. Ranges may not be imposed upon complex arguments to functions."); return; }
       MinActive[lcount]=1;
      }
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
@@ -147,7 +149,8 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
       ppl_EvaluateAlgebra(definition+i, max+lcount, 0, &args_j, status, errtext, 0);
       if (*status >= 0) return;
       i+=args_j;
-      if ((MinActive[lcount]) && (!ppl_units_DimEqual(min+lcount , max+lcount))) { *status=1; sprintf(errtext, "The range specified for argument number %d to this function has a minimum with dimensions of <%s>, and a maximum with dimensions of <%s>. This is not allowed: both must have the same dimensions.",lcount+1,ppl_units_GetUnitStr(min+lcount,NULL,0,0),ppl_units_GetUnitStr(max+lcount,NULL,1,0)); return; }
+      if (max[lcount].FlagComplex) { *status=1; sprintf(errtext, "Where ranges are specified for function arguments, these must be real numbers. Ranges may not be imposed upon complex arguments to functions."); return; }
+      if ((MinActive[lcount]) && (!ppl_units_DimEqual(min+lcount , max+lcount))) { *status=1; sprintf(errtext, "The range specified for argument number %d to this function has a minimum with dimensions of <%s>, and a maximum with dimensions of <%s>. This is not allowed: both must have the same dimensions.",lcount+1,ppl_units_GetUnitStr(min+lcount,NULL,NULL,0,0),ppl_units_GetUnitStr(max+lcount,NULL,NULL,1,0)); return; }
       MaxActive[lcount]=1;
      }
     while ((definition[i]>'\0')&&(definition[i]<=' ')) i++;
@@ -156,11 +159,11 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     i++;
 
     // Swap min/max limits if they are given the wrong way around
-    if ((MinActive[lcount]==1)&&(MaxActive[lcount]==1)&&(min[lcount].number>max[lcount].number))
+    if ((MinActive[lcount]==1)&&(MaxActive[lcount]==1)&&(min[lcount].real>max[lcount].real))
      {
-      tempdbl            = max[lcount].number;
-      max[lcount].number = min[lcount].number;
-      min[lcount].number = tempdbl; 
+      tempdbl          = max[lcount].real;
+      max[lcount].real = min[lcount].real;
+      min[lcount].real = tempdbl; 
      }
 
     lcount++;
@@ -191,18 +194,18 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     Nsupersede = Noverlap = Nmiss = LastOverlapType = LastOverlapK = 0;
     if (supersede==0) for (k=0; k<Nargs; k++) // Looping over all dimensions, count how new ranges miss/overlap/supersede old ranges
      {
-      if      ( ((MinActive[k]==0)||((OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number>=min[k].number))) &&
-                ((MaxActive[k]==0)||((OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number<=max[k].number)))    ) Nsupersede++; // New min/max range completely encompasses old
-      else if ( ((MinActive[k]==1)&& (OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number<=min[k].number) ) ||
-                ((MaxActive[k]==1)&& (OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number>=max[k].number) )    ) Nmiss++; // New min/max range completely outside old
-      else if (  (MinActive[k]==1)&&((OldFuncIter->MinActive[k]==0)||(OldFuncIter->min[k].number< min[k].number)) &&
-                 (MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].number> max[k].number))     )  { Noverlap++; LastOverlapType = 2; LastOverlapK = k; } // New range in middle of old
-      else if (  (MinActive[k]==1)&&(((OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].number> min[k].number)  &&
-                                     ((MaxActive[k]             ==0)||(OldFuncIter->max[k].number<=max[k].number)))||
-                                     ((OldFuncIter->MaxActive[k]==0)&&(MaxActive[k]              == 0           ))    )) { Noverlap++; LastOverlapType = 3; LastOverlapK = k; } // New range goes off top of old
-      else if (  (MaxActive[k]==1)&&(((OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].number< max[k].number)  &&
-                                     ((MinActive[k]             ==0)||(OldFuncIter->min[k].number>=min[k].number)))||
-                                     ((OldFuncIter->MinActive[k]==0)&&(MinActive[k]              == 0           ))    )) { Noverlap++; LastOverlapType = 1; LastOverlapK = k; } // New range goes off bottom of old
+      if      ( ((MinActive[k]==0)||((OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].real>=min[k].real))) &&
+                ((MaxActive[k]==0)||((OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].real<=max[k].real)))    ) Nsupersede++; // New min/max range completely encompasses old
+      else if ( ((MinActive[k]==1)&& (OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].real<=min[k].real) ) ||
+                ((MaxActive[k]==1)&& (OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].real>=max[k].real) )    ) Nmiss++; // New min/max range completely outside old
+      else if (  (MinActive[k]==1)&&((OldFuncIter->MinActive[k]==0)||(OldFuncIter->min[k].real< min[k].real)) &&
+                 (MaxActive[k]==1)&&((OldFuncIter->MaxActive[k]==0)||(OldFuncIter->max[k].real> max[k].real))     )  { Noverlap++; LastOverlapType = 2; LastOverlapK = k; } // New range in middle of old
+      else if (  (MinActive[k]==1)&&(((OldFuncIter->MaxActive[k]==1)&&(OldFuncIter->max[k].real> min[k].real)  &&
+                                     ((MaxActive[k]             ==0)||(OldFuncIter->max[k].real<=max[k].real)))||
+                                     ((OldFuncIter->MaxActive[k]==0)&&(MaxActive[k]            == 0           ))    )) { Noverlap++; LastOverlapType = 3; LastOverlapK = k; } // New range goes off top of old
+      else if (  (MaxActive[k]==1)&&(((OldFuncIter->MinActive[k]==1)&&(OldFuncIter->min[k].real< max[k].real)  &&
+                                     ((MinActive[k]             ==0)||(OldFuncIter->min[k].real>=min[k].real)))||
+                                     ((OldFuncIter->MinActive[k]==0)&&(MinActive[k]            == 0           ))    )) { Noverlap++; LastOverlapType = 1; LastOverlapK = k; } // New range goes off bottom of old
       else  ppl_fatal(__FILE__,__LINE__,"Could not work out how the ranges of two functions overlap");
      }
 
@@ -215,16 +218,16 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     else if ((Nmiss==0) && (Noverlap==1)) // we should reduce the range of the function we overlap with
      {
       if      (LastOverlapType == 1) // Bring lower limit of old definition up above maximum for this new definition
-       { OldFuncIter->min[LastOverlapK].number = max[LastOverlapK].number; OldFuncIter->MinActive[LastOverlapK] = 1; }
+       { OldFuncIter->min[LastOverlapK].real = max[LastOverlapK].real; OldFuncIter->MinActive[LastOverlapK] = 1; }
       else if (LastOverlapType == 3) // Bring upper limit of old definition down below minimum for this new definition
-       { OldFuncIter->max[LastOverlapK].number = min[LastOverlapK].number; OldFuncIter->MaxActive[LastOverlapK] = 1; }
+       { OldFuncIter->max[LastOverlapK].real = min[LastOverlapK].real; OldFuncIter->MaxActive[LastOverlapK] = 1; }
       else
        {
         ppl_UserSpace_FuncDuplicate(OldFuncIter , modified); // Old definition is cut in two by the new definition; duplicate it.
-        OldFuncIter->max[LastOverlapK].number       = min[LastOverlapK].number;
-        OldFuncIter->MaxActive[LastOverlapK]        = 1;
-        OldFuncIter->next->min[LastOverlapK].number = max[LastOverlapK].number;
-        OldFuncIter->next->MinActive[LastOverlapK]  = 1;
+        OldFuncIter->max[LastOverlapK].real        = min[LastOverlapK].real;
+        OldFuncIter->MaxActive[LastOverlapK]       = 1;
+        OldFuncIter->next->min[LastOverlapK].real  = max[LastOverlapK].real;
+        OldFuncIter->next->MinActive[LastOverlapK] = 1;
        }
      }
     else if ((strlen(definition+i)==0) && (Nmiss==0) && (Noverlap>1)) // We are trying to undefine the function, but overlap is complicated along > 1 axis. Best we can do is store the undefinition.
@@ -341,7 +344,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
 
   int    arg1i, arg2i; // Integers for passing to sprintf
   value  arg1v, arg2v; // Doubles (well, actually values with units) for passing to sprintf
-  struct {double d; int i; char *s; unsigned int u; value v; } argf; // We pass this lump of memory to sprintf
+  struct {double d,d2; int i,i2; char *s; unsigned int u,u2; value v; } argf; // We pass this lump of memory to sprintf
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded."); return; }
 
@@ -426,15 +429,17 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        {
         ppl_EvaluateAlgebra(in+pos , &arg1v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
-        if (arg1v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of %s.", ppl_units_GetUnitStr(&arg1v, NULL, 0, 0) ); return; }
-        arg1i = (int)(arg1v.number);
+        if (arg1v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of <%s>.", ppl_units_GetUnitStr(&arg1v, NULL, NULL, 0, 0) ); return; }
+        if (arg1v.FlagComplex       ) { *errpos = pos; sprintf(errtext, "This argument should real, but in fact has an imaginary component."); return; }
+        arg1i = (int)(arg1v.real);
        }
       if (RequiredArgs>2)
        {
         ppl_EvaluateAlgebra(in+pos , &arg2v, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
-        if (arg2v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of %s.", ppl_units_GetUnitStr(&arg2v, NULL, 0, 0) ); return; }
-        arg2i = (int)(arg2v.number);
+        if (arg2v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of <%s>.", ppl_units_GetUnitStr(&arg2v, NULL, NULL, 0, 0) ); return; }
+        if (arg2v.FlagComplex       ) { *errpos = pos; sprintf(errtext, "This argument should real, but in fact has an imaginary component."); return; }
+        arg2i = (int)(arg2v.real);
        }
 
       ArgCount += (RequiredArgs-1); // Fastforward ArgCount to point at the number or string argument that we're actually going to substitute
@@ -451,31 +456,90 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        {
         ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
-        argf.s = ppl_units_GetUnitStr(&argf.v, &argf.d, 0, 0);
-        if      ((AllowedFormats[l]=='d') || (AllowedFormats[l]=='i') || (AllowedFormats[l]=='o') || (AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
+        if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (argf.v.FlagComplex!=0))
+         { sprintf(out+j, "nan"); }
+        else
          {
-          argf.i = (int)argf.d; // sprintf will expect to be passed an int
-          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i); // Print an integer variable
-          if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
-          if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
-         }
-        else if ((AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
-         {
-          argf.u = (unsigned int)argf.d; // sprintf will expect to be passed an unsigned int
-          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u);
-          if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u);
-          if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u);
-         }
-        else // otherwise, sprintf will expect a double
-         {
-          if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d);
-          if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d);
-          if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d);
-         }
-        if (argf.v.dimensionless != 0)
-         {
-          j += strlen(out+j);
-          strcpy(out+j, argf.s); // Print dimensions of this value
+          argf.s = ppl_units_GetUnitStr(&argf.v, &argf.d, &argf.d2, 0, 0);
+          if      ((AllowedFormats[l]=='d') || (AllowedFormats[l]=='i') || (AllowedFormats[l]=='o') || (AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
+           {
+            if ((argf.d<=INT_MIN)||(argf.d>=INT_MAX)||(!gsl_finite(argf.d))||(argf.d2<=INT_MIN)||(argf.d2>=INT_MAX)||(!gsl_finite(argf.d2)))
+             {
+              *errpos = pos; sprintf(errtext, "This argument is too large to represent as an integer.");
+             }
+            else if (argf.v.FlagComplex == 0) // Print a real integer
+             {
+              argf.i = (int)argf.d; // sprintf will expect to be passed an int
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i); // Print an integer variable
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
+             }
+            else // Print a complex integer
+             {
+              argf.i = (int)argf.d ; // sprintf will expect to be passed an int real part, and an int imag part
+              argf.i2= (int)argf.d2;
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i); // Print an integer real part
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
+              j += strlen(out+j);
+              out[j++]='+';
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i2); // Print an integer imag part
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i2);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i2);
+              j += strlen(out+j);
+              strcpy(out+j,"i");
+             }
+           }
+          else if ((AllowedFormats[l]=='x') || (AllowedFormats[l]=='X'))
+           {
+            if ((argf.d<0)||(argf.d>=UINT_MAX)||(!gsl_finite(argf.d))||(argf.d2<0)||(argf.d2>=UINT_MAX)||(!gsl_finite(argf.d2)))
+             {
+              *errpos = pos; sprintf(errtext, "This argument is outside the range which can be represented as an unsigned integer.");
+             }
+            else if (argf.v.FlagComplex == 0) // Print a real unsigned integer
+             {
+              argf.u = (unsigned int)argf.d; // sprintf will expect to be passed an unsigned int
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u); // Print an integer variable
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u);
+             }
+            else // Print a complex unsigned integer
+             {
+              argf.u = (unsigned int)argf.d ; // sprintf will expect to be passed an int real part, and an int imag part
+              argf.u2= (unsigned int)argf.d2;
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u); // Print an integer real part
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u);
+              j += strlen(out+j);
+              out[j++]='+';
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u2); // Print an integer imag part
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u2);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u2);
+              j += strlen(out+j);
+              strcpy(out+j,"i");
+             }
+           }
+          else // otherwise, sprintf will expect a double
+           {
+            if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d); // Print a double (real part)
+            if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d);
+            if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d);
+            if (argf.v.FlagComplex != 0) // Print a complex double
+             {
+              j += strlen(out+j);
+              out[j++]='+';
+              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d2); // Print the imaginary part
+              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d2);
+              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d2);
+              j += strlen(out+j);
+              strcpy(out+j,"i");
+             }
+           }
+          if (argf.v.dimensionless != 0)
+           {
+            j += strlen(out+j);
+            strcpy(out+j, argf.s); // Print dimensions of this value
+           }
          }
        }
       ArgCount++;
@@ -537,7 +601,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   int bufpos = 0;
   value  *VarData  = NULL;
   FunctionDescriptor *FuncDef = NULL;
-  double  TempDbl;
+  double  TempDbl, TempDbl2;
   DictIterator *DictIter;
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
@@ -648,11 +712,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
                 if (!ppl_units_DimEqual(FuncDef->min+k , ResultBuffer+bufpos+k+2))
                  {
                   *errpos = start+i;
-                  sprintf(errtext,"Argument %d supplied to function are dimensionally with specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,0,0),ppl_units_GetUnitStr(FuncDef->min+k,NULL,1,0));
+                  sprintf(errtext,"Argument %d supplied to this function is dimensionally incompatible with the argument's specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,NULL,0,0),ppl_units_GetUnitStr(FuncDef->min+k,NULL,NULL,1,0));
+                  return;
+                 }
+                else if (ResultBuffer[bufpos+k+2].FlagComplex)
+                 {
+                  *errpos = start+i;
+                  sprintf(errtext,"Argument %d supplied to this function must be a real number: any arguments which have min/max ranges specified must be real.",k+1);
                   return;
                  } else { j=1; }
                }
-              if (ResultBuffer[bufpos+k+2].number < FuncDef->min[k].number) { FuncDef=FuncDef->next; l=0; continue; }
+              if (ResultBuffer[bufpos+k+2].real < FuncDef->min[k].real) { FuncDef=FuncDef->next; l=0; continue; }
              }
             if (FuncDef->MaxActive[k]!=0)
              { 
@@ -661,19 +731,25 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
                 if (!ppl_units_DimEqual(FuncDef->max+k , ResultBuffer+bufpos+k+2))
                  {
                   *errpos = start+i;
-                  sprintf(errtext,"Argument %d supplied to function are dimensionally with specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,0,0),ppl_units_GetUnitStr(FuncDef->max+k,NULL,1,0));
+                  sprintf(errtext,"Argument %d supplied to this function is dimensionally incompatible with the argument's specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,NULL,0,0),ppl_units_GetUnitStr(FuncDef->max+k,NULL,NULL,1,0));
+                  return;
+                 } 
+                else if (ResultBuffer[bufpos+k+2].FlagComplex)
+                 {
+                  *errpos = start+i;
+                  sprintf(errtext,"Argument %d supplied to this function must be a real number: any arguments which have min/max ranges specified must be real.",k+1);
                   return;
                  } else { j=1; }
                }
-              if (ResultBuffer[bufpos+k+2].number > FuncDef->max[k].number) { FuncDef=FuncDef->next; l=0; continue; }
+              if (ResultBuffer[bufpos+k+2].real > FuncDef->max[k].real) { FuncDef=FuncDef->next; l=0; continue; }
              }
            }
           if (l==1) break;
          }
         if (FuncDef==NULL)
          {
-          ppl_units_zero(ResultBuffer+bufpos);
-          ResultBuffer[bufpos].number = GSL_NAN;
+          if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(ResultBuffer+bufpos); ResultBuffer[bufpos].real = GSL_NAN; ResultBuffer[bufpos].imag = 0; }
+          else { *errpos = start; sprintf(errtext,"This function is not defined in the requested region of parameter space."); return; }
          } else {
           j=0;
           for (k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
@@ -733,7 +809,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   for (i=0;i<len;i++) if (StatusRow[i]==6)
    {
     ppl_units_zero(ResultBuffer+bufpos);
-    ResultBuffer[bufpos].number = GetFloat(in+start+i, &j);
+    ResultBuffer[bufpos].real = GetFloat(in+start+i, &j);
     for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant."); return; }
@@ -756,7 +832,8 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)
    {
     FETCHNEXT(next_start, next_bufno, next_end);
-    ResultBuffer[next_bufno].number *= -1;
+    ResultBuffer[next_bufno].real *= -1;
+    ResultBuffer[next_bufno].imag *= -1;
     SETSTATUS(p, next_start, next_bufno);
     i = start + next_start;
     i--; p=i-start;
@@ -819,14 +896,20 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
        {
         if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s> and the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 1, 0)); return; }
         else if (ResultBuffer[prev_bufno].dimensionless == 0)
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0) ); return; }
         else
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 0, 0) ); return; }
        }
-      if      (MATCH_ONE('<')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number << (int)ResultBuffer[next_bufno].number);
-      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number >> (int)ResultBuffer[next_bufno].number);
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to real operands; supplied operands have imaginary components."); return; }
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real))||(ResultBuffer[next_bufno].real<=INT_MIN)||(ResultBuffer[next_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[next_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to operands in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
+      if      (MATCH_ONE('<')) ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real << (int)ResultBuffer[next_bufno].real);
+      else if (MATCH_ONE('>')) ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real >> (int)ResultBuffer[next_bufno].real);
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Overflow error; the result of a binary operation must be in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -844,19 +927,21 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        {
         *errpos=i;
         if      (ResultBuffer[prev_bufno].dimensionless)
-         { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+         { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,1,0)); }
         else if (ResultBuffer[next_bufno].dimensionless)
-         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one which is dimensionless.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0)); }
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of <%s> with one which is dimensionless.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,NULL,0,0)); }
         else
-         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of <%s> with one with dimensions of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,1,0)); }
         return;
        }
-      TempDbl = ResultBuffer[prev_bufno].number;
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Magnitude comparisons can only be applied to real operands; supplied operands have imaginary components."); return; }
+      TempDbl = ResultBuffer[prev_bufno].real;
       ppl_units_zero(ResultBuffer+prev_bufno);
-      if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl <= ResultBuffer[next_bufno].number);
-      else if (MATCH_TWO('>','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl >= ResultBuffer[next_bufno].number);
-      else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl <  ResultBuffer[next_bufno].number);
-      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].number = (double)(TempDbl >  ResultBuffer[next_bufno].number);
+      if      (MATCH_TWO('<','=')) ResultBuffer[prev_bufno].real = (double)(TempDbl <= ResultBuffer[next_bufno].real);
+      else if (MATCH_TWO('>','=')) ResultBuffer[prev_bufno].real = (double)(TempDbl >= ResultBuffer[next_bufno].real);
+      else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno].real = (double)(TempDbl <  ResultBuffer[next_bufno].real);
+      else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].real = (double)(TempDbl >  ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -875,18 +960,19 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        { 
         *errpos=i; 
         if      (ResultBuffer[prev_bufno].dimensionless)
-         { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+         { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,1,0)); }
         else if (ResultBuffer[next_bufno].dimensionless)
-         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one which is dimensionless.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0)); }
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of <%s> with one which is dimensionless.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,NULL,0,0)); }
         else
-         { sprintf(errtext, "Attempt to compare a quantity with dimensions of %s with one with dimensions of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,1,0)); }
+         { sprintf(errtext, "Attempt to compare a quantity with dimensions of <%s> with one with dimensions of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno,NULL,NULL,0,0), ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,1,0)); }
         return;
        }
-      TempDbl = ResultBuffer[prev_bufno].number;
+      TempDbl = ResultBuffer[prev_bufno].real;
+      TempDbl2= ResultBuffer[prev_bufno].imag;
       ppl_units_zero(ResultBuffer+prev_bufno);
-      if      (MATCH_TWO('=','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl == ResultBuffer[next_bufno].number);
-      else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno].number = (double)(TempDbl != ResultBuffer[next_bufno].number);
-      else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno].number = (double)(TempDbl != ResultBuffer[next_bufno].number);
+      if      (MATCH_TWO('=','=')) ResultBuffer[prev_bufno].real = (double) (ppl_units_DblEqual(TempDbl, ResultBuffer[next_bufno].real) && ppl_units_DblEqual(TempDbl2, ResultBuffer[next_bufno].imag));
+      else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno].real = (double)!(ppl_units_DblEqual(TempDbl, ResultBuffer[next_bufno].real) && ppl_units_DblEqual(TempDbl2, ResultBuffer[next_bufno].imag));
+      else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno].real = (double)!(ppl_units_DblEqual(TempDbl, ResultBuffer[next_bufno].real) && ppl_units_DblEqual(TempDbl2, ResultBuffer[next_bufno].imag));
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -903,13 +989,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
        {
         if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s> and the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 1, 0)); return; }
         else if (ResultBuffer[prev_bufno].dimensionless == 0)
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0) ); return; }
         else
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 0, 0) ); return; }
        }
-      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number & (int)ResultBuffer[next_bufno].number);
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to real operands; supplied operands have imaginary components."); return; }
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real))||(ResultBuffer[next_bufno].real<=INT_MIN)||(ResultBuffer[next_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[next_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to operands in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
+      ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real & (int)ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -926,13 +1016,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
        {
         if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s> and the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 1, 0)); return; }
         else if (ResultBuffer[prev_bufno].dimensionless == 0)
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0) ); return; }
         else
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 0, 0) ); return; }
        }
-      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number ^ (int)ResultBuffer[next_bufno].number);
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to real operands; supplied operands have imaginary components."); return; }
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real))||(ResultBuffer[next_bufno].real<=INT_MIN)||(ResultBuffer[next_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[next_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to operands in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
+      ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real ^ (int)ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -949,13 +1043,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
        {
         if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s> and the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 1, 0)); return; }
         else if (ResultBuffer[prev_bufno].dimensionless == 0)
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the left operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0) ); return; }
         else
-         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Binary operators can only be applied to dimensionless operands; here, the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 0, 0) ); return; }
        }
-      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number | (int)ResultBuffer[next_bufno].number);
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to real operands; supplied operands have imaginary components."); return; }
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real))||(ResultBuffer[next_bufno].real<=INT_MIN)||(ResultBuffer[next_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[next_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Binary operators can only be applied to operands in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
+      ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real | (int)ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -972,13 +1070,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
        {
         if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
-         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of <%s> and the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 1, 0)); return; }
         else if (ResultBuffer[prev_bufno].dimensionless == 0)
-         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0) ); return; }
         else
-         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 0, 0) ); return; }
        }
-      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number && (int)ResultBuffer[next_bufno].number);
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Logical operators can only be applied to real operands; supplied operands have imaginary components."); return; }
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real))||(ResultBuffer[next_bufno].real<=INT_MIN)||(ResultBuffer[next_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[next_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Logical operators can only be applied to operands in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
+      ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real && (int)ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
@@ -995,13 +1097,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       if ( (ResultBuffer[prev_bufno].dimensionless == 0) || (ResultBuffer[next_bufno].dimensionless == 0) )
        {
         if ( (ResultBuffer[prev_bufno].dimensionless == 0) && (ResultBuffer[next_bufno].dimensionless == 0) )
-         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s and the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 1, 0)); return; }
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of <%s> and the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0), ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 1, 0)); return; }
         else if (ResultBuffer[prev_bufno].dimensionless == 0)
-         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the left operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+prev_bufno, NULL, NULL, 0, 0) ); return; }
         else
-         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the right operand has units of %s.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, 0, 0) ); return; }
+         { *errpos=i; sprintf(errtext, "Logical operators can only be applied to dimensionless operands; here, the right operand has units of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno, NULL, NULL, 0, 0) ); return; }
        }
-      ResultBuffer[prev_bufno].number = (double)((int)ResultBuffer[prev_bufno].number || (int)ResultBuffer[next_bufno].number);
+      if (ResultBuffer[prev_bufno].FlagComplex || ResultBuffer[next_bufno].FlagComplex)
+       { *errpos=i; sprintf(errtext, "Logical operators can only be applied to real operands; supplied operands have imaginary components."); return; }
+      if ((ResultBuffer[prev_bufno].real<=INT_MIN)||(ResultBuffer[prev_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[prev_bufno].real))||(ResultBuffer[next_bufno].real<=INT_MIN)||(ResultBuffer[next_bufno].real>=INT_MAX)||(!gsl_finite(ResultBuffer[next_bufno].real)))
+       { *errpos=i; sprintf(errtext, "Logical operators can only be applied to operands in the range %d<x<%d.",INT_MIN,INT_MAX); return; }
+      ResultBuffer[prev_bufno].real = (double)((int)ResultBuffer[prev_bufno].real || (int)ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {

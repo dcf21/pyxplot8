@@ -357,7 +357,7 @@ char *DictPrint(Dict *in, char *out, int size)
     if      (iter->DataType == DATATYPE_VOID  ) { sprintf(out+pos, "'%s':void", iter->key                         ); }
     else if (iter->DataType == DATATYPE_INT   ) { sprintf(out+pos, "'%s':%d"  , iter->key, *((int    *)iter->data)); }
     else if (iter->DataType == DATATYPE_FLOAT ) { sprintf(out+pos, "'%s':%e"  , iter->key, *((double *)iter->data)); }
-    else if (iter->DataType == DATATYPE_VALUE ) { sprintf(out+pos, "'%s':%e <unit>", iter->key, ((value *)iter->data)->number); }
+    else if (iter->DataType == DATATYPE_VALUE ) { sprintf(out+pos, "'%s':%e+%ei <unit>", iter->key, ((value *)iter->data)->real, ((value *)iter->data)->imag); }
     else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s':'%s'", iter->key,  ((char   *)iter->data)); }
     else if (iter->DataType == DATATYPE_LIST  )
      {

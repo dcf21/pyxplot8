@@ -170,9 +170,9 @@ int directive_do(Dict *command, int IterLevel)
     i=-1; j=-1;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
     if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
    }
-  while ((!status) && (!ppl_units_DblEqual(criterion_val.number,0.0)));
+  while ((!status) && ((!ppl_units_DblEqual(criterion_val.real,0.0)) || (!ppl_units_DblEqual(criterion_val.imag,0.0))));
   return status;
  }
 
@@ -216,8 +216,8 @@ int directive_while(Dict *command, int IterLevel)
     i=-1; j=-1; status=0;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
     if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
-    if (ppl_units_DblEqual(criterion_val.number,0.0)) break;
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+    if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;
     chainiter = chain;
     status = loop_execute(&chainiter, IterLevel);
    }
@@ -258,16 +258,16 @@ int directive_for(Dict *command, int IterLevel)
    {
     step = &step_dummy;
     memcpy(&step_dummy, start, sizeof(value));
-    step_dummy.number = 1.0;
+    step_dummy.real = 1.0; // Step must have same units as start/end values. These are gauranteed by ppl_parser to be REAL.
    }
 
-  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "Error: The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, 0, 0), ppl_units_GetUnitStr(end, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
-  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "Error: The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, 0, 0), ppl_units_GetUnitStr(step, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "Error: The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(end, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "Error: The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(step, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
 
-  if (start->number < end->number) backwards=0;
-  else                             backwards=1;
+  if (start->real < end->real) backwards=0;
+  else                         backwards=1;
 
-  if (((!backwards) && (step->number<=0)) || ((backwards) && (step->number>=0))) { sprintf(temp_err_string, "Error: The projected number of steps in this for loop is infinite."); ppl_error(temp_err_string); return 1; }
+  if (((!backwards) && (step->real<=0)) || ((backwards) && (step->real>=0))) { sprintf(temp_err_string, "Error: The projected number of steps in this for loop is infinite."); ppl_error(temp_err_string); return 1; }
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
@@ -286,12 +286,12 @@ int directive_for(Dict *command, int IterLevel)
 
   // Execute this while loop repeatedly
   status = 0;
-  while (((!backwards)&&(iterval->number < end->number)) || ((backwards)&&(iterval->number > end->number)))
+  while (((!backwards)&&(iterval->real < end->real)) || ((backwards)&&(iterval->real > end->real)))
    {
     chainiter = chain;
     status = loop_execute(&chainiter, IterLevel);
     if (status) break;
-    iterval->number += step->number;
+    iterval->real += step->real;
    }
   return status;
  }

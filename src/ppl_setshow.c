@@ -204,10 +204,10 @@ void directive_set(Dict *command)
         errpos = -1;
         ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, &errpos, temp_err_string, 0);
         if (errpos>=0) { ppl_error(temp_err_string); return; }
-        if (!valobj.dimensionless) { sprintf(temp_err_string, "Error: colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, 1, 0)); ppl_error(temp_err_string); return; }
-        if ((valobj.number <= INT_MIN) || (valobj.number >= INT_MAX)) { sprintf(temp_err_string, "Error: colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(temp_err_string); return; }
+        if (!valobj.dimensionless) { sprintf(temp_err_string, "Error: colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return; }
+        if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Error: colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(temp_err_string); return; }
         for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
-        *tempint = settings_palette_current[((int)valobj.number)%j];
+        *tempint = settings_palette_current[((int)valobj.real)%j];
        }
      }
    }
@@ -329,25 +329,25 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval->exponent[i] != (i==UNIT_LENGTH))
         {
-         sprintf(temp_err_string, "Error: The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, 1, 0));
+         sprintf(temp_err_string, "Error: The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
          ppl_error(temp_err_string);
          return;
         }
      }
-    else { tempval->number /= 100; } // By default, dimensionless positions are in centimetres
+    else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
     if (!(tempval2->dimensionless))
      {
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval2->exponent[i] != (i==UNIT_LENGTH))
         {
-         sprintf(temp_err_string, "Error: The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, 1, 0));
+         sprintf(temp_err_string, "Error: The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
          ppl_error(temp_err_string);
          return;
         }
      }
-    else { tempval2->number /= 100; } // By default, dimensionless positions are in centimetres
-    settings_graph_current.OriginX.number = tempval ->number;
-    settings_graph_current.OriginY.number = tempval2->number;
+    else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
+    settings_graph_current.OriginX.real = tempval ->real;
+    settings_graph_current.OriginY.real = tempval2->real;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"origin")==0)) /* unset origin */
    {
@@ -392,8 +392,8 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"papersize")==0)) /* unset papersize */
    {
-    settings_term_current.PaperHeight.number = settings_term_default.PaperHeight.number;
-    settings_term_current.PaperWidth .number = settings_term_default.PaperWidth .number;
+    settings_term_current.PaperHeight.real = settings_term_default.PaperHeight.real;
+    settings_term_current.PaperWidth .real = settings_term_default.PaperWidth .real;
     strcpy(settings_term_current.PaperName, settings_term_default.PaperName);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
@@ -447,13 +447,13 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "Error: The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, 1, 0));
+           sprintf(temp_err_string, "Error: The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
            ppl_error(temp_err_string);
            return;
           }
        }
-      else { tempval->number /= 100; } // By default, dimensionless positions are in centimetres
-      settings_graph_current.width.number = tempval->number;
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      settings_graph_current.width.real = tempval->real;
      }
     if (DictContains(command,"ratio"))
      {
@@ -474,7 +474,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"size")==0)) /* unset size */
    {
-    settings_graph_current.width.number = settings_graph_default.width.number;
+    settings_graph_current.width.real   = settings_graph_default.width.real;
     settings_graph_current.aspect       = settings_graph_default.aspect;
     settings_graph_current.AutoAspect   = settings_graph_default.AutoAspect;
    }
@@ -557,12 +557,12 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "Error: The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, 1, 0));
+           sprintf(temp_err_string, "Error: The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
            ppl_error(temp_err_string);
            return;
           }
        }
-      else { tempval->number /= 100; } // By default, dimensionless positions are in centimetres
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
      }
     if (tempval2!= NULL) 
      { 
@@ -571,15 +571,15 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval2->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "Error: The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, 1, 0));
+           sprintf(temp_err_string, "Error: The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
            ppl_error(temp_err_string);
            return;
           }
        }
-      else { tempval2->number /= 100; } // By default, dimensionless positions are in centimetres
+      else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
      }
-    if (tempval != NULL) settings_graph_current.TitleXOff.number = tempval ->number;
-    if (tempval2!= NULL) settings_graph_current.TitleYOff.number = tempval2->number;
+    if (tempval != NULL) settings_graph_current.TitleXOff.real = tempval ->real;
+    if (tempval2!= NULL) settings_graph_current.TitleYOff.real = tempval2->real;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notitle")==0)) /* set notitle */
    {
@@ -679,7 +679,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
    {
-    settings_graph_current.width.number = settings_graph_default.width.number;
+    settings_graph_current.width.real = settings_graph_default.width.real;
    }
   else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
    {
@@ -878,7 +878,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (sg->key == SW_ONOFF_ON)  )
    {
     sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0));
-    directive_show3(out+i, ItemSet, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.number == sg->KeyXOff.number)&&(settings_graph_default.KeyYOff.number == sg->KeyYOff.number)), "Selects where legends are orientated on graphs");
+    directive_show3(out+i, ItemSet, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.real == sg->KeyXOff.real)&&(settings_graph_default.KeyYOff.real == sg->KeyYOff.real)), "Selects where legends are orientated on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "keycolumns",1)>=0))
@@ -917,7 +917,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
    { 
     sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0));
-    directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.number == sg->OriginX.number)&&(settings_graph_default.OriginY.number == sg->OriginY.number)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
+    directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.real == sg->OriginX.real)&&(settings_graph_default.OriginY.real == sg->OriginY.real)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "output", 1)>=0))
@@ -946,7 +946,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "papersize", 1)>=0))
    {
     sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(settings_term_current.PaperWidth),0,0), ppl_units_NumericDisplay(&(settings_term_current.PaperHeight),1,0));
-    directive_show3(out+i, ItemSet, interactive, "PaperSize", buf, ((settings_term_default.PaperWidth.number==settings_term_current.PaperWidth.number)&&(settings_term_default.PaperHeight.number==settings_term_current.PaperHeight.number)), "The current papersize for postscript output, in mm");
+    directive_show3(out+i, ItemSet, interactive, "PaperSize", buf, ((settings_term_default.PaperWidth.real==settings_term_current.PaperWidth.real)&&(settings_term_default.PaperHeight.real==settings_term_current.PaperHeight.real)), "The current papersize for postscript output, in mm");
     i += strlen(out+i) ; p=1;
     if (StrAutocomplete("user", settings_term_current.PaperName, 1)<0)
      {
@@ -1063,7 +1063,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     StrEscapify(sg->title, buf); k = strlen(buf);
     sprintf(buf+k, " %s , %s", ppl_units_NumericDisplay(&(sg->TitleXOff), 0, 0), ppl_units_NumericDisplay(&(sg->TitleYOff), 1, 0));
-    directive_show3(out+i, ItemSet, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.number==sg->TitleXOff.number)&&(settings_graph_default.TitleYOff.number==sg->TitleYOff.number)), "A title to be displayed above graphs");
+    directive_show3(out+i, ItemSet, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.real==sg->TitleXOff.real)&&(settings_graph_default.TitleYOff.real==sg->TitleYOff.real)), "A title to be displayed above graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "units", 1)>=0))
@@ -1089,7 +1089,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
    { 
     sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0));
-    directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.number==sg->width.number), "The width of graphs");
+    directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
 

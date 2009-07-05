@@ -72,12 +72,14 @@ double GetFloat(char *str, int *Nchars)
 
 char *NumericDisplay(double in, int N, int SigFig)
  {
-  static char format[16], outputA[128], outputB[128];
+  static char format[16], outputA[128], outputB[128], outputC[128], outputD[128];
   double x, AccLevel;
   char *output;
   int DecimalLevel, DPmax, i, j, k;
-  if (N==0) output = outputA;
-  else      output = outputB;
+  if      (N==0) output = outputA;
+  else if (N==1) output = outputB;
+  else if (N==2) output = outputC;
+  else           output = outputD;
   if ((fabs(in) < 1e10) && (fabs(in) > 1e-3))
    {
     x = fabs(in);

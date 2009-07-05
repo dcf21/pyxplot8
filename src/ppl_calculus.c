@@ -30,6 +30,8 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 
+#include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
@@ -38,6 +40,7 @@ typedef struct IntComm {
  value        *dummy;
  value         first;
  unsigned char IsFirst;
+ unsigned char TestingReal;
  int          *errpos;
  char         *errtext;
  int           RecursionDepth;
@@ -50,7 +53,7 @@ double CalculusSlave(double x, void *params)
 
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
 
-  data->dummy->number = x;
+  data->dummy->real = x;
   ppl_EvaluateAlgebra(data->expr, &output, 0, NULL, data->errpos, data->errtext, data->RecursionDepth+1);
 
   if (data->IsFirst)
@@ -65,7 +68,8 @@ double CalculusSlave(double x, void *params)
       return GSL_NAN;
      }
    }
-  return output.number;
+  if (data->TestingReal) return output.real;
+  else                   return output.imag;
  }
 
 void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int *errpos, char *errtext, int RecursionDepth)
@@ -75,7 +79,7 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
   value                      DummyTemp;
   gsl_integration_workspace *ws;
   gsl_function               fn;
-  double                     result, error;
+  double                     ResultReal=0, ResultImag=0, error;
 
   if (!ppl_units_DimEqual(min,max))
    {
@@ -84,8 +88,16 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
     return;
    }
 
+  if (min->FlagComplex || max->FlagComplex)
+   {
+    *errpos=0;
+    strcpy(errtext, "Error: The minimum and maximum limits of this integration operation must be real numbers; supplied values are complex.");
+    return;
+   }
+
   commlink.expr    = expr;
   commlink.IsFirst = 1;
+  commlink.TestingReal = 1;
   commlink.errpos  = errpos;
   commlink.errtext = errtext;
   commlink.RecursionDepth = RecursionDepth;
@@ -110,14 +122,22 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
   fn.function = &CalculusSlave;
   fn.params   = &commlink;
 
-  gsl_integration_qags (&fn, min->number, max->number, 0, 1e-7, 1000, ws, &result, &error); 
+  gsl_integration_qags (&fn, min->real, max->real, 0, 1e-7, 1000, ws, &ResultReal, &error); 
+
+  if ((*errpos < 0) && (settings_term_current.ComplexNumbers == SW_ONOFF_ON))
+   {
+    commlink.TestingReal = 0;
+    gsl_integration_qags (&fn, min->real, max->real, 0, 1e-7, 1000, ws, &ResultImag, &error);
+   }
 
   memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using
 
   if (*errpos < 0)
    {
     ppl_units_mult( &commlink.first , min , out , errpos, errtext ); // Get units of output right
-    out->number = result;
+    out->real = ResultReal;
+    out->imag = ResultImag;
+    out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
    }
   return;
  }
@@ -128,7 +148,7 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   value                     *DummyVar;
   value                      DummyTemp;
   gsl_function               fn;
-  double                     result, error;
+  double                     ResultReal=0, ResultImag=0, error;
 
   if (!ppl_units_DimEqual(point, step))
    {
@@ -137,8 +157,16 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     return;
    }
 
+  if (point->FlagComplex || step->FlagComplex)
+   {
+    *errpos=0;
+    strcpy(errtext, "Error: The arguments x and step to this differentiation operation must be real numbers; supplied values are complex.");
+    return;
+   }
+
   commlink.expr    = expr;
   commlink.IsFirst = 1;
+  commlink.TestingReal = 1;
   commlink.errpos  = errpos;
   commlink.errtext = errtext;
   commlink.RecursionDepth = RecursionDepth;
@@ -162,15 +190,23 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   fn.function = &CalculusSlave;
   fn.params   = &commlink;
 
-  gsl_deriv_central(&fn, point->number, step->number, &result, &error);
+  gsl_deriv_central(&fn, point->real, step->real, &ResultReal, &error);
+
+  if ((*errpos < 0) && (settings_term_current.ComplexNumbers == SW_ONOFF_ON))
+   {
+    commlink.TestingReal = 0;
+    gsl_deriv_central(&fn, point->real, step->real, &ResultImag, &error);
+   }
 
   memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using
 
   if (*errpos < 0)
    {
-    point->number = 1.0;
+    point->real = 1.0; point->imag = 0.0; point->FlagComplex = 0;
     ppl_units_div( &commlink.first , point , out , errpos, errtext ); // Get units of output right
-    out->number = result;
+    out->real = ResultReal;
+    out->imag = ResultImag;
+    out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
    }
   return;
  }

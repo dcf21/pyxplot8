@@ -32,6 +32,8 @@
 
 #include "ppl_constants.h"
 #include "ppl_error.h"
+#include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
@@ -57,7 +59,8 @@ double MultiMinSlave(const gsl_vector *x, void *params)
 
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
 
-  for (i=0; i<data->Nfitvars; i++) data->fitvar[i]->number = gsl_vector_get(x, i);
+  if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) for (i=0; i<data->Nfitvars; i++)   data->fitvar[i]->real = gsl_vector_get(x, i);
+  else                                                      for (i=0; i<data->Nfitvars; i++) { data->fitvar[i]->real = gsl_vector_get(x,2*i); data->fitvar[i]->imag = gsl_vector_get(x,2*i+1); }
 
   for (i=0; i<data->Nexprs; i++)
    {
@@ -72,7 +75,8 @@ double MultiMinSlave(const gsl_vector *x, void *params)
         strcpy(data->errtext, "Error: The two sides of the equation which is being solved are not dimensionally compatible.");
         return GSL_NAN;
        }
-      accumulator += pow(output1.number - output2.number , 2); // Minimise sum of square deviations of many equations
+      accumulator += pow(output1.real - output2.real , 2); // Minimise sum of square deviations of many equations
+      accumulator += pow(output1.imag - output2.imag , 2);
       squareroot = 1;
      } else {
       if (data->IsFirst[i])
@@ -87,7 +91,7 @@ double MultiMinSlave(const gsl_vector *x, void *params)
           return GSL_NAN;
          }
        }
-      accumulator += output1.number; // ... or just the raw values in minimise and maximise commands
+      accumulator += output1.real; // ... or just the raw values in minimise and maximise commands
      }
    }
   if (squareroot) accumulator = sqrt(accumulator);
@@ -98,19 +102,21 @@ double MultiMinSlave(const gsl_vector *x, void *params)
 void MultiMinIterate(MMComm *commlink, int *status)
  {
   size_t                              iter = 0,iter2 = 0;
-  int                                 i;
+  int                                 i, Nparams;
   double                              size=0,sizelast=0,sizelast2=0;
   const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
   gsl_multimin_fminimizer            *s;
   gsl_vector                         *x, *ss;
   gsl_multimin_function               fn;
 
-  fn.n = commlink->Nfitvars;           
-  fn.f = &MultiMinSlave;              
-  fn.params = (void *)commlink;      
-  
-  x  = gsl_vector_alloc( commlink->Nfitvars );
-  ss = gsl_vector_alloc( commlink->Nfitvars );
+  Nparams = commlink->Nfitvars * ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) ? 1:2);
+
+  fn.n = Nparams;
+  fn.f = &MultiMinSlave;
+  fn.params = (void *)commlink;
+
+  x  = gsl_vector_alloc( Nparams );
+  ss = gsl_vector_alloc( Nparams );
 
   iter2=0;
   do
@@ -118,11 +124,13 @@ void MultiMinIterate(MMComm *commlink, int *status)
     iter2++;
     sizelast2 = size;
 
-    for (i=0; i<commlink->Nfitvars; i++) gsl_vector_set(x , i,     commlink->fitvar[i]->number);
-    for (i=0; i<commlink->Nfitvars; i++)
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)for(i=0;i<commlink->Nfitvars;i++) gsl_vector_set(x,  i,commlink->fitvar[i]->real);
+    else                                                     for(i=0;i<commlink->Nfitvars;i++){gsl_vector_set(x,2*i,commlink->fitvar[i]->real); gsl_vector_set(x,2*i+1,commlink->fitvar[i]->imag); }
+
+    for (i=0; i<Nparams; i++)
      {
-      if (fabs(commlink->fitvar[i]->number)>1e-6) gsl_vector_set(ss, i, 0.1*fabs(commlink->fitvar[i]->number));
-      else                                        gsl_vector_set(ss, i, 0.1                                  ); // Avoid having a stepsize of zero
+      if (fabs(gsl_vector_get(x,i))>1e-6) gsl_vector_set(ss, i, 0.1 * gsl_vector_get(x,i));
+      else                                gsl_vector_set(ss, i, 0.1                      ); // Avoid having a stepsize of zero
      }
 
     s = gsl_multimin_fminimizer_alloc (T, fn.n);
@@ -133,7 +141,7 @@ void MultiMinIterate(MMComm *commlink, int *status)
     do 
      {
       iter++;
-      for (i=0; i<2+commlink->Nfitvars*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
+      for (i=0; i<2+Nparams*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
        {
         *status = gsl_multimin_fminimizer_iterate(s);
         if (*status) break;
@@ -166,7 +174,7 @@ void MinOrMax(Dict *command, double sign)
   int           i, status=0, errpos=-1;
 
   ppl_units_zero(&DummyTemp);
-  DummyTemp.number  = 1.0; // Default starting point is 1.0
+  DummyTemp.real    = 1.0; // Default starting point is 1.0
   commlink.Nfitvars = 0;
   commlink.Nexprs   = 1;
 
@@ -179,7 +187,7 @@ void MinOrMax(Dict *command, double sign)
 
     if (DummyVar!=NULL)
      {
-      if (DummyVar->string != NULL) { ppl_units_zero(DummyVar); DummyVar->number=1.0; } // Turn string variables into floats
+      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
       commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
      }
     else
@@ -213,7 +221,7 @@ void MinOrMax(Dict *command, double sign)
 
   if ((status) || (errpos >= 0) || (commlink.GoneNaN==1))
    {
-    for (i=0; i<commlink.Nfitvars; i++) commlink.fitvar[i]->number=GSL_NAN; // We didn't produce a sensible answer
+    for (i=0; i<commlink.Nfitvars; i++) { commlink.fitvar[i]->real=GSL_NAN; commlink.fitvar[i]->imag=0; commlink.fitvar[i]->FlagComplex=0; } // We didn't produce a sensible answer
    }
 
   return;
@@ -229,7 +237,7 @@ void directive_solve(Dict *command)
   int           i, status=0, errpos=-1;
 
   ppl_units_zero(&DummyTemp);
-  DummyTemp.number  = 1.0; // Default starting point is 1.0
+  DummyTemp.real    = 1.0; // Default starting point is 1.0
   commlink.Nfitvars = 0;
   commlink.Nexprs   = 0;
 
@@ -242,7 +250,7 @@ void directive_solve(Dict *command)
 
     if (DummyVar!=NULL)
      {
-      if (DummyVar->string != NULL) { ppl_units_zero(DummyVar); DummyVar->number=1.0; } // Turn string variables into floats
+      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
       commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
      }
     else
@@ -296,7 +304,7 @@ void directive_solve(Dict *command)
 
   if ((status) || (errpos >= 0) || (commlink.GoneNaN==1))
    {
-    for (i=0; i<commlink.Nfitvars; i++) commlink.fitvar[i]->number=GSL_NAN; // We didn't produce a sensible answer
+    for (i=0; i<commlink.Nfitvars; i++) { commlink.fitvar[i]->real=GSL_NAN; commlink.fitvar[i]->imag=0; commlink.fitvar[i]->FlagComplex=0; } // We didn't produce a sensible answer
    }
 
   return;

@@ -48,7 +48,7 @@ exec@3:directive: = < %q:command | %Q:command >\n\
 exit@2:directive:quit =\n\
 fit@3:directive = [ \\[@n { { < %f:min | \\*@n:minauto > } < :@n | to@n > { < %f:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:fit_function \\(@n [ %v:inputvar ]:@operands, \\)@n < %q:filename | %Q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %f:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ %E:using_item ]:using_list: ) via@1 [ %v:fit_variable ]:fit_variables,\n\
 for@2:directive = %v:var_name \\=@n %fu:start_value to@n %fu:final_value ( step@2:step %fu:step_size ) ( \\{@n:brace ( %r:command ) )\n\
-foreach@4:directive = %v:var_name in@n:in < \\(@n [ < %fu:value | %q:string | %Q:string | %S:string > ]:item_list, \\)@n | %q:filename | %Q:filename | %S:filename >  ( \\{@n:brace ( %r:command ) )\n\
+foreach@4:directive = %v:var_name in@n:in < \\(@n [ < %fi:value | %q:string | %Q:string | %S:string > ]:item_list, \\)@n | %q:filename | %Q:filename | %S:filename >  ( \\{@n:brace ( %r:command ) )\n\
 help@2:directive = %r:topic\n\
 history@6:directive = { %d:number_lines }\n\
 histogram@2:directive = [ \\[@n { { < %f:min | \\*@n:minauto > } < :@n | to@n > { < %f:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:hist_function \\()@2 < %q:filename | %Q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %f:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ %E:using_item ]:using_list: ~ binwidth@4 %f:binwidth ~ binorigin@4 %f:binorigin ~ bins@n \\(@n [ %f:x ]:bin_list, \\)@n )\n\
@@ -62,7 +62,7 @@ move@2:directive = { item@1 } %d:moveno to@1 %fu:x ,@n %fu:y \n\
 ?@n:directive:help = %r:topic \n\
 !@n:directive:pling = %r:cmd\n\
 < plot@1:directive | replot@3:directive > = { item@1 %d:editno } [ \\[@n { { < %f:min | \\*@n:minauto > } < :@n | to@n > { < %f:max | \\*@n:maxauto > } } \\]@n ]:@range_list [ < %q:filename | [ %e:expression ]:expression_list: > ( axes@1 %a:axis_x %a:axis_y ~ every@1 [ { %d:every_item } ]:every_list: ~ index@1 %f:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ < title@1 < %q:title | %Q:title > | notitle@3:notitle > ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ %E:using_item ]:using_list: ) { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ < pointsize@7 | ps@2 > %f:pointsize ~ < pointtype@6 | pt@2 > %d:pointtype ~ < linestyle@6 | ls@2 > %d:linestyle ~ < pointlinewidth@6 | plw@3 > %f:pointlinewidth ~ < colour@1 | color@1 > %s:colour ~ < fillcolour@2 | fillcolor@2 | fc@2 > %s:fillcolour ~ < lines@1:style | points@1:style | lp@2:style:linespoints | linespoints@5:style | pl@2:style:linespoints | pointslines@5:style:linespoints | dots@1:style | boxes@1:style | wboxes@1:style | impulses@1:style | steps@1:style | fsteps@1:style | histeps@1:style | errorbars@1:style | xerrorbars@2:style | yerrorbars@2:style | xyerrorbars@3:style | errorrange@6:style | xerrorrange@7:style | yerrorrange@7:style | xyerrorrange@8:style | arrows@3:style:arrows_head | arrows_head@3:style | arrows_nohead@3:style | arrows_twoway@3:style | arrows_twohead@3:style | csplines@3:style | acsplines@3:style > ~ smooth@2:smooth ) } ]:@plot_list, \n\
-print@2:directive = [ < %fu:expression | %Q:string | %q:string > ]:@print_list, \n\
+print@2:directive = [ < %fi:expression | %Q:string | %q:string > ]:@print_list, \n\
 pwd@2:directive =\n\
 quit@1:directive =\n\
 refresh@3:directive =\n\
@@ -203,7 +203,7 @@ unset@3:directive:unset_error = { item@1 %d:editno } { %s:set_option } %r:restof
 while@5:directive = %e:criterion ( \\{@n:brace ( %r:command ) )\n\
 \\}:n:close_brace while@5:directive = %e:criterion ( \\{@n:brace ( %r:command ) )\n\
 { < let@3 > } %v:varname \\=~@n:directive:var_set_regex = s@n %r:regex\n\
-{ < let@3 > } %v:varname \\=@n:directive:var_set = { < %fu:numeric_value | %Q:string_value | %q:string_value > }\n\
+{ < let@3 > } %v:varname \\=@n:directive:var_set = { < %fi:numeric_value | %Q:string_value | %q:string_value > }\n\
 %v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list \\=@n:directive:func_set = { %e:definition } \n\
 ";
 

@@ -49,8 +49,8 @@ typedef struct unit
 
 typedef struct value
  {
-  double        number;
-  unsigned char dimensionless, modified;
+  double        real, imag;
+  unsigned char dimensionless, FlagComplex, modified;
   char         *string;
   double        exponent[UNITS_MAX_BASEUNITS];
  } value;
@@ -74,7 +74,7 @@ int           __inline__ ppl_units_DimEqual2   (value *a, unit  *b);
 int           __inline__ ppl_units_UnitDimEqual(unit  *a, unit  *b);
 
 
-char  *ppl_units_GetUnitStr    (value *in, double *NumberOut, int N, int typeable);
+char  *ppl_units_GetUnitStr    (value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
 void   ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext);
 
 void   ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext);

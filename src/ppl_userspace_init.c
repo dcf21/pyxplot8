@@ -119,99 +119,104 @@ void ppl_UserSpaceInit()
 
   // Set up default variables
   ppl_units_zero(&v);
-  v.number = M_PI;
+  v.real = M_PI;
   DictAppendValue(_ppl_UserSpace_Vars , "pi"            , v); // pi
-  v.number = M_E;
+  v.real = M_E;
   DictAppendValue(_ppl_UserSpace_Vars , "e"             , v); // e
-  v.number = GSL_CONST_MKSA_SPEED_OF_LIGHT;
+  v.real = 0.0;
+  v.imag = 1.0;
+  v.FlagComplex = 1;
+  DictAppendValue(_ppl_UserSpace_Vars , "i"             , v); // i
+  ppl_units_zero(&v);
+  v.real = GSL_CONST_MKSA_SPEED_OF_LIGHT;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH]=1 ; v.exponent[UNIT_TIME]=-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_c"         , v); // Speed of light
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_VACUUM_PERMEABILITY;
+  v.real = GSL_CONST_MKSA_VACUUM_PERMEABILITY;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 1; v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] = -2; v.exponent[UNIT_CURRENT] = -2;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_0"      , v); // The permeability of free space
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_VACUUM_PERMITTIVITY;
+  v.real = GSL_CONST_MKSA_VACUUM_PERMITTIVITY;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] =-3; v.exponent[UNIT_MASS] =-1; v.exponent[UNIT_TIME] =  4; v.exponent[UNIT_CURRENT] =  2;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_epsilon_0" , v); // The permittivity of free space
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_ELECTRON_CHARGE;
+  v.real = GSL_CONST_MKSA_ELECTRON_CHARGE;
   v.dimensionless = 0;
   v.exponent[UNIT_CURRENT] = 1; v.exponent[UNIT_TIME] = 1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_q"         , v); // The fundamental charge
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_PLANCKS_CONSTANT_H;
+  v.real = GSL_CONST_MKSA_PLANCKS_CONSTANT_H;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_h"         , v); // The Planck constant
-  v.number = GSL_CONST_MKSA_PLANCKS_CONSTANT_HBAR;
+  v.real = GSL_CONST_MKSA_PLANCKS_CONSTANT_HBAR;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_hbar"      , v); // The Planck constant / 2pi
   ppl_units_zero(&v);
-  v.number = GSL_CONST_NUM_AVOGADRO;
+  v.real = GSL_CONST_NUM_AVOGADRO;
   v.dimensionless = 0;
   v.exponent[UNIT_MOLE] = -1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_NA"        , v); // The Avogadro constant
   ppl_units_zero(&v);
-  v.number = 3.839e26;
+  v.real = 3.839e26;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-3;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Lsun"      , v); // The solar luminosity
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_UNIFIED_ATOMIC_MASS;
+  v.real = GSL_CONST_MKSA_UNIFIED_ATOMIC_MASS;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_u"       , v); // The universal mass constant
-  v.number = GSL_CONST_MKSA_MASS_ELECTRON;
+  v.real = GSL_CONST_MKSA_MASS_ELECTRON;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_e"       , v); // The electron mass
-  v.number = GSL_CONST_MKSA_MASS_PROTON;
+  v.real = GSL_CONST_MKSA_MASS_PROTON;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_p"       , v); // The proton mass
-  v.number = GSL_CONST_MKSA_MASS_NEUTRON;
+  v.real = GSL_CONST_MKSA_MASS_NEUTRON;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_n"       , v); // The neutron mass
-  v.number = GSL_CONST_MKSA_MASS_MUON;
+  v.real = GSL_CONST_MKSA_MASS_MUON;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_m_muon"    , v); // The muon mass
-  v.number = GSL_CONST_MKSA_SOLAR_MASS;
+  v.real = GSL_CONST_MKSA_SOLAR_MASS;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Msun"      , v); // The solar mass
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_RYDBERG;
+  v.real = GSL_CONST_MKSA_RYDBERG;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = -1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Ry"        , v); // The Rydberg constant
   ppl_units_zero(&v);
-  v.number = GSL_CONST_NUM_FINE_STRUCTURE;
+  v.real = GSL_CONST_NUM_FINE_STRUCTURE;
   v.dimensionless = 1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_alpha"     , v); // The fine structure constant
   ppl_units_zero(&v);
-  v.number = 6.955e8;
+  v.real = 6.955e8;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Rsun"      , v); // The solar radius
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_BOHR_MAGNETON;
+  v.real = GSL_CONST_MKSA_BOHR_MAGNETON;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_CURRENT] = 1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_mu_b"      , v); // The Bohr magneton
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_MOLAR_GAS;
+  v.real = GSL_CONST_MKSA_MOLAR_GAS;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1; v.exponent[UNIT_MOLE] =-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_R"         , v); // The gas constant
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_BOLTZMANN;
+  v.real = GSL_CONST_MKSA_BOLTZMANN;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_TEMPERATURE] =-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_kB"        , v); // The Boltzmann constant
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_LENGTH] = 2; v.exponent[UNIT_TIME] =-2;
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_STEFAN_BOLTZMANN_CONSTANT;
+  v.real = GSL_CONST_MKSA_STEFAN_BOLTZMANN_CONSTANT;
   v.dimensionless = 0;
   v.exponent[UNIT_MASS] = 1; v.exponent[UNIT_TIME] =-3; v.exponent[UNIT_TEMPERATURE] =-4;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_sigma"     , v); // The Stefan-Boltzmann constant
   ppl_units_zero(&v);
-  v.number = GSL_CONST_MKSA_GRAVITATIONAL_CONSTANT;
+  v.real = GSL_CONST_MKSA_GRAVITATIONAL_CONSTANT;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , v); // The gravitational constant

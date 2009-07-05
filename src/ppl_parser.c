@@ -23,8 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include <math.h>
 #include <readline/readline.h>
+
+#include <gsl/gsl_math.h>
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -591,7 +594,21 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
            {
             if (MatchVal._val.dimensionless == 0)
              {
-              sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of %s.", ppl_units_GetUnitStr(&MatchVal._val,NULL,0,0));
+              sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of <%s>.", ppl_units_GetUnitStr(&MatchVal._val,NULL,NULL,0,0));
+              *AlgebraLinepos = *linepos;
+              *match          = 1; // Fudge to make sure error is displayed
+              *success        = 0;
+             }
+            else if (MatchVal._val.FlagComplex == 1)
+             {
+              sprintf(AlgebraError, "This value should have been real, but in fact has an imaginary component.");
+              *AlgebraLinepos = *linepos;
+              *match          = 1; // Fudge to make sure error is displayed
+              *success        = 0;
+             }
+            else if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX)||(!gsl_finite(MatchVal._dbl)))
+             {
+              sprintf(AlgebraError, "This integer value is too large.");
               *AlgebraLinepos = *linepos;
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
@@ -641,7 +658,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           *linepos     += i;
          }
        }
-      else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fu")==0) || (strcmp(node->MatchString, "%d")==0))
+      else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fi")==0) || (strcmp(node->MatchString, "%fu")==0) || (strcmp(node->MatchString, "%d")==0))
        {
         i = -1;
         *AlgebraNewLinepos=-1;
@@ -654,20 +671,35 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          }
         else
          {
-          if ((strcmp(node->MatchString, "%fu")!=0) && (MatchVal._val.dimensionless == 0))
+          if ((strcmp(node->MatchString, "%fi")!=0) && (strcmp(node->MatchString, "%fu")!=0) && (MatchVal._val.dimensionless == 0))
            {
-            sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of %s.", ppl_units_GetUnitStr(&MatchVal._val,NULL,0,0));
+            sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of <%s>.", ppl_units_GetUnitStr(&MatchVal._val,NULL,NULL,0,0));
             *AlgebraLinepos = *linepos;
             *success        = 0;
            }
-          if (strcmp(node->MatchString, "%d")==0)
+          else if ((strcmp(node->MatchString, "%fi")!=0) && (MatchVal._val.FlagComplex == 1))
            {
-            MatchVal._int = (int)floor(MatchVal._val.number);
-            MatchType     = DATATYPE_INT;
+            sprintf(AlgebraError, "This value should have been real, but in fact has an imaginary component.");
+            *AlgebraLinepos = *linepos;
+            *success        = 0;
+           }
+          else if (strcmp(node->MatchString, "%d")==0)
+           {
+            if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX)||(!gsl_finite(MatchVal._dbl)))
+             {
+              sprintf(AlgebraError, "This integer value is too large.");
+              *AlgebraLinepos = *linepos;
+              *success        = 0;
+             }
+            else
+             {
+              MatchVal._int = (int)floor(MatchVal._val.real);
+              MatchType     = DATATYPE_INT;
+             }
            }
           else if (strcmp(node->MatchString, "%f")==0)
            {
-            MatchVal._dbl = MatchVal._val.number;
+            MatchVal._dbl = MatchVal._val.real;
             MatchType     = DATATYPE_FLOAT;
            }
           else
@@ -723,7 +755,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          { sprintf(expecting+*ExpectingPos, "an integer value or expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0))
          { sprintf(expecting+*ExpectingPos, "an algebraic expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
-        else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fu")==0))
+        else if ((strcmp(node->MatchString, "%f")==0) || (strcmp(node->MatchString, "%fi")==0) || (strcmp(node->MatchString, "%fu")==0))
          { sprintf(expecting+*ExpectingPos, "a numeric value or expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         else if ((strcmp(node->MatchString, "%s")==0) || (strcmp(node->MatchString, "%S")==0) || (strcmp(node->MatchString, "%r")==0))
          { sprintf(expecting+*ExpectingPos, "a string%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }

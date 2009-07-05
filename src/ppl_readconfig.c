@@ -186,10 +186,10 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_KEYPOS_INT,SW_KEYPOS_STR))>0) settings_graph_default.KeyPos        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting KEYPOS."       , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "KEY_XOFF"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyXOff.number= fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyXOff.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting KEY_XOFF."     , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "KEY_YOFF"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyYOff.number= fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyYOff.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting KEY_YOFF."     , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "LANDSCAPE"    )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .landscape     = i;
@@ -213,25 +213,25 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .NumDisplayTypeable = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMTYPEABLE."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINX"      )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX.number= fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINX."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINY"      )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginY.number= fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginY.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINY."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "OUTPUT"       )==0)
         strcpy(settings_term_default.output , setvalue);
       else if (strcmp(setkey, "PAPER_HEIGHT" )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperHeight.number= fl/1000;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperHeight.real  = fl/1000;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting PAPER_HEIGHT." , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "PAPER_NAME"   )==0)
         {
          ppl_PaperSizeByName(setvalue, &PaperHeight, &PaperWidth);
          if (PaperHeight <= 0) {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnrecognised papersize specified for setting PAPER_NAME."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
-         settings_term_default.PaperHeight.number = PaperHeight/1000;
-         settings_term_default.PaperWidth.number  = PaperWidth/1000;
+         settings_term_default.PaperHeight.real = PaperHeight/1000;
+         settings_term_default.PaperWidth.real  = PaperWidth/1000;
         }
       else if (strcmp(setkey, "PAPER_WIDTH"  )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperWidth.number= fl/1000;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperWidth.real  = fl/1000;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting PAPER_WIDTH."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "POINTLINEWIDTH")==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.PointLineWidth= fl;
@@ -269,10 +269,10 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "TITLE"        )==0)
         strcpy(settings_graph_default.title  , setvalue);
       else if (strcmp(setkey, "TITLE_XOFF"   )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleXOff.number= fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleXOff.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_XOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "TITLE_YOFF"   )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff.number= fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_YOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "UNITABBREV"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .UnitDisplayAbbrev= i;
@@ -284,7 +284,7 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_UNITSCH_INT,SW_UNITSCH_STR))>0) settings_term_default.UnitScheme = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting UNITSCHEME."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "WIDTH"        )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.width.number    = fl/100;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.width.real      = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting WIDTH."        , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else
        { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnrecognised setting name '%s'.", linecounter, ConfigFname, setkey); ppl_warning(temp_err_string); continue; }
@@ -420,8 +420,9 @@ void ReadConfigFile(char *ConfigFname)
         ppl_units_StringEvaluate(setvalue, &setnumeric, &k, &j, errtext);
         if (j >= 0) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s", linecounter, ConfigFname, errtext); ppl_warning(temp_err_string); continue; }
         if (setvalue[k]!='\0') { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nUnexpected trailing matter in definition", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+        if (setnumeric.FlagComplex) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nMultiplier in units definition cannot be complex", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
         for (j=0; j<UNITS_MAX_BASEUNITS; j++) ppl_unit_database[ppl_unit_pos].exponent[j] = setnumeric.exponent[j];
-        ppl_unit_database[ppl_unit_pos].multiplier = setnumeric.number;
+        ppl_unit_database[ppl_unit_pos].multiplier = setnumeric.real;
         ppl_unit_pos++;
        }
      }
