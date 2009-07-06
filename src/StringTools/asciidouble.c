@@ -84,7 +84,7 @@ char *NumericDisplay(double in, int N, int SigFig)
    {
     x = fabs(in);
     AccLevel = x*(1.0+pow(10,-SigFig));
-    DPmax    = SigFig-log10(in);
+    DPmax    = SigFig-log10(x);
     for (DecimalLevel=0; DecimalLevel<DPmax; DecimalLevel++) if ((x - ((floor(x*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - x))<AccLevel) break;
     sprintf(format,"%%.%df",DecimalLevel);
     sprintf(output,format,in);

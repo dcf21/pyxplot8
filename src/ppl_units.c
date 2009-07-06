@@ -66,7 +66,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH];
   double NumberOutReal, NumberOutImag;
-  char *output, *unitstr, AddComplex[2]="+";
+  char *output, *unitstr, AddComplex[2]="+", RealStr[256];
   if (N==0) output = outputA;
   else      output = outputB;
 
@@ -84,14 +84,14 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   else
    {
     if (NumberOutImag<0) AddComplex[0]='\0'; // Minus sign on complex number means we don't need to write a PLUS b i
-    if ((unitstr[0]=='\0') && (typeable==0)) sprintf(output,"%s%s%si", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
-                                                                       NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
-    else if (unitstr[0]=='\0')               sprintf(output,"%s%s%s*sqrt(-1)", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
-                                                                               NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
-    else if (typeable==0) sprintf(output, "(%s%s%si) %s", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
-                                                          NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
-    else                  sprintf(output, "(%s%s%s*sqrt(-1))%s" , NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures), AddComplex,
-                                                                  NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
+
+    if (!ppl_units_DblEqual(NumberOutReal, 0)) sprintf(RealStr, "%s", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures));
+    else                                       RealStr[0]='\0'; // Don't print real part if it's zero
+
+    if ((unitstr[0]=='\0') && (typeable==0)) sprintf(output,"%s%s%si", RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
+    else if (unitstr[0]=='\0')               sprintf(output,"%s%s%s*sqrt(-1)", RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
+    else if (typeable==0) sprintf(output, "(%s%s%si) %s", RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
+    else                  sprintf(output, "(%s%s%s*sqrt(-1))%s" , RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
    }
 
   return output;
