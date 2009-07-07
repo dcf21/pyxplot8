@@ -117,6 +117,14 @@ void __inline__ ppl_units_DimCpy(value *o, value *i)
   return;
  }
 
+void __inline__ ppl_units_DimInverse(value *o, value *i)
+ {
+  int j;
+  o->dimensionless = i->dimensionless;
+  for (j=0; j<UNITS_MAX_BASEUNITS; j++) o->exponent[j] = -i->exponent[j];
+  return;
+ }
+
 int __inline__ ppl_units_DimEqual(value *a, value *b)
  {
   int j;
@@ -272,7 +280,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
 // Main entry point for printing units
 char *ppl_units_GetUnitStr(value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
  {
-  static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH];
+  static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH], outputC[LSTR_LENGTH];
   char  *output;
   value  residual;
   unit         *UnitList[UNITS_MAX_BASEUNITS];
@@ -285,8 +293,9 @@ char *ppl_units_GetUnitStr(value *in, double *NumberOutReal, double *NumberOutIm
 
   if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
 
-  if (N==0) output = outputA;
-  else      output = outputB;
+  if      (N==0) output = outputA;
+  else if (N==1) output = outputB;
+  else           output = outputC;
 
   if (in->dimensionless != 0)
    {

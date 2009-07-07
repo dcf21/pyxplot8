@@ -45,10 +45,20 @@ void ppl_UserSpaceInit()
   _ppl_UserSpace_Funcs = DictInit();
 
   // Function descriptors for the mathematical functions which are built into PyXPlot
-  FunctionDescriptor fd_abs           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_abs         , NULL, NULL, NULL, NULL, NULL, NULL, "abs(x) returns the absolute magnitude of x"};
+  FunctionDescriptor fd_abs           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_abs         , NULL, NULL, NULL, NULL, NULL, NULL, "abs(z) returns the absolute magnitude of z"};
   FunctionDescriptor fd_acos          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acos        , NULL, NULL, NULL, NULL, NULL, NULL, "acos(x) returns the arccosine of x"};
+  FunctionDescriptor fd_acosh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acosh       , NULL, NULL, NULL, NULL, NULL, NULL, "acosh(x) returns the hyperbolic arccosine of x"};
+  FunctionDescriptor fd_acot          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acot        , NULL, NULL, NULL, NULL, NULL, NULL, "acos(x) returns the arccotangent of x"};
+  FunctionDescriptor fd_acoth         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acoth       , NULL, NULL, NULL, NULL, NULL, NULL, "acoth(x) returns the hyperbolic arccotangent of x"};
+  FunctionDescriptor fd_acsc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsc        , NULL, NULL, NULL, NULL, NULL, NULL, "acsc(x) returns the arccosecant of x"};
+  FunctionDescriptor fd_acsch         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsch       , NULL, NULL, NULL, NULL, NULL, NULL, "acsch(x) returns the hyperbolic arccosecant of x"};
+  FunctionDescriptor fd_arg           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_arg         , NULL, NULL, NULL, NULL, NULL, NULL, "arg(z) returns the argument of the complex number z"};
+  FunctionDescriptor fd_asec          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asec        , NULL, NULL, NULL, NULL, NULL, NULL, "asec(x) returns the arcsecant of x"};
+  FunctionDescriptor fd_asech         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asech       , NULL, NULL, NULL, NULL, NULL, NULL, "asech(x) returns the hyperbolic arcsecant of x"};
   FunctionDescriptor fd_asin          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asin        , NULL, NULL, NULL, NULL, NULL, NULL, "asin(x) returns the arcsine of x"};
+  FunctionDescriptor fd_asinh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asinh       , NULL, NULL, NULL, NULL, NULL, NULL, "asinh(x) returns the hyperbolic arcsine of x"};
   FunctionDescriptor fd_atan          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atan        , NULL, NULL, NULL, NULL, NULL, NULL, "atan(x) returns the arctangent of x"};
+  FunctionDescriptor fd_atanh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atanh       , NULL, NULL, NULL, NULL, NULL, NULL, "atanh(x) returns the hyperbolic arctangent of x"};
   FunctionDescriptor fd_atan2         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_atan2       , NULL, NULL, NULL, NULL, NULL, NULL, "atan2(x,y) returns the arctangent of x/y. Unlike atan(y/x), atan2(x,y) takes account of the signs of both x and y to remove the degeneracy between (1,1) and (-1,-1)"};
   FunctionDescriptor fd_besseli       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besseli     , NULL, NULL, NULL, NULL, NULL, NULL, "besseli(l,x) evaluates the lth regular modified spherical Bessel function at x"};
   FunctionDescriptor fd_besselI       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselI     , NULL, NULL, NULL, NULL, NULL, NULL, "besselI(l,x) evaluates the lth regular modified cylindrical Bessel function at x"};
@@ -67,8 +77,13 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_chisqPDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqPDF    , NULL, NULL, NULL, NULL, NULL, NULL, "chisqPDF(x,nu) returns the probability desity at x in a chi-squared distribution with nu degrees of freedom"};
   FunctionDescriptor fd_chisqCDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDF    , NULL, NULL, NULL, NULL, NULL, NULL, "chisqCDF(x,nu) returns the cumulative probability desity at x in a chi-squared distribution with nu degrees of freedom"};
   FunctionDescriptor fd_chisqCDFi     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDFi   , NULL, NULL, NULL, NULL, NULL, NULL, "chisqCDFi(P,nu) returns the point x at which the cumulative probability desity in a chi-squared distribution with nu degrees of freedom is P"};
+  FunctionDescriptor fd_conjugate     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_conjugate   , NULL, NULL, NULL, NULL, NULL, NULL, "conjugate(z) returns the complex conjugate of z"};
   FunctionDescriptor fd_cos           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cos         , NULL, NULL, NULL, NULL, NULL, NULL, "cos(x) returns the cosine of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_cosh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cosh        , NULL, NULL, NULL, NULL, NULL, NULL, "cosh(x) returns the hyperbolic cosine of x"};
+  FunctionDescriptor fd_cot           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cot         , NULL, NULL, NULL, NULL, NULL, NULL, "cot(x) returns the cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_coth          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_coth        , NULL, NULL, NULL, NULL, NULL, NULL, "cot(x) returns the hyperbolic cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_csc           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csc         , NULL, NULL, NULL, NULL, NULL, NULL, "csc(x) returns the cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_csch          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csch        , NULL, NULL, NULL, NULL, NULL, NULL, "csch(x) returns the hyperbolic cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_degrees       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_degrees     , NULL, NULL, NULL, NULL, NULL, NULL, "degrees(x) converts angles measured in radians into degrees"};
   FunctionDescriptor fd_ellK          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellK        , NULL, NULL, NULL, NULL, NULL, NULL, "ellipticintK(k) evaluates the complete elliptic integral K(k)"};
   FunctionDescriptor fd_ellE          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellE        , NULL, NULL, NULL, NULL, NULL, NULL, "ellipticintE(k) evaluates the complete elliptic integral E(k)"};
@@ -85,14 +100,15 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_gaussianCDFi  = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDFi, NULL, NULL, NULL, NULL, NULL, NULL, "gaussianCDFi(x,sigma) evaluates the inverse Gaussian cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_heaviside     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_heaviside   , NULL, NULL, NULL, NULL, NULL, NULL, "heaviside(x) returns the Heaviside function, defined to be one for x>=0 and zero otherwise"};
   FunctionDescriptor fd_hypot         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_hypot       , NULL, NULL, NULL, NULL, NULL, NULL, "hypot(x,y) returns the quadrature sum of x and y"};
+  FunctionDescriptor fd_imag          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_imag        , NULL, NULL, NULL, NULL, NULL, NULL, "Im(z) returns the magnitude of the imaginary part of z"};
   FunctionDescriptor fd_ldexp         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ldexp       , NULL, NULL, NULL, NULL, NULL, NULL, "ldexp(x,y) returns x times 2 to the power of an integer y"};
   FunctionDescriptor fd_legendreP     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreP   , NULL, NULL, NULL, NULL, NULL, NULL, "legendreP(l,x) evaluates the lth Legendre polynomial at x"};
   FunctionDescriptor fd_legendreQ     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreQ   , NULL, NULL, NULL, NULL, NULL, NULL, "legendreQ(l,x) evaluates the lth Legendre function at x"};
   FunctionDescriptor fd_log           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log         , NULL, NULL, NULL, NULL, NULL, NULL, "log(x) returns the natural logarithm of x"};
   FunctionDescriptor fd_log10         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log10       , NULL, NULL, NULL, NULL, NULL, NULL, "log10(x) returns the logarithm to base 10 of x"};
-  FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalPDF(x,sigma) evaluates the log normal probability density function of standard deviation sigma at x"};
-  FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDF(x,sigma) evaluates the log normal cumulative distribution function of standard deviation sigma at x"};
-  FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDFi(x,sigma) evaluates the inverse log normal cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalPDF(x,zeta,sigma) evaluates the log normal probability density function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDF(x,zeta,sigma) evaluates the log normal cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDFi(x,zeta,sigma) evaluates the inverse log normal cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_max           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_max         , NULL, NULL, NULL, NULL, NULL, NULL, "max(x,y) returns the greater of the two values x and y"};
   FunctionDescriptor fd_min           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_min         , NULL, NULL, NULL, NULL, NULL, NULL, "min(x,y) returns the lesser of the two values x and y"};
   FunctionDescriptor fd_mod           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_mod         , NULL, NULL, NULL, NULL, NULL, NULL, "mod(x,y) returns the remainder of x/y"};
@@ -106,6 +122,9 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_randomg       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomg    , NULL, NULL, NULL, NULL, NULL, NULL, "randomGaussian(sigma) returns a random sample from a Gaussian (normal) distribution of standard deviation sigma"};
   FunctionDescriptor fd_randomln      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandomln   , NULL, NULL, NULL, NULL, NULL, NULL, "randomLogNormal(zeta,sigma) returns a random sample from the log normal distribution centred on zeta, and of width sigma"};
   FunctionDescriptor fd_randomp       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomp    , NULL, NULL, NULL, NULL, NULL, NULL, "randomPoisson(n) returns a random integer from a Poisson distribution with mean n"};
+  FunctionDescriptor fd_real          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_real        , NULL, NULL, NULL, NULL, NULL, NULL, "Re(z) returns the magnitude of the real part of z"};
+  FunctionDescriptor fd_sec           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "sec(x) returns the secant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_sech          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sech        , NULL, NULL, NULL, NULL, NULL, NULL, "sech(x) returns the hyperbolic secant of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_sin           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sin         , NULL, NULL, NULL, NULL, NULL, NULL, "sin(x) returns the sine of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "sinh(x) returns the hyperbolic sine of x"};
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "sqrt(x) returns the square root of x"};
@@ -224,8 +243,18 @@ void ppl_UserSpaceInit()
   // Copy function descriptors for core mathematical functions into function namespace
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "abs"            , (void *)&fd_abs         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acos"           , (void *)&fd_acos        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acosh"          , (void *)&fd_acosh       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acot"           , (void *)&fd_acot        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acoth"          , (void *)&fd_acoth       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acsc"           , (void *)&fd_acsc        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acsch"          , (void *)&fd_acsch       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "arg"            , (void *)&fd_arg         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asec"           , (void *)&fd_asec        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asech"          , (void *)&fd_asech       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asin"           , (void *)&fd_asin        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asinh"          , (void *)&fd_asinh       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan"           , (void *)&fd_atan        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atanh"          , (void *)&fd_atanh       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan2"          , (void *)&fd_atan2       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "besseli"        , (void *)&fd_besseli     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "besselI"        , (void *)&fd_besselI     , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -244,8 +273,13 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqPDF"       , (void *)&fd_chisqPDF    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqCDF"       , (void *)&fd_chisqCDF    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqCDFi"      , (void *)&fd_chisqCDFi   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "conjugate"      , (void *)&fd_conjugate   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cos"            , (void *)&fd_cos         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cosh"           , (void *)&fd_cosh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cot"            , (void *)&fd_cot         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "coth"           , (void *)&fd_coth        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "csc"            , (void *)&fd_csc         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "csch"           , (void *)&fd_csch        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "degrees"        , (void *)&fd_degrees     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ellipticintK"   , (void *)&fd_ellK        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ellipticintE"   , (void *)&fd_ellE        , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -262,6 +296,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gaussianCDFi"   , (void *)&fd_gaussianCDFi, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "heaviside"      , (void *)&fd_heaviside   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hypot"          , (void *)&fd_hypot       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Im"             , (void *)&fd_imag        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ldexp"          , (void *)&fd_ldexp       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreP"      , (void *)&fd_legendreP   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreQ"      , (void *)&fd_legendreQ   , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -283,6 +318,9 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "randomGaussian" , (void *)&fd_randomg     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "randomLogNormal", (void *)&fd_randomln    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "randomPoisson"  , (void *)&fd_randomp     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Re"             , (void *)&fd_real        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sec"            , (void *)&fd_sec         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sech"           , (void *)&fd_sech        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sin"            , (void *)&fd_sin         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sinh"           , (void *)&fd_sinh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"           , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);

@@ -60,7 +60,7 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
 
   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) for (i=0; i<data->Nfitvars; i++)   data->fitvar[i]->real = gsl_vector_get(x, i);
-  else                                                      for (i=0; i<data->Nfitvars; i++) { data->fitvar[i]->real = gsl_vector_get(x,2*i); data->fitvar[i]->imag = gsl_vector_get(x,2*i+1); }
+  else                                                      for (i=0; i<data->Nfitvars; i++) { data->fitvar[i]->real = gsl_vector_get(x,2*i); data->fitvar[i]->imag = gsl_vector_get(x,2*i+1); data->fitvar[i]->FlagComplex = !ppl_units_DblEqual(data->fitvar[i]->imag, 0); }
 
   for (i=0; i<data->Nexprs; i++)
    {
