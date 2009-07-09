@@ -66,6 +66,7 @@ void ppl_settings_term_init()
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup              = SW_ONOFF_OFF;
+  settings_term_default.calendar            = SW_CALENDAR_BRITISH;
   settings_term_default.colour              = SW_ONOFF_ON;
   settings_term_default.ComplexNumbers      = SW_ONOFF_OFF;
   settings_term_default.display             = SW_ONOFF_ON;

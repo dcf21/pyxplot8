@@ -680,10 +680,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
-        if      (NArgs==0) ((void(*)(value*,                     int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==1) ((void(*)(value*,value*,              int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos+2,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==2) ((void(*)(value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==3) ((void(*)(value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos,&j,errtext);
+        if      (NArgs==0) ((void(*)(value*,                                          int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                                                                                    ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==1) ((void(*)(value*,value*,                                   int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                                                              ResultBuffer+bufpos+2,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==2) ((void(*)(value*,value*,value*,                            int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                                        ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==3) ((void(*)(value*,value*,value*,value*,                     int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,              int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==5) ((void(*)(value*,value*,value*,value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos+6,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==6) ((void(*)(value*,value*,value*,value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos+6,ResultBuffer+bufpos+7,ResultBuffer+bufpos,&j,errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_UNIT)

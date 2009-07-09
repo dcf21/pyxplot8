@@ -124,7 +124,17 @@ int sgn(double x)
 #define CHECK_3NOTNAN \
  { \
   CHECK_2NOTNAN; \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in3->FlagComplex)) { NULL_OUTPUT; } \
   if ((!gsl_finite(in3->real)) || (!gsl_finite(in3->imag))) { NULL_OUTPUT; } \
+ }
+
+#define CHECK_6NOTNAN \
+ { \
+  CHECK_3NOTNAN; \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in4->FlagComplex) || (in5->FlagComplex) || (in6->FlagComplex))) { NULL_OUTPUT; } \
+  if ((!gsl_finite(in4->real)) || (!gsl_finite(in4->imag))) { NULL_OUTPUT; } \
+  if ((!gsl_finite(in5->real)) || (!gsl_finite(in5->imag))) { NULL_OUTPUT; } \
+  if ((!gsl_finite(in6->real)) || (!gsl_finite(in6->imag))) { NULL_OUTPUT; } \
  }
 
 #define CHECK_1INPUT_DIMLESS \
@@ -157,6 +167,16 @@ int sgn(double x)
    } \
  }
 
+#define CHECK_6INPUT_DIMLESS \
+ { \
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless && in4->dimensionless && in5->dimensionless && in6->dimensionless)) \
+   { \
+    *status = 1; \
+    sprintf(errtext, "The %s function can only act upon dimensionless inputs.", FunctionDescription); \
+    return; \
+   } \
+ }
+
 #define CHECK_2INPUT_DIMMATCH \
  { \
   if ((!(in1->dimensionless && in2->dimensionless)) && (!(ppl_units_DimEqual(in1, in2)))) \
@@ -182,6 +202,7 @@ int sgn(double x)
 #define IF_1COMPLEX if (in->FlagComplex) {
 #define IF_2COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex)) {
 #define IF_3COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex)) {
+#define IF_6COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex) || (in4->FlagComplex) || (in5->FlagComplex) || (in6->FlagComplex)) {
 #define ELSE_REAL   } else {
 #define ENDIF       }
 
@@ -1238,3 +1259,6 @@ double frandom()
  {
   return (double)rand() / RAND_MAX;
  }
+
+#include "dcftime.c"
+

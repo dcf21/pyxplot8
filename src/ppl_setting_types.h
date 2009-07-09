@@ -163,6 +163,20 @@ extern char *SW_UNITSCH_STR[];
 extern int   SW_UNITSCH_ACL[];
 extern int   SW_UNITSCH_INT[];
 
+// Calendars which we can use
+
+#define SW_CALENDAR_GREGORIAN 19001
+#define SW_CALENDAR_JULIAN    19002
+#define SW_CALENDAR_BRITISH   19003
+#define SW_CALENDAR_FRENCH    19004
+#define SW_CALENDAR_CATHOLIC  19005
+#define SW_CALENDAR_RUSSIAN   19006
+#define SW_CALENDAR_GREEK     19007
+
+extern char *SW_CALENDAR_STR[];
+extern int   SW_CALENDAR_ACL[];
+extern int   SW_CALENDAR_INT[];
+
 void *FetchSettingName      (int id, int *id_list, void **name_list);
 int   FetchSettingByName    (char *name, int *id_list, char **name_list);
 

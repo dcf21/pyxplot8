@@ -30,6 +30,7 @@
 #include <gsl/gsl_sf.h>
 
 #include "MathsTools/dcfmath.h"
+#include "MathsTools/dcftime.h"
 
 #include "ListTools/lt_memory.h"
 
@@ -130,6 +131,19 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "sqrt(x) returns the square root of x"};
   FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "tanh(x) returns the hyperbolic tangent of x"};
+  FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
+  FunctionDescriptor fd_time_year     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_year        , NULL, NULL, NULL, NULL, NULL, NULL, "time_year(JD) returns the calendar year corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_month    = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_month       , NULL, NULL, NULL, NULL, NULL, NULL, "time_month(JD) returns the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_day      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_day         , NULL, NULL, NULL, NULL, NULL, NULL, "time_day(JD) returns the day of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_hour     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_hour        , NULL, NULL, NULL, NULL, NULL, NULL, "time_hour(JD) returns the hour of the day corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_min      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_min         , NULL, NULL, NULL, NULL, NULL, NULL, "time_min(JD) returns the minutes within the hour corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_sec      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "time_sec(JD) returns the seconds within the minute corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_moonphase= { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_moonphase   , NULL, NULL, NULL, NULL, NULL, NULL, "time_moonphase(JD) returns the phase on the Moon on Julian Date JD"};
+  FunctionDescriptor fd_timediff_years= { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcftimediff_years   , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_years(JD1,JD2) returns the number of whole years (intervals of 365 days) elapsed between Julian Dates JD1 and JD2"};
+  FunctionDescriptor fd_timediff_days = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_days    , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_days(JD1,JD2,wrap) returns the number of whole days elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 365"};
+  FunctionDescriptor fd_timediff_hours= { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_hours   , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_hours(JD1,JD2,wrap) returns the number of whole hours elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 24"};
+  FunctionDescriptor fd_timediff_min  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_minutes , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_mins(JD1,JD2,wrap) returns the number of whole minutes elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 60"};
+  FunctionDescriptor fd_timediff_sec  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_seconds , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_secs(JD1,JD2,wrap) returns the number of seconds, including fractions of seconds, elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 60"};
   FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
   FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "unit(...) multiplies a number by a physical unit"};
   FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "zeta(x) evaluates the Riemann zeta function at x"};
@@ -326,6 +340,19 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"           , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tan"            , (void *)&fd_tan         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tanh"           , (void *)&fd_tanh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_juliandate", (void *)&fd_time_juliandate, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_year"      , (void *)&fd_time_year      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_month"     , (void *)&fd_time_month     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_day"       , (void *)&fd_time_day       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_hour"      , (void *)&fd_time_hour      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_min"       , (void *)&fd_time_min       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_sec"       , (void *)&fd_time_sec       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_moonphase" , (void *)&fd_time_moonphase , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_years" , (void *)&fd_timediff_years , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_days"  , (void *)&fd_timediff_days  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_hours" , (void *)&fd_timediff_hours , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_mins"  , (void *)&fd_timediff_min   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_secs"  , (void *)&fd_timediff_sec   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tophat"         , (void *)&fd_tophat      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "unit"           , (void *)&fd_unit        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zeta"           , (void *)&fd_zeta        , sizeof(FunctionDescriptor), DATATYPE_VOID);

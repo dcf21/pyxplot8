@@ -151,6 +151,15 @@ void directive_set(Dict *command)
    {
     settings_graph_current.BoxWidth = settings_graph_default.BoxWidth;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"calendar")==0)) /* set calendar */
+   {
+    DictLookup(command,"calendar",NULL,(void **)&tempstr);
+    settings_term_current.calendar = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"calendar")==0)) /* unset calendar */
+   {
+    settings_term_current.calendar = settings_term_default.calendar;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"display")==0)) /* set display */
    {
     settings_term_current.display = SW_ONOFF_ON;
@@ -801,6 +810,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     sprintf(buf, "%s", (char *)NumericDisplay(sg->BoxFrom,0,settings_term_current.SignificantFigures));
     directive_show3(out+i, ItemSet, interactive, "BoxFrom", buf, (settings_graph_default.BoxFrom == sg->BoxFrom), "Sets the vertical level from which the bars of barcharts and histograms are drawn");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendar",1)>=0))
+   {
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.calendar, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
+    directive_show3(out+i, ItemSet, interactive, "calendar", buf, (settings_term_current.calendar == settings_term_default.calendar), "Selects the historical year in which the transition is made between Julian and Gregorian calendars");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
