@@ -132,6 +132,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "tanh(x) returns the hyperbolic tangent of x"};
   FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
+  FunctionDescriptor fd_time_now      = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcftime_now         , NULL, NULL, NULL, NULL, NULL, NULL, "time_now() returns the present Julian Date"};
   FunctionDescriptor fd_time_year     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_year        , NULL, NULL, NULL, NULL, NULL, NULL, "time_year(JD) returns the calendar year corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_month    = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_month       , NULL, NULL, NULL, NULL, NULL, NULL, "time_month(JD) returns the calendar month corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_day      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_day         , NULL, NULL, NULL, NULL, NULL, NULL, "time_day(JD) returns the day of the calendar month corresponding to the Julian Date JD"};
@@ -341,6 +342,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tan"            , (void *)&fd_tan         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tanh"           , (void *)&fd_tanh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_juliandate", (void *)&fd_time_juliandate, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_now"       , (void *)&fd_time_now       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_year"      , (void *)&fd_time_year      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_month"     , (void *)&fd_time_month     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_day"       , (void *)&fd_time_day       , sizeof(FunctionDescriptor), DATATYPE_VOID);

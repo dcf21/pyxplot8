@@ -25,6 +25,7 @@
 #include "ppl_units.h"
 
 void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *in5, value *in6, value *output, int *status, char *errtext);
+void dcftime_now(value *output, int *status, char *errtext);
 void dcftime_year(value *in, value *output, int *status, char *errtext);
 void dcftime_month(value *in, value *output, int *status, char *errtext);
 void dcftime_day(value *in, value *output, int *status, char *errtext);

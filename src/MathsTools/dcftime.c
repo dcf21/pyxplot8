@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "ppl_settings.h"
 #include "ppl_units.h"
@@ -51,11 +52,11 @@ double SwitchOverJD()
    {
     case SW_CALENDAR_GREGORIAN: return -HUGE_VAL;
     case SW_CALENDAR_JULIAN   : return  HUGE_VAL;
-    case SW_CALENDAR_BRITISH  : return 17520902.0;
-    case SW_CALENDAR_FRENCH   : return 15821209.0;
+    case SW_CALENDAR_BRITISH  : return 2361222.0;
+    case SW_CALENDAR_FRENCH   : return 2299227.0;
     case SW_CALENDAR_CATHOLIC : return 2299161.0;
-    case SW_CALENDAR_RUSSIAN  : return 19180131.0;
-    case SW_CALENDAR_GREEK    : return 19230215.0;
+    case SW_CALENDAR_RUSSIAN  : return 2421639.0;
+    case SW_CALENDAR_GREEK    : return 2423480.0;
     default                   : ppl_fatal(__FILE__,__LINE__,"Internal Error: Calendar option is set to an illegal setting.");
    }
   return 0; // Never gets here
@@ -63,7 +64,7 @@ double SwitchOverJD()
 
 double JulianDate(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
  {
-  double sign, JD, DayFraction, LastJulian, FirstGregorian, ReqDate;
+  double JD, DayFraction, LastJulian, FirstGregorian, ReqDate;
   int b;
 
   SwitchOverCalDate(&LastJulian, &FirstGregorian);
@@ -80,35 +81,34 @@ double JulianDate(int year, int month, int day, int hour, int min, int sec, int 
 
   JD = 365.0*year - 679004.0 + 2400000.5 + b + floor(30.6001*(month+1)) + day;
 
-  if ((day<0) || (min<0) || (sec<0)) sign=-1; else sign = 1.0;
-  DayFraction = sign * (fabs(day) + fabs(min)/60.0 + fabs(sec)/3600.0);
+  DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
 
   return JD + DayFraction;
  }
 
-void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *min, int *sec)
+void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec)
  {
-  double a,b,c,d,e,f;
+  long a,b,c,d,e,f;
   double DayFraction;
   int temp;
   if (month == NULL) month = &temp; // Dummy placeholder, since we need month later in the calculation
 
-  a = JD + 0.5;
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
   if (a < SwitchOverJD())
-   { b=0; c=a+1524; } // Julian
+   { b=0; c=a+1524; } // Julian calendar
   else
-   { b=(a-1867216.25)/26524.25; c=a+b-(b/4)+1525; }
-  d = (c-122.1)/365.25;
-  e = 365*d + d/4;
-  f = (c-e)/30.6001;
-  if (day  != NULL) *day   = (int)floor(c-e-floor(30.6001*f));
-                    *month = (int)floor(f-1-12*(f/14));
-  if (year != NULL) *year  = (int)floor(d-4715-((7+*month)/10));
+   { b=(a-1867216.25)/36524.25; c=a+b-(b/4)+1525; } // Gregorian calendar
+  d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
+  e = 365*d + d/4; // Number of days accounted for by these
+  f = (c-e)/30.6001;      // Number of 30.6001 days periods (a.k.a. months) in remainder
+  if (day  != NULL) *day   = (int)floor(c-e-(int)(30.6001*f));
+                    *month = (int)floor(f-1-12*(f>=14));
+  if (year != NULL) *year  = (int)floor(d-4715-(*month>=3));
 
-  DayFraction = JD - floor(JD);
-  if (hour != NULL) *hour = (int)floor(24*DayFraction);
-  if (min  != NULL) *min  = (int)floor(fmod(1440*DayFraction , 60));
-  if (sec  != NULL) *sec  = (int)floor(fmod(86400*DayFraction , 60));
+  DayFraction = (JD+0.5) - floor(JD+0.5);
+  if (hour != NULL) *hour = (int)floor(        24*DayFraction      );
+  if (min  != NULL) *min  = (int)floor(fmod( 1440*DayFraction , 60));
+  if (sec  != NULL) *sec  =            fmod(86400*DayFraction , 60) ;
  }
 
 // Wrappers for importing into PyXPlot's function table
@@ -127,6 +127,16 @@ void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *i
   IF_6COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = JulianDate((int)in1->real, (int)in2->real, (int)in3->real, (int)in4->real, (int)in5->real, (int)in6->real, status, errtext); }
   ENDIF
+ }
+
+void dcftime_now(value *output, int *status, char *errtext)
+ {
+  time_t timer;
+  struct tm timeinfo;
+  timer = time(NULL);
+  gmtime_r(&timer , &timeinfo);
+  WRAPPER_INIT;
+  output->real = JulianDate(1900+timeinfo.tm_year, 1+timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, status, errtext);
  }
 
 void dcftime_year(value *in, value *output, int *status, char *errtext)
@@ -192,22 +202,35 @@ void dcftime_min(value *in, value *output, int *status, char *errtext)
 void dcftime_sec(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "time_sec(JD)";
-  int i;
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, NULL, &i); }
+  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, NULL, &(output->real)); }
   ENDIF
-  output->real = (double)i;
  }
 
 void dcftime_moonphase(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "time_moonphase(JD)";
+  double t; // Time in Julian Centuries since 2000.0
+  double Msun,Lsun,L0,l,ls,D,F,dL;
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = 0; }
+  ELSE_REAL
+   {
+    t    = (in->real - 2451545)/36525;
+    Msun = 2*M_PI*fmod(0.993133+99.997361*t, 1);
+    Lsun = 2*M_PI*fmod(0.7859453+Msun/(2*M_PI)+(6893.0*sin(Msun)+72.0*sin(2*Msun)+6191.2*t)/1296e3, 1);
+    L0   = 2*M_PI*fmod(0.606433+1336.855225*t, 1);
+    l    = 2*M_PI*fmod(0.374897+1325.552410*t, 1);
+    ls   = 2*M_PI*fmod(0.993133+99.997361*t, 1);
+    D    = 2*M_PI*fmod(0.827361+1236.853086*t, 1);
+    F    = 2*M_PI*fmod(0.259086+1342.227825*t, 1);
+    dL   = 22640*sin(l) - 4586*sin(l-2*D) + 2370*sin(2*D) + 769*sin(2*l) - 668*sin(ls) - 412*sin(2*F) - 212*sin(2*l-2*D) - 206*sin(l+ls-2*D) + 192*sin(l+2*D) - 165*sin(ls-2*D) - 125*sin(D) - 110*sin(l+ls) + 148*sin(l-ls) - 55*sin(2*F-2*D);
+    output->real = fmod(L0 + dL/1296e3*2*M_PI - Lsun , 2*M_PI);
+    while (output->real<0) output->real += 2*M_PI;
+   }
   ENDIF
   CLEANUP_APPLYUNIT(UNIT_ANGLE);
  }
