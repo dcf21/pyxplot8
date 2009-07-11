@@ -136,7 +136,7 @@ void CheckForGvOutput()
      StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
      if (linebuffer[0]=='\0') break;
      if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
-     if (strncmp(linebuffer, SED, strlen(SED))==0) ppl_error("Error: A problem was encounter with the supplied regular expression.");
+     if (strncmp(linebuffer, SED_COMMAND, strlen(SED_COMMAND))==0) ppl_error("Error: A problem was encounter with the supplied regular expression.");
      else ppl_error(linebuffer);
     }
   return;
@@ -285,7 +285,7 @@ int CSPForkNewGv(char *fname, List *gv_list)
      }
     if (setpgid( getpid() , getpid() )) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
     sprintf(WatchText, "%s%s", GHOSTVIEW_OPT, "watch");
-    if (execlp(GHOSTVIEW, GHOSTVIEW, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute GhostView returned error code."); // Execute GhostView
+    if (execlp(GHOSTVIEW_COMMAND, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute GhostView returned error code."); // Execute GhostView
     ppl_fatal(__FILE__,__LINE__,"Execution of GhostView failed."); // execlp call should not return
     exit(1); // ppl_fatal shouldn't either, so something's gone really wrong...
    }
@@ -355,7 +355,7 @@ void ForkSed(char *cmd, int *pidout, int *fstdin, int *fstdout)
       if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
       close(PipeCSP2MAIN[1]);
      }
-    if (execl(SED, SED, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
+    if (execl(SED_COMMAND, SED_COMMAND, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
     ppl_fatal(__FILE__,__LINE__,"Execution of sed failed."); // execlp call should not return
     exit(1); // ppl_fatal shouldn't either, so something's gone really wrong... 
    }

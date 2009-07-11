@@ -33,7 +33,7 @@
 
 void SwitchOverCalDate(double *LastJulian, double *FirstGregorian)
  {
-  switch (settings_term_current.calendar)
+  switch (settings_term_current.CalendarIn)
    {
     case SW_CALENDAR_GREGORIAN: { *LastJulian = -HUGE_VAL;  *FirstGregorian = -HUGE_VAL; return; }
     case SW_CALENDAR_JULIAN   : { *LastJulian =  HUGE_VAL;  *FirstGregorian =  HUGE_VAL; return; }
@@ -48,7 +48,7 @@ void SwitchOverCalDate(double *LastJulian, double *FirstGregorian)
 
 double SwitchOverJD()
  {
-  switch (settings_term_current.calendar)
+  switch (settings_term_current.CalendarOut)
    {
     case SW_CALENDAR_GREGORIAN: return -HUGE_VAL;
     case SW_CALENDAR_JULIAN   : return  HUGE_VAL;
@@ -77,7 +77,7 @@ double JulianDate(int year, int month, int day, int hour, int min, int sec, int 
   else if (ReqDate >= FirstGregorian)
    { b = (year/400) - (year/100) + (year/4); } // Gregorian calendar
   else
-   { *status=1; sprintf(errtext, "The requested date never happened in the %s calendar: it was lost in the transition from the Julian to the Gregorian calendar.", (char *)FetchSettingName(settings_term_current.calendar, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR )); }
+   { *status=1; sprintf(errtext, "The requested date never happened in the %s calendar: it was lost in the transition from the Julian to the Gregorian calendar.", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR )); }
 
   JD = 365.0*year - 679004.0 + 2400000.5 + b + floor(30.6001*(month+1)) + day;
 

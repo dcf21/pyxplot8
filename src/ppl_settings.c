@@ -29,6 +29,8 @@
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
+#include "ListTools/lt_dict.h"
+
 #include "EPSMaker/eps_colours.h"
 
 #include "ppl_constants.h"
@@ -56,17 +58,21 @@ settings_session  settings_session_default;
 int               settings_palette_default[PALETTE_LENGTH] = {COLOUR_BLACK, COLOUR_RED, COLOUR_BLUE, COLOUR_MAGENTA, COLOUR_CYAN, COLOUR_BROWN, COLOUR_SALMON, COLOUR_GRAY, COLOUR_GREEN, COLOUR_NAVYBLUE, COLOUR_PERIWINKLE, COLOUR_PINEGREEN, COLOUR_SEAGREEN, COLOUR_GREENYELLOW, COLOUR_ORANGE, COLOUR_CARNATIONPINK, COLOUR_PLUM, -1};
 int               settings_palette_current[PALETTE_LENGTH];
 
+Dict             *settings_filters;
+
 void ppl_settings_term_init()
  {
   FILE  *LocalePipe;
   int    Nchars,i;
   double PaperWidth, PaperHeight;
+  value  tempval;
   char   ConfigFname[FNAME_LENGTH];
   char  *PaperSizePtr;
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup              = SW_ONOFF_OFF;
-  settings_term_default.calendar            = SW_CALENDAR_BRITISH;
+  settings_term_default.CalendarIn          = SW_CALENDAR_BRITISH;
+  settings_term_default.CalendarOut         = SW_CALENDAR_BRITISH;
   settings_term_default.colour              = SW_ONOFF_ON;
   settings_term_default.ComplexNumbers      = SW_ONOFF_OFF;
   settings_term_default.display             = SW_ONOFF_ON;
@@ -160,6 +166,10 @@ void ppl_settings_term_init()
   ppl_units_zero(&(settings_graph_default.TitleYOff));
   settings_graph_default.TitleYOff.real   = 0.0;
   settings_graph_default.TitleYOff.dimensionless = 0; settings_graph_default.TitleYOff.exponent[UNIT_LENGTH] = 1;
+  ppl_units_zero(&(settings_graph_default.Tmin));
+  ppl_units_zero(&(settings_graph_default.Tmax));
+  settings_graph_default.Tmin.real    = 0.0;
+  settings_graph_default.Tmax.real    = 1.0;
   ppl_units_zero(&(settings_graph_default.width));
   settings_graph_default.width.real   = 0.0;
   settings_graph_default.width.dimensionless = 0; settings_graph_default.width.exponent[UNIT_LENGTH] = 1;
@@ -188,6 +198,23 @@ void ppl_settings_term_init()
   settings_axis_default.MTickList   = NULL;
   settings_axis_default.TickList    = NULL;
   strcpy(settings_axis_default.label, "");
+
+  // Set up list of input filters
+  settings_filters = DictInit();
+  ppl_units_zero(&tempval);
+  #ifdef HAVE_FITSIO
+  tempval.string = FITSHELPER;
+  DictAppendValue(settings_filters, "*.fits", tempval);
+  #endif
+  #ifdef GUNZIP_COMMAND
+  tempval.string = GUNZIP_COMMAND;
+  DictAppendValue(settings_filters, "*.gz", tempval);
+  #endif
+  #ifdef WGET_COMMAND
+  tempval.string = WGET_COMMAND;
+  DictAppendValue(settings_filters, "http://*", tempval);
+  DictAppendValue(settings_filters, "ftp://*", tempval);
+  #endif
 
   // Set up current axes
   for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;

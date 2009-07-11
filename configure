@@ -71,7 +71,35 @@ else
  echo "NO" ; echo "ERROR: Required program sed could not be found." ; exit
 fi
 
-# 5. FIND GHOSTVIEW
+# 5. CHECK FOR GUNZIP
+
+echo $ECHO_N "Checking for gunzip            ............. $ECHO_C"
+whichout=`which gunzip 2> /dev/null`
+if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
+if [ "$whichout" != "" ] ; then
+ echo "YES"
+ echo "GUNZIP_COMMAND=-D GUNZIP_COMMAND=\"\\\"${whichout} -c\\\"\"" >> Makefile
+else
+ echo "NO"
+ echo "GUNZIP_COMMAND=" >> Makefile
+ echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files."
+fi
+
+# 6. CHECK FOR WGET
+
+echo $ECHO_N "Checking for wget              ............. $ECHO_C"
+whichout=`which wget 2> /dev/null`
+if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
+if [ "$whichout" != "" ] ; then
+ echo "YES"
+ echo "WGET_COMMAND=-D WGET_COMMAND=\"\\\"${whichout} -O -\\\"\"" >> Makefile
+else
+ echo "NO"
+ echo "WGET_COMMAND=" >> Makefile
+ echo "WARNING: wget could not be found. Installation will proceed, but PyXPlot will not be able to plot files directly from URLs."
+fi
+
+# 7. FIND GHOSTVIEW
 
 echo $ECHO_N "Checking for ghostview         ............. $ECHO_C"
 whichout_gv=`which gv 2> /dev/null`
@@ -98,7 +126,7 @@ else
  echo "WARNING: Ghostview could not be found. Installation will proceed, but X11 terminal will not be available in PyXPlot. If required, install either ghostview (gv) or Gnome-ghostview (ggv), and then re-install PyXPlot."
 fi
 
-# 6. FIND MAKE
+# 8. FIND MAKE
 
 echo $ECHO_N "Checking for GNU make          ............. $ECHO_C"
 whichout_make=`which make 2> /dev/null`
@@ -119,7 +147,7 @@ else
  exit
 fi
 
-# 7. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
+# 9. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
 
 echo $ECHO_N "Checking for libreadline-dev   ............. $ECHO_C"
 if printf '#include <readline/readline.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -131,19 +159,21 @@ else
  echo "HAVE_READLINE=-D NOHAVE_READLINE=1" >> Makefile
 fi
 
-# 8. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
+# 10. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
 
 echo $ECHO_N "Checking for libcfitsio-dev    ............. $ECHO_C"
 if printf '#include <fitsio.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
 then
  echo "YES"
  echo "HAVE_FITSIO=-D HAVE_FITSIO=1" >> Makefile
+ echo "FITSIO_LINK=-lcfitsio" >> Makefile
 else
  echo "NO"
  echo "HAVE_FITSIO=-D NOHAVE_FITSIO=1" >> Makefile
+ echo "FITSIO_LINK=" >> Makefile
 fi
 
-# 9. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS
+# 11. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS
 
 echo $ECHO_N "Checking for libgsl0-dev       ............. $ECHO_C"
 if printf '#include <gsl/gsl_version.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -155,7 +185,7 @@ else
  exit
 fi
 
-# 10. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
+# 12. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
 
 echo $ECHO_N "Checking for libxml2-dev       ............. $ECHO_C"
 whichout=`which xml2-config 2> /dev/null`
@@ -168,7 +198,7 @@ else
  exit
 fi
 
-# 11. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBJPEG HEADERS
+# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBJPEG HEADERS
 
 echo $ECHO_N "Checking for libjpeg-dev       ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <jpeglib.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -180,7 +210,7 @@ else
  exit
 fi
 
-# 12. OUTPUT MAKEFILE
+# 14. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 

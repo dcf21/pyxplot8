@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) ||
                                                   (EnvDisplay==NULL) ||
                                                   (EnvDisplay[0]=='\0') ||
-                                                  (strcmp(GHOSTVIEW, "/bin/false")==0) ||
+                                                  (strcmp(GHOSTVIEW_COMMAND, "/bin/false")==0) ||
                                                   (isatty(STDIN_FILENO) != 1)))
      {
       ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");

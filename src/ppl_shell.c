@@ -333,6 +333,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "set")==0)
    directive_set(command);
+  else if (strcmp(directive, "set_error")==0)
+   directive_seterror(command, interactive);
   else if (strcmp(directive, "show")==0)
    directive_show(command, interactive);
   else if (strcmp(directive, "solve")==0)
@@ -343,6 +345,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_text(command, interactive);
   else if (strcmp(directive, "unset")==0)
    directive_set(command);
+  else if (strcmp(directive, "unset_error")==0)
+   directive_unseterror(command, interactive);
   else if (strcmp(directive, "while")==0)
    {
     DictLookup(command,"close_brace",NULL,(void **)(&varstrval));

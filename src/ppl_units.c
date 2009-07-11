@@ -65,8 +65,9 @@ value *ppl_units_zero(value *in)
 char *ppl_units_NumericDisplay(value *in, int N, int typeable)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH];
-  double NumberOutReal, NumberOutImag;
-  char *output, *unitstr, AddComplex[2]="+", RealStr[256];
+  double NumberOutReal, NumberOutImag, OoM;
+  char *output, *unitstr;
+  int i=0;
   if (N==0) output = outputA;
   else      output = outputB;
 
@@ -75,25 +76,39 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
   unitstr = ppl_units_GetUnitStr(in, &NumberOutReal, &NumberOutImag, N, typeable);
 
-  if (in->FlagComplex==0)
+  if (((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) || (!gsl_finite(NumberOutReal)) || (!gsl_finite(NumberOutImag)))
    {
-    if (unitstr[0]=='\0') return NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures);
-    else if (typeable==0) sprintf(output, "%s %s", NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures), unitstr);
-    else                  sprintf(output, "%s%s" , NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures), unitstr);
+    strcpy(output+i, NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures));
+    i+=strlen(output+i);
    }
   else
    {
-    if (NumberOutImag<0) AddComplex[0]='\0'; // Minus sign on complex number means we don't need to write a PLUS b i
+    OoM = hypot(NumberOutReal , NumberOutImag) * pow(10 , -settings_term_current.SignificantFigures);
 
-    if (!ppl_units_DblEqual(NumberOutReal, 0)) sprintf(RealStr, "%s", NumericDisplay(NumberOutReal, N  , settings_term_current.SignificantFigures));
-    else                                       RealStr[0]='\0'; // Don't print real part if it's zero
-
-    if ((unitstr[0]=='\0') && (typeable==0)) sprintf(output,"%s%s%si", RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
-    else if (unitstr[0]=='\0')               sprintf(output,"%s%s%s*sqrt(-1)", RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures) );
-    else if (typeable==0) sprintf(output, "(%s%s%si) %s", RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
-    else                  sprintf(output, "(%s%s%s*sqrt(-1))%s" , RealStr, AddComplex, NumericDisplay(NumberOutImag, N+2, settings_term_current.SignificantFigures), unitstr);
+    if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM)) output[i++] = '('; // open brackets on complex number
+    if (fabs(NumberOutReal) >= OoM) { strcpy(output+i, NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures)); i+=strlen(output+i); }
+    if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM) && (NumberOutImag > 0)) output[i++] = '+';
+    if (fabs(NumberOutImag) > OoM)
+     {
+      if (fabs(NumberOutImag-1)>=OoM)
+       {
+        strcpy(output+i, NumericDisplay(NumberOutImag, N, settings_term_current.SignificantFigures));
+        i+=strlen(output+i);
+       }
+      if (typeable == 0) output[i++] = 'i';
+      else               { strcpy(output+i, "*sqrt(-1)"); i+=strlen(output+i); }
+     }
+    if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM)) output[i++] = ')'; // close brackets on complex number
    }
 
+  if (unitstr[0]!='\0')
+   {
+    if (typeable==0) output[i++] = ' ';
+    sprintf(output+i, "%s", unitstr);
+    i+=strlen(output+i); // Add unit string as required
+   }
+
+  output[i++] = '\0'; // null terminate string
   return output;
  }
 
@@ -485,7 +500,7 @@ void __inline__ ppl_units_pow (value *a, value *b, value *o, int *status, char *
    }
   else // Complex pow()
    {
-    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
     else if (a->dimensionless == 0)
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
@@ -575,7 +590,8 @@ void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *
 
   if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real division
    {
-    if (fabs(b->real) < 1e-200)
+    if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+    else if (fabs(b->real) < 1e-200)
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
       else                                                      { sprintf(errtext, "Division by zero error."); *status = 1; return; }
@@ -590,21 +606,18 @@ void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *
    }
   else // Complex division
    {
-    if ((mag = pow(b->real,2)+pow(b->imag,2)) < 1e-200)
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
+    else if ((mag = pow(b->real,2)+pow(b->imag,2)) < 1e-200)
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
       else                                                      { sprintf(errtext, "Division by zero error."); *status = 1; return; }
      }
     else
      {
-      if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
-      else
-       {
-        tmp            = (a->real * b->real + a->imag * b->imag) / mag;
-        o->imag        = (a->imag * b->real - a->real * b->imag) / mag;
-        o->real        = tmp;
-        o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
-       }
+      tmp            = (a->real * b->real + a->imag * b->imag) / mag;
+      o->imag        = (a->imag * b->real - a->real * b->imag) / mag;
+      o->real        = tmp;
+      o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
      }
    }
 

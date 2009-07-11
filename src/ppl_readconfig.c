@@ -128,6 +128,12 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "BOXWIDTH"     )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.BoxWidth      = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting BOXWIDTH."     , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "CALENDARIN"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarIn = fl;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting CALENDARIN."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "CALENDAROUT"  )==0)
+        if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarOut= fl;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting CALENDAROUT."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "COLOUR"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .colour        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting COLOUR."       , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
@@ -274,6 +280,12 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "TITLE_YOFF"   )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TITLE_YOFF."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "TRANGE_MIN"   )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.Tmin.real       = fl;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TRANGE_MIN."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "TRANGE_MAX"   )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.Tmax.real       = fl;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TRANGE_MAX."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "UNITABBREV"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .UnitDisplayAbbrev= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting UNITABBREV."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }

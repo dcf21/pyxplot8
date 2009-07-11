@@ -24,6 +24,7 @@
 
 #include "StringTools/str_constants.h"
 #include "ListTools/lt_list.h"
+#include "ListTools/lt_dict.h"
 
 #include "ppl_constants.h"
 #include "ppl_units.h"
@@ -34,7 +35,7 @@ typedef struct with_words {
  } with_words;
 
 typedef struct settings_terminal {
- int    backup, calendar, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplayTypeable, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev;
+ int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplayTypeable, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev;
  double dpi;
  value  PaperHeight, PaperWidth;
  char   output[FNAME_LENGTH];
@@ -46,7 +47,7 @@ typedef struct settings_graph {
  int          aspect, AutoAspect, AxesColour, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
  double       bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, FontSize, LineWidth, PointSize, PointLineWidth;
  unsigned int GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
- value        KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, width;
+ value        KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width;
  char         title[FNAME_LENGTH];
  with_words   DataStyle, FuncStyle;
  } settings_graph;
@@ -79,6 +80,7 @@ extern settings_axis     ZAxes[];
 extern settings_session  settings_session_default;
 extern int               settings_palette_current[];
 extern int               settings_palette_default[];
+extern Dict             *settings_filters;
 
 void  ppl_settings_term_init();
 #endif

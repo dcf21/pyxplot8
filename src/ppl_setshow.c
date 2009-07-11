@@ -66,6 +66,38 @@ void with_words_print(with_words *defn, char *out)
   return;
  }
 
+void directive_seterror(Dict *command, int interactive)
+ {
+  char *tempstr;
+  DictLookup(command,"set_option",NULL, (void **)&tempstr);
+  if (tempstr != NULL)
+   {
+    if (!interactive) { sprintf(temp_err_string, "Error: unrecognised set option '%s'.", tempstr); ppl_error(temp_err_string); }
+    else              { sprintf(temp_err_string, txt_set                               , tempstr); ppl_error(temp_err_string); }
+   }
+  else
+   {
+    if (!interactive) { ppl_error("Error: set command detected with no set option following it."); }
+    else              { ppl_error(txt_set_noword); }
+   }
+ }
+
+void directive_unseterror(Dict *command, int interactive)
+ {
+  char *tempstr;
+  DictLookup(command,"set_option",NULL, (void **)&tempstr);
+  if (tempstr != NULL)
+   {
+    if (!interactive) { sprintf(temp_err_string, "Error: unrecognised set option '%s'.", tempstr); ppl_error(temp_err_string); }
+    else              { sprintf(temp_err_string, txt_unset                             , tempstr); ppl_error(temp_err_string); }
+   }
+  else
+   {
+    if (!interactive) { ppl_error("Error: unset command detected with no set option following it."); }
+    else              { ppl_error(txt_unset_noword); }
+   }
+ }
+
 void directive_set(Dict *command)
  {
   int     i, j, k, l, m, p, pp, errpos, multiplier;
@@ -153,12 +185,18 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"calendar")==0)) /* set calendar */
    {
-    DictLookup(command,"calendar",NULL,(void **)&tempstr);
-    settings_term_current.calendar = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
+    DictLookup(command,"calendar"   ,NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.CalendarIn  =
+                         settings_term_current.CalendarOut = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
+    DictLookup(command,"calendarin" ,NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.CalendarIn  = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
+    DictLookup(command,"calendarout",NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.CalendarOut = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"calendar")==0)) /* unset calendar */
    {
-    settings_term_current.calendar = settings_term_default.calendar;
+    settings_term_current.CalendarIn  = settings_term_default.CalendarIn;
+    settings_term_current.CalendarOut = settings_term_default.CalendarOut;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"display")==0)) /* set display */
    {
@@ -177,6 +215,22 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"dpi")==0)) /* unset dpi */
    {
     settings_term_current.dpi = settings_term_default.dpi;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"filter")==0)) /* set filter */
+   {
+    DictLookup(command,"filename",NULL,(void **)&tempstr);
+    DictLookup(command,"filter",NULL,(void **)&tempstr2);
+    ppl_units_zero(&valobj);
+    valobj.string = tempstr2;
+    valobj.modified = 1;
+    DictAppendValue(settings_filters,tempstr,valobj);
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"filter")==0)) /* unset filter */
+   {
+    DictLookup(command,"filename",NULL,(void **)&tempstr);
+    DictLookup(settings_filters,tempstr,NULL,(void **)&tempstr2);
+    if (tempstr2 == NULL) { ppl_warning("Warning: attempt to unset a filter which did not exist."); return; }
+    DictRemoveKey(settings_filters,tempstr);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
    {
@@ -445,6 +499,21 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
    {
     settings_graph_current.samples = settings_graph_default.samples;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"trange")==0)) /* set trange */
+   {
+    DictLookup(command,"min",NULL,(void **)&tempval);
+    DictLookup(command,"max",NULL,(void **)&tempval2);
+    if (tempval == NULL) tempval = &settings_graph_current.Tmin;
+    if (tempval2== NULL) tempval2= &settings_graph_current.Tmax;
+    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error("Error: Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
+    settings_graph_current.Tmin = *tempval;
+    settings_graph_current.Tmax = *tempval2;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"trange")==0)) /* unset trange */
+   {
+    settings_graph_current.Tmin = settings_graph_default.Tmin;
+    settings_graph_current.Tmax = settings_graph_default.Tmax;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
    {
@@ -764,6 +833,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   int   i=0, p=0,j,k,l,m;
   DictIterator *DictIter;
   FunctionDescriptor *FDiter;
+  value *tempval;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
@@ -812,10 +882,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, interactive, "BoxFrom", buf, (settings_graph_default.BoxFrom == sg->BoxFrom), "Sets the vertical level from which the bars of barcharts and histograms are drawn");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendar",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarin",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.calendar, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
-    directive_show3(out+i, ItemSet, interactive, "calendar", buf, (settings_term_current.calendar == settings_term_default.calendar), "Selects the historical year in which the transition is made between Julian and Gregorian calendars");
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
+    directive_show3(out+i, ItemSet, interactive, "calendarin", buf, (settings_term_current.CalendarIn == settings_term_default.CalendarIn), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when dates are being input");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarout",1)>=0))
+   {
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.CalendarOut, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
+    directive_show3(out+i, ItemSet, interactive, "calendarout", buf, (settings_term_current.CalendarOut == settings_term_default.CalendarOut), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when displaying dates");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
@@ -829,6 +905,20 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures));
     directive_show3(out+i, ItemSet, interactive, "DPI", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing gif, jpg or png output");
     i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "filters",1)>=0))
+   {
+    DictIter = DictIterateInit(settings_filters);
+    while (DictIter != NULL)
+     {
+      tempval = (value *)DictIter->data;
+      StrEscapify(DictIter->key, buf+16);
+      StrEscapify(tempval->string, buf2);
+      sprintf(buf,"%s %s",buf+16,buf2);
+      directive_show3(out+i, ItemSet, interactive, "filter", buf, (!tempval->modified), "Sets an input filter to be used when reading datafiles");
+      i += strlen(out+i) ; p=1;
+      DictIter = DictIterate(DictIter, NULL, NULL);
+     }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "fontsize",1)>=0) || (StrAutocomplete(word, "fountsize",1)>=0))
    { 
@@ -1081,6 +1171,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.real==sg->TitleXOff.real)&&(settings_graph_default.TitleYOff.real==sg->TitleYOff.real)), "A title to be displayed above graphs");
     i += strlen(out+i) ; p=1;
    }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "trange", 1)>=0))
+   {
+    sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Tmin), 0, 0), ppl_units_NumericDisplay(&(sg->Tmax), 1, 0));
+    directive_show3(out+i, ItemSet, interactive, "trange", buf, (settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
+    i += strlen(out+i) ; p=1;
+   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "units", 1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
@@ -1107,7 +1203,6 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
-
   if (StrAutocomplete(word, "variables", 1)>=0)
    {
     SHOW_HIGHLIGHT(1);
