@@ -36,10 +36,10 @@ int main(int argc, char **argv)
  {
   char  help_string[LSTR_LENGTH], version_string[FNAME_LENGTH], version_string_underline[FNAME_LENGTH], warntext[FNAME_LENGTH];
   char *filename;
-  int   i, j, HaveFilename=0;
+  int   i, HaveFilename=0;
 #ifdef HAVE_FITSIO
   fitsfile *fptr=NULL;
-  int       status=0, hdupos, hdutype, nkeys, bitpix, naxis, ncols, anynull=0, dispwidth[16384];
+  int       j, status=0, hdupos, hdutype, nkeys, bitpix, naxis, ncols, anynull=0, dispwidth[16384];
   long      naxes[256], nrows;
   char      card[FLEN_CARD], keyword[FLEN_KEYWORD], colname[FLEN_VALUE], nullstr[]="nan", tabval[16384]="\0", *valptr;
 #endif
@@ -53,9 +53,9 @@ strcpy(warntext,"");
 #endif
 
   // Make help and version strings
-  sprintf(version_string, "\nPyXPlot Fits Helper %s\n", VERSION);
+  sprintf(version_string, "\nPyXPlot Fits Helper %s\n\n", VERSION);
 
-  sprintf(help_string   , "%s\
+  sprintf(help_string   , "\nPyXPlot Fits Helper %s\n\
 %s\n\
 \n\
 %sUsage: pyxplot_fitshelper <filename>\n\
@@ -72,7 +72,7 @@ full Users' Guide can be found in the file:\n\
 %s%spyxplot.pdf\n\
 \n\
 For the latest information on PyXPlot development, see the project website:\n\
-<http://www.pyxplot.org.uk>\n", version_string, StrUnderline(version_string, version_string_underline), warntext, DOCDIR, PATHLINK);
+<http://www.pyxplot.org.uk>\n\n", VERSION, StrUnderline(version_string, version_string_underline), warntext, DOCDIR, PATHLINK);
 
   // Scan commandline options for any switches
   HaveFilename=0;
