@@ -156,11 +156,11 @@ $(LOCAL_BINDIR)/install/pyxplot_watch: $(PPLW_OBJECTS_INSTALL)
 
 $(LOCAL_BINDIR)/pyxplot_fitshelper:         $(FITSHELP_OBJECTS)
 	mkdir -p $(LOCAL_BINDIR)
-	$(LINK) $(CFITSIO_LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS)         -o $(LOCAL_BINDIR)/pyxplot_fitshelper
+	$(LINK) $(FITSIO_LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS)         -o $(LOCAL_BINDIR)/pyxplot_fitshelper
 
 $(LOCAL_BINDIR)/install/pyxplot_fitshelper: $(FITSHELP_OBJECTS_INSTALL)
 	mkdir -p $(LOCAL_BINDIR)/install
-	$(LINK) $(CFITSIO_LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS_INSTALL) -o $(LOCAL_BINDIR)/install/pyxplot_fitshelper
+	$(LINK) $(FITSIO_LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS_INSTALL) -o $(LOCAL_BINDIR)/install/pyxplot_fitshelper
 
 #
 # Make time helper
