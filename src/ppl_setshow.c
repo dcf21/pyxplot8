@@ -772,6 +772,12 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"range")==0)) /* unset xrange */
    {
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"xformat")==0)) /* unset xformat */
+   {
+   }
   else
    {
     ppl_error("Internal Error in PyXPlot's set command: could not find handler for this set command.");

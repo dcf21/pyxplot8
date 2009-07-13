@@ -25,14 +25,26 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_FITSIO
+#include <fitsio.h>
+#endif
+
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
 int main(int argc, char **argv)
  {
-  char  help_string[LSTR_LENGTH], version_string[FNAME_LENGTH], version_string_underline[FNAME_LENGTH];
+  char  help_string[LSTR_LENGTH], version_string[FNAME_LENGTH], version_string_underline[FNAME_LENGTH], warntext[FNAME_LENGTH];
   char *filename;
   int   i, HaveFilename=0;
+
+#ifndef HAVE_FITSIO
+strcpy(warntext,"\n*** WARNING ***\nAs the cfitsio library was not installed on this computer when PyXPlot was\n\
+installed, PyXPlot has been compiled with no support for fits files. This\n\
+application is a dummy filter which does nothing.\n\n");
+#else
+strcpy(warntext,"");
+#endif
 
   // Make help and version strings
   sprintf(version_string, "\nPyXPlot Fits Helper %s\n", VERSION);
@@ -40,7 +52,7 @@ int main(int argc, char **argv)
   sprintf(help_string   , "%s\
 %s\n\
 \n\
-Usage: pyxplot_fitshelper <filename>\n\
+%sUsage: pyxplot_fitshelper <filename>\n\
   -h, --help:       Display this help.\n\
   -v, --version:    Display version number.\n\
 \n\
@@ -54,7 +66,7 @@ full Users' Guide can be found in the file:\n\
 %s%spyxplot.pdf\n\
 \n\
 For the latest information on PyXPlot development, see the project website:\n\
-<http://www.pyxplot.org.uk>\n", version_string, StrUnderline(version_string, version_string_underline), DOCDIR, PATHLINK);
+<http://www.pyxplot.org.uk>\n", version_string, StrUnderline(version_string, version_string_underline), warntext, DOCDIR, PATHLINK);
 
   // Scan commandline options for any switches
   HaveFilename=0;
@@ -94,6 +106,16 @@ For the latest information on PyXPlot development, see the project website:\n\
     fprintf(stderr, "pyxplot_fitshelper should be provided with only one filename on the command line to act upon. Multiple filenames appear to have been supplied. Type 'pyxplot_fitshelper -help' for a list of available commandline options.");
     return 1;
    }
+
+#ifndef HAVE_FITSIO
+  fprintf(stderr, "The cfitsio library was not installed on this computer when PyXPlot was\n\
+installed, and consequently PyXPlot was compiled with no support for fits\n\
+files. The fits helper application which you are using is a dummy which does\n\
+nothing. To plot this datafile, you need to install libcfitsio and then\n\
+recompile PyXPlot.");
+  exit(1);
+#else
+#endif
 
   return 0;
  }

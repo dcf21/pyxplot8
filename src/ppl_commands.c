@@ -68,6 +68,7 @@ quit@1:directive =\n\
 refresh@3:directive =\n\
 reset@3:directive =\n\
 save@2:directive = < %q:filename | %Q:filename | %S:filename >\n\
+set@2:directive { item@1 %d:editno } %a:axis format@1:set_option:xformat = %r:format_string\n\
 set@2:directive { item@1 %d:editno } %a:axis label@1:set_option:xlabel = < %q:label_text | %Q:label_text | %s:label_text >\n\
 set@2:directive { item@1 %d:editno } %a:axis range@1:set_option = \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n\n\
 set@2:directive { item@1 %d:editno } { %a:axis } ticdir@4:set_option = < inward@1:dir | outward@1:dir | both@1:dir >\n\

@@ -206,6 +206,10 @@ void ppl_settings_makedefault()
   tempval.string = FITSHELPER;
   DictAppendValue(settings_filters, "*.fits", tempval);
   #endif
+  #ifdef TIMEHELPER
+  tempval.string = TIMEHELPER;
+  DictAppendValue(settings_filters, "*.log", tempval);
+  #endif
   #ifdef GUNZIP_COMMAND
   tempval.string = GUNZIP_COMMAND;
   DictAppendValue(settings_filters, "*.gz", tempval);

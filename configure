@@ -39,64 +39,64 @@ esac
 
 echo $ECHO_N "Checking for latex             ............. $ECHO_C"
 whichout=`which latex 2> /dev/null`
-if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-if [ "$whichout" != "" ] ; then
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
  echo "YES"
  echo "LATEX_COMMAND=${whichout}" >> Makefile
 else
- echo "NO" ; echo "ERROR: Required program latex could not be found." ; exit
+ echo "NO" ; echo "ERROR: Required program latex could not be found." >&2 ; exit
 fi
 
 # 3. CHECK FOR CONVERT
 
 echo $ECHO_N "Checking for ImageMagick convert............ $ECHO_C"
 whichout=`which convert 2> /dev/null`
-if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-if [ "$whichout" != "" ] ; then
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
  echo "YES"
  echo "CONVERT_COMMAND=${whichout}" >> Makefile
 else 
- echo "NO" ; echo "ERROR: Required program convert could not be found." ; exit
+ echo "NO" ; echo "ERROR: Required program convert could not be found." >&2 ; exit
 fi
 
 # 4. CHECK FOR SED
 
 echo $ECHO_N "Checking for sed               ............. $ECHO_C"
 whichout=`which sed 2> /dev/null`
-if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-if [ "$whichout" != "" ] ; then
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
  echo "YES"
  echo "SED_COMMAND=${whichout}" >> Makefile
 else 
- echo "NO" ; echo "ERROR: Required program sed could not be found." ; exit
+ echo "NO" ; echo "ERROR: Required program sed could not be found." >&2 ; exit
 fi
 
 # 5. CHECK FOR GUNZIP
 
 echo $ECHO_N "Checking for gunzip            ............. $ECHO_C"
 whichout=`which gunzip 2> /dev/null`
-if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-if [ "$whichout" != "" ] ; then
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
  echo "YES"
  echo "GUNZIP_COMMAND=-D GUNZIP_COMMAND=\"\\\"${whichout} -c\\\"\"" >> Makefile
 else
  echo "NO"
  echo "GUNZIP_COMMAND=" >> Makefile
- echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files."
+ echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files." >&2
 fi
 
 # 6. CHECK FOR WGET
 
 echo $ECHO_N "Checking for wget              ............. $ECHO_C"
 whichout=`which wget 2> /dev/null`
-if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-if [ "$whichout" != "" ] ; then
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
  echo "YES"
  echo "WGET_COMMAND=-D WGET_COMMAND=\"\\\"${whichout} -O -\\\"\"" >> Makefile
 else
  echo "NO"
  echo "WGET_COMMAND=" >> Makefile
- echo "WARNING: wget could not be found. Installation will proceed, but PyXPlot will not be able to plot files directly from URLs."
+ echo "WARNING: wget could not be found. Installation will proceed, but PyXPlot will not be able to plot files directly from URLs." >&2
 fi
 
 # 7. FIND GHOSTVIEW
@@ -104,26 +104,26 @@ fi
 echo $ECHO_N "Checking for ghostview         ............. $ECHO_C"
 whichout_gv=`which gv 2> /dev/null`
 whichout_ggv=`which ggv 2> /dev/null`
-if [ "`echo $whichout_gv | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_gv="" ; fi
-if [ "`echo $whichout_ggv | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_ggv="" ; fi
-if [ "$whichout_gv" != "" ] ; then
- echo $ECHO_N "YES (gv"
+if test "`echo $whichout_gv | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout_gv="" ; fi
+if test "`echo $whichout_ggv | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout_ggv="" ; fi
+if test "$whichout_gv" != "" ; then
+ echo $ECHO_N "YES (gv$ECHO_C"
  echo "GV_COMMAND=${whichout_gv}" >> Makefile 
- if [ "`gv --v 2> /dev/null`" = "" ]; then 
+ if test "`gv --v 2> /dev/null`" = "" ; then 
   echo ", single hyphen options)" 
   echo "GV_OPT=-" >> Makefile
  else
   echo ", double hyphen options)" 
   echo "GV_OPT=--" >> Makefile
  fi
-elif [ "$whichout_ggv" != "" ] ; then
+elif test "$whichout_ggv" != "" ; then
  echo "YES (ggv, don't forget to set \"watch file\" in the viewer preferences!)"
  echo "GV_COMMAND=${whichout_ggv}" >> Makefile
  echo "GV_OPT=--" >> Makefile
 else
  echo "GV_COMMAND=/bin/false" >> Makefile
  echo "NO"
- echo "WARNING: Ghostview could not be found. Installation will proceed, but X11 terminal will not be available in PyXPlot. If required, install either ghostview (gv) or Gnome-ghostview (ggv), and then re-install PyXPlot."
+ echo "WARNING: Ghostview could not be found. Installation will proceed, but X11 terminal will not be available in PyXPlot. If required, install either ghostview (gv) or Gnome-ghostview (ggv), and then re-install PyXPlot." >&2
 fi
 
 # 8. FIND MAKE
@@ -131,19 +131,19 @@ fi
 echo $ECHO_N "Checking for GNU make          ............. $ECHO_C"
 whichout_make=`which make 2> /dev/null`
 whichout_gmake=`which gmake 2> /dev/null`
-if [ "`echo $whichout_make | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_make="" ; fi
-if [ "`echo $whichout_gmake | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout_gmake="" ; fi
-if [ "$whichout_gmake" != "" ] ; then
+if test "`echo $whichout_make | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout_make="" ; fi
+if test "`echo $whichout_gmake | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout_gmake="" ; fi
+if test "$whichout_gmake" != "" ; then
  echo "YES (gmake)"
  echo "MAKE_COMMAND=${whichout_gmake}" >> Makefile
  MAKE_COMMAND="gmake"
-elif [ "$whichout_make" != "" ] ; then
+elif test "$whichout_make" != "" ; then
  echo "YES (make)"
  echo "MAKE_COMMAND=${whichout_make}" >> Makefile
  MAKE_COMMAND="make"
 else
  echo "NO"
- echo "ERROR: Required program 'make' could not be found."
+ echo "ERROR: Required program 'make' could not be found." >&2
  exit
 fi
 
@@ -181,7 +181,7 @@ then
  echo "YES"
 else
  echo "NO"
- echo "ERROR: Header files for required library 'libgsl' could not be found."
+ echo "ERROR: Header files for required library 'libgsl' could not be found." >&2
  exit
 fi
 
@@ -189,12 +189,12 @@ fi
 
 echo $ECHO_N "Checking for libxml2-dev       ............. $ECHO_C"
 whichout=`which xml2-config 2> /dev/null`
-if [ "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ] ; then whichout="" ; fi
-if [ "$whichout" != "" ] ; then
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
  echo "YES"
 else
  echo "NO"
- echo "ERROR: Header files for required library 'libxml2' could not be found."
+ echo "ERROR: Header files for required library 'libxml2' could not be found." >&2
  exit
 fi
 
@@ -206,7 +206,7 @@ then
  echo "YES"
 else
  echo "NO"
- echo "ERROR: Header files for required library 'libjpeg' could not be found."
+ echo "ERROR: Header files for required library 'libjpeg' could not be found." >&2
  exit
 fi
 

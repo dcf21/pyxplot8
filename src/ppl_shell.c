@@ -60,7 +60,7 @@ void InteractiveSession()
   int   linenumber = 1;
   char *line_ptr;
 
-  ppl_log("Starting an interactive session.");
+  if (DEBUG) ppl_log("Starting an interactive session.");
 
   // Set up SIGINT handler
   if (sigsetjmp(sigjmp_ToInteractive, 1) == 0)
