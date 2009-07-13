@@ -60,7 +60,7 @@ int               settings_palette_current[PALETTE_LENGTH];
 
 Dict             *settings_filters;
 
-void ppl_settings_term_init()
+void ppl_settings_makedefault()
  {
   FILE  *LocalePipe;
   int    Nchars,i;
@@ -171,7 +171,7 @@ void ppl_settings_term_init()
   settings_graph_default.Tmin.real    = 0.0;
   settings_graph_default.Tmax.real    = 1.0;
   ppl_units_zero(&(settings_graph_default.width));
-  settings_graph_default.width.real   = 0.0;
+  settings_graph_default.width.real   = 0.08; // 8cm
   settings_graph_default.width.dimensionless = 0; settings_graph_default.width.exponent[UNIT_LENGTH] = 1;
 
   // Default Axis Settings, used whenever a new axis is created
@@ -285,6 +285,18 @@ void ppl_settings_term_init()
       if (DEBUG) ppl_log("$PAPERSIZE returned an unrecognised paper size."); 
      }
    }
+
+  // Copy Default Settings to Current Settings
+  settings_term_current  = settings_term_default;
+  settings_graph_current = settings_graph_default;
+  for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+  return;
+ }
+
+void ppl_settings_readconfig()
+ {
+  int    i;
+  char   ConfigFname[FNAME_LENGTH];
 
   sprintf(ConfigFname, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplotrc");
   ReadConfigFile(ConfigFname);

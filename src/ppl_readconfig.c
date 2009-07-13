@@ -36,6 +36,8 @@
 #include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_papersize.h"
+#include "ppl_parser.h"
+#include "ppl_setshow.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_userspace.h"
@@ -66,6 +68,7 @@ void ReadConfigFile(char *ConfigFname)
   char  linebuffer[LSTR_LENGTH], setkey[LSTR_LENGTH], setvalue[LSTR_LENGTH], ColourName[SSTR_LENGTH], *StringScan;
   char  errtext[LSTR_LENGTH], setstring[LSTR_LENGTH];
   value setnumeric;
+  Dict *scriptcmd;
   FILE *infile;
   int   state=-1;
   int   linecounter=0;
@@ -94,6 +97,8 @@ void ReadConfigFile(char *ConfigFname)
     else if (strcmp(linebuffer, "[variables]")==0) {state=5; continue;}
     else if (strcmp(linebuffer, "[functions]")==0) {state=6; continue;}
     else if (strcmp(linebuffer, "[units]"    )==0) {state=7; continue;}
+    else if (strcmp(linebuffer, "[filters]"  )==0) {state=8; continue;}
+    else if (strcmp(linebuffer, "[script]"   )==0) {state=9; continue;}
 
     _ReadConfig_FetchKey  (linebuffer, setkey  );
     _ReadConfig_FetchValue(linebuffer, setvalue);
@@ -437,6 +442,32 @@ void ReadConfigFile(char *ConfigFname)
         ppl_unit_database[ppl_unit_pos].multiplier = setnumeric.real;
         ppl_unit_pos++;
        }
+     }
+    else if (state == 8) // [filters] section
+     {
+      ppl_units_zero(&setnumeric);
+      setnumeric.string = setvalue;
+      DictAppendValue(settings_filters,setkey,setnumeric);
+     }
+    else if (state == 9) // [script] section
+     {
+      settings_term_current  = settings_term_default; // Copy settings for directive_set()
+      settings_graph_current = settings_graph_default;
+      for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+      ppl_error_setstreaminfo(linecounter, "configuration file");
+      scriptcmd = parse(linebuffer);
+      if (scriptcmd != NULL)
+       {
+        DictLookup(scriptcmd,"directive",NULL,(void **)(&StringScan));
+        if (strcmp(StringScan,"set_error")==0) { sprintf(temp_err_string, "Unrecognised set command."); ppl_error(temp_err_string); continue; }
+        if (strcmp(StringScan,"set")!=0) { sprintf(temp_err_string, "Only set commands are allowed in scripts in configuration files."); ppl_error(temp_err_string); continue; }
+        DictLookup(scriptcmd,"editno",NULL,(void **)(&StringScan));
+        if (StringScan != NULL) { sprintf(temp_err_string, "Item specifiers are not allowed in set commands in scripts in configuration files."); ppl_error(temp_err_string); continue; }
+        directive_set(scriptcmd);
+       }
+      settings_term_default  = settings_term_current; // Copy changed settings into defaults
+      settings_graph_default = settings_graph_current;
+      for (i=0; i<PALETTE_LENGTH; i++) settings_palette_default[i] = settings_palette_current[i];
      }
     else
      {

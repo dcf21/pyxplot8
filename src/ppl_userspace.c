@@ -180,7 +180,8 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   NeedToStoreNan = 0;
   while (OldFuncIter != NULL)
    {
-    if ((OldFuncIter->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncIter->FunctionType==PPL_USERSPACE_UNIT)) { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
+    if ((OldFuncIter->FunctionType==PPL_USERSPACE_SYSTEM)||(OldFuncIter->FunctionType==PPL_USERSPACE_STRFUNC)||(OldFuncIter->FunctionType==PPL_USERSPACE_UNIT))
+        { *status=1 ; strcpy(errtext, "Attempt to redefine a core system function"); return; }
     supersede = 0;
     if ((supersede==0) && (OldFuncIter->FunctionType!=PPL_USERSPACE_USERDEF)) supersede=1; // Do not splice user-defined functions with splines
 
@@ -339,11 +340,14 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
   int  outpos   = 0;
   value *VarData = NULL;
   int  pos2, CommaPositions[MAX_STR_FORMAT_ITEMS], NFormatItems;
-  int  i,j,k,l,ArgCount,RequiredArgs;
+  int  i,j,k,l,NArgs,ArgCount,RequiredArgs;
   char AllowedFormats[] = "cdieEfgGosSxX%"; // These tokens are allowed after a % format specifier
 
+  FunctionDescriptor *FuncDefn = NULL;
+  value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
+
   int    arg1i, arg2i; // Integers for passing to sprintf
-  value  arg1v, arg2v; // Doubles (well, actually values with units) for passing to sprintf
+  value  arg1v, arg2v, argtemp; // Doubles (well, actually values with units) for passing to sprintf
   struct {double d,d2; int i,i2; char *s; unsigned int u,u2; value v; } argf; // We pass this lump of memory to sprintf
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded."); return; }
@@ -352,17 +356,67 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
 
   if ((in[pos]!='\'') && (in[pos]!='\"')) // If quoted string doesn't start with quote, it must be a string variable name
    {
-    while ((in[pos]>' ') && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
+    while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
-    if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name."); return; } // Have we used up as many characters as we were told we had to?
-    DictLookup(_ppl_UserSpace_Vars, FormatString, NULL, (void **)&VarData); // Global variables
-    if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start; sprintf(errtext, "No such variable, '%s'.", FormatString); return; }
-    if (VarData->string == NULL) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected."); return; }
-    *errpos = -1;
-    if ((end!=NULL)&&(*end<0)) *end=pos;
-    strcpy(out, VarData->string);
-    return;
+    if (in[pos]=='(') // We have a function
+     {
+      DictLookup(_ppl_UserSpace_Funcs, FormatString, NULL, (void **)&FuncDefn); // Look up in database of function definitions
+      if (FuncDefn == NULL) { *errpos = start; sprintf(errtext, "No such function, '%s'.", FormatString); return; }
+      if (FuncDefn->FunctionType != PPL_USERSPACE_STRFUNC) { *errpos = start; sprintf(errtext, "This function returns a numeric result; a string function was expected."); return; }
+      NArgs = FuncDefn->NumberArguments;
+      pos++;
+      for (k=0; k<NArgs; k++) // Now collect together numeric arguments
+       {
+        if (k+2 >= ALGEBRA_MAXITEMS) { *errpos = pos; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+        while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
+        if (in[pos]==')') { *errpos = pos; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
+        j=-1;
+        ppl_EvaluateAlgebra(in+pos, ResultBuffer+k+2, 0, &j, errpos, errtext, RecursionDepth+1);
+        if (*errpos >= 0) { (*errpos) += pos; return; }
+        pos+=j;
+        while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
+        if (k < NArgs-1)
+         {
+          if (in[pos] != ',')
+           {
+            *errpos = pos;
+            if (in[pos] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
+            else               strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+            return;
+           } else { pos++; }
+         }
+       }
+      if (in[pos] != ')') // Check that we have closing bracket
+       {
+        (*errpos) = pos;
+        if (in[pos] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
+        else               strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+        return;
+       } else { pos++; }
+      if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; } // Have we used up as many characters as we were told we had to?
+      j=0;
+      ResultBuffer[0].string = NULL;
+      if      (NArgs==0) ((void(*)(value*,                            int*,char*))FuncDefn->FunctionPtr)(                                                            ResultBuffer,&j,errtext);
+      else if (NArgs==1) ((void(*)(value*,value*,                     int*,char*))FuncDefn->FunctionPtr)(                                             ResultBuffer+2,ResultBuffer,&j,errtext);
+      else if (NArgs==2) ((void(*)(value*,value*,value*,              int*,char*))FuncDefn->FunctionPtr)(                              ResultBuffer+2,ResultBuffer+3,ResultBuffer,&j,errtext);
+      else if (NArgs==3) ((void(*)(value*,value*,value*,value*,       int*,char*))FuncDefn->FunctionPtr)(               ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer,&j,errtext);
+      else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,int*,char*))FuncDefn->FunctionPtr)(ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer+5,ResultBuffer,&j,errtext);
+      if (j>0) { *errpos = start; return; }
+      strcpy(out, ResultBuffer[0].string);
+      return;
+     }
+    else
+     {
+      if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name."); return; } // Have we used up as many characters as we were told we had to?
+      DictLookup(_ppl_UserSpace_Vars, FormatString, NULL, (void **)&VarData); // Look up in database of variable definitions
+      if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start; sprintf(errtext, "No such variable, '%s'.", FormatString); return; }
+      if (VarData->string == NULL) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected."); return; }
+      *errpos = -1;
+      if ((end!=NULL)&&(*end<0)) *end=pos;
+      strcpy(out, VarData->string);
+      return;
+     }
    }
 
   // We have a quoted string
@@ -445,9 +499,16 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
       ArgCount += (RequiredArgs-1); // Fastforward ArgCount to point at the number or string argument that we're actually going to substitute
       if ((AllowedFormats[l]=='c') || (AllowedFormats[l]=='s') || (AllowedFormats[l]=='S'))
        {
-        ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
-        if (*errpos>=0) { *errpos += pos; return; }
-        argf.s = FormatArg;
+        ppl_EvaluateAlgebra(in+pos , &argtemp, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
+        if (*errpos>=0)
+         { 
+          *errpos = -1;
+          ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
+          if (*errpos>=0) { *errpos += pos; return; } // Error from attempt at string evaluation should prevail
+          argf.s = FormatArg;
+         } else {
+          argf.s = ppl_units_NumericDisplay(&argtemp, 0, 0);
+         }
         if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s); // Print a string variable
         if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.s);
         if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.s);
@@ -674,6 +735,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
         (*errpos) = start+i;
         if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
         else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+        return;
+       }
+      if (FunctionType == PPL_USERSPACE_STRFUNC)
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+        (*errpos) = start+i;
+        strcpy(errtext,"Type error: This function returns a string where a numeric result was expected.");
         return;
        }
       if (FunctionType == PPL_USERSPACE_SYSTEM)

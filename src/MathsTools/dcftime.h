@@ -27,8 +27,11 @@
 void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *in5, value *in6, value *output, int *status, char *errtext);
 void dcftime_now(value *output, int *status, char *errtext);
 void dcftime_year(value *in, value *output, int *status, char *errtext);
-void dcftime_month(value *in, value *output, int *status, char *errtext);
-void dcftime_day(value *in, value *output, int *status, char *errtext);
+void dcftime_monthnum(value *in, value *output, int *status, char *errtext);
+void dcftime_monthname(value *in, value *in2, value *output, int *status, char *errtext);
+void dcftime_daymonth(value *in, value *output, int *status, char *errtext);
+void dcftime_dayweeknum(value *in, value *output, int *status, char *errtext);
+void dcftime_dayweekname(value *in, value *in2, value *output, int *status, char *errtext);
 void dcftime_hour(value *in, value *output, int *status, char *errtext);
 void dcftime_min(value *in, value *output, int *status, char *errtext);
 void dcftime_sec(value *in, value *output, int *status, char *errtext);
@@ -38,5 +41,6 @@ void dcftimediff_days(value *in1, value *in2, value *in3, value *output, int *st
 void dcftimediff_hours(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcftimediff_minutes(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcftimediff_seconds(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
+void dcftime_ordinal(value *in, value *output, int *status, char *errtext);
 
 #endif

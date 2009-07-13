@@ -28,6 +28,8 @@
 #include <math.h>
 #include <time.h>
 
+#include "ListTools/lt_memory.h"
+
 #include "ppl_settings.h"
 #include "ppl_units.h"
 
@@ -151,9 +153,9 @@ void dcftime_year(value *in, value *output, int *status, char *errtext)
   output->real = (double)i;
  }
 
-void dcftime_month(value *in, value *output, int *status, char *errtext)
+void dcftime_monthnum(value *in, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "time_month(JD)";
+  char *FunctionDescription = "time_monthnum(JD)";
   int i;
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
@@ -163,9 +165,39 @@ void dcftime_month(value *in, value *output, int *status, char *errtext)
   output->real = (double)i;
  }
 
-void dcftime_day(value *in, value *output, int *status, char *errtext)
+void dcftime_monthname(value *in1, value *in2, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "time_day(JD)";
+  char *FunctionDescription = "time_monthname(JD,length)";
+  int i;
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  CHECK_NEEDINT(in2, "function's second input (length) must be an integer");
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { InvJulianDate(in1->real, NULL, &i, NULL, NULL, NULL, NULL); }
+  ENDIF
+  output->string = lt_malloc(16);
+  output->string[0] = '\0';
+  switch (i)
+   {
+    case  1: strcpy(output->string, "January");   break;
+    case  2: strcpy(output->string, "February");  break;
+    case  3: strcpy(output->string, "March");     break;
+    case  4: strcpy(output->string, "April");     break;
+    case  5: strcpy(output->string, "May");       break;
+    case  6: strcpy(output->string, "June");      break;
+    case  7: strcpy(output->string, "July");      break;
+    case  8: strcpy(output->string, "August");    break;
+    case  9: strcpy(output->string, "September"); break;
+    case 10: strcpy(output->string, "October");   break;
+    case 11: strcpy(output->string, "November");  break;
+    case 12: strcpy(output->string, "December");  break;
+   }
+  if ((in2->real>0) && (in2->real<15)) output->string[(int)in2->real] = '\0';
+ }
+
+void dcftime_daymonth(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "time_daymonth(JD)";
   int i;
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
@@ -173,6 +205,41 @@ void dcftime_day(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, &i, NULL, NULL, NULL); }
   ENDIF
   output->real = (double)i;
+ }
+
+void dcftime_dayweeknum(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "time_dayweeknum(JD)";
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = floor( fmod(in->real+0.5 , 7) + 1); }
+  ENDIF
+ }
+
+void dcftime_dayweekname(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "time_dayweekname(JD,length)";
+  int i;
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  CHECK_NEEDINT(in2, "function's second input (length) must be an integer");
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { i = floor( fmod(in1->real+0.5 , 7) ); }
+  ENDIF
+  output->string = lt_malloc(16);
+  output->string[0] = '\0';
+  switch (i)
+   {
+    case  0: strcpy(output->string, "Monday");    break;
+    case  1: strcpy(output->string, "Tuesday");   break;
+    case  2: strcpy(output->string, "Wednesday"); break;
+    case  3: strcpy(output->string, "Thursday");  break;
+    case  4: strcpy(output->string, "Friday");    break;
+    case  5: strcpy(output->string, "Saturday");  break;
+    case  6: strcpy(output->string, "Sunday");    break;
+   }
+  if ((in2->real>0) && (in2->real<15)) output->string[(int)in2->real] = '\0';
  }
 
 void dcftime_hour(value *in, value *output, int *status, char *errtext)
@@ -287,5 +354,26 @@ void dcftimediff_seconds(value *in1, value *in2, value *in3, value *output, int 
   ELSE_REAL   { output->real = floor((in2->real - in1->real)*1440); }
   ENDIF
   if (!ppl_units_DblEqual(in3->real, 0)) output->real = fmod(output->real, 60);
+ }
+
+void dcftime_ordinal(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "ordinal(number)";
+  int i;
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  CHECK_NEEDINT(in, "function's input must be an integer");
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+    i = (int)in->real;
+    output->string = lt_malloc(16);
+    if      (((i%100)<21) && ((i%100)>3)) sprintf(output->string, "%dth", i);
+    else if  ((i% 10)==1)                 sprintf(output->string, "%dst", i);
+    else if  ((i% 10)==2)                 sprintf(output->string, "%dnd", i);
+    else if  ((i% 10)==3)                 sprintf(output->string, "%drd", i);
+    else                                  sprintf(output->string, "%dth", i);
+   }
+  ENDIF
  }
 

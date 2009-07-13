@@ -113,6 +113,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_max           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_max         , NULL, NULL, NULL, NULL, NULL, NULL, "max(x,y) returns the greater of the two values x and y"};
   FunctionDescriptor fd_min           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_min         , NULL, NULL, NULL, NULL, NULL, NULL, "min(x,y) returns the lesser of the two values x and y"};
   FunctionDescriptor fd_mod           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_mod         , NULL, NULL, NULL, NULL, NULL, NULL, "mod(x,y) returns the remainder of x/y"};
+  FunctionDescriptor fd_ordinal       = { PPL_USERSPACE_STRFUNC, 0 , 1 , (void *)&dcftime_ordinal     , NULL, NULL, NULL, NULL, NULL, NULL, "ordinal(x) converts the integer x into an ordinal number string, e.g. '1st', '2nd', etc"};
   FunctionDescriptor fd_poissonPDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonPDF  , NULL, NULL, NULL, NULL, NULL, NULL, "poissonPDF(x,mu) returns the probability of getting x from a Poisson distribution with mean mu"};
   FunctionDescriptor fd_poissonCDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonCDF  , NULL, NULL, NULL, NULL, NULL, NULL, "poissonCDF(x,mu) returns the probability of getting <= x from a Poisson distribution with mean mu"};
   FunctionDescriptor fd_pow           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_pow         , NULL, NULL, NULL, NULL, NULL, NULL, "pow(x,y) returns x to the power of y"};
@@ -134,8 +135,11 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
   FunctionDescriptor fd_time_now      = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcftime_now         , NULL, NULL, NULL, NULL, NULL, NULL, "time_now() returns the present Julian Date"};
   FunctionDescriptor fd_time_year     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_year        , NULL, NULL, NULL, NULL, NULL, NULL, "time_year(JD) returns the calendar year corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_month    = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_month       , NULL, NULL, NULL, NULL, NULL, NULL, "time_month(JD) returns the calendar month corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_day      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_day         , NULL, NULL, NULL, NULL, NULL, NULL, "time_day(JD) returns the day of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_monthnum = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_monthnum    , NULL, NULL, NULL, NULL, NULL, NULL, "time_monthnum(JD) returns the number (1-12) of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_monthname= { PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_monthname   , NULL, NULL, NULL, NULL, NULL, NULL, "time_monthname(JD,length) returns the name, truncated to length characters, of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_daymonth = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_daymonth    , NULL, NULL, NULL, NULL, NULL, NULL, "time_daymonth(JD) returns the day of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_dayweeknum={ PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_dayweeknum  , NULL, NULL, NULL, NULL, NULL, NULL, "time_dayweeknum(JD) returns the number (1=Monday - 7=Sunday) of the day of the week corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_dayweekname={PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_dayweekname , NULL, NULL, NULL, NULL, NULL, NULL, "time_dayweekname(JD,length) returns the name, truncated to length characters, of the day of the week corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_hour     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_hour        , NULL, NULL, NULL, NULL, NULL, NULL, "time_hour(JD) returns the hour of the day corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_min      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_min         , NULL, NULL, NULL, NULL, NULL, NULL, "time_min(JD) returns the minutes within the hour corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_sec      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "time_sec(JD) returns the seconds within the minute corresponding to the Julian Date JD"};
@@ -323,6 +327,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "max"            , (void *)&fd_max         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "min"            , (void *)&fd_min         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "mod"            , (void *)&fd_mod         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ordinal"        , (void *)&fd_ordinal     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "poissonPDF"     , (void *)&fd_poissonPDF  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "poissonCDF"     , (void *)&fd_poissonCDF  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "pow"            , (void *)&fd_pow         , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -344,8 +349,11 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_juliandate", (void *)&fd_time_juliandate, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_now"       , (void *)&fd_time_now       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_year"      , (void *)&fd_time_year      , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_month"     , (void *)&fd_time_month     , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_day"       , (void *)&fd_time_day       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_monthnum"  , (void *)&fd_time_monthnum  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_monthname" , (void *)&fd_time_monthname , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_daymonth"  , (void *)&fd_time_daymonth  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_dayweeknum", (void *)&fd_time_dayweeknum, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_dayweekname",(void *)&fd_time_dayweekname,sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_hour"      , (void *)&fd_time_hour      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_min"       , (void *)&fd_time_min       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_sec"       , (void *)&fd_time_sec       , sizeof(FunctionDescriptor), DATATYPE_VOID);

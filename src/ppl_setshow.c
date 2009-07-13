@@ -111,6 +111,10 @@ void directive_set(Dict *command)
   Dict   *tempdict;
   ListIterator *listiter;
   with_words *tempstyle;
+  settings_graph *sg;
+
+  sg = &settings_graph_current;
+
   DictLookup(command,"directive",NULL,(void **)(&directive));
   DictLookup(command,"set_option",NULL,(void **)(&setoption));
 
@@ -140,48 +144,48 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"bar")==0)) /* set bar */
    {
     DictLookup(command,"bar_size",NULL,(void **)&tempdbl);
-    settings_graph_current.bar = *tempdbl;
+    sg->bar = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"bar")==0)) /* unset bar */
    {
-    settings_graph_current.bar = settings_graph_default.bar;
+    sg->bar = settings_graph_default.bar;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
    {
     DictLookup(command,"bin_origin",NULL,(void **)&tempdbl);
-    settings_graph_current.BinOrigin = *tempdbl;
+    sg->BinOrigin = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binorigin")==0)) /* unset binorigin */
    {
-    settings_graph_current.BinOrigin = settings_graph_default.BinOrigin;
+    sg->BinOrigin = settings_graph_default.BinOrigin;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
     DictLookup(command,"bin_width",NULL,(void **)&tempdbl);
     if (*tempdbl <= 0.0) { ppl_error("Error: width of histogram bins must be greater than zero."); return; }
-    settings_graph_current.BinWidth = *tempdbl;
+    sg->BinWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
    {
-    settings_graph_current.BinWidth = settings_graph_default.BinWidth;
+    sg->BinWidth = settings_graph_default.BinWidth;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
    {
     DictLookup(command,"box_from",NULL,(void **)&tempdbl);
-    settings_graph_current.BoxFrom = *tempdbl;
+    sg->BoxFrom = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxfrom")==0)) /* unset boxfrom */
    {
-    settings_graph_current.BoxFrom = settings_graph_default.BoxFrom;
+    sg->BoxFrom = settings_graph_default.BoxFrom;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxwidth")==0)) /* set boxwidth */
    {
     DictLookup(command,"box_width",NULL,(void **)&tempdbl);
-    settings_graph_current.BoxWidth = *tempdbl;
+    sg->BoxWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxwidth")==0)) /* unset boxwidth */
    {
-    settings_graph_current.BoxWidth = settings_graph_default.BoxWidth;
+    sg->BoxWidth = settings_graph_default.BoxWidth;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"calendar")==0)) /* set calendar */
    {
@@ -236,18 +240,18 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"fontsize",NULL,(void **)&tempdbl);
     if (*tempdbl <= 0.0) { ppl_error("Error: font sizes are not allowed to be less than or equal to zero."); return; }
-    settings_graph_current.FontSize = *tempdbl;
+    sg->FontSize = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"fontsize")==0)) /* unset fontsize */
    {
-    settings_graph_current.FontSize = settings_graph_default.FontSize;
+    sg->FontSize = settings_graph_default.FontSize;
    }
   else if ((strcmp(setoption,"axescolour")==0) || (strcmp(setoption,"gridmajcolour")==0) || (strcmp(setoption,"gridmincolour")==0) || (strcmp(setoption,"textcolour")==0)) /* set axescolour | set gridmajcolour | set gridmincolour */
    {
-    if (strcmp(setoption,"axescolour"   )==0) { tempint = &settings_graph_current.AxesColour    ; tempint2 = &settings_graph_default.AxesColour;    }
-    if (strcmp(setoption,"gridmajcolour")==0) { tempint = &settings_graph_current.GridMajColour ; tempint2 = &settings_graph_default.GridMajColour; }
-    if (strcmp(setoption,"gridmincolour")==0) { tempint = &settings_graph_current.GridMinColour ; tempint2 = &settings_graph_default.GridMinColour; }
-    if (strcmp(setoption,"textcolour"   )==0) { tempint = &settings_graph_current.TextColour    ; tempint2 = &settings_graph_default.TextColour;    }
+    if (strcmp(setoption,"axescolour"   )==0) { tempint = &sg->AxesColour    ; tempint2 = &settings_graph_default.AxesColour;    }
+    if (strcmp(setoption,"gridmajcolour")==0) { tempint = &sg->GridMajColour ; tempint2 = &settings_graph_default.GridMajColour; }
+    if (strcmp(setoption,"gridmincolour")==0) { tempint = &sg->GridMinColour ; tempint2 = &settings_graph_default.GridMinColour; }
+    if (strcmp(setoption,"textcolour"   )==0) { tempint = &sg->TextColour    ; tempint2 = &settings_graph_default.TextColour;    }
 
     if (strcmp(directive,"unset")==0)
      {
@@ -279,30 +283,30 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"grid")==0)) /* unset grid */
    {
-    settings_graph_current.grid = settings_graph_default.grid;
-    for (i=0; i<MAX_AXES; i++) settings_graph_current.GridAxisX[i] = settings_graph_default.GridAxisX[i];
-    for (i=0; i<MAX_AXES; i++) settings_graph_current.GridAxisY[i] = settings_graph_default.GridAxisY[i];
-    for (i=0; i<MAX_AXES; i++) settings_graph_current.GridAxisZ[i] = settings_graph_default.GridAxisZ[i];
+    sg->grid = settings_graph_default.grid;
+    for (i=0; i<MAX_AXES; i++) sg->GridAxisX[i] = settings_graph_default.GridAxisX[i];
+    for (i=0; i<MAX_AXES; i++) sg->GridAxisY[i] = settings_graph_default.GridAxisY[i];
+    for (i=0; i<MAX_AXES; i++) sg->GridAxisZ[i] = settings_graph_default.GridAxisZ[i];
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"key")==0)) /* set key */
    {
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"key")==0)) /* unset key */
    {
-    settings_graph_current.key     = settings_graph_default.key;
-    settings_graph_current.KeyPos  = settings_graph_default.KeyPos;
-    settings_graph_current.KeyXOff = settings_graph_default.KeyXOff;
-    settings_graph_current.KeyYOff = settings_graph_default.KeyYOff;
+    sg->key     = settings_graph_default.key;
+    sg->KeyPos  = settings_graph_default.KeyPos;
+    sg->KeyXOff = settings_graph_default.KeyXOff;
+    sg->KeyYOff = settings_graph_default.KeyYOff;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
    {
     DictLookup(command,"key_columns",NULL,(void **)&tempint);
     if (*tempint <= 0.0) { ppl_error("Error: keys cannot have fewer than one columns."); return; }
-    settings_graph_current.KeyColumns = *tempint;
+    sg->KeyColumns = *tempint;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"keycolumns")==0)) /* unset keycolumns */
    {
-    settings_graph_current.KeyColumns = settings_graph_default.KeyColumns;
+    sg->KeyColumns = settings_graph_default.KeyColumns;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"label")==0)) /* set label */
    {
@@ -317,11 +321,11 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
     if (*tempdbl <= 0.0) { ppl_error("Error: line widths are not allowed to be less than or equal to zero."); return; }
-    settings_graph_current.LineWidth = *tempdbl;
+    sg->LineWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
    {
-    settings_graph_current.LineWidth = settings_graph_default.LineWidth;
+    sg->LineWidth = settings_graph_default.LineWidth;
    }
   else if ((strcmp(setoption,"logscale")==0))         /* set logscale */
    {
@@ -345,7 +349,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nokey")==0)) /* set nokey */
    {
-    settings_graph_current.key = SW_ONOFF_OFF;
+    sg->key = SW_ONOFF_OFF;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"label")==0)) /* set nolabel | unset label */
    {
@@ -409,24 +413,24 @@ void directive_set(Dict *command)
         }
      }
     else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
-    settings_graph_current.OriginX.real = tempval ->real;
-    settings_graph_current.OriginY.real = tempval2->real;
+    sg->OriginX.real = tempval ->real;
+    sg->OriginY.real = tempval2->real;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"origin")==0)) /* unset origin */
    {
-    settings_graph_current.OriginX = settings_graph_default.OriginX;
-    settings_graph_current.OriginY = settings_graph_default.OriginY;
+    sg->OriginX = settings_graph_default.OriginX;
+    sg->OriginY = settings_graph_default.OriginY;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"output")==0)) /* set output */
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
     strncpy(settings_term_current.output, tempstr, FNAME_LENGTH-4);
-    settings_graph_current.title[FNAME_LENGTH-4]='\0';
+    sg->title[FNAME_LENGTH-4]='\0';
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"output")==0)) /* unset output */
    {
     strncpy(settings_term_current.output, settings_term_default.output, FNAME_LENGTH-4);
-    settings_graph_current.title[FNAME_LENGTH-4]='\0';
+    sg->title[FNAME_LENGTH-4]='\0';
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"palette")==0)) /* set palette */
    {
@@ -463,21 +467,21 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"pointlinewidth",NULL,(void **)&tempdbl);
     if (*tempdbl <= 0.0) { ppl_error("Error: point line widths are not allowed to be less than or equal to zero."); return; }
-    settings_graph_current.PointLineWidth = *tempdbl;
+    sg->PointLineWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
    {
-    settings_graph_current.PointLineWidth = settings_graph_default.PointLineWidth;
+    sg->PointLineWidth = settings_graph_default.PointLineWidth;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
    {
     DictLookup(command,"pointsize",NULL,(void **)&tempdbl);
     if (*tempdbl <= 0.0) { ppl_error("Error: point sizes are not allowed to be less than or equal to zero."); return; }
-    settings_graph_current.PointSize = *tempdbl;
+    sg->PointSize = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
    {
-    settings_graph_current.PointSize = settings_graph_default.PointSize;
+    sg->PointSize = settings_graph_default.PointSize;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"preamble")==0)) /* set preamble */
    {
@@ -494,26 +498,26 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"samples",NULL,(void **)&tempint);
     if (*tempint <= 2.0) { ppl_error("Error: graphs cannot be constucted based on fewer than two samples."); return; }
-    settings_graph_current.samples = *tempint;
+    sg->samples = *tempint;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
    {
-    settings_graph_current.samples = settings_graph_default.samples;
+    sg->samples = settings_graph_default.samples;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"trange")==0)) /* set trange */
    {
     DictLookup(command,"min",NULL,(void **)&tempval);
     DictLookup(command,"max",NULL,(void **)&tempval2);
-    if (tempval == NULL) tempval = &settings_graph_current.Tmin;
-    if (tempval2== NULL) tempval2= &settings_graph_current.Tmax;
+    if (tempval == NULL) tempval = &sg->Tmin;
+    if (tempval2== NULL) tempval2= &sg->Tmax;
     if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error("Error: Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
-    settings_graph_current.Tmin = *tempval;
-    settings_graph_current.Tmax = *tempval2;
+    sg->Tmin = *tempval;
+    sg->Tmax = *tempval2;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"trange")==0)) /* unset trange */
    {
-    settings_graph_current.Tmin = settings_graph_default.Tmin;
-    settings_graph_current.Tmax = settings_graph_default.Tmax;
+    sg->Tmin = settings_graph_default.Tmin;
+    sg->Tmax = settings_graph_default.Tmax;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
    {
@@ -531,36 +535,36 @@ void directive_set(Dict *command)
           }
        }
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
-      settings_graph_current.width.real = tempval->real;
+      sg->width.real = tempval->real;
      }
     if (DictContains(command,"ratio"))
      {
       DictLookup(command,"ratio",NULL,(void **)&tempdbl);
       if ((fabs(*tempdbl) < 1e-4) || (fabs(*tempdbl) > 1e4)) { ppl_error("Error: The requested aspect ratios for graphs must be in the range 0.001 to 10000."); return; }
-      settings_graph_current.aspect = *tempdbl;
-      settings_graph_current.AutoAspect = SW_ONOFF_OFF;
+      sg->aspect = *tempdbl;
+      sg->AutoAspect = SW_ONOFF_OFF;
      }
     if (DictContains(command,"square"))
      {
-      settings_graph_current.aspect = 1.0;
-      settings_graph_current.AutoAspect = SW_ONOFF_OFF;
+      sg->aspect = 1.0;
+      sg->AutoAspect = SW_ONOFF_OFF;
      }
     if (DictContains(command,"noratio"))
      {
-      settings_graph_current.AutoAspect = SW_ONOFF_ON;
+      sg->AutoAspect = SW_ONOFF_ON;
      }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"size")==0)) /* unset size */
    {
-    settings_graph_current.width.real   = settings_graph_default.width.real;
-    settings_graph_current.aspect       = settings_graph_default.aspect;
-    settings_graph_current.AutoAspect   = settings_graph_default.AutoAspect;
+    sg->width.real   = settings_graph_default.width.real;
+    sg->aspect       = settings_graph_default.aspect;
+    sg->AutoAspect   = settings_graph_default.AutoAspect;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style */
    {
     DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
-    if (tempstr[0]=='d') tempstyle = &settings_graph_current.DataStyle;
-    else                 tempstyle = &settings_graph_current.FuncStyle;
+    if (tempstr[0]=='d') tempstyle = &sg->DataStyle;
+    else                 tempstyle = &sg->FuncStyle;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"terminal")==0)) /* set terminal */
    {
@@ -591,23 +595,23 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"texthalign")==0)) /* set texthalign */
    {
-    if (DictContains(command,"left"  )) settings_graph_current.TextHAlign = SW_HALIGN_LEFT;
-    if (DictContains(command,"centre")) settings_graph_current.TextHAlign = SW_HALIGN_CENT;
-    if (DictContains(command,"right" )) settings_graph_current.TextHAlign = SW_HALIGN_RIGHT;
+    if (DictContains(command,"left"  )) sg->TextHAlign = SW_HALIGN_LEFT;
+    if (DictContains(command,"centre")) sg->TextHAlign = SW_HALIGN_CENT;
+    if (DictContains(command,"right" )) sg->TextHAlign = SW_HALIGN_RIGHT;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"texthalign")==0)) /* unset texthalign */
    {
-    settings_graph_default.TextHAlign = settings_graph_current.TextHAlign;
+    settings_graph_default.TextHAlign = sg->TextHAlign;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"textvalign")==0)) /* set textvalign */
    {
-    if (DictContains(command,"top"   )) settings_graph_current.TextVAlign = SW_VALIGN_TOP;
-    if (DictContains(command,"centre")) settings_graph_current.TextVAlign = SW_VALIGN_CENT;
-    if (DictContains(command,"bottom")) settings_graph_current.TextVAlign = SW_VALIGN_BOT;
+    if (DictContains(command,"top"   )) sg->TextVAlign = SW_VALIGN_TOP;
+    if (DictContains(command,"centre")) sg->TextVAlign = SW_VALIGN_CENT;
+    if (DictContains(command,"bottom")) sg->TextVAlign = SW_VALIGN_BOT;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"textvalign")==0)) /* unset textvalign */
    {
-    settings_graph_default.TextVAlign = settings_graph_current.TextVAlign;
+    settings_graph_default.TextVAlign = sg->TextVAlign;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"tics")==0)) /* set tics */
    {
@@ -624,8 +628,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"title")==0)) /* set title */
    {
     DictLookup(command,"title",NULL,(void **)&tempstr);
-    strncpy(settings_graph_current.title, tempstr, FNAME_LENGTH-4);
-    settings_graph_current.title[FNAME_LENGTH-4]='\0';
+    strncpy(sg->title, tempstr, FNAME_LENGTH-4);
+    sg->title[FNAME_LENGTH-4]='\0';
     DictLookup(command,"x_offset",NULL,(void **)&tempval);
     DictLookup(command,"y_offset",NULL,(void **)&tempval2);
     if (tempval != NULL)
@@ -656,19 +660,19 @@ void directive_set(Dict *command)
        }
       else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
      }
-    if (tempval != NULL) settings_graph_current.TitleXOff.real = tempval ->real;
-    if (tempval2!= NULL) settings_graph_current.TitleYOff.real = tempval2->real;
+    if (tempval != NULL) sg->TitleXOff.real = tempval ->real;
+    if (tempval2!= NULL) sg->TitleYOff.real = tempval2->real;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notitle")==0)) /* set notitle */
    {
-    strcpy(settings_graph_current.title, "");
+    strcpy(sg->title, "");
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"title")==0)) /* unset title */
    {
-    strncpy(settings_graph_current.title, settings_graph_default.title, FNAME_LENGTH-4);
-    settings_graph_current.title[FNAME_LENGTH-4]='\0';
-    settings_graph_current.TitleXOff = settings_graph_default.TitleXOff;
-    settings_graph_current.TitleYOff = settings_graph_default.TitleYOff;
+    strncpy(sg->title, settings_graph_default.title, FNAME_LENGTH-4);
+    sg->title[FNAME_LENGTH-4]='\0';
+    sg->TitleXOff = settings_graph_default.TitleXOff;
+    sg->TitleYOff = settings_graph_default.TitleYOff;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"unit")==0)) /* set unit */
    {
@@ -757,7 +761,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
    {
-    settings_graph_current.width.real = settings_graph_default.width.real;
+    sg->width.real = settings_graph_default.width.real;
    }
   else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
    {

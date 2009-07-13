@@ -77,19 +77,18 @@ int main(int argc, char **argv)
   if (DEBUG) ppl_log("Initialising PyXPlot.");
   lt_MemoryInit(&ppl_fatal, &ppl_log);
   ClearInputSource();
+  ppl_settings_makedefault();
   ppl_units_init();
   ppl_PaperSizeInit();
   ppl_UserSpaceInit();
   ppl_text_init();
-  if (DEBUG) ppl_log("Initialising settings.");
-  ppl_settings_term_init();
+
+  // Turn off GSL's automatic error handler
+  gsl_set_error_handler_off();
 
   // Initialise GNU Readline
   rl_readline_name = "PyXPlot";                          /* Allow conditional parsing of the ~/.inputrc file. */
   rl_attempted_completion_function = ppl_rl_completion;  /* Tell the completer that we want a crack first. */
-
-  // Turn off GSL's automatic error handler
-  gsl_set_error_handler_off();
 
   // Scan commandline options for any switches
   for (i=1; i<argc; i++)
@@ -154,6 +153,10 @@ int main(int argc, char **argv)
   // Set up commandline parser
   if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");
   ppl_commands_read();
+
+  // Initialise settings and read configuration file
+  if (DEBUG) ppl_log("Reading configuration file.");
+  ppl_settings_readconfig();
 
   // Set up SIGINT handler
   if (sigsetjmp(sigjmp_ToMain, 1) == 0)

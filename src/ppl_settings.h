@@ -82,7 +82,8 @@ extern int               settings_palette_current[];
 extern int               settings_palette_default[];
 extern Dict             *settings_filters;
 
-void  ppl_settings_term_init();
+void  ppl_settings_makedefault();
+void  ppl_settings_readconfig();
 #endif
 
 // Functions defined in ppl_readconfig.c
