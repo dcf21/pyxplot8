@@ -409,3 +409,30 @@ char *StrEscapify(char *in, char *out)
   return out;
  }
 
+/* StrWildcardTest(): Test whether test string matches wildcard string */
+
+int StrWildcardTest(char *test, char *wildcard)
+ {
+  int i=0, j, k, mineat=0, maxeat=0;
+
+  while ((wildcard[i]!='\0') && (wildcard[i]!='?') && (wildcard[i]!='*')) if (test[i] != wildcard[i]) { return 0; } else { i++; }
+  if (wildcard[i]=='\0') return (test[i]=='\0');
+
+  j=i;
+  while ((wildcard[j]=='?') || (wildcard[j]=='*'))
+   {
+    if (wildcard[j]=='?') { mineat++; maxeat++; }
+    else                  { maxeat = 10000; }
+    j++;
+   }
+
+  for (k=0; k<mineat; k++) if (test[i++]=='\0') return 0;
+
+  for (k=0; k<maxeat-mineat; k++)
+   {
+    if (StrWildcardTest(test+i,wildcard+j)) return 1;
+    if (test[i++]=='\0') return 0;
+   }
+  return 0;
+ }
+

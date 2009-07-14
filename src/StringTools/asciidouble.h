@@ -43,5 +43,6 @@ void   StrWordWrap              (char *in, char *out, int width);
 void   StrBracketMatch          (char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses);
 int    StrCmpNoCase             (char *a, char *b);
 char  *StrEscapify              (char *in, char *out);
+int    StrWildcardTest          (char *test, char *wildcard);
 #endif
 

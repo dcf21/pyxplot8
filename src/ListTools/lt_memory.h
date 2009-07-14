@@ -24,13 +24,14 @@
 #ifndef _LT_MEMORY_H
 #define _LT_MEMORY_H 1
 
-void  lt_MemoryInit            ( void(*mem_fatal_handler)(char *, int, char *) , void(*mem_log_handler)(char *) );
+void  lt_MemoryInit            ( void(*mem_error_handler)(char *) , void(*mem_log_handler)(char *) );
 void  lt_MemoryStop            ();
 int   lt_DescendIntoNewContext ();
 int   lt_AscendOutOfContext    (int context);
 void _lt_SetMemContext         (int context);
 int   lt_GetMemContext         ();
 void  lt_FreeAll               (int context);
+void  lt_Free                  (int context);
 
 void *lt_malloc                (int size);
 void *lt_malloc_incontext      (int size, int context);
@@ -39,12 +40,15 @@ void *lt_malloc_incontext      (int size, int context);
 
 // Allocate memory in 256kb blocks (262144 bytes)
 #define FM_BLOCKSIZE  262144
-#define FM_BLOCKMAX    65536
+
+// Always align mallocs to 8-byte boundaries; 64-bit processors do double arithmetic twice as fast when word-aligned
+#define SYNCSTEP      8
 
 void  fastmalloc_init   ();
 void  fastmalloc_close  ();
 void *fastmalloc        (int context, int size);
 void  fastmalloc_freeall(int context);
+void  fastmalloc_free   (int context);
 
 #endif
 

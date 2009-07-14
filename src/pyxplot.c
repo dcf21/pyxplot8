@@ -75,12 +75,11 @@ int main(int argc, char **argv)
 
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
-  lt_MemoryInit(&ppl_fatal, &ppl_log);
+  lt_MemoryInit(&ppl_error, &ppl_log);
   ClearInputSource();
-  ppl_settings_makedefault();
   ppl_units_init();
   ppl_PaperSizeInit();
-  ppl_UserSpaceInit();
+  ppl_settings_makedefault();
   ppl_text_init();
 
   // Turn off GSL's automatic error handler
@@ -149,6 +148,9 @@ int main(int argc, char **argv)
   // Launch child process
   if (DEBUG) ppl_log("Launching the Child Support Process.");
   InitialiseCSP();
+
+  // Initialise user variables and functions
+  ppl_UserSpaceInit();
 
   // Set up commandline parser
   if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");

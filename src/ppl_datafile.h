@@ -50,7 +50,7 @@ typedef struct DataTable {
   struct DataBlock *next;
  } DataTable;
 
-void DataFile_read(DataTable *output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
+void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
 
 #endif
 
