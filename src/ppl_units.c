@@ -124,7 +124,7 @@ unsigned char __inline__ ppl_units_DblEqual(double a, double b)
   return 1;
  }
 
-void __inline__ ppl_units_DimCpy(value *o, value *i)
+void __inline__ ppl_units_DimCpy(value *o, const value *i)
  {
   int j;
   o->dimensionless = i->dimensionless;
@@ -132,7 +132,7 @@ void __inline__ ppl_units_DimCpy(value *o, value *i)
   return;
  }
 
-void __inline__ ppl_units_DimInverse(value *o, value *i)
+void __inline__ ppl_units_DimInverse(value *o, const value *i)
  {
   int j;
   o->dimensionless = i->dimensionless;
@@ -140,21 +140,21 @@ void __inline__ ppl_units_DimInverse(value *o, value *i)
   return;
  }
 
-int __inline__ ppl_units_DimEqual(value *a, value *b)
+int __inline__ ppl_units_DimEqual(const value *a, const value *b)
  {
   int j;
   for (j=0; j<UNITS_MAX_BASEUNITS; j++) if (ppl_units_DblEqual(a->exponent[j] , b->exponent[j]) == 0) return 0;
   return 1;
  }
 
-int __inline__ ppl_units_DimEqual2(value *a, unit *b)
+int __inline__ ppl_units_DimEqual2(const value *a, const unit *b)
  {
   int j;
   for (j=0; j<UNITS_MAX_BASEUNITS; j++) if (ppl_units_DblEqual(a->exponent[j] , b->exponent[j]) == 0) return 0;
   return 1;
  }
 
-int __inline__ ppl_units_UnitDimEqual(unit *a, unit *b)
+int __inline__ ppl_units_UnitDimEqual(const unit *a, const unit *b)
  {
   int j;
   for (j=0; j<UNITS_MAX_BASEUNITS; j++) if (ppl_units_DblEqual(a->exponent[j] , b->exponent[j]) == 0) return 0;
@@ -293,7 +293,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
  }
 
 // Main entry point for printing units
-char *ppl_units_GetUnitStr(value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
+char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH], outputC[LSTR_LENGTH];
   char  *output;
@@ -478,7 +478,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
 // ARITHMETIC OPERATIONS ON VALUES
 // -------------------------------
 
-void __inline__ ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   int i;
   double exponent=0;
@@ -541,7 +541,7 @@ void __inline__ ppl_units_pow (value *a, value *b, value *o, int *status, char *
   return;
  }
 
-void __inline__ ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_mult(const value *a, const value *b, value *o, int *status, char *errtext)
  {
   int i;
   double tmp;
@@ -582,7 +582,7 @@ void __inline__ ppl_units_mult(value *a, value *b, value *o, int *status, char *
   return;
  }
 
-void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_div (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   int i;
   double mag, tmp;
@@ -637,7 +637,7 @@ void __inline__ ppl_units_div (value *a, value *b, value *o, int *status, char *
   return;
  }
 
-void __inline__ ppl_units_add (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_add (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   o->real = a->real + b->real;
   if ((o != a) && (o != b)) { ppl_units_DimCpy(o,a); o->imag = 0.0; o->FlagComplex=0; }
@@ -664,7 +664,7 @@ void __inline__ ppl_units_add (value *a, value *b, value *o, int *status, char *
   return;
  }
 
-void __inline__ ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_sub (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   o->real = a->real - b->real;
   if ((o != a) && (o != b)) { ppl_units_DimCpy(o,a); o->imag = 0.0; o->FlagComplex=0; }
@@ -691,7 +691,7 @@ void __inline__ ppl_units_sub (value *a, value *b, value *o, int *status, char *
   return;
  }
 
-void __inline__ ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext)
+void __inline__ ppl_units_mod (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   o->real = a->real - floor(a->real / b->real) * b->real;
   if ((o != a) && (o != b)) { ppl_units_DimCpy(o,a); o->imag = 0.0; o->FlagComplex=0; }

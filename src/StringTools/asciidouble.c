@@ -28,7 +28,7 @@
 
 /* GetFloat(): This gets a float from a string */
 
-double GetFloat(char *str, int *Nchars)
+double GetFloat(const char *str, int *Nchars)
  {
   double accumulator = 0;
   int decimals = 0;
@@ -70,7 +70,7 @@ double GetFloat(char *str, int *Nchars)
 
 /* ValidFloat(): Sees whether candidate string is a valid float */
 
-int ValidFloat(char *str, int *end)
+int ValidFloat(const char *str, int *end)
  {
   unsigned char past_decimal_point=0, had_number=0, expvalid=1;
   int pos = 0;
@@ -177,7 +177,7 @@ void file_readline(FILE *file, char *output)
 
 /* GetWord(): This returns the first word (terminated by any whitespace). Maximum <max> characters. */
 
-void GetWord(char *out, char *in, int max)
+void GetWord(char *out, const char *in, int max)
  {
   int count = 0;
   while ((*in <= ' ') && (*in != '\0')) in++; /* Fastforward over preceeding whitespace */
@@ -210,7 +210,7 @@ char *FriendlyTimestring()
 
 /* StrStrip(): Strip whitespace from both ends of a string */
 
-char *StrStrip(char *in, char *out)
+char *StrStrip(const char *in, char *out)
  {
   char *scan = out;
   while ((*in <= ' ') && (*in > '\0')) in++;
@@ -223,7 +223,7 @@ char *StrStrip(char *in, char *out)
 
 /* StrUpper(): Capitalise a string */
 
-char *StrUpper(char *in, char *out)
+char *StrUpper(const char *in, char *out)
  {
   char *scan = out;
   while (*in > 0)
@@ -235,7 +235,7 @@ char *StrUpper(char *in, char *out)
 
 /* StrLower(): Lowercase a string */
 
-char *StrLower(char *in, char *out)
+char *StrLower(const char *in, char *out)
  {
   char *scan = out;
   while (*in > 0)
@@ -247,7 +247,7 @@ char *StrLower(char *in, char *out)
 
 /* StrUnderline(): Underline a string */
 
-char *StrUnderline(char *in, char *out)
+char *StrUnderline(const char *in, char *out)
  {
   char *scan = out;
   while (*in > 0) if (*in++ >= ' ') *scan++='-';
@@ -279,7 +279,7 @@ char  *StrRemoveCompleteLine(char *in, char *out)
 
 /* StrSlice(): Take a slice out of a string */
 
-char *StrSlice(char *in, char *out, int start, int end)
+char *StrSlice(const char *in, char *out, int start, int end)
  {
   char *scan = out;
   int   pos  = 0;
@@ -303,7 +303,7 @@ char *StrCommaSeparatedListScan(char **inscan, char *out)
 
 /* StrAutocomplete(): Test whether a candidate string matches the beginning of test string, and is a least N characters long */
 
-int StrAutocomplete(char *candidate, char *test, int Nmin)
+int StrAutocomplete(const char *candidate, const char *test, int Nmin)
  {
   int IsAlphanumeric = 1; // Alphanumeric test strings can be terminated by punctuation; others must have spaces after them
   int i,j;
@@ -333,7 +333,7 @@ int StrAutocomplete(char *candidate, char *test, int Nmin)
 
 /* StrWordWrap(): Word wrap a piece of text to a certain width */
 
-void StrWordWrap(char *in, char *out, int width)
+void StrWordWrap(const char *in, char *out, int width)
  {
   int WhiteSpace =  1;
   int LastSpace  = -1;
@@ -371,7 +371,7 @@ void StrWordWrap(char *in, char *out, int width)
 /* StrBacketMatch(): Find a closing bracket to match an opening bracket, and optionally return a list of all comma positions */
 /*                   'in' should point to the opening bracket character for which we are looking for the closing partner */
 
-void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses)
+void StrBracketMatch(const char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses)
  {
   int  BracketLevel = 0;
   int  inpos        = 0;
@@ -418,7 +418,7 @@ void StrBracketMatch(char *in, int *CommaPositions, int *Nargs, int *ClosingBrac
 
 /* StrCmpNoCase(): A case-insensitive version of the standard strcmp() function */
 
-int StrCmpNoCase(char *a, char *b)
+int StrCmpNoCase(const char *a, const char *b)
  {
   char aU, bU;
   while (1)
@@ -435,10 +435,10 @@ int StrCmpNoCase(char *a, char *b)
 
 /* StrEscapify(): Inserts escape characters into strings before quote characters */
 
-char *StrEscapify(char *in, char *out)
+char *StrEscapify(const char *in, char *out)
  {
-  char *scanin  = in;
-  char *scanout = out;
+  const char *scanin  = in;
+  char       *scanout = out;
   *scanout++ = '\"';
   while (*scanin != '\0')
    {
@@ -452,7 +452,7 @@ char *StrEscapify(char *in, char *out)
 
 /* StrWildcardTest(): Test whether test string matches wildcard string */
 
-int StrWildcardTest(char *test, char *wildcard)
+int StrWildcardTest(const char *test, const char *wildcard)
  {
   int i=0, j, k, mineat=0, maxeat=0;
 

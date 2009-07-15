@@ -68,22 +68,22 @@ value *ppl_units_zero          (value *in);
 char  *ppl_units_NumericDisplay(value *in, int N, int typeable);
 
 unsigned char __inline__ ppl_units_DblEqual    (double a, double b);
-void          __inline__ ppl_units_DimCpy      (value *o, value *i);
-void          __inline__ ppl_units_DimInverse  (value *o, value *i);
-int           __inline__ ppl_units_DimEqual    (value *a, value *b);
-int           __inline__ ppl_units_DimEqual2   (value *a, unit  *b);
-int           __inline__ ppl_units_UnitDimEqual(unit  *a, unit  *b);
+void          __inline__ ppl_units_DimCpy      (value *o, const value *i);
+void          __inline__ ppl_units_DimInverse  (value *o, const value *i);
+int           __inline__ ppl_units_DimEqual    (const value *a, const value *b);
+int           __inline__ ppl_units_DimEqual2   (const value *a, const unit  *b);
+int           __inline__ ppl_units_UnitDimEqual(const unit  *a, const unit  *b);
 
 
-char  *ppl_units_GetUnitStr    (value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
+char  *ppl_units_GetUnitStr    (const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
 void   ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext);
 
-void   ppl_units_pow (value *a, value *b, value *o, int *status, char *errtext);
-void   ppl_units_mult(value *a, value *b, value *o, int *status, char *errtext);
-void   ppl_units_div (value *a, value *b, value *o, int *status, char *errtext);
-void   ppl_units_add (value *a, value *b, value *o, int *status, char *errtext);
-void   ppl_units_sub (value *a, value *b, value *o, int *status, char *errtext);
-void   ppl_units_mod (value *a, value *b, value *o, int *status, char *errtext);
+void   ppl_units_pow (const value *a, const value *b, value *o, int *status, char *errtext);
+void   ppl_units_mult(const value *a, const value *b, value *o, int *status, char *errtext);
+void   ppl_units_div (const value *a, const value *b, value *o, int *status, char *errtext);
+void   ppl_units_add (const value *a, const value *b, value *o, int *status, char *errtext);
+void   ppl_units_sub (const value *a, const value *b, value *o, int *status, char *errtext);
+void   ppl_units_mod (const value *a, const value *b, value *o, int *status, char *errtext);
 
 void   ppl_units_init();
 

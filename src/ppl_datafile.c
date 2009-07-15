@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -37,6 +38,7 @@
 #include "ppl_error.h"
 #include "ppl_input.h"
 #include "ppl_settings.h"
+#include "ppl_units.h"
 
 FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
  {
@@ -74,6 +76,79 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
   // If not, then we just open the file and return a file-handle to it
   if ((infile = fopen(filename, "r")) == NULL) { sprintf(errout,"Could not open input file '%s'.",filename); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
   return infile;
+ }
+
+// DataFile_UsingConvert()
+//   input = string from a using :...: clause.
+//   output = output of what this clause computes to.
+//   OutputContext = the lt_memory context in which memory should be malloced if we're returning a string.
+//   columns = text in each column of datafile.
+//   Ncols = number of items in the array 'columns'.
+//   LineNo = the number of the line we should return as $0.
+//   NumericOut = if true, we're returning a number. Otherwise, a string.
+//   ColumnHeads = column names.
+//   NColumnHeads = Length of above array.
+//   ColumnUnits = column units.
+//   NColumnUnits = Length of above array.
+//   status = 0 on success. 1 on failure.
+//   errtext = error text output.
+//   ErrCounter = If zero, we don't bother returning errors.
+
+void __inline__ DataFile_UsingConvert(const char *input, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const char **ColumnHeads, const int NColumnHeads, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter)
+ {
+  double dbl;
+  int i,j,l=strlen(input);
+  unsigned char NamedColumn=0;
+  const char *outstr=NULL;
+  char buffer[32];
+
+  if (ValidFloat(input,&l)) // using 1:2 -- number is column number
+   {
+    dbl=GetFloat(input,NULL);
+    NamedColumn=1;
+   }
+  else
+   {
+    for (i=0;i<NColumnHeads;i++) // using ColumnName
+     if (strcmp(ColumnHeads[i],input)==0)
+      {
+       dbl=i;
+       NamedColumn=1;
+       break;
+      }
+   }
+
+  if (NamedColumn) // Clean up these cases
+   {
+    if ((dbl<0)||(dbl>Ncols+1)) { if (*ErrCounter<=0) sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
+    i=(int)floor(dbl);
+    if (!NumericOut)
+     {
+      if (i==0) { sprintf(buffer,"%d",i); outstr=buffer; }
+      else      { outstr=columns[i]; }
+      goto RETURN_STRING;
+     }
+    if (i==0)
+     { dbl = LineNo; }
+    else
+     {
+      dbl=GetFloat(columns[i],&j);
+      if (columns[i][j]!='\0') { if (*ErrCounter<=0) sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
+     }
+    ppl_units_zero(output);
+    output->real = dbl;
+    ppl_units_mult(output,ColumnUnits[i],output,status,errtext);
+    return;
+   }
+
+  // Start copying out string, substituting any $s that we find
+
+RETURN_STRING:
+  ppl_units_zero(output);
+  output->string = (char *)lt_malloc_incontext(strlen(outstr),OutputContext);
+  if (output->string == NULL) { if (*ErrCounter<=0) sprintf(errtext, "Out of memory."); *status=1; return; }
+  strcpy(output->string,outstr);
+  return;
  }
 
 void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)

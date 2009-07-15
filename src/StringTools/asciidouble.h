@@ -24,26 +24,26 @@
 
 #include <stdio.h>
 
-double GetFloat                 (char *str, int *Nchars);
-int    ValidFloat               (char *str, int *end);
+double GetFloat                 (const char *str, int *Nchars);
+int    ValidFloat               (const char *str, int *end);
 char  *NumericDisplay           (double in, int N, int SigFig);
 unsigned char DblEqual          (double a, double b);
 void   file_readline            (FILE *file, char *output);
-void   GetWord                  (char *out, char *in, int max);
+void   GetWord                  (char *out, const char *in, int max);
 char  *NextWord                 (char *in);
 char  *FriendlyTimestring       ();
-char  *StrStrip                 (char *in, char *out);
-char  *StrUpper                 (char *in, char *out);
-char  *StrLower                 (char *in, char *out);
-char  *StrUnderline             (char *in, char *out);
+char  *StrStrip                 (const char *in, char *out);
+char  *StrUpper                 (const char *in, char *out);
+char  *StrLower                 (const char *in, char *out);
+char  *StrUnderline             (const char *in, char *out);
 char  *StrRemoveCompleteLine    (char *in, char *out);
-char  *StrSlice                 (char *in, char *out, int start, int end);
+char  *StrSlice                 (const char *in, char *out, int start, int end);
 char  *StrCommaSeparatedListScan(char **inscan, char *out);
-int    StrAutocomplete          (char *candidate, char *test, int Nmin);
-void   StrWordWrap              (char *in, char *out, int width);
-void   StrBracketMatch          (char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses);
-int    StrCmpNoCase             (char *a, char *b);
-char  *StrEscapify              (char *in, char *out);
-int    StrWildcardTest          (char *test, char *wildcard);
+int    StrAutocomplete          (const char *candidate, char *test, int Nmin);
+void   StrWordWrap              (const char *in, char *out, int width);
+void   StrBracketMatch          (const char *in, int *CommaPositions, int *Nargs, int *ClosingBracketPos, int MaxCommaPoses);
+int    StrCmpNoCase             (const char *a, const char *b);
+char  *StrEscapify              (const char *in, char *out);
+int    StrWildcardTest          (const char *test, const char *wildcard);
 #endif
 
