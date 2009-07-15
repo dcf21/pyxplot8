@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 double GetFloat                 (char *str, int *Nchars);
+int    ValidFloat               (char *str, int *end);
 char  *NumericDisplay           (double in, int N, int SigFig);
 unsigned char DblEqual          (double a, double b);
 void   file_readline            (FILE *file, char *output);

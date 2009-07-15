@@ -32,13 +32,13 @@ double GetFloat(char *str, int *Nchars)
  {
   double accumulator = 0;
   int decimals = 0;
-  int past_decimal_point = 0;
-  int negative = 0;
+  unsigned char past_decimal_point = 0;
+  unsigned char negative = 0;
   int pos = 0;
   int pos2= 0;
 
-  if (str[pos] == '-') { negative = 1; pos++; }                     /* Deal with negatives */
-  if (str[pos] == '+') {               pos++; }                     /* Deal with e.g. 1E+09 */
+  if      (str[pos] == '-') { negative = 1; pos++; }  /* Deal with negatives */
+  else if (str[pos] == '+') {               pos++; }  /* Deal with e.g. 1E+09 */
 
   while (((str[pos]>='0') && (str[pos]<='9')) || (str[pos] == '.'))
    {
@@ -66,6 +66,47 @@ double GetFloat(char *str, int *Nchars)
   if (pos    ==    0) pos = -1; // Alert the user that this was a blank string!
   if (Nchars != NULL) *Nchars = pos;
   return(accumulator);
+ }
+
+/* ValidFloat(): Sees whether candidate string is a valid float */
+
+int ValidFloat(char *str, int *end)
+ {
+  unsigned char past_decimal_point=0, had_number=0, expvalid=1;
+  int pos = 0;
+  int pos2= 0;
+
+  if      (str[pos] == '-') { pos++; }  /* Deal with negatives */
+  else if (str[pos] == '+') { pos++; }  /* Deal with e.g. 1E+09 */
+
+  while (((str[pos]>='0') && (str[pos]<='9')) || (str[pos] == '.'))
+   {
+    if (str[pos] == '.')
+     {
+      if (past_decimal_point) goto VALID_FLOAT_ENDED;
+      else                    past_decimal_point = 1;
+     }
+    else
+     { had_number = 1; }
+    pos++;
+   }
+
+  if (!had_number) return 0;
+
+  if ((str[pos] == 'e') || (str[pos] == 'E')) /* Deals with exponents */
+   {
+    expvalid = ValidFloat(str+pos+1 , &pos2);
+    pos += pos2+1;
+   }
+
+  while ((str[pos]!='\0')&&(str[pos]<=' ')) pos++; /* Fast-forward over spaces at end */
+
+VALID_FLOAT_ENDED:
+  if ((!had_number)||(!expvalid)) return 0;
+  if (end==NULL) return 1;
+  if ((*end>=0)&&(pos<*end)) return 0;
+  *end = pos;
+  return 1;
  }
 
 /* NumericDisplay(): Displays a double in either %f or %e formats */

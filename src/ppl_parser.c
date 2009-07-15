@@ -92,11 +92,15 @@ void StartNewStructure(ParserNode **DefnStack, int *i, int type)
  {
   ParserNode **target = NULL;
   ParserNode  *NewNode = (ParserNode *)lt_malloc(sizeof(ParserNode));
+
+  if (NewNode == NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory whilst setting up PyXPlot's command line parser."); exit(1); }
+
   NewNode->type = type;
   NewNode->MatchString = NULL;
   NewNode->VarName     = NewNode->VarSetVal   = NULL;
   NewNode->FirstChild  = NewNode->NextSibling = NULL;
   NewNode->ACLevel = -1;
+
   if ((*i)>0)
    {
     if ((DefnStack[(*i)-1]->type != PN_TYPE_SEQ) && (type != PN_TYPE_SEQ)) StartNewStructure(DefnStack, i, PN_TYPE_SEQ); // This new structure is actually the first in a possible sequence
@@ -135,7 +139,7 @@ void RollBack(ParserNode **DefnStack, int *i, int type, char *PplCommandsText, i
 
   if (VarNameBegin > -1)
    {
-    DefnStack[(*i)-1]->VarName = (char *)lt_malloc((VarNameEnd-VarNameBegin+1)*sizeof(char));
+    if ((DefnStack[(*i)-1]->VarName = (char *)lt_malloc((VarNameEnd-VarNameBegin+1)*sizeof(char)))==NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory whilst setting up PyXPlot's command line parser."); exit(1); }
     strncpy( DefnStack[(*i)-1]->VarName , PplCommandsText+VarNameBegin , VarNameEnd-VarNameBegin );
     DefnStack[(*i)-1]->VarName[VarNameEnd - VarNameBegin] = '\0';
    }
@@ -231,14 +235,29 @@ void ppl_commands_read()
           while ((ppl_commands[InputPos] > ' ') && (ppl_commands[InputPos] != ':')) InputPos++;
           n = InputPos;
          }
-        NewNode          = (ParserNode *)lt_malloc(sizeof(ParserNode));
+        if ((NewNode = (ParserNode *)lt_malloc(sizeof(ParserNode)))==NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory whilst setting up PyXPlot's command line parser."); exit(1); }
         NewNode->type    = PN_TYPE_ITEM;
         NewNode->ACLevel = N;
-                   NewNode->MatchString = (char *)lt_malloc((j-i+1)*sizeof(char)); strncpy(NewNode->MatchString, ppl_commands + i, j-i); NewNode->MatchString[j-i]='\0';
-        if (k>0) { NewNode->VarName     = (char *)lt_malloc((l-k+1)*sizeof(char)); strncpy(NewNode->VarName    , ppl_commands + k, l-k); NewNode->VarName    [l-k]='\0'; }
-        else       NewNode->VarName     = NULL;
-        if (m>0) { NewNode->VarSetVal   = (char *)lt_malloc((n-m+1)*sizeof(char)); strncpy(NewNode->VarSetVal  , ppl_commands + m, n-m); NewNode->VarSetVal  [n-m]='\0'; }
-        else       NewNode->VarSetVal   = NULL;
+
+        if ((NewNode->MatchString = (char *)lt_malloc((j-i+1)*sizeof(char)))==NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory whilst setting up PyXPlot's command line parser."); exit(1); }
+        strncpy(NewNode->MatchString, ppl_commands + i, j-i);
+        NewNode->MatchString[j-i]='\0';
+        if (k>0)
+         {
+           if ((NewNode->VarName = (char *)lt_malloc((l-k+1)*sizeof(char)))==NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory whilst setting up PyXPlot's command line parser."); exit(1); }
+           strncpy(NewNode->VarName, ppl_commands + k, l-k);
+           NewNode->VarName[l-k]='\0';
+          }
+        else
+         { NewNode->VarName = NULL; }
+        if (m>0)
+         {
+          if ((NewNode->VarSetVal = (char *)lt_malloc((n-m+1)*sizeof(char)))==NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory whilst setting up PyXPlot's command line parser."); exit(1); }
+          strncpy(NewNode->VarSetVal, ppl_commands + m, n-m);
+          NewNode->VarSetVal[n-m]='\0';
+         }
+        else
+         { NewNode->VarSetVal = NULL; }
         NewNode->FirstChild = NewNode->NextSibling = NULL;
         target = &(DefnStack[StackPos-1]->FirstChild);
         while (*target != NULL) target = &((*target)->NextSibling);
@@ -358,7 +377,7 @@ char *parse_autocomplete(const char *LineConst, int status)
     else
      {
       i = strlen(rl_line_buffer) + strlen(InputLineAddBuffer);
-      line = (char *)malloc((i+1)*sizeof(char));
+      if ((line = (char *)malloc((i+1)*sizeof(char)))==NULL) { ppl_error("Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
       strcpy(line, InputLineAddBuffer);
       strcpy(line+strlen(line) , rl_line_buffer);
       line[i] = '\0';
@@ -391,18 +410,18 @@ char *parse_autocomplete(const char *LineConst, int status)
 
       if (expecting[0] == '\n')
        {
-        if (status < 0)
+        if (status < 0) // Special case: use Readline's filename tab completion
          {
-          output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // Special case: use Readline's filename tab completion
+          if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error("Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
           strcpy(output, expecting);
           return output;
          } else {
           break;
          }
        }
-      if (expecting[0] != '\0')
+      if (expecting[0] != '\0') // We have a new completion option; do not iterate through more commands
        {
-        output = (char *)malloc((strlen(expecting)+1)*sizeof(char)); // We have a new completion option; do not iterate through more commands
+        if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error("Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
         strcpy(output, expecting);
         return output;
        }
@@ -453,9 +472,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
                    Dict *output, int *match, int *success)
  {
   unsigned char repeating=0, first=0;
-  int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, ACLevel;
+  int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, j, ACLevel;
   union {double _dbl; int _int; char *_str; value _val; } MatchVal;
-  char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4];
+  char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4], QuoteType;
   unsigned char DummyStatus[ALGEBRA_MAXLENGTH];
   Dict *OutputOld=NULL, *DictBaby=NULL;
   List *DictBabyList=NULL;
@@ -571,7 +590,66 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        }
       else if (strcmp(node->MatchString, "%Q")==0)
        {
-        *success = 0; // Redundant now that %q also matches string variable names
+        for (i=0; ((line[*linepos+i]>'\0') && (line[*linepos+i]<=' ')); i++); // Fast-forward over preceding spaces
+
+        if ((line[*linepos+i]!='\'') && (line[*linepos+i]!='\"')) // If quoted string doesn't start with quote, it must be a string variable name
+         {
+          if (!isalpha(line[*linepos+i]))
+           { *success=0; }
+          else
+           {
+            while (((isalnum(line[*linepos+i]))||(line[*linepos+i]=='_'))) i++; // Fetch a word
+            while ((line[*linepos+i]>'\0') && (line[*linepos+i]<=' ')) i++; // Fast-forward over trailing spaces
+            if (line[*linepos+i]=='(') // We have a function
+             {
+              j=-1;
+              StrBracketMatch(line + *linepos + i, NULL, NULL, &j, -1);
+              if (j<0) { *success=0; }
+              else     { i+=j+1; } // We have succeeded in finding a valid function call
+             }
+            else // We have a variable name, and have nothing more to do
+             { }
+           }
+         }
+        else // We have a quoted string
+         {
+          QuoteType = line[*linepos+(i++)];
+          for (; ((line[*linepos+i]!='\0') && (line[*linepos+i]!=QuoteType)); i++)
+           {
+            if ((line[*linepos+i]=='\\') && (line[*linepos+i+1]=='\\')) i++;
+            if ((line[*linepos+i]=='\\') && (line[*linepos+i+1]=='\'')) i++;
+            if ((line[*linepos+i]=='\\') && (line[*linepos+i+1]=='\"')) i++;
+           }
+          if (line[*linepos+i]!=QuoteType)
+           { *success=0; }
+          else
+           {
+            i++;
+            while ((line[*linepos+i]>'\0') && (line[*linepos+i]<=' ')) i++; // Fast-forward over trailing spaces
+            if (line[*linepos+i]=='%') // We have a substitution operator
+             {
+              i++;
+              while ((line[*linepos+i]>'\0') && (line[*linepos+i]<=' ')) i++; // Fast-forward over trailing spaces
+              if (line[*linepos+i]!='(') // Need an opening bracket after substitution operator
+               { *success=0; }
+              else
+               {
+                j=-1;
+                StrBracketMatch(line + *linepos + i, NULL, NULL, &j, -1);
+                if (j<0) { *success=0; }
+                else     { i+=j+1; } // We have succeeded in finding a valid function call
+               }
+             }
+           }
+         }
+        if (*success!=0) // If we have succeeded, write output
+         {
+          strncpy(TempMatchStr, line + *linepos, i);
+          TempMatchStr[i] = '\0';
+          MatchType = DATATYPE_STRING;
+          MatchVal._str = TempMatchStr;
+          *linepos += i;
+         }
        }
       else if (strcmp(node->MatchString, "%a")==0)
        {
@@ -759,9 +837,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          { sprintf(expecting+*ExpectingPos, "a numeric value or expression%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         else if ((strcmp(node->MatchString, "%s")==0) || (strcmp(node->MatchString, "%S")==0) || (strcmp(node->MatchString, "%r")==0))
          { sprintf(expecting+*ExpectingPos, "a string%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
-        else if  (strcmp(node->MatchString, "%q")==0)
+        else if ((strcmp(node->MatchString, "%q")==0) || (strcmp(node->MatchString, "%Q")==0))
          { sprintf(expecting+*ExpectingPos, "a quoted string%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
-        else if ((strcmp(node->MatchString, "%Q")==0) || (strcmp(node->MatchString, "%v")==0))
+        else if  (strcmp(node->MatchString, "%v")==0)
          { sprintf(expecting+*ExpectingPos, "a variable name%s", varname); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }
         else
          { sprintf(expecting+*ExpectingPos, "\"%s\"", node->MatchString); (*ExpectingPos)+=strlen(expecting+*ExpectingPos); }

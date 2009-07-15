@@ -54,7 +54,7 @@ int directive_interpolate(Dict *command, int mode)
   if   (mode == INTERP_LOGLIN) continuity = DATAFILE_SORTEDLOGLOG;
   else                         continuity = DATAFILE_SORTED;
 
-  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, 2, SelectCrit, continuity, &ErrCount);
+  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, 2, SelectCrit, continuity, &ErrCount);
   if (status) { ppl_error(errtext); return 1; }
 
   return 0;

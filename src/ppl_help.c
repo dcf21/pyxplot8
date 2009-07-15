@@ -50,7 +50,7 @@ void help_PagerDisplay(char *PageName, xmlNode *node, int interactive)
   char     DefaultPagerName[] = "less";
   char    *PagerName;
   char    *Ncolumns_text;
-  int      i, Ncolumns, Nchildren;
+  int      i, j, Ncolumns, Nchildren, strlen_version, strlen_date;
   FILE    *PagerHandle;
 
   sprintf(TextBuffer,"\\\\**** Help Topic: %s****\\\\", PageName);
@@ -58,8 +58,18 @@ void help_PagerDisplay(char *PageName, xmlNode *node, int interactive)
   for (cur_node = node->children; cur_node; cur_node = cur_node->next) // Loop over children
    if (cur_node->type == XML_TEXT_NODE)
     {
-     sprintf(TextBuffer+i, "%s", cur_node->content); i += strlen(TextBuffer+i);
-    }
+     strlen_version = strlen("$VERSION");
+     strlen_date    = strlen("$DATE"   );
+     for (j=0; cur_node->content[j]!='\0'; )
+      {
+       if      (strncmp((char *)cur_node->content+j,"$VERSION",strlen_version)==0)
+        { j+=strlen_version; strcpy(TextBuffer+i,VERSION); i += strlen(TextBuffer+i); }
+       else if (strncmp((char *)cur_node->content+j,"$DATE"   ,strlen_date   )==0)
+        { j+=strlen_date   ; strcpy(TextBuffer+i,DATE   ); i += strlen(TextBuffer+i); }
+       else
+        { TextBuffer[i++] = cur_node->content[j++]; }
+      }
+    } // NB, TextBuffer is not null terminated at this point, but we're about to add stuff to it...
 
   sprintf(TextBuffer+i, "\\\\\\\\\\\\");
   // Insert information about children

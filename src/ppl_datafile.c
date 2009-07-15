@@ -76,10 +76,10 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
   return infile;
  }
 
-void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
+void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
  {
   unsigned char AutoUsingList=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma; // OneColumnInput=1;
-  int           UsingLen, logi, logj;
+  int           UsingLen, logi, logj, ContextOutput, ContextRough;
   char         *UsingItems[USING_ITEMS_MAX];
   ListIterator *listiter;
   Dict         *tempdict;
@@ -181,6 +181,10 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     if (*status>0) return; // There was a problem launching coprocess or opening file
    }
 
+  // Keep a record of the memory context we're going to output into, and then make a scratchpad context
+  ContextOutput = lt_GetMemContext();
+  ContextRough  = lt_DescendIntoNewContext();
+
   // Read input file, line by line
   while ( (!ferror(filtered_input)) && (!feof(filtered_input)) )
    {
@@ -253,5 +257,9 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   if ((continuity == DATAFILE_SORTED) || (continuity == DATAFILE_SORTEDLOGLOG))
    {
    }
+
+  // Delete rough workspace
+  lt_AscendOutOfContext(ContextRough);
+  return;
  }
 
