@@ -80,6 +80,7 @@ void InteractiveSession()
       if (line_ptr == NULL) break;
       ProcessDirective(line_ptr, isatty(STDIN_FILENO), 0);
       ppl_error_setstreaminfo(-1, "");
+      PPLKillAllHelpers();
      }
 
     if (isatty(STDIN_FILENO) == 1) 
@@ -128,6 +129,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
      {
       status = ProcessDirective(line_ptr, 0, IterLevel);
       ppl_error_setstreaminfo(-1, "");
+      PPLKillAllHelpers();
       if ((ProcessedALine==0) && (status>0)) // If an error occurs on the first line of a script, aborted processing it
        {
         ppl_error("Error on first line of commandfile: Is this is valid script?\nAborting");
@@ -472,7 +474,7 @@ int directive_regex(Dict *command)
   char  *varname;
   char   cmd[LSTR_LENGTH];
   value *varnumval;
-  int    i, j, fstdin, fstdout, pid, status;
+  int    i, j, fstdin, fstdout;
   char   ci;
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   fd_set          readable;
@@ -500,7 +502,7 @@ int directive_regex(Dict *command)
   cmd[i++] = '\0';
 
   // Fork a child sed process with the regular expression on the command line, and send variable contents to it
-  ForkSed(cmd, &pid, &fstdin, &fstdout);
+  ForkSed(cmd, &fstdin, &fstdout);
   if (write(fstdin, varnumval->string, strlen(varnumval->string)) != strlen(varnumval->string)) ppl_fatal(__FILE__,__LINE__,"Could not write to pipe to sed");
   close(fstdin);
 
@@ -514,10 +516,6 @@ int directive_regex(Dict *command)
   if ((i = read(fstdout, cmd, LSTR_LENGTH)) < 0) { ppl_error("Error: Could not read from pipe to sed."); return 0; }
   cmd[i] = '\0';
   close(fstdout);
-
-  // Get exit status back from sed process and check that it is zero
-  if (waitpid(pid, &status, 0) <= 0) { ppl_error("Error: Could not read exit status from sed."); return 0; }
-  if ((!WIFEXITED(status)) || (WEXITSTATUS(status)!=0)) { return 0; } // Error message will get sent to stderr, we assume
 
   // Copy string into string variable
   varnumval->string = (char *)lt_malloc_incontext(strlen(cmd)+1, _ppl_UserSpace_Vars->memory_context);

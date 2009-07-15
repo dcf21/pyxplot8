@@ -250,18 +250,18 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
    }
 
   // Make a new function descriptor with the details of the new expression for this function
-  NewFuncPtr = (FunctionDescriptor *)malloc(sizeof(FunctionDescriptor));
-  NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
-  NewFuncPtr->modified        = modified;
-  NewFuncPtr->NumberArguments = Nargs;
-  NewFuncPtr->FunctionPtr     =          malloc(strlen(definition+i)+1); strcpy((char *)NewFuncPtr->FunctionPtr, definition+i );
-  NewFuncPtr->ArgList         = (char  *)malloc(args_i                ); memcpy(        NewFuncPtr->ArgList    , args        , args_i );
-  NewFuncPtr->min             = (value *)malloc(Nargs * sizeof(value));  memcpy(        NewFuncPtr->min        , min         , Nargs*sizeof(value));
-  NewFuncPtr->max             = (value *)malloc(Nargs * sizeof(value));  memcpy(        NewFuncPtr->max        , max         , Nargs*sizeof(value));
-  NewFuncPtr->MinActive       = (unsigned char *)malloc(Nargs);          memcpy(        NewFuncPtr->MinActive  , MinActive   , Nargs);
-  NewFuncPtr->MaxActive       = (unsigned char *)malloc(Nargs);          memcpy(        NewFuncPtr->MaxActive  , MaxActive   , Nargs);
-  NewFuncPtr->next            = OldFuncPtr;
-  NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
+  if ((NewFuncPtr = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor),0))==NULL) return;
+       NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
+       NewFuncPtr->modified        = modified;
+       NewFuncPtr->NumberArguments = Nargs;
+  if ((NewFuncPtr->FunctionPtr     =          lt_malloc_incontext(strlen(definition+i)+1,0))==NULL) return; strcpy((char *)NewFuncPtr->FunctionPtr, definition+i );
+  if ((NewFuncPtr->ArgList         = (char  *)lt_malloc_incontext(args_i                ,0))==NULL) return; memcpy(        NewFuncPtr->ArgList    , args        , args_i );
+  if ((NewFuncPtr->min             = (value *)lt_malloc_incontext(Nargs * sizeof(value) ,0))==NULL) return; memcpy(        NewFuncPtr->min        , min         , Nargs*sizeof(value));
+  if ((NewFuncPtr->max             = (value *)lt_malloc_incontext(Nargs * sizeof(value) ,0))==NULL) return; memcpy(        NewFuncPtr->max        , max         , Nargs*sizeof(value));
+  if ((NewFuncPtr->MinActive       = (unsigned char *)lt_malloc_incontext(Nargs         ,0))==NULL) return; memcpy(        NewFuncPtr->MinActive  , MinActive   , Nargs);
+  if ((NewFuncPtr->MaxActive       = (unsigned char *)lt_malloc_incontext(Nargs         ,0))==NULL) return; memcpy(        NewFuncPtr->MaxActive  , MaxActive   , Nargs);
+       NewFuncPtr->next            = OldFuncPtr;
+       NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
   DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)NewFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
   return;
  }
@@ -301,20 +301,20 @@ void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
   Nargs=in->NumberArguments;
   for (j=0,i=0;i<Nargs;i++) while (in->ArgList[j++]!='\0')
 
-  NewFuncPtr = (FunctionDescriptor *)malloc(sizeof(FunctionDescriptor));
-  NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
-  NewFuncPtr->modified        = modified;
-  NewFuncPtr->NumberArguments = in->NumberArguments;
-  NewFuncPtr->FunctionPtr     =          malloc(strlen(in->FunctionPtr)+1); strcpy((char *)NewFuncPtr->FunctionPtr, (char *)in->FunctionPtr );
-  NewFuncPtr->ArgList         = (char  *)malloc(j);                         memcpy(        NewFuncPtr->ArgList    , in->ArgList     , j );
-  NewFuncPtr->min             = (value *)malloc(Nargs * sizeof(value));     memcpy(        NewFuncPtr->min        , in->min         , Nargs*sizeof(value));
-  NewFuncPtr->max             = (value *)malloc(Nargs * sizeof(value));     memcpy(        NewFuncPtr->max        , in->max         , Nargs*sizeof(value));
-  NewFuncPtr->MinActive       = (unsigned char *)malloc(Nargs);             memcpy(        NewFuncPtr->MinActive  , in->MinActive   , Nargs);
-  NewFuncPtr->MaxActive       = (unsigned char *)malloc(Nargs);             memcpy(        NewFuncPtr->MaxActive  , in->MaxActive   , Nargs);
-  NewFuncPtr->next            = in->next;
-  NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
-  in->next                    = NewFuncPtr;
-  in->modified                = modified;
+  if ((NewFuncPtr = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor),0))==NULL) return;
+       NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
+       NewFuncPtr->modified        = modified;
+       NewFuncPtr->NumberArguments = in->NumberArguments;
+  if ((NewFuncPtr->FunctionPtr     =          lt_malloc_incontext(strlen(in->FunctionPtr)+1,0))==NULL) return; strcpy((char *)NewFuncPtr->FunctionPtr, (char *)in->FunctionPtr );
+  if ((NewFuncPtr->ArgList         = (char  *)lt_malloc_incontext(j                        ,0))==NULL) return; memcpy(        NewFuncPtr->ArgList    , in->ArgList     , j );
+  if ((NewFuncPtr->min             = (value *)lt_malloc_incontext(Nargs * sizeof(value)    ,0))==NULL) return; memcpy(        NewFuncPtr->min        , in->min         , Nargs*sizeof(value));
+  if ((NewFuncPtr->max             = (value *)lt_malloc_incontext(Nargs * sizeof(value)    ,0))==NULL) return; memcpy(        NewFuncPtr->max        , in->max         , Nargs*sizeof(value));
+  if ((NewFuncPtr->MinActive       = (unsigned char *)lt_malloc_incontext(Nargs            ,0))==NULL) return; memcpy(        NewFuncPtr->MinActive  , in->MinActive   , Nargs);
+  if ((NewFuncPtr->MaxActive       = (unsigned char *)lt_malloc_incontext(Nargs            ,0))==NULL) return; memcpy(        NewFuncPtr->MaxActive  , in->MaxActive   , Nargs);
+       NewFuncPtr->next            = in->next;
+       NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
+       in->next                    = NewFuncPtr;
+       in->modified                = modified;
   return;
  }
 

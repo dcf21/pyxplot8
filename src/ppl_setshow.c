@@ -847,6 +847,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
+
+  if ((out==NULL)||(buf==NULL)||(buf2==NULL))
+   {
+    ppl_error("Out of memory error whilst trying to allocate buffers in show command.");
+    if (out!=NULL) free(out); if (buf!=NULL) free(buf); if (buf2!=NULL) free(buf2);
+    return 1;
+   }
+
   out[0] = buf[0] = '\0';
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
    {
@@ -1340,7 +1348,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
 
   if (p!=0) ppl_report(out);
-  free(out); free(buf);
+  free(out); free(buf); free(buf2);
   return p;
  }
 

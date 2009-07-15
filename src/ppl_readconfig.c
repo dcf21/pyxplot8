@@ -406,10 +406,17 @@ void ReadConfigFile(char *ConfigFname)
       if (isalpha(setkey[i])) do { i++; } while ((isalnum(setkey[i])) || (setkey[i]=='_')); \
       if (i==j) \
        { \
-        if (last==output) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal %s name.", linecounter, ConfigFname, type); ppl_warning(temp_err_string); continue; } \
-        else { output = (char *)malloc(strlen(last)+1); strcpy(output, last); } \
+        if (last==output) \
+         { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal %s name.", linecounter, ConfigFname, type); ppl_warning(temp_err_string); continue; } \
+        else \
+         { \
+          output = (char *)malloc(strlen(last)+1); \
+          if (output==NULL) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nOut of memory error whilst generating new unit.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; } \
+          strcpy(output, last); \
+         } \
        } else { \
         output = (char *)malloc(i-j+1); \
+        if (output==NULL) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nOut of memory error whilst generating new unit.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; } \
         strncpy(output, setkey+j, i-j); output[i-j]='\0'; \
        } \
       while ((setkey[i]<=' ')&&(setkey[i]!='\0')) i++; \

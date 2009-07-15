@@ -38,6 +38,7 @@
 #include "ppl_children.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
+#include "ppl_setting_types.h"
 
 // Pipes for communication between the main PyXPlot process and the CSP
 
@@ -52,6 +53,7 @@ static char SIGTERM_NAME[16]; // The name of SIGTERM, which we filter out from G
 
 static List *GhostViews;                    // A list of X11_multiwindow and X11_singlewindow sessions which we kill on PyXPlot exit
 static List *GhostView_Persists;            // A list of X11_persist sessions for which we leave our temporary directory until they quit
+static List *HelperPIDs;                    // A list of helper processes forked by the main PyXPlot process
 static int   GhostView_pid = 0;             // pid of any running gv process launched under X11_singlewindow
 char         GhostView_Fname[FNAME_LENGTH]; // Filename of the eps file currently being viewed in X11_singlewindow
 static int   PyXPlotRunning = 1;            // Flag which we drop in the CSP when the main process stops running
@@ -66,6 +68,7 @@ void  InitialiseCSP()
   // Create empty lists for storing lists of GhostView processes
   GhostViews         = ListInit();
   GhostView_Persists = ListInit();
+  HelperPIDs         = ListInit();
   
   // The string "signal 15" we filter out of GhostView's output
   sprintf(SIGTERM_NAME, "signal %d", SIGTERM);
@@ -79,6 +82,7 @@ void  InitialiseCSP()
    {
     close(PipeMAIN2CSP[0]); // Parent process; close CSP's ends of pipes
     //close(PipeCSP2MAIN[1]); // Leave this pipe open so that sed can return error messages down it
+    if (signal(SIGCHLD, PPLCheckForChildExits) == SIG_ERR) ppl_fatal(__FILE__,__LINE__,"Main process could not set up a signal handler for SIGCHLD.");
     return; // Parent process returns
    }
 
@@ -204,7 +208,7 @@ void CSPCheckForNewCommands()
   waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
   FD_ZERO(&readable); FD_SET(PipeMAIN2CSP[0], &readable);
   pselect(PipeMAIN2CSP[0]+1, &readable, NULL, NULL, &waitperiod, NULL);
-  if (!FD_ISSET(PipeMAIN2CSP[0] , &readable)) return; // select tells us that pipe from CSP is not readable
+  if (!FD_ISSET(PipeMAIN2CSP[0] , &readable)) return; // select tells us that pipe from main process is not readable
 
   pos = strlen(PipeOutputBuffer);
   if (read(PipeMAIN2CSP[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5) > 0)
@@ -277,6 +281,7 @@ int CSPForkNewGv(char *fname, List *gv_list)
    {
     // Child process; about to run GhostView.
     sprintf(ppl_error_source, "GV%7d", getpid());
+    settings_session_default.colour = SW_ONOFF_OFF;
     if (DEBUG) { sprintf(temp_err_string, "New GhostView process alive; going to view %s.", fname); ppl_log(temp_err_string); }
     if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe, so that GhostView doesn't spam terminal
      {
@@ -286,8 +291,9 @@ int CSPForkNewGv(char *fname, List *gv_list)
     if (setpgid( getpid() , getpid() )) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
     sprintf(WatchText, "%s%s", GHOSTVIEW_OPT, "watch");
     if (execlp(GHOSTVIEW_COMMAND, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute GhostView returned error code."); // Execute GhostView
-    ppl_fatal(__FILE__,__LINE__,"Execution of GhostView failed."); // execlp call should not return
-    exit(1); // ppl_fatal shouldn't either, so something's gone really wrong...
+    sprintf(temp_err_string, "Execution of GhostView using binary '%s' failed; has it been reinstalled since PyXPlot was installed?", GHOSTVIEW_COMMAND);
+    ppl_error(temp_err_string); // execlp call should not return
+    exit(1);
    }
   return 0;
  }
@@ -316,20 +322,53 @@ void CSPKillLatestSinglewindow()
   return;
  }
 
-void ForkSed(char *cmd, int *pidout, int *fstdin, int *fstdout)
+// Facilities for forking helper processes with pipes from the main PyXPlot process
+
+void PPLCheckForChildExits(int signo)
+ {
+  ListIterator *iter;
+  int          *pid;
+  iter = ListIterateInit(HelperPIDs);
+  while (iter != NULL)
+   {
+    iter = ListIterate(iter, (void **)&pid);
+    if (waitpid(*pid,NULL,WNOHANG) != 0)
+     {
+      if (DEBUG) { sprintf(temp_err_string, "A helper process with pid %d has terminated.", *pid); ppl_log(temp_err_string); }
+      ListRemovePtr(HelperPIDs, (void *)pid); // Stabat mater dolorosa
+     }
+   }
+  return;
+ }
+
+void PPLKillAllHelpers()
+ {
+  ListIterator *iter;
+  int          *pid;
+  iter = ListIterateInit(HelperPIDs);
+  while (iter != NULL)
+   {
+    iter = ListIterate(iter, (void **)&pid);
+    kill(*pid, SIGTERM); // Dulce et decorum est pro patria mori
+    ListRemovePtr(HelperPIDs, (void *)pid);
+   }
+  return;
+ }
+
+void ForkSed(char *cmd, int *fstdin, int *fstdout)
  {
   int fd0[2], fd1[2];
   int pid;
 
   if ((pipe(fd0)<0) || (pipe(fd1)<0)) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
 
-  if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for the CSP.");
+  if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for sed process.");
   else if ( pid        != 0)
    {
     // Parent process
     close(fd0[0]); *fstdin  = fd0[1];
     close(fd1[1]); *fstdout = fd1[0];
-    *pidout = pid;
+    ListAppendInt(HelperPIDs, pid);
     return;
    }
   else 
@@ -339,6 +378,7 @@ void ForkSed(char *cmd, int *pidout, int *fstdin, int *fstdout)
     close(PipeCSP2MAIN[0]);
     close(PipeMAIN2CSP[1]);
     sprintf(ppl_error_source, "SED%6d", getpid());
+    settings_session_default.colour = SW_ONOFF_OFF;
     if (DEBUG) { sprintf(temp_err_string, "New sed process alive; going to run command \"%s\".", cmd); ppl_log(temp_err_string); }
     if (fd0[0] != STDIN_FILENO) // Redirect stdin to pipe
      {
@@ -356,8 +396,50 @@ void ForkSed(char *cmd, int *pidout, int *fstdin, int *fstdout)
       close(PipeCSP2MAIN[1]);
      }
     if (execl(SED_COMMAND, SED_COMMAND, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
-    ppl_fatal(__FILE__,__LINE__,"Execution of sed failed."); // execlp call should not return
-    exit(1); // ppl_fatal shouldn't either, so something's gone really wrong... 
+    ppl_error("Execution of helper process 'sed' failed."); // execlp call should not return
+    exit(1);
+   }
+  return;
+ }
+
+void ForkInputFilter(char **cmd, int *fstdout)
+ {
+  int fd0[2];
+  int pid;
+
+  if (pipe(fd0)<0) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
+
+  if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for input filter process.");
+  else if ( pid        != 0)
+   {
+    // Parent process
+    close(fd0[1]); *fstdout = fd0[0];
+    ListAppendInt(HelperPIDs, pid);
+    return;
+   }
+  else
+   {
+    // Child process
+    close(fd0[0]);
+    close(PipeCSP2MAIN[0]);
+    close(PipeMAIN2CSP[1]);
+    sprintf(ppl_error_source, "IF %6d", getpid());
+    settings_session_default.colour = SW_ONOFF_OFF;
+    if (DEBUG) { sprintf(temp_err_string, "New input filter process alive; going to run command \"%s\".", cmd[0]); ppl_log(temp_err_string); }
+    if (fd0[1] != STDOUT_FILENO) // Redirect stdout to pipe
+     {
+      if (dup2(fd0[1], STDOUT_FILENO) != STDOUT_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdout to pipe.");
+      close(fd0[1]);
+     }
+    if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe
+     {
+      if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
+      close(PipeCSP2MAIN[1]);
+     }
+    if (execvp(cmd[0], cmd)!=0) if (DEBUG) ppl_log("Attempt to execute input filter returned error code."); // Execute input filter
+    sprintf(temp_err_string, "Execution of input filter '%s' failed.", cmd[0]);
+    ppl_error(temp_err_string); // execvp call should not return
+    exit(1);
    }
   return;
  }

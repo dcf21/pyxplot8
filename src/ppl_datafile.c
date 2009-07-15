@@ -32,6 +32,7 @@
 #include "ListTools/lt_list.h"
 #include "ListTools/lt_dict.h"
 
+#include "ppl_children.h"
 #include "ppl_datafile.h"
 #include "ppl_error.h"
 #include "ppl_input.h"
@@ -41,7 +42,8 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
  {
   FILE         *infile;
   DictIterator *DictIter;
-  char         *filter;
+  char         *filter, *FilterArgs, **ArgList;
+  int           i,j,k;
 
   // Check whether we have a specified coprocessor to work on this filetype
   DictIter = DictIterateInit(settings_filters);
@@ -51,6 +53,20 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
      {
       filter = ((value *)DictIter->data)->string;
       if (DEBUG) { sprintf(temp_err_string, "Using input filter '%s'.", filter); ppl_log(temp_err_string); }
+      FilterArgs = (char  *)lt_malloc(strlen(filter)+1);
+      ArgList    = (char **)lt_malloc((strlen(filter)/2+1)*sizeof(char *));
+      if ((FilterArgs==NULL)||(ArgList==NULL)) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
+      strcpy(FilterArgs, filter);
+      for (i=j=k=0; FilterArgs[i]!='\0'; i++)
+       {
+        if      ((k==0) && (FilterArgs[i]> ' ')) { k=1; ArgList[j++] = FilterArgs+i; }
+        else if ((k==1) && (FilterArgs[i]<=' ')) { k=0; FilterArgs[i] = '\0'; }
+       }
+      ArgList[j++] = filename;
+      ArgList[j++] = NULL;
+      ForkInputFilter(ArgList, &i);
+      if ((infile = fdopen(i, "r")) == NULL) { sprintf(errout,"Could not open connection to input filter '%s'.",ArgList[0]); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
+      return infile;
      }
     DictIter = DictIterate(DictIter, NULL, NULL);
    }
@@ -93,7 +109,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
    {
     for (i=0; i<Ncolumns; i++)
      {
-      UsingItems[i] = (char *)lt_malloc(10);
+      if ((UsingItems[i] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
       sprintf(UsingItems[i], "$%d", i+1);
      }
     UsingLen = Ncolumns;

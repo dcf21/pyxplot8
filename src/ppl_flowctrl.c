@@ -85,8 +85,8 @@ void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel
 
   // Add this line into the loop chain
   GetInputSource(&k, &desc);
-  **cmd_put = (cmd_chain_item *)lt_malloc(sizeof(cmd_chain_item)); // Make a new chain element
-  (**cmd_put)->line = (char *)lt_malloc(strlen(line+i)+1); // Write command line
+  if (( **cmd_put = (cmd_chain_item *)lt_malloc(sizeof(cmd_chain_item)) )==NULL) return; // Make a new chain element
+  if (( (**cmd_put)->line = (char *)lt_malloc(strlen(line+i)+1)         )==NULL) return; // Write command line
   strcpy( (**cmd_put)->line , line+i );
   if (k==NULL) (**cmd_put)->linenumber  = -1; // Write source line number
   else         (**cmd_put)->linenumber  = *k;
@@ -95,7 +95,7 @@ void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel
    { (**cmd_put)->description = NULL; } // Write source filename description
   else
    {
-    (**cmd_put)->description = (char *)lt_malloc(strlen(desc)+1);
+    if (( (**cmd_put)->description = (char *)lt_malloc(strlen(desc)+1) )==NULL) return;
     strcpy((**cmd_put)->description, desc);
    }
   *cmd_put                 = &((**cmd_put)->next); // Update where we're going to write the next line of looped commandline

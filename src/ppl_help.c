@@ -32,6 +32,7 @@
 
 #include "ListTools/lt_dict.h"
 #include "ListTools/lt_list.h"
+#include "ListTools/lt_memory.h"
 #include "ListTools/lt_StringProc.h"
 
 #include "ppl_constants.h"
@@ -205,8 +206,8 @@ void directive_help(Dict *command, int interactive)
     return;
    }
 
-  for (i=0;i<MAX_HELP_DEPTH;i++) HelpPosition[i]=(char *)malloc(SSTR_LENGTH*sizeof(char));
-  for (i=0;i<MAX_HELP_HITS ;i++) HelpTexts   [i]=(char *)malloc(SSTR_LENGTH*sizeof(char));
+  for (i=0;i<MAX_HELP_DEPTH;i++) if ((HelpPosition[i]=(char *)lt_malloc(SSTR_LENGTH*sizeof(char)) )==NULL) return;
+  for (i=0;i<MAX_HELP_HITS ;i++) if ((HelpTexts   [i]=(char *)lt_malloc(SSTR_LENGTH*sizeof(char)) )==NULL) return;
 
   root_element = xmlDocGetRootElement(doc);
   help_explore(root_element, &MatchNode, TopicWords, &MatchTextPos, &Nmatches, &ambiguous, HelpPosition, HelpTexts, 0);
@@ -225,9 +226,6 @@ void directive_help(Dict *command, int interactive)
    {
     help_PagerDisplay( HelpTexts[MatchTextPos] , MatchNode , interactive );
    }
-
-  for (i=0;i<MAX_HELP_DEPTH;i++) free(HelpPosition[i]);
-  for (i=0;i<MAX_HELP_HITS ;i++) free(HelpTexts   [i]);
 
   xmlFreeDoc(doc); // Tidy up
   xmlCleanupParser();

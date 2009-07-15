@@ -377,6 +377,7 @@ void ppl_units_init()
   int i=0,j=0;
 
   ppl_unit_database = (unit *)lt_malloc(UNITS_MAX*sizeof(unit));
+  if (ppl_unit_database == NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory error whilst trying to malloc units database."); exit(1); }
 
   // Set up database of known units
   for (i=0;i<UNITS_MAX;i++)

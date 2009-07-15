@@ -44,7 +44,10 @@ void  CSPKillLatestSinglewindow();
 
 // Functions for spawning helper processes
 
-void  ForkSed                  (char *cmd, int *pidout, int *fstdin, int *fstdout);
+void  PPLCheckForChildExits    (int signo);
+void  PPLKillAllHelpers        ();
+void  ForkSed                  (char *cmd, int *fstdin, int *fstdout);
+void  ForkInputFilter          (char **cmd, int *fstdout);
 
 #endif
 
