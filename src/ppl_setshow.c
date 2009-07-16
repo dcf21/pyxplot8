@@ -377,14 +377,14 @@ void directive_set(Dict *command)
       if (*tempint > 30) { ppl_error("Error: It is not sensible to try to display numbers to more than 30 significant figures. Calculations in PyXPlot are only accurate to double precision."); return; }
       settings_term_current.SignificantFigures = *tempint;
      }
-    DictLookup(command,"typeable", NULL,(void **)&tempstr);
-    if (tempstr != NULL) settings_term_current.NumDisplayTypeable = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
+    DictLookup(command,"display", NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.NumDisplay = FetchSettingByName(tempstr, SW_DISPLAY_INT, SW_DISPLAY_STR);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics")==0)) /* set numerics */
    {
     settings_term_current.ComplexNumbers     = settings_term_default.ComplexNumbers;
     settings_term_current.ExplicitErrors     = settings_term_default.ExplicitErrors;
-    settings_term_current.NumDisplayTypeable = settings_term_default.NumDisplayTypeable;
+    settings_term_current.NumDisplay         = settings_term_default.NumDisplay;
     settings_term_current.SignificantFigures = settings_term_default.SignificantFigures;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"origin")==0)) /* set origin */
@@ -870,33 +870,33 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "bar",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)NumericDisplay(sg->bar,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", (char *)NumericDisplay(sg->bar,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "bar", buf, (settings_graph_default.bar == sg->bar), "Sets the size of the strokes which mark the lower and upper limits of errorbars");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binorigin",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)NumericDisplay(sg->BinOrigin,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", (char *)NumericDisplay(sg->BinOrigin,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "BinOrigin", buf, (settings_graph_default.BinOrigin == sg->BinOrigin), "this sets the something");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binwidth",1)>=0))
    { 
-    if (sg->BinWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BinWidth,0,settings_term_current.SignificantFigures));
+    if (sg->BinWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BinWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     else                    sprintf(buf, "auto");
     directive_show3(out+i, ItemSet, interactive, "BinWidth", buf, (settings_graph_default.BinWidth == sg->BinWidth), "Sets the width of bins used when constructing histograms");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxwidth",1)>=0))
    {
-    if (sg->BoxWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BoxWidth,0,settings_term_current.SignificantFigures));
+    if (sg->BoxWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BoxWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     else                    sprintf(buf, "auto");
     directive_show3(out+i, ItemSet, interactive, "BoxWidth", buf, (settings_graph_default.BoxWidth == sg->BoxWidth), "Sets the width of bars on barcharts and histograms");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxfrom",1)>=0))
    {
-    sprintf(buf, "%s", (char *)NumericDisplay(sg->BoxFrom,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", (char *)NumericDisplay(sg->BoxFrom,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "BoxFrom", buf, (settings_graph_default.BoxFrom == sg->BoxFrom), "Sets the vertical level from which the bars of barcharts and histograms are drawn");
     i += strlen(out+i) ; p=1;
    }
@@ -920,7 +920,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "dpi", 1)>=0))
    { 
-    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "DPI", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing gif, jpg or png output");
     i += strlen(out+i) ; p=1;
    }
@@ -940,7 +940,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "fontsize",1)>=0) || (StrAutocomplete(word, "fountsize",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)NumericDisplay(sg->FontSize,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", (char *)NumericDisplay(sg->FontSize,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "FountSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the fount size of text output: 1.0 is the default, and other values multiply this default size");
     i += strlen(out+i) ; p=1;
    }
@@ -1012,7 +1012,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "linewidth", 1)>=0) || (StrAutocomplete(word, "lw", 2)>=0))
    { 
-    sprintf(buf, "%s", NumericDisplay(sg->LineWidth,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", NumericDisplay(sg->LineWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "LineWidth", buf, (settings_graph_default.LineWidth == sg->LineWidth), "Sets the widths of lines drawn on graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -1030,11 +1030,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.ExplicitErrors,  SW_ONOFF_INT, (void **)SW_ONOFF_STR));
     directive_show3(out+i, ItemSet, interactive, "numerics errors explicit", buf, (settings_term_default.ExplicitErrors==settings_term_current.ExplicitErrors), "Selects whether numerical errors quietly produce not-a-number results, or throw explicit errors");
     i += strlen(out+i) ; p=1;
-    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.SignificantFigures,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.SignificantFigures,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "numerics sigfig", buf, (settings_term_default.SignificantFigures == settings_term_current.SignificantFigures), "Sets the (minimum) number of significant figures to which decimal numbers are displayed by default");
     i += strlen(out+i) ; p=1;
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.NumDisplayTypeable, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "numerics typeable", buf, (settings_term_default.NumDisplayTypeable==settings_term_current.NumDisplayTypeable), "Selects whether numerical results are displayed in a way which can be copied into a terminal");
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.NumDisplay, SW_DISPLAY_INT, (void **)SW_DISPLAY_STR));
+    directive_show3(out+i, ItemSet, interactive, "numerics display", buf, (settings_term_default.NumDisplay==settings_term_current.NumDisplay), "Selects how numerical results are displayed: in a natural textual way, in a way which can be copied into a terminal, or as LaTeX");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
@@ -1080,13 +1080,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "pointlinewidth",1)>=0) || (StrAutocomplete(word, "plw",3)>=0))
    {
-    sprintf(buf, "%s", NumericDisplay(sg->PointLineWidth,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", NumericDisplay(sg->PointLineWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "PointLineWidth", buf, (settings_graph_default.PointLineWidth==sg->PointLineWidth), "The width of the strokes used to mark points on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "pointsize",1)>=0) || (StrAutocomplete(word, "ps",2)>=0))
    {
-    sprintf(buf, "%s", NumericDisplay(sg->PointSize,0,settings_term_current.SignificantFigures));
+    sprintf(buf, "%s", NumericDisplay(sg->PointSize,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "PointSize", buf, (settings_graph_default.PointSize==sg->PointSize), "The size of points marked on graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -1105,7 +1105,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "size",1)>=0))
    {
     if (sg->AutoAspect == SW_ONOFF_ON) sprintf(buf, "auto");
-    else                               sprintf(buf, "%s", NumericDisplay(sg->aspect, 0,settings_term_current.SignificantFigures));
+    else                               sprintf(buf, "%s", NumericDisplay(sg->aspect, 0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, interactive, "size ratio", buf, ((settings_graph_default.aspect==sg->aspect)&&(settings_graph_default.AutoAspect==sg->AutoAspect)), "The aspect-ratio of graphs");
     i += strlen(out+i) ; p=1;
    }

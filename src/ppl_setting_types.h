@@ -163,6 +163,16 @@ extern char *SW_UNITSCH_STR[];
 extern int   SW_UNITSCH_ACL[];
 extern int   SW_UNITSCH_INT[];
 
+// Schemes in which we can display numeric results
+
+#define SW_DISPLAY_N 18050
+#define SW_DISPLAY_T 18051
+#define SW_DISPLAY_L 18052
+
+extern char *SW_DISPLAY_STR[];
+extern int   SW_DISPLAY_ACL[];
+extern int   SW_DISPLAY_INT[];
+
 // Calendars which we can use
 
 #define SW_CALENDAR_GREGORIAN 19001

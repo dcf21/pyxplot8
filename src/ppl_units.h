@@ -38,7 +38,7 @@
 
 typedef struct unit
  {
-  char         *nameAs, *nameAp, *nameFs, *nameFp, *comment, *quantity;
+  char         *nameAs, *nameAp, *nameLs, *nameLp, *nameFs, *nameFp, *comment, *quantity;
   double        multiplier, offset;
   unsigned char si, cgs, imperial, us, planck, ancient, UserSel, modified;
   int           MaxPrefix;
@@ -58,6 +58,7 @@ typedef struct value
 #ifndef _PPL_UNITS_C
 extern char *SIprefixes_full  [];
 extern char *SIprefixes_abbrev[];
+extern char *SIprefixes_latex [];
 
 extern unit  *ppl_unit_database;
 extern int    ppl_unit_pos;

@@ -220,9 +220,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "NUMSF"        )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .SignificantFigures = min(max((int)fl, 1), 30);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMSF."        , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
-      else if (strcmp(setkey, "NUMTYPEABLE"  )==0)
-        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .NumDisplayTypeable = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMTYPEABLE."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "NUMDISPLAY"  )==0)
+        if ((i=FetchSettingByName(setvalue,SW_DISPLAY_INT, SW_DISPLAY_STR ))>0) settings_term_default.NumDisplay = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting NUMDISPLAY."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINX"      )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ORIGINX."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
@@ -429,8 +429,10 @@ void ReadConfigFile(char *ConfigFname)
 
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLs  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFp  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAp  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , ':' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLp  , ppl_unit_database[ppl_unit_pos].nameAp  , "unit"    , ':' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].quantity, ppl_unit_database[ppl_unit_pos].quantity, "quantity", ' ' );
 
       if (setvalue[0]=='\0')

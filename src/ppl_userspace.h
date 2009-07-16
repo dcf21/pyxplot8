@@ -45,6 +45,7 @@ typedef struct FunctionDescriptor {
  value *min, *max; // Range of values over which this function definition can be used; used in function splicing
  unsigned char *MinActive, *MaxActive;
  struct FunctionDescriptor *next; // A linked list of spliced alternative function definitions
+ char *LaTeX;
  char *description;
  } FunctionDescriptor;
 

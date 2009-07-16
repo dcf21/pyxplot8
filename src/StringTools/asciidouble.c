@@ -111,12 +111,12 @@ VALID_FLOAT_ENDED:
 
 /* NumericDisplay(): Displays a double in either %f or %e formats */
 
-char *NumericDisplay(double in, int N, int SigFig)
+char *NumericDisplay(double in, int N, int SigFig, int latex)
  {
   static char format[16], outputA[128], outputB[128], outputC[128], outputD[128];
   double x, AccLevel;
   char *output;
-  int DecimalLevel, DPmax, i, j, k;
+  int DecimalLevel, DPmax, i, j, k, l;
   if      (N==0) output = outputA;
   else if (N==1) output = outputB;
   else if (N==2) output = outputC;
@@ -142,6 +142,21 @@ char *NumericDisplay(double in, int N, int SigFig)
       for (DecimalLevel=0; DecimalLevel<SigFig; DecimalLevel++) if ((x - ((floor(x*pow(10,DecimalLevel))/pow(10,DecimalLevel)) - x))<AccLevel) break;
       sprintf(format,"%%.%de",DecimalLevel);
       sprintf(output,format,in);
+      if (latex) // Turn 1e10 into nice latex
+       {
+        for (i=0;((output[i]!='\0')&&(output[i]!='e')&&(output[i]!='E'));i++);
+        if (output[i]!='\0')
+         {
+          for (j=i,k=i+32;output[j]!='\0';j++) output[j+32]=output[j];
+          output[j+32]='\0';
+          strcpy(output+i,"\\times10^{"); i+=strlen(output+i); // Replace e with times ten to the...
+          k++; // FFW over the E
+          if (output[k]=='+') k++; // We don't need to say +8... 8 will do
+          for (l=0,j=k;output[j]!='\0';j++) { if ((output[j]>'0')&&(output[j]<='9')) l=1; if ((l==1)||(output[j]!='0')) output[i++]=output[j]; } // Turn -08 into -8
+          output[i++]='}';
+          output[i++]='\0';
+         }
+       }
      }
    }
   for (i=0; ((output[i]!='\0')&&(output[i]!='.')); i++); // If we have trailing decimal zeros, get rid of them

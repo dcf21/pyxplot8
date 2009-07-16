@@ -48,6 +48,7 @@ int   ppl_baseunit_pos = UNIT_FIRSTUSER;
 
 char *SIprefixes_full  [] = {"yocto","zepto","atto","femto","pico","nano","micro","milli","","kilo","mega","giga","tera","peta","exa","zetta","yotta"};
 char *SIprefixes_abbrev[] = {"y","z","a","f","p","n","u","m","","k","M","G","T","P","E","Z","Y"};
+char *SIprefixes_latex [] = {"y","z","a","f","p","n","\\mu ","m","","k","M","G","T","P","E","Z","Y"};
 
 // Make a value structure equal zero, and be dimensionless. Used for preconfiguring values.
 value *ppl_units_zero(value *in)
@@ -71,43 +72,47 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (N==0) output = outputA;
   else      output = outputB;
 
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) return NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures);
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) return NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L));
 
-  if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+  if (typeable==0) typeable = settings_term_current.NumDisplay;
   unitstr = ppl_units_GetUnitStr(in, &NumberOutReal, &NumberOutImag, N, typeable);
 
   if (((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) || (!gsl_finite(NumberOutReal)) || (!gsl_finite(NumberOutImag)))
    {
-    strcpy(output+i, NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures));
+    if (typeable == SW_DISPLAY_L) output[i++] = '$';
+    strcpy(output+i, NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
     i+=strlen(output+i);
    }
   else
    {
     OoM = hypot(NumberOutReal , NumberOutImag) * pow(10 , -settings_term_current.SignificantFigures);
 
+    if (typeable == SW_DISPLAY_L) output[i++] = '$';
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM)) output[i++] = '('; // open brackets on complex number
-    if (fabs(NumberOutReal) >= OoM) { strcpy(output+i, NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures)); i+=strlen(output+i); }
+    if (fabs(NumberOutReal) >= OoM) { strcpy(output+i, NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L))); i+=strlen(output+i); }
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM) && (NumberOutImag > 0)) output[i++] = '+';
     if (fabs(NumberOutImag) > OoM)
      {
       if (fabs(NumberOutImag-1)>=OoM)
        {
-        strcpy(output+i, NumericDisplay(NumberOutImag, N, settings_term_current.SignificantFigures));
+        strcpy(output+i, NumericDisplay(NumberOutImag, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
         i+=strlen(output+i);
        }
-      if (typeable == 0) output[i++] = 'i';
-      else               { strcpy(output+i, "*sqrt(-1)"); i+=strlen(output+i); }
+      if (typeable != SW_DISPLAY_T) output[i++] = 'i';
+      else                          { strcpy(output+i, "*sqrt(-1)"); i+=strlen(output+i); }
      }
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM)) output[i++] = ')'; // close brackets on complex number
    }
 
   if (unitstr[0]!='\0')
    {
-    if (typeable==0) output[i++] = ' ';
+    if      (typeable == SW_DISPLAY_N) output[i++] = ' ';
+    else if (typeable == SW_DISPLAY_L) { output[i++] = '\\'; output[i++] = ','; }
     sprintf(output+i, "%s", unitstr);
     i+=strlen(output+i); // Add unit string as required
    }
 
+  if (typeable == SW_DISPLAY_L) output[i++] = '$';
   output[i++] = '\0'; // null terminate string
   return output;
  }
@@ -296,7 +301,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
 char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH], outputC[LSTR_LENGTH];
-  char  *output;
+  char  *output,*temp;
   value  residual;
   unit         *UnitList[UNITS_MAX_BASEUNITS];
   double        UnitPow [UNITS_MAX_BASEUNITS];
@@ -304,9 +309,9 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
   unsigned char UnitDisp[UNITS_MAX_BASEUNITS];
   double        ExpMax;
   int           pos=0, OutputPos=0;
-  int           i, j, found, first;
+  int           i, j, k, l, found, first;
 
-  if (settings_term_current.NumDisplayTypeable == SW_ONOFF_ON) typeable = 1;
+  if (typeable==0) typeable = settings_term_current.NumDisplay;
 
   if      (N==0) output = outputA;
   else if (N==1) output = outputB;
@@ -342,40 +347,69 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
     found = 0;
     for (i=0; i<pos; i++) if ((UnitDisp[i]==0) && ((found==0) || (UnitPow[i]>ExpMax))) { ExpMax=UnitPow[i]; found=1; j=i; }
     if (found==0) break;
-    if (typeable && first) { strcpy(output+OutputPos, "*unit("); OutputPos+=strlen(output+OutputPos); }
+    if ((typeable==SW_DISPLAY_T) && first) { strcpy(output+OutputPos, "*unit("); OutputPos+=strlen(output+OutputPos); }
     if (!first) // Print * or /
      {
-      if ((UnitPow[j] > 0) || (ppl_units_DblEqual(UnitPow[j],0))) output[OutputPos++] = '*';
-      else                                                        output[OutputPos++] = '/';
+      if ((UnitPow[j] > 0) || (ppl_units_DblEqual(UnitPow[j],0))) { if (typeable==SW_DISPLAY_L) { output[OutputPos++] = '\\'; output[OutputPos++] = ','; }  else output[OutputPos++] = '*'; }
+      else                                                        { output[OutputPos++] = '/'; }
      }
+    if (typeable==SW_DISPLAY_L) { strcpy(output+OutputPos, "\\mathrm{"); OutputPos+=strlen(output+OutputPos); }
     if (UnitPref[j] != 0) // Print SI prefix
      {
-      if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON) strcpy(output+OutputPos, SIprefixes_abbrev[UnitPref[j]+8]);
-      else                                                        strcpy(output+OutputPos, SIprefixes_full  [UnitPref[j]+8]);
+      if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON)
+       {
+        if (typeable!=SW_DISPLAY_L) strcpy(output+OutputPos, SIprefixes_abbrev[UnitPref[j]+8]);
+        else                        strcpy(output+OutputPos, SIprefixes_latex [UnitPref[j]+8]);
+       }
+      else
+       { strcpy(output+OutputPos, SIprefixes_full  [UnitPref[j]+8]); }
       OutputPos+=strlen(output+OutputPos);
      }
     if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON)
      {
-      if (UnitPow[j] >= 0) strcpy(output+OutputPos, UnitList[j]->nameAp);
-      else                 strcpy(output+OutputPos, UnitList[j]->nameAs);
+      if (typeable!=SW_DISPLAY_L)
+       {
+        if (UnitPow[j] >= 0) strcpy(output+OutputPos, UnitList[j]->nameAp); // Use abbreviated name for unit
+        else                 strcpy(output+OutputPos, UnitList[j]->nameAs);
+       }
+      else
+       {
+        if (UnitPow[j] >= 0) strcpy(output+OutputPos, UnitList[j]->nameLp); // Use abbreviated LaTeX name for unit
+        else                 strcpy(output+OutputPos, UnitList[j]->nameLs);
+       }
      } else {
-      if (UnitPow[j] >= 0) strcpy(output+OutputPos, UnitList[j]->nameFp);
-      else                 strcpy(output+OutputPos, UnitList[j]->nameFs);
+      if (UnitPow[j] >= 0) temp = UnitList[j]->nameFp; // Use full name for unit...
+      else                 temp = UnitList[j]->nameFs;
+
+      if (typeable!=SW_DISPLAY_L)
+       { strcpy(output+OutputPos, temp); } // ... either as it comes
+      else
+       {
+        for (k=l=0;temp[k]!='\0';k++)
+         {
+          if (temp[k]=='_') output[OutputPos+(l++)]='\\'; // ... or with escaped underscores for LaTeX
+          output[OutputPos+(l++)]=temp[k];
+         }
+        output[OutputPos+(l++)]='\0';
+       }
      }
     OutputPos+=strlen(output+OutputPos);
+    if (typeable==SW_DISPLAY_L) { output[OutputPos++]='}'; }
     if ( (first && (!ppl_units_DblEqual(UnitPow[j],1))) || ((!first) && (!ppl_units_DblEqual(fabs(UnitPow[j]),1))) ) // Print power
      {
-      output[OutputPos++]='*'; output[OutputPos++]='*';
-      if (first) sprintf(output+OutputPos, "%s", NumericDisplay(     UnitPow[j] , N, settings_term_current.SignificantFigures));
-      else       sprintf(output+OutputPos, "%s", NumericDisplay(fabs(UnitPow[j]), N, settings_term_current.SignificantFigures));
+      if (typeable==SW_DISPLAY_L) { output[OutputPos++]='^'; output[OutputPos++]='{'; }
+      else                        { output[OutputPos++]='*'; output[OutputPos++]='*'; }
+      if (first) sprintf(output+OutputPos, "%s", NumericDisplay(     UnitPow[j] , N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
+      else       sprintf(output+OutputPos, "%s", NumericDisplay(fabs(UnitPow[j]), N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
       OutputPos+=strlen(output+OutputPos);
+      if (typeable==SW_DISPLAY_L) { output[OutputPos++]='}'; }
      }
     UnitDisp[j] = 1;
     first = 0;
    }
 
   // Clean up and return
-  if (typeable) output[OutputPos++] = ')';
+  if (typeable==SW_DISPLAY_T) output[OutputPos++] = ')';
   output[OutputPos] = '\0';
   if (NumberOutReal != NULL) *NumberOutReal = residual.real;
   if (NumberOutImag != NULL) *NumberOutImag = residual.imag;

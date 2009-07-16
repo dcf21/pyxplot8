@@ -81,7 +81,7 @@ void ppl_settings_makedefault()
   settings_term_default.landscape           = SW_ONOFF_OFF;
   strcpy(settings_term_default.LatexPreamble, "");
   settings_term_default.multiplot           = SW_ONOFF_OFF;
-  settings_term_default.NumDisplayTypeable  = SW_ONOFF_OFF;
+  settings_term_default.NumDisplay          = SW_DISPLAY_N;
   strcpy(settings_term_default.output, "");
   ppl_units_zero(&(settings_term_default.PaperHeight));
   settings_term_default.PaperHeight.real    = 297.0 / 1000;

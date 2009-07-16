@@ -69,6 +69,10 @@ char *SW_UNITSCH_STR[] = {"si"          , "cgs"          , "ancient"      , "imp
 int   SW_UNITSCH_INT[] = {SW_UNITSCH_SI , SW_UNITSCH_CGS , SW_UNITSCH_ANC , SW_UNITSCH_IMP , SW_UNITSCH_US , SW_UNITSCH_PLK , -1};
 int   SW_UNITSCH_ACL[] = {1             , 1              , 1              , 1              , 1             , 1              , -1};
 
+char *SW_DISPLAY_STR[] = {"natural"     , "typeable"     , "latex"        };
+int   SW_DISPLAY_ACL[] = {1             , 1              , 1              };
+int   SW_DISPLAY_INT[] = {SW_DISPLAY_N  , SW_DISPLAY_T   , SW_DISPLAY_L   , -1};
+
 char *SW_CALENDAR_STR[] = {"Gregorian"          , "Julian"          , "British"          , "French"          , "Catholic"          , "Russian"          , "Greek"          };
 int   SW_CALENDAR_INT[] = {SW_CALENDAR_GREGORIAN, SW_CALENDAR_JULIAN, SW_CALENDAR_BRITISH, SW_CALENDAR_FRENCH, SW_CALENDAR_CATHOLIC, SW_CALENDAR_RUSSIAN, SW_CALENDAR_GREEK, -1};
 int   SW_CALENDAR_ACL[] = {1                    , 1                 , 1                  , 1                 , 1                   , 1                  , 5                };

@@ -46,114 +46,115 @@ void ppl_UserSpaceInit()
   _ppl_UserSpace_Funcs = DictInit();
 
   // Function descriptors for the mathematical functions which are built into PyXPlot
-  FunctionDescriptor fd_abs           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_abs         , NULL, NULL, NULL, NULL, NULL, NULL, "abs(z) returns the absolute magnitude of z"};
-  FunctionDescriptor fd_acos          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acos        , NULL, NULL, NULL, NULL, NULL, NULL, "acos(x) returns the arccosine of x"};
-  FunctionDescriptor fd_acosh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acosh       , NULL, NULL, NULL, NULL, NULL, NULL, "acosh(x) returns the hyperbolic arccosine of x"};
-  FunctionDescriptor fd_acot          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acot        , NULL, NULL, NULL, NULL, NULL, NULL, "acos(x) returns the arccotangent of x"};
-  FunctionDescriptor fd_acoth         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acoth       , NULL, NULL, NULL, NULL, NULL, NULL, "acoth(x) returns the hyperbolic arccotangent of x"};
-  FunctionDescriptor fd_acsc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsc        , NULL, NULL, NULL, NULL, NULL, NULL, "acsc(x) returns the arccosecant of x"};
-  FunctionDescriptor fd_acsch         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsch       , NULL, NULL, NULL, NULL, NULL, NULL, "acsch(x) returns the hyperbolic arccosecant of x"};
-  FunctionDescriptor fd_arg           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_arg         , NULL, NULL, NULL, NULL, NULL, NULL, "arg(z) returns the argument of the complex number z"};
-  FunctionDescriptor fd_asec          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asec        , NULL, NULL, NULL, NULL, NULL, NULL, "asec(x) returns the arcsecant of x"};
-  FunctionDescriptor fd_asech         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asech       , NULL, NULL, NULL, NULL, NULL, NULL, "asech(x) returns the hyperbolic arcsecant of x"};
-  FunctionDescriptor fd_asin          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asin        , NULL, NULL, NULL, NULL, NULL, NULL, "asin(x) returns the arcsine of x"};
-  FunctionDescriptor fd_asinh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asinh       , NULL, NULL, NULL, NULL, NULL, NULL, "asinh(x) returns the hyperbolic arcsine of x"};
-  FunctionDescriptor fd_atan          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atan        , NULL, NULL, NULL, NULL, NULL, NULL, "atan(x) returns the arctangent of x"};
-  FunctionDescriptor fd_atanh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atanh       , NULL, NULL, NULL, NULL, NULL, NULL, "atanh(x) returns the hyperbolic arctangent of x"};
-  FunctionDescriptor fd_atan2         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_atan2       , NULL, NULL, NULL, NULL, NULL, NULL, "atan2(x,y) returns the arctangent of x/y. Unlike atan(y/x), atan2(x,y) takes account of the signs of both x and y to remove the degeneracy between (1,1) and (-1,-1)"};
-  FunctionDescriptor fd_besseli       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besseli     , NULL, NULL, NULL, NULL, NULL, NULL, "besseli(l,x) evaluates the lth regular modified spherical Bessel function at x"};
-  FunctionDescriptor fd_besselI       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselI     , NULL, NULL, NULL, NULL, NULL, NULL, "besselI(l,x) evaluates the lth regular modified cylindrical Bessel function at x"};
-  FunctionDescriptor fd_besselj       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselj     , NULL, NULL, NULL, NULL, NULL, NULL, "besselj(l,x) evaluates the lth regular spherical Bessel function at x"};
-  FunctionDescriptor fd_besselJ       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselJ     , NULL, NULL, NULL, NULL, NULL, NULL, "besselJ(l,x) evaluates the lth regular cylindrical Bessel function at x"};
-  FunctionDescriptor fd_besselk       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselk     , NULL, NULL, NULL, NULL, NULL, NULL, "besselk(l,x) evaluates the lth irregular modified spherical Bessel function at x"};
-  FunctionDescriptor fd_besselK       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselK     , NULL, NULL, NULL, NULL, NULL, NULL, "besselK(l,x) evaluates the lth irregular modified cylindrical Bessel function at x"};
-  FunctionDescriptor fd_bessely       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_bessely     , NULL, NULL, NULL, NULL, NULL, NULL, "bessely(l,x) evaluates the lth irregular spherical Bessel function at x"};
-  FunctionDescriptor fd_besselY       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselY     , NULL, NULL, NULL, NULL, NULL, NULL, "besselY(l,x) evaluates the lth irregular cylindrical Bessel function at x"};
-  FunctionDescriptor fd_beta          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_beta        , NULL, NULL, NULL, NULL, NULL, NULL, "beta(a,b) evaluates the beta function B(a,b)"};
-  FunctionDescriptor fd_binomialPDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialPDF , NULL, NULL, NULL, NULL, NULL, NULL, "binomialPDF(k,p,n) evaulates the probability of getting k successes out of n trials in a binomial distribution with success probability p"};
-  FunctionDescriptor fd_binomialCDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialCDF , NULL, NULL, NULL, NULL, NULL, NULL, "binomialCDF(k,p,n) evaulates the probability of getting fewer than or exactly k successes out of n trials in a binomial distribution with success probability p"};
-  FunctionDescriptor fd_Bv            = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_planck_Bv   , NULL, NULL, NULL, NULL, NULL, NULL, "Bv(nu,T) returns the emitted power of a blackbody of temperature T per unit area, per unit solid angle, and per unit frequency"};
-  FunctionDescriptor fd_Bvmax         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_planck_Bvmax, NULL, NULL, NULL, NULL, NULL, NULL, "Bvmax(T) returns the frequency of the maximum of the function Bv(nu,T)"};
-  FunctionDescriptor fd_ceil          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ceil        , NULL, NULL, NULL, NULL, NULL, NULL, "ceil(x) returns the smallest integer value greater than or equal to x"};
-  FunctionDescriptor fd_chisqPDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqPDF    , NULL, NULL, NULL, NULL, NULL, NULL, "chisqPDF(x,nu) returns the probability desity at x in a chi-squared distribution with nu degrees of freedom"};
-  FunctionDescriptor fd_chisqCDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDF    , NULL, NULL, NULL, NULL, NULL, NULL, "chisqCDF(x,nu) returns the cumulative probability desity at x in a chi-squared distribution with nu degrees of freedom"};
-  FunctionDescriptor fd_chisqCDFi     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDFi   , NULL, NULL, NULL, NULL, NULL, NULL, "chisqCDFi(P,nu) returns the point x at which the cumulative probability desity in a chi-squared distribution with nu degrees of freedom is P"};
-  FunctionDescriptor fd_conjugate     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_conjugate   , NULL, NULL, NULL, NULL, NULL, NULL, "conjugate(z) returns the complex conjugate of z"};
-  FunctionDescriptor fd_cos           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cos         , NULL, NULL, NULL, NULL, NULL, NULL, "cos(x) returns the cosine of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_cosh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cosh        , NULL, NULL, NULL, NULL, NULL, NULL, "cosh(x) returns the hyperbolic cosine of x"};
-  FunctionDescriptor fd_cot           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cot         , NULL, NULL, NULL, NULL, NULL, NULL, "cot(x) returns the cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_coth          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_coth        , NULL, NULL, NULL, NULL, NULL, NULL, "cot(x) returns the hyperbolic cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_csc           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csc         , NULL, NULL, NULL, NULL, NULL, NULL, "csc(x) returns the cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_csch          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csch        , NULL, NULL, NULL, NULL, NULL, NULL, "csch(x) returns the hyperbolic cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_degrees       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_degrees     , NULL, NULL, NULL, NULL, NULL, NULL, "degrees(x) converts angles measured in radians into degrees"};
-  FunctionDescriptor fd_ellK          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellK        , NULL, NULL, NULL, NULL, NULL, NULL, "ellipticintK(k) evaluates the complete elliptic integral K(k)"};
-  FunctionDescriptor fd_ellE          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellE        , NULL, NULL, NULL, NULL, NULL, NULL, "ellipticintE(k) evaluates the complete elliptic integral E(k)"};
-  FunctionDescriptor fd_ellP          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ellP        , NULL, NULL, NULL, NULL, NULL, NULL, "ellipticintP(k,n) evaluates the complete elliptic integral P(k,n)"};
-  FunctionDescriptor fd_erf           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erf         , NULL, NULL, NULL, NULL, NULL, NULL, "erf(x) evaluates the error function at x"};
-  FunctionDescriptor fd_erfc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erfc        , NULL, NULL, NULL, NULL, NULL, NULL, "erfc(x) evaluates the complimentary error function at x"};
-  FunctionDescriptor fd_exp           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_exp         , NULL, NULL, NULL, NULL, NULL, NULL, "exp(x) returns e to the power of x"};
-  FunctionDescriptor fd_expm1         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_expm1       , NULL, NULL, NULL, NULL, NULL, NULL, "expm1(x) accurately evaluates exp(x)-1"};
-  FunctionDescriptor fd_expint        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_expint      , NULL, NULL, NULL, NULL, NULL, NULL, "expint(n,x) evaluates the integral of exp(-xt)/t**n between one and infinity"};
-  FunctionDescriptor fd_floor         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_floor       , NULL, NULL, NULL, NULL, NULL, NULL, "floor(x) returns the largest integer value smaller than or equal to x"};
-  FunctionDescriptor fd_gamma         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_gamma       , NULL, NULL, NULL, NULL, NULL, NULL, "gamma(x) evaluates the gamma function at x"};
-  FunctionDescriptor fd_gaussianPDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianPDF , NULL, NULL, NULL, NULL, NULL, NULL, "gaussianPDF(x,sigma) evaluates the Gaussian probability density function of standard deviation sigma at x"};
-  FunctionDescriptor fd_gaussianCDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDF , NULL, NULL, NULL, NULL, NULL, NULL, "gaussianCDF(x,sigma) evaluates the Gaussian cumulative distribution function of standard deviation sigma at x"};
-  FunctionDescriptor fd_gaussianCDFi  = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDFi, NULL, NULL, NULL, NULL, NULL, NULL, "gaussianCDFi(x,sigma) evaluates the inverse Gaussian cumulative distribution function of standard deviation sigma at x"};
-  FunctionDescriptor fd_heaviside     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_heaviside   , NULL, NULL, NULL, NULL, NULL, NULL, "heaviside(x) returns the Heaviside function, defined to be one for x>=0 and zero otherwise"};
-  FunctionDescriptor fd_hypot         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_hypot       , NULL, NULL, NULL, NULL, NULL, NULL, "hypot(x,y) returns the quadrature sum of x and y"};
-  FunctionDescriptor fd_imag          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_imag        , NULL, NULL, NULL, NULL, NULL, NULL, "Im(z) returns the magnitude of the imaginary part of z"};
-  FunctionDescriptor fd_ldexp         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ldexp       , NULL, NULL, NULL, NULL, NULL, NULL, "ldexp(x,y) returns x times 2 to the power of an integer y"};
-  FunctionDescriptor fd_legendreP     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreP   , NULL, NULL, NULL, NULL, NULL, NULL, "legendreP(l,x) evaluates the lth Legendre polynomial at x"};
-  FunctionDescriptor fd_legendreQ     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreQ   , NULL, NULL, NULL, NULL, NULL, NULL, "legendreQ(l,x) evaluates the lth Legendre function at x"};
-  FunctionDescriptor fd_log           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log         , NULL, NULL, NULL, NULL, NULL, NULL, "log(x) returns the natural logarithm of x"};
-  FunctionDescriptor fd_log10         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log10       , NULL, NULL, NULL, NULL, NULL, NULL, "log10(x) returns the logarithm to base 10 of x"};
-  FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalPDF(x,zeta,sigma) evaluates the log normal probability density function of standard deviation sigma at x"};
-  FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDF(x,zeta,sigma) evaluates the log normal cumulative distribution function of standard deviation sigma at x"};
-  FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "lognormalCDFi(x,zeta,sigma) evaluates the inverse log normal cumulative distribution function of standard deviation sigma at x"};
-  FunctionDescriptor fd_max           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_max         , NULL, NULL, NULL, NULL, NULL, NULL, "max(x,y) returns the greater of the two values x and y"};
-  FunctionDescriptor fd_min           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_min         , NULL, NULL, NULL, NULL, NULL, NULL, "min(x,y) returns the lesser of the two values x and y"};
-  FunctionDescriptor fd_mod           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_mod         , NULL, NULL, NULL, NULL, NULL, NULL, "mod(x,y) returns the remainder of x/y"};
-  FunctionDescriptor fd_ordinal       = { PPL_USERSPACE_STRFUNC, 0 , 1 , (void *)&dcftime_ordinal     , NULL, NULL, NULL, NULL, NULL, NULL, "ordinal(x) converts the integer x into an ordinal number string, e.g. '1st', '2nd', etc"};
-  FunctionDescriptor fd_poissonPDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonPDF  , NULL, NULL, NULL, NULL, NULL, NULL, "poissonPDF(x,mu) returns the probability of getting x from a Poisson distribution with mean mu"};
-  FunctionDescriptor fd_poissonCDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonCDF  , NULL, NULL, NULL, NULL, NULL, NULL, "poissonCDF(x,mu) returns the probability of getting <= x from a Poisson distribution with mean mu"};
-  FunctionDescriptor fd_pow           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_pow         , NULL, NULL, NULL, NULL, NULL, NULL, "pow(x,y) returns x to the power of y"};
-  FunctionDescriptor fd_radians       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_radians     , NULL, NULL, NULL, NULL, NULL, NULL, "radians(x) converts angles measured in degrees into radians"};
-  FunctionDescriptor fd_random        = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcfmath_frandom     , NULL, NULL, NULL, NULL, NULL, NULL, "random(x) returns a random number between 0 and 1"};
-  FunctionDescriptor fd_randombin     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandombin  , NULL, NULL, NULL, NULL, NULL, NULL, "randomBinomial(p,n) returns a random sample from a binomial distribution with n independent trials and a success probability p"};
-  FunctionDescriptor fd_randomcs      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomcs   , NULL, NULL, NULL, NULL, NULL, NULL, "randomChiSq(mu) returns a random sample from a chi-squared distribution with mu degrees of freedom"};
-  FunctionDescriptor fd_randomg       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomg    , NULL, NULL, NULL, NULL, NULL, NULL, "randomGaussian(sigma) returns a random sample from a Gaussian (normal) distribution of standard deviation sigma"};
-  FunctionDescriptor fd_randomln      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandomln   , NULL, NULL, NULL, NULL, NULL, NULL, "randomLogNormal(zeta,sigma) returns a random sample from the log normal distribution centred on zeta, and of width sigma"};
-  FunctionDescriptor fd_randomp       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomp    , NULL, NULL, NULL, NULL, NULL, NULL, "randomPoisson(n) returns a random integer from a Poisson distribution with mean n"};
-  FunctionDescriptor fd_real          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_real        , NULL, NULL, NULL, NULL, NULL, NULL, "Re(z) returns the magnitude of the real part of z"};
-  FunctionDescriptor fd_sec           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "sec(x) returns the secant of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_sech          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sech        , NULL, NULL, NULL, NULL, NULL, NULL, "sech(x) returns the hyperbolic secant of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_sin           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sin         , NULL, NULL, NULL, NULL, NULL, NULL, "sin(x) returns the sine of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "sinh(x) returns the hyperbolic sine of x"};
-  FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "sqrt(x) returns the square root of x"};
-  FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "tanh(x) returns the hyperbolic tangent of x"};
-  FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
-  FunctionDescriptor fd_time_now      = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcftime_now         , NULL, NULL, NULL, NULL, NULL, NULL, "time_now() returns the present Julian Date"};
-  FunctionDescriptor fd_time_year     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_year        , NULL, NULL, NULL, NULL, NULL, NULL, "time_year(JD) returns the calendar year corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_monthnum = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_monthnum    , NULL, NULL, NULL, NULL, NULL, NULL, "time_monthnum(JD) returns the number (1-12) of the calendar month corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_monthname= { PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_monthname   , NULL, NULL, NULL, NULL, NULL, NULL, "time_monthname(JD,length) returns the name, truncated to length characters, of the calendar month corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_daymonth = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_daymonth    , NULL, NULL, NULL, NULL, NULL, NULL, "time_daymonth(JD) returns the day of the calendar month corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_dayweeknum={ PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_dayweeknum  , NULL, NULL, NULL, NULL, NULL, NULL, "time_dayweeknum(JD) returns the number (1=Monday - 7=Sunday) of the day of the week corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_dayweekname={PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_dayweekname , NULL, NULL, NULL, NULL, NULL, NULL, "time_dayweekname(JD,length) returns the name, truncated to length characters, of the day of the week corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_hour     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_hour        , NULL, NULL, NULL, NULL, NULL, NULL, "time_hour(JD) returns the hour of the day corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_min      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_min         , NULL, NULL, NULL, NULL, NULL, NULL, "time_min(JD) returns the minutes within the hour corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_sec      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "time_sec(JD) returns the seconds within the minute corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_moonphase= { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_moonphase   , NULL, NULL, NULL, NULL, NULL, NULL, "time_moonphase(JD) returns the phase on the Moon on Julian Date JD"};
-  FunctionDescriptor fd_timediff_years= { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcftimediff_years   , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_years(JD1,JD2) returns the number of whole years (intervals of 365 days) elapsed between Julian Dates JD1 and JD2"};
-  FunctionDescriptor fd_timediff_days = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_days    , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_days(JD1,JD2,wrap) returns the number of whole days elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 365"};
-  FunctionDescriptor fd_timediff_hours= { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_hours   , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_hours(JD1,JD2,wrap) returns the number of whole hours elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 24"};
-  FunctionDescriptor fd_timediff_min  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_minutes , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_mins(JD1,JD2,wrap) returns the number of whole minutes elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 60"};
-  FunctionDescriptor fd_timediff_sec  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_seconds , NULL, NULL, NULL, NULL, NULL, NULL, "timediff_secs(JD1,JD2,wrap) returns the number of seconds, including fractions of seconds, elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 60"};
-  FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
-  FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "unit(...) multiplies a number by a physical unit"};
-  FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "zeta(x) evaluates the Riemann zeta function at x"};
-  FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
-  FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "diff_da(e,x,step) numerically differentiates an expression e wrt a at x, using a step size of step. 'a' can be any variable name with fewer than 16 characters."};
+  FunctionDescriptor fd_abs           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_abs         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{abs}(@1)", "abs(z) returns the absolute magnitude of z"};
+  FunctionDescriptor fd_acos          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acos        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acos}(@1)", "acos(x) returns the arccosine of x"};
+  FunctionDescriptor fd_acosh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acosh       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acosh}(@1)", "acosh(x) returns the hyperbolic arccosine of x"};
+  FunctionDescriptor fd_acot          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acot        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acot}(@1)", "acot(x) returns the arccotangent of x"};
+  FunctionDescriptor fd_acoth         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acoth       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acoth}(@1)", "acoth(x) returns the hyperbolic arccotangent of x"};
+  FunctionDescriptor fd_acsc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsc        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acsc}(@1)", "acsc(x) returns the arccosecant of x"};
+  FunctionDescriptor fd_acsch         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsch       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acsch}(@1)", "acsch(x) returns the hyperbolic arccosecant of x"};
+  FunctionDescriptor fd_arg           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_arg         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{arg}(@1)", "arg(z) returns the argument of the complex number z"};
+  FunctionDescriptor fd_asec          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asec        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asec}(@1)", "asec(x) returns the arcsecant of x"};
+  FunctionDescriptor fd_asech         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asech       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asech}(@1)", "asech(x) returns the hyperbolic arcsecant of x"};
+  FunctionDescriptor fd_asin          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asin        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asin}(@1)", "asin(x) returns the arcsine of x"};
+  FunctionDescriptor fd_asinh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asinh       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asinh}(@1)", "asinh(x) returns the hyperbolic arcsine of x"};
+  FunctionDescriptor fd_atan          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atan        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atan}(@1)", "atan(x) returns the arctangent of x"};
+  FunctionDescriptor fd_atanh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atanh       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atanh}(@1)", "atanh(x) returns the hyperbolic arctangent of x"};
+  FunctionDescriptor fd_atan2         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_atan2       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atan2}(@1,@2)", "atan2(x,y) returns the arctangent of x/y. Unlike atan(y/x), atan2(x,y) takes account of the signs of both x and y to remove the degeneracy between (1,1) and (-1,-1)"};
+  FunctionDescriptor fd_besseli       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besseli     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besseli}(@1,@2)", "besseli(l,x) evaluates the lth regular modified spherical Bessel function at x"};
+  FunctionDescriptor fd_besselI       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselI     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besselI}(@1,@2)", "besselI(l,x) evaluates the lth regular modified cylindrical Bessel function at x"};
+  FunctionDescriptor fd_besselj       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselj     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besselj}(@1,@2)", "besselj(l,x) evaluates the lth regular spherical Bessel function at x"};
+  FunctionDescriptor fd_besselJ       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselJ     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besselJ}(@1,@2)", "besselJ(l,x) evaluates the lth regular cylindrical Bessel function at x"};
+  FunctionDescriptor fd_besselk       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselk     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besselk}(@1,@2)", "besselk(l,x) evaluates the lth irregular modified spherical Bessel function at x"};
+  FunctionDescriptor fd_besselK       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselK     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besselK}(@1,@2)", "besselK(l,x) evaluates the lth irregular modified cylindrical Bessel function at x"};
+  FunctionDescriptor fd_bessely       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_bessely     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{bessely}(@1,@2)", "bessely(l,x) evaluates the lth irregular spherical Bessel function at x"};
+  FunctionDescriptor fd_besselY       = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_besselY     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{besselY}(@1,@2)", "besselY(l,x) evaluates the lth irregular cylindrical Bessel function at x"};
+  FunctionDescriptor fd_beta          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_beta        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B}(@1,@2)", "beta(a,b) evaluates the beta function B(a,b)"};
+  FunctionDescriptor fd_binomialPDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialPDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{binomialPDF}(@1,@2,@3)", "binomialPDF(k,p,n) evaulates the probability of getting k successes out of n trials in a binomial distribution with success probability p"};
+  FunctionDescriptor fd_binomialCDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialCDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{binomialCDF}(@1,@2,@3)", "binomialCDF(k,p,n) evaulates the probability of getting fewer than or exactly k successes out of n trials in a binomial distribution with success probability p"};
+  FunctionDescriptor fd_Bv            = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_planck_Bv   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B_\\nu}(@1,@2)", "Bv(nu,T) returns the emitted power of a blackbody of temperature T per unit area, per unit solid angle, and per unit frequency"};
+  FunctionDescriptor fd_Bvmax         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_planck_Bvmax, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B_\\nu max}(@1)", "Bvmax(T) returns the frequency of the maximum of the function Bv(nu,T)"};
+  FunctionDescriptor fd_ceil          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ceil        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ceil}(@1)", "ceil(x) returns the smallest integer value greater than or equal to x"};
+  FunctionDescriptor fd_chisqPDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqPDF    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 PDF}(@1,@2)", "chisqPDF(x,nu) returns the probability desity at x in a chi-squared distribution with nu degrees of freedom"};
+  FunctionDescriptor fd_chisqCDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDF    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 CDF}(@1,@2)", "chisqCDF(x,nu) returns the cumulative probability desity at x in a chi-squared distribution with nu degrees of freedom"};
+  FunctionDescriptor fd_chisqCDFi     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDFi   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 CDFi}(@1,@2)", "chisqCDFi(P,nu) returns the point x at which the cumulative probability desity in a chi-squared distribution with nu degrees of freedom is P"};
+  FunctionDescriptor fd_conjugate     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_conjugate   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{conjugate}(@1)", "conjugate(z) returns the complex conjugate of z"};
+  FunctionDescriptor fd_cos           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cos         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cos}(@1)", "cos(x) returns the cosine of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_cosh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cosh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cosh}(@1)", "cosh(x) returns the hyperbolic cosine of x"};
+  FunctionDescriptor fd_cot           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cot         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cot}(@1)", "cot(x) returns the cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_coth          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_coth        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{coth}(@1)", "coth(x) returns the hyperbolic cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_csc           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csc         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{csc}(@1)", "csc(x) returns the cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_csch          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csch        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{csch}(@1)", "csch(x) returns the hyperbolic cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_degrees       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_degrees     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{degrees}(@1)", "degrees(x) converts angles measured in radians into degrees"};
+  FunctionDescriptor fd_ellK          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellK        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ellipticintK}(@1)", "ellipticintK(k) evaluates the complete elliptic integral K(k)"};
+  FunctionDescriptor fd_ellE          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellE        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ellipticintE}(@1)", "ellipticintE(k) evaluates the complete elliptic integral E(k)"};
+  FunctionDescriptor fd_ellP          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ellP        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ellipticintP}(@1,@2)", "ellipticintP(k,n) evaluates the complete elliptic integral P(k,n)"};
+  FunctionDescriptor fd_erf           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erf         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{erf}(@1)", "erf(x) evaluates the error function at x"};
+  FunctionDescriptor fd_erfc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erfc        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{erfc}(@1)", "erfc(x) evaluates the complimentary error function at x"};
+  FunctionDescriptor fd_exp           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_exp         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{exp}(@1)", "exp(x) returns e to the power of x"};
+  FunctionDescriptor fd_expm1         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_expm1       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expm1}(@1)", "expm1(x) accurately evaluates exp(x)-1"};
+  FunctionDescriptor fd_expint        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_expint      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expint}(@1,@2)", "expint(n,x) evaluates the integral of exp(-xt)/t**n between one and infinity"};
+  FunctionDescriptor fd_floor         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_floor       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{floor}(@1)", "floor(x) returns the largest integer value smaller than or equal to x"};
+  FunctionDescriptor fd_gamma         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_gamma       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\Gamma}(@1)", "gamma(x) evaluates the gamma function at x"};
+  FunctionDescriptor fd_gaussianPDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianPDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianPDF}(@1,@2)", "gaussianPDF(x,sigma) evaluates the Gaussian probability density function of standard deviation sigma at x"};
+  FunctionDescriptor fd_gaussianCDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianCDF}(@1,@2)", "gaussianCDF(x,sigma) evaluates the Gaussian cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_gaussianCDFi  = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDFi, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianCDFi}(@1,@2)", "gaussianCDFi(x,sigma) evaluates the inverse Gaussian cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_heaviside     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_heaviside   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{heaviside}(@1)", "heaviside(x) returns the Heaviside function, defined to be one for x>=0 and zero otherwise"};
+  FunctionDescriptor fd_hypot         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_hypot       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hypot}(@1,@2)", "hypot(x,y) returns the quadrature sum of x and y"};
+  FunctionDescriptor fd_imag          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_imag        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{Im}(@1)", "Im(z) returns the magnitude of the imaginary part of z"};
+  FunctionDescriptor fd_ldexp         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ldexp       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ldexp}(@1,@2)", "ldexp(x,y) returns x times 2 to the power of an integer y"};
+  FunctionDescriptor fd_legendreP     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreP   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{legendreP}(@1,@2)", "legendreP(l,x) evaluates the lth Legendre polynomial at x"};
+  FunctionDescriptor fd_legendreQ     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreQ   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{legendreQ}(@1,@2)", "legendreQ(l,x) evaluates the lth Legendre function at x"};
+  FunctionDescriptor fd_log           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{log}(@1)", "log(x) returns the natural logarithm of x"};
+  FunctionDescriptor fd_log10         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log10       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{log_{10}}(@1)", "log10(x) returns the logarithm to base 10 of x"};
+  FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lognormalPDF}(@1,@2,@3)", "lognormalPDF(x,zeta,sigma) evaluates the log normal probability density function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lognormalCDF}(@1,@2,@3)", "lognormalCDF(x,zeta,sigma) evaluates the log normal cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lognormalCDFi}(@1,@2,@3)", "lognormalCDFi(x,zeta,sigma) evaluates the inverse log normal cumulative distribution function of standard deviation sigma at x"};
+  FunctionDescriptor fd_max           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_max         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{max}(@1,@2)", "max(x,y) returns the greater of the two values x and y"};
+  FunctionDescriptor fd_min           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_min         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{min}(@1,@2)", "min(x,y) returns the lesser of the two values x and y"};
+  FunctionDescriptor fd_mod           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_mod         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{mod}(@1,@2)", "mod(x,y) returns the remainder of x/y"};
+  FunctionDescriptor fd_ordinal       = { PPL_USERSPACE_STRFUNC, 0 , 1 , (void *)&dcftime_ordinal     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ordinal}(@1)", "ordinal(x) converts the integer x into an ordinal number string, e.g. '1st', '2nd', etc"};
+  FunctionDescriptor fd_poissonPDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonPDF  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{poissonPDF}(@1,@2)", "poissonPDF(x,mu) returns the probability of getting x from a Poisson distribution with mean mu"};
+  FunctionDescriptor fd_poissonCDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonCDF  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{poissonCDF}(@1,@2)", "poissonCDF(x,mu) returns the probability of getting <= x from a Poisson distribution with mean mu"};
+  FunctionDescriptor fd_pow           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_pow         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{pow}(@1,@2)", "pow(x,y) returns x to the power of y"};
+  FunctionDescriptor fd_radians       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_radians     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{radians}(@1)", "radians(x) converts angles measured in degrees into radians"};
+  FunctionDescriptor fd_random        = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcfmath_frandom     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random}(@1)", "random(x) returns a random number between 0 and 1"};
+  FunctionDescriptor fd_randombin     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandombin  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{randomBinomial}(@1,@2)", "randomBinomial(p,n) returns a random sample from a binomial distribution with n independent trials and a success probability p"};
+  FunctionDescriptor fd_randomcs      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomcs   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random-\\chi^2}(@1)", "randomChiSq(mu) returns a random sample from a chi-squared distribution with mu degrees of freedom"};
+  FunctionDescriptor fd_randomg       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomg    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{randomGaussian}(@1)", "randomGaussian(sigma) returns a random sample from a Gaussian (normal) distribution of standard deviation sigma"};
+  FunctionDescriptor fd_randomln      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandomln   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{randomLogNormal}(@1,@2)", "randomLogNormal(zeta,sigma) returns a random sample from the log normal distribution centred on zeta, and of width sigma"};
+  FunctionDescriptor fd_randomp       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomp    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{randomPoisson}(@1)", "randomPoisson(n) returns a random integer from a Poisson distribution with mean n"};
+  FunctionDescriptor fd_real          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_real        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{Re}(@1)", "Re(z) returns the magnitude of the real part of z"};
+  FunctionDescriptor fd_sec           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sec}(@1)", "sec(x) returns the secant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_sech          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sech        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sech}(@1)", "sech(x) returns the hyperbolic secant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_sin           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sin         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sin}(@1)", "sin(x) returns the sine of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinh}(@1)", "sinh(x) returns the hyperbolic sine of x"};
+  FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "\\sqrt{@1}", "sqrt(x) returns the square root of x"};
+  FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tan}(@1)", "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tanh}(@1)", "tanh(x) returns the hyperbolic tangent of x"};
+  FunctionDescriptor fd_texify        = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfmath_texify      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{texify}(@0)", "texify(str) converts an algebraic expression into a LaTeX command string representation"};
+  FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_juliandate}(@1,@2,@3,@4,@5,@6)", "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
+  FunctionDescriptor fd_time_now      = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcftime_now         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_now}()", "time_now() returns the present Julian Date"};
+  FunctionDescriptor fd_time_year     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_year        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_year}(@1)", "time_year(JD) returns the calendar year corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_monthnum = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_monthnum    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_monthnum}(@1)", "time_monthnum(JD) returns the number (1-12) of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_monthname= { PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_monthname   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_monthname}(@1,@2)", "time_monthname(JD,length) returns the name, truncated to length characters, of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_daymonth = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_daymonth    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_daymonth}(@1)", "time_daymonth(JD) returns the day of the calendar month corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_dayweeknum={ PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_dayweeknum  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_dayweeknum}(@1)", "time_dayweeknum(JD) returns the number (1=Monday - 7=Sunday) of the day of the week corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_dayweekname={PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_dayweekname , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_dayweekname{@1,@2}", "time_dayweekname(JD,length) returns the name, truncated to length characters, of the day of the week corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_hour     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_hour        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_hour}(@1)", "time_hour(JD) returns the hour of the day corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_min      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_min         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_min}(@1)", "time_min(JD) returns the minutes within the hour corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_sec      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_sec}(@1)", "time_sec(JD) returns the seconds within the minute corresponding to the Julian Date JD"};
+  FunctionDescriptor fd_time_moonphase= { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_moonphase   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_moonphase}(@1)", "time_moonphase(JD) returns the phase on the Moon on Julian Date JD"};
+  FunctionDescriptor fd_timediff_years= { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcftimediff_years   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_years}(@1,@2)", "timediff_years(JD1,JD2) returns the number of whole years (intervals of 365 days) elapsed between Julian Dates JD1 and JD2"};
+  FunctionDescriptor fd_timediff_days = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_days    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_days}(@1,@2)", "timediff_days(JD1,JD2,wrap) returns the number of whole days elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 365"};
+  FunctionDescriptor fd_timediff_hours= { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_hours   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_hours}(@1,@2)", "timediff_hours(JD1,JD2,wrap) returns the number of whole hours elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 24"};
+  FunctionDescriptor fd_timediff_min  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_minutes , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_mins}(@1,@2)", "timediff_mins(JD1,JD2,wrap) returns the number of whole minutes elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 60"};
+  FunctionDescriptor fd_timediff_sec  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_seconds , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_secs}(@1,@2)", "timediff_secs(JD1,JD2,wrap) returns the number of seconds, including fractions of seconds, elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 60"};
+  FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tophat}(@1,@2)", "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
+  FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{unit}(@0)", "unit(...) multiplies a number by a physical unit"};
+  FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\zeta}(@1)", "zeta(x) evaluates the Riemann zeta function at x"};
+  FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\int_{@2}^{@3}@1\\,\\mathrm{d}@?", "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
+  FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\left.\\frac{\\mathrm{d}}{?}\\right|_{@2}\\left[@1\\right]", "diff_da(e,x,step) numerically differentiates an expression e wrt a at x, using a step size of step. 'a' can be any variable name with fewer than 16 characters."};
 
   // Set up default variables
   ppl_units_zero(&v);
@@ -346,6 +347,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"           , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tan"            , (void *)&fd_tan         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tanh"           , (void *)&fd_tanh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "texify"         , (void *)&fd_texify      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_juliandate", (void *)&fd_time_juliandate, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_now"       , (void *)&fd_time_now       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_year"      , (void *)&fd_time_year      , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -400,6 +402,8 @@ void ppl_units_init()
   // Set up default list of units
   ppl_unit_database[ppl_unit_pos].nameAs     = "percent"; // Percent
   ppl_unit_database[ppl_unit_pos].nameAp     = "percent"; // Percent
+  ppl_unit_database[ppl_unit_pos].nameLs     = "\\%";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "\\%";
   ppl_unit_database[ppl_unit_pos].nameFs     = "percent";
   ppl_unit_database[ppl_unit_pos].nameFp     = "percent";
   ppl_unit_database[ppl_unit_pos].multiplier = 0.01;
@@ -408,6 +412,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ppm"; // Parts per million
   ppl_unit_database[ppl_unit_pos].nameAp     = "ppm"; // Parts per million
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "parts_per_million";
   ppl_unit_database[ppl_unit_pos].nameFp     = "parts_per_million";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e-6;
@@ -416,6 +422,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ppb"; // Parts per billion
   ppl_unit_database[ppl_unit_pos].nameAp     = "ppb"; // Parts per billion
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "parts_per_billion";
   ppl_unit_database[ppl_unit_pos].nameFp     = "parts_per_billion";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e-9;
@@ -424,6 +432,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "m";    // Metre
   ppl_unit_database[ppl_unit_pos].nameAp     = "m";    // Metre
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "metre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "metres";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -435,6 +445,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cm";    // Centimetre
   ppl_unit_database[ppl_unit_pos].nameAp     = "cm";    // Centimetre
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "centimetre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "centimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -444,6 +456,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ang";  // Angstrom
   ppl_unit_database[ppl_unit_pos].nameAp     = "ang";  // Angstrom
+  ppl_unit_database[ppl_unit_pos].nameLs     = "\\A";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "\\A";
   ppl_unit_database[ppl_unit_pos].nameFs     = "angstrom";
   ppl_unit_database[ppl_unit_pos].nameFp     = "angstroms";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -453,6 +467,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "in";   // Inch
   ppl_unit_database[ppl_unit_pos].nameAp     = "in";   // Inch
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "inch";
   ppl_unit_database[ppl_unit_pos].nameFp     = "inches";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -464,6 +480,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ft";   // Foot
   ppl_unit_database[ppl_unit_pos].nameAp     = "ft";   // Foot
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "foot";
   ppl_unit_database[ppl_unit_pos].nameFp     = "feet";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -475,6 +493,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "yd";   // Yard
   ppl_unit_database[ppl_unit_pos].nameAp     = "yd";   // Yard
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "yard";
   ppl_unit_database[ppl_unit_pos].nameFp     = "yards";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -486,6 +506,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "mi";   // Mile
   ppl_unit_database[ppl_unit_pos].nameAp     = "mi";   // Mile
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mile";
   ppl_unit_database[ppl_unit_pos].nameFp     = "miles";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -497,6 +519,8 @@ void ppl_units_init()
   
   ppl_unit_database[ppl_unit_pos].nameAs     = "furlong"; // Furlong
   ppl_unit_database[ppl_unit_pos].nameAp     = "furlongs";// Furlong
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "furlong";
   ppl_unit_database[ppl_unit_pos].nameFp     = "furlongs";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -506,6 +530,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "chain"; // Chain
   ppl_unit_database[ppl_unit_pos].nameAp     = "chains";// Chain
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "chain";
   ppl_unit_database[ppl_unit_pos].nameFp     = "chains";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -515,6 +541,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "link"; // Link
   ppl_unit_database[ppl_unit_pos].nameAp     = "links";// Link
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "link";
   ppl_unit_database[ppl_unit_pos].nameFp     = "links";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -524,6 +552,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cable"; // Cable
   ppl_unit_database[ppl_unit_pos].nameAp     = "cables";// Cable
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "cable";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cables";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -533,6 +563,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "fathom"; // Fathom
   ppl_unit_database[ppl_unit_pos].nameAp     = "fathoms";// Fathom
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "fathom";
   ppl_unit_database[ppl_unit_pos].nameFp     = "fathoms";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -542,6 +574,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "league"; // League
   ppl_unit_database[ppl_unit_pos].nameAp     = "leagues";// League
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "league";
   ppl_unit_database[ppl_unit_pos].nameFp     = "leagues";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -551,6 +585,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "nautical_mile"; // Nautical mile
   ppl_unit_database[ppl_unit_pos].nameAp     = "nautical_miles";// Nautical mile
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "nautical_mile";
   ppl_unit_database[ppl_unit_pos].nameFp     = "nautical_miles";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -560,6 +596,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubit"; // Cubit
   ppl_unit_database[ppl_unit_pos].nameAp     = "cubits";// Cubit
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubits";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -570,6 +608,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "rod"; // Rod
   ppl_unit_database[ppl_unit_pos].nameAp     = "rods";// Rod
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "rod";
   ppl_unit_database[ppl_unit_pos].nameFp     = "rods";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -579,6 +619,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "perch";  // Perch
   ppl_unit_database[ppl_unit_pos].nameAp     = "perches";// Perch
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "perch";
   ppl_unit_database[ppl_unit_pos].nameFp     = "perches";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -588,6 +630,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "pole"; // Pole
   ppl_unit_database[ppl_unit_pos].nameAp     = "poles";// Pole
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pole";
   ppl_unit_database[ppl_unit_pos].nameFp     = "poles";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -597,6 +641,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "AU";   // Astronomical unit
   ppl_unit_database[ppl_unit_pos].nameAp     = "AU";   // Astronomical unit
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "astronomical_unit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "astronomical_units";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -606,6 +652,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "lyr";   // Lightyear
   ppl_unit_database[ppl_unit_pos].nameAp     = "lyr";   // Lightyear
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "light_year";
   ppl_unit_database[ppl_unit_pos].nameFp     = "light_years";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -615,6 +663,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "pc";   // Parsec
   ppl_unit_database[ppl_unit_pos].nameAp     = "pc";   // Parsec
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "parsec";
   ppl_unit_database[ppl_unit_pos].nameFp     = "parsecs";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -625,6 +675,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Rsun";   // Solar radii
   ppl_unit_database[ppl_unit_pos].nameAp     = "Rsolar"; // Solar radii
+  ppl_unit_database[ppl_unit_pos].nameLs     = "R_\\odot";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "R_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_radius";
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_radii";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -634,6 +686,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Rearth"; // Earth radii
   ppl_unit_database[ppl_unit_pos].nameAp     = "Rearth"; // Earth radii
+  ppl_unit_database[ppl_unit_pos].nameLs     = "R_E";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "R_E";
   ppl_unit_database[ppl_unit_pos].nameFs     = "earth_radius";
   ppl_unit_database[ppl_unit_pos].nameFp     = "earth_radii";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -643,6 +697,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Rjove";   // Jupiter radii
   ppl_unit_database[ppl_unit_pos].nameAp     = "Rjovian"; // Jupiter radii
+  ppl_unit_database[ppl_unit_pos].nameLs     = "R_J";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "R_J";
   ppl_unit_database[ppl_unit_pos].nameFs     = "jupiter_radius";
   ppl_unit_database[ppl_unit_pos].nameFp     = "jupiter_radii";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -652,6 +708,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "lunar_distance";  // Lunar distances
   ppl_unit_database[ppl_unit_pos].nameAp     = "lunar_distances"; // Lunar distances
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "lunar_distance";
   ppl_unit_database[ppl_unit_pos].nameFp     = "lunar_distances";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -661,6 +719,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "s";    // Second
   ppl_unit_database[ppl_unit_pos].nameAp     = "s";    // Second
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "second";
   ppl_unit_database[ppl_unit_pos].nameFp     = "seconds";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -674,6 +734,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "min";  // Minute
   ppl_unit_database[ppl_unit_pos].nameAp     = "min";  // Minute
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "minute";
   ppl_unit_database[ppl_unit_pos].nameFp     = "minutes";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -683,6 +745,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "hr";   // Hour
   ppl_unit_database[ppl_unit_pos].nameAp     = "hr";   // Hour
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hour";
   ppl_unit_database[ppl_unit_pos].nameFp     = "hours";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -693,6 +757,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "day";  // Day
   ppl_unit_database[ppl_unit_pos].nameAp     = "days"; // Day
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "day";
   ppl_unit_database[ppl_unit_pos].nameFp     = "days";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -703,6 +769,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "week"; // Week
   ppl_unit_database[ppl_unit_pos].nameAp     = "weeks";// Week
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "week";
   ppl_unit_database[ppl_unit_pos].nameFp     = "weeks";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -712,6 +780,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "yr";   // Year
   ppl_unit_database[ppl_unit_pos].nameAp     = "yr";   // Year
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "year";
   ppl_unit_database[ppl_unit_pos].nameFp     = "years";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -722,6 +792,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "kg";   // Kilogram
   ppl_unit_database[ppl_unit_pos].nameAp     = "kg";   // Kilogram
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kilogram";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kilograms";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -731,6 +803,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gramme
   ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gramme
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gramme";
   ppl_unit_database[ppl_unit_pos].nameFp     = "grammes";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -741,6 +815,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gram
   ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gram
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gram";
   ppl_unit_database[ppl_unit_pos].nameFp     = "grams";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -752,6 +828,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "t";    // Metric Tonne
   ppl_unit_database[ppl_unit_pos].nameAp     = "t";    // Metric Tonne
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "metric_ton";
   ppl_unit_database[ppl_unit_pos].nameFp     = "metric_tons";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -762,6 +840,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "t";    // Metric Tonne
   ppl_unit_database[ppl_unit_pos].nameAp     = "t";    // Metric Tonne
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "tonne";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tonnes";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -771,6 +851,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "short_ton"; // US Ton
   ppl_unit_database[ppl_unit_pos].nameAp     = "short_tons";// US Ton
+  ppl_unit_database[ppl_unit_pos].nameLs     = "short\\_ton";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "short\\_tons";
   ppl_unit_database[ppl_unit_pos].nameFs     = "ton";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -782,6 +864,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "long_ton";  // UK Ton
   ppl_unit_database[ppl_unit_pos].nameAp     = "long_tons"; // UK Ton
+  ppl_unit_database[ppl_unit_pos].nameLs     = "long\\_ton";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "long\\_tons";
   ppl_unit_database[ppl_unit_pos].nameFs     = "ton";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
@@ -793,6 +877,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oz"; // Ounce
   ppl_unit_database[ppl_unit_pos].nameAp     = "oz"; // Ounce
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "ounce";
   ppl_unit_database[ppl_unit_pos].nameFp     = "ounces";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -803,6 +889,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "lb";  // Pound
   ppl_unit_database[ppl_unit_pos].nameAp     = "lbs"; // Pound
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pound";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pounds";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -813,6 +901,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "stone"; // Stone
   ppl_unit_database[ppl_unit_pos].nameAp     = "stone"; // Stone
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "stone";
   ppl_unit_database[ppl_unit_pos].nameFp     = "stone";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -823,6 +913,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cwt"; // hundredweight
   ppl_unit_database[ppl_unit_pos].nameAp     = "cwt"; // hundredweight
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hundredweight";
   ppl_unit_database[ppl_unit_pos].nameFp     = "hundredweight";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -833,6 +925,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "drachm";  // drachm
   ppl_unit_database[ppl_unit_pos].nameAp     = "drachms"; // drachm
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "drachm";
   ppl_unit_database[ppl_unit_pos].nameFp     = "drachms";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -843,6 +937,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "grain";  // grain
   ppl_unit_database[ppl_unit_pos].nameAp     = "grains"; // grain
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "grain";
   ppl_unit_database[ppl_unit_pos].nameFp     = "grains";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -853,6 +949,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "CD";  // carat
   ppl_unit_database[ppl_unit_pos].nameAp     = "CDs"; // carat
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "carat";
   ppl_unit_database[ppl_unit_pos].nameFp     = "carats";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -862,6 +960,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "shekel";  // Shekel
   ppl_unit_database[ppl_unit_pos].nameAp     = "shekels"; // Shekel
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "shekel";
   ppl_unit_database[ppl_unit_pos].nameFp     = "shekels";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -872,6 +972,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "mina";  // Mina
   ppl_unit_database[ppl_unit_pos].nameAp     = "minas"; // Mina
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mina";
   ppl_unit_database[ppl_unit_pos].nameFp     = "minas";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -882,6 +984,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "talent";  // Talent
   ppl_unit_database[ppl_unit_pos].nameAp     = "talents"; // Talent
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "talent";
   ppl_unit_database[ppl_unit_pos].nameFp     = "talents";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -892,6 +996,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Msun";   // Solar mass
   ppl_unit_database[ppl_unit_pos].nameAp     = "Msolar"; // Solar mass
+  ppl_unit_database[ppl_unit_pos].nameLs     = "M_\\odot";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "M_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_mass";
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_masses";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -901,6 +1007,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Mearth"; // Earth mass
   ppl_unit_database[ppl_unit_pos].nameAp     = "Mearth"; // Earth mass
+  ppl_unit_database[ppl_unit_pos].nameLs     = "M_E";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "M_E";
   ppl_unit_database[ppl_unit_pos].nameFs     = "earth_mass";
   ppl_unit_database[ppl_unit_pos].nameFp     = "earth_masses";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -910,6 +1018,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Mjove";    // Jupiter mass
   ppl_unit_database[ppl_unit_pos].nameAp     = "Mjupiter"; // Jupiter mass
+  ppl_unit_database[ppl_unit_pos].nameLs     = "M_J";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "M_J";
   ppl_unit_database[ppl_unit_pos].nameFs     = "jupiter_mass";
   ppl_unit_database[ppl_unit_pos].nameFp     = "jupiter_masses";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -919,6 +1029,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "A"; // Ampere
   ppl_unit_database[ppl_unit_pos].nameAp     = "A"; // Ampere
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "ampere";
   ppl_unit_database[ppl_unit_pos].nameFp     = "amperes";
   ppl_unit_database[ppl_unit_pos].quantity   = "current";
@@ -930,6 +1042,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "A"; // Ampere
   ppl_unit_database[ppl_unit_pos].nameAp     = "A"; // Ampere
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "amp";
   ppl_unit_database[ppl_unit_pos].nameFp     = "amps";
   ppl_unit_database[ppl_unit_pos].quantity   = "current";
@@ -940,6 +1054,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "K"; // Kelvin
   ppl_unit_database[ppl_unit_pos].nameAp     = "K"; // Kelvin
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kelvin";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kelvin";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
@@ -951,6 +1067,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oC"; // oC
   ppl_unit_database[ppl_unit_pos].nameAp     = "oC"; // oC
+  ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ C";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ C";
   ppl_unit_database[ppl_unit_pos].nameFs     = "celsius";
   ppl_unit_database[ppl_unit_pos].nameFp     = "celsius";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
@@ -960,6 +1078,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oC"; // oC
   ppl_unit_database[ppl_unit_pos].nameAp     = "oC"; // oC
+  ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ C";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ C";
   ppl_unit_database[ppl_unit_pos].nameFs     = "centigrade";
   ppl_unit_database[ppl_unit_pos].nameFp     = "centigrade";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
@@ -969,6 +1089,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oF"; // oF
   ppl_unit_database[ppl_unit_pos].nameAp     = "oF"; // oF
+  ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ F";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ F";
   ppl_unit_database[ppl_unit_pos].nameFs     = "fahrenheit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "fahrenheit";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
@@ -980,6 +1102,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "mol";  // mole
   ppl_unit_database[ppl_unit_pos].nameAp     = "mol";  // mole
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mole";
   ppl_unit_database[ppl_unit_pos].nameFp     = "moles";
   ppl_unit_database[ppl_unit_pos].quantity   = "moles";
@@ -992,6 +1116,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cd";   // candela
   ppl_unit_database[ppl_unit_pos].nameAp     = "cd";   // candela
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "candela";
   ppl_unit_database[ppl_unit_pos].nameFp     = "candelas";
   ppl_unit_database[ppl_unit_pos].quantity   = "light_intensity";
@@ -1007,6 +1133,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "candlepower";   // candlepower
   ppl_unit_database[ppl_unit_pos].nameAp     = "candlepower";   // candlepower
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "candlepower";
   ppl_unit_database[ppl_unit_pos].nameFp     = "candlepower";
   ppl_unit_database[ppl_unit_pos].quantity   = "light_intensity";
@@ -1020,6 +1148,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "lm";   // lumen
   ppl_unit_database[ppl_unit_pos].nameAp     = "lm";   // lumen
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "lumen";
   ppl_unit_database[ppl_unit_pos].nameFp     = "lumens";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
@@ -1033,6 +1163,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "lx";   // lux
   ppl_unit_database[ppl_unit_pos].nameAp     = "lx";   // lux
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "lux";
   ppl_unit_database[ppl_unit_pos].nameFp     = "luxs";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
@@ -1045,6 +1177,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Jy";   // jansky
   ppl_unit_database[ppl_unit_pos].nameAp     = "Jy";   // jansky
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "jansky";
   ppl_unit_database[ppl_unit_pos].nameFp     = "janskys";
   ppl_unit_database[ppl_unit_pos].quantity   = "flux_density";
@@ -1057,6 +1191,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "rad";  // radians
   ppl_unit_database[ppl_unit_pos].nameAp     = "rad";  // radians
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "radian";
   ppl_unit_database[ppl_unit_pos].nameFp     = "radians";
   ppl_unit_database[ppl_unit_pos].quantity   = "angle";
@@ -1067,6 +1203,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "deg";  // degrees
   ppl_unit_database[ppl_unit_pos].nameAp     = "deg";  // degrees
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "degree";
   ppl_unit_database[ppl_unit_pos].nameFp     = "degrees";
   ppl_unit_database[ppl_unit_pos].quantity   = "angle";
@@ -1077,6 +1215,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "arcmin";  // arcminute
   ppl_unit_database[ppl_unit_pos].nameAp     = "arcmins"; // arcminute
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "arcminute";
   ppl_unit_database[ppl_unit_pos].nameFp     = "arcminutes";
   ppl_unit_database[ppl_unit_pos].quantity   = "angle";
@@ -1086,6 +1226,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "arcsec";  // arcsecond
   ppl_unit_database[ppl_unit_pos].nameAp     = "arcsecs"; // arcsecond
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "arcsecond";
   ppl_unit_database[ppl_unit_pos].nameFp     = "arcseconds";
   ppl_unit_database[ppl_unit_pos].quantity   = "angle";
@@ -1095,6 +1237,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "bit";  // bit
   ppl_unit_database[ppl_unit_pos].nameAp     = "bits"; // bit
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "bit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bits";
   ppl_unit_database[ppl_unit_pos].quantity   = "bits";
@@ -1106,6 +1250,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "euro";  // cost
   ppl_unit_database[ppl_unit_pos].nameAp     = "euros"; // cost
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "euro";
   ppl_unit_database[ppl_unit_pos].nameFp     = "euros";
   ppl_unit_database[ppl_unit_pos].quantity   = "cost";
@@ -1122,6 +1268,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "knot";  // knot
   ppl_unit_database[ppl_unit_pos].nameAp     = "knots"; // knot
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "knot";
   ppl_unit_database[ppl_unit_pos].nameFp     = "knots";
   ppl_unit_database[ppl_unit_pos].quantity   = "velocity";
@@ -1132,6 +1280,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "acre";  // acre
   ppl_unit_database[ppl_unit_pos].nameAp     = "acres"; // acre
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "acre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "acres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1142,6 +1292,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "are";  // are
   ppl_unit_database[ppl_unit_pos].nameAp     = "ares"; // are
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "are";
   ppl_unit_database[ppl_unit_pos].nameFp     = "ares";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1151,6 +1303,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "barn";  // barn
   ppl_unit_database[ppl_unit_pos].nameAp     = "barns"; // barn
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "barn";
   ppl_unit_database[ppl_unit_pos].nameFp     = "barns";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1160,6 +1314,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "hectare";  // hectare
   ppl_unit_database[ppl_unit_pos].nameAp     = "hectares"; // hectare
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hectare";
   ppl_unit_database[ppl_unit_pos].nameFp     = "hectares";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1169,6 +1325,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_mi"; // square mile
   ppl_unit_database[ppl_unit_pos].nameAp     = "sq_mi"; // square mile
+  ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_mi";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_mi";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_mile";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_miles";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1179,6 +1337,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_km"; // square kilometre
   ppl_unit_database[ppl_unit_pos].nameAp     = "sq_km"; // square kilometre
+  ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_km";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_km";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_kilometre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_kilometres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1189,6 +1349,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_m"; // square metre
   ppl_unit_database[ppl_unit_pos].nameAp     = "sq_m"; // square metre
+  ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_m";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_m";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_metre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_metres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1199,6 +1361,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_cm"; // square centimetre
   ppl_unit_database[ppl_unit_pos].nameAp     = "sq_cm"; // square centimetre
+  ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_cm";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_cm";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_centimetre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_centimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1209,6 +1373,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_ft"; // square foot
   ppl_unit_database[ppl_unit_pos].nameAp     = "sq_ft"; // square foot
+  ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_ft";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_ft";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_foot";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_feet";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1219,6 +1385,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_in"; // square inch
   ppl_unit_database[ppl_unit_pos].nameAp     = "sq_in"; // square inch
+  ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_in";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_in";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_inch";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_inches";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
@@ -1229,6 +1397,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_m"; // cubic metre
   ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_m"; // cubic metre
+  ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_m";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_m";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_metre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_metres";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1239,6 +1409,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_cm"; // cubic centimetre
   ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_cm"; // cubic centimetre
+  ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_cm";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_cm";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_centimetre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_centimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1249,6 +1421,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_ft"; // cubic foot
   ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_ft"; // cubic foot
+  ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_ft";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_ft";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_foot";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_feet";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1259,6 +1433,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_in"; // cubic inch
   ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_in"; // cubic inch
+  ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_in";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_in";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_inch";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_inches";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1269,6 +1445,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "l"; // litre
   ppl_unit_database[ppl_unit_pos].nameAp     = "l"; // litre
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "litre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "litres";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1279,6 +1457,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_(UK)"; // fluid ounce
   ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_(UK)"; // fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameLs     = "fl\\_oz\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "fl\\_oz\\_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
@@ -1291,6 +1471,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_(US)"; // fluid ounce
   ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_(US)"; // fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameLs     = "fl\\_oz\\_(US)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "fl\\_oz\\_(US)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -1303,6 +1485,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(UK)";  // pint
   ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(UK)"; // pint
+  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
@@ -1315,6 +1499,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(US)";  // pint
   ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(US)"; // pint
+  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -1327,6 +1513,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "quart_(UK)";  // quart
   ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_(UK)"; // quart
+  ppl_unit_database[ppl_unit_pos].nameLs     = "quart\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "quarts\\_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "quart_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
@@ -1339,6 +1527,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "quart_(US)";  // quart
   ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_(US)"; // quart
+  ppl_unit_database[ppl_unit_pos].nameLs     = "quart\\_(US)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "quarts\\_(US)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "quart_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -1351,6 +1541,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(UK)";  // gallon
   ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(UK)"; // gallon
+  ppl_unit_database[ppl_unit_pos].nameLs     = "gallon\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "gallons\\_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
@@ -1363,6 +1555,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(US)";  // gallon
   ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(US)"; // gallon
+  ppl_unit_database[ppl_unit_pos].nameLs     = "gallon\\_(US)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "gallons\\_(US)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -1375,6 +1569,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_(UK)";  // bushel
   ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_(UK)"; // bushel
+  ppl_unit_database[ppl_unit_pos].nameLs     = "bushel\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "bushels\\_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_(UK)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
@@ -1387,6 +1583,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_(US)";  // bushel
   ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_(US)"; // bushel
+  ppl_unit_database[ppl_unit_pos].nameLs     = "bushel\\_(US)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "bushels\\_(US)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -1399,6 +1597,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cup_(US)";  // cup
   ppl_unit_database[ppl_unit_pos].nameAp     = "cups_(US)"; // cup
+  ppl_unit_database[ppl_unit_pos].nameLs     = "cup\\_(US)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "cups\\_(US)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cup_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cups_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
@@ -1411,6 +1611,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "teaspoon";  // teaspoon
   ppl_unit_database[ppl_unit_pos].nameAp     = "teaspoons"; // teaspoon
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "teaspoon";
   ppl_unit_database[ppl_unit_pos].nameFp     = "teaspoons";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1421,6 +1623,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "tablespoon";  // tablespoon
   ppl_unit_database[ppl_unit_pos].nameAp     = "tablespoons"; // tablespoon
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "tablespoon";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tablespoons";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
@@ -1431,6 +1635,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sterad";  // steradians
   ppl_unit_database[ppl_unit_pos].nameAp     = "sterad";  // steradians
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "steradian";
   ppl_unit_database[ppl_unit_pos].nameFp     = "steradians";
   ppl_unit_database[ppl_unit_pos].quantity   = "solidangle";
@@ -1441,6 +1647,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sqdeg";  // square degrees
   ppl_unit_database[ppl_unit_pos].nameAp     = "sqdeg";  // square degrees
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_degree";
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_degrees";
   ppl_unit_database[ppl_unit_pos].quantity   = "solidangle";
@@ -1451,6 +1659,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Hz";  // hertz
   ppl_unit_database[ppl_unit_pos].nameAp     = "Hz";  // hertz
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hertz";
   ppl_unit_database[ppl_unit_pos].nameFp     = "hertz";
   ppl_unit_database[ppl_unit_pos].quantity   = "frequency";
@@ -1462,6 +1672,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Bq";  // becquerel
   ppl_unit_database[ppl_unit_pos].nameAp     = "Bq";  // becquerel
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "becquerel";
   ppl_unit_database[ppl_unit_pos].nameFp     = "becquerel";
   ppl_unit_database[ppl_unit_pos].quantity   = "frequency";
@@ -1472,6 +1684,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "B";  // bytes
   ppl_unit_database[ppl_unit_pos].nameAp     = "B";  // bytes
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "byte";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bytes";
   ppl_unit_database[ppl_unit_pos].quantity   = "bits";
@@ -1483,6 +1697,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "N";  // newton
   ppl_unit_database[ppl_unit_pos].nameAp     = "N";  // newton
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "newton";
   ppl_unit_database[ppl_unit_pos].nameFp     = "newtons";
   ppl_unit_database[ppl_unit_pos].quantity   = "force";
@@ -1497,6 +1713,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "dyn";  // dyne
   ppl_unit_database[ppl_unit_pos].nameAp     = "dyn";  // dyne
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "dyne";
   ppl_unit_database[ppl_unit_pos].nameFp     = "dynes";
   ppl_unit_database[ppl_unit_pos].quantity   = "force";
@@ -1509,6 +1727,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "lbf";  // pound force
   ppl_unit_database[ppl_unit_pos].nameAp     = "lbf";  // pound force
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pound_force";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pounds_force";
   ppl_unit_database[ppl_unit_pos].quantity   = "force";
@@ -1521,6 +1741,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Pa";  // pascal
   ppl_unit_database[ppl_unit_pos].nameAp     = "Pa";  // pascal
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pascal";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pascals";
   ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
@@ -1535,6 +1757,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Ba";  // barye
   ppl_unit_database[ppl_unit_pos].nameAp     = "Ba";  // barye
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "barye";
   ppl_unit_database[ppl_unit_pos].nameFp     = "baryes";
   ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
@@ -1547,6 +1771,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "atm";  // atmosphere
   ppl_unit_database[ppl_unit_pos].nameAp     = "atms"; // atmosphere
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "atmosphere";
   ppl_unit_database[ppl_unit_pos].nameFp     = "atmospheres";
   ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
@@ -1561,6 +1787,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "bar";  // bar
   ppl_unit_database[ppl_unit_pos].nameAp     = "bars"; // bar
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "bar";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bars";
   ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
@@ -1574,6 +1802,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "J";  // joule
   ppl_unit_database[ppl_unit_pos].nameAp     = "J";  // joule
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "joule";
   ppl_unit_database[ppl_unit_pos].nameFp     = "joules";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1588,6 +1818,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "eV";  // electronvolt
   ppl_unit_database[ppl_unit_pos].nameAp     = "eV";  // electronvolt
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "electronvolt";
   ppl_unit_database[ppl_unit_pos].nameFp     = "electronvolts";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1601,6 +1833,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "erg";  // erg
   ppl_unit_database[ppl_unit_pos].nameAp     = "erg";  // erg
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "erg";
   ppl_unit_database[ppl_unit_pos].nameFp     = "ergs";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1613,6 +1847,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cal";  // calorie
   ppl_unit_database[ppl_unit_pos].nameAp     = "cal";  // calorie
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "calorie";
   ppl_unit_database[ppl_unit_pos].nameFp     = "calories";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1626,6 +1862,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "BTU";  // British Thermal Unit
   ppl_unit_database[ppl_unit_pos].nameAp     = "BTU";  // British Thermal Unit
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "British Thermal Unit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "British Thermal Units";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1637,6 +1875,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "therm";  // Therm
   ppl_unit_database[ppl_unit_pos].nameAp     = "therms"; // Therm
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "therm";
   ppl_unit_database[ppl_unit_pos].nameFp     = "therms";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1648,6 +1888,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "W";  // watt
   ppl_unit_database[ppl_unit_pos].nameAp     = "W";  // watt
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "watt";
   ppl_unit_database[ppl_unit_pos].nameFp     = "watts";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
@@ -1662,6 +1904,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "horsepower";  // horsepower
   ppl_unit_database[ppl_unit_pos].nameAp     = "horsepower";  // horsepower
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "horsepower";
   ppl_unit_database[ppl_unit_pos].nameFp     = "horsepower";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
@@ -1674,6 +1918,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Lsun";    // Solar luminosity
   ppl_unit_database[ppl_unit_pos].nameAp     = "Lsolar";  // Solar luminosity
+  ppl_unit_database[ppl_unit_pos].nameLs     = "L_\\odot";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "L_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_luminosity";
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_luminosities";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
@@ -1685,6 +1931,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Gy";  // gray
   ppl_unit_database[ppl_unit_pos].nameAp     = "Gy";  // gray
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gray";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gray";
   ppl_unit_database[ppl_unit_pos].quantity   = "radiation_dose";
@@ -1695,6 +1943,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Sv";  // sievert
   ppl_unit_database[ppl_unit_pos].nameAp     = "Sv";  // sievert
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "sievert";
   ppl_unit_database[ppl_unit_pos].nameFp     = "sieverts";
   ppl_unit_database[ppl_unit_pos].quantity   = "radiation_dose";
@@ -1705,6 +1955,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "kat";  // katal
   ppl_unit_database[ppl_unit_pos].nameAp     = "kat";  // katal
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "katal";
   ppl_unit_database[ppl_unit_pos].nameFp     = "katals";
   ppl_unit_database[ppl_unit_pos].quantity   = "catalytic_activity";
@@ -1716,6 +1968,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "P";  // poise
   ppl_unit_database[ppl_unit_pos].nameAp     = "P";  // poise
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "poise";
   ppl_unit_database[ppl_unit_pos].nameFp     = "poises";
   ppl_unit_database[ppl_unit_pos].quantity   = "viscosity";
@@ -1728,6 +1982,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "kayser";  // kayser
   ppl_unit_database[ppl_unit_pos].nameAp     = "kaysers"; // kayser
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kayser";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kaysers";
   ppl_unit_database[ppl_unit_pos].quantity   = "wavenumber";
@@ -1738,6 +1994,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "C";  // coulomb
   ppl_unit_database[ppl_unit_pos].nameAp     = "C";  // coulomb
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "coulomb";
   ppl_unit_database[ppl_unit_pos].nameFp     = "coulombs";
   ppl_unit_database[ppl_unit_pos].quantity   = "charge";
@@ -1751,6 +2009,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "V";  // volt
   ppl_unit_database[ppl_unit_pos].nameAp     = "V";  // volt
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "volt";
   ppl_unit_database[ppl_unit_pos].nameFp     = "volts";
   ppl_unit_database[ppl_unit_pos].quantity   = "potential";
@@ -1766,6 +2026,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ohm";  // ohm
   ppl_unit_database[ppl_unit_pos].nameAp     = "ohms"; // ohm
+  ppl_unit_database[ppl_unit_pos].nameLs     = "\\Omega";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "\\Omega";
   ppl_unit_database[ppl_unit_pos].nameFs     = "ohm";
   ppl_unit_database[ppl_unit_pos].nameFp     = "ohms";
   ppl_unit_database[ppl_unit_pos].quantity   = "resistance";
@@ -1781,6 +2043,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "S"; // siemens
   ppl_unit_database[ppl_unit_pos].nameAp     = "S"; // siemens
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "siemens";
   ppl_unit_database[ppl_unit_pos].nameFp     = "siemens";
   ppl_unit_database[ppl_unit_pos].quantity   = "conductance";
@@ -1796,6 +2060,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "mho";  // mho
   ppl_unit_database[ppl_unit_pos].nameAp     = "mhos"; // mho
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mho";
   ppl_unit_database[ppl_unit_pos].nameFp     = "mhos";
   ppl_unit_database[ppl_unit_pos].quantity   = "conductance";
@@ -1810,6 +2076,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "F";  // farad
   ppl_unit_database[ppl_unit_pos].nameAp     = "F";  // farad
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "farad";
   ppl_unit_database[ppl_unit_pos].nameFp     = "farad";
   ppl_unit_database[ppl_unit_pos].quantity   = "capacitance";
@@ -1825,6 +2093,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "H";  // henry
   ppl_unit_database[ppl_unit_pos].nameAp     = "H";  // henry
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "henry";
   ppl_unit_database[ppl_unit_pos].nameFp     = "henry";
   ppl_unit_database[ppl_unit_pos].quantity   = "inductance";
@@ -1840,6 +2110,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "T";  // tesla
   ppl_unit_database[ppl_unit_pos].nameAp     = "T";  // tesla
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "tesla";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tesla";
   ppl_unit_database[ppl_unit_pos].quantity   = "magnetic_field";
@@ -1854,6 +2126,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "G";  // gauss
   ppl_unit_database[ppl_unit_pos].nameAp     = "G";  // gauss
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gauss";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gauss";
   ppl_unit_database[ppl_unit_pos].quantity   = "magnetic_field";
@@ -1868,6 +2142,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Wb";  // weber
   ppl_unit_database[ppl_unit_pos].nameAp     = "Wb";  // weber
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "weber";
   ppl_unit_database[ppl_unit_pos].nameFp     = "weber";
   ppl_unit_database[ppl_unit_pos].quantity   = "magnetic_flux";
@@ -1883,6 +2159,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Mx";  // maxwell
   ppl_unit_database[ppl_unit_pos].nameAp     = "Mx";  // maxwell
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "maxwell";
   ppl_unit_database[ppl_unit_pos].nameFp     = "maxwell";
   ppl_unit_database[ppl_unit_pos].quantity   = "magnetic_flux";
@@ -1899,6 +2177,8 @@ void ppl_units_init()
   // Planck Units
   ppl_unit_database[ppl_unit_pos].nameAs     = "L_planck"; // Planck Length
   ppl_unit_database[ppl_unit_pos].nameAp     = "L_planck"; // Planck Length
+  ppl_unit_database[ppl_unit_pos].nameLs     = "L_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "L_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_length";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_lengths";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
@@ -1909,6 +2189,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "M_planck"; // Planck Mass
   ppl_unit_database[ppl_unit_pos].nameAp     = "M_planck"; // Planck Mass
+  ppl_unit_database[ppl_unit_pos].nameLs     = "M_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "M_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_mass";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_masses";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
@@ -1919,6 +2201,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "T_planck"; // Planck Time
   ppl_unit_database[ppl_unit_pos].nameAp     = "T_planck"; // Planck Time
+  ppl_unit_database[ppl_unit_pos].nameLs     = "T_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "T_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_time";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_times";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
@@ -1929,6 +2213,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Q_planck"; // Planck Charge
   ppl_unit_database[ppl_unit_pos].nameAp     = "Q_planck"; // Planck Charge
+  ppl_unit_database[ppl_unit_pos].nameLs     = "Q_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "Q_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_charge";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_charges";
   ppl_unit_database[ppl_unit_pos].quantity   = "charge";
@@ -1938,8 +2224,10 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "K_planck"; // Planck Temperature
-  ppl_unit_database[ppl_unit_pos].nameAp     = "K_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Theta_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Theta_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameLs     = "\\Theta_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "\\Theta_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_temperature";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_temperature";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
@@ -1948,8 +2236,10 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "P_planck"; // Planck Momentum
-  ppl_unit_database[ppl_unit_pos].nameAp     = "P_planck"; // Planck Momentum
+  ppl_unit_database[ppl_unit_pos].nameAs     = "p_planck"; // Planck Momentum
+  ppl_unit_database[ppl_unit_pos].nameAp     = "p_planck"; // Planck Momentum
+  ppl_unit_database[ppl_unit_pos].nameLs     = "p_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "p_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_momentum";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_momentum";
   ppl_unit_database[ppl_unit_pos].quantity   = "momentum";
@@ -1962,6 +2252,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "E_planck"; // Planck Energy
   ppl_unit_database[ppl_unit_pos].nameAp     = "E_planck"; // Planck Energy
+  ppl_unit_database[ppl_unit_pos].nameLs     = "E_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "E_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_energy";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_energy";
   ppl_unit_database[ppl_unit_pos].quantity   = "energy";
@@ -1974,6 +2266,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "F_planck"; // Planck Force
   ppl_unit_database[ppl_unit_pos].nameAp     = "F_planck"; // Planck Force
+  ppl_unit_database[ppl_unit_pos].nameLs     = "F_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "F_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_force";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_force";
   ppl_unit_database[ppl_unit_pos].quantity   = "force";
@@ -1986,6 +2280,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "P_planck"; // Planck Power
   ppl_unit_database[ppl_unit_pos].nameAp     = "P_planck"; // Planck Power
+  ppl_unit_database[ppl_unit_pos].nameLs     = "P_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "P_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_power";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_power";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
@@ -1998,6 +2294,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "I_planck"; // Planck Current
   ppl_unit_database[ppl_unit_pos].nameAp     = "I_planck"; // Planck Current
+  ppl_unit_database[ppl_unit_pos].nameLs     = "I_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "I_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_current";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_current";
   ppl_unit_database[ppl_unit_pos].quantity   = "current";
@@ -2008,6 +2306,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "V_planck"; // Planck Voltage
   ppl_unit_database[ppl_unit_pos].nameAp     = "V_planck"; // Planck Voltage
+  ppl_unit_database[ppl_unit_pos].nameLs     = "V_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "V_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_voltage";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_voltage";
   ppl_unit_database[ppl_unit_pos].quantity   = "potential";
@@ -2021,6 +2321,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Z_planck"; // Planck Impedence
   ppl_unit_database[ppl_unit_pos].nameAp     = "Z_planck"; // Planck Impedence
+  ppl_unit_database[ppl_unit_pos].nameLs     = "Z_P";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "Z_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_impedence";
   ppl_unit_database[ppl_unit_pos].nameFp     = "planck_impedence";
   ppl_unit_database[ppl_unit_pos].quantity   = "resistance";

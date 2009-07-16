@@ -262,6 +262,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
   if ((NewFuncPtr->MaxActive       = (unsigned char *)lt_malloc_incontext(Nargs         ,0))==NULL) return; memcpy(        NewFuncPtr->MaxActive  , MaxActive   , Nargs);
        NewFuncPtr->next            = OldFuncPtr;
        NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
+       NewFuncPtr->LaTeX           = NULL;
   DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)NewFuncPtr, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
   return;
  }
@@ -286,6 +287,7 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
   if (in->max        !=NULL) free(in->max);
   if (in->MinActive  !=NULL) free(in->MinActive);
   if (in->MaxActive  !=NULL) free(in->MaxActive);
+  if (in->LaTeX      !=NULL) free(in->LaTeX);
   if ( (in->description!=NULL) && (in->description!=(char *)in->FunctionPtr) ) free(in->description);
   return;
  }
@@ -313,6 +315,7 @@ void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
   if ((NewFuncPtr->MaxActive       = (unsigned char *)lt_malloc_incontext(Nargs            ,0))==NULL) return; memcpy(        NewFuncPtr->MaxActive  , in->MaxActive   , Nargs);
        NewFuncPtr->next            = in->next;
        NewFuncPtr->description     = NewFuncPtr->FunctionPtr;
+       NewFuncPtr->LaTeX           = NULL;
        in->next                    = NewFuncPtr;
        in->modified                = modified;
   return;
@@ -387,6 +390,14 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
            } else { pos++; }
          }
        }
+      if (NArgs==-1) // We have a function which takes one string argument
+       {
+        pos--; // pos should point to opening bracket
+        StrBracketMatch(in+pos,NULL,NULL,&k,0);
+        ((void(*)(char*,int,value*,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,&j,errtext);
+        if (j>0) { *errpos = start; return; }
+        pos += k;
+       }
       if (in[pos] != ')') // Check that we have closing bracket
        {
         (*errpos) = pos;
@@ -396,13 +407,14 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        } else { pos++; }
       if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; } // Have we used up as many characters as we were told we had to?
       j=0;
-      ResultBuffer[0].string = NULL;
+      if      (NArgs>=0) ResultBuffer[0].string = NULL;
       if      (NArgs==0) ((void(*)(value*,                            int*,char*))FuncDefn->FunctionPtr)(                                                            ResultBuffer,&j,errtext);
       else if (NArgs==1) ((void(*)(value*,value*,                     int*,char*))FuncDefn->FunctionPtr)(                                             ResultBuffer+2,ResultBuffer,&j,errtext);
       else if (NArgs==2) ((void(*)(value*,value*,value*,              int*,char*))FuncDefn->FunctionPtr)(                              ResultBuffer+2,ResultBuffer+3,ResultBuffer,&j,errtext);
       else if (NArgs==3) ((void(*)(value*,value*,value*,value*,       int*,char*))FuncDefn->FunctionPtr)(               ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer,&j,errtext);
       else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,int*,char*))FuncDefn->FunctionPtr)(ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer+5,ResultBuffer,&j,errtext);
       if (j>0) { *errpos = start; return; }
+      if ((end!=NULL)&&(*end<0)) *end=pos;
       strcpy(out, ResultBuffer[0].string);
       return;
      }
