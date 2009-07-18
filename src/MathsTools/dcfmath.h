@@ -116,7 +116,6 @@ void dcfmath_sinh(value *in, value *output, int *status, char *errtext);
 void dcfmath_sqrt(value *in, value *output, int *status, char *errtext);
 void dcfmath_tan(value *in, value *output, int *status, char *errtext);
 void dcfmath_tanh(value *in, value *output, int *status, char *errtext);
-void dcfmath_texify(char *in, int inlen, value *output, int *status, char *errtext);
 void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext);
 

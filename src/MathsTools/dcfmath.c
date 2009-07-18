@@ -42,8 +42,6 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_zeta.h>
 
-#include "ListTools/lt_memory.h"
-
 #include "ppl_units.h"
 
 #include "dcfmath.h"
@@ -1225,22 +1223,6 @@ void dcfmath_tanh(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { output->real = tanh(in->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
- }
-
-void dcfmath_texify(char *in, int inlen, value *output, int *status, char *errtext)
- {
-  WRAPPER_INIT;
-  while ((in[0]!='\0')&&(in[0]<=' '))     { in++; inlen--; } // Strip spaces off front
-  while ((inlen>0)&&(in[inlen-1]<=' '))   {       inlen--; } // Strip spaces off back
-  if ((in[0]=='\'')&&(in[inlen-1]=='\'')) { in++; inlen--; inlen--; } // Strip off '' quotes
-  if ((in[0]=='\"')&&(in[inlen-1]=='\"')) { in++; inlen--; inlen--; } // Strip off "" quotes
-  while ((in[0]!='\0')&&(in[0]<=' '))     { in++; inlen--; } // Strip spaces off front
-  while ((inlen>1)&&(in[inlen-1]<=' '))   {       inlen--; } // Strip spaces off back
-  if ((inlen<0)||(inlen>ALGEBRA_MAXLENGTH)) { sprintf(errtext, "Supplied expression is longer than maximum of %d characters.", ALGEBRA_MAXLENGTH); *status=1; return; }
-  output->string = lt_malloc(ALGEBRA_MAXLENGTH);
-  output->string[0] = '\0';
-  strncpy(output->string, in, inlen); // Place holder
-  output->string[inlen] = '\0';
  }
 
 void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *errtext)

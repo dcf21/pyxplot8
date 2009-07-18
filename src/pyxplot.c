@@ -49,6 +49,7 @@
 #include "ppl_parser.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_texify.h"
 #include "ppl_userspace_init.h"
 
 int WillBeInteractive;
@@ -151,6 +152,7 @@ int main(int argc, char **argv)
 
   // Initialise user variables and functions
   ppl_UserSpaceInit();
+  texify_init();
 
   // Set up commandline parser
   if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");

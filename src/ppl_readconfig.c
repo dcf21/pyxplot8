@@ -406,7 +406,7 @@ void ReadConfigFile(char *ConfigFname)
       if (isalpha(setkey[i])) do { i++; } while ((isalnum(setkey[i])) || (setkey[i]=='_')); \
       if (i==j) \
        { \
-        if (last==output) \
+        if (&last==&output) \
          { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal %s name.", linecounter, ConfigFname, type); ppl_warning(temp_err_string); continue; } \
         else \
          { \

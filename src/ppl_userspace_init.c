@@ -35,6 +35,7 @@
 #include "ListTools/lt_memory.h"
 
 #include "ppl_error.h"
+#include "ppl_texify.h"
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
@@ -132,7 +133,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "\\sqrt{@1}", "sqrt(x) returns the square root of x"};
   FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tan}(@1)", "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tanh}(@1)", "tanh(x) returns the hyperbolic tangent of x"};
-  FunctionDescriptor fd_texify        = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfmath_texify      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{texify}(@0)", "texify(str) converts an algebraic expression into a LaTeX command string representation"};
+  FunctionDescriptor fd_texify        = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&wrapper_texify      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{texify}(@0)", "texify(str) converts an algebraic expression into a LaTeX command string representation"};
   FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_juliandate}(@1,@2,@3,@4,@5,@6)", "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
   FunctionDescriptor fd_time_now      = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcftime_now         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_now}()", "time_now() returns the present Julian Date"};
   FunctionDescriptor fd_time_year     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_year        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_year}(@1)", "time_year(JD) returns the calendar year corresponding to the Julian Date JD"};
@@ -2060,8 +2061,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "mho";  // mho
   ppl_unit_database[ppl_unit_pos].nameAp     = "mhos"; // mho
-  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
-  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameLs     = "\\mho";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "\\mho";
   ppl_unit_database[ppl_unit_pos].nameFs     = "mho";
   ppl_unit_database[ppl_unit_pos].nameFp     = "mhos";
   ppl_unit_database[ppl_unit_pos].quantity   = "conductance";

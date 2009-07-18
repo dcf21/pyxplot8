@@ -933,7 +933,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  5: EVALUATION OF *  /  %
@@ -950,7 +950,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  6: EVALUATION OF +  -
@@ -966,7 +966,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  7: EVALUATION OF << >>
@@ -996,7 +996,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  8: EVALUATION OF < <= >= >
@@ -1028,7 +1028,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  9: EVALUATION OF == !=  <>
@@ -1059,7 +1059,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 10: EVALUATION OF &
@@ -1086,7 +1086,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 11: EVALUATION OF ^
@@ -1113,7 +1113,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 12: EVALUATION OF |
@@ -1140,7 +1140,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 13: EVALUATION OF and
@@ -1167,7 +1167,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 14: EVALUATION OF or
@@ -1194,7 +1194,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = start + next_start - 1; p=i-start;
      } else {
-      while (StatusRow[i]==7) { i++; p++; }
+      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 15: RETURN RESULT TO USER
