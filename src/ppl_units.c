@@ -48,7 +48,9 @@ int   ppl_baseunit_pos = UNIT_FIRSTUSER;
 
 char *SIprefixes_full  [] = {"yocto","zepto","atto","femto","pico","nano","micro","milli","","kilo","mega","giga","tera","peta","exa","zetta","yotta"};
 char *SIprefixes_abbrev[] = {"y","z","a","f","p","n","u","m","","k","M","G","T","P","E","Z","Y"};
-char *SIprefixes_latex [] = {"y","z","a","f","p","n","\\mu ","m","","k","M","G","T","P","E","Z","Y"};
+char *SIprefixes_latex [] = {"y","z","a","f","p","n","\\upmu ","m","","k","M","G","T","P","E","Z","Y"};
+
+// NB: The LaTeX upmu character is defined by the {upgreek} package
 
 // Make a value structure equal zero, and be dimensionless. Used for preconfiguring values.
 value *ppl_units_zero(value *in)

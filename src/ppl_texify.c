@@ -39,48 +39,36 @@
 static unsigned char InMathMode;
 static unsigned char InTextRm;
 
-static Dict *LatexVarNames = NULL;
+#define ENTERMATHMODE "$\\displaystyle"
 
-void texify_init()
+static char *LatexVarNamesFr[] = {"alpha"  ,"beta"   ,"gamma"  ,"delta"  ,"epsilon","zeta"   ,"eta"    ,"theta"  ,"iota"   ,"kappa"  ,"lambda" ,"mu"     ,"nu"     ,"xi"     ,"pi"     ,"rho"    ,"sigma"  ,"tau"    ,"upsilon","phi"    ,"chi"    ,"psi"    ,"omega"  ,"Gamma"  ,"Delta"  ,"Theta"  ,"Lambda" ,"Xi"     ,"Pi"     ,"Sigma"  ,"Upsilon","Phi"    ,"Psi"    ,"Omega"  ,"aleph"  , NULL};
+
+static char *LatexVarNamesTo[] = {"\\alpha","\\beta","\\gamma","\\delta","\\epsilon","\\zeta","\\eta","\\theta","\\iota","\\kappa","\\lambda","\\mu","\\nu","\\xi","\\pi","\\rho","\\sigma","\\tau","\\upsilon","\\phi","\\chi","\\psi","\\omega","\\Gamma","\\Delta","\\Theta","\\Lambda","\\Xi","\\Pi","\\Sigma","\\Upsilon","\\Phi","\\Psi","\\Omega","\\aleph",NULL};
+
+int texify_MakeGreek(const char *in, char *out)
  {
-  if (LatexVarNames != NULL) return;
-  LatexVarNames = DictInit();
-  DictAppendString(LatexVarNames, "alpha"  , "\\alpha");
-  DictAppendString(LatexVarNames, "beta"   , "\\beta");
-  DictAppendString(LatexVarNames, "gamma"  , "\\gamma");
-  DictAppendString(LatexVarNames, "delta"  , "\\delta");
-  DictAppendString(LatexVarNames, "epsilon", "\\epsilon");
-  DictAppendString(LatexVarNames, "zeta"   , "\\zeta");
-  DictAppendString(LatexVarNames, "eta"    , "\\eta");
-  DictAppendString(LatexVarNames, "theta"  , "\\theta");
-  DictAppendString(LatexVarNames, "iota"   , "\\iota");
-  DictAppendString(LatexVarNames, "kappa"  , "\\kappa");
-  DictAppendString(LatexVarNames, "lambda" , "\\lambda");
-  DictAppendString(LatexVarNames, "mu"     , "\\mu");
-  DictAppendString(LatexVarNames, "nu"     , "\\nu");
-  DictAppendString(LatexVarNames, "xi"     , "\\xi");
-  DictAppendString(LatexVarNames, "pi"     , "\\pi");
-  DictAppendString(LatexVarNames, "rho"    , "\\rho");
-  DictAppendString(LatexVarNames, "sigma"  , "\\sigma");
-  DictAppendString(LatexVarNames, "tau"    , "\\tau");
-  DictAppendString(LatexVarNames, "upsilon", "\\upsilon");
-  DictAppendString(LatexVarNames, "phi"    , "\\phi");
-  DictAppendString(LatexVarNames, "chi"    , "\\chi");
-  DictAppendString(LatexVarNames, "psi"    , "\\psi");
-  DictAppendString(LatexVarNames, "omega"  , "\\omega");
-  DictAppendString(LatexVarNames, "Gamma"  , "\\Gamma");
-  DictAppendString(LatexVarNames, "Delta"  , "\\Delta");
-  DictAppendString(LatexVarNames, "Theta"  , "\\Theta");
-  DictAppendString(LatexVarNames, "Lambda" , "\\Lambda");
-  DictAppendString(LatexVarNames, "Xi"     , "\\Xi");
-  DictAppendString(LatexVarNames, "Pi"     , "\\Pi");
-  DictAppendString(LatexVarNames, "Sigma"  , "\\Sigma");
-  DictAppendString(LatexVarNames, "Upsilon", "\\Upsilon");
-  DictAppendString(LatexVarNames, "Phi"    , "\\Phi");
-  DictAppendString(LatexVarNames, "Psi"    , "\\Psi");
-  DictAppendString(LatexVarNames, "Omega"  , "\\Omega");
-  DictAppendString(LatexVarNames, "aleph"  , "\\aleph");
-  return;
+  int i,j,k,l,m;
+
+  for (i=0; LatexVarNamesFr[i]!=NULL; i++)
+   {
+    for (j=0; LatexVarNamesFr[i][j]!='\0'; j++) if (LatexVarNamesFr[i][j]!=in[j]) break;
+    if ( LatexVarNamesFr[i][j]!='\0') continue;
+    if ((!isalnum(in[j]))&&(in[j]!='_')) { strcpy(out, LatexVarNamesTo[i]); return 1; } // We have a Greek letter
+    if (in[j]=='_') j++;
+    if (isdigit(in[j]))
+     {
+      l=j;
+      while (isdigit(in[j])) j++;
+      if ((isalnum(in[j]))||(in[j]=='_')) continue;
+      sprintf(out, "%s_{", LatexVarNamesTo[i]); // We have Greek letter underscore number
+      k = strlen(out);
+      for (m=l;m<j;m++) out[k++]=in[m];
+      out[k++]='}';
+      out[k++]='\0';
+      return 1;
+     }
+   }
+  return 0;
  }
 
 void texify_generic(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel)
@@ -92,7 +80,7 @@ void texify_generic(char *in, int *end, char *out, int EvalStrings, int *status,
   if ((in[i]=='\'')||(in[i]=='\"')) texify_quotedstring(in, &j, out, EvalStrings, status, errtext, RecursionDepth, BracketLevel);
   else                              texify_algebra     (in, &j, out, EvalStrings, status, errtext, RecursionDepth, BracketLevel);
   if (end!=NULL) *end=j+i;
-  if (*status) return;
+  if (*status>=0) return;
   outpos = strlen(out);
   if (RecursionDepth==1)
    {
@@ -105,7 +93,7 @@ void texify_generic(char *in, int *end, char *out, int EvalStrings, int *status,
 
 void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel)
  {
-  int  i=0, j=0, k, l, m;
+  int  i=0, j=0, k, l, m, OpenQuotePos=0;
   char QuoteType='\0', buffer[LSTR_LENGTH];
   int  CommaPositions[MAX_STR_FORMAT_ITEMS], Nargs;
 
@@ -113,10 +101,8 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
 
   if (EvalStrings)
    {
-    *status=-1;
     ppl_GetQuotedString(in, buffer, 0, end, status, errtext, 1); // end will get written here, and we want nothing more to do with it
     if (*status>=0) return;
-    *status=0;
     end = NULL;
     in  = buffer;
    }
@@ -124,8 +110,9 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
   while ((in[i]!='\0')&&(in[i]<=' ')) i++;
   if (!EvalStrings)
    {
-    if ((in[i]!='\'')&&(in[i]!='\"')) { strcpy(errtext, "Syntax Error: A quoted string should begin with a \' or a \"."); *status=1; return; }
+    if ((in[i]!='\'')&&(in[i]!='\"')) { strcpy(errtext, "Syntax Error: A quoted string should begin with a \' or a \"."); *status=i; return; }
     QuoteType = in[i];
+    OpenQuotePos = i;
    }
 
   if ((InMathMode)&&(!InTextRm)) { InTextRm=1; strcpy(out+j,"\\textrm{"); j+=strlen(out+j); } // Make sure not in math mode
@@ -148,7 +135,7 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
     else                  { out[j++]=in[i]; }
    }
 
-  if (in[i]!=QuoteType) { out[j++]='\0'; strcpy(errtext, "Syntax Error: Mismatched quote in string to be texified."); *status=1; return; }
+  if (in[i]!=QuoteType) { out[j++]='\0'; strcpy(errtext, "Syntax Error: Mismatched quote in string to be texified."); *status=OpenQuotePos; return; }
 
   if      (in[i]=='\'') { out[j++]='\''; } // Write closing quote to output
   else if (in[i]=='\"') { out[j++]='\''; out[j++]='\''; }
@@ -160,8 +147,8 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
   if (in[i]!='%')
    {
     out[j++]='\0';
-    if ((end!=NULL)&&(*end>0)&&(i<*end)) { out[j++]='\0'; *status=1; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string."); return; }
-    *status = 0;
+    if ((end!=NULL)&&(*end>0)&&(i<*end)) { out[j++]='\0'; *status=i; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string."); return; }
+    *status = -1;
     if ((end!=NULL)&&(*end<0)) *end=i;
     return;
    }
@@ -169,14 +156,14 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
   // We have read a format string, but have a % operator acting upon it
   i++; // Skip over % character
   while ((in[i]>'\0') && (in[i]<=' ')) i++; // Fast-forward over preceding spaces
-  if (in[i]!='(') { out[j++]='\0'; *status=1; strcpy(errtext, "Syntax Error: An opening bracket was expected after %% substitution operator."); return; }
+  if (in[i]!='(') { out[j++]='\0'; *status=i; strcpy(errtext, "Syntax Error: An opening bracket was expected after %% substitution operator."); return; }
   StrBracketMatch(in+i, CommaPositions, &Nargs, &k, MAX_STR_FORMAT_ITEMS);
-  if (k<0) { out[j++]='\0'; *status=1; strcpy(errtext, "Syntax Error: Mismatched bracket after %% string substitution operator."); return; }
-  if (Nargs>=MAX_STR_FORMAT_ITEMS) { out[j++]='\0'; *status=1; strcpy(errtext, "Overflow Error: Too many string substitution arguments."); return; }
-  if ((end!=NULL)&&(*end>0)&&(i+k<*end)) { out[j++]='\0'; *status=1; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string."); return; }
+  if (k<0) { out[j++]='\0'; *status=i; strcpy(errtext, "Syntax Error: Mismatched bracket after %% string substitution operator."); return; }
+  if (Nargs>=MAX_STR_FORMAT_ITEMS) { out[j++]='\0'; *status=i; strcpy(errtext, "Overflow Error: Too many string substitution arguments."); return; }
+  if ((end!=NULL)&&(*end>0)&&(i+k<*end)) { out[j++]='\0'; *status=i+k; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string."); return; }
 
   // Brackets work best in mathmode
-  if (!InMathMode) { InMathMode=1; out[j++]='$'; } // Make sure we are in math mode
+  if (!InMathMode) { InMathMode=1; strcpy(out+j, ENTERMATHMODE); j+=strlen(out+j); } // Make sure we are in math mode
   if ( InTextRm  ) { InTextRm  =0; out[j++]='}'; } // Make sure we are not in textrm
   strcpy(out+j, "\\%\\left("); j+=strlen(out+j);
   for (l=0;l<Nargs;l++)
@@ -188,16 +175,16 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
      }
     m = CommaPositions[l+1] - (CommaPositions[l]+1);
     texify_generic(in+i+CommaPositions[l]+1, &m, out+j, EvalStrings, status, errtext, RecursionDepth+1, BracketLevel);
-    if (*status) return;
+    if (*status>=0) { (*status)+=i+CommaPositions[l]+1; return; }
     j+=strlen(out+j);
    }
-  if (!InMathMode) { InMathMode=1; out[j++]='$'; } // Make sure we are in math mode
+  if (!InMathMode) { InMathMode=1; strcpy(out+j, ENTERMATHMODE); j+=strlen(out+j); } // Make sure we are in math mode
   if ( InTextRm  ) { InTextRm  =0; out[j++]='}'; } // Make sure we are not in textrm
   strcpy(out+j, "\\right)"); j+=strlen(out+j);
   i+=k+1; // i should point to the character after the )
   *BracketLevel=1; // We have just used ()
-  if ((end!=NULL)&&(*end>0)&&(i<*end)) { *status=1; strcpy(errtext, "Syntax Error: Unexpected trailing matter after substitution () after quoted string."); return; }
-  *status = 0;
+  if ((end!=NULL)&&(*end>0)&&(i<*end)) { *status=i; strcpy(errtext, "Syntax Error: Unexpected trailing matter after substitution () after quoted string."); return; }
+  *status = -1;
   if ((end!=NULL)&&(*end<0)) *end=i;
   return;
  }
@@ -224,21 +211,19 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
   unsigned char OpList[OPLIST_LEN];                  // A list of what operations this expression contains
   unsigned char StatusRow       [ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
   unsigned char StatusRowInitial[ALGEBRA_MAXLENGTH];
-  char dummy[DUMMYVAR_MAXLEN], *LaTeXModel, DummyLaTeXModel[FNAME_LENGTH], *FunctionName;
+  char dummy[DUMMYVAR_MAXLEN], GreekifiedDummy[DUMMYVAR_MAXLEN+10], *LaTeXModel, DummyLaTeXModel[FNAME_LENGTH], *FunctionName;
   int  CommaPositions[MAX_STR_FORMAT_ITEMS], Nargs, RequiredNargs;
   value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
   DictIterator *DictIter;
 
-  if (RecursionDepth > MAX_RECURSION_DEPTH) { *status=1; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded."); return; }
+  if (RecursionDepth > MAX_RECURSION_DEPTH) { *status=0; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded."); return; }
 
   *BracketLevel = 0;
 
-  *status=-1;
   CalculatedEnd=-1;
   ppl_GetExpression(in, &CalculatedEnd, 0, StatusRow, OpList, status, errtext);
-  if (*status >= 0) { *status=1; return; }
-  *status=0;
-  if ((end != NULL) && (*end >  0) && (CalculatedEnd < *end)) { *status=1; strcpy(errtext,"Syntax Error: Unexpected trailing matter after algebraic expression."); return; }
+  if (*status >= 0) return;
+  if ((end != NULL) && (*end >  0) && (CalculatedEnd < *end)) { *status=CalculatedEnd; strcpy(errtext,"Syntax Error: Unexpected trailing matter after algebraic expression."); return; }
   if ((end != NULL) && (*end <= 0)) *end = CalculatedEnd;
 
   for (i=0;i<ALGEBRA_MAXLENGTH;i++) StatusRowInitial[i] = StatusRow[i];
@@ -252,13 +237,13 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
     i+=2;
     j=-1;
     ppl_units_StringEvaluate(in+i, ResultBuffer+bufpos, &k, &j, errtext);
-    if (j>=0) { *status=1; return; }
+    if (j>=0) { *status=i+j; return; }
     i+=k; while ((in[i]>'\0')&&(in[i]<=' ')) i++;
-    if (in[i] != ')') { *status=1; strcpy(errtext,"Syntax Error: Unexpected trailing matter after unit(...) expression."); return; }
+    if (in[i] != ')') { *status=i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after unit(...) expression."); return; }
     while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
     for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
     for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
-    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *status=1; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *status=0; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
 
   // EVALUATION OF ALL NUMERICAL CONSTANTS
@@ -268,8 +253,8 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
     ResultBuffer[bufpos].real = GetFloat(in+i, &j);
     for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     j+=i; while ((in[j]>'\0')&&(in[j]<=' ')) j++;
-    if (j!=k) { *status=1; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant."); return; }
-    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *status=1; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+    if (j!=k) { *status=j; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant."); return; }
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *status=0; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
 
   // EVALUATION OF MINUS SIGNS
@@ -295,10 +280,8 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       if (!go) { RESETSTATUS(prev_start, i); while (StatusRow[i]==7) i++; }
       else
        {
-        *status=-1;
         ppl_units_pow(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , status , errtext);
-        if (*status >= 0) { *status=1; return; }
-        *status=0;
+        if (*status >= 0) { *status=i; return; }
         SETSTATUS(prev_end, next_end, prev_bufno);
         i = next_start - 1;
        }
@@ -318,11 +301,9 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       FETCHNEXT(next_start, next_bufno, next_end);
       if (!go) { while (StatusRow[i]==7) i++; continue; }
       if ((!wasunit)&&(!wasunit2)) { while (StatusRow[i]==7) i++; continue; }
-      *status=-1;
       if      (MATCH_ONE('*')) ppl_units_mult(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , status , errtext);
       else if (MATCH_ONE('/')) ppl_units_div (ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , status , errtext);
-      if (*status >= 0) { *status=1; return; }
-      *status=0;
+      if (*status >= 0) { *status=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
       i = next_start - 1;
      } else {
@@ -335,7 +316,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
    {
     if (StatusRow[i]>=BUFFER_OFFSET) // A numeric constant
      {
-      if (!InMathMode) { InMathMode=1; out[outpos++]='$'; } // Make sure we are in math mode
+      if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
       strcpy(out+outpos, ppl_units_NumericDisplay(ResultBuffer+StatusRow[i]-BUFFER_OFFSET, 0, SW_DISPLAY_L)+1); // Chop off initial $
       outpos += strlen(out+outpos) - 1; // Chop off final $
@@ -346,7 +327,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
     else if (StatusRow[i]==3)
      {
       i++; // Fastforward over (
-      if (!InMathMode) { InMathMode=1; out[outpos++]='$'; } // Make sure we are in math mode
+      if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
       strcpy(out+outpos, "\\left??"); outpos += strlen(out+outpos); OpenBracketPos = outpos-2;
       while (1)
@@ -361,13 +342,13 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
         if ((in[i]=='\0')||(in[i]==')')) break;
         j=-1;
         texify_generic(in+i, &j, out+outpos, 0, status, errtext, RecursionDepth+1, BracketLevel);
-        if (*status) return;
+        if (*status>=0) { (*status)+=i; return; }
         outpos += strlen(out+outpos);
-        if (!InMathMode) { InMathMode=1; out[outpos++]='$'; } // Make sure we are in math mode
+        if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
         if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
         i+=j;
 
-        if   ((*BracketLevel)>OldBracketLevel) OldBracketLevel = (*BracketLevel); // When we return, BracketLevel should record the deepest we've been
+        if ((*BracketLevel)>OldBracketLevel) OldBracketLevel = (*BracketLevel); // OldBracketLevel should record the deepest we've been
        }
       strcpy(out+outpos, "\\right??"); outpos += strlen(out+outpos);
 
@@ -384,7 +365,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
      }
     else if (StatusRow[i]==7) // Texify an operator
      {
-      if (!InMathMode) { InMathMode=1; out[outpos++]='$'; } // Make sure we are in math mode
+      if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
       out[outpos]='\0';
       if      ((in[i]=='a')&&(in[i+1]=='n')&&(in[i+2]=='d')) strcpy(out+outpos, "\\mathrm{and}");
@@ -412,18 +393,18 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
      }
     else if (StatusRow[i]==4) // Texify a $
      {
-      if (!InMathMode) { InMathMode=1; out[outpos++]='$'; } // Make sure we are in math mode
+      if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
       strcpy(out+outpos, "\\$");
       outpos += strlen(out+outpos);
       while (StatusRow[i]==4) i++; i--;
      }
-    else if (StatusRow[i]==8) // Texify a variable name
+    else if (StatusRow[i]==8) // Texify a variable name or function call
      {
-      if (!InMathMode) { InMathMode=1; out[outpos++]='$'; } // Make sure we are in math mode
+      if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
 
-      for (j=i ; ((j<CalculatedEnd)&&(StatusRow[j]==8)) ; j++);
+      for (j=i ; ((j<CalculatedEnd)&&(StatusRow[j]==8)) ; j++); // FFW to see what next atom is... if () this is a function call
 
       if ((j<CalculatedEnd) && (StatusRow[j]==3)) // This is a function call
        {
@@ -437,6 +418,8 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
             for (l=0; ((isalnum(in[i+k+l]) || (in[i+k+l]=='_')) && (l<DUMMYVAR_MAXLEN)); l++) dummy[l]=in[i+k+l];
             if (l==DUMMYVAR_MAXLEN) continue; // Dummy variable name was too long
             dummy[l]='\0'; // Dummy hold the name of the variable being integrated over
+            k = texify_MakeGreek(dummy , GreekifiedDummy);
+            if (k==0) strcpy(GreekifiedDummy , dummy); // Make dummy variable have Greek lettering as required
            } else { // Otherwise, we have to match function name exactly
             if ((DictIter->key[k]>' ') || (isalnum(in[i+k])) || (in[i+k]=='_')) continue; // Nope...
            }
@@ -447,6 +430,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
          }
         if (LaTeXModel == NULL) // We have no LaTeX template for this function, so we construct one which puts function name in Roman
          {
+          LaTeXModel = DummyLaTeXModel;
           k=0;
           strcpy(DummyLaTeXModel+k, "\\mathrm{"); k+=strlen(DummyLaTeXModel+k);
           for (l=i;l<j;l++)
@@ -460,37 +444,66 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
         StrBracketMatch(in+j, CommaPositions, &Nargs, &k, MAX_STR_FORMAT_ITEMS);
         if ((RequiredNargs >= 0) && (RequiredNargs != Nargs))
          {
-          *status=1;
+          *status=j;
           sprintf(errtext,"Error: The %s() function takes %d arguments, but %d have been supplied in expression to be texified.", FunctionName, RequiredNargs, Nargs);
           return;
          }
+
+        // Realise LaTeX model
+        for (k=0; LaTeXModel[k]!='\0'; k++)
+         {
+          if      (LaTeXModel[k  ]!='@') out[outpos++]=LaTeXModel[k];
+          else if (LaTeXModel[k+1]=='?') { strcpy(out+outpos , GreekifiedDummy); outpos += strlen(out+outpos); }
+          else if (LaTeXModel[k+1]=='<') { strcpy(out+outpos , "\\left??"); outpos += strlen(out+outpos); OpenBracketPos = outpos-2; }
+          else if (LaTeXModel[k+1]=='>')
+           {
+            strcpy(out+outpos , "\\right??"); outpos += strlen(out+outpos);
+            (*BracketLevel) = OldBracketLevel;
+            BracketType = (*BracketLevel) % 3;
+            if      (BracketType==0) { out[OpenBracketPos+0]='(' ; out[OpenBracketPos+1]=' '; out[outpos-2]=')' ; out[outpos-1]=' '; }
+            else if (BracketType==1) { out[OpenBracketPos+0]='[' ; out[OpenBracketPos+1]=' '; out[outpos-2]=']' ; out[outpos-1]=' '; }
+            else                     { out[OpenBracketPos+0]='\\'; out[OpenBracketPos+1]='{'; out[outpos-2]='\\'; out[outpos-1]='}'; }
+            (*BracketLevel)++;
+           }
+          else if ((LaTeXModel[k+1]>='1') && (LaTeXModel[k+1]<='6'))
+           {
+            l=(int)(LaTeXModel[k+1]-'1');
+            m=-1;
+            texify_generic(in+CommaPositions[l]+j+1, &m, out+outpos, 0, status, errtext, RecursionDepth+1, BracketLevel);
+            if (*status>=0) { (*status)+=CommaPositions[l]+j; return; }
+            outpos += strlen(out+outpos);
+            if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
+            if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
+            if ((*BracketLevel)>OldBracketLevel) OldBracketLevel = (*BracketLevel); // OldBracketLevel should record the deepest we've been
+           }
+          else if (LaTeXModel[k+1]=='0') // @0 means we list all commandline arguments
+           {
+            for (l=0; l<Nargs; l++)
+             {
+              if (l!=0) out[outpos++]=',';
+              m=-1;
+              texify_generic(in+CommaPositions[l]+j+1, &m, out+outpos, 0, status, errtext, RecursionDepth+1, BracketLevel);
+              if (*status>=0) { (*status)+=CommaPositions[l]+j; return; }
+              outpos += strlen(out+outpos);
+              if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
+              if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
+              if ((*BracketLevel)>OldBracketLevel) OldBracketLevel = (*BracketLevel); // OldBracketLevel should record the deepest we've been
+             }
+           }
+          if (LaTeXModel[k]=='@') k++; // FFW over two-byte code
+         }
+
         i=j;
         while (StatusRow[i]==3) i++;
         i--;
        }
       else // This is a simple variable name
        {
-        k=0;
-        for ( DictIter=DictIterateInit(LatexVarNames) ; (DictIter!=NULL) ; DictIter=DictIterate(DictIter,NULL,NULL) )
-         {
-          for (j=0; DictIter->key[j]!='\0'; j++) if (DictIter->key[j]!=in[i+j]) break;
-          if (DictIter->key[j]!='\0') continue;
-          if ((!isalnum(in[i+j]))&&(in[i+j]!='_')) { strcpy(out+outpos, (char *)DictIter->data); outpos += strlen(out+outpos); k=1; break; } // We have a Greek letter
-          if (in[i+j]=='_') j++;
-          if (isdigit(in[i+j]))
-           {
-            l=j;
-            while (isdigit(in[i+j])) j++;
-            if ((isalnum(in[i+j]))||(in[i+j]=='_')) continue;
-            sprintf(out+outpos, "%s_{", (char *)DictIter->data); // We have Greek letter underscore number
-            outpos += strlen(out+outpos);
-            for (m=l;m<j;m++) out[outpos++]=in[i+m];
-            out[outpos++]='}';
-            k=1;
-            break;
-           }
-         }
-        if (k==0) // Variable name was not a known Greek character
+        k = texify_MakeGreek(in+i , out+outpos);
+
+        if (k)
+         { outpos += strlen(out+outpos); }
+        else // Variable name was not a known Greek character
          {
           for ( ; StatusRow[i]==8; i++)
            {
@@ -510,16 +523,18 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
   return; // Finished
  }
 
+// NB: The texify function returns a different status code from all other function wrappers. No error is -1. Otherwise status points to position of error.
+
 void wrapper_texify(char *in, int inlen, value *output, int *status, char *errtext)
  {
   int BracketLevel=0;
 
-  *status=0;
+  *status=-1;
   ppl_units_zero(output);
   inlen--; // Make inlen point to last character
   while ((in[0]!='\0')&&(in[0]<=' '))   { in++; inlen--; } // Strip spaces off front
   while ((inlen>0)&&(in[inlen]<=' '))   {       inlen--; } // Strip spaces off back
-  if ((inlen<0)||(inlen>ALGEBRA_MAXLENGTH)) { sprintf(errtext, "Supplied expression is longer than maximum of %d characters.", ALGEBRA_MAXLENGTH); *status=1; return; }
+  if ((inlen<0)||(inlen>ALGEBRA_MAXLENGTH)) { sprintf(errtext, "Supplied expression is longer than maximum of %d characters.", ALGEBRA_MAXLENGTH); *status=0; return; }
   output->string = lt_malloc(ALGEBRA_MAXLENGTH);
   output->string[0] = '\0';
   texify_generic(in, &inlen, output->string, 1, status, errtext, 1, &BracketLevel);

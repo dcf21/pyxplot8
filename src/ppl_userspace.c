@@ -394,9 +394,10 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        {
         pos--; // pos should point to opening bracket
         StrBracketMatch(in+pos,NULL,NULL,&k,0);
-        j=0;
+        if (k<=0) { *errpos = pos; strcpy(errtext,"Syntax Error: Mismatched bracket."); return; }
+        j=-1;
         ((void(*)(char*,int,value*,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,&j,errtext);
-        if (j>0) { *errpos = start; return; }
+        if (j>=0) { *errpos = pos+1+j; return; }
         pos += k;
        }
       if (in[pos] != ')') // Check that we have closing bracket
@@ -1242,7 +1243,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
 #define NEWSTATE(L) state=trial; for (i=0;i<L;i++) { status[scanpos++]=(unsigned char)(state-'0') ; if (scanpos>=ALGEBRA_MAXLENGTH) PGE_OVERFLOW; }
 #define SAMESTATE                                  { status[scanpos++]=(unsigned char)(state-'0') ; if (scanpos>=ALGEBRA_MAXLENGTH) PGE_OVERFLOW; }
 
-void ppl_GetExpression(char *in, int *end, int DollarAllowed, unsigned char *status, unsigned char *OpList, int *errpos, char *errtext)
+void ppl_GetExpression(const char *in, int *end, int DollarAllowed, unsigned char *status, unsigned char *OpList, int *errpos, char *errtext)
  {
   static char *AllowedNext[] = {"34568","","72","368","34568","72","34568","372"};
   static unsigned char DummyOpList[OPLIST_LEN];

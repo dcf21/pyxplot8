@@ -24,7 +24,8 @@
 
 #include "ppl_units.h"
 
-void texify_init        ();
+int  texify_MakeGreek   (const char *in, char *out);
+
 void texify_generic     (char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel);
 void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel);
 void texify_algebra     (char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel);
