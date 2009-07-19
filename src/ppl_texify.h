@@ -25,9 +25,9 @@
 #include "ppl_units.h"
 
 void texify_init        ();
-void texify_generic     (char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth);
-void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth);
-void texify_algebra     (char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth);
+void texify_generic     (char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel);
+void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel);
+void texify_algebra     (char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel);
 
 void wrapper_texify     (char *in, int inlen, value *output, int *status, char *errtext);
 

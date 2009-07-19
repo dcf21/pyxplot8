@@ -329,7 +329,7 @@ void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
 // start: start scanning at in+start
 // end: If NULL, does nothing. If *end>0, we must use all characters up to this point. If *end<0, last character of string is written here
 // Local?Vars: Local variables which take precedence over global variables. 2 takes precedence over 1
-// errpos: Set >0 if an error is found at (in+errpos).
+// errpos: Set >=0 if an error is found at (in+errpos).
 // errtext: Error messages are written here
 // ---------------------------------------------------------------------------------
 
@@ -385,7 +385,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
            {
             *errpos = pos;
             if (in[pos] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
-            else               strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+            else               strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function.");
             return;
            } else { pos++; }
          }
@@ -394,6 +394,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        {
         pos--; // pos should point to opening bracket
         StrBracketMatch(in+pos,NULL,NULL,&k,0);
+        j=0;
         ((void(*)(char*,int,value*,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,&j,errtext);
         if (j>0) { *errpos = start; return; }
         pos += k;
@@ -402,7 +403,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        {
         (*errpos) = pos;
         if (in[pos] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
-        else               strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+        else               strcpy(errtext,"Syntax Error: Unexpected trailing matter after final argument to function");
         return;
        } else { pos++; }
       if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; } // Have we used up as many characters as we were told we had to?
@@ -737,23 +738,23 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
            {
             *errpos = start+i;
             if (in[start+i] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
-            else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
+            else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function.");
             return;
            } else { i++; }
          }
-       }
-      if ((FunctionType != PPL_USERSPACE_UNIT) && (in[start+i] != ')')) // Unit function deals with arguments itself
-       {
-        (*errpos) = start+i;
-        if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
-        else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter.");
-        return;
        }
       if (FunctionType == PPL_USERSPACE_STRFUNC)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         (*errpos) = start+i;
         strcpy(errtext,"Type error: This function returns a string where a numeric result was expected.");
+        return;
+       }
+      if ((FunctionType != PPL_USERSPACE_UNIT) && (in[start+i] != ')')) // Unit function deals with arguments itself
+       {
+        (*errpos) = start+i;
+        if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
+        else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter after final argument to function.");
         return;
        }
       if (FunctionType == PPL_USERSPACE_SYSTEM)
@@ -775,7 +776,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
         ppl_units_StringEvaluate(in+start+i, ResultBuffer+bufpos, &k, &j, errtext);
         if (j>=0) { *errpos = start+i+j; return; }
         i+=k; while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
-        if (in[start+i] != ')') { (*errpos) = start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter."); return; }
+        if (in[start+i] != ')') { (*errpos) = start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after unit expression."); return; }
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
        }
       else if (FunctionType == PPL_USERSPACE_USERDEF)
