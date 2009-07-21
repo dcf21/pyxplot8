@@ -78,6 +78,41 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
   return infile;
  }
 
+void __inline__ DataFile_UsingConvert_FetchColumn(double ColumnNo, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter)
+ {
+  int i,j=-1;
+  const char *outstr=NULL;
+  char buffer[32];
+
+  if ((ColumnNo<0)||(ColumnNo>Ncols+1)) { if (*ErrCounter>0) sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
+  i=(int)floor(ColumnNo);
+  if (!NumericOut)
+   {
+    if (i==0) { sprintf(buffer,"%d",i); outstr=buffer; }
+    else      { outstr=columns[i]; }
+    goto RETURN_STRING;
+   }
+  if (i==0)
+   { ColumnNo = LineNo; }
+  else
+   {
+    ColumnNo=GetFloat(columns[i],&j);
+    if (columns[i][j]!='\0') { if (*ErrCounter>0) sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
+   }
+  ppl_units_zero(output);
+  output->real = ColumnNo;
+  ppl_units_mult(output,ColumnUnits[i],output,status,errtext);
+  return;
+
+RETURN_STRING:
+  ppl_units_zero(output); 
+  output->string = (char *)lt_malloc_incontext(strlen(outstr),OutputContext);
+  if (output->string == NULL) { if (*ErrCounter>0) sprintf(errtext, "Out of memory."); *status=1; return; }
+  strcpy(output->string,outstr);
+  return;
+ }
+
+
 // DataFile_UsingConvert()
 //   input = string from a using :...: clause.
 //   output = output of what this clause computes to.
@@ -94,60 +129,25 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
 //   errtext = error text output.
 //   ErrCounter = If zero, we don't bother returning errors.
 
-void __inline__ DataFile_UsingConvert(const char *input, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const char **ColumnHeads, const int NColumnHeads, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter)
+void DataFile_UsingConvert(const char *input, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const char **ColumnHeads, const int NColumnHeads, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter, int RecursionDepth)
  {
   double dbl;
-  int i,j,l=strlen(input);
+  int i,l=strlen(input);
   unsigned char NamedColumn=0;
-  const char *outstr=NULL;
-  char buffer[32];
 
-  if (ValidFloat(input,&l)) // using 1:2 -- number is column number
+  if (RecursionDepth==1) // 1 only means "the contents of column 1" at the root level of recursion... the '1' in $(1) actually means 1.
    {
-    dbl=GetFloat(input,NULL);
-    NamedColumn=1;
-   }
-  else
-   {
-    for (i=0;i<NColumnHeads;i++) // using ColumnName
-     if (strcmp(ColumnHeads[i],input)==0)
-      {
-       dbl=i;
-       NamedColumn=1;
-       break;
-      }
-   }
-
-  if (NamedColumn) // Clean up these cases
-   {
-    if ((dbl<0)||(dbl>Ncols+1)) { if (*ErrCounter<=0) sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
-    i=(int)floor(dbl);
-    if (!NumericOut)
-     {
-      if (i==0) { sprintf(buffer,"%d",i); outstr=buffer; }
-      else      { outstr=columns[i]; }
-      goto RETURN_STRING;
-     }
-    if (i==0)
-     { dbl = LineNo; }
+    if (ValidFloat(input,&l)) // using 1:2 -- number is column number
+     { dbl=GetFloat(input,NULL); NamedColumn=1; }
     else
-     {
-      dbl=GetFloat(columns[i],&j);
-      if (columns[i][j]!='\0') { if (*ErrCounter<=0) sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
-     }
-    ppl_units_zero(output);
-    output->real = dbl;
-    ppl_units_mult(output,ColumnUnits[i],output,status,errtext);
-    return;
+     { for (i=0;i<NColumnHeads;i++) if (strcmp(ColumnHeads[i],input)==0) { dbl=i; NamedColumn=1; break; } } // using ColumnName
+
+    if (NamedColumn) // Clean up these cases
+     { DataFile_UsingConvert_FetchColumn(dbl, output, OutputContext, columns, Ncols, LineNo, NumericOut, ColumnUnits, NColumnUnits, status, errtext, ErrCounter); return; }
    }
 
   // Start copying out string, substituting any $s that we find
 
-RETURN_STRING:
-  ppl_units_zero(output);
-  output->string = (char *)lt_malloc_incontext(strlen(outstr),OutputContext);
-  if (output->string == NULL) { if (*ErrCounter<=0) sprintf(errtext, "Out of memory."); *status=1; return; }
-  strcpy(output->string,outstr);
   return;
  }
 
@@ -161,9 +161,14 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   int           linestep=1, blockstep=1, linefirst=-1, blockfirst=-1, linelast=-1, blocklast=-1;
   long int      index_number, linenumber_count, linenumber_stepcnt, block_count, block_stepcnt, prev_blanklines, file_linenumber, ItemsOnLine;
   FILE         *filtered_input;
-  char          linebuffer[LSTR_LENGTH], *lineptr;
+  char          linebuffer[LSTR_LENGTH], *lineptr, *cptr;
 
-  int i, *intptr;
+  int i, j, k, l, m, *intptr;
+
+  char        **ColumnHeadings  = NULL;
+  int           NColumnHeadings = 0;
+  value        *ColumnUnits     = NULL;
+  int           NColumnUnits    = 0;
 
   // Init
   if (DEBUG) { sprintf(temp_err_string, "Opening datafile '%s'.", filename); ppl_log(temp_err_string); }
@@ -292,7 +297,65 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
      }
 
    // Ignore comment lines
-   if (linebuffer[0]=='#') continue;
+   if (linebuffer[0]=='#')
+    {
+     for (i=1; ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')); i++);
+     if (strncmp(linebuffer+i, "Columns:", 8)==0) // '# Columns:' means we have a list of column headings
+      {
+       i+=8;
+       while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+       ItemsOnLine = 0; hadwhitespace = 1;
+       for (j=i; linebuffer[j]!='\0'; j++)
+        {
+         if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+         else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
+        }
+       cptr            = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
+       ColumnHeadings  = (char **)lt_malloc(ItemsOnLine * sizeof(char *));
+       NColumnHeadings = ItemsOnLine;
+       if ((cptr==NULL)||(ColumnHeadings==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+       ItemsOnLine = 0; hadwhitespace = 1;
+       for (j=i; linebuffer[j]!='\0'; j++)
+        {
+         if (linebuffer[j]< ' ') { linebuffer[j]='\0'; hadwhitespace = 1; }
+         else if (hadwhitespace) { ColumnHeadings[ItemsOnLine] = cptr+j-i; ItemsOnLine++; hadwhitespace = 0; }
+        }
+      }
+     if (strncmp(linebuffer+i, "Units:", 6)==0) // '# Units:' means we have a list of column units
+      {
+       i+=6;
+       while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+       ItemsOnLine = 0; hadwhitespace = 1;
+       for (j=i; linebuffer[j]!='\0'; j++)
+        {
+         if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+         else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
+        }
+       cptr         = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
+       ColumnUnits  = (value *)lt_malloc(ItemsOnLine * sizeof(value));
+       NColumnUnits = ItemsOnLine;
+       if ((cptr==NULL)||(ColumnUnits==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+       ItemsOnLine = 0; hadwhitespace = 1;
+       for (k=0; cptr[k]!='\0'; k++)
+        {
+         if (cptr[k]<' ') { continue; }
+         else
+          {
+           for (l=0; cptr[k+l]>' '; l++);
+           cptr[k+l]='\0'; m=-1;
+           ppl_units_StringEvaluate(cptr+k, ColumnUnits+ItemsOnLine, &l, &m, errout);
+           if (m>=0)
+            {
+             ppl_units_zero(ColumnUnits+ItemsOnLine);
+             ColumnUnits[ItemsOnLine].real = 1.0;
+             if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(temp_err_string,"Error on line %ld of data file '%s', at character %d:",file_linenumber,filename,i+k); ppl_warning(temp_err_string); ppl_warning(errout); }
+            }
+           ItemsOnLine++; k+=l;
+          }
+        }
+      }
+     continue; // Ignore comment lines
+    }
    prev_blanklines=0;
 
    // If we're in an index we're ignoring, don't do anything with this line

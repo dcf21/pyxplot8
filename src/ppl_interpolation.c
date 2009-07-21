@@ -39,7 +39,7 @@
 int directive_interpolate(Dict *command, int mode)
  {
   DataTable *data;
-  int        status=0, index=0, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=0;
+  int        status=0, index=0, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=5;
   char       errtext[LSTR_LENGTH], *filename=NULL, *tempstr=NULL, *SelectCrit=NULL;
   List      *UsingList=NULL, *EveryList=NULL;
 
