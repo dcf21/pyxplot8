@@ -237,7 +237,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
      }
 
     temp=OldFuncIter->next;
-    if (supersede > 0) { free(OldFuncIter); } else { OldFuncPrev = &(OldFuncIter->next); }
+    if (supersede > 0) { /* free(OldFuncIter); */ } else { OldFuncPrev = &(OldFuncIter->next); }
     OldFuncIter=temp;
    }
 
@@ -272,7 +272,7 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
  {
   if (in->FunctionType == PPL_USERSPACE_USERDEF)
    {
-    if (in->FunctionPtr!=NULL) free(in->FunctionPtr);
+    //if (in->FunctionPtr!=NULL) free(in->FunctionPtr);
    }
   else if (in->FunctionType == PPL_USERSPACE_SPLINE)
    {
@@ -282,13 +282,13 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
    {
     ppl_fatal(__FILE__,__LINE__,"Attempt to destroy a function descriptor which is neither a user-defined function, nor a spline.");
    }
-  if (in->ArgList    !=NULL) free(in->ArgList);
-  if (in->min        !=NULL) free(in->min);
-  if (in->max        !=NULL) free(in->max);
-  if (in->MinActive  !=NULL) free(in->MinActive);
-  if (in->MaxActive  !=NULL) free(in->MaxActive);
-  if (in->LaTeX      !=NULL) free(in->LaTeX);
-  if ( (in->description!=NULL) && (in->description!=(char *)in->FunctionPtr) ) free(in->description);
+  //if (in->ArgList    !=NULL) free(in->ArgList);
+  //if (in->min        !=NULL) free(in->min);
+  //if (in->max        !=NULL) free(in->max);
+  //if (in->MinActive  !=NULL) free(in->MinActive);
+  //if (in->MaxActive  !=NULL) free(in->MaxActive);
+  //if (in->LaTeX      !=NULL) free(in->LaTeX);
+  //if ( (in->description!=NULL) && (in->description!=(char *)in->FunctionPtr) ) free(in->description);
   return;
  }
 

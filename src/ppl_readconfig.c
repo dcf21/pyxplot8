@@ -259,6 +259,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "TERMENLARGE"  )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .TermEnlarge   = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TERMENLARGE."  , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
+      else if (strcmp(setkey, "ENLARGE"      )==0) // ENLARGE, as opposed to TERMENLARGE is supported for back-compatibility with PyXPlot 0.7
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .TermEnlarge   = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting ENLARGE."      , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       else if (strcmp(setkey, "TERMINVERT"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .TermInvert = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal value for setting TERMINVERT."   , linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }

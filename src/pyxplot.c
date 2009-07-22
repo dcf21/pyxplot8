@@ -89,6 +89,17 @@ int main(int argc, char **argv)
   rl_readline_name = "PyXPlot";                          /* Allow conditional parsing of the ~/.inputrc file. */
   rl_attempted_completion_function = ppl_rl_completion;  /* Tell the completer that we want a crack first. */
 
+  // Initialise user variables and functions
+  ppl_UserSpaceInit();
+
+  // Set up commandline parser; do this BEFORE reading config files, which may contain a [script] section which needs parsing
+  if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");
+  ppl_commands_read();
+
+  // Initialise settings and read configuration file; do this BEFORE processing command line arguments which take precedence
+  if (DEBUG) ppl_log("Reading configuration file.");
+  ppl_settings_readconfig();
+
   // Scan commandline options for any switches
   for (i=1; i<argc; i++)
    {
@@ -148,17 +159,6 @@ int main(int argc, char **argv)
   // Launch child process
   if (DEBUG) ppl_log("Launching the Child Support Process.");
   InitialiseCSP();
-
-  // Initialise user variables and functions
-  ppl_UserSpaceInit();
-
-  // Set up commandline parser
-  if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");
-  ppl_commands_read();
-
-  // Initialise settings and read configuration file
-  if (DEBUG) ppl_log("Reading configuration file.");
-  ppl_settings_readconfig();
 
   // Set up SIGINT handler
   if (sigsetjmp(sigjmp_ToMain, 1) == 0)
