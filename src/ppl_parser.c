@@ -715,11 +715,11 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           MatchVal._str = TempMatchStr;
          }
        }
-      else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0))
+      else if ((strcmp(node->MatchString, "%e")==0) || (strcmp(node->MatchString, "%E")==0)) // %E allows dollars; %e does not
        {
         i = -1;
         *AlgebraNewLinepos=-1;
-        ppl_GetExpression(line+*linepos, &i, 0, DummyStatus, NULL, AlgebraNewLinepos, AlgebraNewError);
+        ppl_GetExpression(line+*linepos, &i, (strcmp(node->MatchString, "%E")==0), DummyStatus, NULL, AlgebraNewLinepos, AlgebraNewError);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;

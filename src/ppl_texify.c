@@ -39,7 +39,7 @@
 static unsigned char InMathMode;
 static unsigned char InTextRm;
 
-#define ENTERMATHMODE "$\\displaystyle"
+#define ENTERMATHMODE "$\\displaystyle "
 
 static char *LatexVarNamesFr[] = {"alpha"  ,"beta"   ,"gamma"  ,"delta"  ,"epsilon","zeta"   ,"eta"    ,"theta"  ,"iota"   ,"kappa"  ,"lambda" ,"mu"     ,"nu"     ,"xi"     ,"pi"     ,"rho"    ,"sigma"  ,"tau"    ,"upsilon","phi"    ,"chi"    ,"psi"    ,"omega"  ,"Gamma"  ,"Delta"  ,"Theta"  ,"Lambda" ,"Xi"     ,"Pi"     ,"Sigma"  ,"Upsilon","Phi"    ,"Psi"    ,"Omega"  ,"aleph"  , NULL};
 
@@ -221,7 +221,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
   *BracketLevel = 0;
 
   CalculatedEnd=-1;
-  ppl_GetExpression(in, &CalculatedEnd, 0, StatusRow, OpList, status, errtext);
+  ppl_GetExpression(in, &CalculatedEnd, 1, StatusRow, OpList, status, errtext);
   if (*status >= 0) return;
   if ((end != NULL) && (*end >  0) && (CalculatedEnd < *end)) { *status=CalculatedEnd; strcpy(errtext,"Syntax Error: Unexpected trailing matter after algebraic expression."); return; }
   if ((end != NULL) && (*end <= 0)) *end = CalculatedEnd;
