@@ -379,8 +379,8 @@ void ReadConfigFile(char *ConfigFname)
       if (isalpha(setkey[0])) for (i=1;isalnum(setkey[i]);i++);
       if ((i==0)||(setkey[i]!='\0')) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal variable name\n", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; }
       errpos = -1; end = strlen(setvalue);
-      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_GetQuotedString(setvalue, setstring , 0, &end, &errpos, errtext, 0);
-      else                                            ppl_EvaluateAlgebra(setvalue,&setnumeric, 0, &end, &errpos, errtext, 0);
+      if ((setvalue[0]=='\"') || (setvalue[0]=='\'')) ppl_GetQuotedString(setvalue, setstring , 0, &end, 0, &errpos, errtext, 0);
+      else                                            ppl_EvaluateAlgebra(setvalue,&setnumeric, 0, &end, 0, &errpos, errtext, 0);
       if (errpos >= 0)
        {
         sprintf(temp_err_string, "Error in line %d of configuration file %s:\n%s", linecounter, ConfigFname, errtext);

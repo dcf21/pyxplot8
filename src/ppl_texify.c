@@ -139,7 +139,7 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
 
   if (EvalStrings)
    {
-    ppl_GetQuotedString(in, buffer, 0, end, status, errtext, 1); // end will get written here, and we want nothing more to do with it
+    ppl_GetQuotedString(in, buffer, 0, end, 0, status, errtext, 1); // end will get written here, and we want nothing more to do with it
     if (*status>=0) return;
     end = NULL;
     in  = buffer;

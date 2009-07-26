@@ -43,6 +43,7 @@
 
 #include "ppl_calculus.h"
 #include "ppl_constants.h"
+#include "ppl_datafile.h"
 #include "ppl_interpolation.h"
 #include "ppl_userspace.h"
 
@@ -128,7 +129,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     else
      {
       *status=-1; args_j=0;
-      ppl_EvaluateAlgebra(definition+i, min+lcount, 0, &args_j, status, errtext, 0);
+      ppl_EvaluateAlgebra(definition+i, min+lcount, 0, &args_j, 0, status, errtext, 0);
       if (*status >= 0) return;
       i+=args_j;
       if (min[lcount].FlagComplex) { *status=1; sprintf(errtext, "Where ranges are specified for function arguments, these must be real numbers. Ranges may not be imposed upon complex arguments to functions."); return; }
@@ -146,7 +147,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     else
      {
       *status=-1; args_j=0;
-      ppl_EvaluateAlgebra(definition+i, max+lcount, 0, &args_j, status, errtext, 0);
+      ppl_EvaluateAlgebra(definition+i, max+lcount, 0, &args_j, 0, status, errtext, 0);
       if (*status >= 0) return;
       i+=args_j;
       if (max[lcount].FlagComplex) { *status=1; sprintf(errtext, "Where ranges are specified for function arguments, these must be real numbers. Ranges may not be imposed upon complex arguments to functions."); return; }
@@ -333,7 +334,7 @@ void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
 // errtext: Error messages are written here
 // ---------------------------------------------------------------------------------
 
-void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth)
+void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char DollarAllowed, int *errpos, char *errtext, int RecursionDepth)
  {
   char QuoteType;
   char FormatString[LSTR_LENGTH]; // Used to store the string found between quotes, before applying the substitution operator
@@ -359,6 +360,49 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
 
   if ((in[pos]!='\'') && (in[pos]!='\"')) // If quoted string doesn't start with quote, it must be a string variable name
    {
+    if ((DollarAllowed)&&(in[pos]=='$')) // We have $foo, and are working inside a datafile
+     {
+      if ((end!=NULL)&&(*end>=0)) { i=*end-(pos+1); } else {i=-1;}
+      if (ValidFloat(in+pos+1, &i)) // We have $2
+       {
+        argf.d = GetFloat(in+pos+1, NULL);
+        *errpos=0;
+        DataFile_UsingConvert_FetchColumnByNumber(argf.d, &(argf.v), 0, 0, errpos, errtext);
+        if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
+        strcpy(out, argf.v.string);
+        return;
+       }
+      else if (in[pos+1]=='(') // We have $(a+b)
+       {
+        ppl_EvaluateAlgebra(in, &argf.v, pos+1, end, 1, errpos, errtext, RecursionDepth+1);
+        if (*errpos>=0) return;
+        if (argf.v.FlagComplex  !=0) { *errpos=0; strcpy(errtext, "Number of requested column in datafile should be a real integer; supplied number has an imaginary component."); return; }
+        if (argf.v.dimensionless==0) { *errpos=0; sprintf(errtext, "Number of requested column in datafile should be a dimensionless number; supplied number has units of <%s>.",ppl_units_GetUnitStr(&(argf.v),NULL,NULL,0,0)); return; }
+        *errpos=0;
+        DataFile_UsingConvert_FetchColumnByNumber(argf.v.real, &(argf.v), 0, 0, errpos, errtext);
+        if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
+        strcpy(out, argf.v.string);
+        return;
+       }
+      else // We have $ColumnName
+       {
+        for (i=pos+1,j=0;((isalnum(in[i]))||(in[i]=='_')); i++,j++) temp_err_string[j]=in[i];
+        temp_err_string[j++]='\0';
+        if ((j>1)&&(!((end!=NULL)&&(*end>0)&&(i<*end))))
+         {
+          *errpos=0;
+          DataFile_UsingConvert_FetchColumnByName(temp_err_string, &(argf.v), 0, 0, errpos, errtext);
+          if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
+          strcpy(out, argf.v.string);
+          return;
+         }
+       }
+      for (i=pos+1,j=0;((isalnum(in[i]))||(in[i]=='_')); i++,j++) temp_err_string[j]=in[i];
+      temp_err_string[j++]='\0';
+      *errpos=0;
+      sprintf(errtext, "Error: Request for unrecognised column of datafile '$%s'.", temp_err_string);
+      return;
+     }
     while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
@@ -375,7 +419,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
         while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
         if (in[pos]==')') { *errpos = pos; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
         j=-1;
-        ppl_EvaluateAlgebra(in+pos, ResultBuffer+k+2, 0, &j, errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos, ResultBuffer+k+2, 0, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos >= 0) { (*errpos) += pos; return; }
         pos+=j;
         while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
@@ -495,7 +539,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
       StrSlice(FormatString, FormatToken, i, k+1);
       if (RequiredArgs>1) // Length and/or precision was specified with a *, so we need to take an integer from the list of arguments
        {
-        ppl_EvaluateAlgebra(in+pos , &arg1v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &arg1v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         if (arg1v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of <%s>.", ppl_units_GetUnitStr(&arg1v, NULL, NULL, 0, 0) ); return; }
         if (arg1v.FlagComplex       ) { *errpos = pos; sprintf(errtext, "This argument should real, but in fact has an imaginary component."); return; }
@@ -503,7 +547,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        }
       if (RequiredArgs>2)
        {
-        ppl_EvaluateAlgebra(in+pos , &arg2v, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &arg2v, CommaPositions[ArgCount+1]+1, &CommaPositions[ArgCount+2], DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         if (arg2v.dimensionless == 0) { *errpos = pos; sprintf(errtext, "This argument should be dimensionless, but has dimensions of <%s>.", ppl_units_GetUnitStr(&arg2v, NULL, NULL, 0, 0) ); return; }
         if (arg2v.FlagComplex       ) { *errpos = pos; sprintf(errtext, "This argument should real, but in fact has an imaginary component."); return; }
@@ -513,11 +557,11 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
       ArgCount += (RequiredArgs-1); // Fastforward ArgCount to point at the number or string argument that we're actually going to substitute
       if ((AllowedFormats[l]=='c') || (AllowedFormats[l]=='s') || (AllowedFormats[l]=='S'))
        {
-        ppl_EvaluateAlgebra(in+pos , &argtemp, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &argtemp, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0)
          { 
           *errpos = -1;
-          ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
+          ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
           if (*errpos>=0) { *errpos += pos; return; } // Error from attempt at string evaluation should prevail
           argf.s = FormatArg;
          } else {
@@ -529,7 +573,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
        }
       else
        {
-        ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], errpos, errtext, RecursionDepth+1);
+        ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (argf.v.FlagComplex!=0))
          { sprintf(out+j, "nan"); }
@@ -637,7 +681,9 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
 // Order of precedence:
 //  1 f(x)
 //  2 ()
-//    [evaluate numerics and variables]
+//    [evaluate numerics]
+//    [evaluate $s]
+//    [evaluate variables]
 //  3 minus signs
 //  4 **
 //  5 *  /  %
@@ -660,9 +706,10 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, int *errpos, 
 
 #define FETCHPREV(VARA,VARB,VARC)  { for (j=p-1,cj=StatusRow[p-1]; ((StatusRow[j]==cj)&&(j>0)); j--); if (cj<BUFFER_OFFSET) {*errpos=i; strcpy(errtext, "Internal Error: Trying to do arithmetic before numeric conversion"); return;}; VARA=j; VARB=(int)(cj-BUFFER_OFFSET); VARC=p-1; }
 #define FETCHNEXT(VARA,VARB,VARC)  { for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++); if ((cj=StatusRow[j])<BUFFER_OFFSET) {*errpos=i; strcpy(errtext, "Internal Error: Trying to do arithmetic before numeric conversion"); return;}; for (k=j; StatusRow[k]==cj; k++); VARA=j; VARB=(int)(cj-BUFFER_OFFSET); VARC=k; }
+#define FETCHNEXTI(VARA,VARB,VARC) { for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++); for (k=j, cj=StatusRow[j]; StatusRow[k]==cj; k++); VARA=j; VARB=(int)cj; VARC=k; }
 #define SETSTATUS(BEG,END,VAL)     { ci = (unsigned char)(VAL+BUFFER_OFFSET); for (j=BEG;j<END;j++) StatusRow[j]=ci; }
 
-void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth)
+void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned char DollarAllowed, int *errpos, char *errtext, int RecursionDepth)
  {
   unsigned char OpList[OPLIST_LEN];           // A list of what operations this expression contains
   unsigned char StatusRow[ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
@@ -728,7 +775,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
             else                    i++;
            }
          } else { // otherwise, we evaluate the argument straight away
-          ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos+k+2, 0, &j, errpos, errtext, RecursionDepth+1);
+          ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos+k+2, 0, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
           if (*errpos >= 0) { (*errpos) += start+i; return; }
           i+=j;
          }
@@ -854,7 +901,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
             j += strlen(((FunctionDescriptor *)DictIter->data)->ArgList+j)+1;
            }
           j=-1;
-          ppl_EvaluateAlgebra((char *)FuncDef->FunctionPtr, ResultBuffer+bufpos, 0, &j, errpos, errtext, RecursionDepth+1);
+          ppl_EvaluateAlgebra((char *)FuncDef->FunctionPtr, ResultBuffer+bufpos, 0, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
           if (((char *)FuncDef->FunctionPtr)[j]!='\0') { *errpos=1; strcpy(errtext,"Unexpected trailing matter in function definition."); }
           j=0;
           for (k=0; k<NArgs; k++) // Swap old arguments for new in global dictionary
@@ -883,14 +930,14 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
   if (OpList[2]!=0) for (i=0;i<len;i++) if (StatusRow[i]==3)
    {
     j=-1;
-    ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, errpos, errtext, RecursionDepth+1);
+    ppl_EvaluateAlgebra(in+start+i, ResultBuffer+bufpos, 1, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
     if (*errpos >= 0) { (*errpos) += start+i; return; }
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (in[start+j]!=')') { *errpos=start+j; strcpy(errtext,"Syntax Error: Unexpected trailing matter within brackets."); return; }
     for (k=i; StatusRow[k]==3; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
-  // PHASE 2b: EVALUATION OF ALL NUMERICS AND VARIABLES
+  // PHASE 2b: EVALUATION OF EXPLICIT NUMERICAL QUANTITIES
   for (i=0;i<len;i++) if (StatusRow[i]==6)
    {
     ppl_units_zero(ResultBuffer+bufpos);
@@ -900,9 +947,42 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant."); return; }
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
-  for (i=0;i<len;i++) if ((StatusRow[i]==8) || (StatusRow[i]==4))
+  // PHASE 2c: EVALUATION OF $45-TYPE VARIABLES
+  if (DollarAllowed) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==4)
    {
-    for (j=i;((StatusRow[j]==8)||(StatusRow[i]==4));j++);
+    FETCHNEXTI(next_start, next_bufno, next_end);
+    if (next_bufno>=BUFFER_OFFSET) // $45 or $(45)
+     {
+      next_bufno-=BUFFER_OFFSET;
+      if (ResultBuffer[next_bufno].FlagComplex  !=0) { *errpos=0; strcpy(errtext, "Number of requested column in datafile should be a real integer; supplied number has an imaginary component."); return; }
+      if (ResultBuffer[next_bufno].dimensionless==0) { *errpos=0; sprintf(errtext, "Number of requested column in datafile should be a dimensionless number; supplied number has units of <%s>.",ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,0,0)); return; }
+      *errpos=0;
+      DataFile_UsingConvert_FetchColumnByNumber(ResultBuffer[next_bufno].real, ResultBuffer+next_bufno, 1, 0, errpos, errtext);
+      if (*errpos==0) { *errpos=-1; } else { *errpos=i; return; }
+      SETSTATUS(p, next_start, next_bufno);
+      i = start + next_end;
+      i--; p=i-start;
+     }
+    else // $ColumnName
+     {
+      ppl_units_zero(ResultBuffer+bufpos);
+      for (j=p;(StatusRow[j]==8);j++);
+      while ((j>p) && (in[start+j-1]<=' ')) j--;
+      ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
+      *errpos=0;
+      DataFile_UsingConvert_FetchColumnByName(in+start+p, ResultBuffer+bufpos, 1, 0, errpos, errtext);
+      in[start+j] = ck;
+      if (*errpos==0) { *errpos=-1; } else { *errpos=i; return; }
+      SETSTATUS(p, next_end, bufpos);
+      i = start + next_end;
+      i--; p=i-start;
+      bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+     }
+   }
+  // PHASE 2d: EVALUATION OF VARIABLES
+  for (i=0;i<len;i++) if (StatusRow[i]==8)
+   {
+    for (j=i;(StatusRow[j]==8);j++);
     while ((j>i) && (in[start+j-1]<=' ')) j--;
     ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
     DictLookup(_ppl_UserSpace_Vars, in+start+i, NULL, (void **)&VarData);
@@ -910,7 +990,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     in[start+j] = ck;
     if (VarData->string != NULL) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected."); return; }
     ResultBuffer[bufpos] = *VarData;
-    for (k=i; ((StatusRow[k]==8)||(StatusRow[k]==4)); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
+    for (k=i; (StatusRow[k]==8); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
    }
   // PHASE  3: EVALUATION OF MINUS SIGNS

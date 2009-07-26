@@ -62,8 +62,8 @@ void ppl_UserSpace_SetFunc      (char *definition, int modified, int *status, ch
 void ppl_UserSpace_FuncDestroy  (FunctionDescriptor *in);
 void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified);
 
-void ppl_GetQuotedString(char *in, char   *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);
-void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, int *errpos, char *errtext, int RecursionDepth);
+void ppl_GetQuotedString(char *in, char   *out, int start, int *end, unsigned char DollarAllowed, int *errpos, char *errtext, int RecursionDepth);
+void ppl_EvaluateAlgebra(char *in, value  *out, int start, int *end, unsigned char DollarAllowed, int *errpos, char *errtext, int RecursionDepth);
 void ppl_GetExpression  (const char *in, int *end, int DollarAllowed, unsigned char *status, unsigned char *OpList, int *errpos, char *errtext);
 
 #endif

@@ -38,8 +38,8 @@ void *lt_malloc_incontext      (int size, int context);
 
 // Fastmalloc functions
 
-// Allocate memory in 256kb blocks (262144 bytes)
-#define FM_BLOCKSIZE  262144
+// Allocate memory in 128kb blocks (131072 bytes)
+#define FM_BLOCKSIZE  131072
 
 // Always align mallocs to 8-byte boundaries; 64-bit processors do double arithmetic twice as fast when word-aligned
 #define SYNCSTEP      8

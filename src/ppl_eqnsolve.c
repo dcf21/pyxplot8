@@ -64,11 +64,11 @@ double MultiMinSlave(const gsl_vector *x, void *params)
 
   for (i=0; i<data->Nexprs; i++)
    {
-    ppl_EvaluateAlgebra(data->expr1[i], &output1, 0, NULL, data->errpos, data->errtext, 0);
+    ppl_EvaluateAlgebra(data->expr1[i], &output1, 0, NULL, 0, data->errpos, data->errtext, 0);
 
     if (data->expr2[i] != NULL)
      {
-      ppl_EvaluateAlgebra(data->expr2[i], &output2, 0, NULL, data->errpos, data->errtext, 0);
+      ppl_EvaluateAlgebra(data->expr2[i], &output2, 0, NULL, 0, data->errpos, data->errtext, 0);
       if (!ppl_units_DimEqual(&output1, &output2))
        {
         *(data->errpos)=0;

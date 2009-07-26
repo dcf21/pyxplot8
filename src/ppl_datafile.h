@@ -32,23 +32,60 @@
 
 #define USING_ITEMS_MAX 32
 
+// The approximate number of bytes we seek to put in each data block
+
+#define DATAFILE_DATABLOCK_BYTES 524288
+
 #include "ppl_units.h"
 
+// RawDataTabls structure, used for storing raw text from datafiles prior to rotation when "with rows" is used
+
+typedef struct RawDataBlock {
+  char               **text;      // Array of BlockLength x Ncolumns x [string data from datafile]
+  long int            *FileLine;  // For each string above... store the line number in the data file that it came from
+  long int            *FileCol;   // For each string above... store the column number that it came from
+  int                 *Ncolumns;  // Array of BlockLength x [Number of items on this line]
+  int                  BlockLength;
+  int                  BlockPosition; // Where have we filled up to?
+  struct RawDataBlock *next;
+ } RawDataBlock;
+
+typedef struct RawDataTable {
+  int    Nrows;
+  int    MemoryContext;
+  struct RawDataBlock *first;
+  struct RawDataBlock *current;
+ } RawDataTable;
+
+
+// DataTable structure, used for returning tables of VALUEs from ppl_datafile.c
+
 typedef struct DataBlock {
-  double          **data;     // Array of Ncolumns x array of length BlockLength
-  long int        **FileLine; // For each double above... store the line number in the data file that it came from
-  long int        **FileCol;  // For each double above... store the column number that it came from
-  unsigned char    *split;    // Array of length BlockLength; TRUE if we should break data before this next datapoint
-  int               BlockLength;
+  double          *data_real; // Array of Ncolumns x array of length BlockLength
+  double          *data_imag; // Array of Ncolumns x array of length BlockLength
+  unsigned char   *data_FlagI;// Array of Ncolumns x array of length BlockLength
+  char           **text;      // Array of BlockLength x string labels for datapoints
+  long int        *FileLine;  // For each double above... store the line number in the data file that it came from
+  long int        *FileCol;   // For each double above... store the column number that it came from
+  unsigned char   *split;     // Array of length BlockLength; TRUE if we should break data before this next datapoint
+  int              BlockLength;
+  int              BlockPosition; // Where have we filled up to?
   struct DataBlock *next;
  } DataBlock;
 
 typedef struct DataTable {
   int    Ncolumns;
   int    Nrows;
-  value *FirstEntries; // Array of size Ncolumns
-  struct DataBlock *next;
+  int    MemoryContext;
+  value *FirstEntries; // Array of size Ncolumns; store units for data in each column here
+  struct DataBlock *first;
+  struct DataBlock *current;
  } DataTable;
+
+// Functions in ppl_datafile.c
+
+void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext);
+void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext);
 
 void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
 

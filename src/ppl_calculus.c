@@ -54,7 +54,7 @@ double CalculusSlave(double x, void *params)
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
 
   data->dummy->real = x;
-  ppl_EvaluateAlgebra(data->expr, &output, 0, NULL, data->errpos, data->errtext, data->RecursionDepth+1);
+  ppl_EvaluateAlgebra(data->expr, &output, 0, NULL, 0, data->errpos, data->errtext, data->RecursionDepth+1);
 
   if (data->IsFirst)
    {

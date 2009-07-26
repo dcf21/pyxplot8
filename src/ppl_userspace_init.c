@@ -27,6 +27,7 @@
 
 #include <gsl/gsl_const_mksa.h>
 #include <gsl/gsl_const_num.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 
 #include "MathsTools/dcfmath.h"
@@ -163,6 +164,10 @@ void ppl_UserSpaceInit()
   DictAppendValue(_ppl_UserSpace_Vars , "pi"            , v); // pi
   v.real = M_E;
   DictAppendValue(_ppl_UserSpace_Vars , "e"             , v); // e
+  v.real = M_EULER;
+  DictAppendValue(_ppl_UserSpace_Vars , "euler"         , v); // Euler constant
+  v.real = (1.0+sqrt(5))/2.0;
+  DictAppendValue(_ppl_UserSpace_Vars , "GoldenRatio"   , v); // Golden Ratio
   v.real = 0.0;
   v.imag = 1.0;
   v.FlagComplex = 1;
@@ -260,6 +265,11 @@ void ppl_UserSpaceInit()
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 3; v.exponent[UNIT_TIME] =-2; v.exponent[UNIT_MASS] =-1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_G"         , v); // The gravitational constant
+  ppl_units_zero(&v);
+  v.real = GSL_CONST_MKSA_GRAV_ACCEL;
+  v.dimensionless = 0;
+  v.exponent[UNIT_LENGTH] = 1; v.exponent[UNIT_TIME] =-2;
+  DictAppendValue(_ppl_UserSpace_Vars , "phy_g"         , v); // The standard acceleration due to gravity on Earth
 
   // Copy function descriptors for core mathematical functions into function namespace
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "abs"            , (void *)&fd_abs         , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -891,6 +901,17 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "oz_(Troy)"; // Troy Ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "oz_(Troy)"; // Troy Ounce
+  ppl_unit_database[ppl_unit_pos].nameLs     = "oz\\_(Troy)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "oz\\_(Troy)";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "Troy_ounce";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "Troy_ounces";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TROY_OUNCE;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "lb";  // Pound
   ppl_unit_database[ppl_unit_pos].nameAp     = "lbs"; // Pound
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
@@ -1467,7 +1488,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
   ppl_unit_database[ppl_unit_pos].multiplier = 28.4130625e-6;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
@@ -1481,8 +1501,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 29.5735295625e-6;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_FLUID_OUNCE;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1495,7 +1514,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
   ppl_unit_database[ppl_unit_pos].multiplier = 568.26125e-6;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
@@ -1503,14 +1521,13 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(US)";  // pint
   ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(US)"; // pint
-  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_(US)";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_(US)";
   ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(US)";
   ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 473.176473e-6;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_PINT;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1523,7 +1540,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
   ppl_unit_database[ppl_unit_pos].multiplier = 1136.5225e-6;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
@@ -1537,8 +1553,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 946.352946e-6;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_QUART;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1551,8 +1566,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 4.54609e-3;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_UK_GALLON;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1565,8 +1579,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 3.785411784e-3;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_US_GALLON;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1579,7 +1592,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(UK)";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
   ppl_unit_database[ppl_unit_pos].multiplier = 36.36872e-3;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
@@ -1593,7 +1605,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
   ppl_unit_database[ppl_unit_pos].multiplier = 35.23907016688e-3;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
@@ -1607,8 +1618,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "cups_(US)";
   ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 236.5882365e-6;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_CUP;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
@@ -1620,8 +1630,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "teaspoon";
   ppl_unit_database[ppl_unit_pos].nameFp     = "teaspoons";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 4.92892159375e-6;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TEASPOON;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1632,8 +1641,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "tablespoon";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tablespoons";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -3;
-  ppl_unit_database[ppl_unit_pos].multiplier = 4.92892159375e-6 * 2;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TABLESPOON;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1780,7 +1788,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "atmosphere";
   ppl_unit_database[ppl_unit_pos].nameFp     = "atmospheres";
   ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
-  ppl_unit_database[ppl_unit_pos].multiplier = 101325;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_STD_ATMOSPHERE;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].ancient    = 1;
@@ -1798,7 +1806,46 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e5;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
-  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "psi"; // psi
+  ppl_unit_database[ppl_unit_pos].nameAp     = "psi"; // psi
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pound_per_square_inch";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pounds_per_square_inch";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_PSI;
+  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "inHg"; // inch of mercury
+  ppl_unit_database[ppl_unit_pos].nameAp     = "inHg"; // inch of mercury
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "inch_of_mercury";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "inches_of_mercury";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_INCH_OF_MERCURY;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "inAq"; // inch of water
+  ppl_unit_database[ppl_unit_pos].nameAp     = "inAq"; // inch of water
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "inch_of_water";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "inches_of_water";
+  ppl_unit_database[ppl_unit_pos].quantity   = "pressure";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_INCH_OF_WATER;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;

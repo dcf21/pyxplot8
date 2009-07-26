@@ -39,6 +39,9 @@
 #include "ppl_input.h"
 #include "ppl_settings.h"
 #include "ppl_units.h"
+#include "ppl_userspace.h"
+
+// Routine used to launch input filters as coprocesses with piped output returned as a file handle
 
 FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
  {
@@ -66,7 +69,7 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
        }
       ArgList[j++] = filename;
       ArgList[j++] = NULL;
-      ForkInputFilter(ArgList, &i);
+      ForkInputFilter(ArgList, &i); // Fork process for input filter, and runned piped output through the standard IO library using fdopen()
       if ((infile = fdopen(i, "r")) == NULL) { sprintf(errout,"Could not open connection to input filter '%s'.",ArgList[0]); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
       return infile;
      }
@@ -78,40 +81,97 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
   return infile;
  }
 
-void __inline__ DataFile_UsingConvert_FetchColumn(double ColumnNo, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter)
+// The following two routines are a part of the BODMAS machine, and evaluate "$3" in the current context
+
+static       int     UCFC_OutputContext = -1;
+static const char  **UCFC_columns       = NULL;
+static       int     UCFC_Ncols         = -1;
+static       int     UCFC_LineNo        = -1;
+static const char  **UCFC_ColumnHeads   = NULL;
+static       int     UCFC_NColumnHeads  = -1;
+static const value **UCFC_ColumnUnits   = NULL;
+static       int     UCFC_NColumnUnits  = -1;
+
+void __inline__ DataFile_UCFC_configure(const int OutputContext, const char **columns, const int Ncols, const int LineNo, const char **ColumnHeads, const int NColumnHeads, const value **ColumnUnits, const int NColumnUnits)
+ {
+  UCFC_OutputContext = OutputContext;
+  UCFC_columns       = columns;
+  UCFC_Ncols         = Ncols;
+  UCFC_LineNo        = LineNo;
+  UCFC_ColumnHeads   = ColumnHeads;
+  UCFC_NColumnHeads  = NColumnHeads;
+  UCFC_ColumnUnits   = ColumnUnits;
+  UCFC_NColumnUnits  = NColumnUnits;
+  return;
+ }
+
+void __inline__ DataFile_UCFC_deconfigure()
+ {
+  UCFC_OutputContext = -1;
+  UCFC_columns       = NULL;
+  UCFC_Ncols         = -1;
+  UCFC_LineNo        = -1;
+  UCFC_ColumnHeads   = NULL;
+  UCFC_NColumnHeads  = -1;
+  UCFC_ColumnUnits   = NULL;
+  UCFC_NColumnUnits  = -1;
+  return;
+ }
+
+void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext)
  {
   int i,j=-1;
   const char *outstr=NULL;
-  char buffer[32];
+  static char buffer[32];
 
-  if ((ColumnNo<0)||(ColumnNo>Ncols+1)) { if (*ErrCounter>0) sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
+  if ((ColumnNo<0)||(ColumnNo>UCFC_Ncols+1)) { sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
   i=(int)floor(ColumnNo);
   if (!NumericOut)
    {
-    if (i==0) { sprintf(buffer,"%d",i); outstr=buffer; }
-    else      { outstr=columns[i]; }
+    if (i==0) { sprintf(buffer,"%d",UCFC_LineNo); outstr=buffer; }
+    else      { outstr=UCFC_columns[i]; }
     goto RETURN_STRING;
    }
   if (i==0)
-   { ColumnNo = LineNo; }
+   { ColumnNo = UCFC_LineNo; }
   else
    {
-    ColumnNo=GetFloat(columns[i],&j);
-    if (columns[i][j]!='\0') { if (*ErrCounter>0) sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
+    ColumnNo=GetFloat(UCFC_columns[i],&j);
+    if (UCFC_columns[i][j]!='\0') { sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
    }
   ppl_units_zero(output);
   output->real = ColumnNo;
-  ppl_units_mult(output,ColumnUnits[i],output,status,errtext);
+  if (i<UCFC_NColumnUnits) ppl_units_mult(output,UCFC_ColumnUnits[i],output,status,errtext);
   return;
 
 RETURN_STRING:
   ppl_units_zero(output); 
-  output->string = (char *)lt_malloc_incontext(strlen(outstr),OutputContext);
-  if (output->string == NULL) { if (*ErrCounter>0) sprintf(errtext, "Out of memory."); *status=1; return; }
-  strcpy(output->string,outstr);
+  if (MallocOut)
+   {
+    output->string = (char *)lt_malloc_incontext(strlen(outstr),UCFC_OutputContext);
+    if (output->string == NULL) { sprintf(errtext, "Out of memory."); *status=1; return; }
+    strcpy(output->string,outstr);
+   }
+  else
+   {
+    output->string = (char *)outstr;
+   }
   return;
  }
 
+void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext)
+ {
+  int i;
+  for (i=0;i<UCFC_NColumnHeads;i++)
+   if (strcmp(UCFC_ColumnHeads[i],ColumnName)==0)
+    {
+     DataFile_UsingConvert_FetchColumnByNumber((double)i, output, NumericOut, MallocOut, status, errtext);
+     return;
+    }
+  sprintf(errtext, "Requested column named '%s' does not exist.", ColumnName);
+  *status=1;
+  return;
+ }
 
 // DataFile_UsingConvert()
 //   input = string from a using :...: clause.
@@ -129,25 +189,38 @@ RETURN_STRING:
 //   errtext = error text output.
 //   ErrCounter = If zero, we don't bother returning errors.
 
-void DataFile_UsingConvert(const char *input, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const char **ColumnHeads, const int NColumnHeads, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter, int RecursionDepth)
+void __inline__ DataFile_UsingConvert(char *input, value *output, const int OutputContext, const char **columns, const int Ncols, const int LineNo, const int NumericOut, const char **ColumnHeads, const int NColumnHeads, const value **ColumnUnits, const int NColumnUnits, int *status, char *errtext, int *ErrCounter)
  {
   double dbl;
   int i,l=strlen(input);
   unsigned char NamedColumn=0;
 
-  if (RecursionDepth==1) // 1 only means "the contents of column 1" at the root level of recursion... the '1' in $(1) actually means 1.
-   {
-    if (ValidFloat(input,&l)) // using 1:2 -- number is column number
-     { dbl=GetFloat(input,NULL); NamedColumn=1; }
-    else
-     { for (i=0;i<NColumnHeads;i++) if (strcmp(ColumnHeads[i],input)==0) { dbl=i; NamedColumn=1; break; } } // using ColumnName
+  DataFile_UCFC_configure(OutputContext, columns, Ncols, LineNo, ColumnHeads, NColumnHeads, ColumnUnits, NColumnUnits);
 
-    if (NamedColumn) // Clean up these cases
-     { DataFile_UsingConvert_FetchColumn(dbl, output, OutputContext, columns, Ncols, LineNo, NumericOut, ColumnUnits, NColumnUnits, status, errtext, ErrCounter); return; }
+  if (ValidFloat(input,&l)) // using 1:2 -- number is column number -- "1" means "the contents of column 1", i.e. "$1".
+   { dbl=GetFloat(input,NULL); NamedColumn=1; }
+  else
+   { for (i=0;i<NColumnHeads;i++) if (strcmp(ColumnHeads[i],input)==0) { dbl=i; NamedColumn=1; break; } } // using ColumnName
+
+  if (NamedColumn) // Clean up these cases
+   {
+    DataFile_UsingConvert_FetchColumnByNumber(dbl, output, NumericOut, 1, status, errtext);
+   }
+  else
+   {
+    *status=-1;
+    if (NumericOut) ppl_EvaluateAlgebra(input, output, 0, &l, 1, status, errtext, 1);
+    else
+     {
+      ppl_GetQuotedString(input, temp_err_string, 0, &l, 1, status, errtext, 1);
+      ppl_units_zero(output);
+      output->string = (char *)lt_malloc_incontext(strlen(temp_err_string),UCFC_OutputContext);
+      strcpy(output->string, temp_err_string);
+     }
+    if (*status>=0) {*status=1;} else {*status=0;}
    }
 
-  // Start copying out string, substituting any $s that we find
-
+  DataFile_UCFC_deconfigure();
   return;
  }
 
@@ -190,7 +263,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     for (i=0; i<Ncolumns; i++)
      {
       if ((UsingItems[i] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
-      sprintf(UsingItems[i], "$%d", i+1);
+      sprintf(UsingItems[i], "%d", i+1);
      }
     UsingLen = Ncolumns;
     AutoUsingList = 1; // We have automatically generated this using list
@@ -198,7 +271,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   else if (UsingLen==1) // Prepend data point number if only one number specified in using statement
    {
     UsingItems[1] = UsingItems[0];
-    UsingItems[0] = "$0";
+    UsingItems[0] = "0";
     UsingLen++;
    }
 

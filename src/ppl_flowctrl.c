@@ -168,7 +168,7 @@ int directive_do(Dict *command, int IterLevel)
     status = loop_execute(&chainiter, IterLevel);
     if (status) break;
     i=-1; j=-1;
-    ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
+    ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
     if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
     if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
    }
@@ -214,7 +214,7 @@ int directive_while(Dict *command, int IterLevel)
   do
    {
     i=-1; j=-1; status=0;
-    ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, &j, temp_err_string, 0);
+    ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
     if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
     if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
     if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;

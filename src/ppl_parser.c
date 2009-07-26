@@ -574,7 +574,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         i=-1;
         *AlgebraNewLinepos=-1;
-        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, AlgebraNewLinepos, AlgebraNewError, 0);
+        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;
@@ -663,7 +663,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           (*linepos)++;
           i = -1;
           *AlgebraNewLinepos = -1;
-          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, AlgebraNewLinepos, AlgebraNewError, 0);
+          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
           if (*AlgebraNewLinepos >= 0)
            {
             TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraNewLinepos = -1;
@@ -740,7 +740,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         i = -1;
         *AlgebraNewLinepos=-1;
-        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, AlgebraNewLinepos, AlgebraNewError, 0);
+        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;  

@@ -269,7 +269,7 @@ void directive_set(Dict *command)
        {
         j = strlen(tempstr);
         errpos = -1;
-        ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, &errpos, temp_err_string, 0);
+        ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, &errpos, temp_err_string, 0);
         if (errpos>=0) { ppl_error(temp_err_string); return; }
         if (!valobj.dimensionless) { sprintf(temp_err_string, "Error: colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return; }
         if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Error: colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(temp_err_string); return; }
