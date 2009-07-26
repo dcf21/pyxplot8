@@ -387,6 +387,8 @@ void ppl_units_init()
    {
     ppl_unit_database[i].nameAs     = NULL;
     ppl_unit_database[i].nameAp     = NULL;
+    ppl_unit_database[i].nameLs     = NULL;
+    ppl_unit_database[i].nameLp     = NULL;
     ppl_unit_database[i].nameFs     = NULL;
     ppl_unit_database[i].nameFp     = NULL;
     ppl_unit_database[i].quantity   = NULL;
@@ -394,9 +396,10 @@ void ppl_units_init()
     ppl_unit_database[i].multiplier = 1.0;
     ppl_unit_database[i].offset     = 0.0;
     ppl_unit_database[i].UserSel    = 0;
-    ppl_unit_database[i].si         = ppl_unit_database[i].imperial  = ppl_unit_database[i].us = ppl_unit_database[i].planck =
-    ppl_unit_database[i].ancient    = ppl_unit_database[i].modified  = 0;
+    ppl_unit_database[i].si         = ppl_unit_database[i].cgs       = ppl_unit_database[i].imperial  = ppl_unit_database[i].us = ppl_unit_database[i].planck =
+    ppl_unit_database[i].ancient    = ppl_unit_database[i].UserSel   = ppl_unit_database[i].modified  = 0;
     ppl_unit_database[i].MaxPrefix  = ppl_unit_database[i].MinPrefix = 0;
+    ppl_unit_database[i].UserSelPrefix = 0;
     for (j=0; j<UNITS_MAX_BASEUNITS; j++) ppl_unit_database[i].exponent[j] = 0;
    }
 

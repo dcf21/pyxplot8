@@ -45,30 +45,68 @@ static char *LatexVarNamesFr[] = {"alpha"  ,"beta"   ,"gamma"  ,"delta"  ,"epsil
 
 static char *LatexVarNamesTo[] = {"\\alpha","\\beta","\\gamma","\\delta","\\epsilon","\\zeta","\\eta","\\theta","\\iota","\\kappa","\\lambda","\\mu","\\nu","\\xi","\\pi","\\rho","\\sigma","\\tau","\\upsilon","\\phi","\\chi","\\psi","\\omega","\\Gamma","\\Delta","\\Theta","\\Lambda","\\Xi","\\Pi","\\Sigma","\\Upsilon","\\Phi","\\Psi","\\Omega","\\aleph",NULL};
 
-int texify_MakeGreek(const char *in, char *out)
+void texify_MakeGreek(const char *in, char *out)
  {
-  int i,j,k,l,m;
+  int i,ji=0,jg,k,l,m;
+  char *outno_=out;
 
-  for (i=0; LatexVarNamesFr[i]!=NULL; i++)
+  while ((isalnum(in[ji]))||(in[ji]=='_'))
    {
-    for (j=0; LatexVarNamesFr[i][j]!='\0'; j++) if (LatexVarNamesFr[i][j]!=in[j]) break;
-    if ( LatexVarNamesFr[i][j]!='\0') continue;
-    if ((!isalnum(in[j]))&&(in[j]!='_')) { strcpy(out, LatexVarNamesTo[i]); return 1; } // We have a Greek letter
-    if (in[j]=='_') j++;
-    if (isdigit(in[j]))
+    k=0;
+    for (i=0; LatexVarNamesFr[i]!=NULL; i++)
      {
-      l=j;
-      while (isdigit(in[j])) j++;
-      if ((isalnum(in[j]))||(in[j]=='_')) continue;
-      sprintf(out, "%s_{", LatexVarNamesTo[i]); // We have Greek letter underscore number
-      k = strlen(out);
-      for (m=l;m<j;m++) out[k++]=in[m];
-      out[k++]='}';
-      out[k++]='\0';
-      return 1;
+      for (jg=0; LatexVarNamesFr[i][jg]!='\0'; jg++) if (LatexVarNamesFr[i][jg]!=in[ji+jg]) break;
+      if (LatexVarNamesFr[i][jg]!='\0') continue;
+      if (!isalnum(in[ji+jg])) // We have a Greek letter
+       {
+        strcpy(out, LatexVarNamesTo[i]);
+        out += strlen(out);
+        ji += jg;
+        k=1;
+        break;
+       }
+      else if (isdigit(in[ji+jg]))
+       {
+        l=ji+jg;
+        while (isdigit(in[ji+jg])) jg++;
+        if (isalnum(in[ji+jg])) continue;
+        sprintf(out, "%s_{", LatexVarNamesTo[i]); // We have Greek letter underscore number
+        out += strlen(out);
+        for (m=l;m<ji+jg;m++) *(out++)=in[m];
+        *(out++) = '}';
+        ji += jg;
+        k=1;
+        break;
+       }
+     }
+    if ((k==0)&&(ji>1))
+     {
+      for (jg=0; isdigit(in[ji+jg]); jg++);
+      if ( (jg>0) && (!isalnum(in[ji+jg])) && (in[ji+jg]!='_') )
+       {
+        out=outno_;
+        sprintf(out, "_{"); // We have an underscore number at the end of variable name
+        out += strlen(out);
+        for (m=ji;m<ji+jg;m++) *(out++)=in[m];
+        *(out++) = '}';
+        ji += jg;
+        k=1;
+       }
+     }
+    if (k==0)
+     {
+      for (jg=0; (isalnum(in[ji+jg])); jg++) *(out++)=in[ji+jg];
+      ji+=jg;
+     }
+    outno_=out;
+    if (in[ji]=='_')
+     {
+      *(out++)='\\'; *(out++)='_';
+      ji++;
      }
    }
-  return 0;
+  *(out++)='\0';
+  return;
  }
 
 void texify_generic(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel)
@@ -418,8 +456,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
             for (l=0; ((isalnum(in[i+k+l]) || (in[i+k+l]=='_')) && (l<DUMMYVAR_MAXLEN)); l++) dummy[l]=in[i+k+l];
             if (l==DUMMYVAR_MAXLEN) continue; // Dummy variable name was too long
             dummy[l]='\0'; // Dummy hold the name of the variable being integrated over
-            k = texify_MakeGreek(dummy , GreekifiedDummy);
-            if (k==0) strcpy(GreekifiedDummy , dummy); // Make dummy variable have Greek lettering as required
+            texify_MakeGreek(dummy , GreekifiedDummy); // Make dummy variable have Greek lettering as required
            } else { // Otherwise, we have to match function name exactly
             if ((DictIter->key[k]>' ') || (isalnum(in[i+k])) || (in[i+k]=='_')) continue; // Nope...
            }
@@ -499,19 +536,8 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
        }
       else // This is a simple variable name
        {
-        k = texify_MakeGreek(in+i , out+outpos);
-
-        if (k)
-         { outpos += strlen(out+outpos); }
-        else // Variable name was not a known Greek character
-         {
-          for ( ; StatusRow[i]==8; i++)
-           {
-            if (in[i]<' ') continue;
-            if (in[i]=='_') out[outpos++]='\\';
-            out[outpos++]=in[i];
-           }
-         }
+        texify_MakeGreek(in+i , out+outpos);
+        outpos += strlen(out+outpos);
         while (StatusRow[i]==8) i++;
         i--;
        }

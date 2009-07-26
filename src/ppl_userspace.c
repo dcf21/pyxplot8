@@ -924,7 +924,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
     i--; p=i-start;
    }
   // PHASE  4: EVALUATION OF **
-  if (OpList[4]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+  if (OpList[4]!=0) for (i=CalculatedEnd-1,p=len-1;p>0;i--,p--) if ((StatusRow[p]==7)&&(StatusRow[p-1]!=7))
    {
     if (MATCH_TWO('*','*'))
      {
@@ -933,9 +933,6 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       ppl_units_pow(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
       if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start - 1; p=i-start;
-     } else {
-      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  5: EVALUATION OF *  /  %
@@ -1002,7 +999,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
      }
    }
   // PHASE  8: EVALUATION OF < <= >= >
-  if (OpList[8]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+  if (OpList[8]!=0) for (i=CalculatedEnd-1,p=len-1;p>0;i--,p--) if ((StatusRow[p]==7)&&(StatusRow[p-1]!=7))
    {
     if ((MATCH_ONE('<'))||(MATCH_ONE('>')))
      {
@@ -1028,13 +1025,10 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       else if (MATCH_ONE('<')    ) ResultBuffer[prev_bufno].real = (double)(TempDbl <  ResultBuffer[next_bufno].real);
       else if (MATCH_ONE('>')    ) ResultBuffer[prev_bufno].real = (double)(TempDbl >  ResultBuffer[next_bufno].real);
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start - 1; p=i-start;
-     } else {
-      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE  9: EVALUATION OF == !=  <>
-  if (OpList[9]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)
+  if (OpList[9]!=0) for (i=CalculatedEnd-1,p=len-1;p>0;i--,p--) if ((StatusRow[p]==7)&&(StatusRow[p-1]!=7))
    {
     if ((MATCH_TWO('=','='))||(MATCH_TWO('!','='))||(MATCH_TWO('<','>')))
      {
@@ -1059,9 +1053,6 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, int *errpos,
       else if (MATCH_TWO('!','=')) ResultBuffer[prev_bufno].real = (double)!(ppl_units_DblEqual(TempDbl, ResultBuffer[next_bufno].real) && ppl_units_DblEqual(TempDbl2, ResultBuffer[next_bufno].imag));
       else if (MATCH_TWO('<','>')) ResultBuffer[prev_bufno].real = (double)!(ppl_units_DblEqual(TempDbl, ResultBuffer[next_bufno].real) && ppl_units_DblEqual(TempDbl2, ResultBuffer[next_bufno].imag));
       SETSTATUS(prev_end, next_end, prev_bufno);
-      i = start + next_start - 1; p=i-start;
-     } else {
-      while (StatusRow[p]==7) { i++; p++; }
      }
    }
   // PHASE 10: EVALUATION OF &

@@ -95,13 +95,19 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM) && (NumberOutImag > 0)) output[i++] = '+';
     if (fabs(NumberOutImag) > OoM)
      {
-      if (fabs(NumberOutImag-1)>=OoM)
+      if (fabs(NumberOutImag-1.0)>=OoM) // If this is false, imaginary part is 1, so print +i, not +1i
        {
-        strcpy(output+i, NumericDisplay(NumberOutImag, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
-        i+=strlen(output+i);
+        if (fabs(NumberOutImag+1.0)>=OoM)
+         {
+          strcpy(output+i, NumericDisplay(NumberOutImag, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
+          i+=strlen(output+i);
+         }
+        else
+         { output[i++]='-'; } // Just print -i, not -1i
        }
-      if (typeable != SW_DISPLAY_T) output[i++] = 'i';
-      else                          { strcpy(output+i, "*sqrt(-1)"); i+=strlen(output+i); }
+      if      (typeable != SW_DISPLAY_T)                                       { output[i++] = 'i'; }
+      else if ((fabs(NumberOutImag-1.0)>=OoM)&&(fabs(NumberOutImag+1.0)>=OoM)) { strcpy(output+i, "*sqrt(-1)"); i+=strlen(output+i); }
+      else                                                                     { strcpy(output+i,  "sqrt(-1)"); i+=strlen(output+i); } // We've not printed 1 or -1, so nothing to multiply with
      }
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM)) output[i++] = ')'; // close brackets on complex number
    }
@@ -517,9 +523,11 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
 void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   int i;
-  double exponent=0;
+  double exponent;
   gsl_complex ac, bc;
   unsigned char DimLess=1;
+
+  exponent = b->real; // We may overwrite this when we set o->real, so store a copy
 
   if (b->dimensionless == 0)
    {
@@ -527,17 +535,20 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
     else { sprintf(errtext, "Exponent should be dimensionless, but instead has dimensions of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 0, 0)); *status = 1; return; }
    }
 
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real pow()
+  if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) // Real pow()
    {
     if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; }
-    else                                  { exponent = b->real; o->real = pow(a->real, exponent); }
+    else
+     {
+      o->real = pow(a->real, exponent);
+      if ((!gsl_finite(o->real))&&(settings_term_current.ExplicitErrors == SW_ONOFF_ON)) { sprintf(errtext, "Exponentiation operator produced a complex number result, but complex arithmetic is currently disabled. Type 'set numerics complex' to enable it."); *status = 1; return; }
+     }
     o->imag = 0.0;
     o->FlagComplex=0;
    }
   else // Complex pow()
    {
-    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
-    else if (a->dimensionless == 0)
+    if ((a->dimensionless == 0) && (b->FlagComplex))
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
       else { sprintf(errtext, "Raising quantities with physical units to complex powers produces quantities with complex physical dimensions, which is forbidden. The operand in question has dimensions of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0)); *status = 1; return; }
@@ -557,7 +568,7 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
        }
       o->real = GSL_REAL(ac);
       o->imag = GSL_IMAG(ac);
-      o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+      o->FlagComplex = !ppl_units_DblEqual(o->imag, 0.0);
      }
    }
 

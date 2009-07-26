@@ -755,9 +755,10 @@ void dcfmath_erfc(value *in, value *output, int *status, char *errtext)
 void dcfmath_exp(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "exp(x)";
+  int i;
   gsl_complex z;
   CHECK_1NOTNAN;
-  CHECK_1INPUT_DIMLESS;
+  CHECK_DIMLESS_OR_HAS_UNIT(in , "first", "dimensionless or an angle", UNIT_ANGLE, 1);
   IF_1COMPLEX { GSL_SET_COMPLEX(&z,in->real,in->imag); z=gsl_complex_exp(z); CLEANUP_GSLCOMPLEX; }
   ELSE_REAL   { output->real = exp(in->real); }
   ENDIF
@@ -767,8 +768,9 @@ void dcfmath_exp(value *in, value *output, int *status, char *errtext)
 void dcfmath_expm1(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "expm1(x)";
+  int i;
   CHECK_1NOTNAN;
-  CHECK_1INPUT_DIMLESS;
+  CHECK_DIMLESS_OR_HAS_UNIT(in , "first", "dimensionless or an angle", UNIT_ANGLE, 1);
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = expm1(in->real); }
   ENDIF
