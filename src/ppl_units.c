@@ -541,7 +541,7 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
     else
      {
       o->real = pow(a->real, exponent);
-      if ((!gsl_finite(o->real))&&(settings_term_current.ExplicitErrors == SW_ONOFF_ON)) { sprintf(errtext, "Exponentiation operator produced a complex number result, but complex arithmetic is currently disabled. Type 'set numerics complex' to enable it."); *status = 1; return; }
+      if ((!gsl_finite(o->real))&&(settings_term_current.ExplicitErrors == SW_ONOFF_ON)) { sprintf(errtext, "Exponentiation operator produced an overflow error or a complex number result. To enable complex arithmetic, type 'set numerics complex'."); *status = 1; return; }
      }
     o->imag = 0.0;
     o->FlagComplex=0;
@@ -569,6 +569,11 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
       o->real = GSL_REAL(ac);
       o->imag = GSL_IMAG(ac);
       o->FlagComplex = !ppl_units_DblEqual(o->imag, 0.0);
+      if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
+       {
+        if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Exponentiation operator produced an overflow error."); *status = 1; return; }
+        else { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+       }
      }
    }
 
