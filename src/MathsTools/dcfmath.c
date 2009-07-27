@@ -1029,22 +1029,9 @@ void dcfmath_poissonCDF(value *in1, value *in2, value *output, int *status, char
 
 void dcfmath_pow (value *in1, value *in2, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "pow(x,y)";
-  int j;
-  value *in = in2;
-  gsl_complex z, z2;
+  //char *FunctionDescription = "pow(x,y)";
   CHECK_2NOTNAN;
-  CHECK_1INPUT_DIMLESS; // THIS IS CORRECT. Only in2 need be dimensionless
-  if (in2->FlagComplex && !in1->dimensionless)
-   {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { NULL_OUTPUT; }
-    else { *status=1; sprintf(errtext, "Raising quantities with physical units to complex powers produces quantities with complex physical dimensions, which is forbidden. The operand in question has dimensions of <%s>.", ppl_units_GetUnitStr(in1, NULL, NULL, 0, 0)); return; }
-   }
-  IF_2COMPLEX { GSL_SET_COMPLEX(&z,in1->real,in1->imag); GSL_SET_COMPLEX(&z2,in2->real,in2->imag); z=gsl_complex_pow(z,z2); CLEANUP_GSLCOMPLEX; }
-  ELSE_REAL   { output->real = pow(in1->real, in2->real); }
-  ENDIF
-  if ((output->dimensionless = in1->dimensionless) == 0)
-    for (j=0; j<UNITS_MAX_BASEUNITS; j++) output->exponent[j] = in1->exponent[j] * in2->real;
+  ppl_units_pow(in1, in2, output, status, errtext);
  }
 
 void dcfmath_radians(value *in, value *output, int *status, char *errtext)

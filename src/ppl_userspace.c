@@ -998,7 +998,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
    {
     FETCHNEXT(next_start, next_bufno, next_end);
     ResultBuffer[next_bufno].real *= -1;
-    ResultBuffer[next_bufno].imag *= -1;
+    if (ResultBuffer[next_bufno].FlagComplex) ResultBuffer[next_bufno].imag *= -1;
     SETSTATUS(p, next_start, next_bufno);
     i = start + next_start;
     i--; p=i-start;
