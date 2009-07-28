@@ -60,11 +60,8 @@ typedef struct RawDataTable {
 
 typedef struct DataBlock {
   double          *data_real; // Array of Ncolumns x array of length BlockLength
-  double          *data_imag; // Array of Ncolumns x array of length BlockLength
-  unsigned char   *data_FlagI;// Array of Ncolumns x array of length BlockLength
   char           **text;      // Array of BlockLength x string labels for datapoints
   long int        *FileLine;  // For each double above... store the line number in the data file that it came from
-  long int        *FileCol;   // For each double above... store the column number that it came from
   unsigned char   *split;     // Array of length BlockLength; TRUE if we should break data before this next datapoint
   int              BlockLength;
   int              BlockPosition; // Where have we filled up to?

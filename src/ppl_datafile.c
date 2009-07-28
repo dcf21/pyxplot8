@@ -237,21 +237,18 @@ void __inline__ DataFile_UsingConvert(char *input, value *output, const int Outp
 DataBlock *DataFile_NewDataBlock(const int Ncolumns, const int MemoryContext)
  {
   DataBlock *output;
-  int BlockLength = 1 + DATAFILE_DATABLOCK_BYTES / (2*sizeof(double) + 2*sizeof(long int) + 1*sizeof(char)) / Ncolumns;
+  int BlockLength = 1 + DATAFILE_DATABLOCK_BYTES / (sizeof(double) + sizeof(long int)) / Ncolumns;
 
   output = (DataBlock *)lt_malloc_incontext(sizeof(DataBlock), MemoryContext);
   if (output==NULL) return NULL;
   output->data_real  = (double *)       lt_malloc_incontext(BlockLength * Ncolumns * sizeof(double       ), MemoryContext);
-  output->data_imag  = (double *)       lt_malloc_incontext(BlockLength * Ncolumns * sizeof(double       ), MemoryContext);
-  output->data_FlagI = (unsigned char *)lt_malloc_incontext(BlockLength * Ncolumns * sizeof(unsigned char), MemoryContext);
   output->text       = (char **)        lt_malloc_incontext(BlockLength *            sizeof(char *       ), MemoryContext);
   output->FileLine   = (long int *)     lt_malloc_incontext(BlockLength * Ncolumns * sizeof(long int     ), MemoryContext);
-  output->FileCol    = (long int *)     lt_malloc_incontext(BlockLength * Ncolumns * sizeof(long int     ), MemoryContext);
   output->split      = (unsigned char *)lt_malloc_incontext(BlockLength *            sizeof(unsigned char), MemoryContext);
   output->BlockLength   = BlockLength;
   output->BlockPosition = 0;
   output->next          = NULL;
-  if ((output->data_real==NULL)||(output->data_imag==NULL)||(output->data_FlagI==NULL)||(output->text==NULL)||(output->FileLine==NULL)||(output->FileCol==NULL)||(output->split==NULL)) return NULL;
+  if ((output->data_real==NULL)||(output->text==NULL)||(output->FileLine==NULL)||(output->split==NULL)) return NULL;
   return output;
  }
 
@@ -279,7 +276,7 @@ DataTable *DataFile_NewDataTable(const int Ncolumns, const int MemoryContext)
 RawDataBlock *DataFile_NewRawDataBlock(const int MemoryContext)
  {
   RawDataBlock *output;
-  int BlockLength = 1 + DATAFILE_DATABLOCK_BYTES / (1*sizeof(char *) + 1*sizeof(long int));
+  int BlockLength = 1 + DATAFILE_DATABLOCK_BYTES / (sizeof(char *) + sizeof(long int));
 
   output = (RawDataBlock *)lt_malloc_incontext(sizeof(RawDataBlock), MemoryContext);
   if (output==NULL) return NULL;
@@ -341,7 +338,6 @@ void DataFile_DataTable_List(DataTable *i)
  {
   DataBlock *blk;
   value v;
-  double tmp;
   int j,k,Ncolumns;
 
   if (i==NULL) { printf("<NULL data table>\n"); return; }
@@ -356,22 +352,10 @@ void DataFile_DataTable_List(DataTable *i)
       for (k=0; k<i->Ncolumns; k++)
        {
         v             = i->FirstEntries[k];
-        if (!blk->data_FlagI[j*Ncolumns+k])
-         {
-          v.real        = v.real * blk->data_real [j*Ncolumns+k];
-          v.imag        = v.imag * blk->data_real [j*Ncolumns+k];
-          v.FlagComplex = !ppl_units_DblEqual(v.imag, 0);
-          if (!v.FlagComplex) v.imag=0.0;
-         }
-        else
-         {
-          tmp           = v.real * blk->data_real [j*Ncolumns+k] - v.imag * blk->data_imag [j*Ncolumns+k];
-          v.imag        = v.real * blk->data_imag [j*Ncolumns+k] + v.imag * blk->data_real [j*Ncolumns+k];
-          v.real        = tmp;
-          v.FlagComplex = !ppl_units_DblEqual(v.imag, 0);
-          if (!v.FlagComplex) v.imag=0.0;
-         }
-        printf("%15s [line %6ld, col %6ld]    ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns+k], blk->FileCol[j*Ncolumns+k]);
+        v.real        = blk->data_real[j*Ncolumns+k];
+        v.imag        = 0.0;
+        v.FlagComplex = 0;
+        printf("%15s [line %6ld]    ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns+k] );
        }
       if (blk->text[j] != NULL) printf("Label: <%s>",blk->text[j]);
       if (blk->split[j]) printf("\n\n\n");
