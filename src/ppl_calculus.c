@@ -138,6 +138,7 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
     out->real = ResultReal;
     out->imag = ResultImag;
     out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
+    if (!out->FlagComplex) out->imag=0.0; // Enforce that real numbers have positive zero imaginary components
    }
   return;
  }
@@ -207,6 +208,7 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     out->real = ResultReal;
     out->imag = ResultImag;
     out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
+    if (!out->FlagComplex) out->imag=0.0; // Enforce that real numbers have positive zero imaginary components
    }
   return;
  }

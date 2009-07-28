@@ -569,6 +569,7 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
       o->real = GSL_REAL(ac);
       o->imag = GSL_IMAG(ac);
       o->FlagComplex = !ppl_units_DblEqual(o->imag, 0.0);
+      if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
       if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
        {
         if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Exponentiation operator produced an overflow error."); *status = 1; return; }
@@ -615,6 +616,7 @@ void __inline__ ppl_units_mult(const value *a, const value *b, value *o, int *st
       o->imag        = (a->imag * b->real + a->real * b->imag);
       o->real        = tmp;
       o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+      if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
      }
    }
 
@@ -670,6 +672,7 @@ void __inline__ ppl_units_div (const value *a, const value *b, value *o, int *st
       o->imag        = (a->imag * b->real - a->real * b->imag) / mag;
       o->real        = tmp;
       o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+      if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
      }
    }
 
@@ -712,6 +715,7 @@ void __inline__ ppl_units_add (const value *a, const value *b, value *o, int *st
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
     o->imag = a->imag + b->imag;
     o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+    if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
    }
   return;
  }
@@ -739,6 +743,7 @@ void __inline__ ppl_units_sub (const value *a, const value *b, value *o, int *st
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
     o->imag = a->imag - b->imag;
     o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
+    if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
    }
   return;
  }

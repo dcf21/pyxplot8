@@ -41,10 +41,8 @@
 // RawDataTabls structure, used for storing raw text from datafiles prior to rotation when "with rows" is used
 
 typedef struct RawDataBlock {
-  char               **text;      // Array of BlockLength x Ncolumns x [string data from datafile]
+  char               **text;      // Array of BlockLength x [string data from datafile]
   long int            *FileLine;  // For each string above... store the line number in the data file that it came from
-  long int            *FileCol;   // For each string above... store the column number that it came from
-  int                 *Ncolumns;  // Array of BlockLength x [Number of items on this line]
   int                  BlockLength;
   int                  BlockPosition; // Where have we filled up to?
   struct RawDataBlock *next;

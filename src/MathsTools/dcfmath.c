@@ -210,6 +210,7 @@ int sgn(double x)
   output->real = GSL_REAL(z); \
   output->imag = GSL_IMAG(z); \
   output->FlagComplex = !ppl_units_DblEqual(output->imag,0); \
+  if (!output->FlagComplex) output->imag=0.0;
 
 #define CLEANUP_APPLYUNIT(UNIT) \
   output->dimensionless = 0; \
