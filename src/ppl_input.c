@@ -132,7 +132,7 @@ char *FetchInputLine(char *output, char *prompt)
    {
     ppl_error_setstreaminfo(*linenumber, filename_description);
     if ((feof(infile)) || (ferror(infile))) return NULL;
-    file_readline(infile, output);
+    file_readline(infile, output, LSTR_LENGTH);
     (*linenumber)++;
     return output;
    }

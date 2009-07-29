@@ -28,7 +28,7 @@ double GetFloat                 (const char *str, int *Nchars);
 int    ValidFloat               (const char *str, int *end);
 char  *NumericDisplay           (double in, int N, int SigFig, int latex);
 unsigned char DblEqual          (double a, double b);
-void   file_readline            (FILE *file, char *output);
+void   file_readline            (FILE *file, char *output, int MaxLength);
 void   GetWord                  (char *out, const char *in, int max);
 char  *NextWord                 (char *in);
 char  *FriendlyTimestring       ();

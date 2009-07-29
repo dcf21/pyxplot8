@@ -32,6 +32,8 @@
 
 #define USING_ITEMS_MAX 32
 
+#define MAX_DATACOLS 16384
+
 // The approximate number of bytes we seek to put in each data block
 
 #define DATAFILE_DATABLOCK_BYTES 524288
@@ -46,6 +48,7 @@ typedef struct RawDataBlock {
   int                  BlockLength;
   int                  BlockPosition; // Where have we filled up to?
   struct RawDataBlock *next;
+  struct RawDataBlock *prev;
  } RawDataBlock;
 
 typedef struct RawDataTable {
@@ -66,6 +69,7 @@ typedef struct DataBlock {
   int              BlockLength;
   int              BlockPosition; // Where have we filled up to?
   struct DataBlock *next;
+  struct DataBlock *prev;
  } DataBlock;
 
 typedef struct DataTable {
@@ -83,6 +87,8 @@ void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value
 void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext);
 
 void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
+
+void DataFile_FromFunctions(DataTable **output, int *status, char *errout, char **fnlist, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
 
 #endif
 

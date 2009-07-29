@@ -180,13 +180,14 @@ unsigned char DblEqual(double a, double b)
 
 /* file_readline(): This remarkably useful function forwards a file to the next newline */
 
-void file_readline(FILE *file, char *output)
+void file_readline(FILE *file, char *output, int MaxLength)
 {
  char c = '\x07';
  char *outputscan = output;
+ int i=0;
 
  while (((int)c != '\n') && (!feof(file)) && (!ferror(file)))
-   if ((fscanf(file,"%c",&c)>=0) && (((int)c)>31)) *(outputscan++) = c;
+   if ((fscanf(file,"%c",&c)>=0) && ((c>31)||(c==9)) && (i<MaxLength-2)) { i++; *(outputscan++) = c; } // ASCII 9 is a tab
   *(outputscan++) = '\0';
 }
 

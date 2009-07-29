@@ -239,11 +239,11 @@ void ppl_settings_makedefault()
    {
     if (DEBUG) ppl_log("Failed to open a pipe to the locale command.");
    } else {
-    file_readline(LocalePipe, ConfigFname); // Should read LC_PAPER
-    file_readline(LocalePipe, ConfigFname); // Should quote the default paper width
+    file_readline(LocalePipe, ConfigFname, FNAME_LENGTH); // Should read LC_PAPER
+    file_readline(LocalePipe, ConfigFname, FNAME_LENGTH); // Should quote the default paper width
     PaperHeight = GetFloat(ConfigFname, &Nchars);
     if (Nchars != strlen(ConfigFname)) goto LC_PAPERSIZE_DONE;
-    file_readline(LocalePipe, ConfigFname); // Should quote the default paper height
+    file_readline(LocalePipe, ConfigFname, FNAME_LENGTH); // Should quote the default paper height
     PaperWidth  = GetFloat(ConfigFname, &Nchars);
     if (Nchars != strlen(ConfigFname)) goto LC_PAPERSIZE_DONE;
     if (DEBUG) { sprintf(temp_err_string, "Read papersize %f x %f", PaperWidth, PaperHeight); ppl_log(temp_err_string); }
@@ -259,7 +259,7 @@ void ppl_settings_makedefault()
    {
     if (DEBUG) ppl_log("Failed to open /etc/papersize.");
    } else {
-    file_readline(LocalePipe, ConfigFname); // Should a papersize name
+    file_readline(LocalePipe, ConfigFname, FNAME_LENGTH); // Should a papersize name
     ppl_PaperSizeByName(ConfigFname, &PaperHeight, &PaperWidth);
     if (PaperHeight > 0)
      {

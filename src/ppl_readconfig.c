@@ -87,7 +87,7 @@ void ReadConfigFile(char *ConfigFname)
   while ((!feof(infile)) && (!ferror(infile)))
    {
     linecounter++;
-    file_readline(infile, linebuffer);
+    file_readline(infile, linebuffer, LSTR_LENGTH);
     StrStrip(linebuffer, linebuffer);
     if             (linebuffer[0] == '\0')                   continue;
     else if (strcmp(linebuffer, "[settings]" )==0) {state=1; continue;}
