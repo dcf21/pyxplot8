@@ -269,17 +269,24 @@ int CSPForkNewGv(char *fname, List *gv_list)
  {
   int pid;
   char WatchText[16];
+  sigset_t sigs;
+  
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
+  sigprocmask(SIG_BLOCK, &sigs, NULL);
 
   if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for the CSP.");
   else if ( pid        != 0)
    {
     // Parent process (i.e. the CSP)
     ListAppendInt(gv_list, pid);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     return pid;
    }
   else
    {
     // Child process; about to run GhostView.
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     sprintf(ppl_error_source, "GV%7d", getpid());
     settings_session_default.colour = SW_ONOFF_OFF;
     if (DEBUG) { sprintf(temp_err_string, "New GhostView process alive; going to view %s.", fname); ppl_log(temp_err_string); }
@@ -355,12 +362,19 @@ void PPLKillAllHelpers()
   return;
  }
 
+// NB: Leaves SIGCHLD blocked
 void ForkSed(char *cmd, int *fstdin, int *fstdout)
  {
   int fd0[2], fd1[2];
   int pid;
+  sigset_t sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
 
   if ((pipe(fd0)<0) || (pipe(fd1)<0)) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
+
+  sigprocmask(SIG_BLOCK, &sigs, NULL);
 
   if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for sed process.");
   else if ( pid        != 0)
@@ -369,6 +383,7 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
     close(fd0[0]); *fstdin  = fd0[1];
     close(fd1[1]); *fstdout = fd1[0];
     ListAppendInt(HelperPIDs, pid);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     return;
    }
   else 
@@ -377,6 +392,7 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
     close(fd0[1]); close(fd1[0]);
     close(PipeCSP2MAIN[0]);
     close(PipeMAIN2CSP[1]);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     sprintf(ppl_error_source, "SED%6d", getpid());
     settings_session_default.colour = SW_ONOFF_OFF;
     if (DEBUG) { sprintf(temp_err_string, "New sed process alive; going to run command \"%s\".", cmd); ppl_log(temp_err_string); }
@@ -402,12 +418,19 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
   return;
  }
 
+// NB: Leaves SIGCHLD blocked
 void ForkInputFilter(char **cmd, int *fstdout)
  {
   int fd0[2];
   int pid;
+  sigset_t sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
 
   if (pipe(fd0)<0) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
+
+  sigprocmask(SIG_BLOCK, &sigs, NULL);
 
   if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for input filter process.");
   else if ( pid        != 0)
@@ -415,6 +438,7 @@ void ForkInputFilter(char **cmd, int *fstdout)
     // Parent process
     close(fd0[1]); *fstdout = fd0[0];
     ListAppendInt(HelperPIDs, pid);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     return;
    }
   else
@@ -423,6 +447,7 @@ void ForkInputFilter(char **cmd, int *fstdout)
     close(fd0[0]);
     close(PipeCSP2MAIN[0]);
     close(PipeMAIN2CSP[1]);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     sprintf(ppl_error_source, "IF %6d", getpid());
     settings_session_default.colour = SW_ONOFF_OFF;
     if (DEBUG) { sprintf(temp_err_string, "New input filter process alive; going to run command \"%s\".", cmd[0]); ppl_log(temp_err_string); }

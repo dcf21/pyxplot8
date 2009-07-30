@@ -59,6 +59,7 @@ void InteractiveSession()
  {
   int   linenumber = 1;
   char *line_ptr;
+  sigset_t sigs;
 
   if (DEBUG) ppl_log("Starting an interactive session.");
 
@@ -89,6 +90,9 @@ void InteractiveSession()
       else                                                ppl_report(""); // Make a new line
      }
    } else {
+    sigemptyset(&sigs);
+    sigaddset(&sigs,SIGCHLD);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     ppl_error("\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
     if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
    }
@@ -154,6 +158,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
   static char *DirectiveLinebuffer = NULL;
   Dict *command;
   FILE *SubstPipe;
+  sigset_t sigs;
 
   static int interactive_last=0;
   if (interactive < 0) interactive      = interactive_last;
@@ -220,6 +225,9 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
       // If command is NULL, we had a syntax error
      }
    } else {
+    sigemptyset(&sigs);
+    sigaddset(&sigs,SIGCHLD);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     ppl_error("\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;
    }
@@ -478,6 +486,10 @@ int directive_regex(Dict *command)
   char   ci;
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   fd_set          readable;
+  sigset_t sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
 
   // Extract the name of the variable we're going to perform regular expression upon
   DictLookup(command, "varname", NULL, (void **)(&varname));
@@ -510,12 +522,13 @@ int directive_regex(Dict *command)
   waitperiod.tv_sec  = 1; waitperiod.tv_nsec = 0;
   FD_ZERO(&readable); FD_SET(fstdout, &readable);
   pselect(fstdout+1, &readable, NULL, NULL, &waitperiod, NULL);
-  if (!FD_ISSET(fstdout , &readable)) { ppl_error("Error: Got bored waiting for sed to return data."); return 0; }
+  if (!FD_ISSET(fstdout , &readable)) { ppl_error("Error: Got bored waiting for sed to return data."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
 
   // Read data back from sed process
-  if ((i = read(fstdout, cmd, LSTR_LENGTH)) < 0) { ppl_error("Error: Could not read from pipe to sed."); return 0; }
+  if ((i = read(fstdout, cmd, LSTR_LENGTH)) < 0) { ppl_error("Error: Could not read from pipe to sed."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
   cmd[i] = '\0';
   close(fstdout);
+  sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 
   // Copy string into string variable
   varnumval->string = (char *)lt_malloc_incontext(strlen(cmd)+1, _ppl_UserSpace_Vars->memory_context);

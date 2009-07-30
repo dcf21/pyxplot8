@@ -68,6 +68,8 @@ int main(int argc, char **argv)
   char *EnvDisplay;
   struct stat statinfo;
 
+  sigset_t sigs;
+
   struct timespec waitperiod, waitedperiod; // A time.h timespec specifier for a 100ms nanosleep wait
   waitperiod.tv_sec  = 0;
   waitperiod.tv_nsec = 50000000;
@@ -212,6 +214,9 @@ int main(int argc, char **argv)
 
    // SIGINT longjmps to main return here
    } else {
+    sigemptyset(&sigs);
+    sigaddset(&sigs,SIGCHLD);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     ppl_error("\nReceived SIGINT. Terminating.");
    }
 

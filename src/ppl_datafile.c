@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <signal.h>
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -51,6 +52,10 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
   DictIterator *DictIter;
   char         *filter, *FilterArgs, **ArgList;
   int           i,j,k;
+  sigset_t      sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
 
   // Check whether we have a specified coprocessor to work on this filetype
   DictIter = DictIterateInit(settings_filters);
@@ -72,6 +77,7 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
       ArgList[j++] = filename;
       ArgList[j++] = NULL;
       ForkInputFilter(ArgList, &i); // Fork process for input filter, and runned piped output through the standard IO library using fdopen()
+      sigprocmask(SIG_UNBLOCK, &sigs, NULL);
       if ((infile = fdopen(i, "r")) == NULL) { sprintf(errout,"Could not open connection to input filter '%s'.",ArgList[0]); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
       return infile;
      }
