@@ -67,7 +67,7 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
       if (DEBUG) { sprintf(temp_err_string, "Using input filter '%s'.", filter); ppl_log(temp_err_string); }
       FilterArgs = (char  *)lt_malloc(strlen(filter)+1);
       ArgList    = (char **)lt_malloc((strlen(filter)/2+1)*sizeof(char *));
-      if ((FilterArgs==NULL)||(ArgList==NULL)) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
+      if ((FilterArgs==NULL)||(ArgList==NULL)) { sprintf(errout,"Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return NULL; };
       strcpy(FilterArgs, filter);
       for (i=j=k=0; FilterArgs[i]!='\0'; i++)
        {
@@ -160,7 +160,7 @@ RETURN_STRING:
   if (MallocOut)
    {
     output->string = (char *)lt_malloc_incontext(strlen(outstr),UCFC_OutputContext);
-    if (output->string == NULL) { sprintf(errtext, "Out of memory."); *status=1; return; }
+    if (output->string == NULL) { sprintf(errtext, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
     strcpy(output->string,outstr);
    }
   else
@@ -226,7 +226,7 @@ void __inline__ DataFile_UsingConvert(char *input, value *output, const int Outp
       ppl_GetQuotedString(input, temp_err_string, 0, &l, 1, status, errtext, 1); // We are trying to return a string, so expect to be evaluating a quoted string
       ppl_units_zero(output);
       output->string = (char *)lt_malloc_incontext(strlen(temp_err_string),UCFC_OutputContext);
-      if (output->string == NULL) { sprintf(errtext, "Out of memory."); *status=1; return; }
+      if (output->string == NULL) { sprintf(errtext, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
       strcpy(output->string, temp_err_string);
      }
     if (*status>=0) {*status=1;} else {*status=0;}
@@ -241,10 +241,12 @@ void __inline__ DataFile_UsingConvert(char *input, value *output, const int Outp
 // -------------------------------------------------------------------------------
 
 // DataFile_NewDataBlock()
-DataBlock *DataFile_NewDataBlock(const int Ncolumns, const int MemoryContext)
+DataBlock *DataFile_NewDataBlock(const int Ncolumns, const int MemoryContext, const int Length)
  {
   DataBlock *output;
-  int BlockLength = 1 + DATAFILE_DATABLOCK_BYTES / (sizeof(double) + sizeof(long int)) / Ncolumns;
+  int BlockLength = 1 + DATAFILE_DATABLOCK_BYTES / (sizeof(double) + sizeof(long int)) / Ncolumns; // automatic length
+
+  if (Length>0) BlockLength=Length; // overriden when manually specified Length > 0
 
   output = (DataBlock *)lt_malloc_incontext(sizeof(DataBlock), MemoryContext);
   if (output==NULL) return NULL;
@@ -261,7 +263,7 @@ DataBlock *DataFile_NewDataBlock(const int Ncolumns, const int MemoryContext)
  }
 
 // DataFile_NewDataTable()
-DataTable *DataFile_NewDataTable(const int Ncolumns, const int MemoryContext)
+DataTable *DataFile_NewDataTable(const int Ncolumns, const int MemoryContext, const int Length)
  {
   DataTable *output;
   int i;
@@ -274,7 +276,7 @@ DataTable *DataFile_NewDataTable(const int Ncolumns, const int MemoryContext)
   output->FirstEntries  = (value *)lt_malloc_incontext(Ncolumns*sizeof(value), MemoryContext);
   if (output->FirstEntries==NULL) return NULL;
   for (i=0;i<Ncolumns;i++) ppl_units_zero(output->FirstEntries + i);
-  output->first         = DataFile_NewDataBlock(Ncolumns, MemoryContext);
+  output->first         = DataFile_NewDataBlock(Ncolumns, MemoryContext, Length);
   output->current       = output->first;
   if (output->first==NULL) return NULL;
   return output;
@@ -318,8 +320,9 @@ int DataFile_DataTable_AddRow(DataTable *i)
  {
   if (i==NULL) return 1;
   if (i->current==NULL) return 1;
+  i->Nrows++;
   if (i->current->BlockPosition < (i->current->BlockLength-1)) { i->current->BlockPosition++; return 0; }
-  i->current->next          = DataFile_NewDataBlock(i->Ncolumns, i->MemoryContext);
+  i->current->next          = DataFile_NewDataBlock(i->Ncolumns, i->MemoryContext, -1);
   if (i->current==NULL) return 1;
   i->current->BlockPosition = i->current->BlockLength;
   i->current->next->prev    = i->current;
@@ -332,6 +335,7 @@ int DataFile_RawDataTable_AddRow(RawDataTable *i)
  {
   if (i==NULL) return 1;
   if (i->current==NULL) return 1;
+  i->Nrows++;
   if (i->current->BlockPosition < (i->current->BlockLength-1)) { i->current->BlockPosition++; return 0; }
   i->current->next          = DataFile_NewRawDataBlock(i->MemoryContext);
   if (i->current==NULL) return 1;
@@ -353,7 +357,7 @@ void DataFile_DataTable_List(DataTable *i)
   int j,k,Ncolumns;
 
   if (i==NULL) { printf("<NULL data table>\n"); return; }
-  printf("Table size: %d x %d\n", i->Nrows, i->Ncolumns);
+  printf("Table size: %d x %ld\n", i->Ncolumns, i->Nrows);
   printf("Memory context: %d\n", i->MemoryContext);
   blk = i->first;
   Ncolumns = i->Ncolumns;
@@ -361,13 +365,13 @@ void DataFile_DataTable_List(DataTable *i)
    {
     for (j=0; j<blk->BlockPosition; j++)
      {
-      for (k=0; k<i->Ncolumns; k++)
+      for (k=0; k<Ncolumns; k++)
        {
         v             = i->FirstEntries[k];
-        v.real        = blk->data_real[j*Ncolumns+k];
+        v.real        = blk->data_real[j*Ncolumns + k];
         v.imag        = 0.0;
         v.FlagComplex = 0;
-        printf("%15s [line %6ld]    ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns+k] );
+        printf("%15s [line %6ld]    ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns + k] );
        }
       if (blk->text[j] != NULL) printf("Label: <%s>",blk->text[j]);
       if (blk->split[j]) printf("\n\n\n");
@@ -377,16 +381,137 @@ void DataFile_DataTable_List(DataTable *i)
    }
  }
 
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
+// DataFile_ApplyUsingList(): Convert an array of strings into a DataTable data point, using supplied using :...: expressions and select criterion, etc
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnData, int ItemsOnLine, char **UsingItems, int Ncolumns, long int file_linenumber, char **ColumnHeadings, int NColumnHeadings, value *ColumnUnits, int NColumnUnits, char *LabelStr, char *SelectCriterion, int continuity, unsigned char *discontinuity, int *ErrCounter, int *status, char *errout)
+ {
+  int   i, LocalStatus;
+  value tempval;
+
+  // If select criterion has been supplied, make sure it is true before proceeding
+  LocalStatus=0;
+  if (SelectCriterion != NULL)
+   {
+    LocalStatus=0;
+    DataFile_UsingConvert(SelectCriterion, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+    if (LocalStatus) { if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); } ppl_units_zero(&tempval); }
+    if (!tempval.dimensionless) { if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(errout, "Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s>.", SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0)); ppl_warning(errout); } ppl_units_zero(&tempval); }
+    if (ppl_units_DblEqual(tempval.real,0)&&ppl_units_DblEqual(tempval.imag,0)) LocalStatus=1; // Do not proceed
+   }
+
+  // Only proceed if select criterion was TRUE or not present
+  if (!LocalStatus)
+   {
+    // If a label expression has been specified, evaluate it now
+    if (LabelStr != NULL)
+     {
+      DataFile_UsingConvert(LabelStr, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 0, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+      if ((!LocalStatus) && (tempval.string==NULL)) { sprintf(errout, "Could not evaluate label string <%s>.", LabelStr); LocalStatus=1; }
+      if (!LocalStatus)
+       {
+        out->current->text[out->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(tempval.string)+1, ContextOutput);
+        if (out->current->text[out->current->BlockPosition] == NULL)
+         { strcpy(errout, "Error: Out of memory whilst generating text label for data point."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        else
+         strcpy(out->current->text[out->current->BlockPosition], tempval.string);
+       }
+      if (LocalStatus)
+       {
+        if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); }
+        out->current->text[out->current->BlockPosition] = NULL;
+       }
+     }
+    else
+     out->current->text[out->current->BlockPosition] = NULL;
+
+    // Evaluate using expression on data in columns
+    for (i=0; i<Ncolumns; i++)
+     {
+      DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+      if (LocalStatus) break;
+      if (tempval.FlagComplex) { sprintf(errout, "Data item calculated from expression <%s> on line %ld of datafile is complex.", UsingItems[i], file_linenumber); LocalStatus=1; break; }
+      if (out->Nrows==0)
+       out->FirstEntries[i] = tempval;
+      else
+       if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { sprintf(errout, "The expression <%s> produces data with inconsistent units. On line %ld, a datum with units of <%s> is produced, but previous data have had units of <%s>.", UsingItems[i], file_linenumber, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 0)); LocalStatus=1; break; }
+      out->current->data_real[i + out->current->BlockPosition * Ncolumns] = tempval.real;
+      out->current->FileLine [i + out->current->BlockPosition * Ncolumns] = file_linenumber;
+     }
+
+    out->current->split[out->current->BlockPosition] = *discontinuity;
+
+    if (LocalStatus)
+     {
+      if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); }
+      *discontinuity=(continuity == DATAFILE_DISCONTINUOUS);
+     }
+    else // If we have evaluated all USING expressions successfully, commit this row to the DataTable
+     {
+      LocalStatus = DataFile_DataTable_AddRow(out);
+      if (LocalStatus) { strcpy(errout, "Error: Out of memory whilst reading data file."); *status=1; if (DEBUG) ppl_log(errout); return; }
+      *discontinuity=0;
+     }
+   }
+  return;
+ }
+
 // -----------------------------------------------------------------------------------------------
 // DataFile_RotateRawData(): Routine used to rotate raw data by 90 degrees when plotting with rows
 // -----------------------------------------------------------------------------------------------
 
-void DataFile_RotateRawData(RawDataTable **in, DataTable *out)
+void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems, int Ncolumns, char **RowHeadings, int NRowHeadings, value *RowUnits, int NRowUnits, char *LabelStr, char *SelectCriterion, int continuity, int *ErrCounter, int *status, char *errout)
  {
-  int RawContext = (*in)->MemoryContext;
-  lt_Free(RawContext); // Free input table
-  (*in) = DataFile_NewRawDataTable(RawContext);
+  RawDataBlock *blk;
+  int           i,GotData;
+
+  char         *RowData[MAX_DATACOLS];
+  int           ItemsOnLine;
+  unsigned char discontinuity = 1;
+  int           ContextRaw = (*in )->MemoryContext;
+  int           ContextOut = ( out)->MemoryContext;
+
+  long int      file_linenumber = 0; // FUDGE!!!
+
+  while (1)
+   {
+    GotData = ItemsOnLine = 0; blk = (*in)->first;
+    while ((blk!=NULL)&&(ItemsOnLine<MAX_DATACOLS))
+     {
+      for (i=0; ((i<blk->BlockPosition)&&(ItemsOnLine<MAX_DATACOLS)); i++)
+       {
+        if (blk->text[i]==NULL)
+         { RowData[ItemsOnLine++]=" "; }
+        else
+         {
+          while ((blk->text[i][0]!='\0') && (blk->text[i][0]<=' ')) blk->text[i]++;
+          if (blk->text[i][0]=='\0') RowData[ItemsOnLine++]=" ";
+          else
+           {
+            RowData[ItemsOnLine++] = blk->text[i];
+            while  (blk->text[i][0]> ' ' )                            blk->text[i]++;
+            while ((blk->text[i][0]!='\0') && (blk->text[i][0]<=' ')) blk->text[i]++;
+           }
+         }
+       }
+      blk = blk->next;
+     }
+    if (!GotData) break;
+    DataFile_ApplyUsingList(out, ContextOut, RowData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+   }
+
+  lt_Free(ContextRaw); // Free input table
+  (*in) = DataFile_NewRawDataTable(ContextRaw);
   return;
+ }
+
+// ----------------------------------------------------------------------------
+// DataFile_DataTableSort(): Sort the items in a data table by the first column
+// ----------------------------------------------------------------------------
+
+void DataFile_DataTableSort(DataTable *i)
+ {
  }
 
 // ----------------------------------------------------------------------------------
@@ -405,15 +530,18 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   FILE         *filtered_input;
   char          linebuffer[LSTR_LENGTH], *lineptr, *cptr;
 
-  int i, j, k, l, m, *intptr, LocalStatus;
+  int i, j, k, l, m, *intptr;
 
   char        **ColumnHeadings  = NULL;
   int           NColumnHeadings = 0;
+  char        **RowHeadings     = NULL;
+  int           NRowHeadings    = 0;
   value        *ColumnUnits     = NULL;
   int           NColumnUnits    = 0;
+  value        *RowUnits        = NULL;
+  int           NRowUnits       = 0;
 
   char         *ColumnData[MAX_DATACOLS];
-  value         tempval;
   RawDataTable *RawDataTab = NULL;
 
   // Init
@@ -424,7 +552,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   UsingLen=0; listiter = ListIterateInit(UsingList);
   while (listiter != NULL)
    {
-    if (UsingLen>=USING_ITEMS_MAX) { strcpy(errout,"Too many items in using list."); *status=1; if (DEBUG) ppl_log(errout); return; }
+    if (UsingLen>=USING_ITEMS_MAX) { strcpy(errout,"Error: Too many items in using list."); *status=1; if (DEBUG) ppl_log(errout); return; }
     tempdict = (Dict *)listiter->data;
     DictLookup(tempdict,"using_item",NULL,(void **)&(UsingItems[UsingLen++]));
     listiter = ListIterate(listiter, NULL);
@@ -435,7 +563,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
    {
     for (i=0; i<Ncolumns; i++)
      {
-      if ((UsingItems[i] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
+      if ((UsingItems[i] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
       sprintf(UsingItems[i], "%d", i+1);
      }
     UsingLen = Ncolumns;
@@ -512,8 +640,13 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   ContextRaw    = lt_DescendIntoNewContext(); // Raw data goes into here when plotting with rows
   ContextRough  = lt_DescendIntoNewContext(); // Rough mallocs inside this subroutine happen in this context
 
-  *output = DataFile_NewDataTable(Ncolumns, ContextOutput);
-  if (UsingRowCol == DATAFILE_ROW) RawDataTab = DataFile_NewRawDataTable(ContextRaw);
+  *output = DataFile_NewDataTable(Ncolumns, ContextOutput, -1);
+  if (*output == NULL) { strcpy(errout, "Error: Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
+  if (UsingRowCol == DATAFILE_ROW)
+   {
+    RawDataTab = DataFile_NewRawDataTable(ContextRaw);
+    if (RawDataTab == NULL) { strcpy(errout, "Error: Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
+   }
 
   // Read input file, line by line
   while ( (!ferror(filtered_input)) && (!feof(filtered_input)) )
@@ -550,7 +683,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     if (linebuffer[0]=='#')
      {
       for (i=1; ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')); i++);
-      if (strncmp(linebuffer+i, "Columns:", 8)==0) // '# Columns:' means we have a list of column headings
+      if ((strncmp(linebuffer+i, "Columns:", 8)==0) && (UsingRowCol == DATAFILE_COL)) // '# Columns:' means we have a list of column headings
        {
         i+=8;
         while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
@@ -571,9 +704,30 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
           else if (hadwhitespace) { ColumnHeadings[ItemsOnLine] = cptr+j-i; ItemsOnLine++; hadwhitespace = 0; }
          }
        }
-      if (strncmp(linebuffer+i, "Units:", 6)==0) // '# Units:' means we have a list of column units
+      if ((strncmp(linebuffer+i, "Rows:", 5)==0) && (UsingRowCol == DATAFILE_ROW)) // '# Rows:' means we have a list of row headings
        {
-        i+=6;
+        i+=5;
+        while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+        ItemsOnLine = 0; hadwhitespace = 1;
+        for (j=i; linebuffer[j]!='\0'; j++)
+         {
+          if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+          else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
+         }
+        cptr            = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
+        RowHeadings     = (char **)lt_malloc(ItemsOnLine * sizeof(char *));
+        NRowHeadings    = ItemsOnLine;
+        if ((cptr==NULL)||(RowHeadings==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        ItemsOnLine = 0; hadwhitespace = 1;
+        for (j=i; linebuffer[j]!='\0'; j++)
+         {
+          if (linebuffer[j]< ' ') { linebuffer[j]='\0'; hadwhitespace = 1; }
+          else if (hadwhitespace) { RowHeadings[ItemsOnLine] = cptr+j-i; ItemsOnLine++; hadwhitespace = 0; }
+         }
+       }
+      if (strncmp(linebuffer+i, "ColumnUnits:", 12)==0) // '# ColumnUnits:' means we have a list of column units
+       {
+        i+=12;
         while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
@@ -604,6 +758,39 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
            }
          }
        }
+      if (strncmp(linebuffer+i, "RowUnits:", 9)==0) // '# RowUnits:' means we have a list of row units
+       {
+        i+=9;
+        while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+        ItemsOnLine = 0; hadwhitespace = 1;
+        for (j=i; linebuffer[j]!='\0'; j++)
+         {
+          if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+          else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
+         }
+        cptr         = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
+        RowUnits     = (value *)lt_malloc(ItemsOnLine * sizeof(value));
+        NRowUnits    = ItemsOnLine;
+        if ((cptr==NULL)||(RowUnits==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        ItemsOnLine = 0; hadwhitespace = 1;
+        for (k=0; cptr[k]!='\0'; k++)
+         {
+          if (cptr[k]<' ') { continue; }
+          else
+           {
+            for (l=0; cptr[k+l]>' '; l++);
+            cptr[k+l]='\0'; m=-1;
+            ppl_units_StringEvaluate(cptr+k, RowUnits+ItemsOnLine, &l, &m, errout);
+            if (m>=0)
+             {
+              ppl_units_zero(RowUnits+ItemsOnLine);
+              RowUnits[ItemsOnLine].real = 1.0;
+              if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(temp_err_string,"Error on line %ld of data file '%s', at character %d:",file_linenumber,filename,i+k); ppl_warning(temp_err_string); ppl_warning(errout); }
+             }
+            ItemsOnLine++; k+=l;
+           }
+         }
+       }
       continue; // Ignore comment lines
      }
     prev_blanklines=0;
@@ -617,7 +804,13 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     // Fetch this line if linenumber is within range, or if we are using rows and we need everything
     if (UsingRowCol == DATAFILE_ROW) // Store the whole line into a raw text spool
      {
-      if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output);
+      if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout);
+      if (*status) return;
+      cptr = RawDataTab->current->text[RawDataTab->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(linebuffer)+1, ContextRaw);
+      if (cptr==NULL) { strcpy(errout, "Error: Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); return; }
+      strcpy(cptr, linebuffer);
+      RawDataTab->current->FileLine[RawDataTab->current->BlockPosition] = file_linenumber;
+      if (DataFile_RawDataTable_AddRow(RawDataTab)) { strcpy(errout, "Error: Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); return; }
      }
     else if ((linenumber_stepcnt==0) && ((linefirst<0)||(linenumber_count>=linefirst)) && ((linelast<0)||(linenumber_count<=linelast)))
      {
@@ -640,85 +833,25 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
        }
       if (ItemsOnLine > 1) OneColumnInput=0;
 
-      // If select criterion has been supplied, make sure it is true before proceeding
-      LocalStatus=0;
-      if (SelectCriterion != NULL)
-       {
-        LocalStatus=0;
-        DataFile_UsingConvert(SelectCriterion, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
-        if (LocalStatus) { if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); } ppl_units_zero(&tempval); }
-        if (!tempval.dimensionless) { if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(errout, "Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s>.", SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0)); ppl_warning(errout); } ppl_units_zero(&tempval); }
-        if (ppl_units_DblEqual(tempval.real,0)&&ppl_units_DblEqual(tempval.imag,0)) LocalStatus=1; // Do not proceed
-       }
-
-      // Only proceed if select criterion was TRUE or not present
-      if (!LocalStatus)
-       {
-        // If a label expression has been specified, evaluate it now
-        if (LabelStr != NULL)
-         {
-          DataFile_UsingConvert(LabelStr, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 0, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
-          if ((!LocalStatus) && (tempval.string==NULL)) { sprintf(errout, "Could not evaluate label string <%s>.", LabelStr); LocalStatus=1; }
-          if (!LocalStatus)
-           {
-            (*output)->current->text[(*output)->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(tempval.string)+1, ContextOutput);
-            if ((*output)->current->text[(*output)->current->BlockPosition] == NULL)
-             { sprintf(errout, "Out of memory whilst generating text label for data point."); LocalStatus=1; }
-            else
-             strcpy((*output)->current->text[(*output)->current->BlockPosition], tempval.string);
-           }
-          if (LocalStatus)
-           {
-            if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); }
-            (*output)->current->text[(*output)->current->BlockPosition] = NULL;
-           }
-         }
-        else
-         (*output)->current->text[(*output)->current->BlockPosition] = NULL;
-
-        // Evaluate using expression on data in columns
-        for (i=0; i<Ncolumns; i++)
-         {
-          DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
-          if (LocalStatus) break;
-          if (tempval.FlagComplex) { sprintf(errout, "Data item calculated from expression <%s> on line %ld of datafile is complex.", UsingItems[i], file_linenumber); LocalStatus=1; break; }
-          if ((*output)->Nrows==0)
-           (*output)->FirstEntries[i] = tempval;
-          else
-           if (!ppl_units_DimEqual(&tempval, (*output)->FirstEntries+i)) { sprintf(errout, "The expression <%s> produces data with inconsistent units. On line %ld, a datum with units of <%s> is produced, but previous data have had units of <%s>.", UsingItems[i], file_linenumber, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), ppl_units_GetUnitStr((*output)->FirstEntries+i, NULL, NULL, 1, 0)); LocalStatus=1; break; }
-          (*output)->current->data_real[(*output)->current->BlockPosition] = tempval.real;
-         }
-
-        if (LocalStatus)
-         {
-          if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); }
-         }
-        else // If we have evaluated all USING expressions successfully, commit this row to the DataTable
-         {
-          LocalStatus = DataFile_DataTable_AddRow(*output);
-          if (LocalStatus) { ppl_error("Error: Out of memory whilst reading data file."); break; }
-         }
-       }
+      DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      if (*status) return;
 
       linenumber_count++;
       linenumber_stepcnt = ((linenumber_stepcnt-1) % linestep);
      }
-    discontinuity=0;
    }
 
   // If we are reading rows, go through all of the data that we've read and rotate it by 90 degrees
-  if (UsingRowCol == DATAFILE_ROW) DataFile_RotateRawData(&RawDataTab, *output);
+  if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }
 
   // If requested, now sort the datagrid
-  if ((continuity == DATAFILE_SORTED) || (continuity == DATAFILE_SORTEDLOGLOG))
-   {
-   }
+  if ((continuity == DATAFILE_SORTED) || (continuity == DATAFILE_SORTEDLOGLOG)) DataFile_DataTableSort(*output);
 
   // Debugging line
   DataFile_DataTable_List(*output);
 
   // Delete rough workspace
-  lt_AscendOutOfContext(ContextRaw);
+  lt_AscendOutOfContext(ContextOutput);
   return;
  }
 

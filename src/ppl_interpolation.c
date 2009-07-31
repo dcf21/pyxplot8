@@ -31,6 +31,7 @@
 
 #include "ListTools/lt_dict.h"
 #include "ListTools/lt_list.h"
+#include "ListTools/lt_memory.h"
 
 #include "ppl_datafile.h"
 #include "ppl_error.h"
@@ -39,8 +40,10 @@
 int directive_interpolate(Dict *command, int mode)
  {
   DataTable *data;
-  int        status=0, index=0, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=5;
+  DataBlock *blk;
+  int        i, j, k, ContextOutput, ContextDataTab, status=0, index=0, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=5;
   char       errtext[LSTR_LENGTH], *filename=NULL, *tempstr=NULL, *SelectCrit=NULL;
+  double    *xdata, *ydata;
   List      *UsingList=NULL, *EveryList=NULL;
 
   DictLookup(command, "filename"   , NULL, (void **)&filename);   if (filename == NULL) { ppl_error("Internal error: ppl_interpolation could not read filename."); return 1; }
@@ -54,8 +57,29 @@ int directive_interpolate(Dict *command, int mode)
   if   (mode == INTERP_LOGLIN) continuity = DATAFILE_SORTEDLOGLOG;
   else                         continuity = DATAFILE_SORTED;
 
+  ContextOutput  = lt_GetMemContext();
+  ContextDataTab = lt_DescendIntoNewContext();
+
   DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, 2, SelectCrit, continuity, &ErrCount);
   if (status) { ppl_error(errtext); return 1; }
+
+  xdata = (double *)lt_malloc_incontext(data->Nrows * sizeof(double), ContextOutput); // Transfer data from multiple data tables into single vectors
+  ydata = (double *)lt_malloc_incontext(data->Nrows * sizeof(double), ContextOutput);
+
+  if ((xdata==NULL)||(ydata==NULL)) { ppl_error("Error: Out of memory whilst reading data from input file."); return 1; }
+
+  blk = data->first; i=0;
+  while (blk != NULL)
+   {
+    k=i;  
+    for (j=0; j<blk->BlockPosition; j++) xdata[i++] = blk->data_real[0 + 2*j];
+    i=k;
+    for (j=0; j<blk->BlockPosition; j++) ydata[i++] = blk->data_real[1 + 2*j];
+    blk=blk->next;
+   }
+
+  // Free original data table which is no longer needed
+  lt_AscendOutOfContext(ContextDataTab);
 
   return 0;
  }

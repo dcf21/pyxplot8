@@ -45,15 +45,15 @@
 typedef struct RawDataBlock {
   char               **text;      // Array of BlockLength x [string data from datafile]
   long int            *FileLine;  // For each string above... store the line number in the data file that it came from
-  int                  BlockLength;
-  int                  BlockPosition; // Where have we filled up to?
+  long int             BlockLength;
+  long int             BlockPosition; // Where have we filled up to?
   struct RawDataBlock *next;
   struct RawDataBlock *prev;
  } RawDataBlock;
 
 typedef struct RawDataTable {
-  int    Nrows;
-  int    MemoryContext;
+  long int             Nrows;
+  int                  MemoryContext;
   struct RawDataBlock *first;
   struct RawDataBlock *current;
  } RawDataTable;
@@ -62,21 +62,21 @@ typedef struct RawDataTable {
 // DataTable structure, used for returning tables of VALUEs from ppl_datafile.c
 
 typedef struct DataBlock {
-  double          *data_real; // Array of Ncolumns x array of length BlockLength
-  char           **text;      // Array of BlockLength x string labels for datapoints
-  long int        *FileLine;  // For each double above... store the line number in the data file that it came from
-  unsigned char   *split;     // Array of length BlockLength; TRUE if we should break data before this next datapoint
-  int              BlockLength;
-  int              BlockPosition; // Where have we filled up to?
+  double           *data_real; // Array of Ncolumns x array of length BlockLength
+  char            **text;      // Array of BlockLength x string labels for datapoints
+  long int         *FileLine;  // For each double above... store the line number in the data file that it came from
+  unsigned char    *split;     // Array of length BlockLength; TRUE if we should break data before this next datapoint
+  long int          BlockLength;
+  long int          BlockPosition; // Where have we filled up to?
   struct DataBlock *next;
   struct DataBlock *prev;
  } DataBlock;
 
 typedef struct DataTable {
-  int    Ncolumns;
-  int    Nrows;
-  int    MemoryContext;
-  value *FirstEntries; // Array of size Ncolumns; store units for data in each column here
+  int               Ncolumns;
+  long int          Nrows;
+  int               MemoryContext;
+  value            *FirstEntries; // Array of size Ncolumns; store units for data in each column here
   struct DataBlock *first;
   struct DataBlock *current;
  } DataTable;
