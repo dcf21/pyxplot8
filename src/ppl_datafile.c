@@ -134,25 +134,26 @@ void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value
   const char *outstr=NULL;
   static char buffer[32];
 
-  if ((ColumnNo<0)||(ColumnNo>UCFC_Ncols+1)) { sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
+  if ((ColumnNo<0)||(ColumnNo>MAX_DATACOLS)) { sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
   i=(int)floor(ColumnNo);
+  if ((i<0)||(i>UCFC_Ncols)) { sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
   if (!NumericOut)
    {
     if (i==0) { sprintf(buffer,"%d",UCFC_LineNo); outstr=buffer; }
-    else      { outstr=UCFC_columns[i]; }
+    else      { outstr=UCFC_columns[i-1]; }
     goto RETURN_STRING;
    }
   if (i==0)
    { ColumnNo = UCFC_LineNo; }
   else
    {
-    ColumnNo=GetFloat(UCFC_columns[i],&j);
-    if ((UCFC_columns[i][j]>' ')&&(UCFC_columns[i][j]!=',')) { sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
+    ColumnNo=GetFloat(UCFC_columns[i-1],&j);
+    if ((UCFC_columns[i-1][j]>' ')&&(UCFC_columns[i-1][j]!=',')) { sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
     if (j==0) ColumnNo=0; // Blank columns in CSV files are zero
    }
   ppl_units_zero(output);
   output->real = ColumnNo;
-  if (i<UCFC_NColumnUnits) ppl_units_mult(output,UCFC_ColumnUnits+i,output,status,errtext);
+  if (i<UCFC_NColumnUnits) ppl_units_mult(output,UCFC_ColumnUnits+i-1,output,status,errtext);
   return;
 
 RETURN_STRING:
@@ -365,6 +366,7 @@ void DataFile_DataTable_List(DataTable *i)
    {
     for (j=0; j<blk->BlockPosition; j++)
      {
+      if (blk->split[j]) printf("\n\n");
       for (k=0; k<Ncolumns; k++)
        {
         v             = i->FirstEntries[k];
@@ -374,7 +376,6 @@ void DataFile_DataTable_List(DataTable *i)
         printf("%15s [line %6ld]    ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns + k] );
        }
       if (blk->text[j] != NULL) printf("Label: <%s>",blk->text[j]);
-      if (blk->split[j]) printf("\n\n\n");
       printf("\n");
      }
     blk=blk->next;
@@ -490,6 +491,7 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
           else
            {
             RowData[ItemsOnLine++] = blk->text[i];
+            GotData = 1;
             while  (blk->text[i][0]> ' ' )                            blk->text[i]++;
             while ((blk->text[i][0]!='\0') && (blk->text[i][0]<=' ')) blk->text[i]++;
            }
@@ -504,14 +506,6 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
   lt_Free(ContextRaw); // Free input table
   (*in) = DataFile_NewRawDataTable(ContextRaw);
   return;
- }
-
-// ----------------------------------------------------------------------------
-// DataFile_DataTableSort(): Sort the items in a data table by the first column
-// ----------------------------------------------------------------------------
-
-void DataFile_DataTableSort(DataTable *i)
- {
  }
 
 // ----------------------------------------------------------------------------------
@@ -659,7 +653,8 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     file_linenumber++;
     StrStrip(lineptr, linebuffer);
 
-    if (linebuffer[0]=='\0') // We have a blank line
+    for (j=0; ((linebuffer[j]!='\0')&&(linebuffer[j]<=' ')); j++);
+    if (linebuffer[j]=='\0') // We have a blank line
      {
       if (prev_blanklines>1) continue; // A very long gap in the datafile
       prev_blanklines++;
@@ -677,16 +672,17 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         if (DEBUG) { sprintf(temp_err_string, "Index %ld begins on line %ld of datafile.", index_number, file_linenumber); ppl_log(temp_err_string); }
         if ((index>=0) && (index_number>index)) break; // We'll never find any more data once we've gone past the specified index
        }
+      continue;
      }
 
     // Ignore comment lines
-    if (linebuffer[0]=='#')
+    if (linebuffer[j]=='#')
      {
-      for (i=1; ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')); i++);
+      for (i=j+1; ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')); i++);
       if ((strncmp(linebuffer+i, "Columns:", 8)==0) && (UsingRowCol == DATAFILE_COL)) // '# Columns:' means we have a list of column headings
        {
         i+=8;
-        while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+        while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
@@ -707,7 +703,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
       if ((strncmp(linebuffer+i, "Rows:", 5)==0) && (UsingRowCol == DATAFILE_ROW)) // '# Rows:' means we have a list of row headings
        {
         i+=5;
-        while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+        while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
@@ -728,7 +724,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
       if (strncmp(linebuffer+i, "ColumnUnits:", 12)==0) // '# ColumnUnits:' means we have a list of column units
        {
         i+=12;
-        while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+        while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
@@ -761,7 +757,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
       if (strncmp(linebuffer+i, "RowUnits:", 9)==0) // '# RowUnits:' means we have a list of row units
        {
         i+=9;
-        while ((linebuffer[i]!='\0')&&(linebuffer[i]<' ')) i++;
+        while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
@@ -799,7 +795,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     if ((index>=0) && (index_number != index)) continue;
 
     // If we're in a block that we're ignoring, don't do anything with this line
-    if ((block_stepcnt!=0) || ((blockfirst>=0)&&(block_count<blockfirst)) || ((blocklast>=0)&&(block_count<blocklast))) continue;
+    if ((block_stepcnt!=0) || ((blockfirst>=0)&&(block_count<blockfirst)) || ((blocklast>=0)&&(block_count>blocklast))) continue;
 
     // Fetch this line if linenumber is within range, or if we are using rows and we need everything
     if (UsingRowCol == DATAFILE_ROW) // Store the whole line into a raw text spool
@@ -811,47 +807,44 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
       strcpy(cptr, linebuffer);
       RawDataTab->current->FileLine[RawDataTab->current->BlockPosition] = file_linenumber;
       if (DataFile_RawDataTable_AddRow(RawDataTab)) { strcpy(errout, "Error: Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); return; }
+      discontinuity = 0;
      }
     else if ((linenumber_stepcnt==0) && ((linefirst<0)||(linenumber_count>=linefirst)) && ((linelast<0)||(linenumber_count<=linelast)))
      {
       // Count the number of data items on this line
-      ItemsOnLine = 0; hadwhitespace = 1; hadcomma = 1;
+      ItemsOnLine = 0; hadwhitespace = 1; hadcomma = 0;
       for (i=0; linebuffer[i]!='\0'; i++)
        {
-        if      (linebuffer[i]< ' ') {  hadwhitespace = 1; }
-        else if (linebuffer[i]==',') { ColumnData[ItemsOnLine++]=linebuffer+i; hadwhitespace = hadcomma = 1; }
+        if      (linebuffer[i]<=' ') {  hadwhitespace = 1; }
+        else if (linebuffer[i]==',') { ColumnData[ItemsOnLine++]=linebuffer+i+1; hadwhitespace = hadcomma = 1; }
         else                         { if (hadwhitespace && !hadcomma) { ColumnData[ItemsOnLine++]=linebuffer+i; } hadwhitespace = hadcomma = 0; }
         if (ItemsOnLine==MAX_DATACOLS) break; // Don't allow ColumnData array to overflow
        }
 
       // Add line numbers as first column to one-column datafiles
+      if  (ItemsOnLine >  1) OneColumnInput=0;
       if ((ItemsOnLine == 1) && (OneColumnInput))
        {
         ColumnData[ItemsOnLine++]=ColumnData[0];
         ColumnData[0]=LineNumberStr;
         sprintf(LineNumberStr,"%ld",file_linenumber);
        }
-      if (ItemsOnLine > 1) OneColumnInput=0;
 
       DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
       if (*status) return;
-
-      linenumber_count++;
-      linenumber_stepcnt = ((linenumber_stepcnt-1) % linestep);
      }
+    linenumber_count++;
+    linenumber_stepcnt = ((linenumber_stepcnt-1) % linestep);
    }
 
   // If we are reading rows, go through all of the data that we've read and rotate it by 90 degrees
   if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }
 
-  // If requested, now sort the datagrid
-  if ((continuity == DATAFILE_SORTED) || (continuity == DATAFILE_SORTEDLOGLOG)) DataFile_DataTableSort(*output);
-
   // Debugging line
   DataFile_DataTable_List(*output);
 
   // Delete rough workspace
-  lt_AscendOutOfContext(ContextOutput);
+  lt_AscendOutOfContext(ContextRaw);
   return;
  }
 

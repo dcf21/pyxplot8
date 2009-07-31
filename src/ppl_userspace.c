@@ -729,7 +729,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
 
   *errpos = -1;
-  ppl_GetExpression(in+start, &len, 0, StatusRow, OpList, errpos, errtext);
+  ppl_GetExpression(in+start, &len, DollarAllowed, StatusRow, OpList, errpos, errtext);
   if (*errpos >= 0) { (*errpos) += start; return; }
   CalculatedEnd = start + len;
   if ((end != NULL) && (*end >  0) && (CalculatedEnd < *end)) { *errpos=CalculatedEnd; strcpy(errtext,"Syntax Error: Unexpected trailing matter after algebraic expression"); return; }
@@ -765,7 +765,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
           if ((in[start+i]=='\'') || (in[start+i]=='\"')) { ck=in[start+i]; i++; } else { ck='\0'; }
           while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
           integrand = in+start+i; // Integrand starts here
-          ppl_GetExpression(in+start+i, &j, 0, NULL, NULL, errpos, errtext);
+          ppl_GetExpression(in+start+i, &j, DollarAllowed, NULL, NULL, errpos, errtext);
           if (*errpos >= 0) { (*errpos) += start+i; return; }
           i+=j;
           while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
