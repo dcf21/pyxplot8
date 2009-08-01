@@ -153,7 +153,7 @@ void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value
    }
   ppl_units_zero(output);
   output->real = ColumnNo;
-  if (i<UCFC_NColumnUnits) ppl_units_mult(output,UCFC_ColumnUnits+i-1,output,status,errtext);
+  if ((i>0)&&(i<UCFC_NColumnUnits)) ppl_units_mult(output,UCFC_ColumnUnits+i-1,output,status,errtext);
   return;
 
 RETURN_STRING:
@@ -177,7 +177,7 @@ void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value 
   for (i=0;i<UCFC_NColumnHeads;i++)
    if (strcmp(UCFC_ColumnHeads[i],ColumnName)==0)
     {
-     DataFile_UsingConvert_FetchColumnByNumber((double)i, output, NumericOut, MallocOut, status, errtext);
+     DataFile_UsingConvert_FetchColumnByNumber((double)i+1.1, output, NumericOut, MallocOut, status, errtext); // ColumnHead at position 0 corresponds to column 1
      return;
     }
   sprintf(errtext, "Requested column named '%s' does not exist.", ColumnName);
@@ -212,7 +212,7 @@ void __inline__ DataFile_UsingConvert(char *input, value *output, const int Outp
   if (ValidFloat(input,&l)) // using 1:2 -- number is column number -- "1" means "the contents of column 1", i.e. "$1".
    { dbl=GetFloat(input,NULL); NamedColumn=1; }
   else
-   { for (i=0;i<NColumnHeads;i++) if (strcmp(ColumnHeads[i],input)==0) { dbl=i; NamedColumn=1; break; } } // using ColumnName
+   { for (i=0;i<NColumnHeads;i++) if (strcmp(ColumnHeads[i],input)==0) { dbl=i+1.1; NamedColumn=1; break; } } // using ColumnName
 
   if (NamedColumn) // Clean up these cases
    {
@@ -373,7 +373,7 @@ void DataFile_DataTable_List(DataTable *i)
         v.real        = blk->data_real[j*Ncolumns + k];
         v.imag        = 0.0;
         v.FlagComplex = 0;
-        printf("%15s [line %6ld]    ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns + k] );
+        printf("%15s [line %6ld]  ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns + k] );
        }
       if (blk->text[j] != NULL) printf("Label: <%s>",blk->text[j]);
       printf("\n");
@@ -397,8 +397,8 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
    {
     LocalStatus=0;
     DataFile_UsingConvert(SelectCriterion, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
-    if (LocalStatus) { if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); } ppl_units_zero(&tempval); }
-    if (!tempval.dimensionless) { if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(errout, "Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s>.", SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0)); ppl_warning(errout); } ppl_units_zero(&tempval); }
+    if (LocalStatus) { if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } ppl_units_zero(&tempval); }
+    if (!tempval.dimensionless) { if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(errout, "Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s>.", SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0)); ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } ppl_units_zero(&tempval); }
     if (ppl_units_DblEqual(tempval.real,0)&&ppl_units_DblEqual(tempval.imag,0)) LocalStatus=1; // Do not proceed
    }
 
@@ -420,7 +420,7 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
        }
       if (LocalStatus)
        {
-        if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); }
+        if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); }
         out->current->text[out->current->BlockPosition] = NULL;
        }
      }
@@ -445,7 +445,7 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
 
     if (LocalStatus)
      {
-      if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); }
+      if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); }
       *discontinuity=(continuity == DATAFILE_DISCONTINUOUS);
      }
     else // If we have evaluated all USING expressions successfully, commit this row to the DataTable
@@ -631,8 +631,8 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
   // Keep a record of the memory context we're going to output into, and then make a scratchpad context
   ContextOutput = lt_GetMemContext();
-  ContextRaw    = lt_DescendIntoNewContext(); // Raw data goes into here when plotting with rows
   ContextRough  = lt_DescendIntoNewContext(); // Rough mallocs inside this subroutine happen in this context
+  ContextRaw    = lt_DescendIntoNewContext(); // Raw data goes into here when plotting with rows
 
   *output = DataFile_NewDataTable(Ncolumns, ContextOutput, -1);
   if (*output == NULL) { strcpy(errout, "Error: Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
@@ -682,63 +682,76 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
       if ((strncmp(linebuffer+i, "Columns:", 8)==0) && (UsingRowCol == DATAFILE_COL)) // '# Columns:' means we have a list of column headings
        {
         i+=8;
+        if (DEBUG) { sprintf(temp_err_string,"Reading column headings as specified on line %ld of datafile",file_linenumber); ppl_log(temp_err_string); }
         while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
-          if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+          if (linebuffer[j]<=' ') { hadwhitespace = 1; }
           else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
          }
-        cptr            = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
-        ColumnHeadings  = (char **)lt_malloc(ItemsOnLine * sizeof(char *));
+        cptr            = (char  *)lt_malloc_incontext(j-i+1                     , ContextRough); strcpy(cptr, linebuffer+i);
+        ColumnHeadings  = (char **)lt_malloc_incontext(ItemsOnLine*sizeof(char *), ContextRough);
         NColumnHeadings = ItemsOnLine;
         if ((cptr==NULL)||(ColumnHeadings==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
         ItemsOnLine = 0; hadwhitespace = 1;
-        for (j=i; linebuffer[j]!='\0'; j++)
+        for (j=0; cptr[j]!='\0'; j++)
          {
-          if (linebuffer[j]< ' ') { linebuffer[j]='\0'; hadwhitespace = 1; }
-          else if (hadwhitespace) { ColumnHeadings[ItemsOnLine] = cptr+j-i; ItemsOnLine++; hadwhitespace = 0; }
+          if      (cptr[j]<=' ')  { cptr[j]='\0'; hadwhitespace = 1; }
+          else if (hadwhitespace) { ColumnHeadings[ItemsOnLine] = cptr+j; ItemsOnLine++; hadwhitespace = 0; }
+         }
+        if (DEBUG)
+         {
+          sprintf(temp_err_string,"Total of %ld column headings read.",ItemsOnLine); ppl_log(temp_err_string);
+          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Column heading %d: %s",k,ColumnHeadings[k]); ppl_log(temp_err_string); }
          }
        }
-      if ((strncmp(linebuffer+i, "Rows:", 5)==0) && (UsingRowCol == DATAFILE_ROW)) // '# Rows:' means we have a list of row headings
+      else if ((strncmp(linebuffer+i, "Rows:", 5)==0) && (UsingRowCol == DATAFILE_ROW)) // '# Rows:' means we have a list of row headings
        {
         i+=5;
+        if (DEBUG) { sprintf(temp_err_string,"Reading row headings as specified on line %ld of datafile",file_linenumber); ppl_log(temp_err_string); }
         while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
-          if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+          if (linebuffer[j]<=' ') { hadwhitespace = 1; }
           else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
          }
-        cptr            = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
-        RowHeadings     = (char **)lt_malloc(ItemsOnLine * sizeof(char *));
+        cptr            = (char  *)lt_malloc_incontext(j-i+1                     , ContextRough); strcpy(cptr, linebuffer+i);
+        RowHeadings     = (char **)lt_malloc_incontext(ItemsOnLine*sizeof(char *), ContextRough);
         NRowHeadings    = ItemsOnLine;
         if ((cptr==NULL)||(RowHeadings==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
         ItemsOnLine = 0; hadwhitespace = 1;
-        for (j=i; linebuffer[j]!='\0'; j++)
+        for (j=0; cptr[j]!='\0'; j++)
          {
-          if (linebuffer[j]< ' ') { linebuffer[j]='\0'; hadwhitespace = 1; }
-          else if (hadwhitespace) { RowHeadings[ItemsOnLine] = cptr+j-i; ItemsOnLine++; hadwhitespace = 0; }
+          if      (cptr[j]<=' ')  { cptr[j]='\0'; hadwhitespace = 1; }
+          else if (hadwhitespace) { RowHeadings[ItemsOnLine] = cptr+j; ItemsOnLine++; hadwhitespace = 0; }
+         }
+        if (DEBUG)
+         {
+          sprintf(temp_err_string,"Total of %ld row headings read.",ItemsOnLine); ppl_log(temp_err_string);
+          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Row heading %d: %s",k,RowHeadings[k]); ppl_log(temp_err_string); }
          }
        }
-      if (strncmp(linebuffer+i, "ColumnUnits:", 12)==0) // '# ColumnUnits:' means we have a list of column units
+      else if (strncmp(linebuffer+i, "ColumnUnits:", 12)==0) // '# ColumnUnits:' means we have a list of column units
        {
         i+=12;
+        if (DEBUG) { sprintf(temp_err_string,"Reading column units as specified on line %ld of datafile",file_linenumber); ppl_log(temp_err_string); }
         while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
-          if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+          if (linebuffer[j]<=' ') { hadwhitespace = 1; }
           else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
          }
-        cptr         = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
-        ColumnUnits  = (value *)lt_malloc(ItemsOnLine * sizeof(value));
+        cptr         = (char  *)lt_malloc_incontext(j-i+2                    , ContextRough); strncpy(cptr, linebuffer+i, j-i+2);
+        ColumnUnits  = (value *)lt_malloc_incontext(ItemsOnLine*sizeof(value), ContextRough);
         NColumnUnits = ItemsOnLine;
         if ((cptr==NULL)||(ColumnUnits==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
         ItemsOnLine = 0; hadwhitespace = 1;
         for (k=0; cptr[k]!='\0'; k++)
          {
-          if (cptr[k]<' ') { continue; }
+          if (cptr[k]<=' ') { continue; }
           else
            {
             for (l=0; cptr[k+l]>' '; l++);
@@ -748,30 +761,36 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
              {
               ppl_units_zero(ColumnUnits+ItemsOnLine);
               ColumnUnits[ItemsOnLine].real = 1.0;
-              if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(temp_err_string,"Error on line %ld of data file '%s', at character %d:",file_linenumber,filename,i+k); ppl_warning(temp_err_string); ppl_warning(errout); }
+              if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(temp_err_string,"Error on line %ld of data file '%s', at character %d:",file_linenumber,filename,i+k); ppl_warning(temp_err_string); ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); }
              }
             ItemsOnLine++; k+=l;
            }
          }
+        if (DEBUG)
+         {
+          sprintf(temp_err_string,"Total of %ld column units read.",ItemsOnLine); ppl_log(temp_err_string);
+          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Column unit %d: %s",k,ppl_units_NumericDisplay(ColumnUnits+k,0,0)); ppl_log(temp_err_string); }
+         }
        }
-      if (strncmp(linebuffer+i, "RowUnits:", 9)==0) // '# RowUnits:' means we have a list of row units
+      else if (strncmp(linebuffer+i, "RowUnits:", 9)==0) // '# RowUnits:' means we have a list of row units
        {
         i+=9;
+        if (DEBUG) { sprintf(temp_err_string,"Reading row units as specified on line %ld of datafile",file_linenumber); ppl_log(temp_err_string); }
         while ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')) i++;
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=i; linebuffer[j]!='\0'; j++)
          {
-          if (linebuffer[j]< ' ') { hadwhitespace = 1; }
+          if (linebuffer[j]<=' ') { hadwhitespace = 1; }
           else if (hadwhitespace) { ItemsOnLine++; hadwhitespace = 0; }
          }
-        cptr         = (char  *)lt_malloc(j-i+1); strcpy(cptr, linebuffer+i);
-        RowUnits     = (value *)lt_malloc(ItemsOnLine * sizeof(value));
+        cptr         = (char  *)lt_malloc_incontext(j-i+2                    , ContextRough); strncpy(cptr, linebuffer+i, j-i+2);
+        RowUnits     = (value *)lt_malloc_incontext(ItemsOnLine*sizeof(value), ContextRough);
         NRowUnits    = ItemsOnLine;
         if ((cptr==NULL)||(RowUnits==NULL)) { strcpy(errout, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
         ItemsOnLine = 0; hadwhitespace = 1;
         for (k=0; cptr[k]!='\0'; k++)
          {
-          if (cptr[k]<' ') { continue; }
+          if (cptr[k]<=' ') { continue; }
           else
            {
             for (l=0; cptr[k+l]>' '; l++);
@@ -781,10 +800,15 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
              {
               ppl_units_zero(RowUnits+ItemsOnLine);
               RowUnits[ItemsOnLine].real = 1.0;
-              if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(temp_err_string,"Error on line %ld of data file '%s', at character %d:",file_linenumber,filename,i+k); ppl_warning(temp_err_string); ppl_warning(errout); }
+              if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(temp_err_string,"Error on line %ld of data file '%s', at character %d:",file_linenumber,filename,i+k); ppl_warning(temp_err_string); ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); }
              }
             ItemsOnLine++; k+=l;
            }
+         }
+        if (DEBUG)
+         {
+          sprintf(temp_err_string,"Total of %ld row units read.",ItemsOnLine); ppl_log(temp_err_string);
+          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Row unit %d: %s",k,ppl_units_NumericDisplay(RowUnits+k,0,0)); ppl_log(temp_err_string); }
          }
        }
       continue; // Ignore comment lines
@@ -844,7 +868,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   DataFile_DataTable_List(*output);
 
   // Delete rough workspace
-  lt_AscendOutOfContext(ContextRaw);
+  lt_AscendOutOfContext(ContextRough);
   return;
  }
 

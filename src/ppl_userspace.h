@@ -22,6 +22,8 @@
 #ifndef _PPL_USERSPACE_H
 #define _PPL_USERSPACE_H 1
 
+#include <gsl/gsl_spline.h>
+
 #include "ListTools/lt_dict.h"
 
 #include "ppl_units.h"
@@ -35,6 +37,14 @@
 #define PPL_USERSPACE_SPLINE  32053
 #define PPL_USERSPACE_UNIT    32054
 #define PPL_USERSPACE_INT     32055
+
+typedef struct SplineDescriptor {
+ gsl_spline       *SplineObj;
+ gsl_interp_accel *accelerator;
+ value             UnitX, UnitY;
+ unsigned char     LogInterp;
+ char             *filename, *SplineType;
+ } SplineDescriptor;
 
 typedef struct FunctionDescriptor {
  int   FunctionType;

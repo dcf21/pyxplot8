@@ -24,13 +24,17 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_units.h"
+#include "ppl_userspace.h"
+
 #define INTERP_LINEAR 23001
 #define INTERP_LOGLIN 23002
 #define INTERP_SPLINE 23003
 #define INTERP_AKIMA  23004
 #define INTERP_POLYN  23005
 
-int directive_interpolate(Dict *command, int mode);
+int  directive_interpolate(Dict *command, int mode);
+void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, value *out, int *status, char *errout);
 
 #endif
 

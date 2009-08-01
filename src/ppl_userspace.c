@@ -277,7 +277,11 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
    }
   else if (in->FunctionType == PPL_USERSPACE_SPLINE)
    {
-    if (in->FunctionPtr!=NULL) gsl_spline_free((gsl_spline *)in->FunctionPtr);
+    if (in->FunctionPtr!=NULL)
+     {
+      if (((SplineDescriptor *)in->FunctionPtr)->SplineObj   != NULL ) gsl_spline_free      (((SplineDescriptor *)in->FunctionPtr)->SplineObj  );
+      if (((SplineDescriptor *)in->FunctionPtr)->accelerator != NULL ) gsl_interp_accel_free(((SplineDescriptor *)in->FunctionPtr)->accelerator);
+     }
    }
   else
    {
@@ -386,12 +390,12 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
        }
       else // We have $ColumnName
        {
-        for (i=pos+1,j=0;((isalnum(in[i]))||(in[i]=='_')); i++,j++) temp_err_string[j]=in[i];
-        temp_err_string[j++]='\0';
+        for (i=pos+1,j=0;((isalnum(in[i]))||(in[i]=='_')); i++,j++) FormatString[j]=in[i];
+        FormatString[j++]='\0';
         if ((j>1)&&(!((end!=NULL)&&(*end>0)&&(i<*end))))
          {
           *errpos=0;
-          DataFile_UsingConvert_FetchColumnByName(temp_err_string, &(argf.v), 0, 0, errpos, errtext);
+          DataFile_UsingConvert_FetchColumnByName(FormatString, &(argf.v), 0, 0, errpos, errtext);
           if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
           strcpy(out, argf.v.string);
           return;
@@ -827,6 +831,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         if (in[start+i] != ')') { (*errpos) = start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after unit expression."); return; }
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
        }
+      else if (FunctionType == PPL_USERSPACE_SPLINE)
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+        j=0;
+        ppl_spline_evaluate(DictIter->key, (SplineDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        if (j>0) { *errpos = start+i; return; }
+       }
       else if (FunctionType == PPL_USERSPACE_USERDEF)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
@@ -966,6 +977,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     else // $ColumnName
      {
       ppl_units_zero(ResultBuffer+bufpos);
+      while (StatusRow[p]==4) p++;
       for (j=p;(StatusRow[j]==8);j++);
       while ((j>p) && (in[start+j-1]<=' ')) j--;
       ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!

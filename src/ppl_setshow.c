@@ -1279,7 +1279,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       FDiter = (FunctionDescriptor *)DictIter->data;
       while (FDiter != NULL)
        {
-        if ( (FDiter->FunctionType == PPL_USERSPACE_USERDEF) || (FDiter->FunctionType == PPL_USERSPACE_SPLINE) )
+        if (FDiter->FunctionType == PPL_USERSPACE_USERDEF)
          {
           SHOW_HIGHLIGHT((FDiter->modified==0));
           // Let j be the number of ranges _used_ by this function definition
@@ -1304,6 +1304,15 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
             *(out+(i++)) = ']';
            }
           sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
+          SHOW_DEHIGHLIGHT;
+         }
+        if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
+         {
+          SHOW_HIGHLIGHT((FDiter->modified==0));
+          sprintf(out+i,"%s(x)= [%s interpolation of data from the file '%s']\n",DictIter->key,
+                                                                                ((SplineDescriptor *)FDiter->FunctionPtr)->SplineType,
+                                                                                ((SplineDescriptor *)FDiter->FunctionPtr)->filename   );
+          i+=strlen(out+i);
           SHOW_DEHIGHLIGHT;
          }
         FDiter = FDiter->next;

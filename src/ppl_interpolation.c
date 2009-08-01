@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_interp.h>
@@ -39,6 +40,8 @@
 #include "ppl_datafile.h"
 #include "ppl_error.h"
 #include "ppl_interpolation.h"
+#include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_userspace.h"
 
 static long int __compare_offset;
@@ -55,12 +58,18 @@ int directive_interpolate(Dict *command, int mode)
   DataTable *data;
   DataBlock *blk;
   long int   i, j, k, Nrows;
-  int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=500;
+  int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=20;
   char       errtext[LSTR_LENGTH], *filename=NULL, *fitfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
   double    *xdata, *ydata;
   List      *UsingList=NULL, *EveryList=NULL;
-  FunctionDescriptor *FuncPtr;
+  FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   value      v, FirstEntries[2];
+  SplineDescriptor *desc;
+
+  List         *RangeList;
+  ListIterator *ListIter;
+  Dict         *TempDict;
+  value        *xmin=NULL, *ymin=NULL, *xmax=NULL, *ymax=NULL;
 
   const gsl_interp_type *SplineType;
   gsl_spline            *SplineObj;
@@ -74,13 +83,32 @@ int directive_interpolate(Dict *command, int mode)
   DictLookup(command, "every_list:", NULL, (void **)&EveryList);
   DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
 
+  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  if (RangeList == NULL) goto RANGES_DONE;
+  ListIter = ListIterateInit(RangeList);
+  if (ListIter == NULL) goto RANGES_DONE;
+  TempDict = (Dict *)ListIter->data;
+  DictLookup(TempDict,"min",NULL,(void **)&xmin);
+  DictLookup(TempDict,"max",NULL,(void **)&xmax);
+  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "Error: The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,0)); ppl_error(temp_err_string); return 1; }
+  ListIter = ListIterate(ListIter, NULL);
+  if (ListIter == NULL) goto RANGES_DONE;
+  TempDict = (Dict *)ListIter->data;
+  DictLookup(TempDict,"min",NULL,(void **)&ymin);
+  DictLookup(TempDict,"max",NULL,(void **)&ymax);
+  if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "Error: The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,0)); ppl_error(temp_err_string); return 1; }
+  ListIter = ListIterate(ListIter, NULL);
+  if (ListIter != NULL) { ppl_error("Error: Too many ranges have been supplied to the interpolate command. Only two are allowed: one for each ordinate."); return 1; }
+
+RANGES_DONE:
+
   continuity = DATAFILE_CONTINUOUS;
 
-  if      (mode == INTERP_LINEAR) SplineType=gsl_interp_linear;
-  else if (mode == INTERP_LOGLIN) SplineType=gsl_interp_linear;
-  else if (mode == INTERP_SPLINE) SplineType=gsl_interp_cspline;
-  else if (mode == INTERP_AKIMA ) SplineType=gsl_interp_akima;
-  else if (mode == INTERP_POLYN ) SplineType=gsl_interp_polynomial;
+  if      (mode == INTERP_LINEAR) SplineType = gsl_interp_linear;
+  else if (mode == INTERP_LOGLIN) SplineType = gsl_interp_linear;
+  else if (mode == INTERP_SPLINE) SplineType = gsl_interp_cspline;
+  else if (mode == INTERP_AKIMA ) SplineType = gsl_interp_akima;
+  else if (mode == INTERP_POLYN ) SplineType = gsl_interp_polynomial;
   else                            { ppl_error("Internal Error: interpolate command requested to perform unknown type of interpolation."); return 1; }
 
   // Check that the function we're about to replace isn't a system function
@@ -112,6 +140,24 @@ int directive_interpolate(Dict *command, int mode)
   FirstEntries[0] = data->FirstEntries[0];
   FirstEntries[1] = data->FirstEntries[1];
 
+  // Check that the FirstEntries above have the same units as any supplied ranges
+  if      (xmin != NULL)
+   {
+    if (!ppl_units_DimEqual(xmin,FirstEntries+0)) { sprintf(temp_err_string, "Error: The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,0)); ppl_error(temp_err_string); return 1; }
+   }
+  else if (xmax != NULL)
+   {
+    if (!ppl_units_DimEqual(xmax,FirstEntries+0)) { sprintf(temp_err_string, "Error: The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,0)); ppl_error(temp_err_string); return 1; }
+   }
+  if      (ymin != NULL)
+   {
+    if (!ppl_units_DimEqual(ymin,FirstEntries+1)) { sprintf(temp_err_string, "Error: The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,0)); ppl_error(temp_err_string); return 1; }
+   }
+  else if (ymax != NULL)
+   {
+    if (!ppl_units_DimEqual(ymax,FirstEntries+1)) { sprintf(temp_err_string, "Error: The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymax,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,0)); ppl_error(temp_err_string); return 1; }
+   }
+
   // Free original data table which is no longer needed
   lt_AscendOutOfContext(ContextDataTab);
 
@@ -124,16 +170,17 @@ int directive_interpolate(Dict *command, int mode)
   // Filter out repeat values of x
   for (j=k=1; j<i; j++)
    {
-    if (xdata[j]==xdata[j-1]) { if (ErrCount > 0) { ErrCount--; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Warning: Repeat values for interpolation have been supplied at x=%s.",ppl_units_NumericDisplay(&v, 0, 0)); ppl_warning(temp_err_string); } continue; }
+    if (xdata[j]==xdata[j-1]) { if (ErrCount > 0) { ErrCount--; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Warning: Repeat values for interpolation have been supplied at x=%s.",ppl_units_NumericDisplay(&v, 0, 0)); ppl_warning(temp_err_string); if (ErrCount==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } continue; }
     if (mode == INTERP_LOGLIN)
      {
-      if ((xdata[j]<=0.0) || (ydata[j]<=0.0)) { if (ErrCount > 0) { ErrCount--; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Warning: Negative or zero values are not allowed in power-law interpolation; negative values supplied at x=%s will be ignored.",ppl_units_NumericDisplay(&v, 0, 0)); ppl_warning(temp_err_string); } continue; }
+      if ((xdata[j]<=0.0) || (ydata[j]<=0.0)) { if (ErrCount > 0) { ErrCount--; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Warning: Negative or zero values are not allowed in power-law interpolation; negative values supplied at x=%s will be ignored.",ppl_units_NumericDisplay(&v, 0, 0)); ppl_warning(temp_err_string); if (ErrCount==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } continue; }
       xdata[k]=log(xdata[j]);
       ydata[k]=log(ydata[j]);
      }
     xdata[k]=xdata[j];
     ydata[k]=ydata[j];
-    if (gsl_finite(xdata[k]) && gsl_finite(ydata[k])) k++; // Ignore non-finite data points
+    if (gsl_finite(xdata[k]) && gsl_finite(ydata[k]) && ((xmin==NULL)||(xdata[k]>=xmin->real)) && ((xmax==NULL)||(xdata[k]<=xmax->real)) &&
+                                                        ((ymin==NULL)||(ydata[k]>=ymin->real)) && ((ymax==NULL)||(ydata[k]<=ymax->real))    ) k++; // Ignore non-finite data points
    }
 
   // Check that we have at least three points to interpolate
@@ -146,9 +193,97 @@ int directive_interpolate(Dict *command, int mode)
   if (status) { sprintf(temp_err_string, "Error whilst creating interpolation object:\n%s", gsl_strerror(status)); ppl_error(temp_err_string); return 1; }
 
   // Generate a function descriptor for this spline
+  desc              = (SplineDescriptor *)lt_malloc_incontext(sizeof(SplineDescriptor), 0);
+  if (desc == NULL) { ppl_error("Error: Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  desc->UnitX       = FirstEntries[0];
+  desc->UnitY       = FirstEntries[1];
+  desc->LogInterp   = (mode == INTERP_LOGLIN);
+  desc->SplineObj   = SplineObj;
+  desc->accelerator = gsl_interp_accel_alloc();
+  if (desc->accelerator == NULL) { ppl_error("Error: Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  desc->filename    = (char *)lt_malloc_incontext(strlen(filename)+1, 0);
+  if (desc->filename == NULL) { ppl_error("Error: Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  strcpy(desc->filename, filename);
+
+  if      (mode == INTERP_LINEAR) desc->SplineType="Linear";
+  else if (mode == INTERP_LOGLIN) desc->SplineType="Power-law";
+  else if (mode == INTERP_SPLINE) desc->SplineType="Cubic spline";
+  else if (mode == INTERP_AKIMA ) desc->SplineType="Akima spline";
+  else if (mode == INTERP_POLYN ) desc->SplineType="Polynomial";
+  else                            { ppl_error("Internal Error: interpolate command requested to perform unknown type of interpolation."); return 1; }
+
+  // Make a new function descriptor
+  FuncPtr2 = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor), 0);
+  if (FuncPtr2 == NULL) { ppl_error("Error: Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  FuncPtr2->FunctionType    = PPL_USERSPACE_SPLINE;
+  FuncPtr2->modified        = 1;
+  FuncPtr2->NumberArguments = 1;
+  FuncPtr2->FunctionPtr     = (void *)desc;
+  FuncPtr2->ArgList         = NULL;
+  FuncPtr2->min       = FuncPtr2->max       = NULL;
+  FuncPtr2->MinActive = FuncPtr2->MaxActive = NULL;
+  FuncPtr2->next            = NULL;
+  FuncPtr2->description = FuncPtr2->LaTeX = NULL;
+
+  // Supersede any previous function descriptor
+  while (FuncPtr != NULL)
+   {
+    FuncPtrNext = FuncPtr->next;
+    ppl_UserSpace_FuncDestroy(FuncPtr);
+    FuncPtr = FuncPtrNext;
+   }
+
+  // Add entry to function dictionary
+  DictAppendPtr(_ppl_UserSpace_Funcs, fitfunc, (void *)FuncPtr2, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
 
   // Free copies of data vectors defined within our local context
   lt_AscendOutOfContext(ContextLocalVec);
   return 0;
+ }
+
+void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, value *out, int *status, char *errout)
+ {
+  double dblin, dblout;
+
+  if (!ppl_units_DimEqual(in, &desc->UnitX))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error: The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 0)); }
+    else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
+    *status=1;
+    return;
+   }
+  if (in->FlagComplex)
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error: The %s(x) function expects a real argument, but the supplied argument has an imaginary component.", FuncName); }
+    else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
+    *status=1;
+    return;
+   }
+
+  dblin = in->real;
+  if (desc->LogInterp) dblin = log(dblin);
+  *status = gsl_spline_eval_e(desc->SplineObj, dblin, desc->accelerator, &dblout);
+  if (*status!=0)
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error whilst evaluating the %s(x) function:\n%s", FuncName, gsl_strerror(*status)); }
+    else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
+    *status=1;
+    return;
+   }
+  if (desc->LogInterp) dblout = exp(dblout);
+
+  if (!gsl_finite(dblout))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error whilst evaluating the %s(x) function:\nResult was not a finite number.", FuncName); }
+    else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
+    *status=1;
+    return;
+   }
+
+  // Return output
+  ppl_units_zero(out);
+  out->real = dblout;
+  ppl_units_DimCpy(out, &desc->UnitY);
+  return;
  }
 
