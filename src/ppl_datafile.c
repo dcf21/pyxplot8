@@ -93,63 +93,91 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
 // The following routines are a part of the BODMAS machine, and evaluate "$3" in the current context
 // -------------------------------------------------------------------------------------------------
 
-static       int     UCFC_OutputContext = -1;
-static       char  **UCFC_columns       = NULL;
-static       int     UCFC_Ncols         = -1;
-static       int     UCFC_LineNo        = -1;
-static       char  **UCFC_ColumnHeads   = NULL;
-static       int     UCFC_NColumnHeads  = -1;
-static const value  *UCFC_ColumnUnits   = NULL;
-static       int     UCFC_NColumnUnits  = -1;
+static            int     UCFC_OutputContext   = -1;
+static            char  **UCFC_columns         = NULL;
+static            int     UCFC_Ncols           = -1;
+static  long int          UCFC_file_linenumber = -1;
+static const long int    *UCFC_file_linenumbers= NULL;
+static       long int     UCFC_linenumber_count= -1;
+static       long int     UCFC_block_count     = -1;
+static       long int     UCFC_index_number    = -1;
+static            int     UCFC_UsingRowCol     = -1;
+static const      char   *UCFC_RowColWord      = NULL;
+static const      char   *UCFC_UsingExpression = NULL;
+static            char  **UCFC_ColumnHeads     = NULL;
+static            int     UCFC_NColumnHeads    = -1;
+static const      value  *UCFC_ColumnUnits     = NULL;
+static            int     UCFC_NColumnUnits    = -1;
 
-void __inline__ DataFile_UCFC_configure(const int OutputContext, char **columns, const int Ncols, const int LineNo, char **ColumnHeads, const int NColumnHeads, const value *ColumnUnits, const int NColumnUnits)
+void __inline__ DataFile_UCFC_configure(const int OutputContext, char **columns, const int Ncols, const long int file_linenumber, const long int *file_linenumbers, const long int linenumber_count, const long int block_count, const long int index_number, const int UsingRowCol, const char *RowColWord, const char *UsingExpression, char **ColumnHeads, const int NColumnHeads, const value *ColumnUnits, const int NColumnUnits)
  {
-  UCFC_OutputContext = OutputContext;
-  UCFC_columns       = columns;
-  UCFC_Ncols         = Ncols;
-  UCFC_LineNo        = LineNo;
-  UCFC_ColumnHeads   = ColumnHeads;
-  UCFC_NColumnHeads  = NColumnHeads;
-  UCFC_ColumnUnits   = ColumnUnits;
-  UCFC_NColumnUnits  = NColumnUnits;
+  UCFC_OutputContext    = OutputContext;
+  UCFC_columns          = columns;
+  UCFC_Ncols            = Ncols;
+  UCFC_file_linenumber  = file_linenumber;
+  UCFC_file_linenumbers = file_linenumbers;
+  UCFC_linenumber_count = linenumber_count;
+  UCFC_block_count      = block_count;
+  UCFC_index_number     = index_number;
+  UCFC_UsingRowCol      = UsingRowCol;
+  UCFC_RowColWord       = RowColWord;
+  UCFC_UsingExpression  = UsingExpression;
+  UCFC_ColumnHeads      = ColumnHeads;
+  UCFC_NColumnHeads     = NColumnHeads;
+  UCFC_ColumnUnits      = ColumnUnits;
+  UCFC_NColumnUnits     = NColumnUnits;
   return;
  }
 
 void __inline__ DataFile_UCFC_deconfigure()
  {
-  UCFC_OutputContext = -1;
-  UCFC_columns       = NULL;
-  UCFC_Ncols         = -1;
-  UCFC_LineNo        = -1;
-  UCFC_ColumnHeads   = NULL;
-  UCFC_NColumnHeads  = -1;
-  UCFC_ColumnUnits   = NULL;
-  UCFC_NColumnUnits  = -1;
+  UCFC_OutputContext    = -1;
+  UCFC_columns          = NULL;
+  UCFC_Ncols            = -1;
+  UCFC_file_linenumber  = -1;
+  UCFC_file_linenumbers = NULL;
+  UCFC_linenumber_count = -1;
+  UCFC_block_count      = -1;
+  UCFC_index_number     = -1;
+  UCFC_UsingRowCol      = -1;
+  UCFC_RowColWord       = NULL;
+  UCFC_UsingExpression  = NULL;
+  UCFC_ColumnHeads      = NULL;
+  UCFC_NColumnHeads     = -1;
+  UCFC_ColumnUnits      = NULL;
+  UCFC_NColumnUnits     = -1;
   return;
  }
 
 void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext)
  {
-  int i,j=-1;
-  const char *outstr=NULL;
-  static char buffer[32];
+  int          i,j=-1;
+  long int     k;
+  const  char *outstr=NULL;
+  static char  buffer[32];
 
-  if ((ColumnNo<0)||(ColumnNo>MAX_DATACOLS)) { sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
+  if ((ColumnNo<-10)||(ColumnNo>MAX_DATACOLS)) { sprintf(errtext, "In the expression <%s>, the requested %s number %f does not exist %son line %ld.", UCFC_UsingExpression, UCFC_RowColWord, ColumnNo, (UCFC_UsingRowCol==DATAFILE_COL)?"":"in the block commencing ", UCFC_file_linenumber); *status=1; return; }
   i=(int)floor(ColumnNo);
-  if ((i<0)||(i>UCFC_Ncols)) { sprintf(errtext, "Requested column %d does not exist.", i); *status=1; return; }
+  if ((i<-3)||(i>UCFC_Ncols)) { sprintf(errtext, "In the expression <%s>, the requested %s number %d does not exist %son line %ld.", UCFC_UsingExpression, UCFC_RowColWord, i, (UCFC_UsingRowCol==DATAFILE_COL)?"":"in the block commencing ", UCFC_file_linenumber); *status=1; return; }
   if (!NumericOut)
    {
-    if (i==0) { sprintf(buffer,"%d",UCFC_LineNo); outstr=buffer; }
+    if      (i==-3) { sprintf(buffer,"%ld",UCFC_file_linenumber ); outstr=buffer; }
+    else if (i==-2) { sprintf(buffer,"%ld",UCFC_index_number    ); outstr=buffer; }
+    else if (i==-1) { sprintf(buffer,"%ld",UCFC_block_count     ); outstr=buffer; }
+    else if (i== 0) { sprintf(buffer,"%ld",UCFC_linenumber_count); outstr=buffer; }
     else      { outstr=UCFC_columns[i-1]; }
     goto RETURN_STRING;
    }
-  if (i==0)
-   { ColumnNo = UCFC_LineNo; }
+  if      (i==-3) ColumnNo = UCFC_file_linenumber;
+  else if (i==-2) ColumnNo = UCFC_index_number;
+  else if (i==-1) ColumnNo = UCFC_block_count;
+  else if (i== 0) ColumnNo = UCFC_linenumber_count;
   else
    {
     ColumnNo=GetFloat(UCFC_columns[i-1],&j);
-    if ((UCFC_columns[i-1][j]>' ')&&(UCFC_columns[i-1][j]!=',')) { sprintf(errtext, "Requested column %d does not contain numeric data.", i); *status=1; return; }
-    if (j==0) ColumnNo=0; // Blank columns in CSV files are zero
+    if (UCFC_file_linenumbers == NULL) k = UCFC_file_linenumber;
+    else                               k = UCFC_file_linenumbers[i-1];
+    if (((UCFC_columns[i-1][j]>' ')&&(UCFC_columns[i-1][j]!=','))||(j<=0)) { sprintf(errtext, "In the expression <%s>, the requested %s number %d does not contain numeric data on line %ld.", UCFC_UsingExpression, UCFC_RowColWord, i, k); *status=1; return; } // j==0 for blank columns in CSV, and data off the end of rows
    }
   ppl_units_zero(output);
   output->real = ColumnNo;
@@ -180,7 +208,7 @@ void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value 
      DataFile_UsingConvert_FetchColumnByNumber((double)i+1.1, output, NumericOut, MallocOut, status, errtext); // ColumnHead at position 0 corresponds to column 1
      return;
     }
-  sprintf(errtext, "Requested column named '%s' does not exist.", ColumnName);
+  sprintf(errtext, "In the expression <%s>, the requested %s named '%s' does not exist %son line %ld.", UCFC_UsingExpression, UCFC_RowColWord, ColumnName, (UCFC_UsingRowCol==DATAFILE_COL)?"":"in the block commencing ", UCFC_file_linenumber);
   *status=1;
   return;
  }
@@ -190,7 +218,7 @@ void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value 
 //   input = string from a using :...: clause.
 //   output = output of what this clause computes to.
 //   OutputContext = the lt_memory context in which memory should be malloced if we're returning a string.
-//   columns = text in each column of datafile.
+//   columns = text in each column (or row) of datafile.
 //   Ncols = number of items in the array 'columns'.
 //   LineNo = the number of the line we should return as $0.
 //   NumericOut = if true, we're returning a number. Otherwise, a string.
@@ -201,13 +229,13 @@ void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value 
 //   status = 0 on success. 1 on failure.
 //   errtext = error text output.
 
-void __inline__ DataFile_UsingConvert(char *input, value *output, const int OutputContext, char **columns, const int Ncols, const int LineNo, const int NumericOut, char **ColumnHeads, const int NColumnHeads, const value *ColumnUnits, const int NColumnUnits, int *status, char *errtext)
+void __inline__ DataFile_UsingConvert(char *input, value *output, const int OutputContext, char **columns, const int Ncols, const long int file_linenumber, const long int *file_linenumbers, const long int linenumber_count, const long int block_count, const long int index_number, const int UsingRowCol, const char *RowColWord, const int NumericOut, char **ColumnHeads, const int NColumnHeads, const value *ColumnUnits, const int NColumnUnits, int *status, char *errtext)
  {
   double dbl;
   int i,l=strlen(input);
   unsigned char NamedColumn=0;
 
-  DataFile_UCFC_configure(OutputContext, columns, Ncols, LineNo, ColumnHeads, NColumnHeads, ColumnUnits, NColumnUnits); // Configure the Using Convert Fetch Column routines above
+  DataFile_UCFC_configure(OutputContext, columns, Ncols, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, input, ColumnHeads, NColumnHeads, ColumnUnits, NColumnUnits); // Configure the Using Convert Fetch Column routines above
 
   if (ValidFloat(input,&l)) // using 1:2 -- number is column number -- "1" means "the contents of column 1", i.e. "$1".
    { dbl=GetFloat(input,NULL); NamedColumn=1; }
@@ -225,12 +253,15 @@ void __inline__ DataFile_UsingConvert(char *input, value *output, const int Outp
     else
      {
       ppl_GetQuotedString(input, temp_err_string, 0, &l, 1, status, errtext, 1); // We are trying to return a string, so expect to be evaluating a quoted string
-      ppl_units_zero(output);
-      output->string = (char *)lt_malloc_incontext(strlen(temp_err_string),UCFC_OutputContext);
-      if (output->string == NULL) { sprintf(errtext, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
-      strcpy(output->string, temp_err_string);
+      if (*status<0)
+       {
+        ppl_units_zero(output);
+        output->string = (char *)lt_malloc_incontext(strlen(temp_err_string),UCFC_OutputContext);
+        if (output->string == NULL) { sprintf(errtext, "Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
+        strcpy(output->string, temp_err_string);
+       }
      }
-    if (*status>=0) {*status=1;} else {*status=0;}
+    if (*status>=0) { if (*status<20000) { sprintf(temp_err_string, "Could not evaluate expression <%s> on line %ld of datafile. The error, encountered at character position %d, was: '%s'", input, file_linenumber, *status, errtext); strcpy(errtext, temp_err_string); } *status=1; } else { *status=0; }
    }
 
   DataFile_UCFC_deconfigure(); // Put the UCFC routines above into 'neutral'; this shouldn't be necessary but means they fail gracefully if called after this point
@@ -386,7 +417,7 @@ void DataFile_DataTable_List(DataTable *i)
 // DataFile_ApplyUsingList(): Convert an array of strings into a DataTable data point, using supplied using :...: expressions and select criterion, etc
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
-void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnData, int ItemsOnLine, char **UsingItems, int Ncolumns, long int file_linenumber, char **ColumnHeadings, int NColumnHeadings, value *ColumnUnits, int NColumnUnits, char *LabelStr, char *SelectCriterion, int continuity, unsigned char *discontinuity, int *ErrCounter, int *status, char *errout)
+void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnData, int ItemsOnLine, char **UsingItems, int Ncolumns, long int file_linenumber, long int *file_linenumbers, long int linenumber_count, long int block_count, long int index_number, int UsingRowCol, char *RowColWord, char **ColumnHeadings, int NColumnHeadings, value *ColumnUnits, int NColumnUnits, char *LabelStr, char *SelectCriterion, int continuity, unsigned char *discontinuity, int *ErrCounter, int *status, char *errout)
  {
   int   i, LocalStatus;
   value tempval;
@@ -396,9 +427,9 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
   if (SelectCriterion != NULL)
    {
     LocalStatus=0;
-    DataFile_UsingConvert(SelectCriterion, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+    DataFile_UsingConvert(SelectCriterion, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
     if (LocalStatus) { if (*ErrCounter > 0) { (*ErrCounter)--; ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } ppl_units_zero(&tempval); }
-    if (!tempval.dimensionless) { if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(errout, "Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s>.", SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0)); ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } ppl_units_zero(&tempval); }
+    if (!tempval.dimensionless) { if (*ErrCounter > 0) { (*ErrCounter)--; sprintf(errout, "Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s> on line %ld of the data file.", SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), file_linenumber); ppl_warning(errout); if (*ErrCounter==0) ppl_warning("Too many errors: No more errors will be shown for this datafile."); } ppl_units_zero(&tempval); }
     if (ppl_units_DblEqual(tempval.real,0)&&ppl_units_DblEqual(tempval.imag,0)) LocalStatus=1; // Do not proceed
    }
 
@@ -408,8 +439,8 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
     // If a label expression has been specified, evaluate it now
     if (LabelStr != NULL)
      {
-      DataFile_UsingConvert(LabelStr, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 0, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
-      if ((!LocalStatus) && (tempval.string==NULL)) { sprintf(errout, "Could not evaluate label string <%s>.", LabelStr); LocalStatus=1; }
+      DataFile_UsingConvert(LabelStr, &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, 0, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+      if ((!LocalStatus) && (tempval.string==NULL)) { LocalStatus=1; }
       if (!LocalStatus)
        {
         out->current->text[out->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(tempval.string)+1, ContextOutput);
@@ -430,13 +461,13 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
     // Evaluate using expression on data in columns
     for (i=0; i<Ncolumns; i++)
      {
-      DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+      DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData, ItemsOnLine, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
       if (LocalStatus) break;
-      if (tempval.FlagComplex) { sprintf(errout, "Data item calculated from expression <%s> on line %ld of datafile is complex.", UsingItems[i], file_linenumber); LocalStatus=1; break; }
+      if (tempval.FlagComplex) { sprintf(errout, "Data item calculated from expression <%s> on line %ld of data file is complex.", UsingItems[i], file_linenumber); LocalStatus=1; break; }
       if (out->Nrows==0)
        out->FirstEntries[i] = tempval;
       else
-       if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { sprintf(errout, "The expression <%s> produces data with inconsistent units. On line %ld, a datum with units of <%s> is produced, but previous data have had units of <%s>.", UsingItems[i], file_linenumber, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 0)); LocalStatus=1; break; }
+       if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { sprintf(errout, "The expression <%s> produces data with inconsistent units. On line %ld of data file, a datum with units of <%s> is produced, but previous data have had units of <%s>.", UsingItems[i], file_linenumber, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 0)); LocalStatus=1; break; }
       out->current->data_real[i + out->current->BlockPosition * Ncolumns] = tempval.real;
       out->current->FileLine [i + out->current->BlockPosition * Ncolumns] = file_linenumber;
      }
@@ -462,10 +493,11 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
 // DataFile_RotateRawData(): Routine used to rotate raw data by 90 degrees when plotting with rows
 // -----------------------------------------------------------------------------------------------
 
-void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems, int Ncolumns, char **RowHeadings, int NRowHeadings, value *RowUnits, int NRowUnits, char *LabelStr, char *SelectCriterion, int continuity, int *ErrCounter, int *status, char *errout)
+void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems, int Ncolumns, long int block_count, long int index_number, char **RowHeadings, int NRowHeadings, value *RowUnits, int NRowUnits, char *LabelStr, char *SelectCriterion, int continuity, int *ErrCounter, int *status, char *errout)
  {
   RawDataBlock *blk;
   int           i,GotData;
+  long          linenumber_count=0;
 
   char         *RowData[MAX_DATACOLS];
   int           ItemsOnLine;
@@ -473,11 +505,12 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
   int           ContextRaw = (*in )->MemoryContext;
   int           ContextOut = ( out)->MemoryContext;
 
-  long int      file_linenumber = 0; // FUDGE!!!
+  long int      file_linenumber[MAX_DATACOLS];
 
   while (1)
    {
-    GotData = ItemsOnLine = 0; blk = (*in)->first;
+    GotData = ItemsOnLine = 0;
+    blk = (*in)->first;
     while ((blk!=NULL)&&(ItemsOnLine<MAX_DATACOLS))
      {
       for (i=0; ((i<blk->BlockPosition)&&(ItemsOnLine<MAX_DATACOLS)); i++)
@@ -490,7 +523,9 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
           if (blk->text[i][0]=='\0') RowData[ItemsOnLine++]=" ";
           else
            {
-            RowData[ItemsOnLine++] = blk->text[i];
+            RowData        [ItemsOnLine] = blk->text    [i];
+            file_linenumber[ItemsOnLine] = blk->FileLine[i];
+            ItemsOnLine++;
             GotData = 1;
             while  (blk->text[i][0]> ' ' )                            blk->text[i]++;
             while ((blk->text[i][0]!='\0') && (blk->text[i][0]<=' ')) blk->text[i]++;
@@ -500,7 +535,8 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
       blk = blk->next;
      }
     if (!GotData) break;
-    DataFile_ApplyUsingList(out, ContextOut, RowData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+    DataFile_ApplyUsingList(out, ContextOut, RowData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber[0], file_linenumber, linenumber_count, block_count, index_number, DATAFILE_ROW, "row", RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+    linenumber_count++;
    }
 
   lt_Free(ContextRaw); // Free input table
@@ -548,7 +584,13 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
    {
     if (UsingLen>=USING_ITEMS_MAX) { strcpy(errout,"Error: Too many items in using list."); *status=1; if (DEBUG) ppl_log(errout); return; }
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"using_item",NULL,(void **)&(UsingItems[UsingLen++]));
+    DictLookup(tempdict,"using_item",NULL,(void **)&(UsingItems[UsingLen]));
+    if ((UsingItems[UsingLen]==NULL)||(strlen(StrStrip(UsingItems[UsingLen], UsingItems[UsingLen]))==0)) // Using item is blank; replace with item number
+     {
+      if ((UsingItems[UsingLen] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Error: Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
+      sprintf(UsingItems[UsingLen], "%d", UsingLen+1);
+     }
+    UsingLen++;
     listiter = ListIterate(listiter, NULL);
    }
 
@@ -824,7 +866,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     // Fetch this line if linenumber is within range, or if we are using rows and we need everything
     if (UsingRowCol == DATAFILE_ROW) // Store the whole line into a raw text spool
      {
-      if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout);
+      if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout);
       if (*status) return;
       cptr = RawDataTab->current->text[RawDataTab->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(linebuffer)+1, ContextRaw);
       if (cptr==NULL) { strcpy(errout, "Error: Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); return; }
@@ -854,7 +896,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         sprintf(LineNumberStr,"%ld",file_linenumber);
        }
 
-      DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, ItemsOnLine, UsingItems, Ncolumns, file_linenumber, NULL, linenumber_count, block_count, index_number, DATAFILE_COL, "column", ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
       if (*status) return;
      }
     linenumber_count++;
@@ -862,7 +904,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
    }
 
   // If we are reading rows, go through all of the data that we've read and rotate it by 90 degrees
-  if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }
+  if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }
 
   // Debugging line
   DataFile_DataTable_List(*output);

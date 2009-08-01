@@ -372,7 +372,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         argf.d = GetFloat(in+pos+1, NULL);
         *errpos=0;
         DataFile_UsingConvert_FetchColumnByNumber(argf.d, &(argf.v), 0, 0, errpos, errtext);
-        if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
+        if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
         strcpy(out, argf.v.string);
         return;
        }
@@ -384,7 +384,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         if (argf.v.dimensionless==0) { *errpos=0; sprintf(errtext, "Number of requested column in datafile should be a dimensionless number; supplied number has units of <%s>.",ppl_units_GetUnitStr(&(argf.v),NULL,NULL,0,0)); return; }
         *errpos=0;
         DataFile_UsingConvert_FetchColumnByNumber(argf.v.real, &(argf.v), 0, 0, errpos, errtext);
-        if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
+        if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
         strcpy(out, argf.v.string);
         return;
        }
@@ -396,7 +396,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
          {
           *errpos=0;
           DataFile_UsingConvert_FetchColumnByName(FormatString, &(argf.v), 0, 0, errpos, errtext);
-          if (*errpos==0) { *errpos=-1; } else { *errpos=0; return; }
+          if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
           strcpy(out, argf.v.string);
           return;
          }
@@ -969,7 +969,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       if (ResultBuffer[next_bufno].dimensionless==0) { *errpos=0; sprintf(errtext, "Number of requested column in datafile should be a dimensionless number; supplied number has units of <%s>.",ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,0,0)); return; }
       *errpos=0;
       DataFile_UsingConvert_FetchColumnByNumber(ResultBuffer[next_bufno].real, ResultBuffer+next_bufno, 1, 0, errpos, errtext);
-      if (*errpos==0) { *errpos=-1; } else { *errpos=i; return; }
+      if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
       SETSTATUS(p, next_start, next_bufno);
       i = start + next_end;
       i--; p=i-start;
@@ -984,7 +984,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       *errpos=0;
       DataFile_UsingConvert_FetchColumnByName(in+start+p, ResultBuffer+bufpos, 1, 0, errpos, errtext);
       in[start+j] = ck;
-      if (*errpos==0) { *errpos=-1; } else { *errpos=i; return; }
+      if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
       SETSTATUS(p, next_end, bufpos);
       i = start + next_end;
       i--; p=i-start;
