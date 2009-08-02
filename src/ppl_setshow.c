@@ -1260,7 +1260,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       SHOW_HIGHLIGHT((FDiter->modified==0));
       if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) )
        {
-        sprintf(out+i, "# %-15s: %s.\n", DictIter->key, FDiter->description);
+        sprintf(out+i, "# %-17s: %s.\n", DictIter->key, FDiter->description);
        }
       i += strlen(out+i);
       SHOW_DEHIGHLIGHT;

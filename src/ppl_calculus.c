@@ -130,6 +130,8 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
     gsl_integration_qags (&fn, min->real, max->real, 0, 1e-7, 1000, ws, &ResultImag, &error);
    }
 
+  gsl_integration_workspace_free(ws);
+
   memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using
 
   if (*errpos < 0)

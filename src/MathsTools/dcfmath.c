@@ -128,11 +128,17 @@ int sgn(double x)
   if ((!gsl_finite(in3->real)) || (!gsl_finite(in3->imag))) { NULL_OUTPUT; } \
  }
 
-#define CHECK_6NOTNAN \
+#define CHECK_4NOTNAN \
  { \
   CHECK_3NOTNAN; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in4->FlagComplex) || (in5->FlagComplex) || (in6->FlagComplex))) { NULL_OUTPUT; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in4->FlagComplex)) { NULL_OUTPUT; } \
   if ((!gsl_finite(in4->real)) || (!gsl_finite(in4->imag))) { NULL_OUTPUT; } \
+ }
+
+#define CHECK_6NOTNAN \
+ { \
+  CHECK_4NOTNAN; \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in5->FlagComplex) || (in6->FlagComplex))) { NULL_OUTPUT; } \
   if ((!gsl_finite(in5->real)) || (!gsl_finite(in5->imag))) { NULL_OUTPUT; } \
   if ((!gsl_finite(in6->real)) || (!gsl_finite(in6->imag))) { NULL_OUTPUT; } \
  }
@@ -202,6 +208,7 @@ int sgn(double x)
 #define IF_1COMPLEX if (in->FlagComplex) {
 #define IF_2COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex)) {
 #define IF_3COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex)) {
+#define IF_4COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex) || (in4->FlagComplex)) {
 #define IF_6COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex) || (in4->FlagComplex) || (in5->FlagComplex) || (in6->FlagComplex)) {
 #define ELSE_REAL   } else {
 #define ENDIF       }
@@ -1251,4 +1258,5 @@ double frandom()
  }
 
 #include "dcftime.c"
+#include "dcfast.c"
 

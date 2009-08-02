@@ -35,7 +35,6 @@ void dcftime_dayweekname(value *in, value *in2, value *output, int *status, char
 void dcftime_hour(value *in, value *output, int *status, char *errtext);
 void dcftime_min(value *in, value *output, int *status, char *errtext);
 void dcftime_sec(value *in, value *output, int *status, char *errtext);
-void dcftime_moonphase(value *in, value *output, int *status, char *errtext);
 void dcftimediff_years(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcftimediff_days(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcftimediff_hours(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);

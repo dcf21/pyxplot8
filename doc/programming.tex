@@ -21,7 +21,7 @@
 
 % LaTeX source for the PyXPlot Users' Guide
 
-\chapter{PyXPlot as a programming language}
+\chapter{Using PyXPlot as a Calculator}
 \label{gnuplot_ext_first}
 
 This chapter describes ways of programming PyXPlot.
@@ -125,19 +125,15 @@ set title title
 plot filename
 \end{verbatim}
 
-\section{The \indcmdt{exec}}
+\section{Working with complex numbers}
 
-The \indcmdt{exec} can be used to execute PyXPlot commands contained within
-string variables. For example:
+\section{Working with physical units}
 
-\begin{verbatim}
-terminal="eps"
-exec "set terminal %s"%(terminal)
-\end{verbatim}
+units schemes
 
-It can also be used to write obfuscated PyXPlot scripts.
+\section{Physical constants}
 
-\section{Function Splicing}
+\section{User-defined functions}
 \index{function splicing}
 \index{splicing functions}
 
@@ -226,13 +222,21 @@ plot [0:8] f(x)
 
 \noindent The output of this example can be seen in Figure~\ref{fig:ex_funcsplice2}
 
-\section{Working with physical units}
-
-units schemes
-
-\section{Physical constants}
+\chapter{PyXPlot as a Programming Language}
 
 \section{Flow control}
+
+\section{The \indcmdt{exec}}
+
+The \indcmdt{exec} can be used to execute PyXPlot commands contained within
+string variables. For example:
+
+\begin{verbatim}
+terminal="eps"
+exec "set terminal %s"%(terminal)
+\end{verbatim}
+
+It can also be used to write obfuscated PyXPlot scripts.
 
 \section{Script Watching: pyxplot\_watch}
 

@@ -30,6 +30,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 
+#include "MathsTools/dcfast.h"
 #include "MathsTools/dcfmath.h"
 #include "MathsTools/dcftime.h"
 
@@ -60,6 +61,14 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_asech         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asech       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asech}@<@1@>", "asech(x) returns the hyperbolic arcsecant of x"};
   FunctionDescriptor fd_asin          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asin        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asin}@<@1@>", "asin(x) returns the arcsine of x"};
   FunctionDescriptor fd_asinh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asinh       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asinh}@<@1@>", "asinh(x) returns the hyperbolic arcsine of x"};
+  FunctionDescriptor fd_ast_Lcdm_age      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfast_Lcdm_age     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_age@<@1,@2,@3@>", "ast_Lcdm_age(H0,w_m,w_l) returns the current age of the Universe in an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_Lcdm_angscale = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_angscale, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_angscale@<@1,@2,@3,@4@>", "ast_Lcdm_angscale(z,H0,w_m,w_l) returns the angular scale of the sky in distance per unit angle for an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_Lcdm_DA       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_DA      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_D_A@<@1,@2,@3,@4@>", "ast_Lcdm_DA(z,H0,w_m,w_l) returns the angular size distance corresponding to redshift z in an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_Lcdm_DL       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_DL      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_D_L@<@1,@2,@3,@4@>", "ast_Lcdm_DL(z,H0,w_m,w_l) returns the luminosity distance corresponding to redshift z in an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_Lcdm_DM       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_DM      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_D_M@<@1,@2,@3,@4@>", "ast_Lcdm_DM(z,H0,w_m,w_l) returns the comoving distance corresponding to redshift z in an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_Lcdm_t        = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_t       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_t@<@1,@2,@3,@4@>", "ast_Lcdm_t(z,H0,w_m,w_l) returns the lookback time corresponding to redshift z in an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_Lcdm_z        = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_z       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_z@<@1,@2,@3,@4@>", "ast_Lcdm_z(t,H0,w_m,w_l) returns the redshift corresponding to a lookback time t in an L_CDM cosmology"};
+  FunctionDescriptor fd_ast_moonphase     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfast_moonphase    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_moonphase}@<@1@>", "ast_moonphase(JD) returns the phase on the Moon on Julian Date JD"};
   FunctionDescriptor fd_atan          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atan        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atan}@<@1@>", "atan(x) returns the arctangent of x"};
   FunctionDescriptor fd_atanh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atanh       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atanh}@<@1@>", "atanh(x) returns the hyperbolic arctangent of x"};
   FunctionDescriptor fd_atan2         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_atan2       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atan2}@<@1,@2@>", "atan2(x,y) returns the arctangent of x/y. Unlike atan(y/x), atan2(x,y) takes account of the signs of both x and y to remove the degeneracy between (1,1) and (-1,-1)"};
@@ -74,7 +83,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_beta          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_beta        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B}@<@1,@2@>", "beta(a,b) evaluates the beta function B(a,b)"};
   FunctionDescriptor fd_binomialPDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialPDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{binomialPDF}@<@1,@2,@3@>", "binomialPDF(k,p,n) evaulates the probability of getting k successes out of n trials in a binomial distribution with success probability p"};
   FunctionDescriptor fd_binomialCDF   = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_binomialCDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{binomialCDF}@<@1,@2,@3@>", "binomialCDF(k,p,n) evaulates the probability of getting fewer than or exactly k successes out of n trials in a binomial distribution with success probability p"};
-  FunctionDescriptor fd_Bv            = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_planck_Bv   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B_\\nu}@<@1,@2@>", "Bv(nu,T) returns the emitted power of a blackbody of temperature T per unit area, per unit solid angle, and per unit frequency"};
+  FunctionDescriptor fd_Bv            = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_planck_Bv   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B_\\nu}@<@1,@2@>", "Bv(nu,T) returns the power emitted by a blackbody of temperature T per unit area, per unit solid angle, per unit frequency"};
   FunctionDescriptor fd_Bvmax         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_planck_Bvmax, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{B_{\\nu,max}}@<@1@>", "Bvmax(T) returns the frequency of the maximum of the function Bv(nu,T)"};
   FunctionDescriptor fd_ceil          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ceil        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ceil}@<@1@>", "ceil(x) returns the smallest integer value greater than or equal to x"};
   FunctionDescriptor fd_chisqPDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqPDF    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 PDF}@<@1,@2@>", "chisqPDF(x,nu) returns the probability desity at x in a chi-squared distribution with nu degrees of freedom"};
@@ -146,7 +155,6 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_time_hour     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_hour        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_hour}@<@1@>", "time_hour(JD) returns the hour of the day corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_min      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_min         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_min}@<@1@>", "time_min(JD) returns the minutes within the hour corresponding to the Julian Date JD"};
   FunctionDescriptor fd_time_sec      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_sec}@<@1@>", "time_sec(JD) returns the seconds within the minute corresponding to the Julian Date JD"};
-  FunctionDescriptor fd_time_moonphase= { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_moonphase   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_moonphase}@<@1@>", "time_moonphase(JD) returns the phase on the Moon on Julian Date JD"};
   FunctionDescriptor fd_timediff_years= { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcftimediff_years   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_years}@<@1,@2@>", "timediff_years(JD1,JD2) returns the number of whole years (intervals of 365 days) elapsed between Julian Dates JD1 and JD2"};
   FunctionDescriptor fd_timediff_days = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_days    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_days}@<@1,@2@>", "timediff_days(JD1,JD2,wrap) returns the number of whole days elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 365"};
   FunctionDescriptor fd_timediff_hours= { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcftimediff_hours   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{timediff\\_hours}@<@1,@2@>", "timediff_hours(JD1,JD2,wrap) returns the number of whole hours elapsed between Julian Dates JD1 and JD2. If wrap is true, the number is given modulo 24"};
@@ -284,6 +292,14 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asech"          , (void *)&fd_asech       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asin"           , (void *)&fd_asin        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asinh"          , (void *)&fd_asinh       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_age"     , (void *)&fd_ast_Lcdm_age     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_angscale", (void *)&fd_ast_Lcdm_angscale, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_DA"      , (void *)&fd_ast_Lcdm_DA      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_DL"      , (void *)&fd_ast_Lcdm_DL      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_DM"      , (void *)&fd_ast_Lcdm_DM      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_t"       , (void *)&fd_ast_Lcdm_t       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_z"       , (void *)&fd_ast_Lcdm_z       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_moonphase"    , (void *)&fd_ast_moonphase    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan"           , (void *)&fd_atan        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atanh"          , (void *)&fd_atanh       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan2"          , (void *)&fd_atan2       , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -370,7 +386,6 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_hour"      , (void *)&fd_time_hour      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_min"       , (void *)&fd_time_min       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_sec"       , (void *)&fd_time_sec       , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_moonphase" , (void *)&fd_time_moonphase , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_years" , (void *)&fd_timediff_years , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_days"  , (void *)&fd_timediff_days  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "timediff_hours" , (void *)&fd_timediff_hours , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -670,6 +685,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "light_year";
   ppl_unit_database[ppl_unit_pos].nameFp     = "light_years";
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  = 9;
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_LIGHT_YEAR;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
@@ -799,6 +815,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "year";
   ppl_unit_database[ppl_unit_pos].nameFp     = "years";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
+  ppl_unit_database[ppl_unit_pos].MaxPrefix  = 9;
   ppl_unit_database[ppl_unit_pos].multiplier = 31557600;
   ppl_unit_database[ppl_unit_pos].ancient    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;

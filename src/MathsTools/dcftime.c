@@ -276,32 +276,6 @@ void dcftime_sec(value *in, value *output, int *status, char *errtext)
   ENDIF
  }
 
-void dcftime_moonphase(value *in, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "time_moonphase(JD)";
-  double t; // Time in Julian Centuries since 2000.0
-  double Msun,Lsun,L0,l,ls,D,F,dL;
-  CHECK_1NOTNAN;
-  CHECK_1INPUT_DIMLESS;
-  IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL
-   {
-    t    = (in->real - 2451545)/36525;
-    Msun = 2*M_PI*fmod(0.993133+99.997361*t, 1);
-    Lsun = 2*M_PI*fmod(0.7859453+Msun/(2*M_PI)+(6893.0*sin(Msun)+72.0*sin(2*Msun)+6191.2*t)/1296e3, 1);
-    L0   = 2*M_PI*fmod(0.606433+1336.855225*t, 1);
-    l    = 2*M_PI*fmod(0.374897+1325.552410*t, 1);
-    ls   = 2*M_PI*fmod(0.993133+99.997361*t, 1);
-    D    = 2*M_PI*fmod(0.827361+1236.853086*t, 1);
-    F    = 2*M_PI*fmod(0.259086+1342.227825*t, 1);
-    dL   = 22640*sin(l) - 4586*sin(l-2*D) + 2370*sin(2*D) + 769*sin(2*l) - 668*sin(ls) - 412*sin(2*F) - 212*sin(2*l-2*D) - 206*sin(l+ls-2*D) + 192*sin(l+2*D) - 165*sin(ls-2*D) - 125*sin(D) - 110*sin(l+ls) + 148*sin(l-ls) - 55*sin(2*F-2*D);
-    output->real = fmod(L0 + dL/1296e3*2*M_PI - Lsun , 2*M_PI);
-    while (output->real<0) output->real += 2*M_PI;
-   }
-  ENDIF
-  CLEANUP_APPLYUNIT(UNIT_ANGLE);
- }
-
 void dcftimediff_years(value *in1, value *in2, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "timediff_years(JD1,JD2)";

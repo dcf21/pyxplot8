@@ -341,187 +341,43 @@ recognised by PyXPlot is given in
 Table~\ref{operators_table}.\index{functions!pre-defined}\index{operators}
 
 \begin{table}
-\framebox[\textwidth]{\footnotesize
-\begin{tabular}{p{2.5cm}p{9.5cm}}
-abs($x$)&
-returns the absolute magnitude of $x$.\\
-acos($x$)&
-returns the arccosine of $x$.\\
-asin($x$)&
-returns the arcsine of $x$.\\
-atan($x$)&
-returns the arctangent of $x$.\\
-atan2($x,y$)&
-returns the arctangent of $x/y$. Unlike atan($y/x$), atan2($x,y$) takes account of the signs of both $x$ and $y$ to remove the degeneracy between $(1,1)$ and $(-1,-1)$.\\
-besseli($l,x$)&
-evaluates the $l$th regular modified spherical Bessel function at $x$.\\
-besselI($l,x$)&
-evaluates the $l$th regular modified cylindrical Bessel function at $x$.\\
-besselj($l,x$)&
-evaluates the $l$th regular spherical Bessel function at $x$.\\
-besselJ($l,x$)&
-evaluates the $l$th regular cylindrical Bessel function at $x$.\\
-besselk($l,x$)&
-evaluates the $l$th irregular modified spherical Bessel function at $x$.\\
-besselK($l,x$)&
-evaluates the $l$th irregular modified cylindrical Bessel function at $x$.\\
-bessely($l,x$)&
-evaluates the $l$th irregular spherical Bessel function at $x$.\\
-besselY($l,x$)&
-evaluates the $l$th irregular cylindrical Bessel function at $x$.\\
-beta($a,b$)&
-evaluates the beta function $B(a,b)$.\\
-binomialCDF\newline ($k,p,n$)&
-evaulates the probability of getting fewer than or exactly $k$ successes out of $n$ trials in a binomial distribution with success probability $p$.\\
-binomialPDF\newline ($k,p,n$)&
-evaulates the probability of getting $k$ successes out of $n$ trials in a binomial distribution with success probability $p$.\\
-Bv($\nu,T$)&
-returns the emitted power of a blackbody of temperature $T$ per unit area, per unit solid angle, and per unit frequency.\\
-Bvmax($T$)&
-returns the frequency of the maximum of the function Bv($\nu,T$).\\
-ceil($x$)&
-returns the smallest integer value greater than or equal to $x$.\\
-chisqCDF($x,nu$)&
-returns the cumulative probability desity at $x$ in a $\chi$-squared distribution with $\nu$ degrees of freedom.\\
-chisqCDFi($P,nu$)&
-returns the point $x$ at which the cumulative probability desity in a $\chi$-squared distribution with $\nu$ degrees of freedom is $P$.\\
-chisqPDF($x,nu$)&
-returns the probability desity at $x$ in a $\chi$-squared distribution with $\nu$ degrees of freedom.\\
-cos($x$)&
-returns the cosine of $x$. If $x$ is dimensionless, it is assumed to be measured in radians.\\
-cosh($x$)&
-returns the hyperbolic cosine of $x$.\\
-degrees($x$)&
-converts angles measured in radians into degrees.\\
-diff\_da($e,x,step$)&
-numerically differentiates an expression $e$ with respect to $a$ at $x$, using a step size of $step$. '$a$' can be any variable name with fewer than 16 characters..\\
-ellipticintE($k$)&
-evaluates the complete elliptic integral $E(k)$.\\
-ellipticintK($k$)&
-evaluates the complete elliptic integral $K(k)$.\\
-ellipticintP($k,n$)&
-evaluates the complete elliptic integral $P(k,n)$.\\
-erf($x$)&
-evaluates the error function at $x$.\\
-erfc($x$)&
-evaluates the complimentary error function at $x$.\\
-exp($x$)&
-returns $e^x$.\\
-expint($n,x$)&
-evaluates the integral of $\exp(-xt)/t^n$ between $t=1$ and $t=\infty$.\\
-expm1($x$)&
-accurately evaluates $\exp(x)-1$.\\
-floor($x$)&
-returns the largest integer value smaller than or equal to $x$.\\
-gamma($x$)&
-evaluates the gamma function $\Gamma(x)$.\\
-gaussianCDF($x,\sigma$)&
-evaluates the Gaussian cumulative distribution function of standard deviation $\sigma$ at $x$.\\
-
-\end{tabular}}
-\caption{A list of mathematical functions which are pre-defined within PyXPlot (cont'd.\ in Table~\ref{functions_table2}).}
-\label{functions_table}
-\end{table}
-\begin{table}
-\framebox[\textwidth]{\footnotesize
-\begin{tabular}{p{2.5cm}p{9.5cm}}
-
-gaussianCDFi($x,\sigma$)&
-evaluates the inverse Gaussian cumulative distribution function of standard deviation $\sigma$ at $x$.\\
-gaussianPDF($x,\sigma$)&
-evaluates the Gaussian probability density function of standard deviation $\sigma$ at $x$.\\
-heaviside($x$)&
-returns the Heaviside function, defined to be one for $x\geq0$ and zero otherwise.\\
-hypot($x,y$)&
-returns the quadrature sum of $x$ and $y$: $\sqrt{x^2+y^2}$.\\
-int\_dx($e,min,max$)&
-numerically integrates an expression $e$ with respect to $x$ between $min$ and $max$.\\
-ldexp($x,y$)&
-returns $x$ times $2^y$ for integer y.\\
-legendreP($l,x$)&
-evaluates the $l$th Legendre polynomial at $x$.\\
-legendreQ($l,x$)&
-evaluates the $l$th Legendre function at $x$.\\
-log($x$)&
-returns the natural logarithm of $x$.\\
-log10($x$)&
-returns the logarithm to base~10 of $x$.\\
-lognormalCDF\newline ($x,\sigma$)&
-evaluates the log normal cumulative distribution function of standard deviation $\sigma$ at $x$.\\
-lognormalCDFi\newline ($x,\sigma$)&
-evaluates the inverse log normal cumulative distribution function of standard deviation $\sigma$ at $x$.\\
-lognormalPDF\newline ($x,\sigma$)&
-evaluates the log normal probability density function of standard deviation $\sigma$ at $x$.\\
-max($x,y$)&
-returns the greater of the two values $x$ and $y$.\\
-min($x,y$)&
-returns the lesser of the two values $x$ and $y$.\\
-mod($x,y$)&
-returns the remainder of $x/y$.\\
-poissonCDF($x,\mu$)&
-returns the probability of getting $\leq x$ from a Poisson distribution with mean $\mu$.\\
-poissonPDF($x,\mu$)&
-returns the probability of getting $x$ from a Poisson distribution with mean $\mu$.\\
-pow($x,y$)&
-returns $x$ to the power of $y$.\\
-radians($x$)&
-converts angles measured in degrees into radians.\\
-random($x$)&
-returns a random number between 0 and 1.\\
-randomBinomial\newline ($p,n$)&
-returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$.\\
-randomChiSq($\mu$)&
-returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom.\\
-randomGaussian($\sigma$)&
-returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$.\\
-randomLogNormal\newline ($\zeta,\sigma$)&
-returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$.\\
-randomPoisson($n$)&
-returns a random integer from a Poisson distribution with mean $n$.\\
-sin($x$)&
-returns the sine of $x$. If $x$ is dimensionless, it is assumed to be measured in radians.\\
-sinh($x$)&
-returns the hyperbolic sine of $x$.\\
-sqrt($x$)&
-returns the square root of $x$.\\
-tan($x$)&
-returns the tangent of $x$. If $x$ is dimensionless, it is assumed to be measured in radians.\\
-tanh($x$)&
-returns the hyperbolic tangent of $x$.\\
-tophat($x,\sigma$)&
-returns one if $|x| \leq |\sigma|$, and zero otherwise.\\
-unit(\ldots)&
-multiplies a number by a physical unit.\\
-zeta($x$)&
-evaluates the Riemann zeta function at $x$.\\
-\end{tabular}}
-\caption{A list of mathematical functions which are pre-defined within PyXPlot (cont'd.\ from Table~\ref{functions_table}).}
-\label{functions_table2}
-\end{table}
-
-\begin{table}
 \framebox[\textwidth]{
-\begin{tabular}{lp{9cm}}
-{\tt +} & Algebraic sum \\
-{\tt -} & Algebraic subtraction \\
-{\tt *} & Algebraic multiplication \\
-{\tt **} & Algebraic exponentiation \\
-{\tt /} & Algebraic division \\
-{\tt \%} & Modulo operator \\
-{\tt <<} & Left binary shift \\
-{\tt >>} & Right binary shift \\
-{\tt \&} & Binary and \\
-{\tt |} & Binary or \\
-{\tt \^{}} & Logical exclusive or \\
-{\tt <} & Magnitude comparison \\
-{\tt >} & Magnitude comparison \\
-{\tt <=} & Magnitude comparison \\
-{\tt >=} & Magnitude comparison \\
-{\tt ==} & Equality comparison \\
-{\tt !=} & Equality comparison \\
-{\tt <>} & Alias for {\tt !=} \\
-{\tt and} & Logical and \\
-{\tt or} & Logical or \\
+\begin{tabular}{lll}
+{\bf Symbol} & {\bf Description} & {\bf Operator Associativity} \\
+\hline
+{\tt -} & Unary minus sign & left \\
+{\tt not} & Logical not & left \\
+\hline
+{\tt **} & Algebraic exponentiation & right \\
+\hline
+{\tt *} & Algebraic multiplication & left \\
+{\tt /} & Algebraic division & left \\
+{\tt \%} & Modulo operator & left \\
+\hline
+{\tt +} & Algebraic sum & left \\
+{\tt -} & Algebraic subtraction & left \\
+\hline
+{\tt <<} & Left binary shift & left \\
+{\tt >>} & Right binary shift & left \\
+\hline
+{\tt <} & Magnitude comparison & right \\
+{\tt >} & Magnitude comparison & right \\
+{\tt <=} & Magnitude comparison & right \\
+{\tt >=} & Magnitude comparison & right \\
+\hline
+{\tt ==} & Equality comparison & right \\
+{\tt !=} & Equality comparison & right \\
+{\tt <>} & Alias for {\tt !=} & right \\
+\hline
+{\tt \&} & Binary and & left \\
+\hline
+{\tt \^{}} & Logical exclusive or & left \\
+\hline
+{\tt |} & Binary or & left \\
+\hline
+{\tt and} & Logical and & left \\
+\hline
+{\tt or} & Logical or & left \\
 \end{tabular}}
 \caption{A list of mathematical operators which PyXPlot recognises.}
 \label{operators_table}
