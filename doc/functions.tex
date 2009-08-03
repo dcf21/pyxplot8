@@ -83,19 +83,19 @@ The #1 function #2
 \funcdef{csch($z$)}{returns the hyperbolic cosecant of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{degrees($x$)}{takes a real input which should either have physical units of angle, or be dimensionless, in which case it is assumed to be measured in radians. The output is the dimensionless number of degrees in $x$.}
 \funcdef{diff\_da($e,x,step$)}{numerically differentiates an expression $e$ with respect to $a$ at $x$, using a step size of $step$. '$a$' can be replaced by any variable name of fewer than 16 characters, and so, for example, the {\tt diff\_dfoobar()} function differentiates an expression with respect to the variable {\it foobar}. The expression $e$ may optionally be enclosed in quotes. Both $x$, and the output differential, may be complex numbers with any physical unit. The following example would differentiate the expression $x^2$ with respect to $x$:\newline{\tt print diff\_dx("x**2", 1, 1e-6)}.}
-\funcdef{ellipticintE($k$)}{evaluates the complete elliptic integral $E(k)$.}
-\funcdef{ellipticintK($k$)}{evaluates the complete elliptic integral $K(k)$.}
-\funcdef{ellipticintP($k,n$)}{evaluates the complete elliptic integral $P(k,n)$.}
+\funcdef{ellipticintE($k$)}{evaluates the following complete elliptic integral: \begin{displaymath} E(k) = \int_0^1 \sqrt{\frac{1-k^2 t^2}{1-t^2}}\,\mathrm{d}t. \end{displaymath} }
+\funcdef{ellipticintK($k$)}{evaluates the following complete elliptic integral: \begin{displaymath} K(k) = \int_0^1 \frac{\mathrm{d}t}{\sqrt{(1-t^2)(1-k^2 t^2)}}. \end{displaymath} }
+\funcdef{ellipticintP($k,n$)}{evaluates the following complete elliptic integral: \begin{displaymath} P(k,n) = \int_0^{\nicefrac{\pi}{2}} \frac{\mathrm{d}\theta}{(1+n\sin^2\theta)(1-k^2\sin^2\theta)}.\end{displaymath} }
 \funcdef{erf($x$)}{evaluates the error function at $x$. $x$ must be a dimensionless real number.}
 \funcdef{erfc($x$)}{evaluates the complimentary error function at $x$. $x$ must be a dimensionless real number.}
-\funcdef{exp($x$)}{returns $e^x$. $x$ can be a complex number, but must either be dimensionless or be an angle.}
-\funcdef{expint($n,x$)}{evaluates the integral of $\exp(-xt)/t^n$ between $t=1$ and $t=\infty$. $n$ must be a positive real dimensionless integer and $x$ must be a real dimensionless number.}
+\funcdef{exp($z$)}{returns $e^z$. $z$ can be a complex number, but must either be dimensionless or be an angle.}
+\funcdef{expint($n,x$)}{evaluates the following integral: \begin{displaymath} \int_{t=1}^{t=\infty} \exp(-xt)/t^n \, \mathrm{d}t. \end{displaymath} $n$ must be a positive real dimensionless integer and $x$ must be a real dimensionless number.}
 \funcdef{expm1($x$)}{accurately evaluates $\exp(x)-1$. $x$ must be a dimensionless real number.}
 \funcdef{floor($x$)}{returns the largest integer value smaller than or equal to $x$. $x$ must be real, and must either be dimensionless or be an angle.}
 \funcdef{gamma($x$)}{evaluates the gamma function $\Gamma(x)$. $x$ must be a dimensionless real number.}
-\funcdef{gaussianCDF($x,\sigma$)}{evaluates the Gaussian cumulative distribution function of standard deviation $\sigma$ at $x$.}
-\funcdef{gaussianCDFi($x,\sigma$)}{evaluates the inverse Gaussian cumulative distribution function of standard deviation $\sigma$ at $x$.}
-\funcdef{gaussianPDF($x,\sigma$)}{evaluates the Gaussian probability density function of standard deviation $\sigma$ at $x$.}
+\funcdef{gaussianCDF($x,\sigma$)}{evaluates the Gaussian cumulative distribution function of standard deviation $\sigma$ at $x$. The distribution is centred upon $x=0$. $x$ and $\sigma$ must both be real, but may have any physical dimensions so long as they match.}
+\funcdef{gaussianCDFi($x,\sigma$)}{evaluates the inverse Gaussian cumulative distribution function of standard deviation $\sigma$ at $x$. The distribution is centred upon $x=0$. $x$ and $\sigma$ must both be real, but may have any physical dimensions so long as they match.}
+\funcdef{gaussianPDF($x,\sigma$)}{evaluates the Gaussian probability density function of standard deviation $\sigma$ at $x$. The distribution is centred upon $x=0$. $x$ and $\sigma$ must both be real, but may have any physical dimensions so long as they match.}
 \funcdef{heaviside($x$)}{returns the Heaviside function, defined to be one for $x\geq0$ and zero otherwise. $x$ must be a dimensionless real number.}
 \funcdef{hypot($x,y$)}{returns the quadrature sum of $x$ and $y$: $\sqrt{x^2+y^2}$. $x$ and $y$ may have any physical dimensions so long as they match, and can be complex numbers.}
 \funcdef{Im($z$)}{returns the imaginary part of the complex number $z$, which may have any physical units. The number returned shares the same physical units as $z$.}
@@ -105,33 +105,53 @@ The #1 function #2
 \funcdef{legendreQ($l,x$)}{evaluates the $l$th Legendre function at $x$. $l$ must be a positive dimensionless real integer. $x$ must be a real dimensionless number.}
 \funcdef{log($z$)}{returns the natural logarithm of $z$, which may be any complex dimensionless number.}
 \funcdef{log10($z$)}{returns the logarithm to base~10 of $z$, which may be any complex dimensionless number.}
-\funcdef{lognormalCDF($x,\sigma$)}{evaluates the log normal cumulative distribution function of standard deviation $\sigma$ at $x$.}
-\funcdef{lognormalCDFi($x,\sigma$)}{evaluates the inverse log normal cumulative distribution function of standard deviation $\sigma$ at $x$.}
-\funcdef{lognormalPDF($x,\sigma$)}{evaluates the log normal probability density function of standard deviation $\sigma$ at $x$.}
+\funcdef{lognormalCDF($x,\zeta,\sigma$)}{evaluates the log normal cumulative distribution function of standard deviation $\sigma$, centred upon $\zeta$, at $x$. $\sigma$ must be real, positive and dimenionless. $x$ and $\zeta$ must both be real, but may have any physical dimensions so long as they match.}
+\funcdef{lognormalCDFi($x,\zeta,\sigma$)}{evaluates the inverse log normal cumulative distribution function of standard deviation $\sigma$, centred upon $\zeta$, at $x$. $\sigma$ must be real, positive and dimenionless. $x$ and $\zeta$ must both be real, but may have any physical dimensions so long as they match.}
+\funcdef{lognormalPDF($x,\zeta,\sigma$)}{evaluates the log normal probability density function of standard deviation $\sigma$, centred upon $\zeta$, at $x$. $\sigma$ must be real, positive and dimenionless. $x$ and $\zeta$ must both be real, but may have any physical dimensions so long as they match.}
 \funcdef{max($x,y$)}{returns the greater of the two values $x$ and $y$. $x$ and $y$ may have any physical dimensions so long as they match. If either input is complex, the input with the largest magnitude is returned.}
 \funcdef{min($x,y$)}{returns the lesser of the two values $x$ and $y$. $x$ and $y$ may have any physical dimensions so long as they match. If either input is complex, the input with the smallest magnitude is returned.}
 \funcdef{mod($x,y$)}{returns the remainder of $x/y$. $x$ and $y$ may have any physical dimensions so long as they match, but must both be real.}
 \funcdef{ordinal($x$)}{returns an ordinal string, for example, ``1st'', ``2nd'' or ``3rd'', for any positive dimensionless real number $x$.}
-\funcdef{poissonCDF($x,\mu$)}{returns the probability of getting $\leq x$ from a Poisson distribution with mean $\mu$.}
-\funcdef{poissonPDF($x,\mu$)}{returns the probability of getting $x$ from a Poisson distribution with mean $\mu$.}
+\funcdef{poissonCDF($x,\mu$)}{returns the probability of getting $\leq x$ from a Poisson distribution with mean $\mu$. $\mu$ must be real, positive and dimensionless. $x$ must be real and dimensionless.}
+\funcdef{poissonPDF($x,\mu$)}{returns the probability of getting $x$ from a Poisson distribution with mean $\mu$. $\mu$ must be real, positive and dimensionless. $x$ must be a real dimensionless integer.}
 \funcdef{pow($x,y$)}{returns $x$ to the power of $y$. $x$ and $y$ may both be complex numbers, and $x$ may have any physical dimensions, but $y$ must be dimensionless. It not not permitted for $y$ to be complex if $x$ is not dimensionless, since this would lead to an output with complex physical dimensions.}
 \funcdef{radians($x$)}{takes a real input which should either have physical units of angle, or be dimensionless, in which case it is assumed to be measured in degrees. The output is the dimensionless number of radians in $x$.}
-\funcdef{random()}{returns a random real number between 0 and 1.}
-\funcdef{randomBinomial($p,n$)}{returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$.}
-\funcdef{randomChiSq($\mu$)}{returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom.}
-\funcdef{randomGaussian($\sigma$)}{returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$.}
-\funcdef{randomLogNormal\newline ($\zeta,\sigma$)}{returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$.}
-\funcdef{randomPoisson($n$)}{returns a random integer from a Poisson distribution with mean $n$.}
+\funcdef{random()}{returns a random real number between 0 and~1.}
+\funcdef{randomBinomial($p,n$)}{returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$. $n$ must be a real positive dimensionless integer. $p$ must be a dimensionless number in the range $0\leq p\leq 1$.}
+\funcdef{randomChiSq($\mu$)}{returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom. $\mu$ must be a real positive dimensionless integer.}
+\funcdef{randomGaussian($\sigma$)}{returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero. $\sigma$ must be real, but may have any physical units. The returned random sample shares the physical units of $\sigma$.}
+\funcdef{randomLogNormal($\zeta,\sigma$)}{returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$. $\sigma$ must be a real positive dimensionless number. $\zeta$ must be real, but may have any physical units. The returned random sample shares the physical units of $\zeta$.}
+\funcdef{randomPoisson($n$)}{returns a random integer from a Poisson distribution with mean $n$. $n$ must be a real positive dimensionless number.}
 \funcdef{Re($z$)}{returns the real part of the complex number $z$, which may have any physical units. The number returned shares the same physical units as $z$.}
 \funcdef{sec($z$)}{returns the secant of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{sech($z$)}{returns the hyperbolic secant of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{sin($z$)}{returns the sine of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{sinh($z$)}{returns the hyperbolic sine of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{sqrt($z$)}{returns the square root of $z$, which may be any complex number, and may have any physical dimensions.}
-\funcdef{tan($x$)}{returns the tangent of $x$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
-\funcdef{tanh($x$)}{returns the hyperbolic tangent of $x$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
+\funcdef{tan($z$)}{returns the tangent of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
+\funcdef{tanh($z$)}{returns the hyperbolic tangent of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
+\funcdef{time\_daymonth({\it JD})}{Returns the number of the day of the month on which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_dayweekname({\it JD})}{Returns as a string the name of the day of the week on which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_dayweeknum({\it JD})}{Returns the number, in the range 1~(Sunday) to 7~(Saturday), of the day of the week on which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_hour({\it JD})}{Returns the integer hour of the day, in the range 0-23, in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_juliandate({\it year},{\it month},{\it day},{\it hour},{\it min},{\it sec})}{Returns the Julian Date corresponding to the supplied time and date. Each field should be supplied numerically as an integer: for example, the {\it month} argument should be an integer in the range 1-12. The {\it year} argument should be the number of years elapsed since the Christian epoch. To enter dates before the Christian epoch, $0$ should be passed to indicate the year 1~{\footnotesize BC}, $-1$ should be passed to indicate the year 2~{\footnotesize BC}, and so forth.
+
+Julian Dates are defined to be the number of days elapsed since noon on 1st January, 4713~{\footnotesize BC}. Consequently, Julian Dates are rather large numbers: for example, midnight on 1st January 2000 corresponds to the Julian Date 2451544.5. As demonstrated by this example, the hour of the day is indicated by the fractional part of the Julian Date. The strength of using Julian Dates in analysing time-series data is that they are not subject to the complications which arise from our having months of different lengths and leap years every fourth year: it is trivial to evaluate the time elapsed between any two arbitrary Julian Dates.
+
+Clearly PyXPlot's implementation of the {\tt time\_juliandate()} {\it does} need to understand the complexities of the calendar, including the transition which was made from the Julian calendar to the Gregorian calendar on various dates in various countries. For more details of this, see the {\tt set calendar} command.}
+\funcdef{time\_min({\it JD})}{Returns the integer number of minutes elapsed within the hour when the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_monthnum({\it JD})}{Returns the number, in the range 1-12, of the calendar month in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_monthname({\it JD})}{Returns as a string the English name of the calendar month in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_now()}{Returns the Julian Date corresponding to the present epoch. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_sec({\it JD})}{Returns the number of seconds elapsed within the minute when the supplied Julian Date falls. The number of seconds includes the fractional part. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{time\_year({\it JD})}{Returns the year in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function. The returned value is a dimensionless integer. A value of $0$ corresponds to the year 1~{\footnotesize BC}; a value of $-1$ corresponds to the year 2~{\footnotesize BC}, and so forth.}
+\funcdef{timediff\_days({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of days elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 365~days have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{timediff\_hours({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of hours elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 24~hours have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{timediff\_mins({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of minutes elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 60~minutes have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{timediff\_secs({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of seconds elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 60~seconds have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
+\funcdef{timediff\_years({\it JD}$_1$,{\it JD}$_2$)}{Returns the integer number of years elapsed between the first and second supplied Julian Dates. For more details see the {\tt time\_juliandate()} function.}
 \funcdef{texify(\ldots)}{returns a string of \LaTeX text corresponding to the algebraic expression or string supplied between the brackets.}
-\funcdef{tophat($z,\sigma$)}{returns one if $|z| \leq |\sigma|$, and zero otherwise. Both inputs must be real and dimensionless.}
+\funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real and dimensionless.}
 \funcdef{unit(\ldots)}{multiplies a number by a physical unit. The string inside the brackets should consist of a string of the names of physical units, multiplied together with the {\tt *} operator, divided using the {\tt /} operator, or raised by numeric powers using the {\tt \^{}} operator. The list may be commenced with a numeric constant, for example: {\tt unit(2*m\^{}2/s)}.}
 \funcdef{zeta($x$)}{evaluates the Riemann zeta function for any real dimensionless number $x$.}
 
