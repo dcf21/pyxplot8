@@ -108,7 +108,7 @@ void MultiMinIterate(MMComm *commlink, int *status)
   size_t                              iter = 0,iter2 = 0;
   int                                 i, Nparams;
   double                              size=0,sizelast=0,sizelast2=0;
-  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex; // We don't use nmsimplex2 here because it was new in gsl 1.12
   gsl_multimin_fminimizer            *s;
   gsl_vector                         *x, *ss;
   gsl_multimin_function               fn;

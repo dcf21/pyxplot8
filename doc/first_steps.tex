@@ -24,61 +24,66 @@
 \chapter{First Steps With PyXPlot}
 \label{ch:first_steps}
 
-In this chapter, we provide a brief overview of the basic operation of PyXPlot,
-principally covering those areas of syntax which are borrowed directly from
-\gnuplot. Users who are already familiar with \gnuplot\ may wish to skim or
-skip this chapter, though Section~\ref{sec:latex_incompatibility}, which
-describes the use of \LaTeX\ to render text, and
-Section~\ref{missing_features}, which details those parts of \gnuplot's
-interface that are not supported by PyXPlot, may be of interest. In the
-following chapters, we shall go on to describe the ways in which PyXPlot
-extends \gnuplot's interface.
+In this chapter, we provide a brief overview of the basic commands which are
+used to produce simple plots in PyXPlot, principally those whose syntax is
+borrowed directly from \gnuplot. Users who are already familiar with \gnuplot\
+may wish to skim over this chapter, with the caution that there are some subtle
+differences been \gnuplot\ and PyXPlot syntax. In particular,
+Section~\ref{sec:latex_incompatibility} describes the use of \LaTeX\ to render
+text, and Section~\ref{missing_features} lists some of the most significant
+areas where the two interfaces differ.
 
-Describing \gnuplot's interface in its entirety is a substantial task, and what
-follows is only an overview; novice users may find many excellent tutorials on
-the web which will greatly supplement what is provided below.
+In Chapter~\ref{ch:plotting} we shall revisit the material of the chapter and
+show how to produce more advanced plots.
 
 \section{Getting Started}
 
-The simplest way to start PyXPlot is to type `{\tt pyxplot}' at a shell prompt
+The simplest way to start PyXPlot is to type {\tt pyxplot} at a shell prompt
 to start an interactive session. A PyXPlot command-line prompt will appear,
 into which commands can be typed. PyXPlot can be exited either by typing
 \indcmdts{exit}, \indcmdts{quit}, or by pressing CTRL-D.
 
-As you begin to plot increasingly complicated graphs, the number of commands
-required to set them up and plot them will grow.  It will soon become
-preferable, instead of typing these commands into an interactive session, to
-store lists of commands as scripts, which are simply text files containing
-PyXPlot commands. These may be executed by passing the filename of the command
-script to PyXPlot on the shell command line, for example:\index{command-line
-syntax}
+This will probably be a sufficient way to drive PyXPlot to begin with, but as
+you begin to plot increasingly complicated graphs, you will find that the
+number of commands required to set them up will grow. With time, you will
+probably find that it becomes preferable, instead of typing these commands into
+an interactive session every time you want to use them, to store lists of the
+commands that you use in text files. Once a list of the commands is stored in a
+text file, called a script, they can be executed automatically by PyXPlot by
+passing the filename of the command script to it on the shell command line, for
+example:\index{command-line syntax}
 
 \begin{verbatim}
 pyxplot foo.ppl
 \end{verbatim}
 
 \noindent In this case, PyXPlot would execute all of the commands in the file
-{\tt foo.ppl} and then exit immediately afterwards.  By convention, we suffix
-the filenames of PyXPlot command scripts with `{\tt .ppl}', though this is not
-strictly necessary. Several filenames may be passed on a single command line,
-indicating a series of scripts to be executed in sequence:
+{\tt foo.ppl} and then exit immediately afterwards. By convention, we choose to
+suffix the filenames of PyXPlot command scripts with {\tt .ppl}. This is not
+strictly necessary, but does allow PyXPlot scripts to be easily distinguished
+from other text files in a filing system. The filenames of several command
+scripts may be passed to PyXPlot on a single command line, indicating that they
+should be executed in sequence:
 
 \begin{verbatim}
 pyxplot foo1.ppl foo2.ppl foo3.ppl
 \end{verbatim}
 
-It is possible to use a single PyXPlot session both interactively and from
-command scripts. One way to do this is to pass the magic filename `--' on the
-command line:
+It is also possible to have a single PyXPlot session which alternates between
+running command scripts autonomously and allowing the user to enter commands
+interactively between running the scripts. There are two ways of doing this,
+one of which is to pass PyXPlot the magic filename {\tt --} on the command
+line:
 
 \begin{verbatim}
 pyxplot foo1.ppl - foo2.ppl
 \end{verbatim}
 
 \noindent This magic filename represents an interactive session, which
-commences after the execution of {\tt foo1.ppl}, and should be terminated in
-the usual way after use, with the \indcmdts{exit} or \indcmdts{quit} commands.
-Afterwards, the command script {\tt foo2.ppl} would execute.
+commences after the execution of {\tt foo1.ppl}, and should be terminated by
+the user in the usual way after use, using either the \indcmdts{exit} or
+\indcmdts{quit} commands. After the interactive session is finished, PyXPlot
+will automatically execute the command script {\tt foo2.ppl}.
 
 From within an interactive session, it is possible to run a command script
 using the \indcmdt{load}:
@@ -88,11 +93,11 @@ pyxplot> load 'foo.ppl'
 \end{verbatim}
 
 \noindent This example would have the same effect as typing the contents of the
-file {\tt foo.ppl} into the present session.
+file {\tt foo.ppl} into the present interactive terminal.
 
 Usually a text editor is used to produce PyXPlot command scripts, but the
-\indcmdt{save} may also assist. This stores a history of the commands executed
-in the present interactive session to file.
+\indcmdt{save} may also assist. This stores a history of the commands which
+have been typed into the present interactive session to file.
 
 \begin{boxout}
 From the shell command line, PyXPlot accepts the following switches which
@@ -113,22 +118,23 @@ modify its behaviour:\index{command line syntax}
 
 \begin{boxout}
 When PyXPlot is used interactively, its command-line environment is based upon
-the GNU Readline Library.  This means that the up and down arrow keys can be
+the GNU Readline Library. This means that the up- and down-arrow keys can be
 used to repeat or modify previously executed commands. Each user's command
 history is stored in his homespace in a history file called {\tt
 .pyxplot\_history}, which allows PyXPlot to remember command histories between
-sessions. Additionally, a \indcmdt{save} is provided, allowing the user to save
-his command history from the present session to a text file; this has the
-following syntax:
+sessions. PyXPlot's \indcmdt{save} allows the user a mechanism for saving a
+list of the commands which have been typed into the present session to a text
+file; this has the following syntax:
 
 \begin{verbatim}
 save 'output_filename.ppl'
 \end{verbatim}
 
-The related \indcmdt{history} outputs the history to the terminal. This outputs
-not only the history of the present session, but also commands entered in
-previous sessions, which can be up to several hundred lines long. It can
-optionally be followed by a number, to display the last $n$ commands, e.g.:
+The related \indcmdt{history} outputs to the terminal a history of all of the
+commands which have been typed into this and previous interactive sessions. The
+total history can stretch to several hundred lines long, in which case it can
+be useful to follow the \indcmdt{history} by an optional number, in which case
+it displays the last $n$ commands, e.g.:
 
 \begin{verbatim}
 history 20
@@ -141,15 +147,20 @@ history 20
 \label{first_plots}
 
 The basic workhorse command of PyXPlot is the \indcmdt{plot}, which is used to
-produce all plots. The following simple example would plot the function
-$\sin(x)$:
+produce all plots. The following simple example would plot the trigonometric
+function $\sin(x)$:
 
 \begin{verbatim}
 plot sin(x)
 \end{verbatim}
 
-\noindent It is also possible to plot data stored in files on disk. The
-following would plot data from a file {\tt data.dat}, taking the
+\noindent The function $\sin(x)$ is one of a large number of standard
+mathematical functions, as well as some more specialised functions, which are
+built into PyXPlot. We will meet more of these functions in due course, but a
+complete list can be found in Appendix~\ref{ch:function_list}.
+
+As well as plotting functions, it is also possible to plot data stored in files
+on disk. The following would plot data from a file {\tt data.dat}, taking the
 $x$-co-ordinate of each point from the first column of the \datafile, and the
 $y$-co-ordinate from the second.  The \datafile\ is assumed to be in plain text
 format\footnote{If the filename of a \datafile\ ends with a {\tt .gz} suffix,
@@ -179,6 +190,53 @@ c = 1.5
 f(x) = a*(x**2) + b*x + c
 plot f(x)
 \end{verbatim}
+
+These examples show some of the mathematical operators which are available in
+PyXPlot, a complete list of which can be found in
+Table~\ref{tab:operators_table}.\index{functions!pre-defined}\index{operators}
+
+\begin{table}
+\framebox[\textwidth]{
+\begin{tabular}{lll}
+{\bf Symbol} & {\bf Description} & {\bf Operator Associativity} \\
+\hline
+{\tt -} & Unary minus sign & left \\
+{\tt not} & Logical not & left \\
+\hline
+{\tt **} & Algebraic exponentiation & right \\
+\hline
+{\tt *} & Algebraic multiplication & left \\
+{\tt /} & Algebraic division & left \\
+{\tt \%} & Modulo operator & left \\
+\hline
+{\tt +} & Algebraic sum & left \\
+{\tt -} & Algebraic subtraction & left \\
+\hline
+{\tt <<} & Left binary shift & left \\
+{\tt >>} & Right binary shift & left \\
+\hline
+{\tt <} & Magnitude comparison & right \\
+{\tt >} & Magnitude comparison & right \\
+{\tt <=} & Magnitude comparison & right \\
+{\tt >=} & Magnitude comparison & right \\
+\hline
+{\tt ==} & Equality comparison & right \\
+{\tt !=} & Equality comparison & right \\
+{\tt <>} & Alias for {\tt !=} & right \\
+\hline
+{\tt \&} & Binary and & left \\
+\hline
+{\tt \^{}} & Logical exclusive or & left \\
+\hline
+{\tt |} & Binary or & left \\
+\hline
+{\tt and} & Logical and & left \\
+\hline
+{\tt or} & Logical or & left \\
+\end{tabular}}
+\caption{A list of mathematical operators which PyXPlot recognises.}
+\label{tab:operators_table}
+\end{table}
 
 \noindent To unset a variable or function once it has been set, the following
 syntax should be
@@ -231,18 +289,27 @@ print "The value of",a,"squared is",f(a)
 
 \noindent Values may also be substituted into strings using the {\tt \%}
 operator\index{\% operator@{\tt \%} operator}, which works in a similar fashion
-to Python string substitution operator\index{string
-operators!substitution}\footnote{For a description of this, see Guido van
-Rossum's\index{van Rossum, Guido} {\it Python Library Reference}\index{Python
-Library Reference}: \url{http://docs.python.org/lib/typesseq-strings.html}}.
-The list of values to be substituted into the string should be a ()-bracketed
-list\footnote{Unlike in Python, the brackets are obligatory; {\tt '\%d'\%2} is
-{\it not} valid in PyXPlot.}:
+to Python's string substitution operator\index{string operators!substitution} or
+the {\tt printf} command in C.  The list of values to be substituted into the
+string should be a ()-bracketed list\footnote{Unlike in Python, the brackets
+are obligatory; {\tt '\%d'\%2} is {\it not} valid in PyXPlot, and should be
+written as {\tt '\%d'\%(2)}.}:
 
 \begin{verbatim}
 print "The value of %d squared is %d."%(a,f(a))
 print "The %s of f(%f) is %d."%("value",sqrt(2),f(sqrt(2)))
 \end{verbatim}
+
+As in C, {\tt \%d} means that in integer should be printed, {\tt \%f} means
+that a floating point number should be printed, and {\tt \%e} means that a
+floating point number should be printed in scientific format. {\tt \%s} has a
+slightly different meaning in PyXPlot from in C: it can be used either to
+substitute a string, or to substitute a floating point number in whatever
+format PyXPlot deems most appropriate. As in C, {\tt \%16f} means that a
+floating point number should be displayed in a column of width 16 characters.
+{\tt \%-16f} is similar, but means that the number should be left-justified,
+and {\tt \%.2f} means that the number should be displayed accurate to two
+decimal places.
 
 \section{Axis Labels and Titles}
 \label{sec:latex_incompatibility}
@@ -295,20 +362,20 @@ set xlabel "My plot's X axis"
 
 To make it possible to render \LaTeX\ strings containing both single and double
 quote characters -- for example, to put a German umlaut on the name `J\"org' in
-the \LaTeX\ string `{\tt J$\backslash$"org's Data}' -- PyXPlot recognises
-the backslash character to be an escape character when followed by either ' or
-" in a \LaTeX\ string. This is the \textit{only} case in which PyXPlot
-considers $\backslash$ an escape character. To render the example string above,
-one would type:\index{escape characters}\index{backslash
-character}\index{accented characters}
+the \LaTeX\ string `{\tt J$\backslash$"org's Data}' -- PyXPlot recognises the
+backslash character to be an escape character when followed by either~' or~" in
+a \LaTeX\ string. This is the \textit{only} case in which PyXPlot considers
+$\backslash$ an escape character. To render the example string above, one would
+type:\index{escape characters}\index{backslash character}\index{accented
+characters}
 
 \begin{dodo}
-set xlabel "J\\"org's Data"
+set xlabel "J$\backslash$"org's Data"
 \end{dodo}
 
 \noindent In this example, two backslashes are required.  The first is the
 \LaTeX\ escape character used to produce the umlaut; the second is a PyXPlot
-escape character, used so that the " character is not interpreted as
+escape character, used so that the~" character is not interpreted as
 delimiting the string. \index{escape characters}\index{quote
 characters}\index{special characters}
 
@@ -331,57 +398,6 @@ The \indcmdt{unset} may be followed by almost any word that can follow the {\tt
 set} command, such as {\tt xlabel} or {\tt title}, to return that setting to
 its default configuration. The \indcmdt{reset} restores all configurable
 parameters to their default states.
-
-\section{Operators and Functions}
-
-As has already been seen above, some mathematical functions such as $\sin(x)$
-are pre-defined within PyXPlot. A list of all of PyXPlot's pre-defined
-functions is given in Table~\ref{functions_table}. A list of operators
-recognised by PyXPlot is given in
-Table~\ref{operators_table}.\index{functions!pre-defined}\index{operators}
-
-\begin{table}
-\framebox[\textwidth]{
-\begin{tabular}{lll}
-{\bf Symbol} & {\bf Description} & {\bf Operator Associativity} \\
-\hline
-{\tt -} & Unary minus sign & left \\
-{\tt not} & Logical not & left \\
-\hline
-{\tt **} & Algebraic exponentiation & right \\
-\hline
-{\tt *} & Algebraic multiplication & left \\
-{\tt /} & Algebraic division & left \\
-{\tt \%} & Modulo operator & left \\
-\hline
-{\tt +} & Algebraic sum & left \\
-{\tt -} & Algebraic subtraction & left \\
-\hline
-{\tt <<} & Left binary shift & left \\
-{\tt >>} & Right binary shift & left \\
-\hline
-{\tt <} & Magnitude comparison & right \\
-{\tt >} & Magnitude comparison & right \\
-{\tt <=} & Magnitude comparison & right \\
-{\tt >=} & Magnitude comparison & right \\
-\hline
-{\tt ==} & Equality comparison & right \\
-{\tt !=} & Equality comparison & right \\
-{\tt <>} & Alias for {\tt !=} & right \\
-\hline
-{\tt \&} & Binary and & left \\
-\hline
-{\tt \^{}} & Logical exclusive or & left \\
-\hline
-{\tt |} & Binary or & left \\
-\hline
-{\tt and} & Logical and & left \\
-\hline
-{\tt or} & Logical or & left \\
-\end{tabular}}
-\caption{A list of mathematical operators which PyXPlot recognises.}
-\label{operators_table}
-\end{table}
 
 \section{Plotting \Datafile s}
 \label{plot_datafiles}
