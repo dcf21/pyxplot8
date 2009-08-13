@@ -1186,7 +1186,6 @@ void dcfmath_sqrt(value *in, value *output, int *status, char *errtext)
   int i;
   gsl_complex z;
   CHECK_1NOTNAN;
-  CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { GSL_SET_COMPLEX(&z,in->real,in->imag); z=gsl_complex_sqrt(z); }
   ELSE_REAL   { z=gsl_complex_sqrt_real(in->real); }
   ENDIF
