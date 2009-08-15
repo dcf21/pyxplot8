@@ -26,8 +26,11 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "StringTools/str_constants.h"
+
 #include "ppl_canvasdraw.h"
 #include "ppl_canvasitems.h"
+#include "ppl_error.h"
 
 canvas_itemlist *canvas_items = NULL;
 
@@ -53,6 +56,7 @@ int directive_text(Dict *command, int interactive)
 
 int directive_jpeg(Dict *command, int interactive)
  {
+  ppl_report(DictPrint(command, temp_err_string, LSTR_LENGTH));
   return 0;
  }
 

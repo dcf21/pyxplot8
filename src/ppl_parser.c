@@ -559,14 +559,18 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        }
       else if (strcmp(node->MatchString, "%S")==0)
        {
-        for (i=0; ((line[*linepos+i]>' ')&&(line[*linepos+i]!='\'')&&(line[*linepos+i]!='\"')); i++);
-        if (i>0)
+        if (!(isalpha(line[*linepos+i]) || (line[*linepos+i]=='_')))
          {
-          strncpy(TempMatchStr, line + *linepos, i);
-          TempMatchStr[i] = '\0';
-          MatchType = DATATYPE_STRING;
-          MatchVal._str = TempMatchStr;
-          *linepos += i;
+          for (i=0; ((line[*linepos+i]>' ')&&(line[*linepos+i]!='\'')&&(line[*linepos+i]!='\"')); i++);
+          if (i>0)
+           {
+            strncpy(TempMatchStr, line + *linepos, i);
+            TempMatchStr[i] = '\0';
+            MatchType = DATATYPE_STRING;
+            MatchVal._str = TempMatchStr;
+            *linepos += i;
+           }
+          else *success=0;
          }
         else *success=0;
        }

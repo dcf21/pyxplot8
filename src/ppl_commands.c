@@ -35,6 +35,9 @@
 // List of commands recognised by PyXPlot
 
 char ppl_commands[] = "\
+{ < let@3 > } %v:varname \\=~@n:directive:var_set_regex = s@n %r:regex\n\
+{ < let@3 > } %v:varname \\=@n:directive:var_set = { < %fi:numeric_value | %q:string_value > }\n\
+%v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list \\=@n:directive:func_set = { %e:definition } \n\
 arrow@2:directive = { item@1 %d:editno } { from@1 } %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ < linestyle@6 | ls@2 > %d:linestyle ~ < colour@1 | color@1 > %s:colour ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style | twoway@2:arrow_style:twohead > ) } \n\
 break@2:directive =\n\
 cd@2:directive = [ < %q:directory | %S:directory > ]:path\n\
@@ -209,8 +212,5 @@ unset@3:directive { item@1 %d:editno } width@1:set_option =\n\
 unset@3:directive:unset_error = { item@1 %d:editno } { %s:set_option } %r:restofline\n\
 while@5:directive = %e:criterion ( \\{@n:brace ( %r:command ) )\n\
 \\}:n:close_brace while@5:directive = %e:criterion ( \\{@n:brace ( %r:command ) )\n\
-{ < let@3 > } %v:varname \\=~@n:directive:var_set_regex = s@n %r:regex\n\
-{ < let@3 > } %v:varname \\=@n:directive:var_set = { < %fi:numeric_value | %q:string_value > }\n\
-%v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list \\=@n:directive:func_set = { %e:definition } \n\
 ";
 
