@@ -106,41 +106,47 @@ int sgn(double x)
   ppl_units_zero(output); \
  }
 
+#define NAN_CHECK_FAIL \
+ { \
+  if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The function %s has received a non-finite input.",FunctionDescription); return; } \
+  else { NULL_OUTPUT; } \
+ }
+
 #define CHECK_1NOTNAN \
  { \
   WRAPPER_INIT; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex)) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in->real)) || (!gsl_finite(in->imag))) { NULL_OUTPUT; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex)) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in->real)) || (!gsl_finite(in->imag))) { NAN_CHECK_FAIL; } \
  }
 
 #define CHECK_2NOTNAN \
  { \
   WRAPPER_INIT; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in1->FlagComplex) || (in2->FlagComplex))) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in1->real)) || (!gsl_finite(in1->imag))) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in2->real)) || (!gsl_finite(in2->imag))) { NULL_OUTPUT; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in1->FlagComplex) || (in2->FlagComplex))) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in1->real)) || (!gsl_finite(in1->imag))) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in2->real)) || (!gsl_finite(in2->imag))) { NAN_CHECK_FAIL; } \
  }
 
 #define CHECK_3NOTNAN \
  { \
   CHECK_2NOTNAN; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in3->FlagComplex)) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in3->real)) || (!gsl_finite(in3->imag))) { NULL_OUTPUT; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in3->FlagComplex)) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in3->real)) || (!gsl_finite(in3->imag))) { NAN_CHECK_FAIL; } \
  }
 
 #define CHECK_4NOTNAN \
  { \
   CHECK_3NOTNAN; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in4->FlagComplex)) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in4->real)) || (!gsl_finite(in4->imag))) { NULL_OUTPUT; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in4->FlagComplex)) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in4->real)) || (!gsl_finite(in4->imag))) { NAN_CHECK_FAIL; } \
  }
 
 #define CHECK_6NOTNAN \
  { \
   CHECK_4NOTNAN; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in5->FlagComplex) || (in6->FlagComplex))) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in5->real)) || (!gsl_finite(in5->imag))) { NULL_OUTPUT; } \
-  if ((!gsl_finite(in6->real)) || (!gsl_finite(in6->imag))) { NULL_OUTPUT; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in5->FlagComplex) || (in6->FlagComplex))) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in5->real)) || (!gsl_finite(in5->imag))) { NAN_CHECK_FAIL; } \
+  if ((!gsl_finite(in6->real)) || (!gsl_finite(in6->imag))) { NAN_CHECK_FAIL; } \
  }
 
 #define CHECK_1INPUT_DIMLESS \
@@ -230,7 +236,7 @@ int sgn(double x)
 
 void dcfmath_abs(value *in, value *output, int *status, char *errtext)
  {
-//  char *FunctionDescription = "abs(x)";
+  char *FunctionDescription = "abs(x)";
   CHECK_1NOTNAN;
   IF_1COMPLEX    output->real = hypot(in->real , in->imag);
   ELSE_REAL      output->real = fabs(in->real);
@@ -618,7 +624,7 @@ void dcfmath_chisqCDFi(value *in1, value *in2, value *output, int *status, char 
 
 void dcfmath_conjugate(value *in, value *output, int *status, char *errtext)
  {
-//  char *FunctionDescription = "conjugate(z)";
+  char *FunctionDescription = "conjugate(z)";
   CHECK_1NOTNAN;
   memcpy(output, in, sizeof(value));
   output->imag *= -1;
@@ -879,7 +885,7 @@ void dcfmath_hypot(value *in1, value *in2, value *output, int *status, char *err
 
 void dcfmath_imag(value *in, value *output, int *status, char *errtext)
  {
-//  char *FunctionDescription = "Im(z)";
+  char *FunctionDescription = "Im(z)";
   CHECK_1NOTNAN;
   output->real = in->imag;
   ppl_units_DimCpy(output, in);
@@ -1037,7 +1043,7 @@ void dcfmath_poissonCDF(value *in1, value *in2, value *output, int *status, char
 
 void dcfmath_pow (value *in1, value *in2, value *output, int *status, char *errtext)
  {
-  //char *FunctionDescription = "pow(x,y)";
+  char *FunctionDescription = "pow(x,y)";
   CHECK_2NOTNAN;
   ppl_units_pow(in1, in2, output, status, errtext);
  }
@@ -1126,7 +1132,7 @@ void dcfmath_frandomp(value *in, value *output, int *status, char *errtext)
 
 void dcfmath_real(value *in, value *output, int *status, char *errtext)
  {
-//  char *FunctionDescription = "Re(z)";
+  char *FunctionDescription = "Re(z)";
   CHECK_1NOTNAN;
   output->real = in->real;
   ppl_units_DimCpy(output, in);
