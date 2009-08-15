@@ -720,7 +720,7 @@ The following example sets the $x1$-axis to have tick marks at
 $x=0.05$, $0.1$, $0.2$ and $0.4$.  The $x2$-axis has symbolically labelled tics at
 $x=1/\pi, 2/\pi$, etc., pointing outwards from the plot.  The left-hand
 $y$-axis has tick marks placed automatically whereas the $y2$-axis has no tics
-at all.  The overall effect is shown in Figure~\ref{fig:ex_axistics}.
+at all.  The overall effect is shown in Example~\ref{ex:axistics}.
 
 \begin{verbatim}
 set log x1x2
@@ -734,16 +734,12 @@ set ytics autofreq
 set noy2tics
 \end{verbatim}
 
-\begin{example}
+\example{ex:axistics}{A plot demonsrating the use of custom axis ticks}{
+A plot illustrating some of the crossing points of the function $\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this plot are as given in the text.\\
 \begin{center}
 \includegraphics{examples/eps/ex_axistics.eps}
 \end{center}
-\caption[A plot demonsrating the use of custom axis ticks]
-{A plot illustrating some of the crossing points of the function
-$\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this
-plot are as given in the text.}
-\label{fig:ex_axistics}
-\end{example}
+}
 
 Minor tick marks can be placed on axes with the \indcmdt{set mxtics}, which has
 the same syntax as above.
@@ -801,20 +797,18 @@ set keycolumns 2
 \end{verbatim}
 
 \noindent An example of a plot with a two-column legend is given in
-Figure~\ref{fig:ex_legends}.
+Example~\ref{ex:legends}.
 
-\begin{example}
-\begin{center}
-\includegraphics{examples/eps/ex_legends.eps}
-\end{center}
-\caption[A plot demonstrating the use of a two-column legend]
-{This plot shows how rapidly three functions, often approximated as
+\example{ex:legends}{A plot demonstrating the use of a two-column legend}{
+This plot shows how rapidly three functions, often approximated as
 $x$, deviate from that approximation.  Furthermore it is an example of a plot
 with a two-column legend, positioned below the plot using {\tt set key below}.
 The complete script used to produce the plot can be found on the PyXPlot
-website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.}
-\label{fig:ex_legends}
-\end{example}
+website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.\\
+\begin{center}
+\includegraphics{examples/eps/ex_legends.eps}
+\end{center}
+}
 
 \section{The {\tt linestyle} Keyword}
 

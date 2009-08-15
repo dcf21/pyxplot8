@@ -325,24 +325,18 @@ set title 'Trajectories of rockets fired with speed $v$ and \
 angle $\theta$'
 \end{verbatim}
 
-\begin{example}
+\example{ex:axislab}{A plot of the trajectories of rockets fired with different initial velocities}{
+A plot of the trajectories of rockets fired with different initial velocities.  The key demonstrates the use of \LaTeX\ to render mathematical symbols attractively.\\
 \begin{center}
 \includegraphics{examples/eps/ex_axislab.eps}
 \end{center}
-\caption[A plot of the trajectories of rockets fired with different initial velocities]
-{A plot of the trajectories of rockets fired with different initial
-velocities.  The key demonstrates the use of \LaTeX\ to render mathematical
-symbols attractively.  The full PyXPlot script used to generate this figure is
-available on the PyXPlot website at
-\protect\url{http://www.pyxplot.org.uk/examples/Manual/01axislab/}.}
-\label{fig:ex_axislab}
-\end{example}
+}
 
 \noindent The output produced by these commands is shown in
-Figure~\ref{fig:ex_axislab}.  Note that the labels and title, and indeed all
-text labels in PyXPlot, are rendered using \LaTeX, and so any \LaTeX\ commands
-can be used.  As a caveat, however, this does mean that care needs to be taken
-to escape any of \LaTeX's reserved characters -- i.e.:
+Figure~\ref{ex:axislab}.  Note that the labels and title, and indeed all text
+labels in PyXPlot, are rendered using \LaTeX, and so any \LaTeX\ commands can
+be used.  As a caveat, however, this does mean that care needs to be taken to
+escape any of \LaTeX's reserved characters -- i.e.:
 $\backslash$~\&~\%~\#~\{~\}~\$~\_~\^{} or $\sim$.
 
 Because of the use of quotes to delimit text labels, special care needs to be
@@ -806,7 +800,7 @@ following data file which contains a sampled square wave, entitled
 \end{verbatim}
 
 \noindent the following script fits a truncated Fourier series to it.  The
-output can be found in Figure~\ref{fig:ex_fitting}.
+output can be found in Figure~\ref{ex:fitting}.
 
 \begin{verbatim}
 f(x) = a1*sin(x) + a3*sin(3*x) + a5*sin(5*x)
@@ -816,17 +810,13 @@ plot 'square.dat' title 'data' with points pointsize 2, \
      f(x) title 'Fitted function' with lines
 \end{verbatim}
 
-\begin{example}
-\begin{center}
-\includegraphics{examples/eps/ex_fitting.eps}
-\end{center}
-\caption[The output from a script that fits a truncated Fourier series to a
-sampled square wave]{The output from a script that fits a truncated Fourier series to a
+\example{ex:fitting}{The output from a script that fits a truncated Fourier series to a sampled square wave}{
+The output from a script that fits a truncated Fourier series to a
 sampled square wave.  Even with only three terms the Gibbs pheonomenon is
-becoming apparent (see \protect\url{http://en.wikipedia.org/wiki/Gibbs_phenomenon} for
-an explanation).} 
-\label{fig:ex_fitting}
-\end{example}
+becoming apparent (see \url{http://en.wikipedia.org/wiki/Gibbs_phenomenon} for
+an explanation).\\
+\centerline{\includegraphics{examples/eps/ex_fitting.eps}}
+}
 
 This is useful for producing best-fit lines\index{best fit
 lines}\footnote{Another way of producing best-fit lines is to use a cubic

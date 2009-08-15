@@ -23,19 +23,32 @@
 
 \documentclass[a4paper,onecolumn,11pt]{book}
 \usepackage[dvips]{graphicx}
-\usepackage{amssymb,amsmath,bbding,url,lscape,longtable,multicol,nicefrac,fancyvrb,makeidx,supertabular,upgreek,wasysym}
+\usepackage{afterpage,amssymb,amsmath,bbding,url,lscape,longtable,multicol,nicefrac,fancyvrb,makeidx,supertabular,upgreek,wasysym}
 \makeindex
 \input{definitions}
 
 % Make box and example float environments
 \usepackage{float}
 \floatstyle{boxed}
-\newfloat{boxout}{thp}{lop}
+\newfloat{boxout}{thp}{lob}
 \floatname{boxout}{Box}
 
-\usepackage{example}
-\newfloat{example}{thp}{lop}
-\floatname{example}{Example}
+\floatstyle{plain}
+\newfloat{exampletag}{thp}{loe}
+\floatname{exampletag}{Example}
+
+\usepackage[bf]{caption}
+
+\newcommand{\example}[3]{
+\afterpage{
+\begin{exampletag}[H]\caption[#2]{}\label{#1}\end{exampletag}
+\vspace{-5mm}
+\begin{longtable}{|p{\textwidth}|}
+\hline \endfoot
+\hline \endhead
+#3
+\end{longtable}
+}}
 
 \begin{document}
 
@@ -72,7 +85,7 @@
 \tableofcontents
 
 \listoffigures
-\listof{boxout}{List of Examples}
+\listof{exampletag}{List of Examples}
 
 \include{introduction}
 \include{first_steps}
