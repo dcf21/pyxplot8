@@ -24,9 +24,7 @@
 \chapter{Advanced Plotting}
 \label{ch:plotting}
 
-In this chapter, we continue to explore the various options of the {\tt plot}
-command. Specifically, we turn to those aspects which differ from \gnuplot's
-{\tt plot} command.
+In this chapter, we explore the various options of the {\tt plot} command.
 
 \section{Formatting and Terminals}
 \label{set_terminal2}
@@ -74,9 +72,7 @@ paper size, minus a small margin. The aspect ratio of the plot is preserved.
 This is most useful with the {\tt postscript} terminal, when preparing a plot
 to send directly to a printer.
 
-As there are many changes to the options accepted by the {\tt set terminal}
-command in comparison to those understood by \gnuplot, the syntax of PyXPlot's
-command is given below, followed by a list of the recognised settings:
+The {\tt set terminal} command takes many options. Its complete syntax is:
 
 \begin{verbatim} 
 set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
@@ -88,6 +84,8 @@ set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
              { antialias | noantialias }
              { enlarge | noenlarge }
 \end{verbatim}
+
+The following table lists the effects which each of these settings has:
 
 \newpage %%% WHY IS THIS NECESSARY?
 
@@ -102,7 +100,7 @@ set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
 {\tt png} & As above, but produces a png image.\index{png output}\\
 {\tt jpg} & As above, but produces a jpeg image.\index{jpeg output}\\
 {\tt colour} & Allows datasets to be plotted in colour. Automatically they will be displayed in a series of different colours, or alternatively colours may be specified using the {\tt with colour} plot modifier (see below). {\bf [default]}\index{colour output}\\
-{\tt color} & Equivalent to the above; provided for users of nationalities which can't spell. \smiley \\
+{\tt color} & Equivalent US spelling of the above. \\
 {\tt monochrome} & Opposite to the above; all datasets will be plotted in black.\index{monochrome output}\\
 {\tt portrait} & Sets plots to be displayed in upright (normal) orientation. {\bf [default]}\index{portrait orientation}\\
 {\tt landscape} & Opposite of the above; produces side-ways plots. Not very useful when displayed on the screen, but you fit more on a sheet of paper that way around.\index{landscape orientation}\\
@@ -178,14 +176,13 @@ set papersize a4
 set papersize 100,100
 \end{verbatim}
 
-\noindent A list of recognised paper size names is given in
-Figure~\ref{paper_sizes}.\footnote{For everything that you ever wanted to know
-about international paper sizes, see Marcus Kuhn's excellent treatise:
-\url{http://www.cl.cam.ac.uk/~mgk25/iso-paper.html}. If you still want to know
-more, then Wikipedia has a good article on the Swedish extensions to this
-system and the Japanese B-series:
-\url{http://en.wikipedia.org/wiki/Paper_size}.}\index{Kuhn, Marcus}\index{paper
-sizes}
+\noindent A complete list of recognised paper size names can be found in
+Appendix~\ref{ch:paper_sizes}.\footnote{Marcus Kuhn has written a very complete
+treatise on international paper sizes, which can be downloaded from:
+\url{http://www.cl.cam.ac.uk/~mgk25/iso-paper.html}. Further details on the
+Swedish extensions to this system, and the Japanese B-series, can be found on
+Wikipedia: \url{http://en.wikipedia.org/wiki/Paper_size}.}\index{Kuhn,
+Marcus}\index{paper sizes}
 
 \section{A Tour of PyXPlot's Plot Styles}
 
@@ -206,17 +203,15 @@ exhaustive list; see Section~\ref{list_of_plotstyles}.}:
 
 When using the \indpst{points}, \indpst{linespoints} and \indpst{dots} plot
 styles, the size of the plotted points or dots can be varied by using the
-\indmodt{pointsize} modifier, for example:
+\indmodt{pointsize} modifier. For example,
 
 \begin{verbatim}
 set samples 25
 plot sin(x) with dots pointsize 10
 \end{verbatim}
 
-which would represent data with large dots. The default value of this setting
-is $1.0$.
-
-\noindent The width of lines can similarly be controlled with the
+\noindent would represent data with large dots. The default value of this
+setting is $1.0$. The width of lines can similarly be controlled with the
 \indmodt{linewidth} modifier, and the width of the lines used to draw point
 symbols can be controlled with the \indmodt{pointlinewidth} modifier. For
 example:
@@ -266,9 +261,9 @@ plot 'data.dat' with arrows_nohead
 plot 'data.dat' with arrows_twohead
 \end{verbatim}
 
-The syntax {\tt with arrows} is a shorthand for {\tt with arrows\_head}.  This
-plot style is analogous to the \indpst{vectors} plot style in Version~4 of
-\gnuplot.
+The syntax {\tt with arrows} is a shorthand for {\tt with
+arrows\_head}.\footnote{This plot style is analogous to the \indpst{vectors}
+plot style in Version~4 of \gnuplot.}
 
 \subsection{Error Bars}
 
@@ -361,8 +356,7 @@ it to change in a future release.}
 
 \subsection{Basic Operation}
 
-As in \gnuplot, bar charts and histograms can be produced using the
-\indpst{boxes} plot style:
+Bar charts and histograms can be produced using the \indpst{boxes} plot style:
 
 \begin{verbatim} 
 plot 'data.dat' with boxes
@@ -444,8 +438,8 @@ plot 'data.dat' with boxes fc 4
 \noindent Figures~\ref{fig:ex_barchart2}(b) and (d) demonstrate the use of
 filled bars.
 
-Finally, the \indpst{impulses} plot style, as in \gnuplot, produces bars of zero
-width; see Figure~\ref{fig:ex_barchart1}(c) for an example.
+Finally, the \indpst{impulses} plot style produces bars of zero width; see
+Figure~\ref{fig:ex_barchart1}(c) for an example.
 
 \subsection{Stacked Bar Charts}
 
@@ -471,7 +465,7 @@ The plot styles met so far plot data as solid bars, with left, right and top
 sides all drawn. Data may also be plotted with {\it steps}, with the left and
 right sides of each bar omitted. Some examples are shown in
 Figures~\ref{fig:ex_barchart1}(d), (e) and (f).  As is illustrated in these
-panels, three flavours of steps are available, exactly as in \gnuplot:
+panels, three flavours of steps are available:
 
 \begin{verbatim}
 plot 'data.dat' with steps 
@@ -514,7 +508,7 @@ modifier is supplied.  For example:
 plot sin(x) select ($1>0) discontinuous
 \end{verbatim}
 
-plots a set of disconnected peaks from the sine function.
+\noindent plots a set of disconnected peaks from the sine function.
 
 \section{Horizontally arranged \Datafile s}
 
@@ -522,10 +516,9 @@ plots a set of disconnected peaks from the sine function.
 modifier@{\tt using rows} modifier}\index{using columns modifier@{\tt using
 columns} modifier}\label{horizontal_datafiles} The command syntax for plotting
 columns of \datafile s against one another was previously described in
-Section~\ref{plot_datafiles}.  In an extension of what is possible in \gnuplot,
-PyXPlot also allows one to plot {\it rows} of data against one another in
-horizontally-arranged \datafile s.  For this, the keyword \indkeyt{rows} is
-placed after the {\tt using} modifier:
+Section~\ref{plot_datafiles}. PyXPlot also allows you to plot {\it rows} of
+data against one another in horizontally-arranged \datafile s.  For this, the
+keyword \indkeyt{rows} is placed after the {\tt using} modifier:
 
 \begin{verbatim}
 plot 'data.dat' index 1 using rows 1:2
@@ -593,24 +586,19 @@ $x3$-axis, is implicitly created by giving it a label. In the next, the {\tt
 axes} modifier is used to tell the {\tt plot} command to plot data using the
 horizontal $x3$-axis and the vertical $y$-axis. Here again, the axis would be
 implicitly created if it didn't already exist.  In the third statement, an
-$x3$-axis is explicitly created.
+$x3$-axis is explicitly created.  PyXPlot allows plots to have very large
+numbers of axes: the only constraint is that axis numbers must lie in the range
+1-512, though it is unlikely that there would ever be a practical purpose for
+so many axes.  As a rule, all odd-numbered $x$-axes appear below the plot, and
+even numbered $x$-axes above it; a similar rule applies for $y$-axes, to the
+left and to the right.  This is illustrated in Example~\ref{ex:multiaxes}.
 
-Unlike \gnuplot, which allows only a maximum of two parallel axes to be
-attached to any given plot, PyXPlot allows an unlimited number of axes to be
-used. Odd-numbered $x$-axes appear below the plot, and even numbered $x$-axes
-above it; a similar rule applies for $y$-axes, to the left and to the right.
-This is illustrated in Figure~\ref{fig:ex_multiaxes}.
-
-\begin{figure}
-\begin{center}
-\includegraphics{examples/eps/ex_multiaxes.eps}
-\end{center}
-\caption[A plot demonstrating the use of large numbers of axes]
-{A plot demonstrating the use of large numbers of axes. Odd-numbered
+\example{ex:multiaxes}{The use of large numbers of axes}{
+A plot demonstrating the use of large numbers of axes. Odd-numbered
 $x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
-rule applies for $y$-axes, to the left and to the right.}
-\label{fig:ex_multiaxes}
-\end{figure}
+rule applies for $y$-axes, to the left and to the right.\\
+\centerline{\includegraphics{examples/eps/ex_multiaxes.eps}}
+}
 
 As discussed in the previous chapter, the ranges of axes can be set either
 using the \indcmdt{set xrange}, or within the {\tt plot} command. The following
@@ -845,12 +833,12 @@ plot sin(x) with colour blue
 
 \noindent The {\tt colour} modifier can also be used when defining linestyles.
 
-\index{palette}\index{colours!setting the palette}
-PyXPlot has a palette of colours which it assigns sequentially to datasets when
-colours are not manually assigned. This is also the palette to which integers
-passed to {\tt set colour} refer -- the {\tt 5} above, for example. It may be
-set using the \indcmdt{set palette}, which differs in syntax from \gnuplot. It
-should be followed by a comma-separated list of colours, for example:
+\index{palette}\index{colours!setting the palette} PyXPlot has a palette of
+colours which it assigns sequentially to datasets when colours are not manually
+assigned. This is also the palette to which integers passed to {\tt set colour}
+refer -- the {\tt 5} above, for example. The sequence of colours which make up
+the palette may be set using the \indcmdt{set palette}, which takes a
+comma-separated list of colours, for example:
 
 \begin{verbatim}
 set palette BrickRed, LimeGreen, CadetBlue
@@ -874,8 +862,8 @@ plot '*.dat' with linewidth 2
 \end{verbatim}
 
 \noindent In the legend, full filenames are displayed, allowing the \datafile s
-to be distinguished.  As in \gnuplot, a blank filename passed to the plot
-command causes the last used \datafile\ to be used again, for example:
+to be distinguished. If the user supplies a blank filename, the last used
+\datafile\ is used again, for example:
 
 \begin{verbatim}
 plot 'data.dat' using 1:2, '' using 2:3
@@ -931,10 +919,10 @@ set arrow 1 from 0,0 to 1,1 with nohead \
 linetype 1 c blue
 \end{verbatim}
 
-As in \gnuplot, the co-ordinates for the start and end points of the arrow can
-be specified in a range of co-ordinate systems. The co-ordinate system to be
-used should be specified immediately before the co-ordinate value. The default
-system, \indcot{first} measures the graph using the $x$- and $y$-axes. The
+The co-ordinates for the start and end points of the arrow can be specified in
+a range of co-ordinate systems. The co-ordinate system to be used should be
+specified immediately before the co-ordinate value. The default system,
+\indcot{first} measures the graph using the $x$- and $y$-axes. The
 \indcot{second} system uses the $x2$- and $y2$-axes. The \indcot{screen} and
 \indcot{graph} systems both measure in centimetres from the origin of the
 graph. In the following example, we use these specifiers, and specify
@@ -950,10 +938,10 @@ set arrow 1 from first  x0, first  y0 \
             with nohead
 \end{verbatim}
 
-In addition to these four options, which are those available in \gnuplot, the
-syntax `\indcot{axis{\it n}}' may also be used, to use the $n\,$th $x$- or
-$y$-axis -- for example, `{\tt axis3}'.\indcmd{set arrow} This allows arrows to
-reference any arbitrary axis on plots which make use of large numbers of
+In addition to these four options, \indcot{axis{\it n}} specifies that the
+position is to be measured along the $n\,$th $x$- or $y$-axis -- for example,
+`{\tt axis3}'.\indcmd{set arrow} This allows the graph to be measured with
+reference to any arbitrary axis on plots which make use of large numbers of
 parallel axes (see Section~\ref{multiple_axes}).
 
 \subsection{Text Labels}

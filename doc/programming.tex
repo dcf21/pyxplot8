@@ -21,7 +21,7 @@
 
 % LaTeX source for the PyXPlot Users' Guide
 
-\chapter{Using PyXPlot as a Calculator}
+\chapter{Performing Calculations}
 \label{gnuplot_ext_first}
 
 This chapter describes how PyXPlot may be used as a sophisticated calculator.
@@ -99,7 +99,7 @@ recognised by the =$\sim$ operator.
 {\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
 {\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through the end of the line are ignored. \\
 \end{tabular}}
-\caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful. This table is adapted from Guido van Rossum's\index{van Rossum, Guido} {\it Python Library Reference}\index{Python Library Reference}: \protect\url{http://docs.python.org/lib/node46.html}.}
+\caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
 \label{re_flags}
 \end{table}
 
@@ -222,11 +222,15 @@ An example of the use of function splicing to define a function which does not h
 
 \section{Working with Time-Series Data}
 
-\chapter{PyXPlot as a Programming Language}
+\chapter{Programming and Flow Control}
 
 This chapter describes ways of programming PyXPlot.
 
-\section{Flow Control}
+\section{Conditionals}
+
+\section{For Loops}
+
+\section{While Loops}
 
 \section{The \indcmdt{exec}}
 
@@ -239,6 +243,60 @@ exec "set terminal %s"%(terminal)
 \end{verbatim}
 
 It can also be used to write obfuscated PyXPlot scripts.
+
+\section{Shell Commands}
+
+Shell commands\index{shell commands!executing} may be executed directly from
+within PyXPlot by prefixing them with an \indcmdts{!} character. The
+remainder of the line is sent directly to the shell, for example:
+
+\begin{verbatim}
+!ls -l
+\end{verbatim}
+
+\noindent Semi-colons cannot be used to place further PyXPlot commands after a
+shell command on the same line.
+
+\begin{dontdo}
+!ls -l ; set key top left
+\end{dontdo}
+
+It is also possible to substitute the output of a shell command into a PyXPlot
+command. To do this, the shell command should be enclosed in back-quotes (`).
+For example:\index{backquote character}\index{shell commands!substituting}
+
+\begin{verbatim}
+a=`ls -l *.ppl | wc -l`
+print "The current directory contains %d PyXPlot scripts."%(a)
+\end{verbatim}
+
+It should be noted that back-quotes can only be used outside quotes. For
+example:
+
+\begin{dontdo}
+set xlabel '`ls`'
+\end{dontdo}
+
+\noindent will not work. The best way to do this would be:
+
+\begin{dodo}
+set xlabel `echo "'" ; ls ; echo "'"`
+\end{dodo}
+
+Note that it is not possible to change the current working directory by sending
+the {\tt cd} command to a shell, as this command would only change the working
+directory of the shell in which the single command is executed:
+
+\begin{dontdo}
+!cd ..
+\end{dontdo}
+
+PyXPlot has its own \indcmdt{cd} for this purpose, as well as its own
+\indcmdt{pwd}:
+
+\begin{dodo}
+cd ..
+\end{dodo}
 
 \section{Script Watching: pyxplot\_watch}
 

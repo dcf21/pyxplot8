@@ -272,8 +272,8 @@ be appended to it.
 \section{Printing Text}
 \label{string_subs_op}
 
-PyXPlot has a \indcmdt{print} for displaying strings and the results of
-calculations to the terminal, for example:
+PyXPlot's \indcmdt{print} can be used to display strings and the results of
+calculations on the terminal, as in the following examples:
 
 \begin{verbatim}
 a=2
@@ -763,123 +763,6 @@ set nologscale y x x2
 Further discussion of the configuration of axes can be found in
 Section~\ref{axis_extensions}.
 
-\section{Function Fitting}
-\label{fit_command}
-
-It is possible to fit functional forms to \datapoint s read from files by using
-the \indcmdt{fit}. A simple example might be:\footnote{In \gnuplot, this
-example would have been written {\tt fit f(x) ...}, rather than {\tt fit f()
-...}. This syntax is supported in PyXPlot, but is deprecated.}
-
-\begin{verbatim}
-f(x) = a*x+b
-fit f() 'data.dat' index 1 using 2:3 via a,b
-\end{verbatim}
-
-The first line specifies the functional form which is to be used.  The
-coefficients within this function which are to be varied during the fitting
-process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
-The modifiers \indmodt{index}, \indmodt{every} and
-\indmodt{using}\indmod{select} have the same meanings here as in the plot
-command.\footnote{The {\tt select} modifier, to be introduced in
-Section~\ref{select_modifier} can also be used.}  For example, given the
-following data file which contains a sampled square wave, entitled
-``square.dat'':
-
-\begin{verbatim}
-    0.314159          1
-    0.942478          1
-    1.570796          1
-    2.199115          1
-    2.827433          1
-    3.455752         -1
-    4.084070         -1
-    4.712389         -1
-    5.340708         -1
-    5.969026         -1
-\end{verbatim}
-
-\noindent the following script fits a truncated Fourier series to it.  The
-output can be found in Figure~\ref{ex:fitting}.
-
-\begin{verbatim}
-f(x) = a1*sin(x) + a3*sin(3*x) + a5*sin(5*x)
-fit f() 'square.dat' via a1, a3, a5
-set xlabel '$x$' ; set ylabel '$y$'
-plot 'square.dat' title 'data' with points pointsize 2, \
-     f(x) title 'Fitted function' with lines
-\end{verbatim}
-
-\example{ex:fitting}{The output from a script that fits a truncated Fourier series to a sampled square wave}{
-The output from a script that fits a truncated Fourier series to a
-sampled square wave.  Even with only three terms the Gibbs pheonomenon is
-becoming apparent (see \url{http://en.wikipedia.org/wiki/Gibbs_phenomenon} for
-an explanation).\\
-\centerline{\includegraphics{examples/eps/ex_fitting.eps}}
-}
-
-This is useful for producing best-fit lines\index{best fit
-lines}\footnote{Another way of producing best-fit lines is to use a cubic
-spline; more details are given in Section~\ref{spline_command}}, and also has
-applications for estimating the gradients of datasets.  The syntax is
-essentially identical to that used by \gnuplot, though a few points are worth
-noting:
-
-\begin{itemize}
-\item When fitting a function of $n$ variables, at least $n+1$ columns (or
-rows -- see Section~\ref{horizontal_datafiles}) must be specified after the
-{\tt using} modifier. By default, the first $n+1$ columns are used. These
-correspond to the values of each of the $n$ inputs to the function, plus
-finally the value which the output from the function is aiming to match.
-\item If an additional column is specified, then this is taken to contain the
-standard error in the value that the output from the function is aiming to
-match, and can be used to weight the \datapoint s which are input into the
-{\tt fit} command. 
-\item By default, the starting values for each of the fitting parameters is
-$1.0$. However, if the variables to be used in the fitting process are already
-set before the {\tt fit} command is called, these initial values are used
-instead. For example, the following would use the initial values
-$\{a=100,b=50\}$:
-\begin{verbatim}
-f(x) = a*x+b
-a = 100
-b = 50
-fit f() 'data.dat' index 1 using 2:3 via a,b
-\end{verbatim}
-
-\item As with all numerical fitting procedures, the {\tt fit} command comes
-with caveats. It uses a generic fitting algorithm, and may not work well with
-poorly behaved or ill-constrained problems. It works best when all of the
-values it is attempting to fit are of order unity. For example, in a problem
-where $a$ was of order $10^{10}$, the following might fail:
-\begin{verbatim}
-f(x) = a*x
-fit f() 'data.dat' via a
-\end{verbatim}
-However, better results might be achieved if $a$ were artificially made of
-order unity, as in the following script:
-\begin{verbatim}
-f(x) = 1e10*a*x
-fit f() 'data.dat' via a
-\end{verbatim}
-
-\item A series of ranges may be specified after the {\tt fit} command, using
-the same syntax as in the {\tt plot} command, as described in
-Section~\ref{plot_ranges}. If ranges are specified then only \datapoint s falling
-within these ranges are used in the fitting process; the ranges refer to each
-of the $n$ variables of the fitted function in order.
-
-\item For those interested in the mathematical details, the workings of the
-{\tt fit} command is discussed in more detail in Chapter~\ref{fit_math}.
-
-\end{itemize}
-
-At the end of the fitting process, the best-fitting values of each parameter
-are output to the terminal, along with an estimate of the uncertainty in each.
-Additionally, the Hessian, covariance and correlation matrices are output in
-both human-readable and machine-readable formats, allowing a more complete
-assessment of the probability distribution of the parameters.
-
 \section{Interactive Help}
 
 In addition to this {\it Users' Guide}, PyXPlot also has a \indcmdt{help},
@@ -901,60 +784,6 @@ help commands help
 \end{verbatim}
 
 \noindent which would display help on the {\tt help} command itself.
-
-\section{Shell Commands}
-
-Shell commands\index{shell commands!executing} may be executed directly from
-within PyXPlot by prefixing them with an \indcmdts{!} character. The
-remainder of the line is sent directly to the shell, for example:
-
-\begin{verbatim}
-!ls -l
-\end{verbatim}
-
-\noindent Semi-colons cannot be used to place further PyXPlot commands after a
-shell command on the same line.
-
-\begin{dontdo}
-!ls -l ; set key top left
-\end{dontdo}
-
-It is also possible to substitute the output of a shell command into a PyXPlot
-command. To do this, the shell command should be enclosed in back-quotes (`).
-For example:\index{backquote character}\index{shell commands!substituting}
-
-\begin{verbatim}
-a=`ls -l *.ppl | wc -l`
-print "The current directory contains %d PyXPlot scripts."%(a)
-\end{verbatim}
-
-It should be noted that back-quotes can only be used outside quotes. For
-example:
-
-\begin{dontdo}
-set xlabel '`ls`'
-\end{dontdo}
-
-\noindent will not work. The best way to do this would be:
-
-\begin{dodo}
-set xlabel `echo "'" ; ls ; echo "'"`
-\end{dodo}
-
-Note that it is not possible to change the current working directory by sending
-the {\tt cd} command to a shell, as this command would only change the working
-directory of the shell in which the single command is executed:
-
-\begin{dontdo}
-!cd ..
-\end{dontdo}
-
-PyXPlot has its own \indcmdt{cd} for this purpose, as well as its own
-\indcmdt{pwd}:
-
-\begin{dodo}
-cd ..
-\end{dodo}
 
 \section{Differences Between PyXPlot and \gnuplot}
 \label{missing_features}
