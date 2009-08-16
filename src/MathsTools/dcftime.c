@@ -325,7 +325,7 @@ void dcftimediff_seconds(value *in1, value *in2, value *in3, value *output, int 
   CHECK_3NOTNAN;
   CHECK_3INPUT_DIMLESS;
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = floor((in2->real - in1->real)*1440); }
+  ELSE_REAL   { output->real = floor((in2->real - in1->real)*86400); }
   ENDIF
   if (!ppl_units_DblEqual(in3->real, 0)) output->real = fmod(output->real, 60);
  }

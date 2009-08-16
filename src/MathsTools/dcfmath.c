@@ -241,6 +241,7 @@ void dcfmath_abs(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX    output->real = hypot(in->real , in->imag);
   ELSE_REAL      output->real = fabs(in->real);
   ENDIF
+  CHECK_OUTPUT_OKAY;
   ppl_units_DimCpy(output, in);
  }
 
@@ -432,6 +433,7 @@ void dcfmath_besseli(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_il_scaled((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_besselI(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -443,6 +445,7 @@ void dcfmath_besselI(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_In((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_besselj(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -454,6 +457,7 @@ void dcfmath_besselj(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_jl((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_besselJ(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -465,6 +469,7 @@ void dcfmath_besselJ(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_Jn((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_besselk(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -476,6 +481,7 @@ void dcfmath_besselk(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_kl_scaled((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_besselK(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -487,6 +493,7 @@ void dcfmath_besselK(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_Kn((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_bessely(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -498,6 +505,7 @@ void dcfmath_bessely(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_yl((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_besselY(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -509,6 +517,7 @@ void dcfmath_besselY(value *in1, value *in2, value *output, int *status, char *e
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_Yn((int)in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_beta(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -519,6 +528,7 @@ void dcfmath_beta(value *in1, value *in2, value *output, int *status, char *errt
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_beta(in1->real, in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_binomialPDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
@@ -531,6 +541,7 @@ void dcfmath_binomialPDF(value *in1, value *in2, value *in3, value *output, int 
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_ran_binomial_pdf((unsigned int)in1->real, in2->real, (unsigned int)in3->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
@@ -543,6 +554,7 @@ void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int 
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_cdf_binomial_P((unsigned int)in1->real, in2->real, (unsigned int)in3->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -563,6 +575,7 @@ void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char 
     output->real              =  2 * GSL_CONST_MKSA_PLANCKS_CONSTANT_H / pow(GSL_CONST_MKSA_SPEED_OF_LIGHT, 2) * pow(in1->real,3) / expm1(GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in1->real / GSL_CONST_MKSA_BOLTZMANN / in2->real);
    }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext)
@@ -580,6 +593,7 @@ void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext)
     output->real = 2.821439 * GSL_CONST_MKSA_BOLTZMANN / GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in->real; // Wien displacement law
    }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_ceil(value *in, value *output, int *status, char *errtext)
@@ -590,6 +604,7 @@ void dcfmath_ceil(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = ceil(in->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_chisqPDF(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -600,6 +615,7 @@ void dcfmath_chisqPDF(value *in1, value *in2, value *output, int *status, char *
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_ran_chisq_pdf(in1->real , in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_chisqCDF(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -610,6 +626,7 @@ void dcfmath_chisqCDF(value *in1, value *in2, value *output, int *status, char *
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_cdf_chisq_P(in1->real , in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_chisqCDFi(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -620,6 +637,7 @@ void dcfmath_chisqCDFi(value *in1, value *in2, value *output, int *status, char 
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_cdf_chisq_Pinv(in1->real , in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_conjugate(value *in, value *output, int *status, char *errtext)
@@ -628,6 +646,7 @@ void dcfmath_conjugate(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   memcpy(output, in, sizeof(value));
   output->imag *= -1;
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_cos(value *in, value *output, int *status, char *errtext)
@@ -709,6 +728,7 @@ void dcfmath_degrees(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = degrees(in->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_ellK(value *in, value *output, int *status, char *errtext)
@@ -811,6 +831,7 @@ void dcfmath_floor(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = floor(in->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_gamma(value *in, value *output, int *status, char *errtext)
@@ -888,6 +909,7 @@ void dcfmath_imag(value *in, value *output, int *status, char *errtext)
   char *FunctionDescription = "Im(z)";
   CHECK_1NOTNAN;
   output->real = in->imag;
+  CHECK_OUTPUT_OKAY;
   ppl_units_DimCpy(output, in);
  }
 
@@ -996,6 +1018,7 @@ void dcfmath_max (value *in1, value *in2, value *output, int *status, char *errt
   IF_2COMPLEX { if (hypot(in1->real,in1->imag) < hypot(in2->real,in2->imag)) { memcpy(output,in2,sizeof(value)); } else { memcpy(output,in1,sizeof(value)); } }
   ELSE_REAL   { output->real = max(in1->real, in2->real); ppl_units_DimCpy(output, in1); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_min (value *in1, value *in2, value *output, int *status, char *errtext)
@@ -1006,6 +1029,7 @@ void dcfmath_min (value *in1, value *in2, value *output, int *status, char *errt
   IF_2COMPLEX { if (hypot(in1->real,in1->imag) > hypot(in2->real,in2->imag)) { memcpy(output,in2,sizeof(value)); } else { memcpy(output,in1,sizeof(value)); } }
   ELSE_REAL   { output->real = min(in1->real, in2->real); ppl_units_DimCpy(output, in1); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_mod(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -1016,6 +1040,7 @@ void dcfmath_mod(value *in1, value *in2, value *output, int *status, char *errte
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = fmod(in1->real , in2->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
   ppl_units_DimCpy(output, in1);
  }
 
@@ -1057,6 +1082,7 @@ void dcfmath_radians(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { if (in->dimensionless) { output->real = radians(in->real); } else { output->real = in->real; } }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_frandom(value *output, int *status, char *errtext)
@@ -1135,6 +1161,7 @@ void dcfmath_real(value *in, value *output, int *status, char *errtext)
   char *FunctionDescription = "Re(z)";
   CHECK_1NOTNAN;
   output->real = in->real;
+  CHECK_OUTPUT_OKAY;
   ppl_units_DimCpy(output, in);
  }
 
@@ -1231,7 +1258,7 @@ void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *er
  {
   char *FunctionDescription = "tophat(x,sigma)";
   CHECK_2NOTNAN;
-  CHECK_2INPUT_DIMLESS;
+  CHECK_2INPUT_DIMMATCH;
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { if ( fabs(in1->real) <= fabs(in2->real) ) output->real = 1.0; }
   ENDIF
@@ -1245,6 +1272,7 @@ void dcfmath_zeta(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_zeta(in->real); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 double degrees(double rad)

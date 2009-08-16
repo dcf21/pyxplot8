@@ -154,7 +154,7 @@ Clearly PyXPlot's implementation of the {\tt time\_juliandate()} {\it does} need
 \funcdef{timediff\_secs({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of seconds elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 60~seconds have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
 \funcdef{timediff\_years({\it JD}$_1$,{\it JD}$_2$)}{Returns the integer number of years elapsed between the first and second supplied Julian Dates. For more details see the {\tt time\_juliandate()} function.}
 \funcdef{texify(\ldots)}{returns a string of \LaTeX text corresponding to the algebraic expression or string supplied between the brackets.}
-\funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real and dimensionless.}
+\funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real, but may have any physical dimensions so long as they match.}
 \funcdef{unit(\ldots)}{multiplies a number by a physical unit. The string inside the brackets should consist of a string of the names of physical units, multiplied together with the {\tt *} operator, divided using the {\tt /} operator, or raised by numeric powers using the {\tt \^{}} operator. The list may be commenced with a numeric constant, for example: {\tt unit(2*m\^{}2/s)}.}
 \funcdef{zeta($x$)}{evaluates the Riemann zeta function for any real dimensionless number $x$.}
 
