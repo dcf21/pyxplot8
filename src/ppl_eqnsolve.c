@@ -69,14 +69,17 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   for (i=0; i<data->Nexprs; i++)
    {
     ppl_EvaluateAlgebra(data->expr1[i], &output1, 0, NULL, 0, data->errpos, data->errtext, 0);
+    if (*(data->errpos) >= 0) { *(data->errpos)=0; return GSL_NAN; } // A numerical error happened
 
     if (data->expr2[i] != NULL)
      {
       ppl_EvaluateAlgebra(data->expr2[i], &output2, 0, NULL, 0, data->errpos, data->errtext, 0);
+      if (*(data->errpos) >= 0) { *(data->errpos)=0; return GSL_NAN; } // A numerical error happened
+
       if (!ppl_units_DimEqual(&output1, &output2))
        {
         *(data->errpos)=0;
-        strcpy(data->errtext, "Error: The two sides of the equation which is being solved are not dimensionally compatible.");
+        sprintf(data->errtext, "Error: The two sides of the equation which is being solved are not dimensionally compatible. The left side has dimensions of <%s> while the right side has dimensions of <%s>.",ppl_units_GetUnitStr(&output1, NULL, NULL, 0, 0),ppl_units_GetUnitStr(&output2, NULL, NULL, 1, 0));
         return GSL_NAN;
        }
       accumulator += pow(output1.real - output2.real , 2); // Minimise sum of square deviations of many equations

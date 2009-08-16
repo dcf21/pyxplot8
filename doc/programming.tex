@@ -22,15 +22,14 @@
 % LaTeX source for the PyXPlot Users' Guide
 
 \chapter{Performing Calculations}
-\label{gnuplot_ext_first}
 
 This chapter describes how PyXPlot may be used as a sophisticated calculator.
 
 \section{Variables}
 
-As has already been hinted at in Section~\ref{string_subs_op}, PyXPlot
-recognises two types of variables: numeric variables and string variables.  The
-former can be assigned using any valid mathematical expression. For example:
+PyXPlot recognises two types of variables: numeric variables and string
+variables.  The former can be assigned using any valid mathematical expression.
+For example:
 
 \begin{verbatim}
 a = 5.2 * sqrt(64)
@@ -125,15 +124,383 @@ set title title
 plot filename
 \end{verbatim}
 
+\section{Handling Numerical Errors}
+\label{sec:num_errs}
+\index{numerical errors}
+
+By default, an error message is returned whenever calculations return values
+which are infinite, as in the case of {\tt 1/0}, or when functions are
+evaluated outside the range of parameter space in which they are defined, as in
+the case of {\tt besseli(-1,1)}.  Sometimes this behaviour is desirable: it
+flags up to the user that a calculation has gone wrong, and exactly what the
+problem is.  At other times, however, these error messages can be undesirable.
+For example, when plotting the function {\tt sqrt(x)} between $x=-1$ and $x=1$,
+error messages about the function being undefined for $x<0$ may seem as
+unnecessary spam, and may indeed lead you to miss more genuine and serious
+errors buried in their midst.
+
+For this reason, the issuing of explicit error messages when calculations
+return non-finite numeric results can be switched off by typing
+\indcmd{set numeric errors quiet}
+
+\begin{verbatim}
+set numeric errors quiet
+\end{verbatim}
+
+\noindent Having done this, expressions such as
+
+\begin{verbatim}
+x = besseli(-1,1)
+\end{verbatim}
+
+\noindent fail silently, and variables which contain non-finite numeric results
+are displayed as {\tt NaN}\index{NaN}, which stands for {\it Not a
+Number}\index{not a number}.
+
+The issuing of explicit errors may subsequently be re-enabled by typing
+\indcmd{set numeric errors explicit}
+
+\begin{verbatim}
+set numeric errors explicit
+\end{verbatim}
+
 \section{Working with Complex Numbers}
 \label{sec:complex_numbers}
+\index{complex numbers}
+
+In all of the examples given thus far, algebraic expressions have only been
+allowed to return real numbers: PyXPlot has not been handling any complex
+numbers. Since there are many circumstances in which you may be analysing data
+which you are certain is real, complex arithmetic is disabled by default.
+Expressions such as {\tt sqrt(-1)} will return either an error or {\tt NaN}.
+The most obvious example of this is the built-in variable {\tt i}, which is set
+to equal {\tt sqrt(-1)}:
+
+\begin{verbatim}
+pyxplot> print i
+nan
+\end{verbatim}
+
+Complex arithmetic may be enabled by typing
+\indcmd{set numeric complex}
+
+\begin{verbatim}
+set numeric complex
+\end{verbatim}
+
+\noindent and then disabled again by typing
+\indcmd{set numeric real}
+
+\begin{verbatim}
+set numeric real
+\end{verbatim}
+
+Once complex arithmetic is enabled, many of PyXPlot's built in mathematical
+functions accept complex input arguments, including the logarithm function, all
+of the trigonometric functions, and the exponential function; a complete list
+of functions which accept complex inputs can be found in
+Appendix~\ref{ch:function_list}.
+
+Complex number literals can be entered into algebraic expressions in either of
+the following two forms:
+
+\begin{verbatim}
+print (2 + 3*i       )
+print (2 + 3*sqrt(-1))
+\end{verbatim}
+
+\noindent The former version depends upon the built-in system variable {\tt i}
+being defined to equal $\sqrt{-1}$; the user could stop this from working if he
+had previous typed, for example
+
+\begin{verbatim}
+i=1
+\end{verbatim}
+
+\noindent However, the variable {\tt i} can straightforwardly be returned to
+its default value by typing
+
+\begin{verbatim}
+i=sqrt(-1)
+\end{verbatim}
+
+Several functions are provided especially for performing manipulations on
+complex numbers: the \indfunt{Re(z)} and \indfunt{Im(z)} functions return
+respectively the real and imaginary parts of a complex number $z$, the
+\indfunt{arg(z)} function returns the complex argument of $z$, and the
+\indfunt{abs(z)} function returns the modulus of $z$. For example:
+
+\begin{verbatim}
+set numeric complex
+x=0.5
+print Re(exp(i*x))
+print cos(x)        # This equals the above
+print arg(exp(i*x)) # This equals x
+\end{verbatim}
 
 \section{Working with Physical Units}
 \label{sec:units}
+\index{physical units}\index{units}
 
-units schemes
+PyXPlot has extensive facilities for handling data which is read in from files
+which use different physical units, and these features also make it a powerful
+desktop tool for converting quantities between different imperial and metric
+units, and for doing simple back-of-the-envelope calculations where numbers are
+substituted into equations and you want to know what the dimensions of the
+quantity you've calculated is.
+
+All numeric variables in PyXPlot have not only a numeric magnitude, but also a
+physical unit associated with them. In the case a pure number such as~2, the
+quantity is said to be dimensionless: it has no physical unit. The special
+function \indfunt{unit()} is used to change the physical unit associated with a
+quantity. For example, the expression
+
+\begin{verbatim}
+print 2*unit(s)
+\end{verbatim}
+
+\noindent takes the number~2 and multiplies it by the unit {\tt s}, which is
+the SI abbreviation for seconds.  The resulting quantity then has dimensions of
+time, and could, for example, be divided by the unit {\tt hr} to find the
+dimensionless number of hours in two seconds:
+
+\begin{verbatim}
+print 2*unit(s)/unit(hr)
+\end{verbatim}
+
+\begin{boxout}\index{temperature conversions}\index{units!temperature}
+PyXPlot has extensive facilities for converting physical quantities between
+different units systems, and this includes the ability to convert temperatures
+between degrees Celsius, Fahrenheit and Kelvin. However, these conversions
+should be used with some caution, as can be demonstrated by the following two
+questions:
+\begin{itemize}
+\item How many degrees Kelvin corresponds to a temperature of $20^\circ$C?
+\item How many degrees Kelvin corresponds to a temperature {\it rise} of $20^\circ$C?
+\end{itemize}
+The answers to these two questions are 293\,K and 20\,K respectively: we see
+that the answer depends upon whether we are talking about an {\it absolute}
+temperature or a {\it relative} temperature. A heat capacity of 1\,J/$^\circ$C
+equals 1\,J/K, even though $1^\circ$C does not equal 1\,K.
+
+The reason for this problem, and the explanation of why it affects temperatures
+and rarely any other physical unit, is that there exists such a thing as
+absolute temperature. Distances, for example, are very rarely absolute: they
+measure the relative distance gap between two points. Occasionally people might
+choose to express all displacements relative to a particular origin, but they
+wouldn't expect PyXPlot to be able to convert their displacements to another
+origin automatically in the same way that they might with temperature.
+
+Times are more often absolute than distances: the year 1453 corresponds to 1453
+years since the Christian epoch, and would correspond to a different year in
+the Muslim calendar which started counting in the year 273.\footnote{PyXPlot
+can convert dates between the Christian, Jewish and Muslim calendars, as will
+be seen in Section~\ref{sec:time_series}.}
+
+As PyXPlot cannot distinguish between absolute and relative temperatures, it
+needs to make some assumptions when it converts between different temperature
+scales. In short, PyXPlot (a) does not convert between different temperature
+scales unless explicitly requested to, (b) assumes that all quantities with
+dimensions of temperature are absolute temperatures for the purposes of
+conversions, (c) assumes that all quantities with dimensions of {\it per unit
+temperature} are relative temperatures for the purposes of conversions, and (d)
+does not allow conversions of temperatures raised to any powers other than~1
+or~$-1$ or of absolute temperatures which are multiplied by any other units.
+
+\caption{The problems encountered when converting temperatures between Celsius, Fahrenheit and Kelvin.}
+\end{boxout}
+
+Compound units such as miles per hour, which is defined in terms of two other
+units, can be used thus
+
+\begin{verbatim}
+print 2*unit(miles/hour)
+\end{verbatim}
+
+\noindent or, in many cases, have their own explicit abbreviations, in this
+case {\tt mph}:
+
+\begin{verbatim}
+print 2*unit(mph)
+\end{verbatim}
+
+\noindent As these examples demonstrate, the {\tt unit()} function can be
+passed a string of units either multiplied together with the {\tt *} operator,
+or divided using the {\tt /} operator. Units may be raised to powers with the
+{\tt \^{}} operator, as in
+
+\begin{verbatim}
+a = 2*unit(m^2)
+print "An area of %f square feet"%(a/unit(ft^2))
+\end{verbatim}
+
+\noindent As these examples also demonstrate, units may be refered to either by
+their abbreviated or full names, and either in their singular or plural forms.
+A complete list of all of the units which PyXPlot recognises by default,
+together with all of their recognised names can be found in
+Appendix~\ref{ch:units}.
+
+SI units may also be preceded with SI prefixes\index{units!SI prefixes}, for
+example:
+
+\begin{verbatim}
+a = 2*unit(um)
+a = 2*unit(micrometres)
+\end{verbatim}
+
+When quantities with physical units are substituted into algebraic expressions,
+PyXPlot automatically checks that the expression is dimensionally correct
+before evaluating it. For example, the following expression is not
+dimensionally correct and would return an error because the first term in the
+sum has dimensions of velocity, meanwhile the second term is a length:
+\index{units!dimensional analysis}
+
+\begin{verbatim}
+a = 2*unit(m)
+b = 4*unit(s)
+print a/b + a
+\end{verbatim}
+
+\noindent PyXPlot continues to throw an error in this case, even when explicit
+numerical errors are turned off with the \indcmdt{set numeric errors quiet},
+since it is deemed a serious error: the above expression would never be correct
+for any values of {\tt a} and {\tt b} given their dimensions.
+
+As a quick perusal of Appendix~\ref{ch:units} will show, a large number of
+units are pre-defined in PyXPlot by default. However, the need may occasionally
+arise to define new units. It is not possible to do this from an interactive
+PyXPlot terminal, but it is possible to do so from a configuration script which
+PyXPlot runs upon start-up. This will be discussed in
+Chapter~\ref{ch:configuration}, where we shall also see that new base units can
+also be defined. Just as the Pluto mass can be defined as a new measure of
+mass, so the potato can be defined as a new measure of number of vegetables.
+
+\section{Configuring how Numbers are Displayed}
+\label{sec:unitdisp}
+
+\subsection{Units}
+
+By default, when a number which has physical dimensions is displayed PyXPlot
+searches through its database of physical units for the most appropriate unit
+in which to represent it. The name of the adopted unit is printed after the
+value. By default, quantities are displayed by preference in SI units, and SI
+prefixes such as milli- or kilo- are applied where appropriate. All of the
+behaviour, however, can be configured.
+
+PyXPlot has a number of different {\it units schemes}\index{units!unit
+schemes}, each of which comprises a list of units which are to be used in
+preference to all others. For example, in the CGS unit scheme\index{CGS
+units}\index{units!CGS}, all lengths are displayed in centimetres, all masses
+are displayed in grammes, and so forth. In the imperial unit
+scheme\index{Imperial units}\index{units!Imperial}, quantities are displayed in
+British Imperial units, meanwhile in the US unit scheme, US Imperial units are
+used. The current unit scheme can be changed using the \indcmdt{set unit
+scheme}:
+
+\begin{verbatim}
+pyxplot> vol = 3*unit(m^3)
+pyxplot> set unit scheme si ; print vol
+3 cubic_m
+pyxplot> set unit scheme cgs ; print vol
+3000000 cubic_cm
+pyxplot> set unit scheme imperial ; print vol
+82.488468 bushels_(UK)
+pyxplot> set unit scheme us ; print vol
+85.13278 bushels_(US)
+\end{verbatim}
+
+\noindent A complete list of PyXPlot's unit schemes can be found in
+Table~\ref{tab:unit_schemes}.\index{natural units}\index{units!natural}
+
+\begin{table}
+\framebox[\textwidth]{
+\begin{tabular}{lp{9cm}}
+{\bf Name} & {\bf Description} \\
+\hline
+{\tt ancient} & Ancient units, especially those used in the Authorised Version of the Bible. \\
+{\tt CGS} & CGS units. \\
+{\tt Imperial} & British Imperial units. \\
+{\tt Planck} & Planck units, also known as natural units, which make several physical constants equal unity. \\
+{\tt SI} & SI units. \\
+{\tt US} & US Imperial units. \\
+\hline
+\end{tabular}}
+\caption{A list of PyXPlot's unit schemes.}
+\label{tab:unit_schemes}
+\end{table}
+
+In some cases, one may want to broadly use one of these unit schemes, but
+override one of the units in favour of another.  Astronomers, for example, may
+wish to use SI or CGS units to express all quantities with the exception of
+distances, which they wish to express in parsecs or astronomical units. Another
+astronomer might wish to express masses in solar or Jupiter masses, or
+luminosities in solar luminosities. This level of control is made available
+through the \indcmdt{set unit of} command, for example:
+
+\begin{verbatim}
+set unit of length parsec
+set unit of mass Mjupiter
+\end{verbatim}
+
+The more unusual case of the astronomer who wishes to express masses in Pluto
+masses is more complicated: the Pluto mass is not a pre-defined unit in
+PyXPlot, and it must first be defined before it can be set as a default unit.
+In Chapter~\ref{ch:configuration}, we shall see how to define new units in a
+configuration script.
+
+By default, units are displayed in their abbreviated forms, for example {\tt A} for amperes, and SI prefixes such as milli- and kilo- are applied to SI units where they are appropriate.\index{SI prefixes}\index{units!SI prefixes} In both cases, this behaviour
+can be turned on or off, in the former case with the commands:
+
+\begin{verbatim}
+set unit display abbreviated
+set unit display full
+\end{verbatim}
+
+\noindent and in the latter case using the following pair of commands:
+
+\begin{verbatim}
+set unit display prefix
+set unit display noprefix
+\end{verbatim}
+
+\subsection{Changing the Accuracy to which Numbers are Displayed}
+
+By default, when a number is displayed, it is printed accurate to eight
+significant figures, although fewer figures may actually be displayed if the
+final digits are zeros or nines.
+
+\subsection{Creating Pastable Text}
 
 \section{Physical Constants}
+\label{sec:constants}
+\index{physical constants}\index{constants}
+
+A wide range of mathematical and physical constants are defined by default in
+PyXPlot: most of the physical constants are prefixed with {\tt phy\_} to
+minimise name clashes with variables which the user may wish to define,
+although it is not an error for the user to redefine any of the built-in
+variables.
+
+These physical constants make it easy to evaluate physical formulae without
+explicitly looking up their values, as well as having a wide range of other
+uses. For example, the default aspect ratio of plots is the golden ratio,
+$\left((1+\sqrt{5})/2\right)^{-1}$, whose value is also contained in the
+constant {\tt GoldenRatio}.\index{golden ratio} Thus, the statement
+
+\begin{verbatim}
+set size ratio 1/GoldenRatio
+\end{verbatim}
+
+\noindent is entirely equivalent to setting plots to have the automatic aspect
+ratio. To obtain a square grid on a plot of the default aspect ratio, it is
+necessary that the range of the vertical axis should be {\tt 1/GoldenRatio}
+times that of the horizontal axis:
+
+\begin{verbatim}
+x0 = 0 ; y0 = 0; xspan = 2
+set xrange[x0 - xspan/2             : x0 + xspan/2             ]
+set yrange[y0 - xspan/2/GoldenRatio : y0 + xspan/2/GoldenRatio ]
+\end{verbatim}
 
 \section{User-defined Functions}
 \index{function splicing}
@@ -221,6 +588,7 @@ An example of the use of function splicing to define a function which does not h
 \noindent The output of this example can be seen in Example~\ref{ex:funcsplice2}
 
 \section{Working with Time-Series Data}
+\label{sec:time_series}
 
 \chapter{Programming and Flow Control}
 

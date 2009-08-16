@@ -1308,6 +1308,19 @@ void ppl_units_init()
   // Derived units
   // -------------
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mph";  // mile_per_hour
+  ppl_unit_database[ppl_unit_pos].nameAp     = "mph";  // mile_per_hour
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "mile_per_hour";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "miles_per_hour";
+  ppl_unit_database[ppl_unit_pos].quantity   = "velocity";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_MILE / 3600;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]= 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "knot";  // knot
   ppl_unit_database[ppl_unit_pos].nameAp     = "knots"; // knot
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;

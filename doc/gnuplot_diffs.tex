@@ -1,0 +1,43 @@
+% GNUPLOT_DIFFS.TEX
+%
+% The documentation in this file is part of PyXPlot
+% <http://www.pyxplot.org.uk>
+%
+% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
+%               2008   Ross Church
+%
+% $Id$
+%
+% PyXPlot is free software; you can redistribute it and/or modify it under the
+% terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+%
+% You should have received a copy of the GNU General Public License along with
+% PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+% Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+% ----------------------------------------------------------------------------
+
+% LaTeX source for the PyXPlot Users' Guide
+
+\chapter{Summary of Differences Between PyXPlot and \gnuplot}
+\label{ch:gnuplot_diffs}
+
+Rewrite Me.
+
+Because PyXPlot is still work in progress, it does not implement all of the
+features of \gnuplot. It currently does not implement any three-dimensional or
+surface plotting -- i.e.\ the \indcmdt{splot} of \gnuplot. It also does not
+support the plotting of parametric functions.
+
+Some of \gnuplot's features have been significantly re-worked to improve upon
+their operation. The prime example is \gnuplot's multiplot mode, which allows
+multiple graphs to be placed side-by-side. While we retain a similar syntax, we
+have made it significantly more flexible. The use of dual axes is another
+example: PyXPlot now places no limit on the number of parallel horizontal and
+vertical axes which may be drawn on a graph.
+
+These extensions to \gnuplot's interface are described in detail in the
+following chapters.
+
