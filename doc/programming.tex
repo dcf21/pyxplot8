@@ -105,7 +105,7 @@ recognised by the =$\sim$ operator.
 Strings may also be put together using the string substitution operator, {\tt
 \%}\index{\% operator@{\tt \%} operator}, which works in a similar fashion to
 Python string substitution operator\index{string operators!substitution}. This
-is described in detail in Section~\ref{string_subs_op}.  For example, to
+is described in detail in Section~\ref{sec:string_subs_op}.  For example, to
 concatenate the two strings contained in variables {\tt a} and {\tt b} into
 variable {\tt c} one would run:\index{string operators!concatenation}
 
@@ -307,7 +307,8 @@ temperature} are relative temperatures for the purposes of conversions, and (d)
 does not allow conversions of temperatures raised to any powers other than~1
 or~$-1$ or of absolute temperatures which are multiplied by any other units.
 
-\caption{The problems encountered when converting temperatures between Celsius, Fahrenheit and Kelvin.}
+\caption{The problems encountered when converting temperatures between Celsius,
+Fahrenheit and Kelvin.}
 \end{boxout}
 
 Compound units such as miles per hour, which is defined in terms of two other
@@ -366,7 +367,7 @@ numerical errors are turned off with the \indcmdt{set numeric errors quiet},
 since it is deemed a serious error: the above expression would never be correct
 for any values of {\tt a} and {\tt b} given their dimensions.
 
-As a quick perusal of Appendix~\ref{ch:units} will show, a large number of
+As a quick perusal of Appendix~\ref{ch:unit_list} will show, a large number of
 units are pre-defined in PyXPlot by default. However, the need may occasionally
 arise to define new units. It is not possible to do this from an interactive
 PyXPlot terminal, but it is possible to do so from a configuration script which
@@ -469,7 +470,72 @@ By default, when a number is displayed, it is printed accurate to eight
 significant figures, although fewer figures may actually be displayed if the
 final digits are zeros or nines.
 
+This is generally a helpful convention: PyXPlot's internal arithmetic is
+generally accurate to around 16 significant figures, and so it is quite
+conceivable that a calculation which is supposed to return, say $1$, may in
+fact return 0.999\,999\,999\,999\,999\,9. Likewise, when complex arithmetic is
+enabled, routines which are expected to return real numbers may in fact return
+results with imaginary parts at the level of one part in $10^{16}$.  By
+displaying numbers to only eight significant figures in such cases, the user is
+usually shown the `right' answer, instead of a noisy and unattractive one.
+
+However, there may also be cases where more accuracy is desirable, in which
+case, the number of significant figures to which output is displayed can be set
+using the command\indcmd{set numerics sigfig}
+
+\begin{verbatim}
+n = 12
+set numerics sigfig n
+\end{verbatim}
+
+\noindent where {\tt n} can be any number in the range 1-30. It should be noted
+that the number supplied is the {\it minimum} number of significant figures to
+which numbers are displayed; on occasion an extra figure may be displayed.
+
+Alternatively, the string substitution operator, described in
+Section~\ref{sec:string_subs_op} may be used to specify how a number should be
+displayed on a one-by-one basis, for example:
+
+\begin{verbatim}
+print "%d"  %(pi) # Print the integer part of pi
+print "%.5f"%(pi) # Print pi in non-scientific format, to
+                  #   5 decimal places
+print "%.5e"%(pi) # Print pi in scientific format, to
+                  #   5 decimal places
+print "%s"  %(pi) # Print pi as normal
+\end{verbatim}
+
 \subsection{Creating Pastable Text}
+
+PyXPlot's default convention of displaying numbers in a format such as
+
+\begin{verbatim}
+(2+3i) metres
+\end{verbatim}
+
+is well-suited for creating text which is readable by human users, but is less
+well-suited for creating text which can be copied and pasted into another
+calculation in another PyXPlot terminal, or for creating text which could be
+used in a \LaTeX\ text label on a plot. For this reason, the \indcmdt{set
+numerics display} command allows the user to choose between three different
+ways in which numbers can be displayed:
+
+\begin{verbatim}
+pyxplot> set numerics display natural
+pyxplot> print phy_c
+299792 km/s
+pyxplot> set numerics display typeable
+pyxplot> print phy_c
+299792*unit(km/s)
+pyxplot> set numerics display latex
+pyxplot> print phy_c
+$299792\,\mathrm{km}/\mathrm{s}$
+\end{verbatim}
+
+The first case is the default way in which PyXPlot displays numbers. The second
+case produces text which forms a valid algebraic expression which could be
+pasted into another PyXPlot calculation. The final case produces a string of
+\LaTeX\ text which could be used as a label on a plot.
 
 \section{Physical Constants}
 \label{sec:constants}
@@ -498,8 +564,8 @@ times that of the horizontal axis:
 
 \begin{verbatim}
 x0 = 0 ; y0 = 0; xspan = 2
-set xrange[x0 - xspan/2             : x0 + xspan/2             ]
-set yrange[y0 - xspan/2/GoldenRatio : y0 + xspan/2/GoldenRatio ]
+set xrange[x0 - xspan/2            :x0 + xspan/2             ]
+set yrange[y0 - xspan/2/GoldenRatio:y0 + xspan/2/GoldenRatio ]
 \end{verbatim}
 
 \section{User-defined Functions}
@@ -592,13 +658,202 @@ An example of the use of function splicing to define a function which does not h
 
 \chapter{Programming and Flow Control}
 
-This chapter describes ways of programming PyXPlot.
+In this chapter we turn to the loop constructs which are available in PyXPlot,
+which are principally useful for automatically executing a common set of
+commands many times on many different \datafile s. We also explain how to
+execute shell commands from within PyXPlot, and introduce a simple framework
+for automatically re-executing PyXPlot scripts whenever they change, to allow
+plots to update automatically whenever the scripts used to produce them are
+modified.
 
 \section{Conditionals}
 
+The \indcmdt{if} can be used to conditionally execute a series of commands only
+if a certain criterion is satisfied. In its simplest form, its syntax is
+
+\begin{verbatim}
+if <expression> {
+  ....
+ }
+\end{verbatim}
+
+\noindent where, as in C, the algebraic expression is deemed to be true if it
+evaluates to any non-zero value, and to be false if it is exactly zero. The
+list of commands to be executed must begin on a new line after the {\tt if}
+statement, and the closing brace must be on a line by itself; alternatively,
+semi-colons may, as always, be used in place of new lines. The opening brace
+need not necessarily be on the same line as the {\tt if} statement, as is
+demonstrated in the following example:
+
+\begin{verbatim}
+if (x==0)
+ {
+  print "x is zero"
+ } else if (x>0) {
+  print "x is positive"
+ } else {
+  print "x is negative"
+ }
+\end{verbatim}
+
+In this example, the first script block, contained between the first pair of
+braces, is executed if the first conditional, {\tt x==0}, is true. If the first
+script block is not executed, PyXPlot proceeds to test the second conditional,
+following the {\tt else if} statement, and executes the second script block if
+this is true. The final script block is executed if all of the preceeding
+conditionals have tested false. Any number of {\tt else if} statements can be
+chained after one another, and a final {\tt else} statement can always be
+optionally supplied. The {\tt else} and {\tt else if} statements must always be
+placed on the same line as the closing brace of the preceeding script block.
+
+The precise way in which a string of {\tt else if} statements are arranged in a
+PyXPlot script is a matter of taste: the following is a more compact but
+equivalent version of the example given above:
+
+\begin{verbatim}
+if      (x==0) { ; print "x is zero"     ; } \
+else if (x> 0) { ; print "x is positive" ; } \
+else           { ; print "x is negative" ; }
+\end{verbatim}
+
 \section{For Loops}
 
+As in most programming languages, {\tt for} loops are used in PyXPlot to
+execute a series of lines several times. PyXPlot's \indcmdt{for} command is
+most similar to that of the BASIC programming language, and has the syntax
+
+\begin{verbatim}
+for <variable> = <start> to <end> {step <step>}
+ {
+  ....
+ }
+\end{verbatim}
+
+\noindent as in the example
+
+\begin{verbatim}
+for x = 0 to 10 step 2
+ {
+  print x
+ }
+\end{verbatim}
+
+\noindent which would run the supplied script block repeatedly with different
+values of the variable {\tt x}, starting at zero, increasing by two each time,
+and stopping once {\tt x} reaches ten. Thus, the numbers 0, 2, 4, 6 and 8 would
+be printed.
+
+If no step size is supplied, then a step size of one is adopted. If a negative
+step size is indicated, then the starting value of the loop variable must be
+greater than the end value, otherwise an error is returned, since the loop
+would otherwise run indefinitely. Likewise, if a step size of zero is
+specified, an error is returned.
+
+The same rules concerning the placement of brace characters apply to the
+\indcmdt{for} command as to the {\tt if} command.
+
+\section{Foreach Loops}
+
+The \indcmdt{foreach} command may be used to run a script block once for every
+file in the current working directory which matches a supplied file wildcard.
+For example,
+
+\begin{verbatim}
+foreach x in *.dat
+ {
+  print x
+ }
+\end{verbatim}
+
+\noindent would run the supplied script block once for every file in the
+current working directory with a {\tt .dat} suffix. The effect would be rather
+similar to typing
+
+\begin{verbatim}
+!ls *.dat
+\end{verbatim}
+
+An error is returned if there are no files in the present directory which match
+the supplied wildcard. The following example would produce a plot of all of the
+\datafile s in the current directory:
+
+\begin{verbatim}
+plot
+foreach x in *.dat
+ {
+  replot x using 1:2
+ }
+\end{verbatim}
+
+Alternatively, the \indcmdt{foreach} command may be used to run a script block
+once for every value of a variable in a supplied list, as in
+
+\begin{verbatim}
+foreach x in (-1,pi,10)
+ {
+  print x
+ }
+\end{verbatim}
+
+\noindent would print out the numbers $-1$, $\pi$ and 10.
+
 \section{While Loops}
+
+\example{ex:mandelbrot}{A script to produce an ASCII-art representation of the Mandelbrot Set}{
+In this example, we use all of PyXPlot's loop constructs together in a script
+which calculates the Mandelbrot Set and outputs an ASCII-art representation of
+it to the terminal. The script is as follows: \vspace{0.5cm}\\
+
+{\footnotesize\tt set numerics complex}\\
+{\footnotesize\tt for~y=2~to~-2~step~-0.15}\\
+{\footnotesize\tt ~\{}\\
+{\footnotesize\tt ~~linebuffer~=~""}\\
+{\footnotesize\tt ~~for~x=-2~to~2~step~0.075}\\
+{\footnotesize\tt ~~~\{}\\
+{\footnotesize\tt ~~~~zi~=~x+i*y;~z=zi;~iter=0;}\\
+{\footnotesize\tt ~~~~while~(abs(z)<2)~and~(iter<21)}\\
+{\footnotesize\tt ~~~~~\{}\\
+{\footnotesize\tt ~~~~~~z~=~z**2~+~zi}\\
+{\footnotesize\tt ~~~~~~iter=iter+1}\\
+{\footnotesize\tt ~~~~~\}}\\
+{\footnotesize\tt ~~~~if~~~~~~(iter~<~~1)~\{~;~linebuffer~="\%s~"\%(linebuffer)~;~\}~$\backslash$}\\
+{\footnotesize\tt ~~~~else~if~(iter~<~~2)~\{~;~linebuffer~="\%s."\%(linebuffer)~;~\}~$\backslash$}\\
+{\footnotesize\tt ~~~~else~if~(iter~<~~4)~\{~;~linebuffer~="\%s-"\%(linebuffer)~;~\}~$\backslash$}\\
+{\footnotesize\tt ~~~~else~if~(iter~<~20)~\{~;~linebuffer~="\%s*"\%(linebuffer)~;~\}~$\backslash$}\\
+{\footnotesize\tt ~~~~else~~~~~~~~~~~~~~~~\{~;~linebuffer~="\%s\&"\%(linebuffer)~;~\}}\\
+{\footnotesize\tt ~~~\}}\\
+{\footnotesize\tt ~~print~linebuffer}\\
+{\footnotesize\tt ~\}} \vspace{0.5cm}\\
+
+The output of this script is as follows: \\
+
+{\tt |~~~~~~~~~~~~~~~~~....................~~~~~~~~~~~~~~~~~}\newline
+{\tt |~~~~~~~~~~~~~............................~~~~~~~~~~~~~}\newline
+{\tt |~~~~~~~~~~..................................~~~~~~~~~~}\newline
+{\tt |~~~~~~~~......................................~~~~~~~~}\newline
+{\tt |~~~~~~........-------------.....................~~~~~~}\newline
+{\tt |~~~~~....--------------****-----.................~~~~~}\newline
+{\tt |~~~~..----------------*******------................~~~}\newline
+{\tt |~~~.---------------*****\&\&\&****------...............~~}\newline
+{\tt |~~.-------------***\&***\&\&\&\&\&*****-----..............~~}\newline
+{\tt |~.---------********\&\&\&\&\&\&\&\&\&\&\&\&\&**-----..............~}\newline
+{\tt |~------**********\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&*------.............~}\newline
+{\tt |~----******\&\&\&\&\&*\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&*------..............}\newline
+{\tt |~********\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&**------..............}\newline
+{\tt |~---*****\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&**------..............}\newline
+{\tt |~-----*****\&\&\&\&\&*\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&**------..............}\newline
+{\tt |~-------***********\&\&\&\&\&\&\&\&\&\&\&\&\&**------.............~}\newline
+{\tt |~~----------*******\&\&\&\&\&\&\&\&\&\&\&\&\&**-----..............~}\newline
+{\tt |~~.--------------*******\&\&\&******-----..............~~}\newline
+{\tt |~~~..---------------*****\&****------...............~~~}\newline
+{\tt |~~~~...---------------******------................~~~~}\newline
+{\tt |~~~~~.....---------------------..................~~~~~}\newline
+{\tt |~~~~~~~..........-------.......................~~~~~~~}\newline
+{\tt |~~~~~~~~~.....................................~~~~~~~~}\newline
+{\tt |~~~~~~~~~~~................................~~~~~~~~~~~}\newline
+{\tt |~~~~~~~~~~~~~~..........................~~~~~~~~~~~~~~}\newline
+{\tt |~~~~~~~~~~~~~~~~~~~................~~~~~~~~~~~~~~~~~~~}\\
+}
 
 \section{The \indcmdt{exec}}
 

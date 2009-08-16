@@ -789,7 +789,16 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
           if (in[start+i] != ',')
            {
             *errpos = start+i;
-            if (in[start+i] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
+            if (in[start+i] ==')')
+             {
+              if ((FunctionType == PPL_USERSPACE_INT) && (DictIter->key[0]!='i') && (k==NArgs-2)) // Last argument to diff_dx is optional
+               {
+                ppl_units_zero(ResultBuffer+bufpos+k+3);
+                (ResultBuffer+bufpos+k+3)->real = 1e-6;
+                k++; *errpos=-1; continue;
+               }
+              strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
+             }
             else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function.");
             return;
            } else { i++; }

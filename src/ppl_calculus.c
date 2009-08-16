@@ -39,8 +39,9 @@ typedef struct IntComm {
  char         *expr;
  value        *dummy;
  value         first;
+ double        DummyReal, DummyImag;
  unsigned char IsFirst;
- unsigned char TestingReal;
+ unsigned char TestingReal, VaryingReal;
  int          *errpos;
  char         *errtext;
  int           RecursionDepth;
@@ -53,7 +54,9 @@ double CalculusSlave(double x, void *params)
 
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
 
-  data->dummy->real = x;
+  if (data->VaryingReal) { data->dummy->real = x; data->dummy->imag = data->DummyImag; data->dummy->FlagComplex = !ppl_units_DblEqual(data->dummy->imag,0); }
+  else                   { data->dummy->imag = x; data->dummy->real = data->DummyReal; data->dummy->FlagComplex = !ppl_units_DblEqual(data->dummy->imag,0); }
+
   ppl_EvaluateAlgebra(data->expr, &output, 0, NULL, 0, data->errpos, data->errtext, data->RecursionDepth+1);
 
   if (data->IsFirst)
@@ -98,6 +101,7 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
   commlink.expr    = expr;
   commlink.IsFirst = 1;
   commlink.TestingReal = 1;
+  commlink.VaryingReal = 1;
   commlink.errpos  = errpos;
   commlink.errtext = errtext;
   commlink.RecursionDepth = RecursionDepth;
@@ -116,7 +120,9 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
     ppl_units_zero(&DummyTemp);
     DummyTemp.modified = 2;
    }
-  commlink.dummy = DummyVar;
+  commlink.dummy     = DummyVar;
+  commlink.DummyReal = DummyVar->real;
+  commlink.DummyImag = DummyVar->imag;
 
   ws          = gsl_integration_workspace_alloc(1000);
   fn.function = &CalculusSlave;
@@ -151,7 +157,7 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   value                     *DummyVar;
   value                      DummyTemp;
   gsl_function               fn;
-  double                     ResultReal=0, ResultImag=0, error;
+  double                     ResultReal=0, ResultImag=0, dIdI, dRdI, error;
 
   if (!ppl_units_DimEqual(point, step))
    {
@@ -160,16 +166,17 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     return;
    }
 
-  if (point->FlagComplex || step->FlagComplex)
+  if (step->FlagComplex)
    {
     *errpos=0;
-    strcpy(errtext, "Error: The arguments x and step to this differentiation operation must be real numbers; supplied values are complex.");
+    strcpy(errtext, "Error: The argument 'step' to this differentiation operation must be a real number; supplied value is complex.");
     return;
    }
 
   commlink.expr    = expr;
   commlink.IsFirst = 1;
   commlink.TestingReal = 1;
+  commlink.VaryingReal = 1;
   commlink.errpos  = errpos;
   commlink.errtext = errtext;
   commlink.RecursionDepth = RecursionDepth;
@@ -188,7 +195,9 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     ppl_units_zero(&DummyTemp);
     DummyTemp.modified = 2;
    }
-  commlink.dummy = DummyVar;
+  commlink.dummy     = DummyVar;
+  commlink.DummyReal = DummyVar->real;
+  commlink.DummyImag = DummyVar->imag;
 
   fn.function = &CalculusSlave;
   fn.params   = &commlink;
@@ -199,6 +208,13 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
    {
     commlink.TestingReal = 0;
     gsl_deriv_central(&fn, point->real, step->real, &ResultImag, &error);
+    commlink.VaryingReal = 0;
+    gsl_deriv_central(&fn, point->imag, step->real, &dIdI      , &error);
+    commlink.TestingReal = 1;
+    gsl_deriv_central(&fn, point->imag, step->real, &dRdI      , &error);
+
+    if ((!ppl_units_DblEqual(ResultReal, dIdI)) || (!ppl_units_DblEqual(ResultImag, -dRdI)))
+     { *errpos = 0; strcpy(errtext, "Error: The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation."); return; }
    }
 
   memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using

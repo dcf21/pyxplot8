@@ -87,8 +87,6 @@ set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
 
 The following table lists the effects which each of these settings has:
 
-\newpage %%% WHY IS THIS NECESSARY?
-
 \begin{longtable}{p{3cm}p{9cm}}
 {\tt x11\_singlewindow} & Displays plots on the screen (in X11 windows, using \ghostview). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
 {\tt x11\_multiwindow} & As above, but each new plot appears in a new window, and the old plots remain visible. As many plots as may be desired can be left on the desktop simultaneously.\\
@@ -724,9 +722,7 @@ set noy2tics
 
 \example{ex:axistics}{A plot demonsrating the use of custom axis ticks}{
 A plot illustrating some of the crossing points of the function $\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this plot are as given in the text.\\
-\begin{center}
-\includegraphics{examples/eps/ex_axistics.eps}
-\end{center}
+\centerline{\includegraphics{examples/eps/ex_axistics.eps}}
 }
 
 Minor tick marks can be placed on axes with the \indcmdt{set mxtics}, which has
@@ -793,9 +789,7 @@ $x$, deviate from that approximation.  Furthermore it is an example of a plot
 with a two-column legend, positioned below the plot using {\tt set key below}.
 The complete script used to produce the plot can be found on the PyXPlot
 website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.\\
-\begin{center}
-\includegraphics{examples/eps/ex_legends.eps}
-\end{center}
+\centerline{\includegraphics{examples/eps/ex_legends.eps}}
 }
 
 \section{The {\tt linestyle} Keyword}

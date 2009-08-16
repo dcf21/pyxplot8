@@ -83,7 +83,7 @@ format statement may be specified using the {\tt with format} specifier. The
 syntax for this is similar to that expected by the Python string substitution
 operator ({\tt \%})\index{\% operator@{\tt \%} operator}\index{string
 operators!substitution}\footnote{Note that this operator can also be used
-within PyXPlot; see Section~\ref{string_subs_op} for details.}.  For example,
+within PyXPlot; see Section~\ref{sec:string_subs_op} for details.}.  For example,
 to tabulate the values of $x^2$ to very many significant figures one could use:
 
 \begin{verbatim}
@@ -265,49 +265,56 @@ acsplines} plot style.
 
 \section{Numerical Integration and Differentiation}
 
-\index{differentiation}\index{integration} Special functions are available for
-performing numerical integration and differentiation of expressions:
-\indfunt{int\_dx()} and \indfunt{diff\_dx()}. In each case, the `{\tt x}' may
-be replaced with any valid one-letter variable name, to integrate or
-differentiate with respect to that dummy variable.
+\index{differentiation}\index{integration} Two special functions,
+\indfunt{int\_dx()} and \indfunt{diff\_dx()}, may be used to numerically
+integrate or differentiate an algebraic expressions.  In each case, the letter
+{\tt x} is the dummy variable which is to be used in the integration or
+differentiation, and may be replaced by any valid variable name of up to
+16~characters in length.
 
-The function {\tt int\_dx()} takes three parameters -- firstly the
-expression to be integrated, which should be placed in quotes as a string,
-followed by the minimum and maximum integration limits. For example, the
+The function {\tt int\_dx()} takes three parameters -- firstly the expression
+to be integrated, which may optionally be placed in quotes, followed by the
+minimum and maximum integration limits. These may have any physical dimensions,
+so long as they match, but must both be real numbers. For example, the
 following would plot the integral of the function $\sin(x)$:
 
 \begin{verbatim}
 plot int_dt('sin(t)',0,x)
 \end{verbatim} 
 
-The function {\tt diff\_dx()} takes two obligatory parameters plus two further
+The function {\tt diff\_dx()} takes two obligatory parameters plus one further
 optional parameters. The first is the expression to be differentiated, which,
-as above, should be placed in quotes as a string, followed by the point at
-which the differential should be evaluated, followed by optional parameters
-$\epsilon_1$ and $\epsilon_2$ which are described below.  The following example
-would evaluate the differential of the function $\cos(x)$ with respect to $x$
-at $x=1.0$:
+as above, may optionally placed in quotes for clarity. This should be followed
+by the numerical value of the dummy variable at the point where the given
+expression is to be differentiated. This value may have any physical
+dimensions, and may be a complex number. When complex arithmetic is enabled,
+PyXPlot checks that the function being differentiated satisfied the
+Cauchy-Riemann equations, and returns an error if it does not, in which case it
+is not differentiable.  The final, optional, parameter to the {\tt diff\_dx()}
+function is an approximate step size which indicates the range of argument
+values over which PyXPlot should take samples to determine the gradient. If no
+value is supplied, a value of $10^{-6}$ is used.  The following example would
+evaluate the differential of the function $\cos(x)$ with respect to $x$ at
+$x=1.0$:
 
-\begin{verbatim}
-print diff_dx('cos(x)', 1.0)
-\end{verbatim}
+\begin{dodo}
+print diff\_dx('cos(x)', 1.0)
+\end{dodo}
 
-Differentials are evaluated by a simple differencing algorithm, and a parameter
-$\epsilon$ controls the spacing with which to perform the differencing
-operation:
+The following is an example of a function which is not differentiable, and
+which throws an error because the Cauchy-Riemann equations are not satisfied:
 
-\begin{displaymath}
-\left.\frac{\mathrm{d}f}{\mathrm{d}x}\right|_{x=x_0} \approx \frac{f(x_0+\epsilon/2) - f(x_0-\epsilon/2)}{\epsilon}
-\end{displaymath}
+\begin{dontdo}
+pyxplot> set num comp
+pyxplot> print diff\_dx(Re(sin(x)),1)
+\end{dontdo}
 
-\noindent where $\epsilon = \epsilon_1 + x \epsilon_2$. By default, $\epsilon_1
-= \epsilon_2 = 10^{-6}$, which is appropriate for the differentiation of most
-well-behaved functions.
-
-Advanced users may be interested to know that integration is performed using
-the {\tt quad} function of the {\tt integrate} package of the
-{\tt scipy} numerical toolkit for Python -- a general purpose integration
-routine.\index{scipy}
+Advanced users may be interested to know that \indfunt{int\_dx()} function is
+implemented using the {\tt gsl\_integration\_qags()} function of the Gnu
+Scientific Library\index{GSL}, and the \indfunt{diff\_dx()} function is
+implemented using the {\tt gsl\_deriv\_central()} function of the same library.
+Any caveats which apply to the use of these routines also apply to PyXPlot's
+numerical calculus routines.
 
 \section{Equation Solving and Searching for Minima and Maxima}
 
