@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string.h>
 
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_multimin.h>
 
 #include "StringTools/str_constants.h"
@@ -40,14 +41,34 @@
 typedef struct MMComm {
  char         *expr1  [EQNSOLVE_MAXDIMS];
  char         *expr2  [EQNSOLVE_MAXDIMS];
- value        *fitvar [EQNSOLVE_MAXDIMS];
+ char         *fitvarname[EQNSOLVE_MAXDIMS]; // Name of nth fit variable
+ value        *fitvar    [EQNSOLVE_MAXDIMS];
  int           Nfitvars , Nexprs , GoneNaN;
  double        sign;
  value         first  [EQNSOLVE_MAXDIMS];
  unsigned char IsFirst[EQNSOLVE_MAXDIMS];
  int          *errpos;
  char          errtext[LSTR_LENGTH];
+ int           WarningPos; // One final algebra error is allowed to produce a warning
+ char          warntext[LSTR_LENGTH];
  } MMComm;
+
+char *PrintParameterValues(const gsl_vector *x, MMComm *data, char *output)
+ {
+  int i=0, j=0;
+
+  sprintf(output+j, "( ");
+  j += strlen(output+j);
+  for (i=0; i<data->Nfitvars; i++)
+   {
+    sprintf(output+j, "%s=%s; ", data->fitvarname[i], ppl_units_NumericDisplay(data->fitvar[i],0,0));
+    j += strlen(output+j);
+   }
+  if (j>3) sprintf(output+j-2, " )");
+  else     sprintf(output    , "()");
+
+  return output;
+ }
 
 double MultiMinSlave(const gsl_vector *x, void *params)
  {
@@ -57,7 +78,7 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   double accumulator=0.0;
   MMComm *data = (MMComm *)params;
 
-  if (*(data->errpos)>=0) return GSL_NAN; // We've previously had an error... so don't do any more work
+  if (*(data->errpos)>=0) return GSL_NAN; // We've previously had a serious error... so don't do any more work
 
   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) for (i=0; i<data->Nfitvars; i++)   data->fitvar[i]->real = gsl_vector_get(x, i);
   else                                                      for (i=0; i<data->Nfitvars; i++) { data->fitvar[i]->real = gsl_vector_get(x,2*i);
@@ -69,12 +90,14 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   for (i=0; i<data->Nexprs; i++)
    {
     ppl_EvaluateAlgebra(data->expr1[i], &output1, 0, NULL, 0, data->errpos, data->errtext, 0);
-    if (*(data->errpos) >= 0) { *(data->errpos)=0; return GSL_NAN; } // A numerical error happened
+    // If a numerical error happened; ignore it for now, but return NAN
+    if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s:\n%s", PrintParameterValues(x,data,temp_err_string), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
     if (data->expr2[i] != NULL)
      {
       ppl_EvaluateAlgebra(data->expr2[i], &output2, 0, NULL, 0, data->errpos, data->errtext, 0);
-      if (*(data->errpos) >= 0) { *(data->errpos)=0; return GSL_NAN; } // A numerical error happened
+      // If a numerical error happened; ignore it for now, but return NAN
+      if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s:\n%s", PrintParameterValues(x,data,temp_err_string), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
       if (!ppl_units_DimEqual(&output1, &output2))
        {
@@ -106,11 +129,11 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   return accumulator * data->sign;
  }
 
-void MultiMinIterate(MMComm *commlink, int *status)
+void MultiMinIterate(MMComm *commlink)
  {
   size_t                              iter = 0,iter2 = 0;
-  int                                 i, Nparams;
-  double                              size=0,sizelast=0,sizelast2=0;
+  int                                 i, Nparams, status=0;
+  double                              size=0,sizelast=0,sizelast2=0,testval;
   const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex; // We don't use nmsimplex2 here because it was new in gsl 1.12
   gsl_multimin_fminimizer            *s;
   gsl_vector                         *x, *ss;
@@ -143,17 +166,21 @@ void MultiMinIterate(MMComm *commlink, int *status)
     s = gsl_multimin_fminimizer_alloc (T, fn.n);
     gsl_multimin_fminimizer_set (s, &fn, x, ss);
 
-    iter              = 0;
-    commlink->GoneNaN = 0;
+    // If initial value we are giving the minimiser produces an algebraic error, it's not worth continuing
+    testval = MultiMinSlave(x,(void *)commlink);
+    if (commlink->WarningPos>=0) { *(commlink->errpos) = commlink->WarningPos; commlink->WarningPos=-1; sprintf(commlink->errtext, "Error: %s", commlink->warntext); return; }
+
+    iter                 = 0;
+    commlink->GoneNaN    = 0;
     do 
      {
       iter++;
       for (i=0; i<2+Nparams*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
        {
-        *status = gsl_multimin_fminimizer_iterate(s);
-        if (*status) break;
+        status = gsl_multimin_fminimizer_iterate(s);
+        if (status) break;
        }
-      if (*status) break;
+      if (status) break;
       sizelast = size;
       size     = gsl_multimin_fminimizer_minimum(s);
      }
@@ -162,9 +189,12 @@ void MultiMinIterate(MMComm *commlink, int *status)
     gsl_multimin_fminimizer_free(s);
 
    }
-  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!*status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
+  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
 
-  if (iter2>=20) *status=1;
+  if (iter2>=20) status=1;
+
+  if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Error: Failed to converge. GSL returned error: %s", gsl_strerror(status)); }
+  sizelast = MultiMinSlave(x,(void *)commlink);
 
   gsl_vector_free(x);
   gsl_vector_free(ss);
@@ -178,7 +208,7 @@ void MinOrMax(Dict *command, double sign)
   List         *ViaList;
   ListIterator *ListIter;
   value        *DummyVar, DummyTemp;
-  int           i, status=0, errpos=-1;
+  int           i, errpos=-1;
 
   ppl_units_zero(&DummyTemp);
   DummyTemp.real    = 1.0; // Default starting point is 1.0
@@ -195,13 +225,15 @@ void MinOrMax(Dict *command, double sign)
     if (DummyVar!=NULL)
      {
       if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
-      commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
      }
     else
      {
       DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
       DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
-      commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
      }
 
     commlink.Nfitvars += 1;
@@ -219,18 +251,19 @@ void MinOrMax(Dict *command, double sign)
   commlink.sign       = sign;
   commlink.IsFirst[0] = 1;
   commlink.errpos     = &errpos;
+  commlink.WarningPos =-1;
   commlink.GoneNaN    = 0;
   ppl_units_zero(&commlink.first[0]);
 
-  MultiMinIterate(&commlink, &status);
+  MultiMinIterate(&commlink);
 
+  if (commlink.WarningPos >= 0) ppl_warning(commlink.warntext);
   if (errpos >= 0) ppl_error(commlink.errtext);
 
-  if ((status) || (errpos >= 0) || (commlink.GoneNaN==1))
+  if ((errpos >= 0) || (commlink.GoneNaN==1))
    {
     for (i=0; i<commlink.Nfitvars; i++) { commlink.fitvar[i]->real=GSL_NAN; commlink.fitvar[i]->imag=0; commlink.fitvar[i]->FlagComplex=0; } // We didn't produce a sensible answer
    }
-
   return;
  }
 
@@ -241,7 +274,7 @@ void directive_solve(Dict *command)
   List         *ViaList;
   ListIterator *ListIter;
   value        *DummyVar, DummyTemp;
-  int           i, status=0, errpos=-1;
+  int           i, errpos=-1;
 
   ppl_units_zero(&DummyTemp);
   DummyTemp.real    = 1.0; // Default starting point is 1.0
@@ -258,13 +291,15 @@ void directive_solve(Dict *command)
     if (DummyVar!=NULL)
      {
       if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
-      commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
      }
     else
      {
       DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
       DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
-      commlink.fitvar[ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
+      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
      }
 
     commlink.Nfitvars += 1;
@@ -302,14 +337,16 @@ void directive_solve(Dict *command)
 
   commlink.sign       = 1.0;
   commlink.errpos     = &errpos;
+  commlink.WarningPos =-1;
   commlink.GoneNaN    = 0;
   for (i=0; i<commlink.Nexprs; i++) { commlink.IsFirst[i]=1; ppl_units_zero(&commlink.first[i]); }
 
-  MultiMinIterate(&commlink, &status);
+  MultiMinIterate(&commlink);
 
+  if (commlink.WarningPos >= 0) ppl_warning(commlink.warntext);
   if (errpos >= 0) ppl_error(commlink.errtext);
 
-  if ((status) || (errpos >= 0) || (commlink.GoneNaN==1))
+  if ((errpos >= 0) || (commlink.GoneNaN==1))
    {
     for (i=0; i<commlink.Nfitvars; i++) { commlink.fitvar[i]->real=GSL_NAN; commlink.fitvar[i]->imag=0; commlink.fitvar[i]->FlagComplex=0; } // We didn't produce a sensible answer
    }

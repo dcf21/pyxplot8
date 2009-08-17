@@ -213,8 +213,8 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     commlink.TestingReal = 1;
     gsl_deriv_central(&fn, point->imag, step->real, &dRdI      , &error);
 
-    if ((!ppl_units_DblEqual(ResultReal, dIdI)) || (!ppl_units_DblEqual(ResultImag, -dRdI)))
-     { *errpos = 0; strcpy(errtext, "Error: The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation."); return; }
+    if ((!ppl_units_DblApprox(ResultReal, dIdI)) || (!ppl_units_DblApprox(ResultImag, -dRdI)))
+     { *errpos = 0; sprintf(errtext, "Error: The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation. In the notation f(x+iy)=u+iv, the offending derivatives were: du/dx=%e, dv/dy=%e, du/dy=%e and dv/dx=%e.", ResultReal, dIdI, dRdI, ResultImag); return; }
    }
 
   memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using

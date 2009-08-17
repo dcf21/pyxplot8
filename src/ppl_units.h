@@ -69,6 +69,7 @@ value *ppl_units_zero          (value *in);
 char  *ppl_units_NumericDisplay(value *in, int N, int typeable);
 
 unsigned char __inline__ ppl_units_DblEqual    (double a, double b);
+unsigned char __inline__ ppl_units_DblApprox   (double a, double b);
 void          __inline__ ppl_units_DimCpy      (value *o, const value *i);
 void          __inline__ ppl_units_DimInverse  (value *o, const value *i);
 int           __inline__ ppl_units_DimEqual    (const value *a, const value *b);
