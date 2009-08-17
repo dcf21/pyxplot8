@@ -551,7 +551,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
 
 // NB: The texify function returns a different status code from all other function wrappers. No error is -1. Otherwise status points to position of error.
 
-void wrapper_texify(char *in, int inlen, value *output, int *status, char *errtext)
+void wrapper_texify(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
  {
   int BracketLevel=0;
 

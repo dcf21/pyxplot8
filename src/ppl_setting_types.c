@@ -73,9 +73,9 @@ char *SW_DISPLAY_STR[] = {"natural"     , "typeable"     , "latex"        };
 int   SW_DISPLAY_ACL[] = {1             , 1              , 1              };
 int   SW_DISPLAY_INT[] = {SW_DISPLAY_N  , SW_DISPLAY_T   , SW_DISPLAY_L   , -1};
 
-char *SW_CALENDAR_STR[] = {"Gregorian"          , "Julian"          , "British"          , "French"          , "Catholic"          , "Russian"          , "Greek"          };
-int   SW_CALENDAR_INT[] = {SW_CALENDAR_GREGORIAN, SW_CALENDAR_JULIAN, SW_CALENDAR_BRITISH, SW_CALENDAR_FRENCH, SW_CALENDAR_CATHOLIC, SW_CALENDAR_RUSSIAN, SW_CALENDAR_GREEK, -1};
-int   SW_CALENDAR_ACL[] = {1                    , 1                 , 1                  , 1                 , 1                   , 1                  , 5                };
+char *SW_CALENDAR_STR[] = {"Gregorian"          , "Julian"          , "British"          , "French"          , "Catholic"          , "Russian"          , "Greek"          , "Jewish"          , "Muslim"          };
+int   SW_CALENDAR_INT[] = {SW_CALENDAR_GREGORIAN, SW_CALENDAR_JULIAN, SW_CALENDAR_BRITISH, SW_CALENDAR_FRENCH, SW_CALENDAR_CATHOLIC, SW_CALENDAR_RUSSIAN, SW_CALENDAR_GREEK, SW_CALENDAR_JEWISH, SW_CALENDAR_MUSLIM, -1};
+int   SW_CALENDAR_ACL[] = {1                    , 1                 , 1                  , 1                 , 1                   , 1                  , 5                , 1                 , 1                 , -1};
 
 void *FetchSettingName(int id, int *id_list, void **name_list)
  {

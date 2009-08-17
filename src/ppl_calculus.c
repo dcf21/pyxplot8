@@ -157,7 +157,8 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   value                     *DummyVar;
   value                      DummyTemp;
   gsl_function               fn;
-  double                     ResultReal=0, ResultImag=0, dIdI, dRdI, error;
+  double                     ResultReal=0, ResultImag=0, dIdI, dRdI;
+  double                     ResultReal_error, ResultImag_error, dIdI_error, dRdI_error;
 
   if (!ppl_units_DimEqual(point, step))
    {
@@ -202,18 +203,18 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   fn.function = &CalculusSlave;
   fn.params   = &commlink;
 
-  gsl_deriv_central(&fn, point->real, step->real, &ResultReal, &error);
+  gsl_deriv_central(&fn, point->real, step->real, &ResultReal, &ResultReal_error);
 
   if ((*errpos < 0) && (settings_term_current.ComplexNumbers == SW_ONOFF_ON))
    {
     commlink.TestingReal = 0;
-    gsl_deriv_central(&fn, point->real, step->real, &ResultImag, &error);
+    gsl_deriv_central(&fn, point->real, step->real, &ResultImag, &ResultImag_error);
     commlink.VaryingReal = 0;
-    gsl_deriv_central(&fn, point->imag, step->real, &dIdI      , &error);
+    gsl_deriv_central(&fn, point->imag, step->real, &dIdI      , &dIdI_error);
     commlink.TestingReal = 1;
-    gsl_deriv_central(&fn, point->imag, step->real, &dRdI      , &error);
+    gsl_deriv_central(&fn, point->imag, step->real, &dRdI      , &dRdI_error);
 
-    if ((!ppl_units_DblApprox(ResultReal, dIdI)) || (!ppl_units_DblApprox(ResultImag, -dRdI)))
+    if ((!ppl_units_DblApprox(ResultReal, dIdI, 2*(ResultReal_error+dIdI_error))) || (!ppl_units_DblApprox(ResultImag, -dRdI, 2*(ResultImag_error+dRdI_error))))
      { *errpos = 0; sprintf(errtext, "Error: The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation. In the notation f(x+iy)=u+iv, the offending derivatives were: du/dx=%e, dv/dy=%e, du/dy=%e and dv/dx=%e.", ResultReal, dIdI, dRdI, ResultImag); return; }
    }
 

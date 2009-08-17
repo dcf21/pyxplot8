@@ -444,7 +444,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         StrBracketMatch(in+pos,NULL,NULL,&k,0);
         if (k<=0) { *errpos = pos; strcpy(errtext,"Syntax Error: Mismatched bracket."); return; }
         j=-1;
-        ((void(*)(char*,int,value*,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,&j,errtext);
+        ((void(*)(char*,int,value*,unsigned char,int,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,DollarAllowed,RecursionDepth,&j,errtext);
         if (j>=0) { *errpos = pos+1+j; return; }
         pos += k;
        }

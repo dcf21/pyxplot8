@@ -1095,7 +1095,7 @@ static gsl_rng *rndgen = NULL; // Random number generator for next five function
 
 void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "randomBinomial(p,n)";
+  char *FunctionDescription = "random_binomial(p,n)";
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
@@ -1108,7 +1108,7 @@ void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char
 
 void dcfmath_frandomcs(value *in, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "randomChiSq(mu)";
+  char *FunctionDescription = "random_chisq(mu)";
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
@@ -1120,7 +1120,7 @@ void dcfmath_frandomcs(value *in, value *output, int *status, char *errtext)
 
 void dcfmath_frandomg(value *in, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "randomGaussian(sigma)";
+  char *FunctionDescription = "random_gaussian(sigma)";
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
   CHECK_1NOTNAN;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
@@ -1133,7 +1133,7 @@ void dcfmath_frandomg(value *in, value *output, int *status, char *errtext)
 void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char *errtext)
  {
   value *in = in2; // Only check that in2 is dimensionless
-  char *FunctionDescription = "randomLogNormal(zeta,sigma)";
+  char *FunctionDescription = "random_lognormal(zeta,sigma)";
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
   CHECK_2NOTNAN;
   CHECK_1INPUT_DIMLESS; // THIS IS CORRECT. Only check in2
@@ -1146,7 +1146,7 @@ void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char 
 
 void dcfmath_frandomp(value *in, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "randomPoisson(n)";
+  char *FunctionDescription = "random_poisson(n)";
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;

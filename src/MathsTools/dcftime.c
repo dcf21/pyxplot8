@@ -30,8 +30,11 @@
 
 #include "ListTools/lt_memory.h"
 
+#include "StringTools/str_constants.h"
+
 #include "ppl_settings.h"
 #include "ppl_units.h"
+#include "ppl_userspace.h"
 
 void SwitchOverCalDate(double *LastJulian, double *FirstGregorian)
  {
@@ -113,6 +116,41 @@ void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *m
   if (sec  != NULL) *sec  =            fmod(86400*DayFraction , 60) ;
  }
 
+char *GetMonthName(int i)
+ {
+  switch (i)
+   {
+    case  1: return "January";
+    case  2: return "February";
+    case  3: return "March";
+    case  4: return "April";
+    case  5: return "May";
+    case  6: return "June";
+    case  7: return "July";
+    case  8: return "August";
+    case  9: return "September";
+    case 10: return "October";
+    case 11: return "November";
+    case 12: return "December";
+   }
+  return "???";
+ }
+
+char *GetWeekDayName(int i)
+ {
+  switch (i)
+   {
+    case  0: return "Monday";
+    case  1: return "Tuesday";
+    case  2: return "Wednesday";
+    case  3: return "Thursday";
+    case  4: return "Friday";
+    case  5: return "Saturday";
+    case  6: return "Sunday";
+   }
+  return "???";
+ }
+
 // Wrappers for importing into PyXPlot's function table
 
 void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *in5, value *in6, value *output, int *status, char *errtext)
@@ -129,16 +167,19 @@ void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *i
   IF_6COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = JulianDate((int)in1->real, (int)in2->real, (int)in3->real, (int)in4->real, (int)in5->real, (int)in6->real, status, errtext); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_now(value *output, int *status, char *errtext)
  {
+  char *FunctionDescription = "time_now()";
   time_t timer;
   struct tm timeinfo;
   timer = time(NULL);
   gmtime_r(&timer , &timeinfo);
   WRAPPER_INIT;
   output->real = JulianDate(1900+timeinfo.tm_year, 1+timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, status, errtext);
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_year(value *in, value *output, int *status, char *errtext)
@@ -151,6 +192,7 @@ void dcftime_year(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { InvJulianDate(in->real, &i, NULL, NULL, NULL, NULL, NULL); }
   ENDIF
   output->real = (double)i;
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_monthnum(value *in, value *output, int *status, char *errtext)
@@ -163,6 +205,7 @@ void dcftime_monthnum(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { InvJulianDate(in->real, NULL, &i, NULL, NULL, NULL, NULL); }
   ENDIF
   output->real = (double)i;
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_monthname(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -177,21 +220,7 @@ void dcftime_monthname(value *in1, value *in2, value *output, int *status, char 
   ENDIF
   output->string = lt_malloc(16);
   output->string[0] = '\0';
-  switch (i)
-   {
-    case  1: strcpy(output->string, "January");   break;
-    case  2: strcpy(output->string, "February");  break;
-    case  3: strcpy(output->string, "March");     break;
-    case  4: strcpy(output->string, "April");     break;
-    case  5: strcpy(output->string, "May");       break;
-    case  6: strcpy(output->string, "June");      break;
-    case  7: strcpy(output->string, "July");      break;
-    case  8: strcpy(output->string, "August");    break;
-    case  9: strcpy(output->string, "September"); break;
-    case 10: strcpy(output->string, "October");   break;
-    case 11: strcpy(output->string, "November");  break;
-    case 12: strcpy(output->string, "December");  break;
-   }
+  strcpy(output->string, GetMonthName(i));
   if ((in2->real>0) && (in2->real<15)) output->string[(int)in2->real] = '\0';
  }
 
@@ -205,6 +234,7 @@ void dcftime_daymonth(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, &i, NULL, NULL, NULL); }
   ENDIF
   output->real = (double)i;
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_dayweeknum(value *in, value *output, int *status, char *errtext)
@@ -215,6 +245,7 @@ void dcftime_dayweeknum(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = floor( fmod(in->real+0.5 , 7) + 1); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_dayweekname(value *in1, value *in2, value *output, int *status, char *errtext)
@@ -228,17 +259,7 @@ void dcftime_dayweekname(value *in1, value *in2, value *output, int *status, cha
   ELSE_REAL   { i = floor( fmod(in1->real+0.5 , 7) ); }
   ENDIF
   output->string = lt_malloc(16);
-  output->string[0] = '\0';
-  switch (i)
-   {
-    case  0: strcpy(output->string, "Monday");    break;
-    case  1: strcpy(output->string, "Tuesday");   break;
-    case  2: strcpy(output->string, "Wednesday"); break;
-    case  3: strcpy(output->string, "Thursday");  break;
-    case  4: strcpy(output->string, "Friday");    break;
-    case  5: strcpy(output->string, "Saturday");  break;
-    case  6: strcpy(output->string, "Sunday");    break;
-   }
+  strcpy(output->string, GetWeekDayName(i));
   if ((in2->real>0) && (in2->real<15)) output->string[(int)in2->real] = '\0';
  }
 
@@ -252,6 +273,7 @@ void dcftime_hour(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, &i, NULL, NULL); }
   ENDIF
   output->real = (double)i;
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_min(value *in, value *output, int *status, char *errtext)
@@ -264,6 +286,7 @@ void dcftime_min(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, &i, NULL); }
   ENDIF
   output->real = (double)i;
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_sec(value *in, value *output, int *status, char *errtext)
@@ -274,60 +297,192 @@ void dcftime_sec(value *in, value *output, int *status, char *errtext)
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, NULL, &(output->real)); }
   ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
-void dcftimediff_years(value *in1, value *in2, value *output, int *status, char *errtext)
+void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
  {
-  char *FunctionDescription = "timediff_years(JD1,JD2)";
+  value   JD1;
+  char   *FormatString;
+  int     i=0,j=0,k=0;
+  int     year, month, day, hour, min;
+  double  sec;
+
+  *status=-1;
+  ppl_units_zero(output);
+  inlen--; // Make inlen point to last character
+  while ((in[i]!='\0')&&(in[i]<=' ')) i++; // Strip spaces off front
+
+  // Fetch input Julian Date
+  j=-1;
+  ppl_EvaluateAlgebra(in+i, &JD1, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
+  if (*status >= 0) { (*status) += i; return; }
+  i+=j;
+  while ((in[i]>'\0')&&(in[i]<=' ')) i++;
+
+  // Fetch format string
+  if (in[i] != ',')
+   {
+    if (in[i] ==')') { FormatString = "%a %b %d %H:%M:%S"; }
+    else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; }
+   } else {
+    i++; j=-1;
+    FormatString = lt_malloc(LSTR_LENGTH);
+    ppl_GetQuotedString(in+i, FormatString, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
+    if (*status >= 0) { (*status) += i; return; }
+    i+=j;
+    while ((in[i]>'\0')&&(in[i]<=' ')) i++;
+   }
+
+  // Check for closing bracket
+  if (in[i] != ')')
+   {
+    *status = i;
+    if (in[i] == ',') { strcpy(errtext,"Syntax Error: Too many arguments supplied to function."); }
+    else              { strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); }
+    return;
+   }
+
+  // Check that input is real
+  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_string() function can only act upon real times. The supplied Julian Date is complex."); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"Error: The time_string() function can only act upon dimensionless times. The supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+
+  InvJulianDate(JD1.real, &year, &month, &day, &hour, &min, &sec);
+
+  // Loop through format string making substitutions
+  output->string = lt_malloc(LSTR_LENGTH);
+  for (j=0; FormatString[j]!='\0'; j++)
+   {
+    if (FormatString[j]!='%') { output->string[k++] = FormatString[j]; continue; }
+    switch (FormatString[j+1])
+     {
+      case '%': sprintf(output->string+k, "%%"); break;
+      case 'a': sprintf(output->string+k, "%s", GetWeekDayName( floor( fmod(JD1.real+0.5 , 7) ))); output->string[k+3]='\0'; break;
+      case 'A': sprintf(output->string+k, "%s" , GetWeekDayName( floor( fmod(JD1.real+0.5 , 7) ))); break;
+      case 'b': sprintf(output->string+k, "%s", GetMonthName(month)); output->string[k+3]='\0'; break;
+      case 'B': sprintf(output->string+k, "%s" , GetMonthName(month)); break;
+      case 'C': sprintf(output->string+k, "%d", (year/100)+1); break;
+      case 'd': sprintf(output->string+k, "%d", day); break;
+      case 'H': sprintf(output->string+k, "%02d", hour); break;
+      case 'I': sprintf(output->string+k, "%02d", ((hour-1)%12)+1); break;
+      case 'k': sprintf(output->string+k, "%d", hour); break;
+      case 'l': sprintf(output->string+k, "%d", ((hour-1)%12)+1); break;
+      case 'm': sprintf(output->string+k, "%02d", month); break;
+      case 'M': sprintf(output->string+k, "%02d", min); break;
+      case 'p': sprintf(output->string+k, "%s", (hour<12)?"am":"pm"); break;
+      case 'S': sprintf(output->string+k, "%02d", (int)sec); break;
+      case 'y': sprintf(output->string+k, "%d", year%100); break;
+      case 'Y': sprintf(output->string+k, "%d", year); break;
+      default: { *status=0; sprintf(errtext,"Error: Format string supplied to time_string() function contains unrecognised substitution token '%%%c'.",FormatString[j+1]); return; }
+     }
+    j++;
+    k += strlen(output->string + k);
+   }
+  output->string[k]='\0'; // Null terminate string
+ }
+
+void dcftime_diff_string(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
+ {
+  value JD1,JD2;
+  char *FormatString;
+  int   i=0,j=0,k=0;
+  long  GapYears, GapDays, GapHours, GapMinutes, GapSeconds;
+
+  *status=-1;
+  ppl_units_zero(output);
+  inlen--; // Make inlen point to last character
+  while ((in[i]!='\0')&&(in[i]<=' ')) i++; // Strip spaces off front
+
+  // Fetch first input Julian Date
+  j=-1;
+  ppl_EvaluateAlgebra(in+i, &JD1, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
+  if (*status >= 0) { (*status) += i; return; }
+  i+=j;
+  while ((in[i]>'\0')&&(in[i]<=' ')) i++;
+
+  // Fetch second input Julian Date
+  if (in[i] != ',')
+   {
+    if (in[i] ==')') { *status = i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
+    else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; }
+   }
+  i++; j=-1;
+  ppl_EvaluateAlgebra(in+i, &JD2, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
+  if (*status >= 0) { (*status) += i; return; }
+  i+=j;
+  while ((in[i]>'\0')&&(in[i]<=' ')) i++;
+
+  // Fetch format string
+  if (in[i] != ',')
+   {
+    if (in[i] ==')') { FormatString = "%Y years %d days %h hours %m minutes and %s seconds"; }
+    else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; }
+   } else {
+    i++; j=-1;
+    FormatString = lt_malloc(LSTR_LENGTH);
+    ppl_GetQuotedString(in+i, FormatString, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
+    if (*status >= 0) { (*status) += i; return; }
+    i+=j;
+    while ((in[i]>'\0')&&(in[i]<=' ')) i++;
+   }
+
+  // Check for closing bracket
+  if (in[i] != ')')
+   {
+    *status = i;
+    if (in[i] == ',') { strcpy(errtext,"Syntax Error: Too many arguments supplied to function."); }
+    else              { strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); }
+    return;
+   }
+
+  // Check that inputs are real
+  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_diff_string() function can only act upon real times. The first supplied Julian Date is complex."); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"Error: The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD2.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_diff_string() function can only act upon real times. The second supplied Julian Date is complex."); return; }
+  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"Error: The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+
+  GapYears   = (JD2.real - JD1.real) / 365;
+  GapDays    = (JD2.real - JD1.real);
+  GapHours   = (JD2.real - JD1.real) * 24;
+  GapMinutes = (JD2.real - JD1.real) * 24 * 60;
+  GapSeconds = (JD2.real - JD1.real) * 24 * 3600;
+
+  // Loop through format string making substitutions
+  output->string = lt_malloc(LSTR_LENGTH);
+  for (j=0; FormatString[j]!='\0'; j++)
+   {
+    if (FormatString[j]!='%') { output->string[k++] = FormatString[j]; continue; }
+    switch (FormatString[j+1])
+     {
+      case '%': sprintf(output->string+k, "%%"); break;
+      case 'Y': sprintf(output->string+k, "%ld", GapYears); break;
+      case 'D': sprintf(output->string+k, "%ld", GapDays); break;
+      case 'd': sprintf(output->string+k, "%ld", GapDays%365); break;
+      case 'H': sprintf(output->string+k, "%ld", GapHours); break;
+      case 'h': sprintf(output->string+k, "%ld", GapHours%24); break;
+      case 'M': sprintf(output->string+k, "%ld", GapMinutes); break;
+      case 'm': sprintf(output->string+k, "%ld", GapMinutes%60); break;
+      case 'S': sprintf(output->string+k, "%ld", GapSeconds); break;
+      case 's': sprintf(output->string+k, "%ld", GapSeconds%60); break;
+      default: { *status=0; sprintf(errtext,"Error: Format string supplied to time_diff_string() function contains unrecognised substitution token '%%%c'.",FormatString[j+1]); return; }
+     }
+    j++;
+    k += strlen(output->string + k);
+   }
+  output->string[k]='\0'; // Null terminate string
+  return;
+ }
+
+void dcftime_diff(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "timediff(JD1,JD2)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = floor((in2->real - in1->real) / 365); }
+  ELSE_REAL   { output->real = (in2->real - in1->real)*86400; }
   ENDIF
- }
-
-void dcftimediff_days(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "timediff_days(JD1,JD2,wrap)";
-  CHECK_3NOTNAN;
-  CHECK_3INPUT_DIMLESS;
-  IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = floor(in2->real - in1->real); }
-  ENDIF
-  if (!ppl_units_DblEqual(in3->real, 0)) output->real = fmod(output->real, 365);
- }
-
-void dcftimediff_hours(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "timediff_hours(JD1,JD2,wrap)";
-  CHECK_3NOTNAN;
-  CHECK_3INPUT_DIMLESS;
-  IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = floor((in2->real - in1->real)*24); }
-  ENDIF
-  if (!ppl_units_DblEqual(in3->real, 0)) output->real = fmod(output->real, 24);
- }
-
-void dcftimediff_minutes(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "timediff_mins(JD1,JD2,wrap)";
-  CHECK_3NOTNAN;
-  CHECK_3INPUT_DIMLESS;
-  IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = floor((in2->real - in1->real)*1440); }
-  ENDIF
-  if (!ppl_units_DblEqual(in3->real, 0)) output->real = fmod(output->real, 60);
- }
-
-void dcftimediff_seconds(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "timediff_secs(JD1,JD2,wrap)";
-  CHECK_3NOTNAN;
-  CHECK_3INPUT_DIMLESS;
-  IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = floor((in2->real - in1->real)*86400); }
-  ENDIF
-  if (!ppl_units_DblEqual(in3->real, 0)) output->real = fmod(output->real, 60);
+  CLEANUP_APPLYUNIT(UNIT_TIME);
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcftime_ordinal(value *in, value *output, int *status, char *errtext)

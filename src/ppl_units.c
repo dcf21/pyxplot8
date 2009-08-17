@@ -137,10 +137,9 @@ unsigned char __inline__ ppl_units_DblEqual(double a, double b)
   return 1;
  }
 
-unsigned char __inline__ ppl_units_DblApprox(double a, double b)
+unsigned char __inline__ ppl_units_DblApprox(double a, double b, double err)
  {
-  if ( (fabs(a) < 1e-5) && (fabs(b) < 1e-5) ) return 1;
-  if ( (fabs(a-b) > fabs(5e-2*a)) || (fabs(a-b) > fabs(5e-2*b)) ) return 0;
+  if ( fabs(a-b) > (fabs(err)+1e-50) ) return 0;
   return 1;
  }
 

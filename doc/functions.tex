@@ -121,11 +121,11 @@ The #1 function #2
 \funcdef{pow($x,y$)}{returns $x$ to the power of $y$. $x$ and $y$ may both be complex numbers, and $x$ may have any physical dimensions, but $y$ must be dimensionless. It not not permitted for $y$ to be complex if $x$ is not dimensionless, since this would lead to an output with complex physical dimensions.}
 \funcdef{radians($x$)}{takes a real input which should either have physical units of angle, or be dimensionless, in which case it is assumed to be measured in degrees. The output is the dimensionless number of radians in $x$.}
 \funcdef{random()}{returns a random real number between 0 and~1.}
-\funcdef{randomBinomial($p,n$)}{returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$. $n$ must be a real positive dimensionless integer. $p$ must be a dimensionless number in the range $0\leq p\leq 1$.}
-\funcdef{randomChiSq($\mu$)}{returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom. $\mu$ must be a real positive dimensionless integer.}
-\funcdef{randomGaussian($\sigma$)}{returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero. $\sigma$ must be real, but may have any physical units. The returned random sample shares the physical units of $\sigma$.}
-\funcdef{randomLogNormal($\zeta,\sigma$)}{returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$. $\sigma$ must be a real positive dimensionless number. $\zeta$ must be real, but may have any physical units. The returned random sample shares the physical units of $\zeta$.}
-\funcdef{randomPoisson($n$)}{returns a random integer from a Poisson distribution with mean $n$. $n$ must be a real positive dimensionless number.}
+\funcdef{random\_binomial($p,n$)}{returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$. $n$ must be a real positive dimensionless integer. $p$ must be a dimensionless number in the range $0\leq p\leq 1$.}
+\funcdef{random\_chisq($\mu$)}{returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom. $\mu$ must be a real positive dimensionless integer.}
+\funcdef{random\_gaussian($\sigma$)}{returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero. $\sigma$ must be real, but may have any physical units. The returned random sample shares the physical units of $\sigma$.}
+\funcdef{random\_lognormal($\zeta,\sigma$)}{returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$. $\sigma$ must be a real positive dimensionless number. $\zeta$ must be real, but may have any physical units. The returned random sample shares the physical units of $\zeta$.}
+\funcdef{random\_poisson($n$)}{returns a random integer from a Poisson distribution with mean $n$. $n$ must be a real positive dimensionless number.}
 \funcdef{Re($z$)}{returns the real part of the complex number $z$, which may have any physical units. The number returned shares the same physical units as $z$.}
 \funcdef{sec($z$)}{returns the secant of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{sech($z$)}{returns the hyperbolic secant of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
@@ -134,26 +134,63 @@ The #1 function #2
 \funcdef{sqrt($z$)}{returns the square root of $z$, which may be any complex number, and may have any physical dimensions.}
 \funcdef{tan($z$)}{returns the tangent of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{tanh($z$)}{returns the hyperbolic tangent of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
-\funcdef{time\_daymonth({\it JD})}{Returns the number of the day of the month on which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_dayweekname({\it JD})}{Returns as a string the name of the day of the week on which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_dayweeknum({\it JD})}{Returns the number, in the range 1~(Sunday) to 7~(Saturday), of the day of the week on which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_hour({\it JD})}{Returns the integer hour of the day, in the range 0-23, in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_juliandate({\it year},{\it month},{\it day},{\it hour},{\it min},{\it sec})}{Returns the Julian Date corresponding to the supplied time and date. Each field should be supplied numerically as an integer: for example, the {\it month} argument should be an integer in the range 1-12. The {\it year} argument should be the number of years elapsed since the Christian epoch. To enter dates before the Christian epoch, $0$ should be passed to indicate the year 1~{\footnotesize BC}, $-1$ should be passed to indicate the year 2~{\footnotesize BC}, and so forth.
+\funcdef{time\_daymonth({\it JD})}{returns the number of the day of the month on which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_dayweekname({\it JD})}{returns as a string the name of the day of the week on which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_dayweeknum({\it JD})}{returns the number, in the range 1~(Sunday) to 7~(Saturday), of the day of the week on which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_diff({\it JD}$_1$,{\it JD}$_2$)}{returns the time interval elapsed between the first and second supplied Julian Dates. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_diff\_string({\it JD}$_1$,{\it JD}$_2$,{\it format})}{returns a string representation of the time interval elapsed between the first and second supplied Julian Dates. For more details about Julian Dates, see the {\tt time\_\-juliandate()} function. The third input is used to control the format of the output, with the following tokens being substituted for:
+\begin{longtable}{|ll|}
+\hline \endfoot
+\hline
+Token & Value \\
+\hline \endhead
+{\tt \%\%} & A literal \% sign.\\
+{\tt \%d} & The number of days elapsed, modulo 365.\\
+{\tt \%D} & The number of days elapsed. \\
+{\tt \%h} & The number of hours elapsed, modulo 24.\\
+{\tt \%H} & The number of hours elapsed.\\
+{\tt \%m} & The number of minutes elapsed, modulo 60.\\
+{\tt \%M} & The number of minutes elapsed.\\
+{\tt \%s} & The number of seconds elapsed, modulo 60.\\
+{\tt \%S} & The number of seconds elapsed.\\
+{\tt \%Y} & The number of years elapsed.\\
+\end{longtable}}
+\funcdef{time\_hour({\it JD})}{returns the integer hour of the day, in the range 0-23, in which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_juliandate({\it year},{\it month},{\it day},{\it hour},{\it min},{\it sec})}{returns the Julian Date corresponding to the supplied time and date. Each field should be supplied numerically as an integer: for example, the {\it month} argument should be an integer in the range 1-12. The {\it year} argument should be the number of years elapsed since the Christian epoch. To enter dates before the Christian epoch, $0$ should be passed to indicate the year 1~{\footnotesize BC}, $-1$ should be passed to indicate the year 2~{\footnotesize BC}, and so forth.
 
 Julian Dates are defined to be the number of days elapsed since noon on 1st January, 4713~{\footnotesize BC}. Consequently, Julian Dates are rather large numbers: for example, midnight on 1st January 2000 corresponds to the Julian Date 2451544.5. As demonstrated by this example, the hour of the day is indicated by the fractional part of the Julian Date. The strength of using Julian Dates in analysing time-series data is that they are not subject to the complications which arise from our having months of different lengths and leap years every fourth year: it is trivial to evaluate the time elapsed between any two arbitrary Julian Dates.
 
-Clearly PyXPlot's implementation of the {\tt time\_juliandate()} {\it does} need to understand the complexities of the calendar, including the transition which was made from the Julian calendar to the Gregorian calendar on various dates in various countries. For more details of this, see the {\tt set calendar} command.}
-\funcdef{time\_min({\it JD})}{Returns the integer number of minutes elapsed within the hour when the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_monthnum({\it JD})}{Returns the number, in the range 1-12, of the calendar month in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_monthname({\it JD})}{Returns as a string the English name of the calendar month in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_now()}{Returns the Julian Date corresponding to the present epoch. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_sec({\it JD})}{Returns the number of seconds elapsed within the minute when the supplied Julian Date falls. The number of seconds includes the fractional part. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{time\_year({\it JD})}{Returns the year in which the supplied Julian Date falls. For more details see the {\tt time\_juliandate()} function. The returned value is a dimensionless integer. A value of $0$ corresponds to the year 1~{\footnotesize BC}; a value of $-1$ corresponds to the year 2~{\footnotesize BC}, and so forth.}
-\funcdef{timediff\_days({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of days elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 365~days have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{timediff\_hours({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of hours elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 24~hours have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{timediff\_mins({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of minutes elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 60~minutes have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{timediff\_secs({\it JD}$_1$,{\it JD}$_2$,{\it wrap})}{Returns the integer number of seconds elapsed between the first and second supplied Julian Dates. If {\it wrap} is non-zero, then the output wraps to zero once 60~seconds have been counted, otherwise it does not. For more details see the {\tt time\_juliandate()} function.}
-\funcdef{timediff\_years({\it JD}$_1$,{\it JD}$_2$)}{Returns the integer number of years elapsed between the first and second supplied Julian Dates. For more details see the {\tt time\_juliandate()} function.}
+Clearly PyXPlot's implementation of the {\tt time\_\-juliandate()} {\it does} need to understand the complexities of the calendar, including the transition which was made from the Julian calendar to the Gregorian calendar on various dates in various countries. For more details of this, see the {\tt set calendar} command.}
+\funcdef{time\_min({\it JD})}{returns the integer number of minutes elapsed within the hour when the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_monthnum({\it JD})}{returns the number, in the range 1-12, of the calendar month in which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_monthname({\it JD})}{returns as a string the English name of the calendar month in which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_now()}{returns the Julian Date corresponding to the present epoch. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_sec({\it JD})}{returns the number of seconds elapsed within the minute when the supplied Julian Date falls. The number of seconds includes the fractional part. For more details see the {\tt time\_\-juliandate()} function.}
+\funcdef{time\_string({\it JD},{\it format})}{returns a string representation of the date and time corresponding to the supplied Julian Date. For more details about Julian Dates, see the {\tt time\_\-juliandate()} function. The third input is used to control the format of the output, with the following tokens being substituted for:
+\begin{longtable}{|ll|}
+\hline \endfoot
+\hline
+Token & Value \\
+\hline \endhead
+{\tt \%\%} & A literal \% sign.\\
+{\tt \%a} & Three-letter abbreviated weekday name.\\
+{\tt \%A} & Full weekday name.\\
+{\tt \%b} & Three-letter abbreviated month name.\\
+{\tt \%B} & Full month name.\\
+{\tt \%C} & Century number, e.g. 21 for the years 2000-2100.\\
+{\tt \%d} & Day of month.\\
+{\tt \%H} & Hour of day, in range~00-23.\\
+{\tt \%I} & Hour of day, in range~01-12.\\
+{\tt \%k} & Hour of day, in range~0-23.\\
+{\tt \%l} & Hour of day, in range~1-12.\\
+{\tt \%m} & Month number, in range~01-12.\\
+{\tt \%M} & Minute, in range~00-59.\\
+{\tt \%p} & Either {\tt am} or {\tt pm}.\\
+{\tt \%S} & Second, in range~00-59.\\
+{\tt \%y} & Last two digits of year number.\\
+{\tt \%Y} & Year number.\\
+\end{longtable}}
+\funcdef{time\_year({\it JD})}{returns the year in which the supplied Julian Date falls. For more details see the {\tt time\_\-juliandate()} function. The returned value is a dimensionless integer. A value of $0$ corresponds to the year 1~{\footnotesize BC}; a value of $-1$ corresponds to the year 2~{\footnotesize BC}, and so forth.}
 \funcdef{texify(\ldots)}{returns a string of \LaTeX text corresponding to the algebraic expression or string supplied between the brackets.}
 \funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real, but may have any physical dimensions so long as they match.}
 \funcdef{unit(\ldots)}{multiplies a number by a physical unit. The string inside the brackets should consist of a string of the names of physical units, multiplied together with the {\tt *} operator, divided using the {\tt /} operator, or raised by numeric powers using the {\tt \^{}} operator. The list may be commenced with a numeric constant, for example: {\tt unit(2*m\^{}2/s)}.}

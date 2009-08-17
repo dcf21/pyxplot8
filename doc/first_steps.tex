@@ -392,6 +392,62 @@ set} command, such as {\tt xlabel} or {\tt title}, to return that setting to
 its default configuration. The \indcmdt{reset} restores all configurable
 parameters to their default states.
 
+\section{Querying the Values of Settings}
+
+As the previous section has demonstrated, the \indcmdt{set} is used in a wide
+range of ways to configure the way in which plots appear; we will meet many
+more in due course. The corresponding \indcmdt{show} can be used to query the
+current values of settings. To query the value of one particular setting, the
+\indcmdt{show} should be followed by the name of the setting:
+
+\begin{verbatim}
+show title
+\end{verbatim}
+
+\noindent Alternatively, several settings may be requested at once, or all
+settings beginning with a certain string of characters can be queried, as in
+the following two examples:
+
+\begin{verbatim}
+show xlabel ylabel key
+show g
+\end{verbatim}
+
+\noindent The special keyword {\tt settings} may be used to display the values
+of all settings which can be set with the {\tt set} command. A list of other
+special keywords which the \indcmdt{show} accepts in given in
+Table~\ref{tab:show_keywords}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|lp{9cm}|}
+\hline
+{\bf Query} & {\bf Description} \\ \hline
+{\tt functions} & Lists all currently defined mathematical functions, both those which are built into PyXPlot, and those which the user has defined.\\
+{\tt settings} & Lists the current values of all settings which can be set with the {\tt set} command.\\
+{\tt units} & Lists all of the physical units which PyXPlot is currently set up to recognise.\\
+{\tt userfunctions} & Lists all current user-defined mathematical functions.\\
+{\tt variables} & Lists the values of all currently-defined variables.\\
+\hline
+\end{tabular}
+\end{center}
+\caption{The special keywords which the \indcmdt{show} recognises.}
+\label{tab:show_keywords}
+\end{table}
+
+Generally, the \indcmdt{show} displays each setting in the form of a
+\indcmdt{set} which could be used to set that setting, together with a comment
+to briefly explain what effect the setting has. This means that the output can
+be pasted directly into another PyXPlot terminal to copy settings from one
+session to another. However, it should be noted that some settings, such as
+{\tt papersize} are only pastable once the \indcmdt{set numerics typeable} has
+been issued, for reasons which will be explained in Section~\ref{sec:pastable}.
+
+When a colour-highlighted interactive session is used, settings which have been
+changed are highlighted in yellow, whilst those settings which are unchanged
+from PyXPlot's default configuration, or from a user-supplied configuration
+file, are shown in green.
+
 \section{Plotting \Datafile s}
 \label{plot_datafiles}
 

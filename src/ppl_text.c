@@ -75,6 +75,8 @@ sprintf(txt_init, "\n\
        |___/                                         2008-9 Ross Church\n\
 \n\
 \n\
+THIS ALPHA RELEASE IS HIGHLY UNSTABLE AND NOT FOR DISTRIBUTION\n\
+\n\
 Send comments, bug reports, feature requests and coffee supplies to:\n\
 <coders@pyxplot.org.uk>\n\
 ", VERSION, DATE);

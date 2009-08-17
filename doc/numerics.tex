@@ -201,7 +201,7 @@ within these ranges are used in the fitting process; the ranges refer to each
 of the $n$ variables of the fitted function in order.
 
 \item For those interested in the mathematical details, the workings of the
-{\tt fit} command is discussed in more detail in Chapter~\ref{fit_math}.
+{\tt fit} command is discussed in more detail in Appendix~\ref{fit_math}.
 
 \end{itemize}
 
@@ -215,53 +215,64 @@ assessment of the probability distribution of the parameters.
 \label{spline_command}
 \index{best fit lines}
 
-Gnuplot allows data to be interpolated using its \indpst{csplines} plot style,
-for example:\indps{acsplines}
+The \indcmdt{interpolate} can be used to generate a special function with
+PyXPlot which interpolates a set of \datapoint s supplied from a data file.
+Various different types of interpolation are supported: linear interpolation,
+power-law interpolation\footnote{Power-law interpolation is equivalent to
+linear interpolation in log-log space.}, polynomial interpolation and
+cubic-spline interpolation. The use of polynomial interpolation with large
+datasets is strong discouraged, as polynomial fits tend to show severe
+oscillations between \datapoint s.
+
+The \indcmdt{interpolate} has similar syntax to the \indcmdt{fit}:
 
 \begin{verbatim}
-plot 'data.dat' with csplines
-plot 'data.dat' with acsplines
+interpolate ( linear | loglinear | polynomial | spline )
+            [<range specification>] <function name>() '<filename>' 
+            [index <index specification>]
+            [every <every specification>]
+            [using <using specification>]
 \end{verbatim}
 
-\noindent where the upper statement fits a spline through all of the
-datapoints, and the lower applies some smoothing to the data first. This syntax
-also is supported in PyXPlot, though splines may also be fit through data using
-a new, more powerful, \indcmdt{spline}. This has a syntax similar to that of
-the \indcmdt{fit}, for example:
+A very common application of the \indcmdt{interpolate} is to perform arithmetic
+functions such as addition or subtraction on datasets which are not sampled at
+the same abscissa values. The following example would plot the difference
+between two such datasets:
 
 \begin{verbatim}
-spline f() 'data.dat' index 1 using 2:3
+interpolate linear f() 'data1.dat'
+interpolate linear g() 'data2.dat'
+plot [min:max] f(x)-g(x)
 \end{verbatim}
 
-\noindent In this example, the function $f(x)$ now becomes a special function,
-representing a spline fit to the given datafile. It can be plotted or otherwise
-used in exactly the same way as any other function. This approach is more
-flexible than \gnuplot's syntax, as the spline $f(x)$ can subsequently be
-spliced together with other functions (see the previous section), or used in
-any mathematical operation.  The following code snippet, for example, would fit
-splines through two datasets, and then plot the interpolated differences
-between them, regardless, for example, of whether the two datasets were sampled
-at exactly the same $x$ co-ordinates:
+\noindent Note that it is advisable to supply a range to the {\tt plot} command
+in this example: because the two datasets have been turned into continuous
+functions, the {\tt plot} command has to guess a range to plot them over unless
+one is explicitly supplied.
 
-\begin{verbatim}
-spline f() 'data1.dat'
-spline g() 'data2.dat'
-plot f(x)-g(x)
-\end{verbatim}
+The functions have not, however, lost the range of the original data: because
+it is generally very inadvisable to extrapolate interpolated function fits
+beyond the limits of the \datapoint s used to constain the fit, PyXPlot returns
+an error or NaN if this is attempted.
 
 Smoothed splines can also be produced:
 
 \begin{verbatim}
-spline f() 'data1.dat' smooth 1.0
+interpolate spline f() 'data1.dat' smooth 1.0
 \end{verbatim}
 
 \noindent where the value $1.0$ determines the degree of smoothing to apply;
 the higher the value, the more smoothing is applied. The default behaviour is
 not to smooth at all -- equivalent to {\tt smooth 0.0} -- and a value of $1.0$
-corresponds to the default amount of smoothing applied in \gnuplot's {\tt
-acsplines} plot style.
+corresponds to a moderate degree of smoothing.
 
-{\bf Add information about linear interpolation, etc.}
+The \indcmdt{spline} command is an alias for {\tt interpolate spline}; the
+following two statements have equivalent meaning:
+
+\begin{verbatim}
+spline f() 'data1.dat'
+interpolate spline f() 'data1.dat'
+\end{verbatim}
 
 \section{Numerical Integration and Differentiation}
 
@@ -289,7 +300,7 @@ by the numerical value of the dummy variable at the point where the given
 expression is to be differentiated. This value may have any physical
 dimensions, and may be a complex number. When complex arithmetic is enabled,
 PyXPlot checks that the function being differentiated satisfied the
-Cauchy-Riemann equations, and returns an error if it does not, in which case it
+Cauchy-Riemann equations, and returns an error if it does not to indicate that it
 is not differentiable.  The final, optional, parameter to the {\tt diff\_dx()}
 function is an approximate step size which indicates the range of argument
 values over which PyXPlot should take samples to determine the gradient. If no
@@ -317,6 +328,70 @@ Any caveats which apply to the use of these routines also apply to PyXPlot's
 numerical calculus routines.
 
 \section{Equation Solving and Searching for Minima and Maxima}
+
+The \indcmdt{solve} can be used to numerically solve simple systems of
+equations, as in the following example, which solves a simple pair of
+simultaneous equations of two variables:
+
+\begin{verbatim}
+solve x+y=10, x-y=3 via x,y
+\end{verbatim}
+
+\noindent As in the {\tt fit} command, the list of variables which should be
+varied to achieve a numerical fit should be supplied as a comma-separated list
+after the word {\tt via}. No output is returned if the numerical solver
+succeeds, otherwise an error message is displayed. If any of the fitting
+variables are already defined prior to the \indcmdt{solve} being called, their
+values are used as initial guesses, otherwise an initial guess of one for each
+fitting variable is assumed.
+
+The \indcmdt{solve} works by minimised the square residuals of all of the
+equations supplied, and so even when no exact solution can be found, the best
+compromise is returned. The following example has no solution -- a system of
+three equations with two variables is over-constrained -- but PyXPlot
+nonetheless finds a compromise solution:
+
+\begin{verbatim}
+solve x+y=10, x-y=3, 2*x+y=16 via x,y
+\end{verbatim}
+
+When complex arithmetic is enabled, the \indcmdt{solve} allows each fitting
+variable to take any value in the complex plane, and thus the number of
+dimensions of the fitting problem is effectively doubled, as in the following
+example:
+
+\begin{verbatim}
+set numerics complex
+solve abs(x)=2, arg(x)=90*unit(deg) via x
+\end{verbatim}
+
+The related \indcmd{minimise}\indcmd{maximise} {\tt minimise} and {\tt
+maximise} commands can be used to find the minima or maxima of algebraic
+expressions, for example:
+
+\begin{verbatim}
+x=0.1
+minimise cos(x) via x
+\end{verbatim}
+
+\noindent Note that this example doesn't work when complex arithmetic is
+enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty i$.
+
+Various caveats apply to all of the commands discussed in this section, which
+are common to almost all numerical equation solvers. The {\tt solve}, {\tt
+minimise} and {\tt maximise} commands can only claim to return the {\it
+locally} optimum solution which is closest to the supplied initial guess, and
+this may or may not be the {\it globally} optimum solution.
+
+Furthermore, these commands usually work best when the optimum value they are
+searching for is of order one, and if the convergence radius of this solution
+is of at least similar magnitude. PyXPlot does attempt to correct cases where
+the supplied initial guess turns out to be many orders of magnitude different
+from the true solution, but cannot be gauranteed in these cases not to wildly
+overshoot and produce unexpected results.
+
+Wherever possible, it is strongly advised that the results returned by these
+numerical solvers should be sanity checked.
 
 \section{Histograms}
 

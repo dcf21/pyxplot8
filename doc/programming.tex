@@ -506,6 +506,7 @@ print "%s"  %(pi) # Print pi as normal
 \end{verbatim}
 
 \subsection{Creating Pastable Text}
+\label{sec:pastable}
 
 PyXPlot's default convention of displaying numbers in a format such as
 
@@ -656,6 +657,30 @@ An example of the use of function splicing to define a function which does not h
 \section{Working with Time-Series Data}
 \label{sec:time_series}
 
+\begin{verbatim}
+set calendar british
+x = time_juliandate(2000,1,1,0,0,0)
+print time_diff(x, time_now())
+print time_diff_string(x, time_now())
+
+x = time_now()
+print time_string(x)
+
+set calendar julian
+
+print time_string(x)
+print time_string(time_now()) # Broken!!
+
+set calendar input russian output british
+x = time_juliandate(1828,8,28,0,0,0)
+print time_string(x)
+
+set calendar muslim
+print time_now()
+\end{verbatim}
+
+
+
 \chapter{Programming and Flow Control}
 
 In this chapter we turn to the loop constructs which are available in PyXPlot,
@@ -718,9 +743,9 @@ else           { ; print "x is negative" ; }
 
 \section{For Loops}
 
-As in most programming languages, {\tt for} loops are used in PyXPlot to
-execute a series of lines several times. PyXPlot's \indcmdt{for} command is
-most similar to that of the BASIC programming language, and has the syntax
+As in most programming languages, {\tt for} loops are used to execute a series
+of lines several times. PyXPlot's \indcmdt{for} command is most similar to that
+of the BASIC programming language, and has the syntax
 
 \begin{verbatim}
 for <variable> = <start> to <end> {step <step>}
@@ -729,7 +754,10 @@ for <variable> = <start> to <end> {step <step>}
  }
 \end{verbatim}
 
-\noindent as in the example
+\noindent For example, the following script would run the supplied script block
+repeatedly with different values of the variable {\tt x}, starting at zero,
+increasing by two each time, and stopping once {\tt x} reaches ten. Thus, the
+numbers 0, 2, 4, 6 and 8 would be printed:
 
 \begin{verbatim}
 for x = 0 to 10 step 2
@@ -738,12 +766,7 @@ for x = 0 to 10 step 2
  }
 \end{verbatim}
 
-\noindent which would run the supplied script block repeatedly with different
-values of the variable {\tt x}, starting at zero, increasing by two each time,
-and stopping once {\tt x} reaches ten. Thus, the numbers 0, 2, 4, 6 and 8 would
-be printed.
-
-If no step size is supplied, then a step size of one is adopted. If a negative
+If no step size is supplied, then a unit step size is adopted. If a negative
 step size is indicated, then the starting value of the loop variable must be
 greater than the end value, otherwise an error is returned, since the loop
 would otherwise run indefinitely. Likewise, if a step size of zero is
@@ -799,10 +822,44 @@ foreach x in (-1,pi,10)
 
 \section{While Loops}
 
+The \indcmdt{while} command may be used to continue running a script block
+until some stopping criterion is met. Two types of while loop are supported:
+
+\begin{verbatim}
+while <criterion>
+ {
+  ....
+ }
+
+do
+ {
+  ....
+ } while <criterion>
+\end{verbatim}
+\indcmd{do}
+
+The former example would execute the enclosed script block repeatedly, testing
+the algebraic expression supplied to the \indcmdt{while} command immediately
+before each repetition, and stopping if it tested false. The latter example is
+very similar, but tests the supplied algebraic expression immediately {\it
+after} each repetition. Thus, the former example may never actually execute the
+supplied script block if the looping criterion tests false, but the latter
+example is always gauranteed to run its script block at least once.
+
+The following example would continue looping indefinitely until stopped by the
+user:
+
+\begin{verbatim}
+while (1)
+ {
+  print "Hello, world!"
+ }
+\end{verbatim}
+
 \example{ex:mandelbrot}{A script to produce an ASCII-art representation of the Mandelbrot Set}{
 In this example, we use all of PyXPlot's loop constructs together in a script
 which calculates the Mandelbrot Set and outputs an ASCII-art representation of
-it to the terminal. The script is as follows: \vspace{0.5cm}\\
+it to the terminal. Insert details about what the Mandelbrot Set is. The script is as follows: \vspace{0.5cm}\\
 
 {\footnotesize\tt set numerics complex}\\
 {\footnotesize\tt for~y=2~to~-2~step~-0.15}\\
