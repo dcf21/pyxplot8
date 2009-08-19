@@ -561,6 +561,8 @@ void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char 
  {
   char *FunctionDescription = "Bv(nu,T)";
   int i;
+  value kelvin;
+
   CHECK_2NOTNAN;
   CHECK_DIMLESS_OR_HAS_UNIT(in1, "first", "a frequency", UNIT_TIME, -1);
   CHECK_DIMLESS_OR_HAS_UNIT(in2, "second", "a temperature", UNIT_TEMPERATURE, 1);
@@ -568,11 +570,17 @@ void dcfmath_planck_Bv(value *in1, value *in2, value *output, int *status, char 
    { QUERY_MUST_BE_REAL }
   ELSE_REAL
    {
+    ppl_units_zero(&kelvin);
+    kelvin.real = 1.0;
+    kelvin.exponent[UNIT_TEMPERATURE] = 1;
+    kelvin.TempType = 1;
+    ppl_units_div(in2, &kelvin, &kelvin, status, errtext); // Convert in2 into kelvin
+    if (*status) kelvin.real = GSL_NAN;
     output->dimensionless = 0;
     output->exponent[UNIT_MASS] =  1;
     output->exponent[UNIT_TIME] = -2;
     output->exponent[UNIT_ANGLE]= -2;
-    output->real              =  2 * GSL_CONST_MKSA_PLANCKS_CONSTANT_H / pow(GSL_CONST_MKSA_SPEED_OF_LIGHT, 2) * pow(in1->real,3) / expm1(GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in1->real / GSL_CONST_MKSA_BOLTZMANN / in2->real);
+    output->real              =  2 * GSL_CONST_MKSA_PLANCKS_CONSTANT_H / pow(GSL_CONST_MKSA_SPEED_OF_LIGHT, 2) * pow(in1->real,3) / expm1(GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in1->real / GSL_CONST_MKSA_BOLTZMANN / kelvin.real);
    }
   ENDIF
   CHECK_OUTPUT_OKAY;
@@ -582,15 +590,23 @@ void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "Bvmax(T)";
   int i;
+  value kelvin;
+
   CHECK_1NOTNAN;
   CHECK_DIMLESS_OR_HAS_UNIT(in , "first" , "a temperature", UNIT_TEMPERATURE, 1);
   IF_1COMPLEX 
    { QUERY_MUST_BE_REAL }
   ELSE_REAL
    {
+    ppl_units_zero(&kelvin);
+    kelvin.real = 1.0;
+    kelvin.exponent[UNIT_TEMPERATURE] = 1;
+    kelvin.TempType = 1;
+    ppl_units_div(in, &kelvin, &kelvin, status, errtext); // Convert in into kelvin
+    if (*status) kelvin.real = GSL_NAN;
     output->dimensionless = 0;
     output->exponent[UNIT_TIME] = -1;
-    output->real = 2.821439 * GSL_CONST_MKSA_BOLTZMANN / GSL_CONST_MKSA_PLANCKS_CONSTANT_H * in->real; // Wien displacement law
+    output->real = 2.821439 * GSL_CONST_MKSA_BOLTZMANN / GSL_CONST_MKSA_PLANCKS_CONSTANT_H * kelvin.real; // Wien displacement law
    }
   ENDIF
   CHECK_OUTPUT_OKAY;
@@ -969,6 +985,19 @@ void dcfmath_log10(value *in, value *output, int *status, char *errtext)
   CHECK_OUTPUT_OKAY;
  }
 
+void dcfmath_logn(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "logn(x,n)";
+  gsl_complex z;
+  value base;
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  GSL_SET_COMPLEX(&z,in2->real,in2->imag); z=gsl_complex_log(z); CLEANUP_GSLCOMPLEX; base=*output;
+  GSL_SET_COMPLEX(&z,in1->real,in1->imag); z=gsl_complex_log(z); CLEANUP_GSLCOMPLEX;
+  ppl_units_div(output,&base,output,status,errtext);
+  CHECK_OUTPUT_OKAY;
+ }
+
 void dcfmath_lognormalPDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
  {
   value *in = in3;
@@ -993,7 +1022,7 @@ void dcfmath_lognormalCDF(value *in1, value *in2, value *in3, value *output, int
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_cdf_lognormal_P(in1->real, in2->real, in3->real); }
   ENDIF
-  CHECK_OUTPUT_OKAY; 
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_lognormalCDFi(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
@@ -1225,6 +1254,7 @@ void dcfmath_sqrt(value *in, value *output, int *status, char *errtext)
   CLEANUP_GSLCOMPLEX;
   CHECK_OUTPUT_OKAY;
   output->dimensionless = in->dimensionless;
+  output->TempType      = in->TempType;
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) output->exponent[i] = in->exponent[i] / 2;
  }
 

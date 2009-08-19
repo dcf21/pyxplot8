@@ -44,11 +44,14 @@
 
 unit *ppl_unit_database;
 int   ppl_unit_pos = 0;
-int   ppl_baseunit_pos = UNIT_FIRSTUSER; 
+int   ppl_baseunit_pos = UNIT_FIRSTUSER;
 
 char *SIprefixes_full  [] = {"yocto","zepto","atto","femto","pico","nano","micro","milli","","kilo","mega","giga","tera","peta","exa","zetta","yotta"};
 char *SIprefixes_abbrev[] = {"y","z","a","f","p","n","u","m","","k","M","G","T","P","E","Z","Y"};
 char *SIprefixes_latex [] = {"y","z","a","f","p","n","\\upmu ","m","","k","M","G","T","P","E","Z","Y"};
+
+double TempTypeMultiplier[8]; // These are filled in by ppl_userspace_init.c
+double TempTypeOffset    [8]; // They store the offsets and multiplier for each of the units of temperature
 
 // NB: The LaTeX upmu character is defined by the {upgreek} package
 
@@ -58,7 +61,7 @@ value *ppl_units_zero(value *in)
   int i;
   in->real = in->imag = 0.0;
   in->dimensionless = 1;
-  in->modified = in->FlagComplex = 0;
+  in->modified = in->FlagComplex = in->TempType = 0;
   in->string = NULL;
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) in->exponent[i]=0;
   return in;
@@ -147,6 +150,7 @@ void __inline__ ppl_units_DimCpy(value *o, const value *i)
  {
   int j;
   o->dimensionless = i->dimensionless;
+  o->TempType      = i->TempType;
   for (j=0; j<UNITS_MAX_BASEUNITS; j++) o->exponent[j] = i->exponent[j];
   return;
  }
@@ -156,6 +160,7 @@ void __inline__ ppl_units_DimInverse(value *o, const value *i)
   int j;
   o->dimensionless = i->dimensionless;
   for (j=0; j<UNITS_MAX_BASEUNITS; j++) o->exponent[j] = -i->exponent[j];
+  o->TempType = 0; // Either input was per temperature, or we are now per temperature.
   return;
  }
 
@@ -191,6 +196,12 @@ int __inline__ ppl_units_UnitDimEqual(const unit *a, const unit *b)
                           || ((X).planck   && (settings_term_current.UnitScheme == SW_UNITSCH_PLK )) \
                           || ((X).ancient  && (settings_term_current.UnitScheme == SW_UNITSCH_ANC ))  )
 
+unsigned char __inline__ TempTypeMatch(unsigned char a, unsigned char b)
+ {
+  if ((a<1)||(b<1)) return 1; // anything is compatible with something which doesn't have dimensions of temperature
+  if (a==b) return 1; // oC, oF and oR are only ever used when called for
+  return 0;
+ }
 
 void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
  {
@@ -199,6 +210,7 @@ void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
 
   for (i=0; i<ppl_unit_pos; i++)
    {
+    if (!TempTypeMatch(in->TempType, ppl_unit_database[i].TempType)) continue; // Don't convert between different temperature units
     for (j=0; j<UNITS_MAX_BASEUNITS; j++)
      {
       if ( (ppl_unit_database[i].exponent[j] == 0) || (in->exponent[j]==0) ) continue;
@@ -254,7 +266,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
   // Search for alternative dimensionally-equivalent units which give a smaller value
   for (i=0; i<Nunits; i++)
    for (j=0; j<ppl_unit_pos; j++)
-    if (ppl_units_UnitDimEqual(UnitList[i] , ppl_unit_database + j))
+    if (TempTypeMatch(UnitList[i]->TempType, ppl_unit_database[j].TempType) && (ppl_units_UnitDimEqual(UnitList[i] , ppl_unit_database + j)))
      {
       OldMagnitude = hypot(in->real , in->imag);
       NewValueReal = in->real * pow(UnitList[i]->multiplier / ppl_unit_database[j].multiplier , UnitPow[i]);
@@ -434,6 +446,16 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
 // Function to evaluate strings of the form "m/s"
 // ------------------------------------------------
 
+int __inline__ UnitNameCmp(const char *in, const char *unit, const unsigned char CaseSensitive)
+ {
+  int k;
+  if (unit==NULL) return 0;
+  if (CaseSensitive) for (k=0; ((unit[k]!='\0') && (        unit[k] ==        in[k] )); k++);
+  else               for (k=0; ((unit[k]!='\0') && (toupper(unit[k])==toupper(in[k]))); k++);
+  if ((unit[k]=='\0') && (!(isalnum(in[k]) || (in[k]=='_')))) return k;
+  return 0;
+ }
+
 void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext)
  {
   int i=0,j=0,k,l,m,p;
@@ -460,15 +482,16 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
     for (j=0; j<ppl_unit_pos; j++)
      {
       multiplier = 1.0;
-      if (p==0) { for (k=0; ((ppl_unit_database[j].nameAp[k]!='\0') && (ppl_unit_database[j].nameAp[k]==in[i+k])); k++);
-                  if ((ppl_unit_database[j].nameAp[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
-      if (p==0) { for (k=0; ((ppl_unit_database[j].nameAs[k]!='\0') && (ppl_unit_database[j].nameAs[k]==in[i+k])); k++);
-                  if ((ppl_unit_database[j].nameAs[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
-      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFp[k]!='\0') && (toupper(ppl_unit_database[j].nameFp[k])==toupper(in[i+k]))); k++);
-                  if ((ppl_unit_database[j].nameFp[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
-      if (p==0) { for (k=0; ((ppl_unit_database[j].nameFs[k]!='\0') && (toupper(ppl_unit_database[j].nameFs[k])==toupper(in[i+k]))); k++);
-                  if ((ppl_unit_database[j].nameFs[k]=='\0') && (!(isalnum(in[i+k]) || (in[i+k]=='_')))) p=1; }
-      if (p==0)
+      if      ((k = UnitNameCmp(in+i, ppl_unit_database[j].nameAp,1))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].nameAs,1))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].nameFp,0))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].nameFs,0))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].nameFp,0))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].alt1  ,0))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].alt2  ,0))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].alt3  ,0))!=0) p=1;
+      else if ((k = UnitNameCmp(in+i, ppl_unit_database[j].alt4  ,0))!=0) p=1;
+      else
        {
         for (l=ppl_unit_database[j].MinPrefix/3+8; l<=ppl_unit_database[j].MaxPrefix/3+8; l++)
          {
@@ -476,22 +499,22 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
           for (k=0; ((SIprefixes_full[l][k]!='\0') && (toupper(SIprefixes_full[l][k])==toupper(in[i+k]))); k++);
           if (SIprefixes_full[l][k]=='\0')
            {
-            for (m=0; ((ppl_unit_database[j].nameFp[m]!='\0') && (toupper(ppl_unit_database[j].nameFp[m])==toupper(in[i+k+m]))); m++);
-            if ((ppl_unit_database[j].nameFp[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
-            for (m=0; ((ppl_unit_database[j].nameFs[m]!='\0') && (toupper(ppl_unit_database[j].nameFs[m])==toupper(in[i+k+m]))); m++);
-            if ((ppl_unit_database[j].nameFs[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            if      ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].nameFp,0))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            else if ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].nameFs,0))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            else if ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].alt1  ,0))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            else if ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].alt2  ,0))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            else if ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].alt3  ,0))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            else if ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].alt4  ,0))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
            }
           for (k=0; ((SIprefixes_abbrev[l][k]!='\0') && (SIprefixes_abbrev[l][k]==in[i+k])); k++);
           if (SIprefixes_abbrev[l][k]=='\0')
            {
-            for (m=0; ((ppl_unit_database[j].nameAp[m]!='\0') && (ppl_unit_database[j].nameAp[m]==in[i+k+m])); m++);
-            if ((ppl_unit_database[j].nameAp[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
-            for (m=0; ((ppl_unit_database[j].nameAs[m]!='\0') && (ppl_unit_database[j].nameAs[m]==in[i+k+m])); m++);
-            if ((ppl_unit_database[j].nameAs[m]=='\0') && (!(isalnum(in[i+k+m]) || (in[i+k+m]=='_')))) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            if      ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].nameAp,1))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
+            else if ((m = UnitNameCmp(in+i+k, ppl_unit_database[j].nameAs,1))!=0) { p=1; k+=m; multiplier=pow(10,(l-8)*3); break; }
            }
          }
        }
-      if (p==0)   continue;
+      if (p==0) continue;
       i+=k;
       while ((in[i]<=' ')&&(in[i]!='\0')) i++;
       if (((in[i]=='^') && (i++,1)) || (((in[i]=='*') && (in[i+1]=='*')) && (i+=2,1)))
@@ -501,7 +524,16 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
         i+=k;
         while ((in[i]<=' ')&&(in[i]!='\0')) i++;
        }
+
+      if (ppl_unit_database[j].TempType != 0)
+       {
+        if ((out->TempType >0) && (out->TempType!=ppl_unit_database[j].TempType))
+         { *errpos=i; strcpy(errtext, "Unit error: Attempt to mix Kelvin, oC and oF in the units of a single quantity. Try again with all quantities converted into Kelvin. Type 'help units temperatures' for more details."); return; }
+        out->TempType = ppl_unit_database[j].TempType;
+       }
+
       for (k=0; k<UNITS_MAX_BASEUNITS; k++) out->exponent[k] += ppl_unit_database[j].exponent[k] * power * powerneg;
+      if (ppl_units_DblEqual(out->exponent[UNIT_TEMPERATURE], 0)) out->TempType = 0; // We've lost our temperature dependence
       out->real *= multiplier * pow( ppl_unit_database[j].multiplier , power*powerneg );
       power = 1.0;
       if      (in[i]=='*') { powerneg= 1.0; i++; }
@@ -596,6 +628,7 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
       else { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
      }
    }
+  o->TempType = a->TempType;
   o->dimensionless = DimLess;
   return;
  }
@@ -603,13 +636,35 @@ void __inline__ ppl_units_pow (const value *a, const value *b, value *o, int *st
 void __inline__ ppl_units_mult(const value *a, const value *b, value *o, int *status, char *errtext)
  {
   int i;
-  double tmp;
+  double tmp, areal, breal, aimag, bimag;
   unsigned char DimLess=1;
+
+  areal = a->real ; aimag = a->imag;
+  breal = b->real ; bimag = b->imag;
+
+  // Two inputs have conflicting temperature units. This is only allowed in the special case of oC/oF and friends, when temperature conversion happens.
+  if (!TempTypeMatch(a->TempType, b->TempType))
+   {
+    if      (ppl_units_DblEqual(a->exponent[UNIT_TEMPERATURE], 1.0) && (ppl_units_DblEqual(b->exponent[UNIT_TEMPERATURE],-1.0)))
+     {
+      areal = areal + TempTypeOffset[a->TempType] - TempTypeOffset[b->TempType]; // Remember, areal and breal have already had multipliers applied.
+     }
+    else if (ppl_units_DblEqual(a->exponent[UNIT_TEMPERATURE],-1.0) && (ppl_units_DblEqual(b->exponent[UNIT_TEMPERATURE], 1.0)))
+     {
+      breal = breal + TempTypeOffset[b->TempType] - TempTypeOffset[a->TempType]; // Imaginary part needs to conversion... multiplication already done.
+     }
+    else
+     {*status = 1; sprintf(errtext, "Attempt to multiply quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before multiplication is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) );}
+   }
+
+  // If one or other input has temperature dependence, we need to propagate which unit of temperature is being used.
+  // If we're in one of the cases handled above, don't worry as temperature exponent is about to end up as zero after, e.g. oC/oF
+  o->TempType = (a->TempType > b->TempType) ? a->TempType : b->TempType;
 
   if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real multiplication
    {
     if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; }
-    else                                  { o->real = a->real * b->real; }
+    else                                  { o->real = areal * breal; }
     o->imag = 0.0;
     o->FlagComplex=0;
    }
@@ -618,8 +673,8 @@ void __inline__ ppl_units_mult(const value *a, const value *b, value *o, int *st
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
     else
      {
-      tmp            = (a->real * b->real - a->imag * b->imag);
-      o->imag        = (a->imag * b->real + a->real * b->imag);
+      tmp            = (areal * breal - aimag * bimag);
+      o->imag        = (aimag * breal + areal * bimag);
       o->real        = tmp;
       o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
       if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
@@ -639,19 +694,42 @@ void __inline__ ppl_units_mult(const value *a, const value *b, value *o, int *st
      }
    }
   o->dimensionless = DimLess;
+  if (o->exponent[UNIT_TEMPERATURE]==0) o->TempType = 0; // We've lost our temperature dependence
   return;
  }
 
 void __inline__ ppl_units_div (const value *a, const value *b, value *o, int *status, char *errtext)
  {
   int i;
-  double mag, tmp;
+  double mag, tmp, areal, breal, aimag, bimag;
   unsigned char DimLess=1;
+
+  areal = a->real ; aimag = a->imag;
+  breal = b->real ; bimag = b->imag;
+
+  // Two inputs have conflicting temperature units. This is only allowed in the special case of oC/oF and friends, when temperature conversion happens.
+  if (!TempTypeMatch(a->TempType, b->TempType))
+   {
+    if      (ppl_units_DblEqual(a->exponent[UNIT_TEMPERATURE], 1.0) && (ppl_units_DblEqual(b->exponent[UNIT_TEMPERATURE], 1.0)))
+     {
+      areal = areal + TempTypeOffset[a->TempType] - TempTypeOffset[b->TempType]; // Remember, areal and breal have already had multipliers applied.
+     }
+    else if (ppl_units_DblEqual(a->exponent[UNIT_TEMPERATURE],-1.0) && (ppl_units_DblEqual(b->exponent[UNIT_TEMPERATURE],-1.0)))
+     {
+      breal = breal + TempTypeOffset[b->TempType] - TempTypeOffset[a->TempType]; // Imaginary part needs to conversion... multiplication already done.
+     }
+    else
+     {*status = 1; sprintf(errtext, "Attempt to divide quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before division is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) );}
+   }
+
+  // If one or other input has temperature dependence, we need to propagate which unit of temperature is being used.
+  // If we're in one of the cases handled above, don't worry as temperature exponent is about to end up as zero after, e.g. oC/oF
+  o->TempType = (a->TempType > b->TempType) ? a->TempType : b->TempType;
 
   if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) || ((!a->FlagComplex) && (!b->FlagComplex))) // Real division
    {
     if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
-    else if (fabs(b->real) < 1e-200)
+    else if (fabs(breal) < 1e-200)
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
       else                                                      { sprintf(errtext, "Division by zero error."); *status = 1; return; }
@@ -659,7 +737,7 @@ void __inline__ ppl_units_div (const value *a, const value *b, value *o, int *st
     else
      {
       if (a->FlagComplex || b->FlagComplex) { o->real = GSL_NAN; }
-      else                                  { o->real = a->real / b->real; }
+      else                                  { o->real = areal / breal; }
       o->imag = 0.0;
       o->FlagComplex=0;
      }
@@ -667,15 +745,15 @@ void __inline__ ppl_units_div (const value *a, const value *b, value *o, int *st
   else // Complex division
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
-    else if ((mag = pow(b->real,2)+pow(b->imag,2)) < 1e-200)
+    else if ((mag = pow(breal,2)+pow(bimag,2)) < 1e-200)
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; }
       else                                                      { sprintf(errtext, "Division by zero error."); *status = 1; return; }
      }
     else
      {
-      tmp            = (a->real * b->real + a->imag * b->imag) / mag;
-      o->imag        = (a->imag * b->real - a->real * b->imag) / mag;
+      tmp            = (areal * breal + aimag * bimag) / mag;
+      o->imag        = (aimag * breal - areal * bimag) / mag;
       o->real        = tmp;
       o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
       if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
@@ -695,6 +773,7 @@ void __inline__ ppl_units_div (const value *a, const value *b, value *o, int *st
      }
    }
   o->dimensionless = DimLess;
+  if (o->exponent[UNIT_TEMPERATURE]==0) o->TempType = 0; // We've lost our temperature dependence
   return;
  }
 
@@ -715,7 +794,8 @@ void __inline__ ppl_units_add (const value *a, const value *b, value *o, int *st
       *status = 1; return;
      }
    }
-
+  if (!TempTypeMatch(a->TempType, b->TempType))
+   { *status = 1; sprintf(errtext, "Attempt to add quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before addition is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
   if (a->FlagComplex || b->FlagComplex)
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
@@ -743,7 +823,8 @@ void __inline__ ppl_units_sub (const value *a, const value *b, value *o, int *st
       *status = 1; return;
      }
    }
-
+  if (!TempTypeMatch(a->TempType, b->TempType))
+   { *status = 1; sprintf(errtext, "Attempt to subtract quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before subtraction is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
   if (a->FlagComplex || b->FlagComplex)
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
@@ -771,6 +852,8 @@ void __inline__ ppl_units_mod (const value *a, const value *b, value *o, int *st
       *status = 1; return;
      }
    }
+  if (!TempTypeMatch(a->TempType, b->TempType))
+   { *status = 1; sprintf(errtext, "Attempt to apply mod operator to quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before the use of the mod operator is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
   if (a->FlagComplex || b->FlagComplex)
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }

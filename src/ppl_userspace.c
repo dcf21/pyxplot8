@@ -164,7 +164,7 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
      {
       tempdbl          = max[lcount].real;
       max[lcount].real = min[lcount].real;
-      min[lcount].real = tempdbl; 
+      min[lcount].real = tempdbl;
      }
 
     lcount++;
@@ -1138,7 +1138,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
       if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
        { 
-        *errpos=i; 
+        *errpos=i;
         if      (ResultBuffer[prev_bufno].dimensionless)
          { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,1,0)); }
         else if (ResultBuffer[next_bufno].dimensionless)

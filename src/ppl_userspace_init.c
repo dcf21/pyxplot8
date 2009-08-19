@@ -117,7 +117,9 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_legendreP     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreP   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{legendreP}@<@1,@2@>", "legendreP(l,x) evaluates the lth Legendre polynomial at x"};
   FunctionDescriptor fd_legendreQ     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreQ   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{legendreQ}@<@1,@2@>", "legendreQ(l,x) evaluates the lth Legendre function at x"};
   FunctionDescriptor fd_log           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{log}@<@1@>", "log(x) returns the natural logarithm of x"};
-  FunctionDescriptor fd_log10         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log10       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{log_{10}}@<@1@>", "log10(x) returns the logarithm to base 10 of x"};
+  FunctionDescriptor fd_log10         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log10       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{log_{10}}@<@1@>", "log10(x) returns the logarithm of x to base 10"};
+  FunctionDescriptor fd_logn          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_logn        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{log}_n@<@1@>", "logn(x,n) returns the logarithm of x to base n"};
+  FunctionDescriptor fd_ln            = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_log         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ln}@<@1@>", "ln(x) is an alias for log(x): it returns the natural logarithm of x"};
   FunctionDescriptor fd_lognormalPDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalPDF, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lognormalPDF}@<@1,@2,@3@>", "lognormalPDF(x,zeta,sigma) evaluates the log normal probability density function of standard deviation sigma at x"};
   FunctionDescriptor fd_lognormalCDF  = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDF, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lognormalCDF}@<@1,@2,@3@>", "lognormalCDF(x,zeta,sigma) evaluates the log normal cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_lognormalCDFi = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_lognormalCDFi,NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lognormalCDFi}@<@1,@2,@3@>", "lognormalCDFi(x,zeta,sigma) evaluates the inverse log normal cumulative distribution function of standard deviation sigma at x"};
@@ -347,6 +349,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreQ"      , (void *)&fd_legendreQ   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "log"            , (void *)&fd_log         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "log10"          , (void *)&fd_log10       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "logn"           , (void *)&fd_logn        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ln"             , (void *)&fd_ln          , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "lognormalPDF"   , (void *)&fd_lognormalPDF, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "lognormalCDF"   , (void *)&fd_lognormalCDF, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "lognormalCDFi"  , (void *)&fd_lognormalCDFi,sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -412,9 +416,14 @@ void ppl_units_init()
     ppl_unit_database[i].nameLp     = NULL;
     ppl_unit_database[i].nameFs     = NULL;
     ppl_unit_database[i].nameFp     = NULL;
+    ppl_unit_database[i].alt1       = NULL;
+    ppl_unit_database[i].alt2       = NULL;
+    ppl_unit_database[i].alt3       = NULL;
+    ppl_unit_database[i].alt4       = NULL;
     ppl_unit_database[i].quantity   = NULL;
     ppl_unit_database[i].comment    = NULL;
     ppl_unit_database[i].multiplier = 1.0;
+    ppl_unit_database[i].TempType   = 0;
     ppl_unit_database[i].offset     = 0.0;
     ppl_unit_database[i].UserSel    = 0;
     ppl_unit_database[i].si         = ppl_unit_database[i].cgs       = ppl_unit_database[i].imperial  = ppl_unit_database[i].us = ppl_unit_database[i].planck =
@@ -426,37 +435,37 @@ void ppl_units_init()
 
   // Set up default list of units
   ppl_unit_database[ppl_unit_pos].nameAs     = "percent"; // Percent
-  ppl_unit_database[ppl_unit_pos].nameAp     = "percent"; // Percent
+  ppl_unit_database[ppl_unit_pos].nameAp     = "percent";
   ppl_unit_database[ppl_unit_pos].nameLs     = "\\%";
   ppl_unit_database[ppl_unit_pos].nameLp     = "\\%";
   ppl_unit_database[ppl_unit_pos].nameFs     = "percent";
   ppl_unit_database[ppl_unit_pos].nameFp     = "percent";
-  ppl_unit_database[ppl_unit_pos].multiplier = 0.01;
   ppl_unit_database[ppl_unit_pos].quantity   = "dimensionlessness";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.01;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ppm"; // Parts per million
-  ppl_unit_database[ppl_unit_pos].nameAp     = "ppm"; // Parts per million
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ppm";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "parts_per_million";
   ppl_unit_database[ppl_unit_pos].nameFp     = "parts_per_million";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1e-6;
   ppl_unit_database[ppl_unit_pos].quantity   = "dimensionlessness";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-6;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ppb"; // Parts per billion
-  ppl_unit_database[ppl_unit_pos].nameAp     = "ppb"; // Parts per billion
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ppb";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "parts_per_billion";
   ppl_unit_database[ppl_unit_pos].nameFp     = "parts_per_billion";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1e-9;
   ppl_unit_database[ppl_unit_pos].quantity   = "dimensionlessness";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e-9;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "m";    // Metre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "m";    // Metre
+  ppl_unit_database[ppl_unit_pos].nameAs     = "m"; // Metre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "m";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "metre";
@@ -468,19 +477,32 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "cm";    // Centimetre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cm";    // Centimetre
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cm"; // Centimetre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cm";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "centimetre";
   ppl_unit_database[ppl_unit_pos].nameFp     = "centimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.01;
   ppl_unit_database[ppl_unit_pos].cgs        = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "ang";  // Angstrom
-  ppl_unit_database[ppl_unit_pos].nameAp     = "ang";  // Angstrom
+  ppl_unit_database[ppl_unit_pos].nameAs     = "dm"; // Decimetre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "dm";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "decimetre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "decimetres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.1;
+  ppl_unit_database[ppl_unit_pos].cgs        = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "ang"; // Angstrom
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ang";
   ppl_unit_database[ppl_unit_pos].nameLs     = "\\A";
   ppl_unit_database[ppl_unit_pos].nameLp     = "\\A";
   ppl_unit_database[ppl_unit_pos].nameFs     = "angstrom";
@@ -490,8 +512,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "in";   // Inch
-  ppl_unit_database[ppl_unit_pos].nameAp     = "in";   // Inch
+  ppl_unit_database[ppl_unit_pos].nameAs     = "in"; // Inch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "in";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "inch";
@@ -503,8 +525,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "ft";   // Foot
-  ppl_unit_database[ppl_unit_pos].nameAp     = "ft";   // Foot
+  ppl_unit_database[ppl_unit_pos].nameAs     = "ft"; // Foot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ft";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "foot";
@@ -516,8 +538,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "yd";   // Yard
-  ppl_unit_database[ppl_unit_pos].nameAp     = "yd";   // Yard
+  ppl_unit_database[ppl_unit_pos].nameAs     = "yd"; // Yard
+  ppl_unit_database[ppl_unit_pos].nameAp     = "yd";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "yard";
@@ -529,8 +551,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "mi";   // Mile
-  ppl_unit_database[ppl_unit_pos].nameAp     = "mi";   // Mile
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mi"; // Mile
+  ppl_unit_database[ppl_unit_pos].nameAp     = "mi";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mile";
@@ -543,7 +565,7 @@ void ppl_units_init()
   ppl_unit_pos++;
   
   ppl_unit_database[ppl_unit_pos].nameAs     = "furlong"; // Furlong
-  ppl_unit_database[ppl_unit_pos].nameAp     = "furlongs";// Furlong
+  ppl_unit_database[ppl_unit_pos].nameAp     = "furlongs";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "furlong";
@@ -554,7 +576,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "chain"; // Chain
-  ppl_unit_database[ppl_unit_pos].nameAp     = "chains";// Chain
+  ppl_unit_database[ppl_unit_pos].nameAp     = "chains";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "chain";
@@ -565,7 +587,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "link"; // Link
-  ppl_unit_database[ppl_unit_pos].nameAp     = "links";// Link
+  ppl_unit_database[ppl_unit_pos].nameAp     = "links";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "link";
@@ -576,7 +598,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cable"; // Cable
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cables";// Cable
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cables";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "cable";
@@ -587,7 +609,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "fathom"; // Fathom
-  ppl_unit_database[ppl_unit_pos].nameAp     = "fathoms";// Fathom
+  ppl_unit_database[ppl_unit_pos].nameAp     = "fathoms";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "fathom";
@@ -597,19 +619,30 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "league"; // League
-  ppl_unit_database[ppl_unit_pos].nameAp     = "leagues";// League
+  ppl_unit_database[ppl_unit_pos].nameAs     = "roman_mile"; // Roman Mile
+  ppl_unit_database[ppl_unit_pos].nameAp     = "roman_miles";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
-  ppl_unit_database[ppl_unit_pos].nameFs     = "league";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "leagues";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "roman_mile";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "roman_miles";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
-  ppl_unit_database[ppl_unit_pos].multiplier = 4828.032;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1479.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "roman_league"; // Roman League
+  ppl_unit_database[ppl_unit_pos].nameAp     = "roman_leagues";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "roman_league";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "roman_leagues";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.5 * 1479.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "nautical_mile"; // Nautical mile
-  ppl_unit_database[ppl_unit_pos].nameAp     = "nautical_miles";// Nautical mile
+  ppl_unit_database[ppl_unit_pos].nameAp     = "nautical_miles";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "nautical_mile";
@@ -620,19 +653,19 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubit"; // Cubit
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cubits";// Cubit
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubits";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubits";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
-  ppl_unit_database[ppl_unit_pos].multiplier = 0.04572;
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.4572;
   ppl_unit_database[ppl_unit_pos].ancient    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "rod"; // Rod
-  ppl_unit_database[ppl_unit_pos].nameAp     = "rods";// Rod
+  ppl_unit_database[ppl_unit_pos].nameAp     = "rods";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "rod";
@@ -642,8 +675,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "perch";  // Perch
-  ppl_unit_database[ppl_unit_pos].nameAp     = "perches";// Perch
+  ppl_unit_database[ppl_unit_pos].nameAs     = "perch"; // Perch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "perches";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "perch";
@@ -654,7 +687,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "pole"; // Pole
-  ppl_unit_database[ppl_unit_pos].nameAp     = "poles";// Pole
+  ppl_unit_database[ppl_unit_pos].nameAp     = "poles";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pole";
@@ -664,8 +697,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "AU";   // Astronomical unit
-  ppl_unit_database[ppl_unit_pos].nameAp     = "AU";   // Astronomical unit
+  ppl_unit_database[ppl_unit_pos].nameAs     = "AU"; // Astronomical unit
+  ppl_unit_database[ppl_unit_pos].nameAp     = "AU";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "astronomical_unit";
@@ -675,8 +708,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "lyr";   // Lightyear
-  ppl_unit_database[ppl_unit_pos].nameAp     = "lyr";   // Lightyear
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lyr"; // Lightyear
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lyr";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "light_year";
@@ -687,8 +720,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "pc";   // Parsec
-  ppl_unit_database[ppl_unit_pos].nameAp     = "pc";   // Parsec
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pc"; // Parsec
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pc";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "parsec";
@@ -699,19 +732,20 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Rsun";   // Solar radii
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Rsolar"; // Solar radii
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Rsun"; // Solar radii
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Rsun";
   ppl_unit_database[ppl_unit_pos].nameLs     = "R_\\odot";
   ppl_unit_database[ppl_unit_pos].nameLp     = "R_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_radius";
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_radii";
+  ppl_unit_database[ppl_unit_pos].alt1       = "Rsolar";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
   ppl_unit_database[ppl_unit_pos].multiplier = 6.955e8;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Rearth"; // Earth radii
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Rearth"; // Earth radii
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Rearth";
   ppl_unit_database[ppl_unit_pos].nameLs     = "R_E";
   ppl_unit_database[ppl_unit_pos].nameLp     = "R_E";
   ppl_unit_database[ppl_unit_pos].nameFs     = "earth_radius";
@@ -721,19 +755,21 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Rjove";   // Jupiter radii
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Rjovian"; // Jupiter radii
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Rjupiter"; // Jupiter radii
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Rjupiter";
   ppl_unit_database[ppl_unit_pos].nameLs     = "R_J";
   ppl_unit_database[ppl_unit_pos].nameLp     = "R_J";
   ppl_unit_database[ppl_unit_pos].nameFs     = "jupiter_radius";
   ppl_unit_database[ppl_unit_pos].nameFp     = "jupiter_radii";
+  ppl_unit_database[ppl_unit_pos].alt1       = "Rjove";
+  ppl_unit_database[ppl_unit_pos].alt2       = "Rjovian";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
   ppl_unit_database[ppl_unit_pos].multiplier = 71492000;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "lunar_distance";  // Lunar distances
-  ppl_unit_database[ppl_unit_pos].nameAp     = "lunar_distances"; // Lunar distances
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lunar_distance"; // Lunar distances
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lunar_distances";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "lunar_distance";
@@ -743,8 +779,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "s";    // Second
-  ppl_unit_database[ppl_unit_pos].nameAp     = "s";    // Second
+  ppl_unit_database[ppl_unit_pos].nameAs     = "s"; // Second
+  ppl_unit_database[ppl_unit_pos].nameAp     = "s";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "second";
@@ -758,8 +794,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "min";  // Minute
-  ppl_unit_database[ppl_unit_pos].nameAp     = "min";  // Minute
+  ppl_unit_database[ppl_unit_pos].nameAs     = "min"; // Minute
+  ppl_unit_database[ppl_unit_pos].nameAp     = "min";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "minute";
@@ -769,8 +805,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "hr";   // Hour
-  ppl_unit_database[ppl_unit_pos].nameAp     = "hr";   // Hour
+  ppl_unit_database[ppl_unit_pos].nameAs     = "hr"; // Hour
+  ppl_unit_database[ppl_unit_pos].nameAp     = "hr";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hour";
@@ -781,8 +817,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "day";  // Day
-  ppl_unit_database[ppl_unit_pos].nameAp     = "days"; // Day
+  ppl_unit_database[ppl_unit_pos].nameAs     = "day"; // Day
+  ppl_unit_database[ppl_unit_pos].nameAp     = "days";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "day";
@@ -794,7 +830,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "week"; // Week
-  ppl_unit_database[ppl_unit_pos].nameAp     = "weeks";// Week
+  ppl_unit_database[ppl_unit_pos].nameAp     = "weeks";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "week";
@@ -804,8 +840,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "yr";   // Year
-  ppl_unit_database[ppl_unit_pos].nameAp     = "yr";   // Year
+  ppl_unit_database[ppl_unit_pos].nameAs     = "yr"; // Year
+  ppl_unit_database[ppl_unit_pos].nameAp     = "yr";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "year";
@@ -817,8 +853,19 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "kg";   // Kilogram
-  ppl_unit_database[ppl_unit_pos].nameAp     = "kg";   // Kilogram
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sol"; // Sol (Martian Day)
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sols";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "sol";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "sols";
+  ppl_unit_database[ppl_unit_pos].quantity   = "time";
+  ppl_unit_database[ppl_unit_pos].multiplier = 88775.244;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kg"; // Kilogram
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kg";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kilogram";
@@ -828,8 +875,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gramme
-  ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gramme
+  ppl_unit_database[ppl_unit_pos].nameAs     = "g"; // Gramme
+  ppl_unit_database[ppl_unit_pos].nameAp     = "g";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gramme";
@@ -840,8 +887,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "g";    // Gram
-  ppl_unit_database[ppl_unit_pos].nameAp     = "g";    // Gram
+  ppl_unit_database[ppl_unit_pos].nameAs     = "g"; // Gram
+  ppl_unit_database[ppl_unit_pos].nameAp     = "g";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gram";
@@ -853,44 +900,34 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "t";    // Metric Tonne
-  ppl_unit_database[ppl_unit_pos].nameAp     = "t";    // Metric Tonne
-  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
-  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
-  ppl_unit_database[ppl_unit_pos].nameFs     = "metric_ton";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "metric_tons";
-  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1e3;
-  ppl_unit_database[ppl_unit_pos].MaxPrefix  = 24;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
-  ppl_unit_pos++;
-
-  ppl_unit_database[ppl_unit_pos].nameAs     = "t";    // Metric Tonne
-  ppl_unit_database[ppl_unit_pos].nameAp     = "t";    // Metric Tonne
+  ppl_unit_database[ppl_unit_pos].nameAs     = "t"; // Metric Tonne
+  ppl_unit_database[ppl_unit_pos].nameAp     = "t";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "tonne";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tonnes";
+  ppl_unit_database[ppl_unit_pos].alt1       = "metric_tonne";
+  ppl_unit_database[ppl_unit_pos].alt2       = "metric_tonnes";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e3;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "short_ton"; // US Ton
-  ppl_unit_database[ppl_unit_pos].nameAp     = "short_tons";// US Ton
+  ppl_unit_database[ppl_unit_pos].nameAp     = "short_tons";
   ppl_unit_database[ppl_unit_pos].nameLs     = "short\\_ton";
   ppl_unit_database[ppl_unit_pos].nameLp     = "short\\_tons";
   ppl_unit_database[ppl_unit_pos].nameFs     = "ton";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 907;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "long_ton";  // UK Ton
-  ppl_unit_database[ppl_unit_pos].nameAp     = "long_tons"; // UK Ton
+  ppl_unit_database[ppl_unit_pos].nameAs     = "long_ton"; // UK Ton
+  ppl_unit_database[ppl_unit_pos].nameAp     = "long_tons";
   ppl_unit_database[ppl_unit_pos].nameLs     = "long\\_ton";
   ppl_unit_database[ppl_unit_pos].nameLp     = "long\\_tons";
   ppl_unit_database[ppl_unit_pos].nameFs     = "ton";
@@ -903,7 +940,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oz"; // Ounce
-  ppl_unit_database[ppl_unit_pos].nameAp     = "oz"; // Ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "oz";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "ounce";
@@ -914,19 +951,19 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "oz_(Troy)"; // Troy Ounce
-  ppl_unit_database[ppl_unit_pos].nameAp     = "oz_(Troy)"; // Troy Ounce
-  ppl_unit_database[ppl_unit_pos].nameLs     = "oz\\_(Troy)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "oz\\_(Troy)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "Troy_ounce";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "Troy_ounces";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "oz_troy"; // Troy Ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "oz_troy";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "oz\\_troy";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "oz\\_troy";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "troy_ounce";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "troy_ounces";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TROY_OUNCE;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "lb";  // Pound
-  ppl_unit_database[ppl_unit_pos].nameAp     = "lbs"; // Pound
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lb"; // Pound
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lbs";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pound";
@@ -938,7 +975,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "stone"; // Stone
-  ppl_unit_database[ppl_unit_pos].nameAp     = "stone"; // Stone
+  ppl_unit_database[ppl_unit_pos].nameAp     = "stone";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "stone";
@@ -949,20 +986,45 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "cwt"; // hundredweight
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cwt"; // hundredweight
+  ppl_unit_database[ppl_unit_pos].nameAs     = "slug"; // Slug
+  ppl_unit_database[ppl_unit_pos].nameAp     = "slugs";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
-  ppl_unit_database[ppl_unit_pos].nameFs     = "hundredweight";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "hundredweight";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "slug";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "slugs";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
-  ppl_unit_database[ppl_unit_pos].multiplier = 50.80234544;
-  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  ppl_unit_database[ppl_unit_pos].multiplier = 14.5939;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "drachm";  // drachm
-  ppl_unit_database[ppl_unit_pos].nameAp     = "drachms"; // drachm
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cwt_UK"; // UK hundredweight
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cwt_UK";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "hundredweight_UK";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "hundredweight_UK";
+  ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 50.80234544;
+  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cwt_US"; // US hundredweight
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cwt_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "hundredweight_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "hundredweight_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
+  ppl_unit_database[ppl_unit_pos].quantity   = "mass";
+  ppl_unit_database[ppl_unit_pos].multiplier = 45.359237;
+  ppl_unit_database[ppl_unit_pos].us         = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "drachm"; // drachm
+  ppl_unit_database[ppl_unit_pos].nameAp     = "drachms";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "drachm";
@@ -973,8 +1035,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "grain";  // grain
-  ppl_unit_database[ppl_unit_pos].nameAp     = "grains"; // grain
+  ppl_unit_database[ppl_unit_pos].nameAs     = "grain"; // grain
+  ppl_unit_database[ppl_unit_pos].nameAp     = "grains";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "grain";
@@ -985,8 +1047,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "CD";  // carat
-  ppl_unit_database[ppl_unit_pos].nameAp     = "CDs"; // carat
+  ppl_unit_database[ppl_unit_pos].nameAs     = "CD"; // carat
+  ppl_unit_database[ppl_unit_pos].nameAp     = "CDs";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "carat";
@@ -996,8 +1058,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "shekel";  // Shekel
-  ppl_unit_database[ppl_unit_pos].nameAp     = "shekels"; // Shekel
+  ppl_unit_database[ppl_unit_pos].nameAs     = "shekel"; // Shekel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "shekels";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "shekel";
@@ -1008,8 +1070,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "mina";  // Mina
-  ppl_unit_database[ppl_unit_pos].nameAp     = "minas"; // Mina
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mina"; // Mina
+  ppl_unit_database[ppl_unit_pos].nameAp     = "minas";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mina";
@@ -1020,8 +1082,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "talent";  // Talent
-  ppl_unit_database[ppl_unit_pos].nameAp     = "talents"; // Talent
+  ppl_unit_database[ppl_unit_pos].nameAs     = "talent"; // Talent
+  ppl_unit_database[ppl_unit_pos].nameAp     = "talents";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "talent";
@@ -1032,19 +1094,20 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Msun";   // Solar mass
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Msolar"; // Solar mass
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Msun"; // Solar mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Msun";
   ppl_unit_database[ppl_unit_pos].nameLs     = "M_\\odot";
   ppl_unit_database[ppl_unit_pos].nameLp     = "M_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_mass";
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_masses";
+  ppl_unit_database[ppl_unit_pos].alt1       = "Msolar";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_SOLAR_MASS;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Mearth"; // Earth mass
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Mearth"; // Earth mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Mearth";
   ppl_unit_database[ppl_unit_pos].nameLs     = "M_E";
   ppl_unit_database[ppl_unit_pos].nameLp     = "M_E";
   ppl_unit_database[ppl_unit_pos].nameFs     = "earth_mass";
@@ -1054,23 +1117,27 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Mjove";    // Jupiter mass
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Mjupiter"; // Jupiter mass
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Mjupiter"; // Jupiter mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Mjupiter";
   ppl_unit_database[ppl_unit_pos].nameLs     = "M_J";
   ppl_unit_database[ppl_unit_pos].nameLp     = "M_J";
   ppl_unit_database[ppl_unit_pos].nameFs     = "jupiter_mass";
   ppl_unit_database[ppl_unit_pos].nameFp     = "jupiter_masses";
+  ppl_unit_database[ppl_unit_pos].alt1       = "Mjove";
+  ppl_unit_database[ppl_unit_pos].alt2       = "Mjovian";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.8986e27;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "A"; // Ampere
-  ppl_unit_database[ppl_unit_pos].nameAp     = "A"; // Ampere
+  ppl_unit_database[ppl_unit_pos].nameAp     = "A";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "ampere";
   ppl_unit_database[ppl_unit_pos].nameFp     = "amperes";
+  ppl_unit_database[ppl_unit_pos].alt1       = "amp";
+  ppl_unit_database[ppl_unit_pos].alt2       = "amps";
   ppl_unit_database[ppl_unit_pos].quantity   = "current";
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
@@ -1078,68 +1145,73 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "A"; // Ampere
-  ppl_unit_database[ppl_unit_pos].nameAp     = "A"; // Ampere
-  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
-  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
-  ppl_unit_database[ppl_unit_pos].nameFs     = "amp";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "amps";
-  ppl_unit_database[ppl_unit_pos].quantity   = "current";
-  ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
-  ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT]=1;
-  ppl_unit_pos++;
-
   ppl_unit_database[ppl_unit_pos].nameAs     = "K"; // Kelvin
-  ppl_unit_database[ppl_unit_pos].nameAp     = "K"; // Kelvin
+  ppl_unit_database[ppl_unit_pos].nameAp     = "K";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kelvin";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kelvin";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
+  ppl_unit_database[ppl_unit_pos].TempType   = 1;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].si         = 1;
   ppl_unit_database[ppl_unit_pos].cgs        = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
+  TempTypeMultiplier[ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].multiplier;
+  TempTypeOffset    [ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].offset;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "R"; // Rankin
+  ppl_unit_database[ppl_unit_pos].nameAp     = "R";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "rankin";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "rankin";
+  ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
+  ppl_unit_database[ppl_unit_pos].TempType   = 2;
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.0/9.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
+  TempTypeMultiplier[ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].multiplier;
+  TempTypeOffset    [ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].offset;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oC"; // oC
-  ppl_unit_database[ppl_unit_pos].nameAp     = "oC"; // oC
+  ppl_unit_database[ppl_unit_pos].nameAp     = "oC";
   ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ C";
   ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ C";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "celsius";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "celsius";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "degree_celsius";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "degrees_celsius";
+  ppl_unit_database[ppl_unit_pos].alt1       = "degree_centigrade";
+  ppl_unit_database[ppl_unit_pos].alt2       = "degrees_centigrade";
+  ppl_unit_database[ppl_unit_pos].alt3       = "centigrade";
+  ppl_unit_database[ppl_unit_pos].alt4       = "celsius";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
+  ppl_unit_database[ppl_unit_pos].TempType   = 3;
   ppl_unit_database[ppl_unit_pos].offset     = 273.15;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
-  ppl_unit_pos++;
-
-  ppl_unit_database[ppl_unit_pos].nameAs     = "oC"; // oC
-  ppl_unit_database[ppl_unit_pos].nameAp     = "oC"; // oC
-  ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ C";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ C";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "centigrade";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "centigrade";
-  ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
-  ppl_unit_database[ppl_unit_pos].offset     = 273.15;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
+  TempTypeMultiplier[ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].multiplier;
+  TempTypeOffset    [ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].offset;
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "oF"; // oF
-  ppl_unit_database[ppl_unit_pos].nameAp     = "oF"; // oF
+  ppl_unit_database[ppl_unit_pos].nameAp     = "oF";
   ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ F";
   ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ F";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "fahrenheit";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "fahrenheit";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "degree_fahrenheit";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "degrees_fahrenheit";
+  ppl_unit_database[ppl_unit_pos].alt1       = "fahrenheit";
   ppl_unit_database[ppl_unit_pos].quantity   = "temperature";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1.8;
-  ppl_unit_database[ppl_unit_pos].offset     = 459.67;
+  ppl_unit_database[ppl_unit_pos].TempType   = 4;
+  ppl_unit_database[ppl_unit_pos].multiplier = 5.0/9.0;
+  ppl_unit_database[ppl_unit_pos].offset     = 459.67 * 5.0/9.0;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE]=1;
+  TempTypeMultiplier[ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].multiplier;
+  TempTypeOffset    [ppl_unit_database[ppl_unit_pos].TempType] = ppl_unit_database[ppl_unit_pos].offset;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "mol";  // mole
-  ppl_unit_database[ppl_unit_pos].nameAp     = "mol";  // mole
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mol"; // mole
+  ppl_unit_database[ppl_unit_pos].nameAp     = "mol";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mole";
@@ -1152,8 +1224,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MOLE]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "cd";   // candela
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cd";   // candela
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cd"; // candela
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cd";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "candela";
@@ -1169,8 +1241,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]  =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "candlepower";   // candlepower
-  ppl_unit_database[ppl_unit_pos].nameAp     = "candlepower";   // candlepower
+  ppl_unit_database[ppl_unit_pos].nameAs     = "candlepower"; // candlepower
+  ppl_unit_database[ppl_unit_pos].nameAp     = "candlepower";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "candlepower";
@@ -1178,14 +1250,14 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "light_intensity";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0/683/0.981;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient    = 1;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1; 
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2; 
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]  =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "lm";   // lumen
-  ppl_unit_database[ppl_unit_pos].nameAp     = "lm";   // lumen
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lm"; // lumen
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lm";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "lumen";
@@ -1194,13 +1266,13 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_LUMEN;
   ppl_unit_database[ppl_unit_pos].MinPrefix  = -24;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1; 
-  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2; 
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "lx";   // lux
-  ppl_unit_database[ppl_unit_pos].nameAp     = "lx";   // lux
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lx"; // lux
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lx";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "lux";
@@ -1213,8 +1285,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Jy";   // jansky
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Jy";   // jansky
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Jy"; // jansky
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Jy";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "jansky";
@@ -1227,8 +1299,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "rad";  // radians
-  ppl_unit_database[ppl_unit_pos].nameAp     = "rad";  // radians
+  ppl_unit_database[ppl_unit_pos].nameAs     = "rad"; // radians
+  ppl_unit_database[ppl_unit_pos].nameAp     = "rad";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "radian";
@@ -1239,20 +1311,32 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "deg";  // degrees
-  ppl_unit_database[ppl_unit_pos].nameAp     = "deg";  // degrees
+  ppl_unit_database[ppl_unit_pos].nameAs     = "deg"; // degrees
+  ppl_unit_database[ppl_unit_pos].nameAp     = "deg";
   ppl_unit_database[ppl_unit_pos].nameLs     = "^\\circ";
   ppl_unit_database[ppl_unit_pos].nameLp     = "^\\circ";
   ppl_unit_database[ppl_unit_pos].nameFs     = "degree";
   ppl_unit_database[ppl_unit_pos].nameFp     = "degrees";
   ppl_unit_database[ppl_unit_pos].quantity   = "angle";
   ppl_unit_database[ppl_unit_pos].multiplier = M_PI / 180;
-  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
+  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "arcmin";  // arcminute
-  ppl_unit_database[ppl_unit_pos].nameAp     = "arcmins"; // arcminute
+  ppl_unit_database[ppl_unit_pos].nameAs     = "rev"; // revolution
+  ppl_unit_database[ppl_unit_pos].nameAp     = "rev";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "revolution";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "revolutions";
+  ppl_unit_database[ppl_unit_pos].quantity   = "angle";
+  ppl_unit_database[ppl_unit_pos].multiplier = 2 * M_PI;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "arcmin"; // arcminute
+  ppl_unit_database[ppl_unit_pos].nameAp     = "arcmins";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "arcminute";
@@ -1262,8 +1346,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "arcsec";  // arcsecond
-  ppl_unit_database[ppl_unit_pos].nameAp     = "arcsecs"; // arcsecond
+  ppl_unit_database[ppl_unit_pos].nameAs     = "arcsec"; // arcsecond
+  ppl_unit_database[ppl_unit_pos].nameAp     = "arcsecs";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "arcsecond";
@@ -1273,8 +1357,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "bit";  // bit
-  ppl_unit_database[ppl_unit_pos].nameAp     = "bits"; // bit
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bit"; // bit
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bits";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "bit";
@@ -1286,8 +1370,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "euro";  // cost
-  ppl_unit_database[ppl_unit_pos].nameAp     = "euros"; // cost
+  ppl_unit_database[ppl_unit_pos].nameAs     = "euro"; // cost
+  ppl_unit_database[ppl_unit_pos].nameAp     = "euros";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "euro";
@@ -1304,8 +1388,19 @@ void ppl_units_init()
   // Derived units
   // -------------
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "mph";  // mile_per_hour
-  ppl_unit_database[ppl_unit_pos].nameAp     = "mph";  // mile_per_hour
+  ppl_unit_database[ppl_unit_pos].nameAs     = "dioptre"; // dioptre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "dioptres";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "dioptre";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "dioptres";
+  ppl_unit_database[ppl_unit_pos].quantity   = "lens_power";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=-1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mph"; // mile_per_hour
+  ppl_unit_database[ppl_unit_pos].nameAp     = "mph";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mile_per_hour";
@@ -1317,8 +1412,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "knot";  // knot
-  ppl_unit_database[ppl_unit_pos].nameAp     = "knots"; // knot
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kn"; // knot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kn";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "knot";
@@ -1329,8 +1424,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]  =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "acre";  // acre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "acres"; // acre
+  ppl_unit_database[ppl_unit_pos].nameAs     = "acre"; // acre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "acres";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "acre";
@@ -1341,8 +1436,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "are";  // are
-  ppl_unit_database[ppl_unit_pos].nameAp     = "ares"; // are
+  ppl_unit_database[ppl_unit_pos].nameAs     = "are"; // are
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ares";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "are";
@@ -1352,8 +1447,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "barn";  // barn
-  ppl_unit_database[ppl_unit_pos].nameAp     = "barns"; // barn
+  ppl_unit_database[ppl_unit_pos].nameAs     = "barn"; // barn
+  ppl_unit_database[ppl_unit_pos].nameAp     = "barns";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "barn";
@@ -1363,8 +1458,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "hectare";  // hectare
-  ppl_unit_database[ppl_unit_pos].nameAp     = "hectares"; // hectare
+  ppl_unit_database[ppl_unit_pos].nameAs     = "hectare"; // hectare
+  ppl_unit_database[ppl_unit_pos].nameAp     = "hectares";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hectare";
@@ -1375,7 +1470,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_mi"; // square mile
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_mi"; // square mile
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_mi";
   ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_mi";
   ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_mi";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_mile";
@@ -1387,7 +1482,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_km"; // square kilometre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_km"; // square kilometre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_km";
   ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_km";
   ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_km";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_kilometre";
@@ -1399,7 +1494,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_m"; // square metre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_m"; // square metre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_m";
   ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_m";
   ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_m";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_metre";
@@ -1411,7 +1506,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_cm"; // square centimetre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_cm"; // square centimetre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_cm";
   ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_cm";
   ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_cm";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_centimetre";
@@ -1423,7 +1518,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_ft"; // square foot
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_ft"; // square foot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_ft";
   ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_ft";
   ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_ft";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_foot";
@@ -1435,7 +1530,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "sq_in"; // square inch
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_in"; // square inch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sq_in";
   ppl_unit_database[ppl_unit_pos].nameLs     = "sq\\_in";
   ppl_unit_database[ppl_unit_pos].nameLp     = "sq\\_in";
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_inch";
@@ -1447,7 +1542,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_m"; // cubic metre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_m"; // cubic metre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_m";
   ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_m";
   ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_m";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_metre";
@@ -1459,7 +1554,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_cm"; // cubic centimetre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_cm"; // cubic centimetre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_cm";
   ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_cm";
   ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_cm";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_centimetre";
@@ -1471,7 +1566,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_ft"; // cubic foot
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_ft"; // cubic foot
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_ft";
   ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_ft";
   ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_ft";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_foot";
@@ -1483,7 +1578,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubic_in"; // cubic inch
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_in"; // cubic inch
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cubic_in";
   ppl_unit_database[ppl_unit_pos].nameLs     = "cubic\\_in";
   ppl_unit_database[ppl_unit_pos].nameLp     = "cubic\\_in";
   ppl_unit_database[ppl_unit_pos].nameFs     = "cubic_inch";
@@ -1495,7 +1590,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "l"; // litre
-  ppl_unit_database[ppl_unit_pos].nameAp     = "l"; // litre
+  ppl_unit_database[ppl_unit_pos].nameAp     = "l";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "litre";
@@ -1506,12 +1601,12 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_(UK)"; // fluid ounce
-  ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_(UK)"; // fluid ounce
-  ppl_unit_database[ppl_unit_pos].nameLs     = "fl\\_oz\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "fl\\_oz\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_UK"; // UK fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_UK";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "fl\\_oz\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "fl\\_oz\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_UK";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_UK";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 28.4130625e-6;
@@ -1519,25 +1614,25 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_(US)"; // fluid ounce
-  ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_(US)"; // fluid ounce
-  ppl_unit_database[ppl_unit_pos].nameLs     = "fl\\_oz\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "fl\\_oz\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_(US)";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "fl_oz_US"; // US fluid ounce
+  ppl_unit_database[ppl_unit_pos].nameAp     = "fl_oz_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "fl\\_oz\\_US";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "fl\\_oz\\_US";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "fluid_ounce_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "fluid_ounce_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_FLUID_OUNCE;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(UK)";  // pint
-  ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(UK)"; // pint
-  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pint_UK"; // UK pint
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pints_UK";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pint_UK";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pints_UK";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 568.26125e-6;
@@ -1545,25 +1640,25 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "pint_(US)";  // pint
-  ppl_unit_database[ppl_unit_pos].nameAp     = "pints_(US)"; // pint
-  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "pint_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "pints_(US)";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pint_US"; // US pint
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pints_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "pint\\_US";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "pints\\_US";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pint_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pints_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_PINT;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "quart_(UK)";  // quart
-  ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_(UK)"; // quart
-  ppl_unit_database[ppl_unit_pos].nameLs     = "quart\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "quarts\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "quart_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "quart_UK"; // UK quart
+  ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_UK";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "quart\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "quarts\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "quart_UK";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_UK";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 1136.5225e-6;
@@ -1571,25 +1666,25 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "quart_(US)";  // quart
-  ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_(US)"; // quart
-  ppl_unit_database[ppl_unit_pos].nameLs     = "quart\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "quarts\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "quart_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_(US)";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "quart_US"; // US quart
+  ppl_unit_database[ppl_unit_pos].nameAp     = "quarts_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "quart\\_US";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "quarts\\_US";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "quart_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "quarts_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_QUART;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(UK)";  // gallon
-  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(UK)"; // gallon
-  ppl_unit_database[ppl_unit_pos].nameLs     = "gallon\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "gallons\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_UK"; // UK gallon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_UK";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "gallon\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "gallons\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_UK";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_UK";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_UK_GALLON;
@@ -1597,25 +1692,25 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_(US)";  // gallon
-  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_(US)"; // gallon
-  ppl_unit_database[ppl_unit_pos].nameLs     = "gallon\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "gallons\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_(US)";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "gallon_US"; // US gallon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "gallons_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "gallon\\_US";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "gallons\\_US";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gallon_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gallons_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_US_GALLON;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_(UK)";  // bushel
-  ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_(UK)"; // bushel
-  ppl_unit_database[ppl_unit_pos].nameLs     = "bushel\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "bushels\\_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_(UK)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(UK)";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_UK"; // UK bushel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_UK";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "bushel\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "bushels\\_UK";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_UK";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_UK";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 36.36872e-3;
@@ -1623,45 +1718,69 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_(US)";  // bushel
-  ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_(US)"; // bushel
-  ppl_unit_database[ppl_unit_pos].nameLs     = "bushel\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "bushels\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_(US)";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bushel_US"; // US bushel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bushels_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "bushel\\_US";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "bushels\\_US";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "bushel_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "bushels_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 35.23907016688e-3;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "cup_(US)";  // cup
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cups_(US)"; // cup
-  ppl_unit_database[ppl_unit_pos].nameLs     = "cup\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "cups\\_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "cup_(US)";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "cups_(US)";
-  ppl_unit_database[ppl_unit_pos].comment    = "US imperial";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cup_US"; // US cup
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cups_US";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "cup\\_US";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "cups\\_US";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "cup_US";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "cups_US";
+  ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_CUP;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "teaspoon";  // teaspoon
-  ppl_unit_database[ppl_unit_pos].nameAp     = "teaspoons"; // teaspoon
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bath"; // bath
+  ppl_unit_database[ppl_unit_pos].nameAp     = "baths";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "bath";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "baths";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 22e-3;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "homer"; // homer
+  ppl_unit_database[ppl_unit_pos].nameAp     = "homers";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "homer";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "homers";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 220e-3;
+  ppl_unit_database[ppl_unit_pos].ancient    = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "teaspoon"; // teaspoon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "teaspoons";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "teaspoon";
   ppl_unit_database[ppl_unit_pos].nameFp     = "teaspoons";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TEASPOON;
+  ppl_unit_database[ppl_unit_pos].multiplier = 5e-6; // 5 mL
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "tablespoon";  // tablespoon
-  ppl_unit_database[ppl_unit_pos].nameAp     = "tablespoons"; // tablespoon
+  ppl_unit_database[ppl_unit_pos].nameAs     = "tablespoon"; // tablespoon
+  ppl_unit_database[ppl_unit_pos].nameAp     = "tablespoons";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "tablespoon";
@@ -1671,8 +1790,41 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "sterad";  // steradians
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sterad";  // steradians
+  ppl_unit_database[ppl_unit_pos].nameAs     = "firkin_UK_ale"; // firkin of ale
+  ppl_unit_database[ppl_unit_pos].nameAp     = "firkins_UK_ale";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "firkin\\_UK\\_ale";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "firkins\\_UK\\_ale";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "firkin_UK_ale";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "firkins_UK_ale";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 40.91481;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "firkin_UK_wine"; // firkin of wine
+  ppl_unit_database[ppl_unit_pos].nameAp     = "firkins_UK_wine";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "firkin\\_UK\\_wine";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "firkins\\_UK\\_wine";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "firkin_wine";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "firkins_wine";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 318;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kilderkin_UK_ale"; // kilderkin of ale
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kilderkins_UK_ale";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "kilderkin\\_UK\\_ale";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "kilderkins\\_UK\\_ale";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "kilderkin_UK_ale";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "kilderkins_UK_ale";
+  ppl_unit_database[ppl_unit_pos].quantity   = "volume";
+  ppl_unit_database[ppl_unit_pos].multiplier = 81.82962;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sterad"; // steradians
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sterad";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "steradian";
@@ -1683,8 +1835,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "sqdeg";  // square degrees
-  ppl_unit_database[ppl_unit_pos].nameAp     = "sqdeg";  // square degrees
+  ppl_unit_database[ppl_unit_pos].nameAs     = "sqdeg"; // square degrees
+  ppl_unit_database[ppl_unit_pos].nameAp     = "sqdeg";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "square_degree";
@@ -1695,8 +1847,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_ANGLE]=2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Hz";  // hertz
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Hz";  // hertz
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Hz"; // hertz
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Hz";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "hertz";
@@ -1708,8 +1860,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Bq";  // becquerel
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Bq";  // becquerel
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Bq"; // becquerel
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Bq";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "becquerel";
@@ -1720,8 +1872,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "B";  // bytes
-  ppl_unit_database[ppl_unit_pos].nameAp     = "B";  // bytes
+  ppl_unit_database[ppl_unit_pos].nameAs     = "B"; // bytes
+  ppl_unit_database[ppl_unit_pos].nameAp     = "B";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "byte";
@@ -1733,8 +1885,74 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "N";  // newton
-  ppl_unit_database[ppl_unit_pos].nameAp     = "N";  // newton
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Kib"; // kibibits
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Kib";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "kibibit";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "kibibits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1024.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "KiB"; // kibibytes
+  ppl_unit_database[ppl_unit_pos].nameAp     = "KiB";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "kibibyte";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "kibibytes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 8.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Mib"; // mebibits
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Mib";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "mebibit";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "mebibits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "MiB"; // mebibytes
+  ppl_unit_database[ppl_unit_pos].nameAp     = "MiB";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "mebibyte";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "mebibytes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0 * 8.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Gib"; // gibibits
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Gib";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gibibit";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gibibits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0 * 1024.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "GiB"; // gibibytes
+  ppl_unit_database[ppl_unit_pos].nameAp     = "GiB";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "gibibyte";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "gibibytes";
+  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0 * 1024.0 * 8.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "N"; // newton
+  ppl_unit_database[ppl_unit_pos].nameAp     = "N";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "newton";
@@ -1749,8 +1967,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "dyn";  // dyne
-  ppl_unit_database[ppl_unit_pos].nameAp     = "dyn";  // dyne
+  ppl_unit_database[ppl_unit_pos].nameAs     = "dyn"; // dyne
+  ppl_unit_database[ppl_unit_pos].nameAp     = "dyn";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "dyne";
@@ -1763,8 +1981,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "lbf";  // pound force
-  ppl_unit_database[ppl_unit_pos].nameAp     = "lbf";  // pound force
+  ppl_unit_database[ppl_unit_pos].nameAs     = "lbf"; // pound force
+  ppl_unit_database[ppl_unit_pos].nameAp     = "lbf";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pound_force";
@@ -1777,8 +1995,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Pa";  // pascal
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Pa";  // pascal
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Pa"; // pascal
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Pa";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pascal";
@@ -1793,8 +2011,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Ba";  // barye
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Ba";  // barye
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Ba"; // barye
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Ba";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "barye";
@@ -1807,8 +2025,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "atm";  // atmosphere
-  ppl_unit_database[ppl_unit_pos].nameAp     = "atms"; // atmosphere
+  ppl_unit_database[ppl_unit_pos].nameAs     = "atm"; // atmosphere
+  ppl_unit_database[ppl_unit_pos].nameAp     = "atms";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "atmosphere";
@@ -1823,8 +2041,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "bar";  // bar
-  ppl_unit_database[ppl_unit_pos].nameAp     = "bars"; // bar
+  ppl_unit_database[ppl_unit_pos].nameAs     = "bar"; // bar
+  ppl_unit_database[ppl_unit_pos].nameAp     = "bars";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "bar";
@@ -1838,7 +2056,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "psi"; // psi
-  ppl_unit_database[ppl_unit_pos].nameAp     = "psi"; // psi
+  ppl_unit_database[ppl_unit_pos].nameAp     = "psi";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "pound_per_square_inch";
@@ -1852,7 +2070,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "inHg"; // inch of mercury
-  ppl_unit_database[ppl_unit_pos].nameAp     = "inHg"; // inch of mercury
+  ppl_unit_database[ppl_unit_pos].nameAp     = "inHg";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "inch_of_mercury";
@@ -1865,7 +2083,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "inAq"; // inch of water
-  ppl_unit_database[ppl_unit_pos].nameAp     = "inAq"; // inch of water
+  ppl_unit_database[ppl_unit_pos].nameAp     = "inAq";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "inch_of_water";
@@ -1877,8 +2095,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "J";  // joule
-  ppl_unit_database[ppl_unit_pos].nameAp     = "J";  // joule
+  ppl_unit_database[ppl_unit_pos].nameAs     = "J"; // joule
+  ppl_unit_database[ppl_unit_pos].nameAp     = "J";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "joule";
@@ -1893,8 +2111,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "eV";  // electronvolt
-  ppl_unit_database[ppl_unit_pos].nameAp     = "eV";  // electronvolt
+  ppl_unit_database[ppl_unit_pos].nameAs     = "eV"; // electronvolt
+  ppl_unit_database[ppl_unit_pos].nameAp     = "eV";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "electronvolt";
@@ -1908,8 +2126,21 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "erg";  // erg
-  ppl_unit_database[ppl_unit_pos].nameAp     = "erg";  // erg
+  ppl_unit_database[ppl_unit_pos].nameAs     = "BeV"; // billion electronvolts
+  ppl_unit_database[ppl_unit_pos].nameAp     = "BeV";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "billion_electronvolts";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "billion_electronvolts";
+  ppl_unit_database[ppl_unit_pos].quantity   = "energy";
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e9 * GSL_CONST_MKSA_ELECTRON_VOLT;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "erg"; // erg
+  ppl_unit_database[ppl_unit_pos].nameAp     = "erg";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "erg";
@@ -1922,8 +2153,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "cal";  // calorie
-  ppl_unit_database[ppl_unit_pos].nameAp     = "cal";  // calorie
+  ppl_unit_database[ppl_unit_pos].nameAs     = "cal"; // calorie
+  ppl_unit_database[ppl_unit_pos].nameAp     = "cal";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "calorie";
@@ -1937,8 +2168,21 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "BTU";  // British Thermal Unit
-  ppl_unit_database[ppl_unit_pos].nameAp     = "BTU";  // British Thermal Unit
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kWh"; // Kilowatt hour
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kWh";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "kilowatt_hour";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "kilowatt_hours";
+  ppl_unit_database[ppl_unit_pos].quantity   = "energy";
+  ppl_unit_database[ppl_unit_pos].multiplier = 3.6e6;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] = 2;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "BTU"; // British Thermal Unit
+  ppl_unit_database[ppl_unit_pos].nameAp     = "BTU";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "British Thermal Unit";
@@ -1950,8 +2194,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "therm";  // Therm
-  ppl_unit_database[ppl_unit_pos].nameAp     = "therms"; // Therm
+  ppl_unit_database[ppl_unit_pos].nameAs     = "therm"; // Therm
+  ppl_unit_database[ppl_unit_pos].nameAp     = "therms";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "therm";
@@ -1963,8 +2207,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "W";  // watt
-  ppl_unit_database[ppl_unit_pos].nameAp     = "W";  // watt
+  ppl_unit_database[ppl_unit_pos].nameAs     = "W"; // watt
+  ppl_unit_database[ppl_unit_pos].nameAp     = "W";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "watt";
@@ -1979,8 +2223,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "horsepower";  // horsepower
-  ppl_unit_database[ppl_unit_pos].nameAp     = "horsepower";  // horsepower
+  ppl_unit_database[ppl_unit_pos].nameAs     = "horsepower"; // horsepower
+  ppl_unit_database[ppl_unit_pos].nameAp     = "horsepower";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "horsepower";
@@ -1993,8 +2237,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Lsun";    // Solar luminosity
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Lsolar";  // Solar luminosity
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Lsun"; // Solar luminosity
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Lsolar";
   ppl_unit_database[ppl_unit_pos].nameLs     = "L_\\odot";
   ppl_unit_database[ppl_unit_pos].nameLp     = "L_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_luminosity";
@@ -2006,8 +2250,36 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-3;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Gy";  // gray
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Gy";  // gray
+  ppl_unit_database[ppl_unit_pos].nameAs     = "clo"; // clo
+  ppl_unit_database[ppl_unit_pos].nameAp     = "clos";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "clo";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "clos";
+  ppl_unit_database[ppl_unit_pos].quantity   = "thermal_insulation";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.154;
+  ppl_unit_database[ppl_unit_pos].TempType   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]        =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE] = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]        = 3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "tog"; // tog
+  ppl_unit_database[ppl_unit_pos].nameAp     = "togs";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "tog";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "togs";
+  ppl_unit_database[ppl_unit_pos].quantity   = "thermal_insulation";
+  ppl_unit_database[ppl_unit_pos].multiplier = 0.1;
+  ppl_unit_database[ppl_unit_pos].TempType   = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]        =-1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TEMPERATURE] = 1;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]        = 3;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Gy"; // gray
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Gy";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gray";
@@ -2018,8 +2290,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Sv";  // sievert
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Sv";  // sievert
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Sv"; // sievert
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Sv";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "sievert";
@@ -2030,8 +2302,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "kat";  // katal
-  ppl_unit_database[ppl_unit_pos].nameAp     = "kat";  // katal
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kat"; // katal
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kat";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "katal";
@@ -2043,8 +2315,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME] =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "P";  // poise
-  ppl_unit_database[ppl_unit_pos].nameAp     = "P";  // poise
+  ppl_unit_database[ppl_unit_pos].nameAs     = "P"; // poise
+  ppl_unit_database[ppl_unit_pos].nameAp     = "P";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "poise";
@@ -2057,8 +2329,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]   =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "kayser";  // kayser
-  ppl_unit_database[ppl_unit_pos].nameAp     = "kaysers"; // kayser
+  ppl_unit_database[ppl_unit_pos].nameAs     = "kayser"; // kayser
+  ppl_unit_database[ppl_unit_pos].nameAp     = "kaysers";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kayser";
@@ -2069,8 +2341,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH] =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "C";  // coulomb
-  ppl_unit_database[ppl_unit_pos].nameAp     = "C";  // coulomb
+  ppl_unit_database[ppl_unit_pos].nameAs     = "C"; // coulomb
+  ppl_unit_database[ppl_unit_pos].nameAp     = "C";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "coulomb";
@@ -2084,8 +2356,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "V";  // volt
-  ppl_unit_database[ppl_unit_pos].nameAp     = "V";  // volt
+  ppl_unit_database[ppl_unit_pos].nameAs     = "V"; // volt
+  ppl_unit_database[ppl_unit_pos].nameAp     = "V";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "volt";
@@ -2101,8 +2373,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "ohm";  // ohm
-  ppl_unit_database[ppl_unit_pos].nameAp     = "ohms"; // ohm
+  ppl_unit_database[ppl_unit_pos].nameAs     = "ohm"; // ohm
+  ppl_unit_database[ppl_unit_pos].nameAp     = "ohms";
   ppl_unit_database[ppl_unit_pos].nameLs     = "\\Omega";
   ppl_unit_database[ppl_unit_pos].nameLp     = "\\Omega";
   ppl_unit_database[ppl_unit_pos].nameFs     = "ohm";
@@ -2119,7 +2391,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "S"; // siemens
-  ppl_unit_database[ppl_unit_pos].nameAp     = "S"; // siemens
+  ppl_unit_database[ppl_unit_pos].nameAp     = "S";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "siemens";
@@ -2135,8 +2407,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "mho";  // mho
-  ppl_unit_database[ppl_unit_pos].nameAp     = "mhos"; // mho
+  ppl_unit_database[ppl_unit_pos].nameAs     = "mho"; // mho
+  ppl_unit_database[ppl_unit_pos].nameAp     = "mhos";
   ppl_unit_database[ppl_unit_pos].nameLs     = "\\mho";
   ppl_unit_database[ppl_unit_pos].nameLp     = "\\mho";
   ppl_unit_database[ppl_unit_pos].nameFs     = "mho";
@@ -2151,8 +2423,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "F";  // farad
-  ppl_unit_database[ppl_unit_pos].nameAp     = "F";  // farad
+  ppl_unit_database[ppl_unit_pos].nameAs     = "F"; // farad
+  ppl_unit_database[ppl_unit_pos].nameAp     = "F";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "farad";
@@ -2168,8 +2440,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] = 2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "H";  // henry
-  ppl_unit_database[ppl_unit_pos].nameAp     = "H";  // henry
+  ppl_unit_database[ppl_unit_pos].nameAs     = "H"; // henry
+  ppl_unit_database[ppl_unit_pos].nameAp     = "H";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "henry";
@@ -2185,8 +2457,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-2;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "T";  // tesla
-  ppl_unit_database[ppl_unit_pos].nameAp     = "T";  // tesla
+  ppl_unit_database[ppl_unit_pos].nameAs     = "T"; // tesla
+  ppl_unit_database[ppl_unit_pos].nameAp     = "T";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "tesla";
@@ -2201,8 +2473,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "G";  // gauss
-  ppl_unit_database[ppl_unit_pos].nameAp     = "G";  // gauss
+  ppl_unit_database[ppl_unit_pos].nameAs     = "G"; // gauss
+  ppl_unit_database[ppl_unit_pos].nameAp     = "G";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gauss";
@@ -2217,8 +2489,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Wb";  // weber
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Wb";  // weber
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Wb"; // weber
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Wb";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "weber";
@@ -2234,8 +2506,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_CURRENT] =-1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "Mx";  // maxwell
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Mx";  // maxwell
+  ppl_unit_database[ppl_unit_pos].nameAs     = "Mx"; // maxwell
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Mx";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "maxwell";
@@ -2253,7 +2525,7 @@ void ppl_units_init()
 
   // Planck Units
   ppl_unit_database[ppl_unit_pos].nameAs     = "L_planck"; // Planck Length
-  ppl_unit_database[ppl_unit_pos].nameAp     = "L_planck"; // Planck Length
+  ppl_unit_database[ppl_unit_pos].nameAp     = "L_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "L_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "L_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_length";
@@ -2265,7 +2537,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "M_planck"; // Planck Mass
-  ppl_unit_database[ppl_unit_pos].nameAp     = "M_planck"; // Planck Mass
+  ppl_unit_database[ppl_unit_pos].nameAp     = "M_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "M_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "M_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_mass";
@@ -2277,7 +2549,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "T_planck"; // Planck Time
-  ppl_unit_database[ppl_unit_pos].nameAp     = "T_planck"; // Planck Time
+  ppl_unit_database[ppl_unit_pos].nameAp     = "T_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "T_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "T_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_time";
@@ -2289,7 +2561,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Q_planck"; // Planck Charge
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Q_planck"; // Planck Charge
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Q_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "Q_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "Q_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_charge";
@@ -2302,7 +2574,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Theta_planck"; // Planck Temperature
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Theta_planck"; // Planck Temperature
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Theta_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "\\Theta_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "\\Theta_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_temperature";
@@ -2314,7 +2586,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "p_planck"; // Planck Momentum
-  ppl_unit_database[ppl_unit_pos].nameAp     = "p_planck"; // Planck Momentum
+  ppl_unit_database[ppl_unit_pos].nameAp     = "p_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "p_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "p_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_momentum";
@@ -2328,7 +2600,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "E_planck"; // Planck Energy
-  ppl_unit_database[ppl_unit_pos].nameAp     = "E_planck"; // Planck Energy
+  ppl_unit_database[ppl_unit_pos].nameAp     = "E_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "E_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "E_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_energy";
@@ -2342,7 +2614,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "F_planck"; // Planck Force
-  ppl_unit_database[ppl_unit_pos].nameAp     = "F_planck"; // Planck Force
+  ppl_unit_database[ppl_unit_pos].nameAp     = "F_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "F_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "F_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_force";
@@ -2356,7 +2628,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "P_planck"; // Planck Power
-  ppl_unit_database[ppl_unit_pos].nameAp     = "P_planck"; // Planck Power
+  ppl_unit_database[ppl_unit_pos].nameAp     = "P_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "P_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "P_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_power";
@@ -2370,7 +2642,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "I_planck"; // Planck Current
-  ppl_unit_database[ppl_unit_pos].nameAp     = "I_planck"; // Planck Current
+  ppl_unit_database[ppl_unit_pos].nameAp     = "I_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "I_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "I_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_current";
@@ -2382,7 +2654,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "V_planck"; // Planck Voltage
-  ppl_unit_database[ppl_unit_pos].nameAp     = "V_planck"; // Planck Voltage
+  ppl_unit_database[ppl_unit_pos].nameAp     = "V_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "V_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "V_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_voltage";
@@ -2397,7 +2669,7 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Z_planck"; // Planck Impedence
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Z_planck"; // Planck Impedence
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Z_planck";
   ppl_unit_database[ppl_unit_pos].nameLs     = "Z_P";
   ppl_unit_database[ppl_unit_pos].nameLp     = "Z_P";
   ppl_unit_database[ppl_unit_pos].nameFs     = "planck_impedence";

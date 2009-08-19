@@ -268,47 +268,36 @@ dimensionless number of hours in two seconds:
 print 2*unit(s)/unit(hr)
 \end{verbatim}
 
-\begin{boxout}\index{temperature conversions}\index{units!temperature}
-PyXPlot has extensive facilities for converting physical quantities between
-different units systems, and this includes the ability to convert temperatures
-between degrees Celsius, Fahrenheit and Kelvin. However, these conversions
-should be used with some caution, as can be demonstrated by the following two
-questions:
-\begin{itemize}
-\item How many degrees Kelvin corresponds to a temperature of $20^\circ$C?
-\item How many degrees Kelvin corresponds to a temperature {\it rise} of $20^\circ$C?
-\end{itemize}
-The answers to these two questions are 293\,K and 20\,K respectively: we see
-that the answer depends upon whether we are talking about an {\it absolute}
-temperature or a {\it relative} temperature. A heat capacity of 1\,J/$^\circ$C
-equals 1\,J/K, even though $1^\circ$C does not equal 1\,K.
+\begin{boxout}\index{units!angle}\index{angles, handling of}
+By convention, the SI system of units does not have a base unit of angle:
+instead, the radian is considered to be a dimensionless unit.  There are some
+strong mathematical reasons why this makes sense, since it makes it possible to
+write equations such as
+\begin{displaymath}
+d=\theta r
+\end{displaymath}
+and
+\begin{displaymath}
+x = \exp(a+i\theta).
+\end{displaymath}
+However, it also has some disadvantages: some interesting quantities are
+measured per unit angle or per unit solid angle, and the SI system offers no
+way to dimensionally distinguish these from one another or from quantities with
+no angular dependence.
 
-The reason for this problem, and the explanation of why it affects temperatures
-and rarely any other physical unit, is that there exists such a thing as
-absolute temperature. Distances, for example, are very rarely absolute: they
-measure the relative distance gap between two points. Occasionally people might
-choose to express all displacements relative to a particular origin, but they
-wouldn't expect PyXPlot to be able to convert their displacements to another
-origin automatically in the same way that they might with temperature.
+On balance, we have decided that it is more useful if PyXPlot {\it does}
+consider the radian to be a base unit, so that it can understand quantities
+such as radiative fluxes measured per steradian. The unfortunate consequence of
+this is that first equation above to be rewritten as:
+\begin{displaymath}
+d=\left(\frac{\theta}{2\pi\,\mathrm{rad}}\right) r
+\end{displaymath}
 
-Times are more often absolute than distances: the year 1453 corresponds to 1453
-years since the Christian epoch, and would correspond to a different year in
-the Muslim calendar which started counting in the year 273.\footnote{PyXPlot
-can convert dates between the Christian, Jewish and Muslim calendars, as will
-be seen in Section~\ref{sec:time_series}.}
-
-As PyXPlot cannot distinguish between absolute and relative temperatures, it
-needs to make some assumptions when it converts between different temperature
-scales. In short, PyXPlot (a) does not convert between different temperature
-scales unless explicitly requested to, (b) assumes that all quantities with
-dimensions of temperature are absolute temperatures for the purposes of
-conversions, (c) assumes that all quantities with dimensions of {\it per unit
-temperature} are relative temperatures for the purposes of conversions, and (d)
-does not allow conversions of temperatures raised to any powers other than~1
-or~$-1$ or of absolute temperatures which are multiplied by any other units.
-
-\caption{The problems encountered when converting temperatures between Celsius,
-Fahrenheit and Kelvin.}
+As compensation, the $\exp()$ function and all of the trigonometric functions
+accept either quantities with dimensions of angles, or dimensionless numbers as
+inputs. The second equation above might need some modification, however, since
+it is not possible to add a dimensionless number to an angle.
+\caption{A note on the use of the radian is a base unit in PyXPlot.}
 \end{boxout}
 
 Compound units such as miles per hour, which is defined in terms of two other
@@ -328,18 +317,21 @@ print 2*unit(mph)
 \noindent As these examples demonstrate, the {\tt unit()} function can be
 passed a string of units either multiplied together with the {\tt *} operator,
 or divided using the {\tt /} operator. Units may be raised to powers with the
-{\tt \^{}} operator, as in
+{\tt **} operator\footnote{The {\tt \^{}} character may be used as an alias for
+the {\tt **} operator, though this notation is arguably confusing, since the
+same character is used for the binary exclusive or operator in PyXPlot's normal
+arithmetic.}, as in
 
 \begin{verbatim}
-a = 2*unit(m^2)
-print "An area of %f square feet"%(a/unit(ft^2))
+a = 2*unit(m**2)
+print "An area of %f square feet"%(a/unit(ft**2))
 \end{verbatim}
 
 \noindent As these examples also demonstrate, units may be refered to either by
 their abbreviated or full names, and either in their singular or plural forms.
 A complete list of all of the units which PyXPlot recognises by default,
 together with all of their recognised names can be found in
-Appendix~\ref{ch:units}.
+Appendix~\ref{ch:unit_list}.
 
 SI units may also be preceded with SI prefixes\index{units!SI prefixes}, for
 example:
@@ -376,6 +368,78 @@ Chapter~\ref{ch:configuration}, where we shall also see that new base units can
 also be defined. Just as the Pluto mass can be defined as a new measure of
 mass, so the potato can be defined as a new measure of number of vegetables.
 
+\subsection{Converting between different Temperature Scales}
+\index{temperature conversions}\index{units!temperature}
+
+PyXPlot's facilities for converting quantities between different physical units
+include the ability to convert temperatures between different temperature
+scales, for example, between $^\circ\mathrm{C}$, $^\circ\mathrm{F}$ and K.
+However, these conversions have some subtleties, unique to temperature
+conversions, which mean that they should be used with some caution. Consider
+the following two questions:
+\begin{itemize}
+\item How many degrees Kelvin corresponds to a temperature of $20^\circ$C?
+\item How many degrees Kelvin corresponds to a temperature {\it rise} of $20^\circ$C?
+\end{itemize}
+The answers to these two questions are 293\,K and 20\,K respectively: we see
+that although we are converting from $20^\circ$C in both cases, the
+corresponding number of Kelvin depends upon whether we are talking about an
+{\it absolute} temperature or a {\it relative} temperature. A heat capacity of
+1\,J/$^\circ$C equals 1\,J/K, even though $1^\circ$C does not equal 1\,K.
+
+The cause of this problem, and the reason why it rarely affects any physical
+units other than temperatures is that there exists such a thing as absolute
+temperature. Distances, for example, are very rarely absolute: they measure
+relative distance gaps between points. Occasionally people might choose to
+express all their displacements relative to a particular origin, but they
+wouldn't expect PyXPlot to be able to convert these into displacements from
+another origin. But they might expect it to be able to convert temperatures
+between Celsius and Fahrenheit, even though the problem of doing so is
+equivalent.
+
+Times are occasionally expressed as absolute quantities: the year 1453, for
+example, implicitly corresponds to 1453 years since the Christian epoch.
+Similar problems would arise in trying to convert such a year into the Muslim
+calendar, which counts from the year {\footnotesize AD} 622, to those of
+encountered in converting between temperature scales.\footnote{PyXPlot can,
+incidentally, make this conversion, as will be seen in
+Section~\ref{sec:time_series}.}
+
+As PyXPlot cannot distinguish between absolute and relative temperatures, it
+takes a safe approach of performing algebra consistently with any unit of
+temperature, never performing automatic conversions between different
+temperature scales. A calculation based on temperatures measured in
+$^\circ\mathrm{F}$ will produce an answer measured in $^\circ\mathrm{F}$.
+However, as converting temperatures between temperature scales is a useful task
+which is often wanted, this is allowed, when specifically requested, in the
+specific case of dividing one temperature by another unit of temperature to get
+a dimensionless number, as in the following example:
+
+\begin{dodo}
+print 98*unit(oF) / unit(oC)
+\end{dodo}
+
+\noindent Note that the two units of temperature must be placed in separate
+{\tt unit(...)} functions. The following is not allowed:
+
+\begin{dontdo}
+print 98*unit(oF / oC)
+\end{dontdo}
+
+Note that such a conversion always assumes that the temperatures supplied are
+{\it absolute} temperatures. PyXPlot has no facility for converting relative
+temperatures between different scales. This must be done manually.
+
+The conversion of derived units of temperature, such as $\mathrm{J}/\mathrm{K}$ or
+$^\circ\mathrm{C}^2$, to derived units of other temperature scales, such as
+$\mathrm{J}/^\circ\mathrm{F}$ or $\mathrm{K}^2$, is not permitted, since in
+general these conversions are ill-defined. For example, a temperature squared
+measured in $^\circ\mathrm{C}^2$ has the same value for $\pm
+x^\circ\mathrm{C}$, but would have different values in $\mathrm{K}^2$.
+
+The moral of this story is: pick what unit of temperature you want to work in,
+convert all of your temperatures to that scale, and then stick to it.
+
 \section{Configuring how Numbers are Displayed}
 \label{sec:unitdisp}
 
@@ -393,13 +457,13 @@ schemes}, each of which comprises a list of units which are to be used in
 preference to all others. For example, in the CGS unit scheme\index{CGS
 units}\index{units!CGS}, all lengths are displayed in centimetres, all masses
 are displayed in grammes, and so forth. In the imperial unit
-scheme\index{Imperial units}\index{units!Imperial}, quantities are displayed in
-British Imperial units, meanwhile in the US unit scheme, US Imperial units are
+scheme\index{imperial units}\index{units!imperial}, quantities are displayed in
+British imperial units, meanwhile in the US unit scheme, US customary units are
 used. The current unit scheme can be changed using the \indcmdt{set unit
 scheme}:
 
 \begin{verbatim}
-pyxplot> vol = 3*unit(m^3)
+pyxplot> vol = 3*unit(m**3)
 pyxplot> set unit scheme si ; print vol
 3 cubic_m
 pyxplot> set unit scheme cgs ; print vol
@@ -420,10 +484,10 @@ Table~\ref{tab:unit_schemes}.\index{natural units}\index{units!natural}
 \hline
 {\tt ancient} & Ancient units, especially those used in the Authorised Version of the Bible. \\
 {\tt CGS} & CGS units. \\
-{\tt Imperial} & British Imperial units. \\
+{\tt Imperial} & British imperial units. \\
 {\tt Planck} & Planck units, also known as natural units, which make several physical constants equal unity. \\
 {\tt SI} & SI units. \\
-{\tt US} & US Imperial units. \\
+{\tt US} & US customary units. \\
 \hline
 \end{tabular}}
 \caption{A list of PyXPlot's unit schemes.}

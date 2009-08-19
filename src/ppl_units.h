@@ -38,9 +38,9 @@
 
 typedef struct unit
  {
-  char         *nameAs, *nameAp, *nameLs, *nameLp, *nameFs, *nameFp, *comment, *quantity;
+  char         *nameAs, *nameAp, *nameLs, *nameLp, *nameFs, *nameFp, *alt1, *alt2, *alt3, *alt4, *comment, *quantity;
   double        multiplier, offset;
-  unsigned char si, cgs, imperial, us, planck, ancient, UserSel, modified;
+  unsigned char si, cgs, imperial, us, planck, ancient, UserSel, modified, TempType;
   int           MaxPrefix;
   int           MinPrefix;
   int           UserSelPrefix;
@@ -50,7 +50,7 @@ typedef struct unit
 typedef struct value
  {
   double        real, imag;
-  unsigned char dimensionless, FlagComplex, modified;
+  unsigned char dimensionless, FlagComplex, modified, TempType;
   char         *string;
   double        exponent[UNITS_MAX_BASEUNITS];
  } value;
@@ -59,6 +59,9 @@ typedef struct value
 extern char *SIprefixes_full  [];
 extern char *SIprefixes_abbrev[];
 extern char *SIprefixes_latex [];
+
+extern double TempTypeMultiplier[];
+extern double TempTypeOffset    [];
 
 extern unit  *ppl_unit_database;
 extern int    ppl_unit_pos;
@@ -78,6 +81,7 @@ int           __inline__ ppl_units_UnitDimEqual(const unit  *a, const unit  *b);
 
 
 char  *ppl_units_GetUnitStr    (const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
+int __inline__ UnitNameCmp     (const char *in, const char *unit, const unsigned char CaseSensitive);
 void   ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext);
 
 void   ppl_units_pow (const value *a, const value *b, value *o, int *status, char *errtext);

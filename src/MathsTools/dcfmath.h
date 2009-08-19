@@ -92,6 +92,7 @@ void dcfmath_legendreP(value *in1, value *in2, value *output, int *status, char 
 void dcfmath_legendreQ(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_log(value *in, value *output, int *status, char *errtext);
 void dcfmath_log10(value *in, value *output, int *status, char *errtext);
+void dcfmath_logn(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_lognormalPDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_lognormalCDF(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_lognormalCDFi(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);

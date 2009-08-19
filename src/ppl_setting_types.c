@@ -42,7 +42,7 @@ int   SW_STYLE_INT[] = {SW_STYLE_POINTS , SW_STYLE_LINES , SW_STYLE_LINESPOINTS 
 
 char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"    , "ps"           , "eps"           , "pdf"           , "png"           , "jpg"           , "gif"           , "bmp"           , "tif"           };
 int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1               };
-int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , -1}; 
+int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , -1};
 
 char *SW_KEYPOS_STR[] = {"top right"  , "top middle" , "top left"   , "middle right" , "middle middle" , "middle left" , "bottom right" , "bottom middle" , "bottom left" , "below"         , "outside"         };
 int   SW_KEYPOS_ACL[] = {1            , 5            , 5            , 1              , 8               , 8             , 1              , 8               , 8             , 2               , 1                 };
@@ -62,10 +62,10 @@ int   SW_VALIGN_INT[] = {SW_VALIGN_TOP , SW_VALIGN_CENT , SW_VALIGN_BOT , -1};
 
 char *SW_TERMCOL_STR[] = {"normal"       , "red"          , "green"        , "amber"        , "blue"         , "magenta"      , "cyan"         , "white"        };
 int   SW_TERMCOL_ACL[] = {1              , 1              , 1              , 2              , 1              , 1              , 1              , 1              };
-int   SW_TERMCOL_INT[] = {SW_TERMCOL_NOR , SW_TERMCOL_RED , SW_TERMCOL_GRN , SW_TERMCOL_BRN , SW_TERMCOL_BLU , SW_TERMCOL_MAG , SW_TERMCOL_CYN , SW_TERMCOL_WHT , -1}; 
+int   SW_TERMCOL_INT[] = {SW_TERMCOL_NOR , SW_TERMCOL_RED , SW_TERMCOL_GRN , SW_TERMCOL_BRN , SW_TERMCOL_BLU , SW_TERMCOL_MAG , SW_TERMCOL_CYN , SW_TERMCOL_WHT , -1};
 char *SW_TERMCOL_TXT[] = {"\x1b[0m"      , "\x1b[01;31m"  , "\x1b[01;32m"  , "\x1b[01;33m"  , "\x1b[01;34m"  , "\x1b[01;35m"  , "\x1b[01;36m"  , "\x1b[01;37m"  };
 
-char *SW_UNITSCH_STR[] = {"si"          , "cgs"          , "ancient"      , "imperial"     , "USImperial"  , "planck"       };
+char *SW_UNITSCH_STR[] = {"si"          , "cgs"          , "ancient"      , "imperial"     , "USCustomary" , "planck"       };
 int   SW_UNITSCH_INT[] = {SW_UNITSCH_SI , SW_UNITSCH_CGS , SW_UNITSCH_ANC , SW_UNITSCH_IMP , SW_UNITSCH_US , SW_UNITSCH_PLK , -1};
 int   SW_UNITSCH_ACL[] = {1             , 1              , 1              , 1              , 1             , 1              , -1};
 

@@ -399,12 +399,12 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
     if (fd0[0] != STDIN_FILENO) // Redirect stdin to pipe
      {
       if (dup2(fd0[0], STDIN_FILENO) != STDIN_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdin to pipe.");
-      close(fd0[0]);         
+      close(fd0[0]);
      }
     if (fd1[1] != STDOUT_FILENO) // Redirect stdout to pipe
      {
       if (dup2(fd1[1], STDOUT_FILENO) != STDOUT_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdout to pipe.");
-      close(fd1[1]);         
+      close(fd1[1]);
      }
     if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe
      {

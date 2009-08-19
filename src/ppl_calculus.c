@@ -128,7 +128,7 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
   fn.function = &CalculusSlave;
   fn.params   = &commlink;
 
-  gsl_integration_qags (&fn, min->real, max->real, 0, 1e-7, 1000, ws, &ResultReal, &error); 
+  gsl_integration_qags (&fn, min->real, max->real, 0, 1e-7, 1000, ws, &ResultReal, &error);
 
   if ((*errpos < 0) && (settings_term_current.ComplexNumbers == SW_ONOFF_ON))
    {

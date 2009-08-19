@@ -380,12 +380,28 @@ void directive_set(Dict *command)
     DictLookup(command,"display", NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.NumDisplay = FetchSettingByName(tempstr, SW_DISPLAY_INT, SW_DISPLAY_STR);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics")==0)) /* set numerics */
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics")==0)) /* unset numerics */
    {
     settings_term_current.ComplexNumbers     = settings_term_default.ComplexNumbers;
     settings_term_current.ExplicitErrors     = settings_term_default.ExplicitErrors;
     settings_term_current.NumDisplay         = settings_term_default.NumDisplay;
     settings_term_current.SignificantFigures = settings_term_default.SignificantFigures;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_sigfig")==0)) /* unset numerics sigfig */
+   {
+    settings_term_current.SignificantFigures = settings_term_default.SignificantFigures;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_errors")==0)) /* unset numerics errors */
+   {
+    settings_term_current.ExplicitErrors     = settings_term_default.ExplicitErrors;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_sigfig")==0)) /* unset numerics complex */
+   {
+    settings_term_current.ComplexNumbers     = settings_term_default.ComplexNumbers;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_display")==0)) /* unset numerics display */
+   {
+    settings_term_current.NumDisplay         = settings_term_default.NumDisplay;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"origin")==0)) /* set origin */
    {
@@ -703,15 +719,16 @@ void directive_set(Dict *command)
 
         if (pp!=0) continue;
         multiplier = 8;
-        if (p==0) { for (k=0; ((ppl_unit_database[j].nameAp[k]!='\0') && (ppl_unit_database[j].nameAp[k]==tempstr2[k])); k++);
-                    if ((ppl_unit_database[j].nameAp[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
-        if (p==0) { for (k=0; ((ppl_unit_database[j].nameAs[k]!='\0') && (ppl_unit_database[j].nameAs[k]==tempstr2[k])); k++);
-                    if ((ppl_unit_database[j].nameAs[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
-        if (p==0) { for (k=0; ((ppl_unit_database[j].nameFp[k]!='\0') && (toupper(ppl_unit_database[j].nameFp[k])==toupper(tempstr2[k]))); k++);
-                    if ((ppl_unit_database[j].nameFp[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
-        if (p==0) { for (k=0; ((ppl_unit_database[j].nameFs[k]!='\0') && (toupper(ppl_unit_database[j].nameFs[k])==toupper(tempstr2[k]))); k++);
-                    if ((ppl_unit_database[j].nameFs[k]=='\0') && (!(isalnum(tempstr2[k]) || (tempstr2[k]=='_')))) p=1; }
-        if (p==0)
+        if      ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].nameAp,1))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].nameAs,1))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].nameFp,0))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].nameFs,0))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].nameFp,0))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].alt1  ,0))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].alt2  ,0))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].alt3  ,0))!=0) p=1;
+        else if ((k = UnitNameCmp(tempstr2, ppl_unit_database[j].alt4  ,0))!=0) p=1;
+        else
          {
           for (l=ppl_unit_database[j].MinPrefix/3+8; l<=ppl_unit_database[j].MaxPrefix/3+8; l++)
            {
@@ -719,18 +736,18 @@ void directive_set(Dict *command)
             for (k=0; ((SIprefixes_full[l][k]!='\0') && (toupper(SIprefixes_full[l][k])==toupper(tempstr2[k]))); k++);
             if (SIprefixes_full[l][k]=='\0')
              {
-              for (m=0; ((ppl_unit_database[j].nameFp[m]!='\0') && (toupper(ppl_unit_database[j].nameFp[m])==toupper(tempstr2[k+m]))); m++);
-              if ((ppl_unit_database[j].nameFp[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
-              for (m=0; ((ppl_unit_database[j].nameFs[m]!='\0') && (toupper(ppl_unit_database[j].nameFs[m])==toupper(tempstr2[k+m]))); m++);
-              if ((ppl_unit_database[j].nameFs[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
+              if      ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].nameFp,0))!=0) { p=1; k+=m; multiplier=l; break; }
+              else if ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].nameFs,0))!=0) { p=1; k+=m; multiplier=l; break; }
+              else if ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].alt1  ,0))!=0) { p=1; k+=m; multiplier=l; break; }
+              else if ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].alt2  ,0))!=0) { p=1; k+=m; multiplier=l; break; }
+              else if ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].alt3  ,0))!=0) { p=1; k+=m; multiplier=l; break; }
+              else if ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].alt4  ,0))!=0) { p=1; k+=m; multiplier=l; break; }
              }
             for (k=0; ((SIprefixes_abbrev[l][k]!='\0') && (SIprefixes_abbrev[l][k]==tempstr2[k])); k++);
             if (SIprefixes_abbrev[l][k]=='\0')
              {
-              for (m=0; ((ppl_unit_database[j].nameAp[m]!='\0') && (ppl_unit_database[j].nameAp[m]==tempstr2[k+m])); m++);
-              if ((ppl_unit_database[j].nameAp[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
-              for (m=0; ((ppl_unit_database[j].nameAs[m]!='\0') && (ppl_unit_database[j].nameAs[m]==tempstr2[k+m])); m++);
-              if ((ppl_unit_database[j].nameAs[m]=='\0') && (!(isalnum(tempstr2[k+m]) || (tempstr2[k+m]=='_')))) { p=1; k+=m; multiplier=l; break; }
+              if      ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].nameAp,1))!=0) { p=1; k+=m; multiplier=l; break; }
+              else if ((m = UnitNameCmp(tempstr2+k, ppl_unit_database[j].nameAs,1))!=0) { p=1; k+=m; multiplier=l; break; }
              }
            }
          }
@@ -758,6 +775,29 @@ void directive_set(Dict *command)
     settings_term_current.UnitDisplayPrefix   = settings_term_default.UnitDisplayPrefix;
     settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
     for (i=0; i<ppl_unit_pos; i++) ppl_unit_database[i].UserSel = 0;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_display")==0)) /* unset unit display */
+   {
+    settings_term_current.UnitDisplayAbbrev   = settings_term_default.UnitDisplayAbbrev;
+    settings_term_current.UnitDisplayPrefix   = settings_term_default.UnitDisplayPrefix;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_scheme")==0)) /* unset unit scheme */
+   {
+    settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_of")==0)) /* unset unit of */
+   {
+    DictLookup(command,"quantity",NULL,(void **)&tempstr);
+    i=0; // Quantity recognised
+    for (j=0; j<ppl_unit_pos; j++)
+     {
+      if ((ppl_unit_database[j].quantity != NULL) && (StrCmpNoCase(ppl_unit_database[j].quantity , tempstr) == 0))
+       {
+        i=1;
+        ppl_unit_database[j].UserSel = 0;
+       }
+     }
+    if (i==0) { sprintf(temp_err_string, "Warning: No such quantity as a '%s'.", tempstr); ppl_warning(temp_err_string); }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
    {
@@ -1341,11 +1381,19 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        {
         k=0;
         SHOW_HIGHLIGHT((ppl_unit_database[m].modified==0));
+
+        #define SHOW_ALL_UNIT_NAMES 1
+
         sprintf(out+i, "# The '%s', also known as", ppl_unit_database[m].nameFs); i+=strlen(out+i);
-        if (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }
-        if (strcmp(ppl_unit_database[m].nameAs, ppl_unit_database[m].nameFs) != 0) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAs); i+=strlen(out+i); k=1; }
-        if((strcmp(ppl_unit_database[m].nameAp, ppl_unit_database[m].nameAs) != 0) &&
-           (strcmp(ppl_unit_database[m].nameAp, ppl_unit_database[m].nameFp) != 0)){ sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAp); i+=strlen(out+i); k=1; }
+        if ((SHOW_ALL_UNIT_NAMES) || (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0)) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }
+        if ((SHOW_ALL_UNIT_NAMES) || (strcmp(ppl_unit_database[m].nameAs, ppl_unit_database[m].nameFs) != 0)) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAs); i+=strlen(out+i); k=1; }
+        if ((SHOW_ALL_UNIT_NAMES) ||((strcmp(ppl_unit_database[m].nameAp, ppl_unit_database[m].nameAs) != 0) &&
+           (strcmp(ppl_unit_database[m].nameAp, ppl_unit_database[m].nameFp) != 0))){sprintf(out+i, " '%s' or", ppl_unit_database[m].nameAp); i+=strlen(out+i); k=1; }
+
+        if (       ppl_unit_database[m].alt1 != NULL                             ) { sprintf(out+i, " '%s' or", ppl_unit_database[m].alt1  ); i+=strlen(out+i); k=1; }
+        if (       ppl_unit_database[m].alt2 != NULL                             ) { sprintf(out+i, " '%s' or", ppl_unit_database[m].alt2  ); i+=strlen(out+i); k=1; }
+        if (       ppl_unit_database[m].alt3 != NULL                             ) { sprintf(out+i, " '%s' or", ppl_unit_database[m].alt3  ); i+=strlen(out+i); k=1; }
+        if (       ppl_unit_database[m].alt4 != NULL                             ) { sprintf(out+i, " '%s' or", ppl_unit_database[m].alt4  ); i+=strlen(out+i); k=1; }
         if (k==0) { i-=15; } else { i-=3; out[i++]=','; }
         sprintf(out+i, " is a unit of %s", ppl_unit_database[m].quantity); i += strlen(out+i);
         if (ppl_unit_database[m].comment != NULL) { sprintf(out+i, " (%s)", ppl_unit_database[m].comment); i += strlen(out+i); }
