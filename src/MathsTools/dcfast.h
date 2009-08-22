@@ -31,6 +31,7 @@ void dcfast_Lcdm_DL(value *in1, value *in2, value *in3, value *in4, int *status,
 void dcfast_Lcdm_DM(value *in1, value *in2, value *in3, value *in4, int *status, char *errtext);
 void dcfast_Lcdm_t(value *in1, value *in2, value *in3, value *in4, int *status, char *errtext);
 void dcfast_Lcdm_z(value *in1, value *in2, value *in3, value *in4, int *status, char *errtext);
+void dcfast_sidereal_time(value *in, value *output, int *status, char *errtext);
 void dcfast_moonphase(value *in, value *output, int *status, char *errtext);
 
 #endif

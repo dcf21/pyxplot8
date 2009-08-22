@@ -36,6 +36,10 @@
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
+#include "dcftime.h"
+
+// Routines for looking up the dates when the transition between the Julian calendar and the Gregorian calendar occurred
+
 void SwitchOverCalDate(double *LastJulian, double *FirstGregorian)
  {
   switch (settings_term_current.CalendarIn)
@@ -67,71 +71,64 @@ double SwitchOverJD()
   return 0; // Never gets here
  }
 
-double JulianDate(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
- {
-  double JD, DayFraction, LastJulian, FirstGregorian, ReqDate;
-  int b;
-
-  SwitchOverCalDate(&LastJulian, &FirstGregorian);
-  ReqDate = 10000.0*year + 100*month + day;
-
-  if (month<=2) { month+=12; year--; }
-
-  if (ReqDate <= LastJulian)
-   { b = -2 + ((year+4716)/4) - 1179; } // Julian calendar
-  else if (ReqDate >= FirstGregorian)
-   { b = (year/400) - (year/100) + (year/4); } // Gregorian calendar
-  else
-   { *status=1; sprintf(errtext, "The requested date never happened in the %s calendar: it was lost in the transition from the Julian to the Gregorian calendar.", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR )); }
-
-  JD = 365.0*year - 679004.0 + 2400000.5 + b + floor(30.6001*(month+1)) + day;
-
-  DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
-
-  return JD + DayFraction;
- }
-
-void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec)
- {
-  long a,b,c,d,e,f;
-  double DayFraction;
-  int temp;
-  if (month == NULL) month = &temp; // Dummy placeholder, since we need month later in the calculation
-
-  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
-  if (a < SwitchOverJD())
-   { b=0; c=a+1524; } // Julian calendar
-  else
-   { b=(a-1867216.25)/36524.25; c=a+b-(b/4)+1525; } // Gregorian calendar
-  d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
-  e = 365*d + d/4; // Number of days accounted for by these
-  f = (c-e)/30.6001;      // Number of 30.6001 days periods (a.k.a. months) in remainder
-  if (day  != NULL) *day   = (int)floor(c-e-(int)(30.6001*f));
-                    *month = (int)floor(f-1-12*(f>=14));
-  if (year != NULL) *year  = (int)floor(d-4715-(*month>=3));
-
-  DayFraction = (JD+0.5) - floor(JD+0.5);
-  if (hour != NULL) *hour = (int)floor(        24*DayFraction      );
-  if (min  != NULL) *min  = (int)floor(fmod( 1440*DayFraction , 60));
-  if (sec  != NULL) *sec  =            fmod(86400*DayFraction , 60) ;
- }
+// Functions for looking up the names of the Nth calendar month and the Nth day of the week
 
 char *GetMonthName(int i)
  {
-  switch (i)
+  switch (settings_term_current.CalendarOut)
    {
-    case  1: return "January";
-    case  2: return "February";
-    case  3: return "March";
-    case  4: return "April";
-    case  5: return "May";
-    case  6: return "June";
-    case  7: return "July";
-    case  8: return "August";
-    case  9: return "September";
-    case 10: return "October";
-    case 11: return "November";
-    case 12: return "December";
+    case SW_CALENDAR_HEBREW:
+    switch (i)
+     {
+      case  1: return "Tishri";
+      case  2: return "Heshvan";
+      case  3: return "Kislev";
+      case  4: return "Tevet";
+      case  5: return "Shevat";
+      case  6: return "Adar";
+      case  7: return "Veadar";
+      case  8: return "Nisan";
+      case  9: return "Iyar";
+      case 10: return "Sivan";
+      case 11: return "Tammuz";
+      case 12: return "Av";
+      case 13: return "Elul";
+      default: return "???";
+     }
+    case SW_CALENDAR_ISLAMIC:
+    switch (i)
+     {
+      case  1: return "Muharram";
+      case  2: return "Safar";
+      case  3: return "Rabi'al-Awwal";
+      case  4: return "Rabi'ath-Thani";
+      case  5: return "Jumada l-Ula";
+      case  6: return "Jumada t-Tania";
+      case  7: return "Rajab";
+      case  8: return "Sha'ban";
+      case  9: return "Ramadan";
+      case 10: return "Shawwal";
+      case 11: return "Dhu l-Qa'da";
+      case 12: return "Dhu l-Hijja";
+      default: return "???";
+     }
+    default:
+    switch (i)
+     {
+      case  1: return "January";
+      case  2: return "February";
+      case  3: return "March";
+      case  4: return "April";
+      case  5: return "May";
+      case  6: return "June";
+      case  7: return "July";
+      case  8: return "August";
+      case  9: return "September";
+      case 10: return "October";
+      case 11: return "November";
+      case 12: return "December";
+      default: return "???";
+     }
    }
   return "???";
  }
@@ -149,6 +146,275 @@ char *GetWeekDayName(int i)
     case  6: return "Sunday";
    }
   return "???";
+ }
+
+// Routines for converting between Julian Dates and the Hebrew Calendar
+
+const int HebrewMonthLengths[6][13] = { {30,29,29,29,30,29, 0,30,29,30,29,30,29},    // Deficient Common Year
+                                        {30,29,30,29,30,29, 0,30,29,30,29,30,29},    // Regular   Common Year
+                                        {30,30,30,29,30,29, 0,30,29,30,29,30,29},    // Complete  Common Year
+                                        {30,29,29,29,30,30,29,30,29,30,29,30,29},    // Deficient Embolismic Year
+                                        {30,29,30,29,30,30,29,30,29,30,29,30,29},    // Regular   Embolismic Year
+                                        {30,30,30,29,30,30,29,30,29,30,29,30,29} };  // Complete  Embolismic Year
+
+void GetHebrewNewYears(int GregYear, int *YearNumbers, double *JDs, int *YearTypes)
+ {
+  int i;
+  long X,C,S,A,a,b,j,D,MONTH=3;
+  double Q, JD, r;
+
+  for (i=0; i<3; i++) // Return THREE new year numbers and Julian Dates, and YearTypes for the first two.
+   {
+    X = GregYear-1+i;
+    C = X/100;
+    S = (3*C-5)/4;
+    A = X + 3760;
+    a = (12*X+12)%19; // Work out the date of the passover in the Hebrew year A
+    b = X%4;
+    Q = -1.904412361576 + 1.554241796621*a + 0.25*b - 0.003177794022*X + S;
+    j = (((long)Q) + 3*X + 5*b + 2 - S)%7;
+    r = Q-((long)Q);
+
+    if      ((j==2)||(j==4)||(j==6)          ) D = ((long)Q)+23;
+    else if ((j==1)&&(a> 6)&&(r>=0.632870370)) D = ((long)Q)+24;
+    else if ((j==0)&&(a>11)&&(r>=0.897723765)) D = ((long)Q)+23;
+    else                                       D = ((long)Q)+22; // D is day when 15 Nisan falls after 1st March in the Gregorian year X
+
+    b = (X/400) - (X/100) + (X/4); // Gregorian calendar
+    JD = 365.0*X - 679004.0 + 2400000.5 + b + floor(30.6001*(MONTH+1)) + D;
+
+    YearNumbers[i] = A  +   1;
+    JDs        [i] = JD + 163; // 1 Tishri (New Year) for next year falls 163 days after 15 Nisan
+
+    a = (A+1)%19;
+    if ((a==0)||(a==3)||(a==6)||(a==8)||(a==11)||(a==14)||(a==17)) YearTypes[i] = 3;
+    else                                                           YearTypes[i] = 0;
+   }
+
+  // We've so far worked out whether years are Common or Embolismic. Now need to work out how many days there will be in each year.
+  for (i=0; i<2; i++)
+   {
+    if (YearTypes[i]==0) YearTypes[i] =     JDs[i+1]-JDs[i]-353;
+    else                 YearTypes[i] = 3 + JDs[i+1]-JDs[i]-383;
+
+    if ((YearTypes[i]<0)||(YearTypes[i]>6)) YearTypes[i]=0; // Something very bad has happened.
+   }
+  return;
+ }
+
+double JulianDateHebrew(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
+ {
+  int    i;
+  int    YearNumbers[3], YearTypes[3];
+  double JD, DayFraction, JDs[3];
+
+  if ((month<1)||(month>13)) { *status=1; sprintf(errtext, "Supplied month number should be in the range 1-13."); return 0.0; }
+  if ((year <1)            ) { *status=1; sprintf(errtext, "Supplied year number must be positive for the Hebrew calendar; the calendar is undefined prior to 4760 BC, corresponding to Hebrew year AM 1."); return 0.0; }
+
+  GetHebrewNewYears(year-3760, YearNumbers, JDs, YearTypes);
+  JD = JDs[0];
+  for (i=0; i<month-1; i++) JD += HebrewMonthLengths[ YearTypes[0] ][ i ];
+  if (day>HebrewMonthLengths[ YearTypes[0] ][ i ]) { *status=1; sprintf(errtext, "Supplied day number in the Hebrew month of %s in the year AM %d must be in the range 1-%d.", GetMonthName(month), year, HebrewMonthLengths[ YearTypes[1] ][ i ]); return 0.0; } 
+  JD += day-1;
+  DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
+  return JD + DayFraction;
+ }
+
+void InvJulianDateHebrew(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
+ {
+  long   a,b,c,d,e,f;
+  int    i,j;
+  int    JulDay, JulMon, JulYr;
+  int    YearNumbers[3], YearTypes[3];
+  double JDs[3];
+
+  // First work out date in Julian calendar
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
+  b=0; c=a+1524;
+  d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
+  e = 365*d + d/4; // Number of days accounted for by these
+  f = (c-e)/30.6001;      // Number of 30.6001 days periods (a.k.a. months) in remainder
+  JulDay = (int)floor(c-e-(int)(30.6001*f));
+  JulMon = (int)floor(f-1-12*(f>=14));
+  JulYr  = (int)floor(d-4715-(JulMon>=3));
+
+  GetHebrewNewYears(JulYr, YearNumbers, JDs, YearTypes);
+  i = (JD<JDs[1]) ? 0 : 1;
+  JD -= JDs[i];
+  for (j=0;j<13;j++) if (JD>=HebrewMonthLengths[ YearTypes[i] ][ j ]) JD -= HebrewMonthLengths[ YearTypes[i] ][ j ]; else break;
+  *year  = YearNumbers[i];
+  *month = j+1;
+  *day   = ((int)JD+1);
+  return;
+ }
+
+// Routines for converting between Julian Dates and the Islamic Calendar
+
+double JulianDateIslamic(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
+ {
+  long   N,Q,R,A,W,Q1,Q2,G,K,E,J,X,JD;
+  double DayFraction;
+
+  if ((month<1)||(month>12)) { *status=1; sprintf(errtext, "Supplied month number should be in the range 1-12."); return 0.0; }
+  if ((year <1)            ) { *status=1; sprintf(errtext, "Supplied year number must be positive for the Islamic calendar; the calendar is undefined prior to AD 622 Jul 18, corresponding to AH 1 Muh 1."); return 0.0; }
+
+  N  = day + (long)(29.5001*(month-1)+0.99);
+  Q  = year/30;
+  R  = year%30;
+  A  = (long)((11*R+3)/30);
+  W  = 404*Q+354*R+208+A;
+  Q1 = W/1461;
+  Q2 = W%1461;
+  G  = 621 + 4*((long)(7*Q+Q1));
+  K  = Q2/365.2422;
+  E  = 365.2422*K;
+  J  = Q2-E+N-1;
+  X  = G+K;
+
+  if      ((J>366) && (X%4==0)) { J-=366; X++; }
+  else if ((J>365) && (X%4 >0)) { J-=365; X++; }
+
+  JD = 365.25*(X-1) + 1721423 + J;
+
+  DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
+
+  return JD + DayFraction;
+ }
+
+void InvJulianDateIslamic(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
+ {
+  long a,b,c,d,e,f;
+  int  JulDay, JulMon, JulYr;
+  long alpha,beta,W,N,A,B,C,C2,D,Q,R,J,K,O,H,JJ,CL,DL,S,m;
+  double C1;
+
+  if (JD<1948439.5) { *status=1; sprintf(errtext, "Supplied year number must be positive for the Islamic calendar; the calendar is undefined prior to AD 622 Jul 18, corresponding to AH 1 Muh 1."); return; }
+
+  // First work out date in Julian calendar
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
+  b=0; c=a+1524;
+  d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
+  e = 365*d + d/4; // Number of days accounted for by these
+  f = (c-e)/30.6001;      // Number of 30.6001 days periods (a.k.a. months) in remainder
+  JulDay = (int)floor(c-e-(int)(30.6001*f));
+  JulMon = (int)floor(f-1-12*(f>=14));
+  JulYr  = (int)floor(d-4715-(JulMon>=3));
+
+  alpha = (JD-1867216.25)/36524.25; // See pages 75-76 of "Astronomical Algorithms", by Jean Meeus
+
+  if (JD<2299161)  beta = (JD+0.5);
+  else             beta = (JD+0.5) + 1 + alpha - ((long)(alpha/4));
+
+  c  = (b-122.1)/365.25;
+  d  = 365.25*c;
+  e  = (b-d)/30.6001;
+
+  W  = 2-(JulYr%4==0);
+  N  = ((long)((275*JulMon)/9)) - W*((long)((JulMon+9)/12)) + JulDay - 30;
+  A  = JulYr-623;
+  B  = A/4;
+  C  = A%4;
+  C1 = 365.2501*C;
+  C2 = C1;
+
+  if (C1-C2>0.5) C2++;
+
+  D  = 1461*B+170+C2;
+  Q  = D/10631;
+  R  = D%10631;
+  J  = R/354;
+  K  = R%354;
+  O  = (11*J+14)/30;
+  H  = 30*Q+J+1;
+  JJ = K-O+N-1;
+
+  if (JJ>354)
+   {
+    CL = H%30;
+    DL = (11*CL+3)%30;
+    if      (DL<19) { JJ-=354; H++; }
+    else if (DL>18) { JJ-=355; H++; }
+    if (JJ==0) { JJ=355; H--; }
+   }
+
+  S = (JJ-1)/29.5;
+  m = 1+S;
+  d = JJ-29.5*S;
+
+  if (JJ==355) { m=12; d=30; }
+
+  *year  = (int)H;
+  *month = (int)m;
+  *day   = (int)d;
+  return;
+ }
+
+// Routines for converting between Julian Dates and Calendar Dates in Gregorian and Julian calendars
+
+double JulianDate(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
+ {
+  double JD, DayFraction, LastJulian, FirstGregorian, ReqDate;
+  int b;
+
+  if ((day  <1)||(day  >31)) { *status=1; sprintf(errtext, "Supplied day number should be in the range 1-31."); return 0.0; }
+  if ((hour <0)||(hour >23)) { *status=1; sprintf(errtext, "Supplied hour number should be in the range 0-23."); return 0.0; }
+  if ((min  <0)||(min  >59)) { *status=1; sprintf(errtext, "Supplied minute number should be in the range 0-59."); return 0.0; }
+  if ((sec  <0)||(sec  >59)) { *status=1; sprintf(errtext, "Supplied second number should be in the range 0-59."); return 0.0; }
+
+  if      (settings_term_current.CalendarIn == SW_CALENDAR_HEBREW ) return JulianDateHebrew (year, month, day, hour, min, sec, status, errtext);
+  else if (settings_term_current.CalendarIn == SW_CALENDAR_ISLAMIC) return JulianDateIslamic(year, month, day, hour, min, sec, status, errtext);
+
+  if ((month<1)||(month>12)) { *status=1; sprintf(errtext, "Supplied month number should be in the range 1-12."); return 0.0; }
+
+  SwitchOverCalDate(&LastJulian, &FirstGregorian);
+  ReqDate = 10000.0*year + 100*month + day;
+
+  if (month<=2) { month+=12; year--; }
+
+  if (ReqDate <= LastJulian)
+   { b = -2 + ((year+4716)/4) - 1179; } // Julian calendar
+  else if (ReqDate >= FirstGregorian)
+   { b = (year/400) - (year/100) + (year/4); } // Gregorian calendar
+  else
+   { *status=1; sprintf(errtext, "The requested date never happened in the %s calendar: it was lost in the transition from the Julian to the Gregorian calendar.", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR )); return 0.0; }
+
+  JD = 365.0*year - 679004.0 + 2400000.5 + b + floor(30.6001*(month+1)) + day;
+
+  DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
+
+  return JD + DayFraction;
+ }
+
+void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
+ {
+  long a,b,c,d,e,f;
+  double DayFraction;
+  int temp;
+  if (month == NULL) month = &temp; // Dummy placeholder, since we need month later in the calculation
+
+  // Work out hours, minutes and seconds
+  DayFraction = (JD+0.5) - floor(JD+0.5);
+  if (hour != NULL) *hour = (int)floor(        24*DayFraction      );
+  if (min  != NULL) *min  = (int)floor(fmod( 1440*DayFraction , 60));
+  if (sec  != NULL) *sec  =            fmod(86400*DayFraction , 60) ;
+
+  // Now work out calendar date
+  if      (settings_term_current.CalendarOut == SW_CALENDAR_HEBREW ) return InvJulianDateHebrew (JD, year, month, day, hour, min, sec, status, errtext);
+  else if (settings_term_current.CalendarOut == SW_CALENDAR_ISLAMIC) return InvJulianDateIslamic(JD, year, month, day, hour, min, sec, status, errtext);
+
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
+  if (a < SwitchOverJD())
+   { b=0; c=a+1524; } // Julian calendar
+  else
+   { b=(a-1867216.25)/36524.25; c=a+b-(b/4)+1525; } // Gregorian calendar
+  d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
+  e = 365*d + d/4; // Number of days accounted for by these
+  f = (c-e)/30.6001;      // Number of 30.6001 days periods (a.k.a. months) in remainder
+  if (day  != NULL) *day   = (int)floor(c-e-(int)(30.6001*f));
+                    *month = (int)floor(f-1-12*(f>=14));
+  if (year != NULL) *year  = (int)floor(d-4715-(*month>=3));
+
+  return;
  }
 
 // Wrappers for importing into PyXPlot's function table
@@ -174,11 +440,9 @@ void dcftime_now(value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "time_now()";
   time_t timer;
-  struct tm timeinfo;
   timer = time(NULL);
-  gmtime_r(&timer , &timeinfo);
   WRAPPER_INIT;
-  output->real = JulianDate(1900+timeinfo.tm_year, 1+timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, status, errtext);
+  output->real = 2440587.5 + ((double)timer)/86400;
   CHECK_OUTPUT_OKAY;
  }
 
@@ -189,7 +453,7 @@ void dcftime_year(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, &i, NULL, NULL, NULL, NULL, NULL); }
+  ELSE_REAL   { InvJulianDate(in->real, &i, NULL, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -202,7 +466,7 @@ void dcftime_monthnum(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, &i, NULL, NULL, NULL, NULL); }
+  ELSE_REAL   { InvJulianDate(in->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -216,7 +480,7 @@ void dcftime_monthname(value *in1, value *in2, value *output, int *status, char 
   CHECK_2INPUT_DIMLESS;
   CHECK_NEEDINT(in2, "function's second input (length) must be an integer");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in1->real, NULL, &i, NULL, NULL, NULL, NULL); }
+  ELSE_REAL   { InvJulianDate(in1->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->string = lt_malloc(16);
   output->string[0] = '\0';
@@ -231,7 +495,7 @@ void dcftime_daymonth(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, &i, NULL, NULL, NULL); }
+  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, &i, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -270,7 +534,7 @@ void dcftime_hour(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, &i, NULL, NULL); }
+  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, &i, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -283,7 +547,7 @@ void dcftime_min(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, &i, NULL); }
+  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, &i, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -295,7 +559,7 @@ void dcftime_sec(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, NULL, &(output->real)); }
+  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, NULL, &(output->real), status, errtext); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -323,7 +587,7 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
   // Fetch format string
   if (in[i] != ',')
    {
-    if (in[i] ==')') { FormatString = "%a %b %d %H:%M:%S"; }
+    if (in[i] ==')') { FormatString = "%a %Y %b %d %H:%M:%S"; }
     else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; }
    } else {
     i++; j=-1;
@@ -347,7 +611,10 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
   if (JD1.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_string() function can only act upon real times. The supplied Julian Date is complex."); return; }
   if (!JD1.dimensionless) { *status=0; sprintf(errtext,"Error: The time_string() function can only act upon dimensionless times. The supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
 
-  InvJulianDate(JD1.real, &year, &month, &day, &hour, &min, &sec);
+  *status=0;
+  InvJulianDate(JD1.real, &year, &month, &day, &hour, &min, &sec, status, errtext);
+  if (*status) { *status=0; return; }
+  *status=-1;
 
   // Loop through format string making substitutions
   output->string = lt_malloc(LSTR_LENGTH);

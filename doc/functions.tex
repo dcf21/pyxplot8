@@ -58,6 +58,7 @@ The #1 function #2
 \funcdef{ast\_Lcdm\_t($z$,$\Omega_\mathrm{M}$,$\Omega_\Uplambda$)}{is a specialist cosmology function. It returns the lookback time to objects at a redshift of $z$ in a standard $\Uplambda_\mathrm{CDM}$ cosmology. For details, see the {\tt ast\_Lcdm\_age()} function above. The returned value has dimensions of time. To find the age of the Universe at a redshift of $z$, this value should be subtracted from the output of the {\tt ast\_Lcdm\_age()} function.}
 \funcdef{ast\_Lcdm\_z($t$,$\Omega_\mathrm{M}$,$\Omega_\Uplambda$)}{is a specialist cosmology function. It returns the redshift corresponding to a lookback time of $t$ in a standard $\Uplambda_\mathrm{CDM}$ cosmology. For details, see the {\tt ast\_Lcdm\_age()} function above. The returned value is dimensionless.}
 \funcdef{ast\_moonphase($JD$)}{returns the phase of the Moon, with dimensions of angle, at the time corresponding to the supplied Julian Date.}
+\funcdef{ast\_sidereal\_time($JD$)}{returns the sidereal time at Greenwich, with dimensions of angle, at the time corresponding to the supplied Julian Date. This is equal to the right ascension of the stars which are transiting the Greenwich meridian at that time. This function uses the expression for sidereal time adopted in 1982 by the International Astronomical Union (IAU), and which is reproduced in Chapter~12 of Jean Meeus' book {\it Astronomical Algorithms} (1998).}
 \funcdef{atan($z$)}{returns the arctangent of $z$. $z$ may be any general dimensionless complex number. The output has physical dimensions of angle.}
 \funcdef{atanh($z$)}{returns the hyperbolic arctangent of $z$. $z$ may be any general dimensionless complex number. The output has physical dimensions of angle.}
 \funcdef{atan2($x,y$)}{returns the arctangent of $x/y$. Unlike atan($y/x$), atan2($x,y$) takes account of the signs of both $x$ and $y$ to remove the degeneracy between $(1,1)$ and $(-1,-1)$. $x$ and $y$ must be real numbers, and must have matching physical dimensions.}
@@ -194,5 +195,5 @@ Token & Value \\
 \funcdef{texify(\ldots)}{returns a string of \LaTeX text corresponding to the algebraic expression or string supplied between the brackets.}
 \funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real, but may have any physical dimensions so long as they match.}
 \funcdef{unit(\ldots)}{multiplies a number by a physical unit. The string inside the brackets should consist of a string of the names of physical units, multiplied together with the {\tt *} operator, divided using the {\tt /} operator, or raised by numeric powers using the {\tt \^{}} operator. The list may be commenced with a numeric constant, for example: {\tt unit(2*m\^{}2/s)}.}
-\funcdef{zeta($x$)}{evaluates the Riemann zeta function for any real dimensionless number $x$.}
+\funcdef{zeta($x$)}{evaluates the Riemann zeta function for any dimensionless number $x$.}
 

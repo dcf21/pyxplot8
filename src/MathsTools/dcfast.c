@@ -266,6 +266,31 @@ void dcfast_Lcdm_z(value *in4, value *in1, value *in2, value *in3, value *output
   CHECK_OUTPUT_OKAY;
  }
 
+// Returns the sidereal time for any given Julian Date
+
+void dcfast_sidereal_time(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "ast_sidereal_time(JD)";
+  double T;
+
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+    T = (in->real - 2451545.0) / 36525.0; // See pages 87-88 of Astronomical Algorithms, by Jean Meeus
+    output->real = fmod( M_PI/180 * (
+                                    280.46061837 +
+                                    360.98564736629 * (in->real - 2451545.0) +
+                                    0.000387933     * T*T +
+                                    T*T*T / 38710000.0
+                                   ), 2*M_PI);
+   }
+  ENDIF
+  CLEANUP_APPLYUNIT(UNIT_ANGLE);
+  CHECK_OUTPUT_OKAY;
+ }
+
 // Simple toy to work out the Moon's phase at any given Julian Date
 
 void dcfast_moonphase(value *in, value *output, int *status, char *errtext)

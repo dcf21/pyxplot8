@@ -45,6 +45,7 @@
 #include "ppl_units.h"
 
 #include "dcfmath.h"
+#include "zeta_riemann.h"
 
 double max(double x, double y)
  {
@@ -1297,9 +1298,10 @@ void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *er
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "zeta(x)";
+  gsl_complex zi,z;
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
-  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  IF_1COMPLEX { GSL_SET_COMPLEX(&zi,in->real,in->imag); riemann_zeta_complex(zi,&z,status,errtext); if (*status) return; CLEANUP_GSLCOMPLEX; }
   ELSE_REAL   { output->real = gsl_sf_zeta(in->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;

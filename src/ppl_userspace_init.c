@@ -68,7 +68,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_ast_Lcdm_DM       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_DM      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_D_M@<@1,@2,@3,@4@>", "ast_Lcdm_DM(z,H0,w_m,w_l) returns the comoving distance corresponding to redshift z in an L_CDM cosmology"};
   FunctionDescriptor fd_ast_Lcdm_t        = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_t       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_t@<@1,@2,@3,@4@>", "ast_Lcdm_t(z,H0,w_m,w_l) returns the lookback time corresponding to redshift z in an L_CDM cosmology"};
   FunctionDescriptor fd_ast_Lcdm_z        = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfast_Lcdm_z       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_\\Lambda_{CDM}\\_z@<@1,@2,@3,@4@>", "ast_Lcdm_z(t,H0,w_m,w_l) returns the redshift corresponding to a lookback time t in an L_CDM cosmology"};
-  FunctionDescriptor fd_ast_moonphase     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfast_moonphase    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_moonphase}@<@1@>", "ast_moonphase(JD) returns the phase on the Moon on Julian Date JD"};
+  FunctionDescriptor fd_ast_moonphase     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfast_moonphase    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_moonphase}@<@1@>", "ast_moonphase(JD) returns the phase on the Moon at Julian Date JD"};
+  FunctionDescriptor fd_ast_sidereal_time = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfast_sidereal_time, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ast\\_sidereal\\_time}@<@1@>", "ast_sidereal_time(JD) returns the sidereal time at Greenwich at Julian Date JD"};
   FunctionDescriptor fd_atan          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atan        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atan}@<@1@>", "atan(x) returns the arctangent of x"};
   FunctionDescriptor fd_atanh         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_atanh       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atanh}@<@1@>", "atanh(x) returns the hyperbolic arctangent of x"};
   FunctionDescriptor fd_atan2         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_atan2       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{atan2}@<@1,@2@>", "atan2(x,y) returns the arctangent of x/y. Unlike atan(y/x), atan2(x,y) takes account of the signs of both x and y to remove the degeneracy between (1,1) and (-1,-1)"};
@@ -300,6 +301,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_t"       , (void *)&fd_ast_Lcdm_t       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_Lcdm_z"       , (void *)&fd_ast_Lcdm_z       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_moonphase"    , (void *)&fd_ast_moonphase    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ast_sidereal_time", (void *)&fd_ast_sidereal_time, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan"           , (void *)&fd_atan        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atanh"          , (void *)&fd_atanh       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "atan2"          , (void *)&fd_atan2       , sizeof(FunctionDescriptor), DATATYPE_VOID);

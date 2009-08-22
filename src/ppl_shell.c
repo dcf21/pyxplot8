@@ -471,7 +471,11 @@ void directive_print(Dict *command)
     DictLookup(ItemSubDict,"string",NULL,(void **)&item_str);
     if (item_str != NULL) { strcpy(PrintString+i, item_str); i+=strlen(PrintString+i); }
     DictLookup(ItemSubDict,"expression",NULL,(void **)&item_val);
-    if (item_val != NULL) { strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0)); i+=strlen(PrintString+i); }
+    if (item_val != NULL)
+     {
+      strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0)); i+=strlen(PrintString+i);
+      ppl_UserSpace_SetVarNumeric("ans", item_val, 1);
+     }
    }
   ppl_report(PrintString);
   return;
