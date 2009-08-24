@@ -46,9 +46,9 @@ char txt_show               [LSTR_LENGTH];
 
 void ppl_text_init()
 {
-sprintf(txt_version, "\nPyXPlot %s\n", VERSION);
+sprintf(txt_version, "PyXPlot %s", VERSION);
 
-sprintf(txt_help   , "%s\
+sprintf(txt_help   , "%s\n\
 %s\n\
 \n\
 Usage: pyxplot <options> <filelist>\n\
@@ -64,7 +64,9 @@ full Users' Guide can be found in the file:\n\
 %s%spyxplot.pdf\n\
 \n\
 For the latest information on PyXPlot development, see the project website:\n\
-<http://www.pyxplot.org.uk>\n", txt_version, StrUnderline(txt_version, txt_version_underline), DOCDIR, PATHLINK);
+<http://www.pyxplot.org.uk>\n\
+\n\
+Please report bugs to <coders@pyxplot.org.uk>\n", txt_version, StrUnderline(txt_version, txt_version_underline), DOCDIR, PATHLINK);
 
 sprintf(txt_init, "\n\
  ____       __  ______  _       _      PYXPLOT\n\

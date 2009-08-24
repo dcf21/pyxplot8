@@ -130,14 +130,14 @@ int main(int argc, char **argv)
     else if (strcmp(argv[i], "-"           )==0) WillBeInteractive=2;
     else if ((strcmp(argv[i], "-v")==0) || (strcmp(argv[i], "-version")==0) || (strcmp(argv[i], "--version")==0))
      {
-      ppl_report(txt_version);
+      printf("%s\n",txt_version);
       if (DEBUG) ppl_log("Reported version number as requested.");
       lt_FreeAll(0); lt_MemoryStop();
       return 0;
      }
     else if ((strcmp(argv[i], "-h")==0) || (strcmp(argv[i], "-help")==0) || (strcmp(argv[i], "--help")==0))
      {
-      ppl_report(txt_help);
+      printf("%s\n",txt_help);
       if (DEBUG) ppl_log("Reported help text as requested.");
       lt_FreeAll(0); lt_MemoryStop();
       return 0;
