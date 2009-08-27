@@ -356,6 +356,7 @@ double JulianDate(int year, int month, int day, int hour, int min, int sec, int 
   double JD, DayFraction, LastJulian, FirstGregorian, ReqDate;
   int b;
 
+  if ((year<-1e6)||(year>1e6)||(!gsl_finite(year))) { *status=1; sprintf(errtext, "Supplied year is too big."); return 0.0; }
   if ((day  <1)||(day  >31)) { *status=1; sprintf(errtext, "Supplied day number should be in the range 1-31."); return 0.0; }
   if ((hour <0)||(hour >23)) { *status=1; sprintf(errtext, "Supplied hour number should be in the range 0-23."); return 0.0; }
   if ((min  <0)||(min  >59)) { *status=1; sprintf(errtext, "Supplied minute number should be in the range 0-59."); return 0.0; }
@@ -391,6 +392,8 @@ void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *m
   double DayFraction;
   int temp;
   if (month == NULL) month = &temp; // Dummy placeholder, since we need month later in the calculation
+
+  if ((JD<-1e8)||(JD>1e8)||(!gsl_finite(JD))) { *status=1; sprintf(errtext, "Supplied Julian Date is too big."); return; }
 
   // Work out hours, minutes and seconds
   DayFraction = (JD+0.5) - floor(JD+0.5);

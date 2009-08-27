@@ -787,6 +787,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "second";
   ppl_unit_database[ppl_unit_pos].nameFp     = "seconds";
+  ppl_unit_database[ppl_unit_pos].alt1       = "sec";
+  ppl_unit_database[ppl_unit_pos].alt2       = "secs";
   ppl_unit_database[ppl_unit_pos].quantity   = "time";
   ppl_unit_database[ppl_unit_pos].si         = 1;
   ppl_unit_database[ppl_unit_pos].cgs        = 1;
