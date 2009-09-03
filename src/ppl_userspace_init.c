@@ -2242,11 +2242,12 @@ void ppl_units_init()
   ppl_unit_pos++;
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "Lsun"; // Solar luminosity
-  ppl_unit_database[ppl_unit_pos].nameAp     = "Lsolar";
+  ppl_unit_database[ppl_unit_pos].nameAp     = "Lsun";
   ppl_unit_database[ppl_unit_pos].nameLs     = "L_\\odot";
   ppl_unit_database[ppl_unit_pos].nameLp     = "L_\\odot";
   ppl_unit_database[ppl_unit_pos].nameFs     = "solar_luminosity";
   ppl_unit_database[ppl_unit_pos].nameFp     = "solar_luminosities";
+  ppl_unit_database[ppl_unit_pos].alt1       = "Lsolar";
   ppl_unit_database[ppl_unit_pos].quantity   = "power";
   ppl_unit_database[ppl_unit_pos].multiplier = 3.839e26;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]   = 1;
