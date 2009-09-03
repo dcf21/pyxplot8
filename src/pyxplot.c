@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
   lt_MemoryInit(&ppl_error, &ppl_log);
-  ClearInputSource();
+  ClearInputSource(NULL,NULL,NULL,NULL,NULL,NULL);
   ppl_units_init();
   ppl_PaperSizeInit();
   ppl_settings_makedefault();

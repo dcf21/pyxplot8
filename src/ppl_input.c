@@ -164,12 +164,16 @@ char *InputLineBuffer    = NULL;
 char *InputLineAddBuffer = NULL;
 char *InputLineBufferPos = NULL;
 
-void ClearInputSource()
+void ClearInputSource(char *New, char *NewPos, char *NewAdd, char **Old, char **OldPos, char **OldAdd)
  {
+  if (Old    != NULL) { *Old    = InputLineBuffer;    } else if (InputLineBuffer    != NULL) { free(InputLineBuffer); }
+  if (OldPos != NULL) { *OldPos = InputLineBufferPos; }
+  if (OldAdd != NULL) { *OldAdd = InputLineAddBuffer; } else if (InputLineAddBuffer != NULL) { free(InputLineAddBuffer); }
+  InputLineBuffer    = New;
+  InputLineBufferPos = NewPos;
+  InputLineAddBuffer = NewAdd;
   if (InputLineBuffer    == NULL) InputLineBuffer = (char *)malloc(LSTR_LENGTH);
   if (InputLineBuffer    == NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory error whilst trying to allocate input buffer."); exit(1); }
-  if (InputLineAddBuffer != NULL) { free(InputLineAddBuffer); InputLineAddBuffer=NULL; }
-  InputLineBufferPos = NULL;
   return;
  }
 

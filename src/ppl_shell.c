@@ -58,6 +58,7 @@ int PPL_SHELL_EXITING;
 void InteractiveSession()
  {
   int   linenumber = 1;
+  char *OldLB, *OldLBP, *OldLBA;
   char *line_ptr;
   sigset_t sigs;
 
@@ -71,7 +72,7 @@ void InteractiveSession()
     if ((isatty(STDIN_FILENO) == 1) && (settings_session_default.splash == SW_ONOFF_ON)) ppl_report(txt_init);
 
     PPL_SHELL_EXITING = 0;
-    ClearInputSource();
+    ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
     while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
      {
       CheckForGvOutput();
@@ -97,7 +98,7 @@ void InteractiveSession()
     if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
    }
   PPL_SHELL_EXITING = 0;
-  ClearInputSource();
+  ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
 
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   return;
@@ -111,6 +112,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   char full_filename[FNAME_LENGTH];
   char filename_description[FNAME_LENGTH];
   char *line_ptr;
+  char *OldLB, *OldLBP, *OldLBA;
   FILE *infile;
 
   sprintf(temp_err_string, "Processing input from the script file '%s'.", input); ppl_log(temp_err_string);
@@ -122,7 +124,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
     return;
    }
 
-  ClearInputSource();
+  ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
   PPL_SHELL_EXITING = 0;
   while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
@@ -143,7 +145,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
      }
    }
   PPL_SHELL_EXITING = 0;
-  ClearInputSource();
+  ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
 
   fclose(infile);
   CheckForGvOutput();
@@ -413,11 +415,12 @@ int directive_exec(Dict *command, int IterLevel)
  {
   int   status=0;
   char *strval, *line_ptr;
+  char *OldLB, *OldLBP, *OldLBA;
   int   i=0;
 
   DictLookup(command,"command",NULL,(void **)(&strval));
   SetInputSourceString(strval, &i);
-  ClearInputSource();
+  ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
   PPL_SHELL_EXITING = 0;
   while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
@@ -432,7 +435,7 @@ int directive_exec(Dict *command, int IterLevel)
      }
    }
   PPL_SHELL_EXITING = 0;
-  ClearInputSource();
+  ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
   return status;
  }
 

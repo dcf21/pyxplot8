@@ -38,7 +38,7 @@ char *FetchInputLine(char *output, char *prompt);
 extern char *InputLineAddBuffer;
 #endif
 
-void ClearInputSource();
+void ClearInputSource(char *New, char *NewPos, char *NewAdd, char **Old, char **OldPos, char **OldAdd);
 char *FetchInputStatement(char *prompt1, char *prompt2);
 
 #endif

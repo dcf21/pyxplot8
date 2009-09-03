@@ -28,9 +28,8 @@
 #include <ctype.h>
 
 #include "StringTools/asciidouble.h"
-
 #include "EPSMaker/eps_colours.h"
-
+#include "ListTools/lt_memory.h"
 #include "MathsTools/dcfmath.h"
 
 #include "ppl_constants.h"
@@ -413,12 +412,12 @@ void ReadConfigFile(char *ConfigFname)
          { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nIllegal %s name.", linecounter, ConfigFname, type); ppl_warning(temp_err_string); continue; } \
         else \
          { \
-          output = (char *)malloc(strlen(last)+1); \
+          output = (char *)lt_malloc(strlen(last)+1); \
           if (output==NULL) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nOut of memory error whilst generating new unit.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; } \
           strcpy(output, last); \
          } \
        } else { \
-        output = (char *)malloc(i-j+1); \
+        output = (char *)lt_malloc(i-j+1); \
         if (output==NULL) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nOut of memory error whilst generating new unit.", linecounter, ConfigFname); ppl_warning(temp_err_string); continue; } \
         strncpy(output, setkey+j, i-j); output[i-j]='\0'; \
        } \

@@ -106,9 +106,10 @@ void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel
 int loop_execute(cmd_chain *chain, int IterLevel)
  {
   int   status=0;
+  char *OldLB, *OldLBP, *OldLBA;
   char *line_ptr;
 
-  ClearInputSource();
+  ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
   while ((!status) && (PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
     SetInputSourceLoop(chain);
@@ -116,7 +117,7 @@ int loop_execute(cmd_chain *chain, int IterLevel)
     if (line_ptr == NULL) break;
     if (StrStrip(line_ptr,line_ptr)[0] != '\0') status = ProcessDirective(line_ptr, 0, IterLevel);
    }
-  ClearInputSource();
+  ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
   return status;
  }
 
