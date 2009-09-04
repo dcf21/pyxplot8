@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -84,7 +84,7 @@ twister =~ s@s@th@
 twister =~ s@s@th@g
 \end{verbatim}
 
-\noindent Table~\ref{re_flags} lists all of the regular expression flags
+\noindent Table~\ref{tab:re_flags} lists all of the regular expression flags
 recognised by the =$\sim$ operator.
 
 \begin{table}
@@ -99,7 +99,7 @@ recognised by the =$\sim$ operator.
 {\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through the end of the line are ignored. \\
 \end{tabular}}
 \caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
-\label{re_flags}
+\label{tab:re_flags}
 \end{table}
 
 Strings may also be put together using the string substitution operator, {\tt
@@ -677,9 +677,9 @@ A simple example of the use of function splicing to truncate the function $\sinc
 \end{center}
 }
 
-\label{splice} \noindent The output of this particular example can be seen in
+\noindent The output of this particular example can be seen in
 Example~\ref{ex:funcsplice1}. A similar effect could also have been achieved
-with the {\tt select} keyword; see Section~\ref{select_modifier}.
+with the {\tt select} keyword; see Section~\ref{sec:select_modifier}.
 
 It is possible to make multiple declarations of the same function, over
 different regions of argument space; if there is an overlap in the valid

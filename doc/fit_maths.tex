@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -23,7 +23,7 @@
 
 \chapter{The {\tt fit} Command: Mathematical Details}
 \chaptermark{Details of the {\tt fit} command}
-\label{fit_math}
+\label{ch:fit_maths}
 
 In this section, the mathematical details of the workings of the \indcmdt{fit}
 are described. This may be of interest in diagnosing its limitations, and also
@@ -33,7 +33,7 @@ subject; for a fuller account, the reader is referred to D.S.\ Sivia's {\it
 Data Analysis: A Bayesian Tutorial}.
 
 \section{Notation}
-\label{bayes_notation}
+\label{sec:bayes_notation}
 
 I shall assume that we have some function $f()$, which takes $n_\mathrm{x}$
 parameters, $x_0$...$x_{n_\mathrm{x}-1}$, the set of which may collectively be
@@ -61,7 +61,7 @@ is written
 $\mathrm{P}\left( \mathbf{u} | \left\{ \mathbf{x}_i, f_i, \sigma_i \right\} \right)$.
 
 \section{The Probability Density Function}
-\label{bayes_pdf}
+\label{sec:bayes_pdf}
 
 Bayes' Theorem states that:
 
@@ -134,7 +134,7 @@ L(\mathbf{u}) & = & L(\mathbf{u}^0) +
     \underbrace{
       \sum_{i=0}^{n_\mathrm{u}-1} \left( u_i - u^0_i \right)
       \left.\frac{\partial L}{\partial u_i}\right|_{\mathbf{u}^0}
-    }_{\textrm{Zero at $\mathbf{u}^0$ by definition}} + \label{L_taylor_expand}\\
+    }_{\textrm{Zero at $\mathbf{u}^0$ by definition}} + \label{eqa:L_taylor_expand}\\
 & & \sum_{i=0}^{n_\mathrm{u}-1} \sum_{j=0}^{n_\mathrm{u}-1} \frac{\left( u_i - u^0_i \right) \left( u_j - u^0_j \right)}{2}
     \left.\frac{\partial^2 L}{\partial u_i \partial u_j}\right|_{\mathbf{u}^0} +
     \mathcal{O}\left( \mathbf{u} - \mathbf{u}^0\right)^3 \nonumber
@@ -152,7 +152,7 @@ form:
 
 \begin{equation}
 Q = \frac{1}{2} \left(\mathbf{u} - \mathbf{u}^0\right)^\mathbf{T} \mathbf{A} \left(\mathbf{u} - \mathbf{u}^0\right)
-\label{Q_vector}
+\label{eqn:Q_vector}
 \end{equation}
 
 \noindent where the superscript $^\mathbf{T}$ represents the transpose of the
@@ -166,7 +166,7 @@ A_{ij} = \nabla\nabla L = \left.\frac{\partial^2 L}{\partial u_i \partial u_j}\r
 
 This is the Hessian matrix which is output by the {\tt fit} command. In
 general, an $n_\mathrm{u}$-dimensional Gaussian distribution such as that given
-by equation~(\ref{L_taylor_expand}) yields elliptical contours of
+by Equation~(\ref{eqa:L_taylor_expand}) yields elliptical contours of
 equiprobability in parameter space, whose principal axes need not be aligned
 with our chosen co-ordinate axes -- the variables $u_0 ... u_{n_u-1}$. The
 eigenvectors $\mathbf{e}_i$ of $\mathbf{A}$ are the principal axes of these
@@ -175,7 +175,7 @@ where $\sigma_i$ is the standard deviation of the probability density function
 along the direction of these axes.
 
 This can be visualised by imagining that we diagonalise $\mathbf{A}$, and
-expand equation~(\ref{Q_vector}) in our diagonal basis. The resulting
+expand Equation~(\ref{eqn:Q_vector}) in our diagonal basis. The resulting
 expression for $L$ is a sum of square terms; the cross terms vanish in this
 basis by definition. The equations of the equiprobability contours become the
 equations of ellipses:
@@ -200,8 +200,8 @@ Hessian matrix into a covariance matrix.
 The terms of the covariance matrix $V_{ij}$ are defined by:
 
 \begin{equation}
-\label{def_covar}
 V_{ij} = \left< \left(u_i - u^0_i\right) \left(u_j - u^0_j\right) \right>
+\label{eqn:def_covar}
 \end{equation}
 
 \noindent Its leading diagonal terms may be recognised as equalling the
@@ -212,10 +212,10 @@ favourable also; if $V_{ij} < 0$, the converse is true.
 
 It is a standard statistical result that $\mathbf{V} = (-\mathbf{A})^{-1}$. In
 the remainder of this section we prove this; readers who are willing to accept
-this may skip onto Section~\ref{correlation_matrix}.
+this may skip onto Section~\ref{sec:correlation_matrix}.
 
 Using $\Delta u_i$ to denote $\left(u_i - u^0_i\right)$, we may proceed by
-rewriting equation~(\ref{def_covar}) as:
+rewriting Equation~(\ref{eqn:def_covar}) as:
 
 \begin{eqnarray}
 V_{ij} & = & \idotsint_{u_i=-\infty}^{\infty}
@@ -251,7 +251,7 @@ matrix $A_{ij}$ yields:
 \noindent which we may identify as equalling $V_{ij}$:
 
 \begin{eqnarray}
-\label{v_zrelate}
+\label{eqa:v_zrelate}
 V_{ij} & = & -2 \frac{\partial}{\partial A_{ij}} \left[ \log_e(Z) \right] \\
 & = & -2 \frac{\partial}{\partial A_{ij}} \left[ \log_e((2\pi)^{n_\mathrm{u}/2}) - \log_e(\mathrm{Det}(\mathbf{-A})) \right] \nonumber \\
 & = & 2 \frac{\partial}{\partial A_{ij}} \left[ \log_e(\mathrm{Det}(\mathbf{-A})) \right] \nonumber
@@ -266,7 +266,7 @@ cofactors, yielding the result:
 \end{equation}
 
 \noindent where $a_{ij}$ is the cofactor of $A_{ij}$. Substituting this into
-equation~(\ref{v_zrelate}) yields:
+Equation~(\ref{eqa:v_zrelate}) yields:
 
 \begin{equation}
 V_{ij} = \frac{-a_{ij}}{\mathrm{Det}(\mathbf{-A})}
@@ -283,7 +283,7 @@ V_{ij} = \frac{-\mathbf{A}^\dagger}{\mathrm{Det}(\mathbf{-A})} \equiv (-\mathbf{
 \noindent which proves the result stated earlier.
 
 \section{The Correlation Matrix}
-\label{correlation_matrix}
+\label{sec:correlation_matrix}
 \index{correlation matrix}
 
 Having evaluated the covariance matrix, we may straightforwardly find the
@@ -292,7 +292,7 @@ terms along its leading diagonal. For datafiles where the user does not specify
 the standard deviations $\sigma_i$ in each value $f_i$, the task is not quite
 complete, as the Hessian matrix depends critically upon these uncertainties,
 even if they are assumed the same for all of our $f_i$. This point is returned
-to in Section~\ref{finding_sigmai}.
+to in Section~\ref{sec:finding_sigmai}.
 
 The correlation matrix $\mathbf{C}$, whose terms are given by:
 
@@ -308,17 +308,17 @@ perfect correlation between parameters, and the lower limit perfect
 anti-correlation.
 
 \section{Finding $\sigma_i$}
-\label{finding_sigmai}
+\label{sec:finding_sigmai}
 
 Throughout the preceding sections, the uncertainties in the supplied target
-values $f_i$ have been denoted $\sigma_i$ (see Section~\ref{bayes_notation}).
-The user has the option of supplying these in the source datafile, in which
-case the provisions of the previous sections are now complete; both
-best-estimate parameter values and their uncertainties can be calculated. The
-user may also, however, leave the uncertainties in $f_i$ unstated, in which
-case, as described in Section~\ref{bayes_notation}, we assume all of the data
-values to have a common uncertainty $\sigma_\mathrm{data}$, which is an
-unknown.
+values $f_i$ have been denoted $\sigma_i$ (see
+Section~\ref{sec:bayes_notation}).  The user has the option of supplying these
+in the source datafile, in which case the provisions of the previous sections
+are now complete; both best-estimate parameter values and their uncertainties
+can be calculated. The user may also, however, leave the uncertainties in $f_i$
+unstated, in which case, as described in Section~\ref{sec:bayes_notation}, we
+assume all of the data values to have a common uncertainty
+$\sigma_\mathrm{data}$, which is an unknown.
 
 In this case, where $\sigma_i = \sigma_\mathrm{data} \,\forall\, i$, the best
 fitting parameter values are independent of $\sigma_\mathrm{data}$, but the
@@ -347,7 +347,7 @@ problem to the maximisation of $\mathrm{P}\left( \left\{ f_i \right\} |
 write as a marginalised probability distribution over $\mathbf{u}$:
 
 \begin{eqnarray}
-\label{p_f_given_sigma}
+\label{eqa:p_f_given_sigma}
 \mathrm{P}\left( \left\{ f_i \right\} | \sigma_\mathrm{data}, \left\{ \mathbf{x}_i \right\} \right) =
 \idotsint_{-\infty}^{\infty}
 &
@@ -379,7 +379,7 @@ we can make use of the standard result for an $n_\mathrm{u}$-dimensional Gaussia
 }
 \end{equation}
 
-\noindent We may thus approximate equation~(\ref{p_f_given_sigma}) as:
+\noindent We may thus approximate Equation~(\ref{eqa:p_f_given_sigma}) as:
 
 \begin{eqnarray}
 \mathrm{P}\left( \left\{ f_i \right\} | \sigma_\mathrm{data}, \left\{ \mathbf{x}_i \right\} \right)
@@ -396,7 +396,7 @@ we can make use of the standard result for an $n_\mathrm{u}$-dimensional Gaussia
 \nonumber
 \end{eqnarray}
 
-As in Section~\ref{bayes_pdf}, it is numerically easier to maximise this
+As in Section~\ref{sec:bayes_pdf}, it is numerically easier to maximise this
 quantity via its logarithm, which we denote $L_2$, and can write as:
 
 \begin{eqnarray}

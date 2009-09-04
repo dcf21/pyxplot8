@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -29,7 +29,7 @@ this chapter, we discuss how to label graphs and place simple vector graphics
 around them.
 
 \section{Multi-plotting}
-\label{multiplot}
+\label{sec:multiplot}
 \index{multiplot}
 
 Gnuplot has a plotting mode called {\it multiplot} which allows many graphs to
@@ -144,7 +144,7 @@ In PyXPlot, an axis which borrows its scale and labels from another is called a
 {\it linked axis}.
 
 Such axes are declared by setting the label of the linked axis to a magic
-string such as {\tt linkaxis 0}\label{linked_axes}\index{axes!reserved
+string such as {\tt linkaxis 0}\label{sec:linked_axes}\index{axes!reserved
 labels}\index{magic axis labels}. This magic label would set the axis to borrow
 its scale from an axis from plot zero. The general syntax is `{\tt linkaxis}
 $n$ $m$', where $n$ and $m$ are two integers, separated by a comma or
@@ -155,9 +155,9 @@ an attempt is made to link to an axis which doesn't exist.
 
 \subsection{Text Labels, Arrows and Images}
 
-\label{text_command} In addition to placing plots on the multiplot page, text
-labels may also be inserted independently of any plots, using the
-\indcmdt{text}. This has the following syntax:
+In addition to placing plots on the multiplot page, text labels may also be
+inserted independently of any plots, using the \indcmdt{text}. This has the
+following syntax:
 
 \begin{verbatim} 
 text 'This is some text' at x,y
@@ -188,8 +188,8 @@ multiplot environment, to render a single piece of short text instead of a
 graph. One obvious application is to produce equations rendered as graphical
 files for inclusion in talks.\index{presentations}
 
-\label{arrows} Arrows may also be placed on multiplot pages, independently of
-any plots, using the \indcmdt{arrow}, which has syntax:
+Arrows may also be placed on multiplot pages, independently of any plots, using
+the \indcmdt{arrow}, which has syntax:
 
 \begin{verbatim} 
 arrow from x,y to x,y
@@ -200,8 +200,8 @@ undeleted.
 
 The \indcmdt{arrow} may be followed by the \indmodt{with} keyword to specify to
 style of the arrow. The style keywords which are accepted are identical to
-those accepted by the {\tt set arrow} command (see Section~\ref{set_arrow}).
-For example:
+those accepted by the {\tt set arrow} command (see
+Section~\ref{sec:set_arrow}).  For example:
 
 \begin{verbatim} 
 arrow from x1,y1 to x2,y2 \
@@ -234,7 +234,7 @@ eps 'filename' at 3,2 rotate 5
 $(3,2)$\,cm from the origin, rotated counter-clockwise through 5 degrees.
 
 \subsection{Speed Issues}
-\label{set_display}
+\label{sec:set_display}
 
 By default, whenever an item is added to a multiplot, or an existing item moved
 or replotted, the whole multiplot is replotted to show the change. This can be

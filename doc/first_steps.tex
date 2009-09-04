@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -108,11 +108,11 @@ modify its behaviour:\index{command line syntax}
 {\tt -v --version} & Display the current version number of PyXPlot.\\
 {\tt -q --quiet} & Turn off the display of the welcome message on startup. \\
 {\tt -V --verbose} & Display the welcome message on startup, as happens by default. \\
-{\tt -c --colour} & Use colour highlighting\footnote{This will only function on terminals which support colour output.} to display output in green, warning messages in amber, and error messages in red.\footnote{The authors apologise to those members of the population who are red/green colourblind, but draws their attention to the following sentence.} These colours can be changed in the {\tt terminal} section of the configuration file; see Section~\ref{configuration} for more details. \\
+{\tt -c --colour} & Use colour highlighting\footnote{This will only function on terminals which support colour output.} to display output in green, warning messages in amber, and error messages in red.\footnote{The authors apologise to those members of the population who are red/green colourblind, but draws their attention to the following sentence.} These colours can be changed in the {\tt terminal} section of the configuration file; see Section~\ref{sec:configfile_terminal} for more details. \\
 {\tt -m --monochrome} & Do not use colour highlighting, as happens by default. \\
 \end{tabular}
 \caption{A list of the command line options accepted by PyXPlot.}
-\label{command_switches}
+\label{box:command_switches}
 \end{boxout}
 
 \begin{boxout}
@@ -139,11 +139,11 @@ it displays the last $n$ commands, e.g.:
 history 20
 \end{verbatim}
 \caption{The storage of command histories in PyXPlot.}
-\label{command_history}
+\label{box:command_history}
 \end{boxout}
 
 \section{First Plots}
-\label{first_plots}
+\label{sec:first_plots}
 
 The basic workhorse command of PyXPlot is the \indcmdt{plot}, which is used to
 produce all plots. The following simple example would plot the trigonometric
@@ -332,7 +332,7 @@ A plot of the trajectories of rockets fired with different initial velocities.  
 }
 
 \noindent The output produced by these commands is shown in
-Figure~\ref{ex:axislab}.  Note that the labels and title, and indeed all text
+Example~\ref{ex:axislab}.  Note that the labels and title, and indeed all text
 labels in PyXPlot, are rendered using \LaTeX, and so any \LaTeX\ commands can
 be used.  As a caveat, however, this does mean that care needs to be taken to
 escape any of \LaTeX's reserved characters -- i.e.:
@@ -449,7 +449,7 @@ from PyXPlot's default configuration, or from a user-supplied configuration
 file, are shown in green.
 
 \section{Plotting \Datafile s}
-\label{plot_datafiles}
+\label{sec:plot_datafiles}
 
 In the simple example of the previous section, we plotted the first column of a
 \datafile\ against the second. It is also possible to plot any arbitrary column
@@ -484,8 +484,8 @@ drawing their vertical positions from the value of some column $n$ in the
 \datafile, where the value of $n$ is itself read from the second column of the
 \datafile.
 
-Later, in Section~\ref{horizontal_datafiles}, I shall discuss how to plot rows
-of \datafile s against one another, in horizontally arranged \datafile s.
+Later, in Section~\ref{sec:horizontal_datafiles}, I shall discuss how to plot
+rows of \datafile s against one another, in horizontally arranged \datafile s.
 
 It is also possible to plot data from only selected lines within a \datafile.
 When PyXPlot reads a \datafile, it looks for any blank lines in the file. It
@@ -496,7 +496,8 @@ so on.  \index{datafile format}
 When two or more blank lines are found together, the \datafile\ is divided up
 into {\it index blocks}. The first index block is numbered~0, the next~1, and
 so on. Each index block may be made up of a series of data blocks. To clarify
-this, a labelled example \datafile\ is shown in Figure~\ref{sample_datafile}.
+this, a labelled example \datafile\ is shown in
+Figure~\ref{fig:sample_datafile}.
 
 \begin{figure}
 \framebox[\textwidth]{
@@ -518,7 +519,7 @@ this, a labelled example \datafile\ is shown in Figure~\ref{sample_datafile}.
                    & $<$etc$>$ \\
 \end{tabular}}
 \caption{An example PyXPlot \datafile\ -- the \datafile\ is shown in the two left-hand columns, and commands are shown to the right.}
-\label{sample_datafile}
+\label{fig:sample_datafile}
 \end{figure}
 
 By default, when a \datafile\ is plotted, all data blocks in all index blocks are
@@ -534,7 +535,7 @@ plot 'data.dat' index 1
 
 It is also possible to specify which lines and/or data blocks to plot from
 within each index. To do so, the \indmodt{every} modifier is used, which takes
-up to six values, separated by colons:\label{introduce_every}
+up to six values, separated by colons:\label{sec:every}
 
 \begin{verbatim}
 plot 'data.dat' every a:b:c:d:e:f
@@ -566,18 +567,19 @@ data block; the second from the third line onwards within each data block.
 
 A final modifier for selecting which parts of a \datafile\ are plotted is
 {\tt select}, which plots only those \datapoint s which satisfy some given
-criterion. This is described in Section~\ref{select_modifier}.
+criterion. This is described in Section~\ref{sec:select_modifier}.
 
 \section{Directing Where Output Goes}
-\label{directing_output}
+
+\label{sec:directing_output}
 
 By default, when PyXPlot is used interactively, all plots are displayed on the
 screen. It is also possible to produce postscript output, to be read into other
 programs or embedded into \LaTeX\ documents, as well as a variety of other
 graphical formats. The \indcmdt{set terminal}\footnote{Gnuplot users should
-note that the syntax of the {\tt set terminal} command in PyXPlot is
-somewhat different from that which they are used to; see
-Section~\ref{set_terminal2}.} is used to specify the output format that is
+note that the syntax of the {\tt set terminal} command in PyXPlot is somewhat
+different from that which they are used to; see
+Section~\ref{sec:set_terminal}.} is used to specify the output format that is
 required, and the \indcmdt{set output} is used to specify the file to which
 output should be directed. For example,
 
@@ -641,7 +643,8 @@ set terminal x11
 \end{verbatim}
 
 For more details of the \indcmdt{set terminal}, including how to produce gif
-and png images with transparent backgrounds, see Section~\ref{set_terminal2}.
+and png images with transparent backgrounds, see
+Section~\ref{sec:set_terminal}.
 
 We finally note that, after changing terminals, the \indcmdt{replot} is
 especially useful; it repeats the last {\tt plot} command. If any plot items
@@ -719,7 +722,7 @@ plot 'data.dat' with yerrorbars
 \noindent In this case, three columns of data need to be specified: the $x$-
 and $y$-co-ordinates of each \datapoint, plus the size of the vertical errorbar
 on that \datapoint. By default, the first three columns of the \datafile\ are
-used, but once again (see Section~\ref{plot_datafiles}), the {\tt using}
+used, but once again (see Section~\ref{sec:plot_datafiles}), the {\tt using}
 modifier can be used:
 
 \begin{verbatim}
@@ -727,12 +730,12 @@ plot 'data.dat' using 2:3:7 with yerrorbars
 \end{verbatim}
 
 More details of the {\tt errorbars} plot style can be found in
-Section~\ref{errorbars}. Other plot styles supported by PyXPlot are listed in
-Section~\ref{list_of_plotstyles}, and their details can be found in many
+Section~\ref{sec:errorbars}. Other plot styles supported by PyXPlot are listed in
+Section~\ref{sec:list_of_plotstyles}, and their details can be found in many
 \gnuplot\ tutorials. Bar charts will be discussed further in
-Section~\ref{barcharts}.
+Section~\ref{sec:barcharts}.
 
-\label{pointtype_modifier}
+\label{sec:pointtype}
 The modifiers \indpst{pointtype} and \indpst{linetype}, which can be
 abbreviated to {\tt pt} and {\tt lt} respectively, can also be placed after the
 {\tt with} modifier. Each should be followed by an integer.  The former
@@ -752,8 +755,8 @@ used when functions are plotted.
 
 \section{Setting Axis Ranges}
 
-In Section~\ref{first_plots}, the {\tt set xlabel} configuration command was
-previously introduced for placing text labels on axes. In this section, the
+In Section~\ref{sec:first_plots}, the {\tt set xlabel} configuration command
+was previously introduced for placing text labels on axes. In this section, the
 configuration of axes is extended to setting their ranges.
 
 By default, PyXPlot automatically scales axes to some sensible range which
@@ -764,13 +767,13 @@ done directly from the plot command, for example:
 \begin{verbatim}
 plot [-1:1][-2:2] sin(x)
 \end{verbatim}
-\label{plot_ranges}
+\label{sec:plot_ranges}
 
 \noindent The ranges are specified immediately after the \indcmdt{plot}, with
 the syntax {\tt [minimum:maximum]}.\footnote{An alternative valid syntax is to
 replace the colon with the word {\tt to}: {\tt [minimum to maximum]}.} The
 first specified range applies to the $x$-axis, and the second to the
-$y$-axis.\footnote{As will be discussed in Section~\ref{ranges_multiaxes}, if
+$y$-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
 further ranges are specified, they apply to the $x2$-axis, then the $y2$-axis,
 and so forth.} Any of the values can be omitted, for example:
 
@@ -816,7 +819,7 @@ set nologscale y x x2
 \end{verbatim}
 
 Further discussion of the configuration of axes can be found in
-Section~\ref{axis_extensions}.
+Section~\ref{sec:multiple_axes}.
 
 \section{Interactive Help}
 
@@ -840,20 +843,3 @@ help commands help
 
 \noindent which would display help on the {\tt help} command itself.
 
-\section{Differences Between PyXPlot and \gnuplot}
-\label{missing_features}
-
-Because PyXPlot is still work in progress, it does not implement all of the
-features of \gnuplot. It currently does not implement any three-dimensional or
-surface plotting -- i.e.\ the \indcmdt{splot} of \gnuplot. It also does not
-support the plotting of parametric functions.
-
-Some of \gnuplot's features have been significantly re-worked to improve upon
-their operation. The prime example is \gnuplot's multiplot mode, which allows
-multiple graphs to be placed side-by-side. While we retain a similar syntax, we
-have made it significantly more flexible. The use of dual axes is another
-example: PyXPlot now places no limit on the number of parallel horizontal and
-vertical axes which may be drawn on a graph.
-
-These extensions to \gnuplot's interface are described in detail in the
-following chapters.

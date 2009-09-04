@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -27,13 +27,13 @@
 In this chapter, we explore the various options of the {\tt plot} command.
 
 \section{Formatting and Terminals}
-\label{set_terminal2}
+\label{sec:set_terminal}
 
 In this section, we describe the commands used to control the format of the
 graphic output produced by PyXPlot. This continues the discussion from
-Section~\ref{directing_output} of how the \indcmdt{set terminal} can be used to
-produce plots in various graphic formats, such as postscript files, jpeg
-images, etc.
+Section~\ref{sec:directing_output} of how the \indcmdt{set terminal} can be
+used to produce plots in various graphic formats, such as postscript files,
+jpeg images, etc.
 
 Many of these {\it terminals} -- the word we use to describe an output format
 -- accept additional parameters which configure the exact appearance of the
@@ -102,7 +102,7 @@ The following table lists the effects which each of these settings has:
 {\tt monochrome} & Opposite to the above; all datasets will be plotted in black.\index{monochrome output}\\
 {\tt portrait} & Sets plots to be displayed in upright (normal) orientation. {\bf [default]}\index{portrait orientation}\\
 {\tt landscape} & Opposite of the above; produces side-ways plots. Not very useful when displayed on the screen, but you fit more on a sheet of paper that way around.\index{landscape orientation}\\
-{\tt invert} & Modifier for the gif, png and jpg terminals; produces output with inverted colours.\footnote{This terminal setting is useful for producing plots to embed in talk slideshows, which often contain bright text on a dark background. It only works when producing bitmapped output, though a similar effect can be achieved in postscript using the {\tt set textcolour} and {\tt set axescolour} commands (see Section~\ref{set_colours}).}\index{colours!inverting}\\
+{\tt invert} & Modifier for the gif, png and jpg terminals; produces output with inverted colours.\footnote{This terminal setting is useful for producing plots to embed in talk slideshows, which often contain bright text on a dark background. It only works when producing bitmapped output, though a similar effect can be achieved in postscript using the {\tt set textcolour} and {\tt set axescolour} commands (see Section~\ref{sec:set_colours}).}\index{colours!inverting}\\
 {\tt noinvert} & Modifier for the gif, png and jpg terminals; opposite to the above. {\bf [default]}\\
 {\tt transparent} & Modifier for the gif and png terminals; produces output with a transparent background.\index{transparent terminal}\index{gif output!transparency}\index{png output!transparency}\\
 {\tt solid} & Modifier for the gif and png terminals; opposite to the above. {\bf [default]}\\
@@ -113,7 +113,6 @@ above\\
 size.\index{enlarging output}\\
 {\tt noenlarge} & Do not enlarge output; opposite to the above. {\bf [default]}\\
 \end{longtable}
-\label{terminals}
 
 The default terminal is normally {\tt x11\_singlewindow}, matching
 approximately the behaviour of \gnuplot. However, there is an exception to this.
@@ -140,12 +139,12 @@ quality, since the plot has to be sampled into a bitmapped graphic format.  By
 default, this sampling is performed at $300\,\mathrm{dpi}$, though this may be
 changed using the command {\tt set dpi <value>}. Alternatively, it may be
 changed using the {\tt DPI} option in the {\tt settings} section of a
-configuration file (see Section~\ref{configuration}).\indcmd{set dpi}
+configuration file (see Chapter~\ref{ch:configuration}).\indcmd{set dpi}
 \index{bitmap output!resolution}\index{image resolution}
 
 \section{Backing Up Over-Written Files}
 
-\index{overwriting files}\index{backup files}\label{filebackup}
+\index{overwriting files}\index{backup files}\label{sec:file_backup}
 
 By default, when graphical output is sent to a file -- i.e.\ a postscript file or
 a bitmap image -- pre-existing files are overwritten if their filenames match
@@ -191,7 +190,7 @@ between \datapoint s, and {\tt points}, which does not connect \datapoint s.
 \subsection{Lines and Points}
 
 The following are PyXPlot's most basic plot styles\footnote{This is not an
-exhaustive list; see Section~\ref{list_of_plotstyles}.}:
+exhaustive list; see Section~\ref{sec:list_of_plotstyles}.}:
 \begin{itemize}
 \item \indpst{dots} -- places a small dot at each datum.
 \item \indpst{points} -- places a marker symbol at each datum.
@@ -233,9 +232,9 @@ here, and in the {\tt plot} command, the abbreviation {\tt plw} is valid.
 
 PyXPlot can plot \datapoint s using the standard upper- and lower-limit
 symbols.\index{lower-limit datapoints}\index{upper-limit datapoints} No special
-syntax is required for this; these symbols are pointtypes\footnote{The
-{\tt pointtype} modifier was introduced in
-Section~\ref{pointtype_modifier}.} 12 and 13 respectively, obtained as follows:
+syntax is required for this; these symbols are pointtypes\footnote{The {\tt
+pointtype} modifier was introduced in Section~\ref{sec:pointtype}.} 12 and 13
+respectively, obtained as follows:
 
 \begin{verbatim}
 plot 'upperlimits.dat' with points pointtype 12
@@ -243,7 +242,6 @@ plot 'lowerlimits.dat' with points pointtype 13
 \end{verbatim}
 
 \subsection{Drawing Arrows}
-\label{arrows_plot_style} 
 
 Data may be represented as arrows connecting two points on a plot by using the
 \indpst{arrows} plot style.  This takes four columns of data -- $x_1$, $y_1$,
@@ -265,7 +263,7 @@ plot style in Version~4 of \gnuplot.}
 
 \subsection{Error Bars}
 
-\index{errorbars}\label{errorbars}
+\index{errorbars}\label{sec:errorbars}
 In \gnuplot, when one uses errorbars, one can specify either the size of the
 errorbar, or the minimum to maximum range of the errorbar. Both of these usages
 share a common syntax, and \gnuplot's behaviour depends upon the number of
@@ -346,7 +344,7 @@ the range of the $x$-axis.\footnote{We're aware that this is not good. Expect
 it to change in a future release.}
 
 \section{Barcharts and Histograms}
-\label{barcharts}\index{bar charts}
+\label{sec:barcharts}\index{bar charts}
 \index{steps plot style@{\tt steps} plot style}
 \index{fsteps plot style@{\tt fsteps} plot style}
 \index{histeps plot style@{\tt histeps} plot style}
@@ -478,7 +476,7 @@ rather like the {\tt boxes} plot style; the interfaces between the steps occur
 at the horizontal midpoints between the \datapoint s.
 
 \section{Choosing which Data to Plot}
-\label{select_modifier} 
+\label{sec:select_modifier} 
 As well as the {\tt plot} command's {\tt index}, {\tt using} and {\tt every}
 modifiers, which allow users to plot subsets of data from \datafile s, it also
 has a further modifier, \indmodt{select}. This can be used to plot only those
@@ -512,9 +510,9 @@ plot sin(x) select ($1>0) discontinuous
 
 \index{horizontal datafiles}\index{datafiles!horizontal}\index{using rows
 modifier@{\tt using rows} modifier}\index{using columns modifier@{\tt using
-columns} modifier}\label{horizontal_datafiles} The command syntax for plotting
+columns} modifier}\label{sec:horizontal_datafiles} The command syntax for plotting
 columns of \datafile s against one another was previously described in
-Section~\ref{plot_datafiles}. PyXPlot also allows you to plot {\it rows} of
+Section~\ref{sec:plot_datafiles}. PyXPlot also allows you to plot {\it rows} of
 data against one another in horizontally-arranged \datafile s.  For this, the
 keyword \indkeyt{rows} is placed after the {\tt using} modifier:
 
@@ -531,17 +529,16 @@ plot 'data.dat' index 1 using columns 1:2
 \end{verbatim}
 
 When plotting horizontally-arranged \datafile s, the meanings of the {\tt
-index} and {\tt every} modifiers (see Section~\ref{plot_datafiles}) are altered
-slightly. The former continues to refer to vertically-displaced blocks of data
-separated by two blank lines.  Blocks, as referenced in the {\tt every}
+index} and {\tt every} modifiers (see Section~\ref{sec:plot_datafiles}) are
+altered slightly. The former continues to refer to vertically-displaced blocks
+of data separated by two blank lines.  Blocks, as referenced in the {\tt every}
 modifier, likewise continue to refer to vertically-displaced blocks of
 \datapoint s, separated by single blank lines. The row numbers passed to the
 {\tt using} modifier are counted from the top of the current block.
 
 However, the line-numbers specified in the \indmodt{every} modifier -- i.e.\
-variables $a$, $c$ and $e$ in the system introduced in
-Section~\ref{introduce_every} -- now refer to horizontal columns, rather than
-lines. For example:
+variables $a$, $c$ and $e$ in the system introduced in Section~\ref{sec:every}
+-- now refer to horizontal columns, rather than lines. For example:
 
 \begin{verbatim}
 plot 'data.dat' using rows 1:2 every 2::3::9
@@ -567,7 +564,7 @@ data to a file in order that it can be perused at a later date.
 \section{Including data within PyXPlot command scripts}
 
 \section{Configuring Axes}
-\label{axis_extensions}\label{ranges_multiaxes}\label{multiple_axes}
+\label{sec:multiple_axes}
 
 By default, plots have only one $x$-axis and one $y$-axis. Further parallel
 axes can be added and configured via statements such as:\index{axes
@@ -611,9 +608,9 @@ plot [:][:][:][:][-2:2] sin(x) axes x3y1
 apply to the $x$- and $y$-axes. The next pair apply to the $x2$- and $y2$-axes,
 and so forth.
 
-\index{axes!removal}\index{removing axes}\index{hidden
-axes}\label{axis_removal} Having made axes with the above commands, they may
-subsequently be removed using the \indcmdt{unset axis} as follows:
+\index{axes!removal}\index{removing axes}\index{hidden axes} Having made axes
+with the above commands, they may subsequently be removed using the
+\indcmdt{unset axis} as follows:
 
 \begin{verbatim}
 unset axis x3
@@ -641,10 +638,10 @@ x3} command if it was not desired.
 A subtly different task is that of removing labels from axes, or setting axes
 not to display. To achieve this, a number of special axis labels are used.
 Labelling an axis \indkeyt{nolabels} has the effect that no title or numerical
-labels are placed upon it. Labelling it\label{nolabelstics}
-\indkeyt{nolabelstics} is stronger still; this removes all tick marks from it
-as well (similar in effect to the {\tt set noxtics} command; see below).
-Finally, labelling it \indkeyt{invisible} makes an axis completely invisible.
+labels are placed upon it. Labelling it \indkeyt{nolabelstics} is stronger
+still; this removes all tick marks from it as well (similar in effect to the
+{\tt set noxtics} command; see below).  Finally, labelling it
+\indkeyt{invisible} makes an axis completely invisible.
 
 Labels may be placed on such axes, by suffixing the magic keywords above with a
 colon and the desired title. For example:
@@ -656,11 +653,11 @@ set xlabel 'nolabels:Time'
 \noindent would produce an $x$-axis with no numeric labels, but a label of
 `Time'.
 
-In the unlikely event of wanting
-to label a normal axis with one of these magic words\index{axes!reserved
-labels}\index{magic axis labels}, this may be achieved by prefixing the magic
-word with a space. There is one further magic axis label, {\tt linkaxis},
-which will be described in Section~\ref{linked_axes}.
+In the unlikely event of wanting to label a normal axis with one of these magic
+words\index{axes!reserved labels}\index{magic axis labels}, this may be
+achieved by prefixing the magic word with a space. There is one further magic
+axis label, {\tt linkaxis}, which will be described in
+Section~\ref{sec:linked_axes}.
 
 The ticks of axes can be configured to point either inward, towards the plot,
 as is the default, or outward towards the axis labels, or in both directions.
@@ -818,7 +815,7 @@ command, the modifier {\tt colour}, which can be abbreviated to
 `{\tt c}', can be used to manually select the colour in which each dataset
 is to be plotted. It should be followed either by an integer, to set a colour
 from the present palette, or by a colour name. A list of valid colour names is
-given in Section~\ref{colour_names}. For example:
+given in Section~\ref{sec:colour_names}. For example:
 
 \begin{verbatim}
 plot sin(x) with c 5
@@ -839,8 +836,8 @@ set palette BrickRed, LimeGreen, CadetBlue
 \end{verbatim}
 
 \noindent Another way of setting the palette, in a configuration file, is
-described in Section~\ref{config_files}; a list of valid colour names is given
-in Section~\ref{colour_names}.
+described in Chapter~\ref{ch:configuration}; a list of valid colour names is
+given in Section~\ref{sec:colour_names}.
 
 \section{Plotting Many Files at Once}
 
@@ -874,7 +871,7 @@ The {\tt *} and {\tt ?} wildcards can be used in a similar fashion in the
 
 \subsection{Arrows}
 
-\label{set_arrow}\index{arrows} Arrows may be placed on plots using the
+\label{sec:set_arrow}\index{arrows} Arrows may be placed on plots using the
 \indcmdt{set arrow}. A simple example would be:
 
 \begin{verbatim}
@@ -936,7 +933,7 @@ In addition to these four options, \indcot{axis{\it n}} specifies that the
 position is to be measured along the $n\,$th $x$- or $y$-axis -- for example,
 `{\tt axis3}'.\indcmd{set arrow} This allows the graph to be measured with
 reference to any arbitrary axis on plots which make use of large numbers of
-parallel axes (see Section~\ref{multiple_axes}).
+parallel axes (see Section~\ref{sec:multiple_axes}).
 
 \subsection{Text Labels}
 
@@ -985,7 +982,7 @@ text that the {\tt set fontsize} command does. It is especially useful when
 producing plots to be embedded in presentation slideshows, where bright text on
 a dark background may be desired. It should be followed either by an integer,
 to set a colour from the present palette, or by a colour name. A list of the
-recognised colour names can be found in Section~\ref{colour_names}.  For
+recognised colour names can be found in Section~\ref{sec:colour_names}.  For
 example:
 
 \begin{verbatim}
@@ -1005,7 +1002,8 @@ set texthalign right
 set textvalign top
 \end{verbatim}
 
-An example of a somewhat unconventional plot containing many labels and lines can be found in Figure~\ref{fig:ex_map}.
+An example of a somewhat unconventional plot containing many labels and lines
+can be found in Figure~\ref{fig:ex_map}.
 
 \begin{figure}
 \begin{center}
@@ -1039,8 +1037,8 @@ unset nogrid
 
 \noindent By default, gridlines are drawn from the major and minor ticks of the
 default $x$- and $y$-axes (which are the first $x$- and $y$-axes unless set
-otherwise in the configuration file; see Chapter~\ref{configuration}). However,
-the axes which should be used may be specified after the \indcmdt{set
+otherwise in the configuration file; see Chapter~\ref{ch:configuration}).
+However, the axes which should be used may be specified after the \indcmdt{set
 grid}\index{grid}:
 
 \begin{verbatim}
@@ -1069,10 +1067,10 @@ minor axis ticks respectively. An example would be:
 set gridmincolour blue
 \end{verbatim}
 
-\noindent Any of the colour names listed in Section~\ref{colour_names} can be
-used.
+\noindent Any of the colour names listed in Section~\ref{sec:colour_names} can
+be used.
 
 A related command\index{axes!colour}\index{colours!axes} is \indcmdts{set
 axescolour}, which has a syntax similar to that above, and sets the colour of
-the graph's axes.\label{set_colours}
+the graph's axes.\label{sec:set_colours}
 

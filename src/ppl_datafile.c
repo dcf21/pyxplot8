@@ -584,6 +584,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   // Init
   if (DEBUG) { sprintf(temp_err_string, "Opening datafile '%s'.", filename); ppl_log(temp_err_string); }
   lineptr = linebuffer;
+  if (Ncolumns != 2) OneColumnInput=0; // Only have special handling for one-column datafiles when looking for two columns
 
   // Read items out of Using List into an array of strings
   UsingLen=0; listiter = ListIterateInit(UsingList);

@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -252,7 +252,7 @@ fit f(x) 'data.dat' index 1 using 2:3 via a,b
 This is useful for producing best-fit lines and also has applications in
 estimating the gradients of datasets.  The syntax is essentially identical to
 that used by \gnuplot, though a few points, outlined in
-Section~\ref{fit_command}, are worth noting.
+Section~\ref{sec:fit_command}, are worth noting.
 
 \section{help}\indcmd{help}
 
@@ -448,10 +448,10 @@ this syntax would be:
 plot 'data.dat' with points
 \end{verbatim}
 
-\noindent which would plot the file called {\tt data.dat}.  Section
-\ref{plot_datafiles} should be studied for further details of the format that is
-expected of input \datafile s, and how PyXPlot may be directed to plot only
-certain portions of \datafile s.
+\noindent which would plot the file called {\tt data.dat}.
+Section~\ref{sec:plot_datafiles} should be studied for further details of the
+format that is expected of input \datafile s, and how PyXPlot may be directed
+to plot only certain portions of \datafile s.
 
 Multiple datasets can be plotted on a single graph by listing them with commas
 separating them:
@@ -480,7 +480,7 @@ modifier {\tt with}, with the following syntax:
 plot sin(x) with points
 \end{verbatim}
 
-\label{list_of_plotstyles}
+\label{sec:list_of_plotstyles}
 The following plot styles are recognised: {\tt lines}, {\tt points}, {\tt
 linespoints}, {\tt dots}, {\tt boxes}, {\tt wboxes}, {\tt impulses}, {\tt
 steps}, {\tt histeps}, {\tt fsteps}, {\tt xerrorbars}, {\tt yerrorbars}, {\tt
@@ -663,7 +663,7 @@ keywords.
 
 The reader should also see the {\tt show} command, which can be used to display
 the current values of settings, and the {\tt unset} command, which returns
-settings to their default values. Section~\ref{config_files} describes how
+settings to their default values. Chapter~\ref{ch:configuration} describes how
 commonly used settings can be saved into a configuration file.
 
 \subsection{arrow}\indcmd{set arrow}
@@ -756,7 +756,7 @@ set axescolour blue
 \end{verbatim}
 
 \noindent changes the axes to be blue. Any of the recognised colour names listed in
-Section~\ref{colour_names} can be used.
+Section~\ref{sec:colour_names} can be used.
  
 
 \subsection{axis}\indcmd{set axis}
@@ -1039,7 +1039,7 @@ set gridmajcolour purple
 \end{verbatim}
 
 \noindent would cause the major grid lines to be drawn in purple. Any of the recognised
-colour names listed in Section~\ref{colour_names} can be used.
+colour names listed in Section~\ref{sec:colour_names} can be used.
 
 See also the {\tt set gridmincolour} command.
 
@@ -1059,7 +1059,7 @@ set gridmincolour purple
 \end{verbatim}
 
 \noindent would cause the minor grid lines to be drawn in purple. Any of the recognised
-colour names listed in Section~\ref{colour_names} can be used.
+colour names listed in Section~\ref{sec:colour_names} can be used.
 
 See also the {\tt set gridmajcolour} command.
 
@@ -1294,8 +1294,8 @@ set multiplot
 \end{verbatim}
 
 \noindent causes PyXPlot to enter multiplot mode, which allows many graphs to
-be plotted together and displayed side-by-side. See Section~\ref{multiplot} for
-a full discussion of multiplot mode.
+be plotted together and displayed side-by-side. See Section~\ref{sec:multiplot}
+for a full discussion of multiplot mode.
 
 \subsection{mxtics}\indcmd{set mxtics}
 
@@ -1543,7 +1543,7 @@ plot sin(x), cos(x), tan(x), exp(x)
 \noindent the first function would be plotted in red, the second in green, and the third
 in blue. Upon reaching the fourth, the palette would cycle back to red.
 
-Any of the recognised colour names listed in Section~\ref{colour_names} can be used.
+Any of the recognised colour names listed in Section~\ref{sec:colour_names} can be used.
 
 \subsection{papersize}\indcmd{set papersize}
 
@@ -1562,7 +1562,7 @@ set papersize letter
 set papersize 200,100
 \end{verbatim}
 
-A list of recognised papersizes can be found in Figure~\ref{paper_sizes}.
+A list of recognised papersizes can be found in Appendix~\ref{ch:paper_sizes}.
 
 \subsection{pointlinewidth}\indcmd{set pointlinewidth}
 
@@ -1905,8 +1905,8 @@ set textcolour red
 
 \noindent causes all text labels, including the labels on graph axes and
 legends, etc. to be rendered in red. Any of the recognised colour names listed
-in Section~\ref{colour_names} can be used, as can a number which indexes into
-the current palette.
+in Section~\ref{sec:colour_names} can be used, as can a number which indexes
+into the current palette.
 
 \subsection{texthalign}\indcmd{set texthalign}
 

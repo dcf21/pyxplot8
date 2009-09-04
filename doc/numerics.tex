@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -95,7 +95,7 @@ will be repeated in a cyclic fashion; e.g. in the example above the single
 supplied format is used for both columns.
 
 \section{Function Fitting}
-\label{fit_command}
+\label{sec:fit_command}
 
 It is possible to fit functional forms to \datapoint s read from files by using
 the \indcmdt{fit}. A simple example might be:\footnote{In \gnuplot, this
@@ -113,9 +113,9 @@ process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
 The modifiers \indmodt{index}, \indmodt{every} and
 \indmodt{using}\indmod{select} have the same meanings here as in the plot
 command.\footnote{The {\tt select} modifier, to be introduced in
-Section~\ref{select_modifier} can also be used.}  For example, given the
-following data file which contains a sampled square wave, entitled
-{\tt square.dat}:
+Section~\ref{sec:select_modifier} can also be used.}  For example, given the
+following data file which contains a sampled square wave, entitled {\tt
+square.dat}:
 
 \begin{verbatim}
     0.314159          1
@@ -131,7 +131,7 @@ following data file which contains a sampled square wave, entitled
 \end{verbatim}
 
 \noindent the following script fits a truncated Fourier series to it.  The
-output can be found in Figure~\ref{ex:fitting}.
+output can be found in Example~\ref{ex:fitting}.
 
 \begin{verbatim}
 f(x) = a1*sin(x) + a3*sin(3*x) + a5*sin(5*x)
@@ -151,14 +151,14 @@ an explanation).\\
 
 This is useful for producing best-fit lines\index{best fit
 lines}\footnote{Another way of producing best-fit lines is to use a cubic
-spline; more details are given in Section~\ref{spline_command}}, and also has
+spline; more details are given in Section~\ref{sec:spline_command}}, and also has
 applications for estimating the gradients of datasets.  The syntax is
 essentially identical to that used by \gnuplot, though a few points are worth
 noting:
 
 \begin{itemize}
 \item When fitting a function of $n$ variables, at least $n+1$ columns (or
-rows -- see Section~\ref{horizontal_datafiles}) must be specified after the
+rows -- see Section~\ref{sec:horizontal_datafiles}) must be specified after the
 {\tt using} modifier. By default, the first $n+1$ columns are used. These
 correspond to the values of each of the $n$ inputs to the function, plus
 finally the value which the output from the function is aiming to match.
@@ -196,12 +196,12 @@ fit f() 'data.dat' via a
 
 \item A series of ranges may be specified after the {\tt fit} command, using
 the same syntax as in the {\tt plot} command, as described in
-Section~\ref{plot_ranges}. If ranges are specified then only \datapoint s falling
-within these ranges are used in the fitting process; the ranges refer to each
-of the $n$ variables of the fitted function in order.
+Section~\ref{sec:plot_ranges}. If ranges are specified then only \datapoint s
+falling within these ranges are used in the fitting process; the ranges refer
+to each of the $n$ variables of the fitted function in order.
 
 \item For those interested in the mathematical details, the workings of the
-{\tt fit} command is discussed in more detail in Appendix~\ref{fit_math}.
+{\tt fit} command is discussed in more detail in Appendix~\ref{ch:fit_maths}.
 
 \end{itemize}
 
@@ -212,7 +212,7 @@ both human-readable and machine-readable formats, allowing a more complete
 assessment of the probability distribution of the parameters.
 
 \section{Datafile Interpolation}
-\label{spline_command}
+\label{sec:spline_command}
 \index{best fit lines}
 
 The \indcmdt{interpolate} can be used to generate a special function with

@@ -410,6 +410,7 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
   value     *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX], *outval[USING_ITEMS_MAX];
   value     *DummyVar, DummyTemp;
   double     val;
+  unsigned char InRange;
 
   List         *RangeList, *VarList;
   ListIterator *ListIter;
@@ -453,6 +454,7 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
    if (ListIter == NULL) { min[j]=NULL; max[j]=NULL; }
    else
     {
+     TempDict = (Dict *)ListIter->data;
      DictLookup(TempDict,"min",NULL,(void **)(min+j));
      DictLookup(TempDict,"max",NULL,(void **)(max+j));
      if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified for fitting variable %ld (%s) in the 'foreach ... in datafile' construct have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
@@ -475,26 +477,29 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
      if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
     }
 
-  // Copy physical dimensions from data file to output variables
-  for (k=0; k<i; k++) ppl_units_DimCpy(outval[k] , data->FirstEntries+j);
-
   // Begin looping over input data
   blk = data->first;
   while (blk != NULL)
    {
     for (j=0; j<blk->BlockPosition; j++)
      {
+      InRange=1;
       for (k=0; k<i; k++)
        {
         val = blk->data_real[k + i*j];
-        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) continue; // Check that value is within range
+        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
+        ppl_units_zero(outval[k]);
+        ppl_units_DimCpy(outval[k] , data->FirstEntries+k); // Copy physical dimensions from data file to output variables
         outval[k]->real = val;
         outval[k]->imag = 0.0;
         outval[k]->FlagComplex = 0;
        }
-     *chainiter = *chain;
-     *status = loop_execute(chainiter, IterLevel);
-     if (*status) break;
+      if (InRange) // Only run looped script if this data point is within supplied range
+       {
+       *chainiter = *chain;
+       *status = loop_execute(chainiter, IterLevel);
+       if (*status) break;
+      }
      }
     blk=blk->next;
     if (*status) break;

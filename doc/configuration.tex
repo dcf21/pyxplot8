@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -26,8 +26,6 @@
 
 \section{Overview}
 
-\label{configuration}
-
 As is the case in \gnuplot, PyXPlot can be configured using the \indcmdt{set}
 -- for example:
 
@@ -41,7 +39,6 @@ names, and once again, typing {\tt unset} on its own gives a list of them. The
 \indcmdt{show} can be used to display the values of settings.
 
 \section{Configuration Files}
-\label{config_files}
 
 PyXPlot can also be configured by means of a configuration file, with filename
 {\tt .pyxplotrc}, which is scanned once upon startup. This file may be
@@ -64,10 +61,10 @@ any given file:
 \begin{itemize}
 \item {\tt settings} -- contains parameters similar to those which can be set
 with the {\tt set} command. A complete list is given in
-Section~\ref{configfile_settings} below.
+Section~\ref{sec:configfile_settings} below.
 \item {\tt terminal} -- contains parameters for altering the behaviour and
 appearance of PyXPlot's interactive terminal. A complete list is given in
-Section~\ref{configfile_terminal}.
+Section~\ref{sec:configfile_terminal}.
 \item {\tt variables} -- contains variable definitions. Any variables defined
 in this section will be predefined in the PyXPlot mathematical environment upon
 startup.
@@ -76,7 +73,7 @@ startup.
 to a comma-separated list of the sequence of colours in the palette used to
 plot datasets. The first will be called colour 1 in PyXPlot, the second colour
 2, etc. A list of recognised colour names is given in
-Section~\ref{colour_names}.
+Section~\ref{sec:colour_names}.
 \item {\tt latex} -- contains a variable `{\tt preamble}', which is prefixed to
 the beginning of all \LaTeX\ text items, before the {\tt \textbackslash
 begin\{document\}} statement. It can be used to define custom \LaTeX\ macros,
@@ -161,7 +158,7 @@ PREAMBLE=
 \end{verbatim}
 
 \section{Configuration Options: {\tt settings} section}
-\label{configfile_settings}
+\label{sec:configfile_settings}
 
 The following table provides a brief description of the function of each of the
 parameters in the {\tt settings} section of the above configuration file,
@@ -190,7 +187,7 @@ with a list of possible values for each:
 
                {\bf Analogous set command:} \indcmdts{set backup}
 
-               When this switch is set to `{\tt ON}', and plot output is being directed to file, attempts to write output over existing files cause a copy of the existing file to be preserved, with a tilde after its old filename (see Section~\ref{filebackup}).
+               When this switch is set to `{\tt ON}', and plot output is being directed to file, attempts to write output over existing files cause a copy of the existing file to be preserved, with a tilde after its old filename (see Section~\ref{sec:file_backup}).
                \\
 {\tt BAR}     & {\bf Possible values:}  Any floating-point number.
 
@@ -238,7 +235,7 @@ with a list of possible values for each:
 
                {\bf Analogous set command:} \indcmdts{set display}
 
-               When set to `{\tt ON}', no output is produced until the \indcmdt{set display} is issued. This is useful for speeding up scripts which produce large multiplots; see Section~\ref{set_display} for more details.
+               When set to `{\tt ON}', no output is produced until the \indcmdt{set display} is issued. This is useful for speeding up scripts which produce large multiplots; see Section~\ref{sec:set_display} for more details.
                \\
 {\tt DPI} & {\bf Possible values:} Any floating-point number.
 
@@ -360,11 +357,11 @@ with a list of possible values for each:
 
                Sets the height of the papersize for postscript output in millimetres.
                \\
-{\tt PAPER\_NAME} & {\bf Possible values:} A string matching any of the papersizes listed in Table~\ref{paper_sizes}.
+{\tt PAPER\_NAME} & {\bf Possible values:} A string matching any of the papersizes listed in Chapter~\ref{ch:paper_sizes}.
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
-               Sets the papersize for postscript output to one of the pre-defined papersizes listed in Table~\ref{paper_sizes}.
+               Sets the papersize for postscript output to one of the pre-defined papersizes listed in Chapter~\ref{ch:paper_sizes}.
                \\
 {\tt PAPER\_WIDTH} & {\bf Possible values:} Any floating-point number.
 
@@ -468,7 +465,7 @@ with a list of possible values for each:
 \end{longtable}
 
 \section{Configuration Options: {\tt terminal} section}
-\label{configfile_terminal}
+\label{sec:configfile_terminal}
 
 The following table provides a brief description of the function of each of the
 parameters in the {\tt terminal} section of the above configuration file,
@@ -507,12 +504,18 @@ with a list of possible values for each:
                \\
 \end{longtable}
 
-The colours recognised by the {\tt COLOUR\_XXX} configuration options above are: {\tt Red}, {\tt Green}, {\tt Brown}, {\tt Blue}, {\tt Purple}, {\tt Magenta}, {\tt Cyan}, {\tt White}, {\tt Normal}. The final option produces the default foreground colour of your terminal.
+The colours recognised by the {\tt COLOUR\_XXX} configuration options above
+are: {\tt Red}, {\tt Green}, {\tt Brown}, {\tt Blue}, {\tt Purple}, {\tt
+Magenta}, {\tt Cyan}, {\tt White}, {\tt Normal}. The final option produces the
+default foreground colour of your terminal.
 
 \section{Recognised Colour Names}
-\label{colour_names}
+\label{sec:colour_names}
 
-The following is a complete list of the colour names which PyXPlot recognises in the {\tt set textcolour}, {\tt set axescolour} commands, and in the {\tt colours} section of its configuration file. It should be noted that they are case-insensitive.
+The following is a complete list of the colour names which PyXPlot recognises
+in the {\tt set textcolour}, {\tt set axescolour} commands, and in the {\tt
+colours} section of its configuration file. It should be noted that they are
+case-insensitive.
 
 \vspace{5mm}\noindent
 \index{configuration file!colours}\index{colours!configuration file}
@@ -532,4 +535,7 @@ grey05, grey10, grey15, grey20, grey25, grey30, grey35, grey40, grey45, grey50, 
 \vspace{5mm}\noindent
 The US spelling of grey, ``gray'', is also accepted.
 
-For a colour chart, the reader is referred to Appendix~\ref{colour_charts}, or to Appendix~B of the {\it PyX Reference Manual}.\footnote{\url{http://pyx.sourceforge.net/manual/colorname.html}}
+For a colour chart, the reader is referred to Appendix~\ref{ch:colour_charts},
+or to Appendix~B of the {\it PyX Reference
+Manual}.\footnote{\url{http://pyx.sourceforge.net/manual/colorname.html}}
+

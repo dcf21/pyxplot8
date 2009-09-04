@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-8 Dominic Ford <coders@pyxplot.org.uk>
-%               2008   Ross Church
+% Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+%               2009   Ross Church
 %
 % $Id$
 %
@@ -142,7 +142,7 @@ images/background.jpg}.
 \item We need a simple PyXPlot script to set up a slide template. Paste the
 following text into the file {\tt scripts/slide\_init}; there's a bit of black
 magic in the {\tt arrow} commands in this script which it isn't necessary to
-understand at this stage:\label{presentation_magic}
+understand at this stage:\label{stp:presentation_magic}
 \begin{verbatim}
 scale  = 1.25        ; inch = 2.54 # cm
 width  = 10.24*scale ; height =  7.68*scale
@@ -172,7 +172,7 @@ pyxplot_watch --verbose scripts/0\*
 \item Paste the following text into the file {\tt make\_slides}. This is a
 simple shell script which crops your slides to measure exactly
 $1024\times768$\,pixels, cropping any text boxes which may go off the side of
-them. It links up with the black magic of Step~\ref{presentation_magic}:
+them. It links up with the black magic of Step~\ref{stp:presentation_magic}:
 \begin{verbatim}
 #!/bin/bash
 mkdir -p slides_cropped
@@ -285,9 +285,9 @@ do so by varying the {\tt scale} parameter in the file {\tt
 scripts/slide\_init}.
 \end{enumerate}
 
-The three slides which we have designed can been seen in
-Figures~\ref{presentation_slide1}, \ref{presentation_slide2} and
-\ref{presentation_slide3}.
+%The three slides which we have designed can been seen in
+%Figures~\ref{fig:presentation_slide1}, \ref{fig:presentation_slide2} and
+%\ref{fig:presentation_slide3}.
 
 \subsection{Delivering your Talk}
 
