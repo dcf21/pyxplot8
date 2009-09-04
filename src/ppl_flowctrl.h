@@ -45,5 +45,7 @@ int directive_foreach(Dict *command, int IterLevel);
 int directive_if     (Dict *command, int IterLevel);
 int directive_while  (Dict *command, int IterLevel);
 
+void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *chain, cmd_chain *chainiter, int IterLevel, int *status);
+
 #endif
 

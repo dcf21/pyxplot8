@@ -24,7 +24,7 @@
 #ifndef _LT_MEMORY_H
 #define _LT_MEMORY_H 1
 
-void  lt_MemoryInit            ( void(*mem_error_handler)(char *) , void(*mem_log_handler)(char *) );
+void  lt_MemoryInit            ( void(*mem_error_handler)(int, char *) , void(*mem_log_handler)(char *) );
 void  lt_MemoryStop            ();
 int   lt_DescendIntoNewContext ();
 int   lt_AscendOutOfContext    (int context);

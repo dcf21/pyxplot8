@@ -32,6 +32,8 @@
 
 #define MAX_DATACOLS 16384
 
+#define DATAFILE_NERRS 20
+
 // The approximate number of bytes we seek to put in each data block
 
 #define DATAFILE_DATABLOCK_BYTES 524288

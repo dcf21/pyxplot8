@@ -24,13 +24,22 @@
 #ifndef _PPL_ERROR_H
 #define _PPL_ERROR_H 1
 
+#define ERR_INTERNAL 100
+#define ERR_GENERAL  101
+#define ERR_SYNTAX   102
+#define ERR_NUMERIC  103
+#define ERR_FILE     104
+#define ERR_MEMORY   105
+#define ERR_STACKED  106
+#define ERR_PREFORMED 107
+
 extern char ppl_error_source[];
 extern char temp_err_string[];
 
 void ppl_error_setstreaminfo(int linenumber,char *filename);
-void ppl_error(char *msg);
+void ppl_error(int ErrType, char *msg);
 void ppl_fatal(char *file, int line, char *msg);
-void ppl_warning(char *msg);
+void ppl_warning(int ErrType, char *msg);
 void ppl_report(char *msg);
 void ppl_log(char *msg);
 

@@ -404,7 +404,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
       for (i=pos+1,j=0;((isalnum(in[i]))||(in[i]=='_')); i++,j++) temp_err_string[j]=in[i];
       temp_err_string[j++]='\0';
       *errpos=0;
-      sprintf(errtext, "Error: Request for unrecognised column of datafile '$%s'.", temp_err_string);
+      sprintf(errtext, "Request for unrecognised column of datafile '$%s'.", temp_err_string);
       return;
      }
     while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
@@ -419,7 +419,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
       pos++;
       for (k=0; k<NArgs; k++) // Now collect together numeric arguments
        {
-        if (k+2 >= ALGEBRA_MAXITEMS) { *errpos = pos; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+        if (k+2 >= ALGEBRA_MAXITEMS) { *errpos = pos; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
         while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
         if (in[pos]==')') { *errpos = pos; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
         j=-1;
@@ -760,7 +760,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
       for (k=0; k<NArgs; k++) // Now collect together numeric arguments
        {
-        if (bufpos+k+2 >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+        if (bufpos+k+2 >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
         while ((in[start+i]>'\0')&&(in[start+i]<=' ')) i++;
         if (in[start+i]==')') { *errpos = start+i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
         j=-1;
@@ -808,7 +808,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         (*errpos) = start+i;
-        strcpy(errtext,"Type error: This function returns a string where a numeric result was expected.");
+        strcpy(errtext,"Type Error: This function returns a string where a numeric result was expected.");
         return;
        }
       if ((FunctionType != PPL_USERSPACE_UNIT) && (in[start+i] != ')')) // Unit function deals with arguments itself
@@ -942,7 +942,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
        }
       for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
       for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
-      bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+      bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
      }
     if (p==0) { *errpos=start+j; strcpy(errtext,"No such function"); return; }
    }
@@ -955,7 +955,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (in[start+j]!=')') { *errpos=start+j; strcpy(errtext,"Syntax Error: Unexpected trailing matter within brackets."); return; }
     for (k=i; StatusRow[k]==3; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
-    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
    }
   // PHASE 2b: EVALUATION OF EXPLICIT NUMERICAL QUANTITIES
   for (i=0;i<len;i++) if (StatusRow[i]==6)
@@ -965,7 +965,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     for (k=i; StatusRow[k]==6; k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     j+=i; while ((in[start+j]>'\0')&&(in[start+j]<=' ')) j++;
     if (j!=k) { *errpos=start+i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after numeric constant."); return; }
-    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
    }
   // PHASE 2c: EVALUATION OF $45-TYPE VARIABLES
   if (DollarAllowed) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==4)
@@ -997,7 +997,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       SETSTATUS(p, next_end, bufpos);
       i = start + next_end;
       i--; p=i-start;
-      bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+      bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
      }
    }
   // PHASE 2d: EVALUATION OF VARIABLES
@@ -1012,7 +1012,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     if (VarData->string != NULL) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected."); return; }
     ResultBuffer[bufpos] = *VarData;
     for (k=i; (StatusRow[k]==8); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
-    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal error: Temporary results buffer overflow."); return; }
+    bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
    }
   // PHASE  3: EVALUATION OF MINUS SIGNS
   if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)

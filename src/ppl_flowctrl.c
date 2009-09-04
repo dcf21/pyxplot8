@@ -26,15 +26,21 @@
 #include <string.h>
 #include <glob.h>
 
+#include <gsl/gsl_math.h>
+
 #include "StringTools/asciidouble.h"
+#include "StringTools/str_constants.h"
 
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
 
 #include "pyxplot.h"
+#include "ppl_datafile.h"
 #include "ppl_error.h"
 #include "ppl_input.h"
 #include "ppl_parser.h"
+#include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
@@ -148,18 +154,18 @@ int directive_do(Dict *command, int IterLevel)
    {
     cptr = FetchInputStatement("do ... > ",".......> ");
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-    else            { ppl_error("Error: Unterminated do clause."); return 1; }
+    else            { ppl_error(ERR_SYNTAX, "Unterminated do clause."); return 1; }
    }
 
   // Check whether we found a statement before we found a {
-  if      (status ==  1) { ppl_error("Error: do statement should be followed by { ... }."); return 1; }
-  else if (status == -2) { ppl_error("Error: do clause should be terminated with a while statement."); return 1; }
+  if      (status ==  1) { ppl_error(ERR_SYNTAX, "do statement should be followed by { ... }."); return 1; }
+  else if (status == -2) { ppl_error(ERR_SYNTAX, "do clause should be terminated with a while statement."); return 1; }
 
   // Check that final line has a while clause on it
   cmd2 = parse(cptr);
   if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
   DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
-  if (strcmp(cptr,"while")!=0) { ppl_error("Error: only the statement 'while' can be placed after a } here."); return 1; }
+  if (strcmp(cptr,"while")!=0) { ppl_error(ERR_SYNTAX, "Only the statement 'while' can be placed after a } here."); return 1; }
   DictLookup(cmd2,"criterion",NULL,(void **)(&criterion));
 
   // Execute this do loop repeatedly
@@ -170,8 +176,8 @@ int directive_do(Dict *command, int IterLevel)
     if (status) break;
     i=-1; j=-1;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
-    if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+    if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
   while ((!status) && ((!ppl_units_DblEqual(criterion_val.real,0.0)) || (!ppl_units_DblEqual(criterion_val.imag,0.0))));
   return status;
@@ -204,20 +210,20 @@ int directive_while(Dict *command, int IterLevel)
    {
     cptr = FetchInputStatement("while .> ",".......> ");
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-    else            { ppl_error("Error: Unterminated while loop."); return 1; }
+    else            { ppl_error(ERR_SYNTAX, "Unterminated while loop."); return 1; }
    }
 
   // Check whether we found a statement before we found a {
-  if      (status ==  1) { ppl_error("Error: while statement should be followed by { ... }."); return 1; }
-  else if (status == -1) { ppl_error("Error: while clause should be terminated with a }."); return 1; }
+  if      (status ==  1) { ppl_error(ERR_SYNTAX, "while statement should be followed by { ... }."); return 1; }
+  else if (status == -1) { ppl_error(ERR_SYNTAX, "while clause should be terminated with a }."); return 1; }
 
   // Execute this while loop repeatedly
   do
    {
     i=-1; j=-1; status=0;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
-    if (j>=0) { ppl_error("Error whilst evaluating while (...) criterion:"); ppl_error(temp_err_string); return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"Error whilst evaluating while (...) criterion:\nThis should have been a dimensionless quantity, but instead had units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+    if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;
     chainiter = chain;
     status = loop_execute(&chainiter, IterLevel);
@@ -262,25 +268,25 @@ int directive_for(Dict *command, int IterLevel)
     step_dummy.real = 1.0; // Step must have same units as start/end values. These are gauranteed by ppl_parser to be REAL.
    }
 
-  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "Error: The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(end, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
-  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "Error: The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(step, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(end, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(step, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
 
   if (start->real < end->real) backwards=0;
   else                         backwards=1;
 
-  if (((!backwards) && (step->real<=0)) || ((backwards) && (step->real>=0))) { sprintf(temp_err_string, "Error: The projected number of steps in this for loop is infinite."); ppl_error(temp_err_string); return 1; }
+  if (((!backwards) && (step->real<=0)) || ((backwards) && (step->real>=0))) { sprintf(temp_err_string, "The projected number of steps in this for loop is infinite."); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
     cptr = FetchInputStatement("for... > ",".......> ");
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-    else            { ppl_error("Error: Unterminated for loop."); return 1; }
+    else            { ppl_error(ERR_SYNTAX, "Unterminated for loop."); return 1; }
    }
 
   // Check whether we found a statement before we found a {
-  if      (status ==  1) { ppl_error("Error: for statement should be followed by { ... }."); return 1; }
-  else if (status == -1) { ppl_error("Error: for loop should be terminated with a }."); return 1; }
+  if      (status ==  1) { ppl_error(ERR_SYNTAX, "for statement should be followed by { ... }."); return 1; }
+  else if (status == -1) { ppl_error(ERR_SYNTAX, "for loop should be terminated with a }."); return 1; }
 
   DictAppendValue(_ppl_UserSpace_Vars , loopvar , *start);
   DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval);
@@ -300,6 +306,7 @@ int directive_for(Dict *command, int IterLevel)
 // Main entry point for the foreach statement
 int directive_foreach(Dict *command, int IterLevel)
  {
+  unsigned char foreachdatum;
   int        bracegot=0; // becomes one after we parse opening {
   int        bracelevel=0;
   int        i,status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
@@ -322,37 +329,48 @@ int directive_foreach(Dict *command, int IterLevel)
   if (cptr!=NULL) bracegot = 1;
   DictLookup(command,"command",NULL,(void **)(&cptr));
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-  DictLookup(command,"var_name",NULL,(void **)(&loopvar));
+  DictLookup(command,"df",NULL,(void **)(&cptr));
+  if (cptr==NULL) { foreachdatum=0; } else { foreachdatum=1; } // See whether we're looping over filenames, or data within files
+
+  if (!foreachdatum) DictLookup(command,"var_name",NULL,(void **)(&loopvar)); // Have one loop variable if not looping over a datafile
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
     cptr = FetchInputStatement("for... > ",".......> ");
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-    else            { ppl_error("Error: Unterminated for loop."); return 1; }
+    else            { ppl_error(ERR_SYNTAX, "Unterminated for loop."); return 1; }
    }
 
   // Check whether we found a statement before we found a {
-  if      (status ==  1) { ppl_error("Error: for statement should be followed by { ... }."); return 1; }
-  else if (status == -1) { ppl_error("Error: for loop should be terminated with a }."); return 1; }
+  if      (status ==  1) { ppl_error(ERR_SYNTAX, "for statement should be followed by { ... }."); return 1; }
+  else if (status == -1) { ppl_error(ERR_SYNTAX, "for loop should be terminated with a }."); return 1; }
 
-  ppl_units_zero(&dummy);
-  DictAppendValue(_ppl_UserSpace_Vars , loopvar , dummy);
-  DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval);
+  if (!foreachdatum)
+   {
+    ppl_units_zero(&dummy);
+    DictAppendValue(_ppl_UserSpace_Vars , loopvar , dummy);
+    DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval); // Have one loop variable if not looping over a datafile
+   }
 
   // See if we're iterating over a globbed filename
   DictLookup     (command,"filename",NULL,(void **)(&cptr));
   if (cptr != NULL)
    {
     status=0;
-    if (glob(cptr, 0, NULL, &GlobData) != 0) { ppl_error("Could not glob supplied filename."); return 1; }
+    if (glob(cptr, 0, NULL, &GlobData) != 0) { ppl_error(ERR_FILE, "Could not glob supplied filename."); return 1; }
     for (i=0; i<GlobData.gl_pathc; i++)
      {
-      iterval->string = GlobData.gl_pathv[i];
-      chainiter = chain;
-      status = loop_execute(&chainiter, IterLevel);
+      if (foreachdatum) { directive_foreach_LoopOverData(command, GlobData.gl_pathv[i], &chain, &chainiter, IterLevel, &status); } // Looping over data
+      else
+       {
+        iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
+        chainiter = chain;
+        status = loop_execute(&chainiter, IterLevel);
+       }
       if (status) break;
      }
+    if (!foreachdatum) ppl_units_zero(iterval);
     globfree(&GlobData);
     return status;
    }
@@ -376,7 +394,115 @@ int directive_foreach(Dict *command, int IterLevel)
     if (status) break;
     listiter = ListIterate(listiter, NULL);
    }
+  if (!foreachdatum) ppl_units_zero(iterval);
   return status;
+ }
+
+// Part of directive_foreach... loops over data in a datafile
+void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *chain, cmd_chain *chainiter, int IterLevel, int *status)
+ {
+  DataTable *data;
+  DataBlock *blk;
+  long int   i, j, k;
+  int        ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
+  char       errtext[LSTR_LENGTH], *ReadVars[USING_ITEMS_MAX], *tempstr=NULL, *SelectCrit=NULL;
+  List      *UsingList=NULL, *EveryList=NULL;
+  value     *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX], *outval[USING_ITEMS_MAX];
+  value     *DummyVar, DummyTemp;
+  double     val;
+
+  List         *RangeList, *VarList;
+  ListIterator *ListIter;
+  Dict         *TempDict;
+
+  DictLookup(command, "variables," , NULL, (void **)&VarList);
+  i = ListLen(VarList);
+  if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The 'foreach ... in datafile' construct must be supplied a list of between %d and %d variables to read.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, temp_err_string); *status=1; return; }
+  ListIter = ListIterateInit(VarList);
+  for (j=0; j<i; j++)
+   {
+    TempDict = (Dict *)ListIter->data;
+    DictLookup(TempDict,"variable",NULL,(void **)(ReadVars+j)); // Read variable name into ReadVars[j]
+
+    // Look up variable in user space and get pointer to its value
+    DictLookup(_ppl_UserSpace_Vars, ReadVars[j], NULL, (void **)&DummyVar);
+    if (DummyVar!=NULL)
+     {
+      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
+      outval[j] = DummyVar;
+     }
+    else
+     {
+      DictAppendValue(_ppl_UserSpace_Vars, ReadVars[j], DummyTemp);
+      DictLookup(_ppl_UserSpace_Vars, ReadVars[j], NULL, (void **)&DummyVar);
+      outval[j] = DummyVar;
+     }
+    ListIter = ListIterate(ListIter, NULL);
+   }
+
+  DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
+  DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+  DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+  DictLookup(command, "using_list:", NULL, (void **)&UsingList);
+  DictLookup(command, "every_list:", NULL, (void **)&EveryList);
+  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+
+  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  ListIter = ListIterateInit(RangeList);
+  for (j=0; j<i; j++)
+   if (ListIter == NULL) { min[j]=NULL; max[j]=NULL; }
+   else
+    {
+     DictLookup(TempDict,"min",NULL,(void **)(min+j));
+     DictLookup(TempDict,"max",NULL,(void **)(max+j));
+     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified for fitting variable %ld (%s) in the 'foreach ... in datafile' construct have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
+     ListIter = ListIterate(ListIter, NULL);
+    }
+   if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the 'foreach ... in datafile' construct. %d ranges were supplied, even though only %ld variables are being read.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, temp_err_string); *status=1; return; }
+
+  ContextDataTab = lt_DescendIntoNewContext();
+  DataFile_read(&data, status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, i, SelectCrit, DATAFILE_CONTINUOUS, &ErrCount);
+  if (*status) { ppl_error(ERR_GENERAL, errtext); *status=1; return; }
+
+  // Check that the FirstEntries above have the same units as any supplied ranges
+  for (j=0; j<i; j++)
+   if (min[j] != NULL)
+    {
+     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
+    }
+   else if (max[j] != NULL)
+    {
+     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
+    }
+
+  // Copy physical dimensions from data file to output variables
+  for (k=0; k<i; k++) ppl_units_DimCpy(outval[k] , data->FirstEntries+j);
+
+  // Begin looping over input data
+  blk = data->first;
+  while (blk != NULL)
+   {
+    for (j=0; j<blk->BlockPosition; j++)
+     {
+      for (k=0; k<i; k++)
+       {
+        val = blk->data_real[k + i*j];
+        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) continue; // Check that value is within range
+        outval[k]->real = val;
+        outval[k]->imag = 0.0;
+        outval[k]->FlagComplex = 0;
+       }
+     *chainiter = *chain;
+     *status = loop_execute(chainiter, IterLevel);
+     if (*status) break;
+     }
+    blk=blk->next;
+    if (*status) break;
+   }
+
+  // Free data grid read from data file
+  lt_AscendOutOfContext(ContextDataTab);
+  return;
  }
 
 // Handles a single clause in an if ... else if ... else ... structure
@@ -403,13 +529,13 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
    {
     cptr = FetchInputStatement("if ... > ",".......> ");
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-    else            { ppl_error("Error: Unterminated if clause."); return 1; }
+    else            { ppl_error(ERR_SYNTAX, "Unterminated if clause."); return 1; }
    }
 
   // Check whether we found a statement before we found a {
   if (status == 1)
    {
-    ppl_error("Error: if statement should be followed by { ... }."); return 1;
+    ppl_error(ERR_SYNTAX, "if statement should be followed by { ... }."); return 1;
    }
 
   // See whether final line has an else clause on it
@@ -418,7 +544,7 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
     cmd2 = parse(cptr);
     if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
     DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
-    if (strcmp(cptr,"else")!=0) { ppl_error("Error: only the statement 'else' can be placed after a } here."); return 1; }
+    if (strcmp(cptr,"else")!=0) { ppl_error(ERR_SYNTAX, "Only the statement 'else' can be placed after a } here."); return 1; }
     DictLookup(cmd2,"if",NULL,(void **)(&cptr));
     if (cptr == NULL)
      {

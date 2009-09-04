@@ -72,13 +72,13 @@ void directive_seterror(Dict *command, int interactive)
   DictLookup(command,"set_option",NULL, (void **)&tempstr);
   if (tempstr != NULL)
    {
-    if (!interactive) { sprintf(temp_err_string, "Error: unrecognised set option '%s'.", tempstr); ppl_error(temp_err_string); }
-    else              { sprintf(temp_err_string, txt_set                               , tempstr); ppl_error(temp_err_string); }
+    if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, temp_err_string); }
+    else              { sprintf(temp_err_string, txt_set                        , tempstr); ppl_error(ERR_PREFORMED, temp_err_string); }
    }
   else
    {
-    if (!interactive) { ppl_error("Error: set command detected with no set option following it."); }
-    else              { ppl_error(txt_set_noword); }
+    if (!interactive) { ppl_error(ERR_SYNTAX, "set command detected with no set option following it."); }
+    else              { ppl_error(ERR_PREFORMED, txt_set_noword); }
    }
  }
 
@@ -88,13 +88,13 @@ void directive_unseterror(Dict *command, int interactive)
   DictLookup(command,"set_option",NULL, (void **)&tempstr);
   if (tempstr != NULL)
    {
-    if (!interactive) { sprintf(temp_err_string, "Error: unrecognised set option '%s'.", tempstr); ppl_error(temp_err_string); }
-    else              { sprintf(temp_err_string, txt_unset                             , tempstr); ppl_error(temp_err_string); }
+    if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, temp_err_string); }
+    else              { sprintf(temp_err_string, txt_unset                      , tempstr); ppl_error(ERR_PREFORMED, temp_err_string); }
    }
   else
    {
-    if (!interactive) { ppl_error("Error: unset command detected with no set option following it."); }
-    else              { ppl_error(txt_unset_noword); }
+    if (!interactive) { ppl_error(ERR_SYNTAX, "Unset command detected with no set option following it."); }
+    else              { ppl_error(ERR_PREFORMED, txt_unset_noword); }
    }
  }
 
@@ -162,7 +162,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
     DictLookup(command,"bin_width",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error("Error: width of histogram bins must be greater than zero."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Width of histogram bins must be greater than zero."); return; }
     sg->BinWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
@@ -213,7 +213,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"dpi")==0)) /* set dpi */
    {
     DictLookup(command,"dpi",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 2.0) { ppl_error("Error: output image resolutions below two dots per inch are not supported."); return; }
+    if (*tempdbl <= 2.0) { ppl_error(ERR_GENERAL, "Output image resolutions below two dots per inch are not supported."); return; }
     settings_term_current.dpi = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"dpi")==0)) /* unset dpi */
@@ -233,13 +233,13 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
     DictLookup(settings_filters,tempstr,NULL,(void **)&tempstr2);
-    if (tempstr2 == NULL) { ppl_warning("Warning: attempt to unset a filter which did not exist."); return; }
+    if (tempstr2 == NULL) { ppl_warning(ERR_GENERAL, "Attempt to unset a filter which did not exist."); return; }
     DictRemoveKey(settings_filters,tempstr);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
    {
     DictLookup(command,"fontsize",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error("Error: font sizes are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Font sizes are not allowed to be less than or equal to zero."); return; }
     sg->FontSize = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"fontsize")==0)) /* unset fontsize */
@@ -270,9 +270,9 @@ void directive_set(Dict *command)
         j = strlen(tempstr);
         errpos = -1;
         ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, &errpos, temp_err_string, 0);
-        if (errpos>=0) { ppl_error(temp_err_string); return; }
-        if (!valobj.dimensionless) { sprintf(temp_err_string, "Error: colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(temp_err_string); return; }
-        if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Error: colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(temp_err_string); return; }
+        if (errpos>=0) { ppl_error(ERR_GENERAL, temp_err_string); return; }
+        if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return; }
+        if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return; }
         for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
         *tempint = settings_palette_current[((int)valobj.real)%j];
        }
@@ -301,7 +301,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
    {
     DictLookup(command,"key_columns",NULL,(void **)&tempint);
-    if (*tempint <= 0.0) { ppl_error("Error: keys cannot have fewer than one columns."); return; }
+    if (*tempint <= 0.0) { ppl_error(ERR_GENERAL, "Keys cannot have fewer than one columns."); return; }
     sg->KeyColumns = *tempint;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"keycolumns")==0)) /* unset keycolumns */
@@ -320,7 +320,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
    {
     DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error("Error: line widths are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Line widths are not allowed to be less than or equal to zero."); return; }
     sg->LineWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
@@ -373,8 +373,8 @@ void directive_set(Dict *command)
     DictLookup(command,"number_significant_figures", NULL,(void **)&tempint);
     if (tempint != NULL)
      {
-      if (*tempint <  1) { ppl_error("Error: Numbers cannot be displayed to fewer than one significant figure."); return; }
-      if (*tempint > 30) { ppl_error("Error: It is not sensible to try to display numbers to more than 30 significant figures. Calculations in PyXPlot are only accurate to double precision."); return; }
+      if (*tempint <  1) { ppl_error(ERR_GENERAL, "Numbers cannot be displayed to fewer than one significant figure."); return; }
+      if (*tempint > 30) { ppl_error(ERR_GENERAL, "It is not sensible to try to display numbers to more than 30 significant figures. Calculations in PyXPlot are only accurate to double precision."); return; }
       settings_term_current.SignificantFigures = *tempint;
      }
     DictLookup(command,"display", NULL,(void **)&tempstr);
@@ -412,8 +412,8 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval->exponent[i] != (i==UNIT_LENGTH))
         {
-         sprintf(temp_err_string, "Error: The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
-         ppl_error(temp_err_string);
+         sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+         ppl_error(ERR_NUMERIC, temp_err_string);
          return;
         }
      }
@@ -423,8 +423,8 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval2->exponent[i] != (i==UNIT_LENGTH))
         {
-         sprintf(temp_err_string, "Error: The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
-         ppl_error(temp_err_string);
+         sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+         ppl_error(ERR_NUMERIC, temp_err_string);
          return;
         }
      }
@@ -455,15 +455,15 @@ void directive_set(Dict *command)
     i=0;
     while (listiter != NULL)
      {
-      if (i == PALETTE_LENGTH-1) { ppl_warning("Warning: The set palette command has been passed a palette which is too long; truncating it."); break; }
+      if (i == PALETTE_LENGTH-1) { ppl_warning(ERR_GENERAL, "The set palette command has been passed a palette which is too long; truncating it."); break; }
       tempdict = (Dict *)listiter->data;
       DictLookup(tempdict,"colour",NULL,(void **)&tempstr);
       j = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
-      if (j<0) { sprintf(temp_err_string, "Warning: The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(temp_err_string); }
+      if (j<0) { sprintf(temp_err_string, "The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
       else     { settings_palette_current[i++] = j; }
       listiter = ListIterate(listiter, NULL);
      }
-    if (i==0) { ppl_error("Error: The set palette command has been passed a palette which does not contain any colours."); return; }
+    if (i==0) { ppl_error(ERR_GENERAL, "The set palette command has been passed a palette which does not contain any colours."); return; }
     settings_palette_current[i] = -1;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"palette")==0)) /* unset palette */
@@ -482,7 +482,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
    {
     DictLookup(command,"pointlinewidth",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error("Error: point line widths are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Point line widths are not allowed to be less than or equal to zero."); return; }
     sg->PointLineWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
@@ -492,7 +492,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
    {
     DictLookup(command,"pointsize",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error("Error: point sizes are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Point sizes are not allowed to be less than or equal to zero."); return; }
     sg->PointSize = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
@@ -513,7 +513,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     DictLookup(command,"samples",NULL,(void **)&tempint);
-    if (*tempint <= 2.0) { ppl_error("Error: graphs cannot be constucted based on fewer than two samples."); return; }
+    if (*tempint <= 2.0) { ppl_error(ERR_GENERAL, "Graphs cannot be constucted based on fewer than two samples."); return; }
     sg->samples = *tempint;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
@@ -526,7 +526,7 @@ void directive_set(Dict *command)
     DictLookup(command,"max",NULL,(void **)&tempval2);
     if (tempval == NULL) tempval = &sg->Tmin;
     if (tempval2== NULL) tempval2= &sg->Tmax;
-    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error("Error: Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
+    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
     sg->Tmin = *tempval;
     sg->Tmax = *tempval2;
    }
@@ -545,8 +545,8 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "Error: The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
-           ppl_error(temp_err_string);
+           sprintf(temp_err_string, "The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
        }
@@ -556,7 +556,7 @@ void directive_set(Dict *command)
     if (DictContains(command,"ratio"))
      {
       DictLookup(command,"ratio",NULL,(void **)&tempdbl);
-      if ((fabs(*tempdbl) < 1e-4) || (fabs(*tempdbl) > 1e4)) { ppl_error("Error: The requested aspect ratios for graphs must be in the range 0.001 to 10000."); return; }
+      if ((fabs(*tempdbl) < 1e-4) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, "The requested aspect ratios for graphs must be in the range 0.001 to 10000."); return; }
       sg->aspect = *tempdbl;
       sg->AutoAspect = SW_ONOFF_OFF;
      }
@@ -655,8 +655,8 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "Error: The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
-           ppl_error(temp_err_string);
+           sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
        }
@@ -669,8 +669,8 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval2->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "Error: The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
-           ppl_error(temp_err_string);
+           sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+           ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
        }
@@ -755,16 +755,16 @@ void directive_set(Dict *command)
         if (i!=2)
          {
           if ((ppl_unit_database[j].quantity!=NULL) && (ppl_unit_database[j].quantity[0]!='\0'))
-           { sprintf(temp_err_string, "Warning: '%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_warning(temp_err_string); }
+           { sprintf(temp_err_string, "'%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_warning(ERR_GENERAL, temp_err_string); }
           else
-           { sprintf(temp_err_string, "Warning: '%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_warning(temp_err_string); }
+           { sprintf(temp_err_string, "'%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
          }
         ppl_unit_database[j].UserSel = 1;
         ppl_unit_database[j].UserSelPrefix = multiplier;
         pp=1;
        }
-      if (i==0) { sprintf(temp_err_string, "Warning: No such quantity as a '%s'.", tempstr); ppl_warning(temp_err_string); }
-      if (p==0) { sprintf(temp_err_string, "Warning: No such unit as a '%s'.", tempstr2); ppl_warning(temp_err_string); }
+      if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
+      if (p==0) { sprintf(temp_err_string, "No such unit as a '%s'.", tempstr2); ppl_warning(ERR_GENERAL, temp_err_string); }
       listiter = ListIterate(listiter, NULL);
      }
 
@@ -797,7 +797,7 @@ void directive_set(Dict *command)
         ppl_unit_database[j].UserSel = 0;
        }
      }
-    if (i==0) { sprintf(temp_err_string, "Warning: No such quantity as a '%s'.", tempstr); ppl_warning(temp_err_string); }
+    if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
    {
@@ -820,7 +820,7 @@ void directive_set(Dict *command)
    }
   else
    {
-    ppl_error("Internal Error in PyXPlot's set command: could not find handler for this set command.");
+    ppl_error(ERR_INTERNAL, "PyXPlot's set command could not find handler for this set command.");
    }
   return;
  }
@@ -890,7 +890,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
   if ((out==NULL)||(buf==NULL)||(buf2==NULL))
    {
-    ppl_error("Out of memory error whilst trying to allocate buffers in show command.");
+    ppl_error(ERR_MEMORY, "Out of memory whilst trying to allocate buffers in show command.");
     if (out!=NULL) free(out); if (buf!=NULL) free(buf); if (buf2!=NULL) free(buf2);
     return 1;
    }
@@ -1431,14 +1431,14 @@ void directive_show(Dict *command, int interactive)
     ItemSet[0]='\0';
    } else {
     if ((*EditNo<0) || (*EditNo>MULTIPLOT_MAXINDEX))
-     { sprintf(temp_err_string, "There is no multiplot item with number %d.", *EditNo); ppl_error(temp_err_string); return; }
-    { sprintf(temp_err_string, "There is no multiplot item with number %d.", *EditNo); ppl_error(temp_err_string); return; }
+     { sprintf(temp_err_string, "There is no multiplot item with number %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    { sprintf(temp_err_string, "There is no multiplot item with number %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
     sprintf(ItemSet, "item %d ", *EditNo);
    }
 
   DictLookup(command, "setting_list", NULL, (void **)&ShowList);
   if ((ShowList==NULL) || (ListLen(ShowList) == 0))
-   { ppl_error(txt_show); }
+   { ppl_error(ERR_PREFORMED, txt_show); }
   else
    {
     if (interactive!=0) // On interactive sessions, highlight those settings which have been manually set by the user
@@ -1477,7 +1477,7 @@ void directive_show(Dict *command, int interactive)
         p = (directive_show2(ShowWord, ItemSet, interactive, sg, xa, ya, za) || p);
        }
      }
-    if (p==0) { ppl_error("Invalid show option."); ppl_error(txt_show); }
+    if (p==0) { ppl_error(ERR_SYNTAX, "Invalid show option."); ppl_error(ERR_PREFORMED, txt_show); }
    }
   return;
  }

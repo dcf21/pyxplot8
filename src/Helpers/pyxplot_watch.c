@@ -58,7 +58,7 @@ void RunPyXPlotOnFile(char *fname)
   if (status && !interactive)
    {
     sprintf(LineBuffer, "[%s] Encountered problem in script file %s.", StrStrip(FriendlyTimestring(), temp_err_string), fname);
-    ppl_error(LineBuffer);
+    ppl_error(ERR_PREFORMED, LineBuffer);
    }
 
   if (interactive)
@@ -168,7 +168,7 @@ Send comments, bug reports, feature requests and coffee supplies to:\n\
     else
     {
      sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot_watch -help' for a list of available commandline options.", argv[i]);
-     ppl_error(temp_err_string);
+     ppl_error(ERR_PREFORMED, temp_err_string);
      if (DEBUG) ppl_log("Received unexpected commandline switch.");
      lt_FreeAll(0); lt_MemoryStop();
      return 1;
@@ -181,7 +181,7 @@ Send comments, bug reports, feature requests and coffee supplies to:\n\
   // Check that we have some filenames to watch
   if (!HaveFilenames)
    {
-    ppl_error("No filenames were supplied to watch. PyXPlot Watch's commandline syntax is:\n\npyxplot_watch [options] filename_list\n\nAs PyXPlot Watch has no work to do, it is exitting...");
+    ppl_error(ERR_PREFORMED, "No filenames were supplied to watch. PyXPlot Watch's commandline syntax is:\n\npyxplot_watch [options] filename_list\n\nAs PyXPlot Watch has no work to do, it is exitting...");
     exit(1);
    }
 

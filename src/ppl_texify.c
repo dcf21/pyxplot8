@@ -482,7 +482,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
         if ((RequiredNargs >= 0) && (RequiredNargs != Nargs))
          {
           *status=j;
-          sprintf(errtext,"Error: The %s() function takes %d arguments, but %d have been supplied in expression to be texified.", FunctionName, RequiredNargs, Nargs);
+          sprintf(errtext,"The %s() function takes %d arguments, but %d have been supplied in expression to be texified.", FunctionName, RequiredNargs, Nargs);
           return;
          }
 

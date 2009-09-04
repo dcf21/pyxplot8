@@ -356,7 +356,7 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
   // Find a list of units which multiply together to match dimensions of quantity to display
   while (1)
    {
-    if (pos>=UNITS_MAX_BASEUNITS) { ppl_error("Internal overflow whilst trying to display a unit."); break; }
+    if (pos>=UNITS_MAX_BASEUNITS) { ppl_error(ERR_INTERNAL, "Overflow whilst trying to display a unit."); break; }
     ppl_units_FindOptimalNextUnit(&residual, UnitList + pos, UnitPow + pos);
     UnitDisp[pos] = 0;
     if (ppl_units_DblEqual(UnitPow[pos],0)!=0) break;
@@ -520,7 +520,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
       if (((in[i]=='^') && (i++,1)) || (((in[i]=='*') && (in[i+1]=='*')) && (i+=2,1)))
        {
         power = GetFloat(in+i,&k);
-        if (k<=0) { *errpos=i; strcpy(errtext, "Syntax error: Was expecting a numerical constant here."); return; }
+        if (k<=0) { *errpos=i; strcpy(errtext, "Syntax Error: Was expecting a numerical constant here."); return; }
         i+=k;
         while ((in[i]<=' ')&&(in[i]!='\0')) i++;
        }
@@ -528,7 +528,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
       if (ppl_unit_database[j].TempType != 0)
        {
         if ((out->TempType >0) && (out->TempType!=ppl_unit_database[j].TempType))
-         { *errpos=i; strcpy(errtext, "Unit error: Attempt to mix Kelvin, oC and oF in the units of a single quantity. Try again with all quantities converted into Kelvin. Type 'help units temperatures' for more details."); return; }
+         { *errpos=i; strcpy(errtext, "Unit Error: Attempt to mix Kelvin, oC and oF in the units of a single quantity. Try again with all quantities converted into Kelvin. Type 'help units temperatures' for more details."); return; }
         out->TempType = ppl_unit_database[j].TempType;
        }
 

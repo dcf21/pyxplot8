@@ -336,7 +336,7 @@ Dict *parse(char *line)
         sprintf(ErrText+ErrPos, " |\n%s", AlgebraError); ErrPos += strlen(ErrText+ErrPos);
        }
       strcpy(ErrText+ErrPos, "\n"); ErrPos += strlen(ErrText+ErrPos);
-      ppl_error(ErrText);
+      ppl_error(ERR_PREFORMED,ErrText);
       return NULL;
      }
     return output;
@@ -377,7 +377,7 @@ char *parse_autocomplete(const char *LineConst, int status)
     else
      {
       i = strlen(rl_line_buffer) + strlen(InputLineAddBuffer);
-      if ((line = (char *)malloc((i+1)*sizeof(char)))==NULL) { ppl_error("Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
+      if ((line = (char *)malloc((i+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
       strcpy(line, InputLineAddBuffer);
       strcpy(line+strlen(line) , rl_line_buffer);
       line[i] = '\0';
@@ -412,7 +412,7 @@ char *parse_autocomplete(const char *LineConst, int status)
        {
         if (status < 0) // Special case: use Readline's filename tab completion
          {
-          if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error("Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
+          if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
           strcpy(output, expecting);
           return output;
          } else {
@@ -421,7 +421,7 @@ char *parse_autocomplete(const char *LineConst, int status)
        }
       if (expecting[0] != '\0') // We have a new completion option; do not iterate through more commands
        {
-        if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error("Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
+        if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
         strcpy(output, expecting);
         return output;
        }

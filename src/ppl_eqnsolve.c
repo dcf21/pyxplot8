@@ -91,18 +91,18 @@ double MultiMinSlave(const gsl_vector *x, void *params)
    {
     ppl_EvaluateAlgebra(data->expr1[i], &output1, 0, NULL, 0, data->errpos, data->errtext, 0);
     // If a numerical error happened; ignore it for now, but return NAN
-    if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s:\n%s", PrintParameterValues(x,data,temp_err_string), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
+    if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s: %s", PrintParameterValues(x,data,temp_err_string), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
     if (data->expr2[i] != NULL)
      {
       ppl_EvaluateAlgebra(data->expr2[i], &output2, 0, NULL, 0, data->errpos, data->errtext, 0);
       // If a numerical error happened; ignore it for now, but return NAN
-      if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s:\n%s", PrintParameterValues(x,data,temp_err_string), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
+      if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s: %s", PrintParameterValues(x,data,temp_err_string), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
       if (!ppl_units_DimEqual(&output1, &output2))
        {
         *(data->errpos)=0;
-        sprintf(data->errtext, "Error: The two sides of the equation which is being solved are not dimensionally compatible. The left side has dimensions of <%s> while the right side has dimensions of <%s>.",ppl_units_GetUnitStr(&output1, NULL, NULL, 0, 0),ppl_units_GetUnitStr(&output2, NULL, NULL, 1, 0));
+        sprintf(data->errtext, "The two sides of the equation which is being solved are not dimensionally compatible. The left side has dimensions of <%s> while the right side has dimensions of <%s>.",ppl_units_GetUnitStr(&output1, NULL, NULL, 0, 0),ppl_units_GetUnitStr(&output2, NULL, NULL, 1, 0));
         return GSL_NAN;
        }
       accumulator += pow(output1.real - output2.real , 2); // Minimise sum of square deviations of many equations
@@ -117,7 +117,7 @@ double MultiMinSlave(const gsl_vector *x, void *params)
         if (!ppl_units_DimEqual(&data->first[i],&output1))
          {
           *(data->errpos)=0;
-          strcpy(data->errtext, "Error: The function being minimised or maximised does not have consistent units.");
+          strcpy(data->errtext, "The function being minimised or maximised does not have consistent units.");
           return GSL_NAN;
          }
        }
@@ -168,7 +168,7 @@ void MultiMinIterate(MMComm *commlink)
 
     // If initial value we are giving the minimiser produces an algebraic error, it's not worth continuing
     testval = MultiMinSlave(x,(void *)commlink);
-    if (commlink->WarningPos>=0) { *(commlink->errpos) = commlink->WarningPos; commlink->WarningPos=-1; sprintf(commlink->errtext, "Error: %s", commlink->warntext); return; }
+    if (commlink->WarningPos>=0) { *(commlink->errpos) = commlink->WarningPos; commlink->WarningPos=-1; sprintf(commlink->errtext, "%s", commlink->warntext); return; }
 
     iter                 = 0;
     commlink->GoneNaN    = 0;
@@ -193,7 +193,7 @@ void MultiMinIterate(MMComm *commlink)
 
   if (iter2>=20) status=1;
 
-  if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Error: Failed to converge. GSL returned error: %s", gsl_strerror(status)); }
+  if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); }
   sizelast = MultiMinSlave(x,(void *)commlink);
 
   gsl_vector_free(x);
@@ -240,8 +240,8 @@ void MinOrMax(Dict *command, double sign)
     ListIter = ListIterate(ListIter, NULL);
     if (commlink.Nfitvars >= EQNSOLVE_MAXDIMS)
      {
-      sprintf(temp_err_string, "Error: Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
-      ppl_error(temp_err_string);
+      sprintf(temp_err_string, "Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
+      ppl_error(ERR_NUMERIC, temp_err_string);
       return;
      }
    }
@@ -257,8 +257,8 @@ void MinOrMax(Dict *command, double sign)
 
   MultiMinIterate(&commlink);
 
-  if (commlink.WarningPos >= 0) ppl_warning(commlink.warntext);
-  if (errpos >= 0) ppl_error(commlink.errtext);
+  if (commlink.WarningPos >= 0) ppl_warning(ERR_NUMERIC, commlink.warntext);
+  if (errpos >= 0) ppl_error(ERR_NUMERIC, commlink.errtext);
 
   if ((errpos >= 0) || (commlink.GoneNaN==1))
    {
@@ -306,8 +306,8 @@ void directive_solve(Dict *command)
     ListIter = ListIterate(ListIter, NULL);
     if (commlink.Nfitvars >= EQNSOLVE_MAXDIMS)
      {
-      sprintf(temp_err_string, "Error: Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
-      ppl_error(temp_err_string);
+      sprintf(temp_err_string, "Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
+      ppl_error(ERR_NUMERIC, temp_err_string);
       return;
      }
    }
@@ -322,16 +322,16 @@ void directive_solve(Dict *command)
     ListIter = ListIterate(ListIter, NULL);
     if (commlink.Nexprs >= EQNSOLVE_MAXDIMS)
      {
-      sprintf(temp_err_string, "Error: Too many simultaneous equations to solve; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
-      ppl_error(temp_err_string);
+      sprintf(temp_err_string, "Too many simultaneous equations to solve; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
+      ppl_error(ERR_NUMERIC, temp_err_string);
       return;
      }
    }
 
  if (commlink.Nexprs < 1)
   {
-   sprintf(temp_err_string, "Error: No equations supplied to sove.");
-    ppl_error(temp_err_string);
+   sprintf(temp_err_string, "No equations supplied to solve.");
+    ppl_error(ERR_NUMERIC, temp_err_string);
     return;
    }
 
@@ -343,8 +343,8 @@ void directive_solve(Dict *command)
 
   MultiMinIterate(&commlink);
 
-  if (commlink.WarningPos >= 0) ppl_warning(commlink.warntext);
-  if (errpos >= 0) ppl_error(commlink.errtext);
+  if (commlink.WarningPos >= 0) ppl_warning(ERR_NUMERIC, commlink.warntext);
+  if (errpos >= 0) ppl_error(ERR_NUMERIC, commlink.errtext);
 
   if ((errpos >= 0) || (commlink.GoneNaN==1))
    {

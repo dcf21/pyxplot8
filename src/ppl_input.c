@@ -199,13 +199,13 @@ char *FetchInputStatement(char *prompt1, char *prompt2)
         if (InputLineAddBuffer==NULL)
          {
           InputLineAddBuffer = (char *)malloc(i+1);
-          if (InputLineAddBuffer == NULL) { ppl_error("Out of memory error whilst trying to combine input lines."); return NULL; }
+          if (InputLineAddBuffer == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to combine input lines."); return NULL; }
           strncpy(InputLineAddBuffer, InputLineBuffer, i);
           InputLineAddBuffer[i]='\0';
          } else {
           j = strlen(InputLineAddBuffer);
           InputLineAddBuffer = (char *)realloc((void *)InputLineAddBuffer, j+i+1);
-          if (InputLineAddBuffer == NULL) { ppl_error("Out of memory error whilst trying to combine input lines."); return NULL; }
+          if (InputLineAddBuffer == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to combine input lines."); return NULL; }
           strncpy(InputLineAddBuffer+j, InputLineBuffer, i);
           InputLineAddBuffer[j+i]='\0';
          }

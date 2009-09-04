@@ -67,7 +67,7 @@ double CalculusSlave(double x, void *params)
     if (!ppl_units_DimEqual(&data->first,&output))
      {
       *(data->errpos)=0;
-      strcpy(data->errtext, "Error: This operand does not have consistent units across the range where calculus is being attempted.");
+      strcpy(data->errtext, "This operand does not have consistent units across the range where calculus is being attempted.");
       return GSL_NAN;
      }
    }
@@ -87,14 +87,14 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
   if (!ppl_units_DimEqual(min,max))
    {
     *errpos=0;
-    strcpy(errtext, "Error: The minimum and maximum limits of this integration operation are not dimensionally compatible.");
+    strcpy(errtext, "The minimum and maximum limits of this integration operation are not dimensionally compatible.");
     return;
    }
 
   if (min->FlagComplex || max->FlagComplex)
    {
     *errpos=0;
-    strcpy(errtext, "Error: The minimum and maximum limits of this integration operation must be real numbers; supplied values are complex.");
+    strcpy(errtext, "The minimum and maximum limits of this integration operation must be real numbers; supplied values are complex.");
     return;
    }
 
@@ -163,14 +163,14 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   if (!ppl_units_DimEqual(point, step))
    {
     *errpos=0;
-    strcpy(errtext, "Error: The arguments x and step to this differentiation operation are not dimensionally compatible.");
+    strcpy(errtext, "The arguments x and step to this differentiation operation are not dimensionally compatible.");
     return;
    }
 
   if (step->FlagComplex)
    {
     *errpos=0;
-    strcpy(errtext, "Error: The argument 'step' to this differentiation operation must be a real number; supplied value is complex.");
+    strcpy(errtext, "The argument 'step' to this differentiation operation must be a real number; supplied value is complex.");
     return;
    }
 
@@ -215,7 +215,7 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     gsl_deriv_central(&fn, point->imag, step->real, &dRdI      , &dRdI_error);
 
     if ((!ppl_units_DblApprox(ResultReal, dIdI, 2*(ResultReal_error+dIdI_error))) || (!ppl_units_DblApprox(ResultImag, -dRdI, 2*(ResultImag_error+dRdI_error))))
-     { *errpos = 0; sprintf(errtext, "Error: The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation. In the notation f(x+iy)=u+iv, the offending derivatives were: du/dx=%e, dv/dy=%e, du/dy=%e and dv/dx=%e.", ResultReal, dIdI, dRdI, ResultImag); return; }
+     { *errpos = 0; sprintf(errtext, "The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation. In the notation f(x+iy)=u+iv, the offending derivatives were: du/dx=%e, dv/dy=%e, du/dy=%e and dv/dx=%e.", ResultReal, dIdI, dRdI, ResultImag); return; }
    }
 
   memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using

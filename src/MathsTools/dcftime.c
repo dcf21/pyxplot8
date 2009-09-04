@@ -611,8 +611,8 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
    }
 
   // Check that input is real
-  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_string() function can only act upon real times. The supplied Julian Date is complex."); return; }
-  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"Error: The time_string() function can only act upon dimensionless times. The supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_string() function can only act upon real times. The supplied Julian Date is complex."); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_string() function can only act upon dimensionless times. The supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
 
   *status=0;
   InvJulianDate(JD1.real, &year, &month, &day, &hour, &min, &sec, status, errtext);
@@ -643,7 +643,7 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
       case 'S': sprintf(output->string+k, "%02d", (int)sec); break;
       case 'y': sprintf(output->string+k, "%d", year%100); break;
       case 'Y': sprintf(output->string+k, "%d", year); break;
-      default: { *status=0; sprintf(errtext,"Error: Format string supplied to time_string() function contains unrecognised substitution token '%%%c'.",FormatString[j+1]); return; }
+      default: { *status=0; sprintf(errtext,"Format string supplied to time_string() function contains unrecognised substitution token '%%%c'.",FormatString[j+1]); return; }
      }
     j++;
     k += strlen(output->string + k);
@@ -706,10 +706,10 @@ void dcftime_diff_string(char *in, int inlen, value *output, unsigned char Dolla
    }
 
   // Check that inputs are real
-  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_diff_string() function can only act upon real times. The first supplied Julian Date is complex."); return; }
-  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"Error: The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
-  if (JD2.FlagComplex) { *status=0; strcpy(errtext,"Error: The time_diff_string() function can only act upon real times. The second supplied Julian Date is complex."); return; }
-  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"Error: The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The first supplied Julian Date is complex."); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD2.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The second supplied Julian Date is complex."); return; }
+  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
 
   GapYears   = (JD2.real - JD1.real) / 365;
   GapDays    = (JD2.real - JD1.real);
@@ -734,7 +734,7 @@ void dcftime_diff_string(char *in, int inlen, value *output, unsigned char Dolla
       case 'm': sprintf(output->string+k, "%ld", GapMinutes%60); break;
       case 'S': sprintf(output->string+k, "%ld", GapSeconds); break;
       case 's': sprintf(output->string+k, "%ld", GapSeconds%60); break;
-      default: { *status=0; sprintf(errtext,"Error: Format string supplied to time_diff_string() function contains unrecognised substitution token '%%%c'.",FormatString[j+1]); return; }
+      default: { *status=0; sprintf(errtext,"Format string supplied to time_diff_string() function contains unrecognised substitution token '%%%c'.",FormatString[j+1]); return; }
      }
     j++;
     k += strlen(output->string + k);

@@ -140,15 +140,15 @@ void CheckForGvOutput()
      StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
      if (linebuffer[0]=='\0') break;
      if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
-     if (strncmp(linebuffer, SED_COMMAND, strlen(SED_COMMAND))==0) ppl_error("Error: A problem was encounter with the supplied regular expression.");
-     else ppl_error(linebuffer);
+     if (strncmp(linebuffer, SED_COMMAND, strlen(SED_COMMAND))==0) ppl_error(ERR_GENERAL, "A problem was encounter with the supplied regular expression.");
+     else ppl_error(ERR_GENERAL, linebuffer);
     }
   return;
  }
 
 void SendCommandToCSP(char *cmd)
  {
-  if (write(PipeMAIN2CSP[1], cmd, strlen(cmd)) != strlen(cmd)) ppl_error("Attempt to send a message to the CSP failed.");
+  if (write(PipeMAIN2CSP[1], cmd, strlen(cmd)) != strlen(cmd)) ppl_error(ERR_INTERNAL, "Attempt to send a message to the CSP failed.");
   return;
  }
 
@@ -179,7 +179,7 @@ void CSPCheckForChildExits(int signo)
     iter = ListIterate(iter, (void **)&gv_pid);
     if (waitpid(*gv_pid,NULL,WNOHANG) != 0)
      {
-      if (DEBUG) { sprintf(temp_err_string, "A GhostView process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
+      if (DEBUG) { sprintf(temp_err_string, "A ghostview process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
       ListRemovePtr(GhostViews, (void *)gv_pid); // Stabat mater dolorosa
      }
     if (GhostView_pid == *gv_pid) GhostView_pid = 0;
@@ -190,7 +190,7 @@ void CSPCheckForChildExits(int signo)
     iter = ListIterate(iter, (void **)&gv_pid);
     if (waitpid(*gv_pid,NULL,WNOHANG) != 0)
      {
-      if (DEBUG) { sprintf(temp_err_string, "A persistent GhostView process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
+      if (DEBUG) { sprintf(temp_err_string, "A persistent ghostview process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
       ListRemovePtr(GhostView_Persists, (void *)gv_pid); // Stabat mater dolorosa
      }
     if (GhostView_pid == *gv_pid) GhostView_pid = 0;
@@ -289,7 +289,7 @@ int CSPForkNewGv(char *fname, List *gv_list)
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     sprintf(ppl_error_source, "GV%7d", getpid());
     settings_session_default.colour = SW_ONOFF_OFF;
-    if (DEBUG) { sprintf(temp_err_string, "New GhostView process alive; going to view %s.", fname); ppl_log(temp_err_string); }
+    if (DEBUG) { sprintf(temp_err_string, "New ghostview process alive; going to view %s.", fname); ppl_log(temp_err_string); }
     if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe, so that GhostView doesn't spam terminal
      {
       if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
@@ -297,9 +297,9 @@ int CSPForkNewGv(char *fname, List *gv_list)
      }
     if (setpgid( getpid() , getpid() )) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
     sprintf(WatchText, "%s%s", GHOSTVIEW_OPT, "watch");
-    if (execlp(GHOSTVIEW_COMMAND, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute GhostView returned error code."); // Execute GhostView
-    sprintf(temp_err_string, "Execution of GhostView using binary '%s' failed; has it been reinstalled since PyXPlot was installed?", GHOSTVIEW_COMMAND);
-    ppl_error(temp_err_string); // execlp call should not return
+    if (execlp(GHOSTVIEW_COMMAND, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute ghostview returned error code."); // Execute GhostView
+    sprintf(temp_err_string, "Execution of ghostview using binary '%s' failed; has it been reinstalled since pyxplot was installed?", GHOSTVIEW_COMMAND);
+    ppl_error(ERR_GENERAL, temp_err_string); // execlp call should not return
     exit(1);
    }
   return 0;
@@ -309,7 +309,7 @@ void CSPKillAllGvs()
  {
   ListIterator *iter;
   int          *gv_pid;
-  if (DEBUG) ppl_log("Killing all GhostView processes.");
+  if (DEBUG) ppl_log("Killing all ghostview processes.");
   iter = ListIterateInit(GhostViews);
   while (iter != NULL)
    {
@@ -323,7 +323,7 @@ void CSPKillAllGvs()
 
 void CSPKillLatestSinglewindow()
  {
-  if (DEBUG) { sprintf(temp_err_string, "Killing latest GhostView singlewindow process with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "Killing latest ghostview singlewindow process with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
   if (GhostView_pid > 1) kill(GhostView_pid, SIGTERM);
   GhostView_pid = 0;
   return;
@@ -412,7 +412,7 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
       close(PipeCSP2MAIN[1]);
      }
     if (execl(SED_COMMAND, SED_COMMAND, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
-    ppl_error("Execution of helper process 'sed' failed."); // execlp call should not return
+    ppl_error(ERR_GENERAL, "Execution of helper process 'sed' failed."); // execlp call should not return
     exit(1);
    }
   return;
@@ -463,7 +463,7 @@ void ForkInputFilter(char **cmd, int *fstdout)
      }
     if (execvp(cmd[0], cmd)!=0) if (DEBUG) ppl_log("Attempt to execute input filter returned error code."); // Execute input filter
     sprintf(temp_err_string, "Execution of input filter '%s' failed.", cmd[0]);
-    ppl_error(temp_err_string); // execvp call should not return
+    ppl_error(ERR_GENERAL, temp_err_string); // execvp call should not return
     exit(1);
    }
   return;

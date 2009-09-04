@@ -35,8 +35,6 @@
 
 static int  ppl_error_input_linenumber             = -1;
 static char ppl_error_input_filename[FNAME_LENGTH] = "";
-static int  ppl_error_last_linenumber              = -1; // Only inform user one of each line number
-static char ppl_error_last_filename[FNAME_LENGTH]  = "";
 
 char ppl_error_source[16] = "main     "; // Identifier of the process producing log messages
 
@@ -50,25 +48,48 @@ void ppl_error_setstreaminfo(int linenumber,char *filename)
   return;
  }
 
-void ppl_error(char *msg)
+void ppl_error(int ErrType, char *msg)
  {
-  if ((msg!=temp_stringA) && (msg!=temp_stringB)) { strcpy(temp_stringA, msg); msg = temp_stringA; }
-  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Error:\n", msg); ppl_log(temp_stringC); }
-  if ( ((       ppl_error_input_linenumber    != -1) && (       ppl_error_input_linenumber                         != ppl_error_last_linenumber)) ||
-       ((strcmp(ppl_error_input_filename, "") !=  0) && (strcmp(ppl_error_input_filename, ppl_error_last_filename) !=                         0))   )
+  int i=0;
+
+  if (msg!=temp_stringA) { strcpy(temp_stringA, msg); msg = temp_stringA; }
+
+  temp_stringB[i]='\0';
+
+  if (ErrType != ERR_PREFORMED) // Do not prepend anything to pre-formed errors
    {
-    strcpy(ppl_error_last_filename, ppl_error_input_filename);
-    ppl_error_last_linenumber = ppl_error_input_linenumber;
-    sprintf(temp_stringB, "Error encountered in %s at line %d:", ppl_error_input_filename, ppl_error_input_linenumber);
-    ppl_error(temp_stringB);
-    if (DEBUG) ppl_log(temp_stringB);
+    // When processing scripts, print error location
+    if ((ppl_error_input_linenumber != -1) && (strcmp(ppl_error_input_filename, "") !=  0)) 
+     {
+      sprintf(temp_stringB+i, "%s:%d:", ppl_error_input_filename, ppl_error_input_linenumber);
+      i += strlen(temp_stringB+i);
+      if (ErrType != ERR_STACKED) { temp_stringB[i++] = ' '; temp_stringB[i] = '\0'; }
+     }
+
+    // Prepend error type
+    switch (ErrType)
+     {
+      case ERR_INTERNAL: sprintf(temp_stringB+i, "Internal Error: ");  break;
+      case ERR_MEMORY  :
+      case ERR_GENERAL : sprintf(temp_stringB+i, "Error: ");           break;
+      case ERR_SYNTAX  : sprintf(temp_stringB+i, "Syntax Error: ");    break;
+      case ERR_NUMERIC : sprintf(temp_stringB+i, "Numerical Error: "); break;
+      case ERR_FILE    : sprintf(temp_stringB+i, "File Error: ");      break;
+     }
+    i += strlen(temp_stringB+i);
    }
+
+  strcpy(temp_stringB+i, msg);
+
+  if (DEBUG) { ppl_log(temp_stringB); }
+
+  // Print message in colour or monochrome
   if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDIN_FILENO) == 1))
    sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_err , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-                                     msg,
+                                     temp_stringB,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
   else
-   sprintf(temp_stringC, "%s\n", msg);
+   sprintf(temp_stringC, "%s\n", temp_stringB);
   fputs(temp_stringC, stderr);
   return; 
  }
@@ -77,24 +98,55 @@ void ppl_fatal(char *file, int line, char *msg)
  {
   char introline[FNAME_LENGTH];
   if (msg!=temp_stringE) strcpy(temp_stringE, msg);
-  sprintf(introline, "Fatal Error encounted in %s at line %d:", file, line);
-  ppl_error(introline);
-  ppl_error(temp_stringE);
+  sprintf(introline, "Fatal Error encountered in %s at line %d: %s", file, line, temp_stringE);
+  ppl_error(ERR_PREFORMED, introline);
   lt_FreeAll(0);
   if (DEBUG) ppl_log("Terminating with error condition 1.");
   exit(1);
  }
 
-void ppl_warning(char *msg)
+void ppl_warning(int ErrType, char *msg)
  {
-  if (msg!=temp_stringA) strcpy(temp_stringA, msg);
-  if (DEBUG) { sprintf(temp_stringC, "%s%s", "Warning:\n", temp_stringA); ppl_log(temp_stringC); }
+  int i=0;
+
+  if (msg!=temp_stringA) { strcpy(temp_stringA, msg); msg = temp_stringA; }
+
+  temp_stringB[i]='\0';
+
+  if (ErrType != ERR_PREFORMED) // Do not prepend anything to pre-formed errors
+   {
+    // When processing scripts, print error location
+    if ((ppl_error_input_linenumber != -1) && (strcmp(ppl_error_input_filename, "") !=  0))
+     {
+      sprintf(temp_stringB+i, "%s:%d:", ppl_error_input_filename, ppl_error_input_linenumber);
+      i += strlen(temp_stringB+i);
+      if (ErrType != ERR_STACKED) { temp_stringB[i++] = ' '; temp_stringB[i] = '\0'; }
+     }
+
+    // Prepend error type
+    switch (ErrType)
+     {
+      case ERR_INTERNAL: sprintf(temp_stringB+i, "Internal Warning: ");  break;
+      case ERR_MEMORY  :
+      case ERR_GENERAL : sprintf(temp_stringB+i, "Warning: ");           break;
+      case ERR_SYNTAX  : sprintf(temp_stringB+i, "Syntax Warning: ");    break;
+      case ERR_NUMERIC : sprintf(temp_stringB+i, "Numerical Warning: "); break;
+      case ERR_FILE    : sprintf(temp_stringB+i, "File Warning: ");      break;
+     }
+    i += strlen(temp_stringB+i);
+   }
+
+  strcpy(temp_stringB+i, msg);
+
+  if (DEBUG) { ppl_log(temp_stringB); }
+
+  // Print message in colour or monochrome
   if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDIN_FILENO) == 1))
    sprintf(temp_stringC, "%s%s%s\n", (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-                                     temp_stringA,
+                                     temp_stringB,
                                      (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) );
   else
-   sprintf(temp_stringC, "%s\n", temp_stringA);
+   sprintf(temp_stringC, "%s\n", temp_stringB);
   fputs(temp_stringC, stderr);
   return;
  }
