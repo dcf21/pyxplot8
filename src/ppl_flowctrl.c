@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <wordexp.h>
 #include <glob.h>
 
 #include <gsl/gsl_math.h>
@@ -309,7 +310,7 @@ int directive_foreach(Dict *command, int IterLevel)
   unsigned char foreachdatum;
   int        bracegot=0; // becomes one after we parse opening {
   int        bracelevel=0;
-  int        i,status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  int        i,j,status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   char      *loopvar;    // The loop variable
   value     *iterval, *valptr;
   value      dummy;
@@ -320,6 +321,7 @@ int directive_foreach(Dict *command, int IterLevel)
   cmd_chain  chain     = NULL;
   cmd_chain  chainiter = NULL;
   cmd_chain *cmd_put   = NULL;
+  wordexp_t  WordExp;
   glob_t     GlobData;
 
   cmd_put = &chain;
@@ -358,18 +360,24 @@ int directive_foreach(Dict *command, int IterLevel)
   if (cptr != NULL)
    {
     status=0;
-    if (glob(cptr, 0, NULL, &GlobData) != 0) { ppl_error(ERR_FILE, "Could not glob supplied filename."); return 1; }
-    for (i=0; i<GlobData.gl_pathc; i++)
+    if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
+    for (j=0; j<WordExp.we_wordc; j++)
      {
-      if (foreachdatum) { directive_foreach_LoopOverData(command, GlobData.gl_pathv[i], &chain, &chainiter, IterLevel, &status); } // Looping over data
-      else
+      if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
+      for (i=0; i<GlobData.gl_pathc; i++)
        {
-        iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
-        chainiter = chain;
-        status = loop_execute(&chainiter, IterLevel);
+        if (foreachdatum) { directive_foreach_LoopOverData(command, GlobData.gl_pathv[i], &chain, &chainiter, IterLevel, &status); } // Looping over data
+        else
+         {
+          iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
+          chainiter = chain;
+          status = loop_execute(&chainiter, IterLevel);
+         }
+        if (status) break;
        }
       if (status) break;
      }
+    wordfree(&WordExp);
     if (!foreachdatum) ppl_units_zero(iterval);
     globfree(&GlobData);
     return status;

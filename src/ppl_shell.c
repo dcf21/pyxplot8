@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <wordexp.h>
 #include <glob.h>
 #include <setjmp.h>
 #include <readline/history.h>
@@ -242,11 +243,12 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
 
 int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, int IterLevel)
  {
-  char  *directive, *varname, *varstrval;
-  value *varnumval;
-  glob_t GlobData;
-  char   buffer[LSTR_LENGTH]="";
-  int    i;
+  char      *directive, *varname, *varstrval;
+  value     *varnumval;
+  wordexp_t  WordExp;
+  glob_t     GlobData;
+  char       buffer[LSTR_LENGTH]="";
+  int        i,j;
 
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
 
@@ -315,10 +317,15 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "load")==0)
    {
     DictLookup(command,"filename",NULL,(void **)(&varstrval));
-    if (glob(varstrval, 0, NULL, &GlobData) != 0) { ppl_error(ERR_FILE, "Could not glob this filename."); return 1; }
-    lt_AscendOutOfContext(memcontext); command = NULL;
-    for (i=0; i<GlobData.gl_pathc; i++) ProcessPyXPlotScript(GlobData.gl_pathv[i], IterLevel+1);
-    globfree(&GlobData);
+    if ((wordexp(varstrval, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", varstrval); ppl_error(ERR_FILE, temp_err_string); return 1; }
+    for (j=0; j<WordExp.we_wordc; j++)
+     {
+      if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
+      lt_AscendOutOfContext(memcontext); command = NULL;
+      for (i=0; i<GlobData.gl_pathc; i++) ProcessPyXPlotScript(GlobData.gl_pathv[i], IterLevel+1);
+      globfree(&GlobData);
+     }
+    wordfree(&WordExp);
     return 0;
    }
   else if (strcmp(directive, "loglinear")==0)
@@ -393,6 +400,8 @@ void directive_cd(Dict *command)
   Dict         *DirNameDict;
   char         *DirName;
   ListIterator *CDIterate;
+  wordexp_t     WordExp;
+  glob_t        GlobData;
 
   DictLookup(command,"path",NULL,(void **)(&DirList));
   CDIterate = ListIterateInit(DirList);
@@ -400,12 +409,17 @@ void directive_cd(Dict *command)
    {
     CDIterate = ListIterate(CDIterate , (void **)&DirNameDict);
     DictLookup(DirNameDict,"directory",NULL,(void **)&DirName);
-    if (chdir(DirName) < 0)
+    if ((wordexp(DirName, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", DirName); ppl_error(ERR_FILE, temp_err_string); return; }
+    if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return; }
+    wordfree(&WordExp);
+    if (chdir(GlobData.gl_pathv[0]) < 0)
      {
-      sprintf(temp_err_string, "Could not change into directory '%s'.", DirName);
+      sprintf(temp_err_string, "Could not change into directory '%s'.", GlobData.gl_pathv[0]);
       ppl_error(ERR_FILE, temp_err_string);
+      globfree(&GlobData);
       break;
      }
+    globfree(&GlobData);
    }
   if (getcwd( settings_session_default.cwd , FNAME_LENGTH ) == NULL) { ppl_fatal(__FILE__,__LINE__,"Could not read current working directory."); } // Store cwd
   return;

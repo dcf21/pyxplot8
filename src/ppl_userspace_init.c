@@ -92,18 +92,18 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_chisqCDFi     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDFi   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 CDFi}@<@1,@2@>", "chisqCDFi(P,nu) returns the point x at which the cumulative probability desity in a chi-squared distribution with nu degrees of freedom is P"};
   FunctionDescriptor fd_conjugate     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_conjugate   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{conjugate}@<@1@>", "conjugate(z) returns the complex conjugate of z"};
   FunctionDescriptor fd_cos           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cos         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cos}@<@1@>", "cos(x) returns the cosine of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_cosh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cosh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cosh}@<@1@>", "cosh(x) returns the hyperbolic cosine of x"};
+  FunctionDescriptor fd_cosh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cosh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cosh}@<@1@>", "cosh(x) returns the hyperbolic cosine of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_cot           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cot         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cot}@<@1@>", "cot(x) returns the cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_coth          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_coth        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{coth}@<@1@>", "coth(x) returns the hyperbolic cotangent of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_coth          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_coth        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{coth}@<@1@>", "coth(x) returns the hyperbolic cotangent of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_csc           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csc         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{csc}@<@1@>", "csc(x) returns the cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_csch          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csch        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{csch}@<@1@>", "csch(x) returns the hyperbolic cosecant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_csch          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_csch        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{csch}@<@1@>", "csch(x) returns the hyperbolic cosecant of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_degrees       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_degrees     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{degrees}@<@1@>", "degrees(x) converts angles measured in radians into degrees"};
   FunctionDescriptor fd_ellK          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellK        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ellipticintK}@<@1@>", "ellipticintK(k) evaluates the complete elliptic integral K(k)"};
   FunctionDescriptor fd_ellE          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_ellE        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ellipticintE}@<@1@>", "ellipticintE(k) evaluates the complete elliptic integral E(k)"};
   FunctionDescriptor fd_ellP          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ellP        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ellipticintP}@<@1,@2@>", "ellipticintP(k,n) evaluates the complete elliptic integral P(k,n)"};
   FunctionDescriptor fd_erf           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erf         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{erf}@<@1@>", "erf(x) evaluates the error function at x"};
   FunctionDescriptor fd_erfc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_erfc        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{erfc}@<@1@>", "erfc(x) evaluates the complimentary error function at x"};
-  FunctionDescriptor fd_exp           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_exp         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{exp}@<@1@>", "exp(x) returns e to the power of x"};
+  FunctionDescriptor fd_exp           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_exp         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{exp}@<@1@>", "exp(x) returns e to the power of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_expm1         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_expm1       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expm1}@<@1@>", "expm1(x) accurately evaluates exp(x)-1"};
   FunctionDescriptor fd_expint        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_expint      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expint}@<@1,@2@>", "expint(n,x) evaluates the integral of exp(-xt)/t**n between one and infinity"};
   FunctionDescriptor fd_floor         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_floor       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{floor}@<@1@>", "floor(x) returns the largest integer value smaller than or equal to x"};
@@ -140,12 +140,12 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_randomp       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomp    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random\\_poisson}@<@1@>", "random_poisson(n) returns a random integer from a Poisson distribution with mean n"};
   FunctionDescriptor fd_real          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_real        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{Re}@<@1@>", "Re(z) returns the magnitude of the real part of z"};
   FunctionDescriptor fd_sec           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sec}@<@1@>", "sec(x) returns the secant of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_sech          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sech        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sech}@<@1@>", "sech(x) returns the hyperbolic secant of x. If x is dimensionless, it is assumed to be measured in radians"};
+  FunctionDescriptor fd_sech          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sech        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sech}@<@1@>", "sech(x) returns the hyperbolic secant of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_sin           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sin         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sin}@<@1@>", "sin(x) returns the sine of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinh}@<@1@>", "sinh(x) returns the hyperbolic sine of x"};
+  FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinh}@<@1@>", "sinh(x) returns the hyperbolic sine of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "\\sqrt{@1}", "sqrt(x) returns the square root of x"};
   FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tan}@<@1@>", "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
-  FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tanh}@<@1@>", "tanh(x) returns the hyperbolic tangent of x"};
+  FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tanh}@<@1@>", "tanh(x) returns the hyperbolic tangent of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_texify        = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&wrapper_texify      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{texify}@<@0@>", "texify(str) converts an algebraic expression into a LaTeX command string representation"};
   FunctionDescriptor fd_time_juliandate={ PPL_USERSPACE_SYSTEM , 0 , 6 , (void *)&dcftime_juliandate  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_juliandate}@<@1,@2,@3,@4,@5,@6@>", "time_juliandate(year,month,day,hour,min,sec) returns the Julian Date corresponding to the calendar date supplied"};
   FunctionDescriptor fd_time_now      = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcftime_now         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_now}@<@>", "time_now() returns the present Julian Date"};
@@ -925,7 +925,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
-  ppl_unit_database[ppl_unit_pos].multiplier = 907;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TON;
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
@@ -938,7 +938,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1016;
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_UK_TON;
   ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
@@ -1469,7 +1469,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "hectare";
   ppl_unit_database[ppl_unit_pos].nameFp     = "hectares";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
-  ppl_unit_database[ppl_unit_pos].multiplier = 1e5;
+  ppl_unit_database[ppl_unit_pos].multiplier = 1e4;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1801,7 +1801,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "firkin_UK_ale";
   ppl_unit_database[ppl_unit_pos].nameFp     = "firkins_UK_ale";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].multiplier = 40.91481;
+  ppl_unit_database[ppl_unit_pos].multiplier = 40.91481e-3;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1812,7 +1812,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "firkin_wine";
   ppl_unit_database[ppl_unit_pos].nameFp     = "firkins_wine";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].multiplier = 318;
+  ppl_unit_database[ppl_unit_pos].multiplier = 318e-3;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1823,7 +1823,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "kilderkin_UK_ale";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kilderkins_UK_ale";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].multiplier = 81.82962;
+  ppl_unit_database[ppl_unit_pos].multiplier = 81.82962e-3;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 

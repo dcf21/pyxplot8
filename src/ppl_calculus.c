@@ -71,6 +71,10 @@ double CalculusSlave(double x, void *params)
       return GSL_NAN;
      }
    }
+
+  // Integrand was complex, but complex arithmetic is turned off
+  if ((!ppl_units_DblEqual(output.imag, 0)) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) return GSL_NAN;
+
   if (data->TestingReal) return output.real;
   else                   return output.imag;
  }
@@ -147,6 +151,12 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
     out->imag = ResultImag;
     out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
     if (!out->FlagComplex) out->imag=0.0; // Enforce that real numbers have positive zero imaginary components
+   }
+
+  if ((!gsl_finite(out->real)) || (!gsl_finite(out->imag)) || ((out->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *errpos=0; sprintf(errtext, "Integral does not evaluate to a finite value."); return; }
+    else { out->real = GSL_NAN; out->imag = 0; out->FlagComplex=0; }
    }
   return;
  }
@@ -228,6 +238,12 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
     out->imag = ResultImag;
     out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
     if (!out->FlagComplex) out->imag=0.0; // Enforce that real numbers have positive zero imaginary components
+   }
+
+  if ((!gsl_finite(out->real)) || (!gsl_finite(out->imag)) || ((out->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *errpos=0; sprintf(errtext, "Differential does not evaluate to a finite value."); return; } 
+    else { out->real = GSL_NAN; out->imag = 0; out->FlagComplex=0; }
    }
   return;
  }
