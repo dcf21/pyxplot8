@@ -31,6 +31,8 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "MathsTools/dcfmath.h"
+
 #include "EPSMaker/eps_colours.h"
 
 #include "ppl_constants.h"
@@ -231,6 +233,10 @@ void ppl_settings_makedefault()
   settings_session_default.colour_wrn= SW_TERMCOL_BRN;
   settings_session_default.colour_err= SW_TERMCOL_RED;
   strcpy(settings_session_default.homedir, UnixGetHomeDir());
+
+  // Estimate the machine precision of the floating point unit we are using
+  machine_epsilon = 1.0; // Variable defined in dcfmath.c
+  do { machine_epsilon /= 2.0; } while ((1.0 + (machine_epsilon/2.0)) != 1.0);
 
   // Try and find out the default papersize from the locale command
   // Do this using the popen() command rather than direct calls to nl_langinfo(_NL_PAPER_WIDTH), because the latter is gnu-specific

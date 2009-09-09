@@ -21,6 +21,8 @@
 
 // A selection of useful mathematical functions which are not included in the standard C math library
 
+#define _PPL_DCFMATH_C 1
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
@@ -46,6 +48,8 @@
 
 #include "dcfmath.h"
 #include "zeta_riemann.h"
+
+double machine_epsilon;
 
 double max(double x, double y)
  {
@@ -1068,7 +1072,15 @@ void dcfmath_mod(value *in1, value *in2, value *output, int *status, char *errte
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMMATCH;
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = fmod(in1->real , in2->real); }
+  ELSE_REAL
+   {
+    if (in1->real*machine_epsilon*10 > in2->real)
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "Loss of accuracy in the function %s; the remainder of this division is lost in floating-point rounding.", FunctionDescription); return; }
+      else { NULL_OUTPUT; }
+     }
+    output->real = fmod(in1->real , in2->real);
+   }
   ENDIF
   CHECK_OUTPUT_OKAY;
   ppl_units_DimCpy(output, in1);

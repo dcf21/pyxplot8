@@ -24,6 +24,10 @@
 
 #include "ppl_units.h"
 
+#ifndef _DCFMATH_C
+extern double machine_epsilon;
+#endif
+
 double max    (double x, double y);
 double min    (double x, double y);
 int    sgn    (double x);
