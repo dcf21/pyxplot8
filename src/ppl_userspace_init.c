@@ -39,6 +39,7 @@
 #include "ppl_error.h"
 #include "ppl_texify.h"
 #include "ppl_units.h"
+#include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
 void ppl_UserSpaceInit()
@@ -1790,7 +1791,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFs     = "tablespoon";
   ppl_unit_database[ppl_unit_pos].nameFp     = "tablespoons";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
-  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TABLESPOON;
+  ppl_unit_database[ppl_unit_pos].multiplier = 15e-6; // 15 mL
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 

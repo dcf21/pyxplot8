@@ -23,8 +23,6 @@
 #define _PPL_SETTINGS_H 1
 
 #include "StringTools/str_constants.h"
-#include "ListTools/lt_list.h"
-#include "ListTools/lt_dict.h"
 
 #include "ppl_constants.h"
 #include "ppl_units.h"
@@ -52,14 +50,6 @@ typedef struct settings_graph {
  with_words   DataStyle, FuncStyle;
  } settings_graph;
 
-typedef struct settings_axis {
- unsigned char enabled;
- int    MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
- double LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
- char   label[FNAME_LENGTH];
- List   *MTickList, *TickList;
- } settings_axis;
-
 typedef struct settings_session {
  int   splash, colour, colour_rep, colour_wrn, colour_err;
  char  cwd[FNAME_LENGTH];
@@ -73,17 +63,33 @@ extern settings_terminal settings_term_default;
 extern settings_terminal settings_term_current;
 extern settings_graph    settings_graph_default;
 extern settings_graph    settings_graph_current;
+extern settings_session  settings_session_default;
+extern int               settings_palette_current[];
+extern int               settings_palette_default[];
+
+void  ppl_settings_makedefault();
+void  ppl_settings_readconfig();
+#endif
+
+// Can now safely include these headers, which need some of the settings above
+#include "ListTools/lt_list.h"
+#include "ListTools/lt_dict.h"
+
+typedef struct settings_axis {
+ unsigned char enabled;
+ int    MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
+ double LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
+ char   label[FNAME_LENGTH];
+ List   *MTickList, *TickList;
+ } settings_axis;
+
+// Variables defined in ppl_settings.c
+#ifndef _PPL_SETTINGS_C
 extern settings_axis     settings_axis_default;
 extern settings_axis     XAxes[];
 extern settings_axis     YAxes[];
 extern settings_axis     ZAxes[];
-extern settings_session  settings_session_default;
-extern int               settings_palette_current[];
-extern int               settings_palette_default[];
 extern Dict             *settings_filters;
-
-void  ppl_settings_makedefault();
-void  ppl_settings_readconfig();
 #endif
 
 // Functions defined in ppl_readconfig.c

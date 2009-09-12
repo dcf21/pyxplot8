@@ -51,7 +51,7 @@ LOCAL_OBJDIR = obj
 LOCAL_DOCDIR = doc
 LOCAL_BINDIR = bin
 
-PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c MathsTools/zeta_riemann.c ppl_calculus.c ppl_canvasdraw.c ppl_canvasitems.c ppl_children.c ppl_commands.c ppl_datafile.c ppl_eqnsolve.c ppl_error.c ppl_flowctrl.c ppl_help.c ppl_input.c ppl_interpolation.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_setshow.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_texify.c ppl_text.c ppl_userspace.c ppl_userspace_init.c pyxplot.c StringTools/asciidouble.c
+PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c MathsTools/dcfast.c MathsTools/dcfmath.c MathsTools/dcftime.c MathsTools/zeta_riemann.c ppl_calculus.c ppl_canvasdraw.c ppl_canvasitems.c ppl_children.c ppl_commands.c ppl_datafile.c ppl_eqnsolve.c ppl_error.c ppl_flowctrl.c ppl_help.c ppl_input.c ppl_interpolation.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_setshow.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_texify.c ppl_text.c ppl_units.c ppl_userspace.c ppl_userspace_init.c pyxplot.c StringTools/asciidouble.c
 
 PPL_HEADERS = ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h ListTools/lt_StringProc.h MathsTools/dcfast.h MathsTools/dcfmath.h MathsTools/dcftime.h MathsTools/zeta_riemann.h ppl_calculus.h ppl_canvasdraw.h ppl_canvasitems.h ppl_children.h ppl_constants.h ppl_datafile.h ppl_eqnsolve.h ppl_error.h ppl_flowctrl.h ppl_input.h ppl_interpolation.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_texify.h ppl_units.h ppl_userspace.h ppl_userspace_init.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
 
@@ -70,7 +70,7 @@ PPL_SOURCES         = $(PPL_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
 PPL_OBJECTS         = $(PPL_FILES:%.c=$(LOCAL_OBJDIR)/%.o)
 PPL_OBJECTS_DEBUG   = $(PPL_OBJECTS:%.o=%.debug.o)
 PPL_OBJECTS_INSTALL = $(PPL_OBJECTS:%.o=%.install.o)
-PPL_HFILES          = $(PPL_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) src/ppl_units.c src/MathsTools/dcfast.c src/MathsTools/dcfmath.c src/MathsTools/dcftime.c Makefile
+PPL_HFILES          = $(PPL_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
 
 TESTCARD_SOURCES    = $(TESTCARD_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
 TESTCARD_OBJECTS    = $(TESTCARD_FILES:%.c=$(LOCAL_OBJDIR)/%.debug.o)

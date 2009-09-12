@@ -34,6 +34,7 @@
 #include "ppl_setting_types.h"
 #include "ppl_texify.h"
 #include "ppl_units.h"
+#include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
 static unsigned char InMathMode;

@@ -41,6 +41,7 @@
 #include "ppl_input.h"
 #include "ppl_parser.h"
 #include "ppl_units.h"
+#include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 #include "pyxplot.h"
 

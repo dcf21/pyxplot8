@@ -62,6 +62,8 @@ int               settings_palette_current[PALETTE_LENGTH];
 
 Dict             *settings_filters;
 
+#include "ppl_units_fns.h"
+
 void ppl_settings_makedefault()
  {
   FILE  *LocalePipe;

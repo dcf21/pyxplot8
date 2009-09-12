@@ -33,10 +33,14 @@
 #include "StringTools/str_constants.h"
 
 #include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_units.h"
+#include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
 #include "dcftime.h"
+
+#include "dcfmath_macros.h"
 
 // Routines for looking up the dates when the transition between the Julian calendar and the Gregorian calendar occurred
 

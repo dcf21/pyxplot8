@@ -33,7 +33,11 @@
 #include <gsl/gsl_multimin.h>
 
 #include "ppl_settings.h"
+#include "ppl_setting_types.h"
 #include "ppl_units.h"
+#include "ppl_units_fns.h"
+
+#include "dcfmath_macros.h"
 
 // Lambda Cold Dark Matter Cosmology Engine
 

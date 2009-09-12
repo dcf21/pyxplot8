@@ -39,6 +39,8 @@
 #include "ppl_setshow.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_units.h"
+#include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
 int ppl_termtype_set_in_configfile = 0;

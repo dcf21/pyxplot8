@@ -21,11 +21,6 @@
 
 #define _PPL_USERSPACE 1
 
-// Include <ppl_units.c> as a part of this source file to allow inline
-// compilation of arithmetic functions.
-#include "ppl_units.c"
-#include "MathsTools/dcfmath.c"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -39,12 +34,15 @@
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
+#include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
 
 #include "ppl_calculus.h"
 #include "ppl_constants.h"
 #include "ppl_datafile.h"
 #include "ppl_interpolation.h"
+#include "ppl_units.h"
+#include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
 // -------------------------------------------------------------------
