@@ -43,6 +43,7 @@
 #include "ppl_children.h"
 #include "ppl_eqnsolve.h"
 #include "ppl_error.h"
+#include "ppl_fit.h"
 #include "ppl_flowctrl.h"
 #include "ppl_help.h"
 #include "ppl_input.h"
@@ -183,6 +184,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
     // Do `` substitution
     l = strlen(in+1);
     DirectiveLinebuffer = (char *)malloc(l*sizeof(char));
+    if (DirectiveLinebuffer==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
     for (i=0, j=0; in[i]!='\0'; i++)
      {
       if      ((QuoteChar=='\0') && (in[i]=='\'')                   ) QuoteChar = '\'';
@@ -205,6 +207,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
         while ((!feof(SubstPipe)) && (!ferror(SubstPipe)))
          {
           if (l <= j) DirectiveLinebuffer = (char *)realloc((void *)DirectiveLinebuffer, l=l+1024);
+          if (DirectiveLinebuffer==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
           fscanf(SubstPipe,"%c",DirectiveLinebuffer + j);
           if (DirectiveLinebuffer[j] == '\n') DirectiveLinebuffer[j] = ' ';
           if (DirectiveLinebuffer[j] != '\0') j++;
@@ -298,6 +301,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "do")==0)
    return directive_do(command, IterLevel+1);
+  else if (strcmp(directive, "fit")==0)
+   return directive_fit(command);
   else if (strcmp(directive, "for")==0)
    return directive_for(command, IterLevel+1);
   else if (strcmp(directive, "foreach")==0)
@@ -555,6 +560,7 @@ int directive_regex(Dict *command)
 
   // Copy string into string variable
   varnumval->string = (char *)lt_malloc_incontext(strlen(cmd)+1, _ppl_UserSpace_Vars->memory_context);
+  if (varnumval->string==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return 1; }
   strcpy(varnumval->string, cmd);
   return 0;
  }
