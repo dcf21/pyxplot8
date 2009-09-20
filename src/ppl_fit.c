@@ -47,13 +47,15 @@
 
 // Structure used for passing data around
 typedef struct FitComm {
- int                 NArgs;
+ int                 NArgs, NExpect;
  long int            NDataPoints;
  value             **outval;
  gsl_vector         *ParamVals;
+ value              *FirstVals;
  double             *DataTable;
  unsigned char       FlagYErrorBars;
  FunctionDescriptor *funcdef;
+ char               *ScratchPad, *errtext, *FunctionName;
 } FitComm;
 
 // Routine for printing a GSL matrix in pythonesque format
@@ -76,9 +78,10 @@ char *MatrixPrint(gsl_matrix *m, size_t size, char *out)
 // Low-level routine for working out the mismatch between function and data for a given set of free parameter values
 static double FitResidual(FitComm *p)
  {
-  int      i;
+  int      i, k, errpos=-1;
   long int j;
   double   accumulator, residual;
+  value    x;
 
   // Set free parameter values
   for (i=0; i<p->NArgs; i++) p->outval[i]->real = gsl_vector_get(p->ParamVals, i);
@@ -87,6 +90,11 @@ static double FitResidual(FitComm *p)
 
   for (j=0; j<p->NDataPoints; j++)
    {
+    i=0;
+    sprintf(p->ScratchPad+i, "%s(", p->FunctionName); i+=strlen(p->ScratchPad+i);
+    for (k=0; k<p->NArgs; k++) { sprintf(p->ScratchPad+i, "%e%s,", gsl_vector_get(p->ParamVals,k), ppl_units_GetUnitStr(p->FirstVals+k,NULL,NULL,0,1)); i+=strlen(p->ScratchPad+i); }
+    sprintf(p->ScratchPad+i, ")");
+    ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);
     residual = 0.0;
     accumulator += residual;
    }
@@ -117,14 +125,16 @@ int directive_fit(Dict *command)
   char      *cptr, *filename;
   wordexp_t  WordExp;
   glob_t     GlobData;
-  long int   i, j, NDataPoints;
+  long int   i, j, k, NDataPoints;
   int        ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
   char       errtext[LSTR_LENGTH], *FitVars[USING_ITEMS_MAX], *tempstr=NULL, *SelectCrit=NULL;
   List      *UsingList=NULL, *EveryList=NULL;
   value     *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX], *outval[USING_ITEMS_MAX];
   value     *DummyVar, DummyTemp;
   DataTable *data;
-  double    *LocalDataTable;
+  DataBlock *blk;
+  unsigned char InRange;
+  double    *LocalDataTable, val;
 
   FunctionDescriptor *funcdef;
   List         *RangeList, *VarList;
@@ -175,6 +185,7 @@ int directive_fit(Dict *command)
 
   // Get name of function to fit
   DictLookup(command,"fit_function", NULL, (void **)&cptr);
+  DataComm.FunctionName = cptr;
   if (cptr   ==NULL) ppl_error(ERR_INTERNAL, "Fitting function name not found in fit command.");
   DictLookup(_ppl_UserSpace_Funcs, cptr, NULL, (void **)&funcdef);
   if (funcdef==NULL) { sprintf(temp_err_string,"No such function as '%s'.",cptr); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
@@ -228,22 +239,58 @@ int directive_fit(Dict *command)
 
   // Work out how many data points we have within the specified ranges
   NDataPoints = 0;
+  blk = data->first;
+  while (blk != NULL)
+   {
+    for (j=0; j<blk->BlockPosition; j++)
+     {
+      InRange=1;
+      for (k=0; k<NExpect; k++)
+       {
+        val = blk->data_real[k + NExpect*j];
+        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
+       }
+      if (InRange) NDataPoints++;
+     }
+    blk=blk->next;
+   }
 
   // Copy data into a new table and apply the specified ranges to it
-  LocalDataTable = (double *)malloc(NDataPoints * NExpect * sizeof(double));
+  LocalDataTable = (double *)lt_malloc_incontext(NDataPoints * NExpect * sizeof(double), ContextLocalVec);
   if (LocalDataTable==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return 1; } 
+  i=0;
+  blk = data->first;
+  while (blk != NULL)
+   {
+    for (j=0; j<blk->BlockPosition; j++)
+     {
+      InRange=1;
+      for (k=0; k<NExpect; k++)
+       {
+        val = blk->data_real[k + NExpect*j];
+        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
+        LocalDataTable[i * NExpect + k] = val;
+       }
+      if (InRange) i++;
+     }
+    blk=blk->next;
+   }
 
   // Free original data table which is no longer needed
   lt_AscendOutOfContext(ContextDataTab);
 
   // Populate DataComm
   DataComm.NArgs       = NArgs;
+  DataComm.NExpect     = NExpect;
   DataComm.NDataPoints = NDataPoints;
   DataComm.outval      = outval;
   DataComm.ParamVals   = NULL;
+  DataComm.FirstVals   = data->FirstEntries;
   DataComm.DataTable   = LocalDataTable;
   DataComm.FlagYErrorBars = (NExpect == NArgs+2);
   DataComm.funcdef     = funcdef;
+  DataComm.ScratchPad  = (char *)lt_malloc_incontext(LSTR_LENGTH, ContextLocalVec);
+  DataComm.errtext     = (char *)lt_malloc_incontext(LSTR_LENGTH, ContextLocalVec); // FunctionName was already set above
 
   // Set up a minimiser
 
