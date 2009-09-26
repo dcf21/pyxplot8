@@ -175,10 +175,10 @@ RANGES_DONE:
   // Filter out repeat values of x
   for (j=k=1; j<i; j++)
    {
-    if (xdata[j]==xdata[j-1]) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Repeat values for interpolation have been supplied at x=%s.",ppl_units_NumericDisplay(&v, 0, 0)); ppl_warning(ERR_GENERAL, temp_err_string); COUNTEDERR2; continue; }
+    if (xdata[j]==xdata[j-1]) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Repeat values for interpolation have been supplied at x=%s.",ppl_units_NumericDisplay(&v, 0, 0, 0)); ppl_warning(ERR_GENERAL, temp_err_string); COUNTEDERR2; continue; }
     if (mode == INTERP_LOGLIN)
      {
-      if ((xdata[j]<=0.0) || (ydata[j]<=0.0)) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Negative or zero values are not allowed in power-law interpolation; negative values supplied at x=%s will be ignored.",ppl_units_NumericDisplay(&v, 0, 0)); ppl_warning(ERR_NUMERIC, temp_err_string); COUNTEDERR2; continue; }
+      if ((xdata[j]<=0.0) || (ydata[j]<=0.0)) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Negative or zero values are not allowed in power-law interpolation; negative values supplied at x=%s will be ignored.",ppl_units_NumericDisplay(&v, 0, 0, 0)); ppl_warning(ERR_NUMERIC, temp_err_string); COUNTEDERR2; continue; }
       xdata[k]=log(xdata[j]);
       ydata[k]=log(ydata[j]);
      }

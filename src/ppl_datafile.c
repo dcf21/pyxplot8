@@ -409,7 +409,7 @@ void DataFile_DataTable_List(DataTable *i)
         v.real        = blk->data_real[j*Ncolumns + k];
         v.imag        = 0.0;
         v.FlagComplex = 0;
-        printf("%15s [line %6ld]  ",ppl_units_NumericDisplay(&v, 0, 0), blk->FileLine[j*Ncolumns + k] );
+        printf("%15s [line %6ld]  ",ppl_units_NumericDisplay(&v, 0, 0, 0), blk->FileLine[j*Ncolumns + k] );
        }
       if (blk->text[j] != NULL) printf("Label: <%s>",blk->text[j]);
       printf("\n");
@@ -820,7 +820,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         if (DEBUG)
          {
           sprintf(temp_err_string,"Total of %ld column units read.",ItemsOnLine); ppl_log(temp_err_string);
-          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Column unit %d: %s",k,ppl_units_NumericDisplay(ColumnUnits+k,0,0)); ppl_log(temp_err_string); }
+          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Column unit %d: %s",k,ppl_units_NumericDisplay(ColumnUnits+k,0,0,0)); ppl_log(temp_err_string); }
          }
        }
       else if (strncmp(linebuffer+i, "RowUnits:", 9)==0) // '# RowUnits:' means we have a list of row units
@@ -859,7 +859,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         if (DEBUG)
          {
           sprintf(temp_err_string,"Total of %ld row units read.",ItemsOnLine); ppl_log(temp_err_string);
-          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Row unit %d: %s",k,ppl_units_NumericDisplay(RowUnits+k,0,0)); ppl_log(temp_err_string); }
+          for (k=0; k<ItemsOnLine; k++) { sprintf(temp_err_string,"Row unit %d: %s",k,ppl_units_NumericDisplay(RowUnits+k,0,0,0)); ppl_log(temp_err_string); }
          }
        }
       continue; // Ignore comment lines

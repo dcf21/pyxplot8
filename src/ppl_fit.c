@@ -92,14 +92,22 @@ static double FitResidual(FitComm *p)
    {
     i=0;
     sprintf(p->ScratchPad+i, "%s(", p->FunctionName); i+=strlen(p->ScratchPad+i);
-    for (k=0; k<p->NArgs; k++) { sprintf(p->ScratchPad+i, "%e%s,", gsl_vector_get(p->ParamVals,k), ppl_units_GetUnitStr(p->FirstVals+k,NULL,NULL,0,1)); i+=strlen(p->ScratchPad+i); }
+    for (k=0; k<p->NArgs; k++) { sprintf(p->ScratchPad+i, "%e%s,", gsl_vector_get(p->ParamVals,k), ppl_units_GetUnitStr((*(p->outval))+k,NULL,NULL,0,1)); i+=strlen(p->ScratchPad+i); }
     sprintf(p->ScratchPad+i, ")");
     ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);
-    residual = 0.0;
+    if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,0)); return GSL_NAN; }
+    residual = hypot(x.real - gsl_vector_get(p->ParamVals,k) , x.imag);
     accumulator += residual;
    }
 
   return accumulator;
+ }
+
+static double ResidualMinimiserSlave(gsl_vector *x, void *p_void)
+ {
+  FitComm *p = (FitComm *)p_void;
+  p->ParamVals = x;
+  return FitResidual(p);
  }
 
 // Routine for working out the Hessian matrix
@@ -293,6 +301,7 @@ int directive_fit(Dict *command)
   DataComm.errtext     = (char *)lt_malloc_incontext(LSTR_LENGTH, ContextLocalVec); // FunctionName was already set above
 
   // Set up a minimiser
+  // ResidualMinimiserSlave()
 
   // We're finished... can now free DataTable
   lt_AscendOutOfContext(ContextLocalVec);

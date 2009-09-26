@@ -567,7 +567,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
           if (*errpos>=0) { *errpos += pos; return; } // Error from attempt at string evaluation should prevail
           argf.s = FormatArg;
          } else {
-          argf.s = ppl_units_NumericDisplay(&argtemp, 0, 0);
+          argf.s = ppl_units_NumericDisplay(&argtemp, 0, 0, 0);
          }
         if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s); // Print a string variable
         if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.s);

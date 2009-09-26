@@ -357,7 +357,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
      {
       if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
-      strcpy(out+outpos, ppl_units_NumericDisplay(ResultBuffer+StatusRow[i]-BUFFER_OFFSET, 0, SW_DISPLAY_L)+1); // Chop off initial $
+      strcpy(out+outpos, ppl_units_NumericDisplay(ResultBuffer+StatusRow[i]-BUFFER_OFFSET, 0, SW_DISPLAY_L, 0)+1); // Chop off initial $
       outpos += strlen(out+outpos) - 1; // Chop off final $
       ci = StatusRow[i];
       while (StatusRow[i]==ci) i++; i--;

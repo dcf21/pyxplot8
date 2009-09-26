@@ -38,7 +38,7 @@ extern int    ppl_baseunit_pos;
 #endif
 
 value *ppl_units_zero          (value *in);
-char  *ppl_units_NumericDisplay(value *in, int N, int typeable);
+char  *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs);
 
 char  *ppl_units_GetUnitStr    (const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
 int __inline__ UnitNameCmp     (const char *in, const char *unit, const unsigned char CaseSensitive);

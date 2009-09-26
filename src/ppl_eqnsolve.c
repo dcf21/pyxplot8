@@ -62,7 +62,7 @@ char *PrintParameterValues(const gsl_vector *x, MMComm *data, char *output)
   j += strlen(output+j);
   for (i=0; i<data->Nfitvars; i++)
    {
-    sprintf(output+j, "%s=%s; ", data->fitvarname[i], ppl_units_NumericDisplay(data->fitvar[i],0,0));
+    sprintf(output+j, "%s=%s; ", data->fitvarname[i], ppl_units_NumericDisplay(data->fitvar[i],0,0,0));
     j += strlen(output+j);
    }
   if (j>3) sprintf(output+j-2, " )");

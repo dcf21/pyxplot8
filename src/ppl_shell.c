@@ -497,7 +497,7 @@ void directive_print(Dict *command)
     DictLookup(ItemSubDict,"expression",NULL,(void **)&item_val);
     if (item_val != NULL)
      {
-      strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0)); i+=strlen(PrintString+i);
+      strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0, 0)); i+=strlen(PrintString+i);
       ppl_UserSpace_SetVarNumeric("ans", item_val, 1);
      }
    }

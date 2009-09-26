@@ -70,7 +70,7 @@ value *ppl_units_zero(value *in)
  }
 
 // Display a value with units
-char *ppl_units_NumericDisplay(value *in, int N, int typeable)
+char *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs)
  {
   static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH];
   double NumberOutReal, NumberOutImag, OoM;
@@ -79,7 +79,9 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (N==0) output = outputA;
   else      output = outputB;
 
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) return NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L));
+  if (NSigFigs <= 0) NSigFigs = settings_term_current.SignificantFigures; // If number of significant figures not specified, use user-selected number
+
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) return NumericDisplay(GSL_NAN, N, NSigFigs, (typeable==SW_DISPLAY_L));
 
   if (typeable==0) typeable = settings_term_current.NumDisplay;
   unitstr = ppl_units_GetUnitStr(in, &NumberOutReal, &NumberOutImag, N, typeable);
@@ -87,16 +89,16 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
   if (((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) || (!gsl_finite(NumberOutReal)) || (!gsl_finite(NumberOutImag)))
    {
     if (typeable == SW_DISPLAY_L) output[i++] = '$';
-    strcpy(output+i, NumericDisplay(GSL_NAN, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
+    strcpy(output+i, NumericDisplay(GSL_NAN, N, NSigFigs, (typeable==SW_DISPLAY_L)));
     i+=strlen(output+i);
    }
   else
    {
-    OoM = hypot(NumberOutReal , NumberOutImag) * pow(10 , -settings_term_current.SignificantFigures);
+    OoM = hypot(NumberOutReal , NumberOutImag) * pow(10 , -NSigFigs);
 
     if (typeable == SW_DISPLAY_L) output[i++] = '$';
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM)) output[i++] = '('; // open brackets on complex number
-    if (fabs(NumberOutReal) >= OoM) { strcpy(output+i, NumericDisplay(NumberOutReal, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L))); i+=strlen(output+i); }
+    if (fabs(NumberOutReal) >= OoM) { strcpy(output+i, NumericDisplay(NumberOutReal, N, NSigFigs, (typeable==SW_DISPLAY_L))); i+=strlen(output+i); }
     if ((fabs(NumberOutReal) >= OoM) && (fabs(NumberOutImag) > OoM) && (NumberOutImag > 0)) output[i++] = '+';
     if (fabs(NumberOutImag) > OoM)
      {
@@ -104,7 +106,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable)
        {
         if (fabs(NumberOutImag+1.0)>=OoM)
          {
-          strcpy(output+i, NumericDisplay(NumberOutImag, N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
+          strcpy(output+i, NumericDisplay(NumberOutImag, N, NSigFigs, (typeable==SW_DISPLAY_L)));
           i+=strlen(output+i);
          }
         else

@@ -1041,7 +1041,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (sg->key == SW_ONOFF_ON)  )
    {
-    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0));
+    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0,0));
     directive_show3(out+i, ItemSet, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.real == sg->KeyXOff.real)&&(settings_graph_default.KeyYOff.real == sg->KeyYOff.real)), "Selects where legends are orientated on graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -1080,7 +1080,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
    { 
-    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0));
+    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0,0));
     directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.real == sg->OriginX.real)&&(settings_graph_default.OriginY.real == sg->OriginY.real)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
     i += strlen(out+i) ; p=1;
    }
@@ -1109,7 +1109,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "papersize", 1)>=0))
    {
-    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(settings_term_current.PaperWidth),0,0), ppl_units_NumericDisplay(&(settings_term_current.PaperHeight),1,0));
+    sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(settings_term_current.PaperWidth),0,0,0), ppl_units_NumericDisplay(&(settings_term_current.PaperHeight),1,0,0));
     directive_show3(out+i, ItemSet, interactive, "PaperSize", buf, ((settings_term_default.PaperWidth.real==settings_term_current.PaperWidth.real)&&(settings_term_default.PaperHeight.real==settings_term_current.PaperHeight.real)), "The current papersize for postscript output, in mm");
     i += strlen(out+i) ; p=1;
     if (StrAutocomplete("user", settings_term_current.PaperName, 1)<0)
@@ -1226,13 +1226,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "title", 1)>=0))
    {
     StrEscapify(sg->title, buf); k = strlen(buf);
-    sprintf(buf+k, " %s , %s", ppl_units_NumericDisplay(&(sg->TitleXOff), 0, 0), ppl_units_NumericDisplay(&(sg->TitleYOff), 1, 0));
+    sprintf(buf+k, " %s , %s", ppl_units_NumericDisplay(&(sg->TitleXOff), 0, 0, 0), ppl_units_NumericDisplay(&(sg->TitleYOff), 1, 0, 0));
     directive_show3(out+i, ItemSet, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.real==sg->TitleXOff.real)&&(settings_graph_default.TitleYOff.real==sg->TitleYOff.real)), "A title to be displayed above graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "trange", 1)>=0))
    {
-    sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Tmin), 0, 0), ppl_units_NumericDisplay(&(sg->Tmax), 1, 0));
+    sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Tmin), 0, 0, 0), ppl_units_NumericDisplay(&(sg->Tmax), 1, 0, 0));
     directive_show3(out+i, ItemSet, interactive, "trange", buf, (settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
     i += strlen(out+i) ; p=1;
    }
@@ -1258,7 +1258,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
    { 
-    sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0));
+    sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0, 0));
     directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -1280,7 +1280,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          }
         else
          {
-          sprintf(out+i, "%s = %s\n", DictIter->key, ppl_units_NumericDisplay((value *)DictIter->data, 0, 0));
+          sprintf(out+i, "%s = %s\n", DictIter->key, ppl_units_NumericDisplay((value *)DictIter->data, 0, 0, 0));
          }
         i += strlen(out+i);
         SHOW_DEHIGHLIGHT;
@@ -1339,9 +1339,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           for (k=0; k<=j; k++)
            {
             *(out+(i++)) = '[';
-            if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0)); i+=strlen(out+i); }
+            if (FDiter->MinActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->min+k, 0, 0, 0)); i+=strlen(out+i); }
             *(out+(i++)) = ':';
-            if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0)); i+=strlen(out+i); }
+            if (FDiter->MaxActive[k]) { sprintf(out+i,"%s", ppl_units_NumericDisplay(FDiter->max+k, 0, 0, 0)); i+=strlen(out+i); }
             *(out+(i++)) = ']';
            }
           sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
