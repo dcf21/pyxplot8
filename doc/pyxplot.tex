@@ -40,7 +40,7 @@
 \usepackage[bf]{caption}
 
 \newcommand{\example}[3]{
-\afterpage{
+%\afterpage{
 \upshape\mdseries\rm
 \begin{exampletag}[H]\caption[#2]{}\label{#1}\end{exampletag}
 \vspace{-5mm}
@@ -48,7 +48,9 @@
 \hline \endfoot
 \hline \endhead
 #3
-\end{longtable}\newpage}}
+\end{longtable}\newpage
+%}
+}
 
 \begin{document}
 
