@@ -47,15 +47,16 @@
 
 // Structure used for passing data around
 typedef struct FitComm {
- int                 NArgs, NExpect;
+ int                 NArgs, NExpect, NFitVars;
  long int            NDataPoints;
  value             **outval;
- gsl_vector         *ParamVals;
+ const gsl_vector   *ParamVals;
  value              *FirstVals;
  double             *DataTable;
  unsigned char       FlagYErrorBars;
  FunctionDescriptor *funcdef;
  char               *ScratchPad, *errtext, *FunctionName;
+ unsigned char       GoneNaN;
 } FitComm;
 
 // Routine for printing a GSL matrix in pythonesque format
@@ -83,8 +84,14 @@ static double FitResidual(FitComm *p)
   double   accumulator, residual;
   value    x;
 
+  for (i=0; i<p->NFitVars; i++) printf("%e ",gsl_vector_get(p->ParamVals, i)); printf("<--\n");
+
   // Set free parameter values
-  for (i=0; i<p->NArgs; i++) p->outval[i]->real = gsl_vector_get(p->ParamVals, i);
+  for (i=0; i<p->NFitVars; i++)
+   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)   p->outval[i]->real = gsl_vector_get(p->ParamVals,   i  );
+   else                                                      { p->outval[i]->real = gsl_vector_get(p->ParamVals, 2*i  );
+                                                               p->outval[i]->imag = gsl_vector_get(p->ParamVals, 2*i+1);
+                                                             }
 
   accumulator = 0.0; // Add up sum of square residuals
 
@@ -92,18 +99,21 @@ static double FitResidual(FitComm *p)
    {
     i=0;
     sprintf(p->ScratchPad+i, "%s(", p->FunctionName); i+=strlen(p->ScratchPad+i);
-    for (k=0; k<p->NArgs; k++) { sprintf(p->ScratchPad+i, "%e%s,", gsl_vector_get(p->ParamVals,k), ppl_units_GetUnitStr((*(p->outval))+k,NULL,NULL,0,1)); i+=strlen(p->ScratchPad+i); }
+    for (k=0; k<p->NArgs; k++) { sprintf(p->ScratchPad+i, "%.20e%s,", p->DataTable[j*p->NExpect+k], ppl_units_GetUnitStr(p->FirstVals+k,NULL,NULL,0,1)); i+=strlen(p->ScratchPad+i); }
+    if (p->NArgs>0) i--; // Remove final comma from list of arguments
     sprintf(p->ScratchPad+i, ")");
+    printf("%s\n", p->ScratchPad);
     ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);
-    if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,0)); return GSL_NAN; }
-    residual = hypot(x.real - gsl_vector_get(p->ParamVals,k) , x.imag);
+    printf("--> %e\n", x.real);
+    if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,0)); printf("oops: %s\n", p->errtext); return GSL_NAN; }
+    residual = hypot(x.real - p->DataTable[j*p->NExpect+k] , x.imag);
     accumulator += residual;
    }
 
   return accumulator;
  }
 
-static double ResidualMinimiserSlave(gsl_vector *x, void *p_void)
+static double ResidualMinimiserSlave(const gsl_vector *x, void *p_void)
  {
   FitComm *p = (FitComm *)p_void;
   p->ParamVals = x;
@@ -124,6 +134,80 @@ static gsl_matrix *GetHessian(FitComm *p)
    }
 
   return out;
+ }
+
+// Top-level routine for managing the GSL minimiser
+
+static int FitMinimiseIterate(FitComm *commlink)
+ {
+  size_t                              iter = 0,iter2 = 0;
+  int                                 i, Nparams, status=0;
+  double                              size=0,sizelast=0,sizelast2=0,testval;
+  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex; // We don't use nmsimplex2 here because it was new in gsl 1.12
+  gsl_multimin_fminimizer            *s;
+  gsl_vector                         *x, *ss;
+  gsl_multimin_function               fn;
+
+  Nparams = commlink->NFitVars * ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) ? 1:2);
+
+  fn.n = Nparams;
+  fn.f = &ResidualMinimiserSlave;
+  fn.params = (void *)commlink;
+
+  x  = gsl_vector_alloc( Nparams );
+  ss = gsl_vector_alloc( Nparams );
+
+  iter2=0;
+  do
+   {
+    iter2++;
+    sizelast2 = size;
+
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)for(i=0;i<commlink->NFitVars;i++) gsl_vector_set(x,  i,commlink->outval[i]->real);
+    else                                                     for(i=0;i<commlink->NFitVars;i++){gsl_vector_set(x,2*i,commlink->outval[i]->real); gsl_vector_set(x,2*i+1,commlink->outval[i]->imag); }
+
+    for (i=0; i<Nparams; i++)
+     {
+      if (fabs(gsl_vector_get(x,i))>1e-6) gsl_vector_set(ss, i, 0.1 * gsl_vector_get(x,i));
+      else                                gsl_vector_set(ss, i, 0.1                      ); // Avoid having a stepsize of zero
+     }
+
+    s = gsl_multimin_fminimizer_alloc (T, fn.n);
+    gsl_multimin_fminimizer_set (s, &fn, x, ss);
+
+    // If initial value we are giving the minimiser produces an algebraic error, it's not worth continuing
+    testval = ResidualMinimiserSlave(x,(void *)commlink);
+    if (commlink->errtext[0]!='\0') return 1;
+
+    iter                 = 0;
+    commlink->GoneNaN    = 0;
+    do
+     {
+      iter++;
+      for (i=0; i<2+Nparams*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
+       {
+        status = gsl_multimin_fminimizer_iterate(s);
+        if (status) break;
+       }
+      if (status) break;
+      sizelast = size;
+      size     = gsl_multimin_fminimizer_minimum(s);
+     }
+    while ((iter < 10) || ((size < sizelast) && (iter < 50))); // Iterate 10 times, and then see whether size carries on getting smaller
+
+    gsl_multimin_fminimizer_free(s);
+
+   }
+  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
+
+  if (iter2>=20) status=1;
+
+  if (status) { sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); return 1; }
+  sizelast = ResidualMinimiserSlave(x,(void *)commlink); // Calling minimiser slave now sets all fitting variables to desired values
+
+  gsl_vector_free(x);
+  gsl_vector_free(ss);
+  return 0;
  }
 
 // Main entry point for the implementation of the fit command
@@ -168,6 +252,7 @@ int directive_fit(Dict *command)
   // Get list of fitting variables
   DictLookup(command, "fit_variables," , NULL, (void **)&VarList);
   i = ListLen(VarList);
+  DataComm.NFitVars = i;
   if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The fit command must be supplied a list of between %d and %d free parameters to fit.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, temp_err_string); return 1; }
   ListIter = ListIterateInit(VarList);
   for (j=0; j<i; j++)
@@ -196,7 +281,7 @@ int directive_fit(Dict *command)
   DataComm.FunctionName = cptr;
   if (cptr   ==NULL) ppl_error(ERR_INTERNAL, "Fitting function name not found in fit command.");
   DictLookup(_ppl_UserSpace_Funcs, cptr, NULL, (void **)&funcdef);
-  if (funcdef==NULL) { sprintf(temp_err_string,"No such function as '%s'.",cptr); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (funcdef==NULL) { sprintf(temp_err_string,"No such function as '%s()'.",cptr); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
   NArgs = funcdef->NumberArguments;
 
   // Look up index , using , every modifiers to datafile reading
@@ -278,14 +363,16 @@ int directive_fit(Dict *command)
         val = blk->data_real[k + NExpect*j];
         if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
         LocalDataTable[i * NExpect + k] = val;
+        printf("%e ",val);
        }
       if (InRange) i++;
+      printf("\n");
      }
     blk=blk->next;
    }
 
   // Free original data table which is no longer needed
-  lt_AscendOutOfContext(ContextDataTab);
+  // lt_AscendOutOfContext(ContextDataTab);
 
   // Populate DataComm
   DataComm.NArgs       = NArgs;
@@ -301,7 +388,7 @@ int directive_fit(Dict *command)
   DataComm.errtext     = (char *)lt_malloc_incontext(LSTR_LENGTH, ContextLocalVec); // FunctionName was already set above
 
   // Set up a minimiser
-  // ResidualMinimiserSlave()
+  FitMinimiseIterate(&DataComm);
 
   // We're finished... can now free DataTable
   lt_AscendOutOfContext(ContextLocalVec);
