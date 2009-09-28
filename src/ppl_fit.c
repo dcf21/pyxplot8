@@ -148,7 +148,6 @@ static double GetHessian_diff1(double x, void *p_void)
   gsl_vector_set(p->ParamValsHessian, p->diff1, x);
   gsl_deriv_central(&fn, gsl_vector_get(p->ParamValsHessian, p->diff2), p->diff2step, &output, &output_error); // Differentiate residual a second time
   gsl_vector_set(p->ParamValsHessian, p->diff1, tmp); // Restore old parameter value
-  printf("[%e] %e\n",x,output);
   return output;
  }
 
@@ -176,7 +175,7 @@ static gsl_matrix *GetHessian(FitComm *p)
     p->diff1 = i; p->diff1step = ((output = gsl_vector_get(p->ParamVals,i)*1e-6) < 1e-100) ? 1e-6 : output;
     p->diff2 = j; p->diff2step = ((output = gsl_vector_get(p->ParamVals,j)*1e-6) < 1e-100) ? 1e-6 : output;
     gsl_deriv_central(&fn, gsl_vector_get(p->ParamVals, p->diff1), p->diff1step, &output, &output_error);
-    gsl_matrix_set(out,i,j,output);
+    gsl_matrix_set(out,i,j,-output); // Minus sign here since FitResidual returns the negative of log(P)
    }
 
   gsl_vector_free(p->ParamValsHessian);
@@ -197,24 +196,23 @@ static double FitSigmaData(const gsl_vector *x, void *p_void)
  {
   double term1, term2, term3;
   int    sgn;
-  gsl_matrix *hessian, *hessian_lu;
+  gsl_matrix *hessian;
   gsl_permutation *perm;
 
   FitComm *p = (FitComm *)p_void;
   p->SigmaData = gsl_vector_get(x,0);
+  p->ParamVals = p->BestFitParamVals;
   term1 = FitResidual(p); // Likelihood for the best-fit set of parameters, without the Gaussian normalisation factor
-  term2 = -(p->NDataPoints * log(1.0 / sqrt(2*M_PI) * p->SigmaData)); // Gaussian normalisation factor
+  term2 = -(p->NDataPoints * log(1.0 / sqrt(2*M_PI) / p->SigmaData)); // Gaussian normalisation factor
 
   // term3 is the Occam Factor, which equals the determinant of -H
   hessian = GetHessian(p);
   gsl_matrix_scale(hessian, -1.0); // Want the determinant of -H
   // Generate the LU decomposition of the Hessian matrix
-  hessian_lu = gsl_matrix_alloc(p->NParams,p->NParams);
-  gsl_matrix_memcpy(hessian_lu,hessian);
-  gsl_linalg_LU_decomp(hessian_lu,perm,&sgn);
+  perm = gsl_permutation_alloc(p->NParams);
+  gsl_linalg_LU_decomp(hessian,perm,&sgn); // Hessian matrix is overwritten here, but we don't need it again
   // Calculate the determinant of the Hessian matrix
-  term3 = gsl_linalg_LU_lndet(hessian_lu);
-  gsl_matrix_free(hessian_lu);
+  term3 = gsl_linalg_LU_lndet(hessian) * 0.5; // -log(1/sqrt(det))
   gsl_matrix_free(hessian);
   gsl_permutation_free(perm);
 
@@ -233,14 +231,14 @@ static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector
   gsl_vector                         *x, *ss;
   gsl_multimin_function               fn;
 
-  fn.n = commlink->NParams;
-  fn.f = slave;
-  fn.params = (void *)commlink;
-
   if (!FittingSigmaData) NParams = commlink->NParams;
   else                   NParams = 1;
   x  = gsl_vector_alloc( NParams );
   ss = gsl_vector_alloc( NParams );
+
+  fn.n = NParams;
+  fn.f = slave;
+  fn.params = (void *)commlink;
 
   iter2=0;
   do
@@ -318,7 +316,10 @@ int directive_fit(Dict *command)
   unsigned char InRange;
   double    *LocalDataTable, val;
   gsl_vector *BestFitParamVals;
-  gsl_matrix *hessian;
+  gsl_matrix *hessian, *hessian_lu, *hessian_inv;
+  gsl_permutation *perm;
+  int         sgn;
+  double      StdDev[2*USING_ITEMS_MAX];
 
   FunctionDescriptor *funcdef;
   List         *RangeList, *VarList;
@@ -525,9 +526,34 @@ int directive_fit(Dict *command)
                                                                outval[i]->imag = gsl_vector_get(DataComm.BestFitParamVals, 2*i+1);
                                                              }
 
+  // Calculate and print the covariance matrix
+  hessian_lu  = gsl_matrix_alloc(DataComm.NParams, DataComm.NParams);
+  hessian_inv = gsl_matrix_alloc(DataComm.NParams, DataComm.NParams);
+  gsl_matrix_memcpy(hessian_lu, hessian);
+  gsl_matrix_scale(hessian_lu, -1.0); // Want the inverse of -H
+  perm = gsl_permutation_alloc(DataComm.NParams);
+  gsl_linalg_LU_decomp(hessian_lu,perm,&sgn);
+  gsl_linalg_LU_invert(hessian_lu,perm,hessian_inv);
+  MatrixPrint(hessian_inv, DataComm.NParams, DataComm.ScratchPad);
+  sprintf(temp_err_string, "\n# Covariance matrix of probability distribution:\n# ----------------------------------------------\n\ncovariance = %s", DataComm.ScratchPad);
+  ppl_report(temp_err_string);
+
+  // Calculate the standard deviation of each parameter
+  for (i=0; i<DataComm.NParams; i++) StdDev[i] = sqrt( gsl_matrix_get(hessian_inv, i, i) );
+
+  // Calculate the correlation matrix
+  for (i=0; i<DataComm.NParams; i++) for (j=0; j<DataComm.NParams; j++)
+   gsl_matrix_set(hessian_inv, i, j, gsl_matrix_get(hessian_inv, i, j) / StdDev[i] / StdDev[j]);
+  MatrixPrint(hessian_inv, DataComm.NParams, DataComm.ScratchPad);
+  sprintf(temp_err_string, "\n# Correlation matrix of probability distribution:\n# ----------------------------------------------\n\ncorrelation = %s", DataComm.ScratchPad);
+  ppl_report(temp_err_string);
+
   // We're finished... can now free DataTable
   gsl_vector_free(BestFitParamVals);
+  gsl_matrix_free(hessian_inv);
+  gsl_matrix_free(hessian_lu);
   gsl_matrix_free(hessian);
+  gsl_permutation_free(perm);
   lt_AscendOutOfContext(ContextLocalVec);
   return 0;
  }
