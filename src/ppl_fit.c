@@ -29,9 +29,11 @@
 
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multimin.h>
+#include <gsl/gsl_permutation.h>
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -48,31 +50,35 @@
 
 // Structure used for passing data around
 typedef struct FitComm {
- int                 NArgs, NExpect, NFitVars;
- long int            NDataPoints;
- value             **outval;
- const gsl_vector   *ParamVals;
- gsl_vector         *ParamValsHessian;
- value              *FirstVals;
- double             *DataTable;
- unsigned char       FlagYErrorBars;
- FunctionDescriptor *funcdef;
- char               *ScratchPad, *errtext, *FunctionName;
- unsigned char       GoneNaN;
- double              SigmaData;
- int                 diff1    , diff2;
- double              diff1step, diff2step;
+ int                 NArgs; // The number of arguments taken by the function that we're fitting
+ int                 NExpect; // The total number of columns we're reading from datafile; equals NArgs, plus the target value for f(), plus possibly the error on each target
+ int                 NFitVars; // The number of variables listed after via ....
+ int                 NParams; // The total number of free parameters in the fitting problems; either equals NFitVars, or twice this if complex arithmetic is enabled
+ long int            NDataPoints; // The number of data points read from the supplied datafile
+ value             **outval; // Pointers to the values of the variables which we're fitting the values of in the user's variable space
+ const gsl_vector   *ParamVals; // Trial parameter values to be tried by FitResidual in this iteration
+ const gsl_vector   *BestFitParamVals; // The best fit parameter values (only set after first round of minimisation)
+ gsl_vector         *ParamValsHessian; // Internal variable used by GetHessian() to vary parameter values when differentiating
+ value              *FirstVals; // The first values found in each column of the supplied datafile. These determine the physical units associated with each column.
+ double             *DataTable; // Two-dimensional table of the data read from the datafile.
+ unsigned char       FlagYErrorBars; // If true, the user has specified errorbars for each target value. If false, we have no idea of uncertainty.
+ FunctionDescriptor *funcdef; // Function descriptor for the function f() which we're trying to get to fit the data
+ char               *ScratchPad, *errtext, *FunctionName; // String workspaces
+ unsigned char       GoneNaN; // Used by the minimiser to keep track of when the function being minimised has returned NAN.
+ double              SigmaData; // The assumed errorbar (uniform for all datapoints) on the supplied target values if errorbars are not supplied. We fit this.
+ int                 diff1    , diff2; // The numbers of the free parameters currently being differentiated inside GetHessian()
+ double              diff1step, diff2step; // The step size which GetHessian() recommends using for each of the parameters being differentiated
 } FitComm;
 
 // Routine for printing a GSL matrix in pythonesque format
 static char *MatrixPrint(const gsl_matrix *m, const size_t size, char *out)
  {
-  int i,j,p=0;
+  size_t i,j,p=0;
   strcpy(out+p, "[ [");
   p+=strlen(out+p);
   for (i=0;i<size;i++)
    {
-    for (j=0;j<size;j++) { sprintf(out+p,"%s,",NumericDisplay(gsl_matrix_get(m,size,size),0,settings_term_current.SignificantFigures,0)); p+=strlen(out+p); }
+    for (j=0;j<size;j++) { sprintf(out+p,"%s,",NumericDisplay(gsl_matrix_get(m,i,j),0,settings_term_current.SignificantFigures,0)); p+=strlen(out+p); }
     if (size>0) p--; // Delete final comma
     strcpy(out+p, "] , ["); p+=strlen(out+p); // New row
    }
@@ -91,14 +97,14 @@ static double FitResidual(FitComm *p)
 
   // Set free parameter values
   for (i=0; i<p->NFitVars; i++)
-   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)   p->outval[i]->real = gsl_vector_get(p->ParamVals,   i  );
+   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)   p->outval[i]->real = gsl_vector_get(p->ParamVals,   i  ); // This is setting variables in the user's variable space
    else                                                      { p->outval[i]->real = gsl_vector_get(p->ParamVals, 2*i  );
                                                                p->outval[i]->imag = gsl_vector_get(p->ParamVals, 2*i+1);
                                                              }
 
   accumulator = 0.0; // Add up sum of square residuals
 
-  for (j=0; j<p->NDataPoints; j++)
+  for (j=0; j<p->NDataPoints; j++) // Loop over all of the data points in the file that we're fitting
    {
     i=0;
     sprintf(p->ScratchPad+i, "%s(", p->FunctionName); i+=strlen(p->ScratchPad+i);
@@ -107,27 +113,13 @@ static double FitResidual(FitComm *p)
     sprintf(p->ScratchPad+i, ")");
     ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);
     if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,0)); return GSL_NAN; }
-    residual = hypot(x.real - p->DataTable[j*p->NExpect+k] , x.imag);
-    accumulator += residual;
+    residual = pow(x.real - p->DataTable[j*p->NExpect+k] , 2) + pow(x.imag , 2); // Calculate squared deviation of function result from desired result
+    if (p->FlagYErrorBars) residual /= 2 * pow(p->DataTable[j*p->NExpect+k+1] , 2); // Divide square residual by 2 sigma squared.
+    else                   residual /= 2 * pow(p->SigmaData                   , 2);
+    accumulator += residual; // ... and sum
    }
 
   return accumulator;
- }
-
-// Slave routines called by minimisers
-
-static double ResidualMinimiserSlave(const gsl_vector *x, void *p_void)
- {
-  FitComm *p = (FitComm *)p_void;
-  p->ParamVals = x;
-  return FitResidual(p);
- }
-
-static double FitSigmaData(const gsl_vector *x, void *p_void)
- {
-  FitComm *p = (FitComm *)p_void;
-  p->SigmaData = gsl_vector_get(x,0);
-  return FitResidual(p);
  }
 
 // Slave routines called by the differentiation operation when working out the Hessian matrix
@@ -140,7 +132,6 @@ static double GetHessian_diff2(double x, void *p_void)
   gsl_vector_set(p->ParamValsHessian, p->diff2, x);
   output = FitResidual(p); // Evaluate residual
   gsl_vector_set(p->ParamValsHessian, p->diff2, tmp); // Restore old parameter value
-  printf("* * %e %e\n", x, output);
   return output;
  }
 
@@ -157,7 +148,7 @@ static double GetHessian_diff1(double x, void *p_void)
   gsl_vector_set(p->ParamValsHessian, p->diff1, x);
   gsl_deriv_central(&fn, gsl_vector_get(p->ParamValsHessian, p->diff2), p->diff2step, &output, &output_error); // Differentiate residual a second time
   gsl_vector_set(p->ParamValsHessian, p->diff1, tmp); // Restore old parameter value
-  printf("*   %e %e\n", x, output);
+  printf("[%e] %e\n",x,output);
   return output;
  }
 
@@ -165,29 +156,22 @@ static double GetHessian_diff1(double x, void *p_void)
 static gsl_matrix *GetHessian(FitComm *p)
  {
   gsl_matrix   *out;
-  int           i,j,NParams;
+  int           i,j;
   double        output, output_error;
   gsl_function  fn;
 
-  // Work out how many parameters we are fitting
-  NParams = p->NFitVars * ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) ? 1:2);
-
   // Allocate a vector for passing our position in free-parameter space to FitResidual()
-  p->ParamValsHessian = gsl_vector_alloc(NParams);
-  if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) for(i=0; i<p->NFitVars; i++)   gsl_vector_set(p->ParamValsHessian,   i  , p->outval[i]->real);
-  else                                                      for(i=0; i<p->NFitVars; i++) { gsl_vector_set(p->ParamValsHessian, 2*i  , p->outval[i]->real);
-                                                                                           gsl_vector_set(p->ParamValsHessian, 2*i+1, p->outval[i]->imag); }
+  p->ParamValsHessian = gsl_vector_alloc(p->NParams);
+  for (i=0; i<p->NParams; i++) gsl_vector_set(p->ParamValsHessian, i, gsl_vector_get(p->BestFitParamVals, i));
   p->ParamVals = p->ParamValsHessian;
 
-  for (i=0;i<NParams;i++) printf("--> %e\n", gsl_vector_get(p->ParamValsHessian,i));
-
-  out = gsl_matrix_alloc(p->NArgs, p->NArgs); // Allocate memory for Hessian matrix
+  out = gsl_matrix_alloc(p->NParams, p->NParams); // Allocate memory for Hessian matrix
   if (out==NULL) return NULL;
 
   fn.function = &GetHessian_diff1;
   fn.params   = (void *)p;
 
-  for (i=0; i<p->NFitVars; i++) for (j=0; j<p->NFitVars; j++) // Loop over elements of Hessian matrix
+  for (i=0; i<p->NParams; i++) for (j=0; j<p->NParams; j++) // Loop over elements of Hessian matrix
    {
     p->diff1 = i; p->diff1step = ((output = gsl_vector_get(p->ParamVals,i)*1e-6) < 1e-100) ? 1e-6 : output;
     p->diff2 = j; p->diff2step = ((output = gsl_vector_get(p->ParamVals,j)*1e-6) < 1e-100) ? 1e-6 : output;
@@ -196,29 +180,67 @@ static gsl_matrix *GetHessian(FitComm *p)
    }
 
   gsl_vector_free(p->ParamValsHessian);
+  p->ParamValsHessian = NULL;
   return out;
+ }
+
+// Slave routines called by minimisers
+
+static double ResidualMinimiserSlave(const gsl_vector *x, void *p_void)
+ {
+  FitComm *p = (FitComm *)p_void;
+  p->ParamVals = x;
+  return FitResidual(p);
+ }
+
+static double FitSigmaData(const gsl_vector *x, void *p_void)
+ {
+  double term1, term2, term3;
+  int    sgn;
+  gsl_matrix *hessian, *hessian_lu;
+  gsl_permutation *perm;
+
+  FitComm *p = (FitComm *)p_void;
+  p->SigmaData = gsl_vector_get(x,0);
+  term1 = FitResidual(p); // Likelihood for the best-fit set of parameters, without the Gaussian normalisation factor
+  term2 = -(p->NDataPoints * log(1.0 / sqrt(2*M_PI) * p->SigmaData)); // Gaussian normalisation factor
+
+  // term3 is the Occam Factor, which equals the determinant of -H
+  hessian = GetHessian(p);
+  gsl_matrix_scale(hessian, -1.0); // Want the determinant of -H
+  // Generate the LU decomposition of the Hessian matrix
+  hessian_lu = gsl_matrix_alloc(p->NParams,p->NParams);
+  gsl_matrix_memcpy(hessian_lu,hessian);
+  gsl_linalg_LU_decomp(hessian_lu,perm,&sgn);
+  // Calculate the determinant of the Hessian matrix
+  term3 = gsl_linalg_LU_lndet(hessian_lu);
+  gsl_matrix_free(hessian_lu);
+  gsl_matrix_free(hessian);
+  gsl_permutation_free(perm);
+
+  return term1+term2+term3; // We return the negative of the log-likelihood, which GSL then minimises by varying the assume errorbar size
  }
 
 // Top-level routine for managing the GSL minimiser
 
-static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector *, void *))
+static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector *, void *), unsigned char FittingSigmaData)
  {
   size_t                              iter = 0,iter2 = 0;
-  int                                 i, Nparams, status=0;
+  int                                 i, status=0, NParams;
   double                              size=0,sizelast=0,sizelast2=0,testval;
   const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex; // We don't use nmsimplex2 here because it was new in gsl 1.12
   gsl_multimin_fminimizer            *s;
   gsl_vector                         *x, *ss;
   gsl_multimin_function               fn;
 
-  Nparams = commlink->NFitVars * ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) ? 1:2);
-
-  fn.n = Nparams;
+  fn.n = commlink->NParams;
   fn.f = slave;
   fn.params = (void *)commlink;
 
-  x  = gsl_vector_alloc( Nparams );
-  ss = gsl_vector_alloc( Nparams );
+  if (!FittingSigmaData) NParams = commlink->NParams;
+  else                   NParams = 1;
+  x  = gsl_vector_alloc( NParams );
+  ss = gsl_vector_alloc( NParams );
 
   iter2=0;
   do
@@ -226,10 +248,15 @@ static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector
     iter2++;
     sizelast2 = size;
 
-    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)for(i=0;i<commlink->NFitVars;i++) gsl_vector_set(x,  i,commlink->outval[i]->real);
-    else                                                     for(i=0;i<commlink->NFitVars;i++){gsl_vector_set(x,2*i,commlink->outval[i]->real); gsl_vector_set(x,2*i+1,commlink->outval[i]->imag); }
+    if (!FittingSigmaData)
+     {
+      if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)for(i=0;i<commlink->NFitVars;i++) gsl_vector_set(x,  i,commlink->outval[i]->real);
+      else                                                     for(i=0;i<commlink->NFitVars;i++){gsl_vector_set(x,2*i,commlink->outval[i]->real); gsl_vector_set(x,2*i+1,commlink->outval[i]->imag); }
+     } else {
+      gsl_vector_set(x,0,commlink->SigmaData);
+     }
 
-    for (i=0; i<Nparams; i++)
+    for (i=0; i<NParams; i++)
      {
       if (fabs(gsl_vector_get(x,i))>1e-6) gsl_vector_set(ss, i, 0.1 * gsl_vector_get(x,i));
       else                                gsl_vector_set(ss, i, 0.1                      ); // Avoid having a stepsize of zero
@@ -247,7 +274,7 @@ static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector
     do
      {
       iter++;
-      for (i=0; i<2+Nparams*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
+      for (i=0; i<2+NParams*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
        {
         status = gsl_multimin_fminimizer_iterate(s);
         if (status) break;
@@ -290,6 +317,7 @@ int directive_fit(Dict *command)
   DataBlock *blk;
   unsigned char InRange;
   double    *LocalDataTable, val;
+  gsl_vector *BestFitParamVals;
   gsl_matrix *hessian;
 
   FunctionDescriptor *funcdef;
@@ -443,9 +471,11 @@ int directive_fit(Dict *command)
   // Populate DataComm
   DataComm.NArgs       = NArgs;
   DataComm.NExpect     = NExpect;
+  DataComm.NParams     = DataComm.NFitVars * ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) ? 1 : 2);
   DataComm.NDataPoints = NDataPoints;
   DataComm.outval      = outval;
   DataComm.ParamVals   = NULL;
+  DataComm.BestFitParamVals = NULL;
   DataComm.FirstVals   = FirstVals;
   DataComm.DataTable   = LocalDataTable;
   DataComm.FlagYErrorBars = (NExpect == NArgs+2);
@@ -455,18 +485,27 @@ int directive_fit(Dict *command)
   DataComm.errtext     = (char *)lt_malloc_incontext(LSTR_LENGTH, ContextLocalVec); // FunctionName was already set above
 
   // Set up a minimiser
-  status = FitMinimiseIterate(&DataComm, &ResidualMinimiserSlave);
+  status = FitMinimiseIterate(&DataComm, &ResidualMinimiserSlave, 0);
   if (status) { ppl_error(ERR_GENERAL, DataComm.errtext); return 1; }
 
   // Display the results of the minimiser
   ppl_report("\n# Best fit parameters were:\n# -------------------------\n");
   for (j=0; j<DataComm.NFitVars; j++) { sprintf(temp_err_string, "%s = %s", FitVars[j], ppl_units_NumericDisplay(outval[j],0,0,0)); ppl_report(temp_err_string); }
 
+  // Store best-fit position
+  BestFitParamVals = gsl_vector_alloc(DataComm.NParams);
+  for (i=0; i<DataComm.NFitVars; i++)
+   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)   gsl_vector_set(BestFitParamVals,   i  , outval[i]->real);
+   else                                                      { gsl_vector_set(BestFitParamVals, 2*i  , outval[i]->real);
+                                                               gsl_vector_set(BestFitParamVals, 2*i+1, outval[i]->imag);
+                                                             }
+  DataComm.BestFitParamVals = BestFitParamVals;
+
   // Estimate the size of the errorbars on the supplied data if no errorbars were supplied (this doesn't affect best fit position, but does affect error estimates)
   if (!DataComm.FlagYErrorBars)
    {
-    //status = FitMinimiseIterate(&DataComm, &FitSigmaData);
-    if (status) { ppl_error(ERR_GENERAL, DataComm.errtext); return 1; }
+    status = FitMinimiseIterate(&DataComm, &FitSigmaData, 1);
+    if (status) { ppl_error(ERR_GENERAL, DataComm.errtext); gsl_vector_free(BestFitParamVals); return 1; }
     FirstVals[NArgs].real = DataComm.SigmaData;
     FirstVals[NArgs].imag = 0.0;
     FirstVals[NArgs].FlagComplex = 0;
@@ -475,11 +514,20 @@ int directive_fit(Dict *command)
 
   // Calculate and print the Hessian matrix
   hessian = GetHessian(&DataComm);
-  MatrixPrint(hessian, DataComm.NFitVars, DataComm.ScratchPad);
+  MatrixPrint(hessian, DataComm.NParams, DataComm.ScratchPad);
   sprintf(temp_err_string, "\n# Hessian matrix of log-probability distribution:\n# -----------------------------------------------\n\nhessian = %s", DataComm.ScratchPad);
   ppl_report(temp_err_string);
 
+  // Set variables in user's variable space to best-fit values
+  for (i=0; i<DataComm.NFitVars; i++)
+   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)   outval[i]->real = gsl_vector_get(DataComm.BestFitParamVals,   i  );
+   else                                                      { outval[i]->real = gsl_vector_get(DataComm.BestFitParamVals, 2*i  );
+                                                               outval[i]->imag = gsl_vector_get(DataComm.BestFitParamVals, 2*i+1);
+                                                             }
+
   // We're finished... can now free DataTable
+  gsl_vector_free(BestFitParamVals);
+  gsl_matrix_free(hessian);
   lt_AscendOutOfContext(ContextLocalVec);
   return 0;
  }
