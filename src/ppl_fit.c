@@ -495,7 +495,12 @@ int directive_fit(Dict *command)
 
   // Display the results of the minimiser
   ppl_report("\n# Best fit parameters were:\n# -------------------------\n");
-  for (j=0; j<DataComm.NFitVars; j++) { sprintf(temp_err_string, "%s = %s", FitVars[j], ppl_units_NumericDisplay(outval[j],0,0,0)); ppl_report(temp_err_string); }
+  for (j=0; j<DataComm.NFitVars; j++)
+   {
+    if (settings_term_current.NumDisplay != SW_DISPLAY_L) sprintf(temp_err_string,  "%s = %s", FitVars[j], ppl_units_NumericDisplay(outval[j],0,0,0)  );
+    else                                                  sprintf(temp_err_string, "$%s = %s", FitVars[j], ppl_units_NumericDisplay(outval[j],0,0,0)+1);
+    ppl_report(temp_err_string);
+   }
 
   // Store best-fit position
   BestFitParamVals = gsl_vector_alloc(DataComm.NParams);
@@ -570,20 +575,45 @@ int directive_fit(Dict *command)
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
      {
       DummyTemp.real = StdDev[i] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0; // Apply appropriate unit to standard deviation, which is currently just a double
-      sprintf(DataComm.ScratchPad, "sigma_%s", FitVars[i]);
-      sprintf(temp_err_string, "%22s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+      if (settings_term_current.NumDisplay != SW_DISPLAY_L)
+       {
+        sprintf(DataComm.ScratchPad, "sigma_%s", FitVars[i]);
+        sprintf(temp_err_string, "%22s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+       } else {
+        sprintf(DataComm.ScratchPad, "$\\sigma_\\textrm{");
+        j = strlen(DataComm.ScratchPad);
+        for (k=0; FitVars[i][k]!='\0'; k++) { if (FitVars[i][k]=='_') DataComm.ScratchPad[j++]='\\'; DataComm.ScratchPad[j++]=FitVars[i][k]; }
+        DataComm.ScratchPad[j++]='\0';
+        sprintf(temp_err_string, "%33s} = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0)+1);
+       }
       ppl_report(temp_err_string);
      }
     else
      {
-      DummyTemp.real = StdDev[2*i  ] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
-      sprintf(DataComm.ScratchPad, "sigma_%s_real", FitVars[i]);
-      sprintf(temp_err_string, "%27s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
-      ppl_report(temp_err_string);
-      DummyTemp.real = StdDev[2*i+1] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
-      sprintf(DataComm.ScratchPad, "sigma_%s_imag", FitVars[i]);
-      sprintf(temp_err_string, "%27s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
-      ppl_report(temp_err_string);
+      if (settings_term_current.NumDisplay != SW_DISPLAY_L)
+       {
+        DummyTemp.real = StdDev[2*i  ] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
+        sprintf(DataComm.ScratchPad, "sigma_%s_real", FitVars[i]);
+        sprintf(temp_err_string, "%27s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+        ppl_report(temp_err_string);
+        DummyTemp.real = StdDev[2*i+1] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
+        sprintf(DataComm.ScratchPad, "sigma_%s_imag", FitVars[i]);
+        sprintf(temp_err_string, "%27s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+        ppl_report(temp_err_string);
+       }
+      else
+       {
+        DummyTemp.real = StdDev[2*i  ] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
+        sprintf(DataComm.ScratchPad, "$\\sigma_\\textrm{");
+        j = strlen(DataComm.ScratchPad);
+        for (k=0; FitVars[i][k]!='\0'; k++) { if (FitVars[i][k]=='_') DataComm.ScratchPad[j++]='\\'; DataComm.ScratchPad[j++]=FitVars[i][k]; }
+        DataComm.ScratchPad[j++]='\0';
+        sprintf(temp_err_string, "%38s,real} = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0)+1);
+        ppl_report(temp_err_string);
+        DummyTemp.real = StdDev[2*i+1] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
+        sprintf(temp_err_string, "%38s,imag} = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0)+1);
+        ppl_report(temp_err_string);
+       }
      }
    }
 
@@ -604,9 +634,35 @@ int directive_fit(Dict *command)
     ppl_units_zero(&DummyTemp);
     DummyTemp.real = tmp1; DummyTemp.imag = tmp2 ; DummyTemp.FlagComplex = outval[i]->FlagComplex ; DummyTemp.dimensionless = 0; // Want to display value without unit, and put unit later on line
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
-     sprintf(temp_err_string, "%16s = (%s +/- %s) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[i]*tmp3,0,settings_term_current.SignificantFigures,0), cptr);
+     {
+      if (settings_term_current.NumDisplay != SW_DISPLAY_L)
+       sprintf(temp_err_string, "%16s = (%s +/- %s) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[i]*tmp3,0,settings_term_current.SignificantFigures,0), cptr);
+      else
+       {
+        DataComm.ScratchPad[0]='$';
+        for (j=1,k=0; FitVars[i][k]!='\0'; k++) { if (FitVars[i][k]=='_') DataComm.ScratchPad[j++]='\\'; DataComm.ScratchPad[j++]=FitVars[i][k]; }
+        DataComm.ScratchPad[j++]='\0';
+        sprintf(temp_err_string, "%17s = (%s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,1,0,0)+1);
+        j=strlen(temp_err_string)-1; // Remove final $
+        sprintf(temp_err_string+j, "\\pm%s)%s$", NumericDisplay(StdDev[i]*tmp3,0,settings_term_current.SignificantFigures,0), cptr);
+       }
+     }
     else
-     sprintf(temp_err_string, "%16s = (%s +/- (%s + i*%s)) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,1,settings_term_current.SignificantFigures,0), cptr);
+     {
+      if      (settings_term_current.NumDisplay == SW_DISPLAY_T)
+       sprintf(temp_err_string, "%16s = (%s +/- (%s+%s*sqrt(-1)))%s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
+      else if (settings_term_current.NumDisplay == SW_DISPLAY_L)
+       {
+        DataComm.ScratchPad[0]='$';
+        for (j=1,k=0; FitVars[i][k]!='\0'; k++) { if (FitVars[i][k]=='_') DataComm.ScratchPad[j++]='\\'; DataComm.ScratchPad[j++]=FitVars[i][k]; }
+        DataComm.ScratchPad[j++]='\0';
+        sprintf(temp_err_string, "%17s = (%s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,1,0,0)+1);
+        j=strlen(temp_err_string)-1; // Remove final $
+        sprintf(temp_err_string+j, "\\pm(%s+%si))%s$", NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
+       }
+      else
+       sprintf(temp_err_string, "%16s = (%s +/- (%s+%si)) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
+     }
     ppl_report(temp_err_string);
    }
 
