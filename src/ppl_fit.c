@@ -112,6 +112,7 @@ static double FitResidual(FitComm *p)
     if (p->NArgs>0) i--; // Remove final comma from list of arguments
     sprintf(p->ScratchPad+i, ")");
     ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);
+    if (errpos>=0) return GSL_NAN; // Evaluation of algebra failed
     if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,0)); return GSL_NAN; }
     residual = pow(x.real - p->DataTable[j*p->NExpect+k] , 2) + pow(x.imag , 2); // Calculate squared deviation of function result from desired result
     if (p->FlagYErrorBars) residual /= 2 * pow(p->DataTable[j*p->NExpect+k+1] , 2); // Divide square residual by 2 sigma squared.
@@ -265,7 +266,7 @@ static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector
 
     // If initial value we are giving the minimiser produces an algebraic error, it's not worth continuing
     testval = (*slave)(x,(void *)commlink);
-    if (commlink->errtext[0]!='\0') return 1;
+    if (commlink->errtext[0]!='\0') { gsl_vector_free(x); gsl_vector_free(ss); gsl_multimin_fminimizer_free(s); return 1; }
 
     iter                 = 0;
     commlink->GoneNaN    = 0;
@@ -284,13 +285,12 @@ static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector
     while ((iter < 10) || ((size < sizelast) && (iter < 50))); // Iterate 10 times, and then see whether size carries on getting smaller
 
     gsl_multimin_fminimizer_free(s);
-
    }
   while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
 
   if (iter2>=20) status=1;
 
-  if (status) { sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); return 1; }
+  if (status) { sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); gsl_vector_free(x); gsl_vector_free(ss); return 1; }
   sizelast = (*slave)(x,(void *)commlink); // Calling minimiser slave now sets all fitting variables to desired values
 
   gsl_vector_free(x);
@@ -319,7 +319,7 @@ int directive_fit(Dict *command)
   gsl_matrix *hessian, *hessian_lu, *hessian_inv;
   gsl_permutation *perm;
   int         sgn;
-  double      StdDev[2*USING_ITEMS_MAX];
+  double      StdDev[2*USING_ITEMS_MAX], tmp1, tmp2, tmp3;
 
   FunctionDescriptor *funcdef;
   List         *RangeList, *VarList;
@@ -341,6 +341,10 @@ int directive_fit(Dict *command)
   strcpy(filename, GlobData.gl_pathv[0]);
   wordfree(&WordExp);
   globfree(&GlobData);
+
+  // Default starting point for fitting is 1.0
+  ppl_units_zero(&DummyTemp);
+  DummyTemp.real    = 1.0;
 
   // Get list of fitting variables
   DictLookup(command, "fit_variables," , NULL, (void **)&VarList);
@@ -539,7 +543,17 @@ int directive_fit(Dict *command)
   ppl_report(temp_err_string);
 
   // Calculate the standard deviation of each parameter
-  for (i=0; i<DataComm.NParams; i++) StdDev[i] = sqrt( gsl_matrix_get(hessian_inv, i, i) );
+  for (i=0; i<DataComm.NParams; i++)
+   {
+    if ((gsl_matrix_get(hessian_inv, i, i) <= 0.0) || (!gsl_finite(gsl_matrix_get(hessian_inv, i, i))))
+     {
+      sprintf(temp_err_string, "One of the calculated variances for the fitted parameters is negative. This strongly suggests that the fitting process has failed.");
+      ppl_warning(ERR_NUMERIC, temp_err_string);
+      StdDev[i] = 1e-100;
+     } else {
+      StdDev[i] = sqrt( gsl_matrix_get(hessian_inv, i, i) );
+     }
+   }
 
   // Calculate the correlation matrix
   for (i=0; i<DataComm.NParams; i++) for (j=0; j<DataComm.NParams; j++)
@@ -547,6 +561,54 @@ int directive_fit(Dict *command)
   MatrixPrint(hessian_inv, DataComm.NParams, DataComm.ScratchPad);
   sprintf(temp_err_string, "\n# Correlation matrix of probability distribution:\n# ----------------------------------------------\n\ncorrelation = %s", DataComm.ScratchPad);
   ppl_report(temp_err_string);
+
+  // Print a list of standard deviations
+  ppl_report("\n# Uncertainties in best-fit parameters are:\n# -----------------------------------------\n");
+  for (i=0; i<DataComm.NFitVars; i++)
+   {
+    DummyTemp = *(outval[i]);
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
+     {
+      DummyTemp.real = StdDev[i] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0; // Apply appropriate unit to standard deviation, which is currently just a double
+      sprintf(DataComm.ScratchPad, "sigma_%s", FitVars[i]);
+      sprintf(temp_err_string, "%22s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+      ppl_report(temp_err_string);
+     }
+    else
+     {
+      DummyTemp.real = StdDev[2*i  ] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
+      sprintf(DataComm.ScratchPad, "sigma_%s_real", FitVars[i]);
+      sprintf(temp_err_string, "%27s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+      ppl_report(temp_err_string);
+      DummyTemp.real = StdDev[2*i+1] ; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0;
+      sprintf(DataComm.ScratchPad, "sigma_%s_imag", FitVars[i]);
+      sprintf(temp_err_string, "%27s = %s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,0,0,0));
+      ppl_report(temp_err_string);
+     }
+   }
+
+  // Print summary information
+  ppl_report("\n# Summary:\n# --------\n");
+  for (i=0; i<DataComm.NFitVars; i++)
+   {
+    cptr      = ppl_units_GetUnitStr(outval[i], &tmp1, &tmp2, 0, 0); // Work out what unit the best-fit value is best displayed in
+    if      (fabs(outval[i]->real)>1e-200) tmp3 = tmp1 / outval[i]->real; // Set tmp3 to be the multiplicative size of this unit relative to its SI counterpart
+    else if (fabs(outval[i]->imag)>1e-200) tmp3 = tmp2 / outval[i]->imag; // Can't do this if magnitude of best-fit value is zero, though...
+    else
+     {
+      DummyTemp = *(outval[i]);
+      DummyTemp.real = 1.0; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0; // If best-fit value is zero, use the unit we would use for unity instead.
+      cptr = ppl_units_GetUnitStr(&DummyTemp, &tmp1, &tmp2, 0, 0);
+      tmp3 = tmp1;
+     }
+    ppl_units_zero(&DummyTemp);
+    DummyTemp.real = tmp1; DummyTemp.imag = tmp2 ; DummyTemp.FlagComplex = outval[i]->FlagComplex ; DummyTemp.dimensionless = 0; // Want to display value without unit, and put unit later on line
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
+     sprintf(temp_err_string, "%16s = (%s +/- %s) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[i]*tmp3,0,settings_term_current.SignificantFigures,0), cptr);
+    else
+     sprintf(temp_err_string, "%16s = (%s +/- (%s + i*%s)) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,1,settings_term_current.SignificantFigures,0), cptr);
+    ppl_report(temp_err_string);
+   }
 
   // We're finished... can now free DataTable
   gsl_vector_free(BestFitParamVals);
