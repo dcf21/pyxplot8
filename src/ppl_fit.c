@@ -43,6 +43,7 @@
 
 #include "ppl_datafile.h"
 #include "ppl_error.h"
+#include "ppl_fit.h"
 #include "ppl_settings.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
@@ -650,7 +651,7 @@ int directive_fit(Dict *command)
     else
      {
       if      (settings_term_current.NumDisplay == SW_DISPLAY_T)
-       sprintf(temp_err_string, "%16s = (%s +/- (%s+%s*sqrt(-1)))%s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
+       sprintf(temp_err_string, "%16s = (%s +/- %s +/- %s*sqrt(-1))%s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
       else if (settings_term_current.NumDisplay == SW_DISPLAY_L)
        {
         DataComm.ScratchPad[0]='$';
@@ -658,10 +659,10 @@ int directive_fit(Dict *command)
         DataComm.ScratchPad[j++]='\0';
         sprintf(temp_err_string, "%17s = (%s", DataComm.ScratchPad, ppl_units_NumericDisplay(&DummyTemp,1,0,0)+1);
         j=strlen(temp_err_string)-1; // Remove final $
-        sprintf(temp_err_string+j, "\\pm(%s+%si))%s$", NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
+        sprintf(temp_err_string+j, "\\pm %s\\pm %si)%s$", NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
        }
       else
-       sprintf(temp_err_string, "%16s = (%s +/- (%s+%si)) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
+       sprintf(temp_err_string, "%16s = (%s +/- %s +/- %si) %s", FitVars[i], ppl_units_NumericDisplay(&DummyTemp,1,0,0), NumericDisplay(StdDev[2*i]*tmp3,0,settings_term_current.SignificantFigures,0), NumericDisplay(StdDev[2*i+1]*tmp3,2,settings_term_current.SignificantFigures,0), cptr);
      }
     ppl_report(temp_err_string);
    }

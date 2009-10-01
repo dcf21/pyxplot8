@@ -53,6 +53,7 @@
 #include "ppl_setshow.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_tabulate.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
@@ -367,6 +368,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_solve(command);
   else if (strcmp(directive, "spline")==0)
    return directive_interpolate(command,INTERP_SPLINE);
+  else if (strcmp(directive, "tabulate")==0)
+   return directive_tabulate(command, in);
   else if (strcmp(directive, "text")==0)
    directive_text(command, interactive);
   else if (strcmp(directive, "unset")==0)

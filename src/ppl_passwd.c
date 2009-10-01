@@ -65,9 +65,12 @@ char *UnixGetUserHomeDir(char *username)
 char *UnixGetIRLName()
  {
   struct passwd *ptr;
+  int i;
   ptr = UnixGetPwEntry();
   if (ptr==NULL) ppl_fatal(__FILE__,__LINE__,"Could not find user's entry in /etc/passwd file.");
-  return ptr->pw_gecos;
+  strcpy(temp_err_string, ptr->pw_gecos);
+  for (i=0; temp_err_string[i]!='\0'; i++) if (temp_err_string[i]==',') temp_err_string[i]='\0'; // Remove commas from in-real-life name
+  return temp_err_string;
  }
 
 // Expand out filenames line ~dcf21/script.ppl

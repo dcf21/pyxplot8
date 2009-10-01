@@ -76,6 +76,7 @@ List *ListCopy(List *in, int deep)
 
 int ListLen(List *in)
  {
+  if (in==NULL) return 0;
   return in->length;
  }
 
