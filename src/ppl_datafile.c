@@ -26,6 +26,7 @@
 #include <string.h>
 #include <math.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -42,6 +43,29 @@
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
+
+// -------------------------------------------------------------------------
+// Routine which creates a backup of a datafile if 'set backup' is turned on
+// -------------------------------------------------------------------------
+
+void DataFile_CreateBackupIfRequired(char *filename)
+ {
+  char newname[FNAME_LENGTH];
+  int i,j;
+
+  if (settings_term_current.backup == SW_ONOFF_OFF) return; // Backup is switched off
+  if (access(filename, F_OK) != 0) return; // File we're about to write to does not already exist
+
+  strcpy(newname, filename);
+  i = strlen(filename);
+  for (j=0 ; j<65536 ; j++)
+   {
+    sprintf(newname+i, "~%d",j);
+    if (access(newname, F_OK) != 0) break; // We've found a backup file which does not already exist
+   }
+  rename(filename, newname);
+  return;
+ }
 
 // -----------------------------------------------------------------------------------------------
 // Routine used to launch input filters as coprocesses with piped output returned as a file handle

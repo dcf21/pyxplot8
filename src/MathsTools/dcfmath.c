@@ -75,6 +75,39 @@ int sgn(double x)
   return 1;
  }
 
+void LinearRaster(double *out, double min, double max, int Nsteps)
+ {
+  int i;
+  if (Nsteps < 2) Nsteps = 2; // Avoid division by zero
+  for (i=0; i<Nsteps; i++) out[i] = min + (max - min) * ((double)i / (double)(Nsteps-1));
+  return;
+ }
+
+void LogarithmicRaster(double *out, double min, double max, int Nsteps)
+ {
+  int i;
+  if (min < 1e-200) min = 1e-200; // Avoid log of negative numbers or zero
+  if (max < 1e-200) max = 1e-200;
+  if (Nsteps < 2) Nsteps = 2; // Avoid division by zero
+  for (i=0; i<Nsteps; i++) out[i] = min * pow(max / min , (double)i / (double)(Nsteps-1));
+  return;
+ }
+
+double degrees(double rad)
+ {
+  return rad*180/M_PI;
+ }
+
+double radians(double degrees)
+ {
+  return degrees*M_PI/180;
+ }
+
+double frandom()
+ {
+  return (double)rand() / RAND_MAX;
+ }
+
 // Wrappers for mathematical functions to make them take values as inputs
 
 void dcfmath_abs(value *in, value *output, int *status, char *errtext)
@@ -1155,20 +1188,5 @@ void dcfmath_zeta(value *in, value *output, int *status, char *errtext)
   ELSE_REAL   { output->real = gsl_sf_zeta(in->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
- }
-
-double degrees(double rad)
- {
-  return rad*180/M_PI;
- }
-
-double radians(double degrees)
- {
-  return degrees*M_PI/180;
- }
-
-double frandom()
- {
-  return (double)rand() / RAND_MAX;
  }
 

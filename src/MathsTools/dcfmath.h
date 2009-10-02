@@ -31,6 +31,8 @@ extern double machine_epsilon;
 double max    (double x, double y);
 double min    (double x, double y);
 int    sgn    (double x);
+void   LinearRaster     (double *out, double min, double max, int Nsteps);
+void   LogarithmicRaster(double *out, double min, double max, int Nsteps);
 double degrees(double rad);
 double radians(double degrees);
 double frandom();
