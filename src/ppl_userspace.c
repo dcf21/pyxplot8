@@ -686,8 +686,8 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
 //    [evaluate numerics]
 //    [evaluate $s]
 //    [evaluate variables]
-//  3 minus signs
-//  4 **
+//  3 **
+//  4 minus signs
 //  5 *  /  %
 //  6 +  -
 //  7 <<  >>
@@ -1012,17 +1012,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     for (k=i; (StatusRow[k]==8); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
    }
-  // PHASE  3: EVALUATION OF MINUS SIGNS
-  if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)
-   {
-    FETCHNEXT(next_start, next_bufno, next_end);
-    ResultBuffer[next_bufno].real *= -1;
-    if (ResultBuffer[next_bufno].FlagComplex) ResultBuffer[next_bufno].imag *= -1;
-    SETSTATUS(p, next_start, next_bufno);
-    i = start + next_start;
-    i--; p=i-start;
-   }
-  // PHASE  4: EVALUATION OF **
+  // PHASE  3: EVALUATION OF **
   if (OpList[4]!=0) for (i=CalculatedEnd-1,p=len-1;p>0;i--,p--) if ((StatusRow[p]==7)&&(StatusRow[p-1]!=7))
    {
     if (MATCH_TWO('*','*'))
@@ -1033,6 +1023,16 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       if (*errpos >= 0) { *errpos=i; return; }
       SETSTATUS(prev_end, next_end, prev_bufno);
      }
+   }
+  // PHASE  4: EVALUATION OF MINUS SIGNS
+  if (OpList[3]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==5)
+   {
+    FETCHNEXT(next_start, next_bufno, next_end);
+    ResultBuffer[next_bufno].real *= -1;
+    if (ResultBuffer[next_bufno].FlagComplex) ResultBuffer[next_bufno].imag *= -1;
+    SETSTATUS(p, next_start, next_bufno);
+    i = start + next_start;
+    i--; p=i-start;
    }
   // PHASE  5: EVALUATION OF *  /  %
   if (OpList[5]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)

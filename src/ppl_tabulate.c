@@ -49,7 +49,9 @@
 static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **min, value **max)
  {
   DataBlock *blk;
-  unsigned char InRange, AllInts[USING_ITEMS_MAX], AllSmall[USING_ITEMS_MAX];
+  char *cptr;
+  double tmpdbl, multiplier[USING_ITEMS_MAX];
+  unsigned char InRange, split, AllInts[USING_ITEMS_MAX], AllSmall[USING_ITEMS_MAX];
   long int i,k;
   int j;
   double val;
@@ -64,6 +66,29 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
     {
      if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %d in the tabulate command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     }
+
+  // Output a column units line
+  fprintf(output, "# ColumnUnits: ");
+  for (j=0; j<Ncolumns; j++)
+   {
+    if (data->FirstEntries[j].dimensionless)
+     {
+      fprintf(output, "1 "); // This column contains dimensionless data
+      multiplier[j] = 1.0;
+     }
+    else
+     {
+      data->FirstEntries[j].real = 1.0;
+      data->FirstEntries[j].imag = 0.0;
+      data->FirstEntries[j].FlagComplex = 0;
+      cptr = ppl_units_GetUnitStr(data->FirstEntries+j, multiplier+j, &tmpdbl, 0, SW_DISPLAY_T);
+      for (i=0; ((cptr[i]!='\0')&&(cptr[i]!='(')); i++);
+      i++; // Fastforward over opening bracket
+      for (   ; ((cptr[i]!='\0')&&(cptr[i]!=')')); i++) fprintf(output, "%c", cptr[i]);
+      fprintf(output, " ");
+     }
+   }
+  fprintf(output, "\n");
 
   // Iterate over columns of data in this data grid, working out which columns of data are all ints, and which are all %f-able data
   for (j=0; j<Ncolumns; j++) { AllInts[j] = AllSmall[j] = 1; }
@@ -81,14 +106,44 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
       if (InRange)
        for (k=0; k<Ncolumns; k++)
         {
-         val = blk->data_real[k + Ncolumns*i];
-//         if ((fabs(val)>1000) || (!ppl_units_DblEqual(val,round(val)))) AllInts [k]=0;
-         if ((fabs(val)>1000) || (fabs(val)<0.0999999999999)          ) AllSmall[k]=0;
+         val = blk->data_real[k + Ncolumns*i] * multiplier[k];
+         if ((fabs(val)>1000) || (!ppl_units_DblEqual(val,floor(val+0.5)))) AllInts [k]=0;
+         if ((fabs(val)>1000) || (fabs(val)<0.0999999999999)              ) AllSmall[k]=0;
         }
      }
     blk=blk->next;
    }
 
+  // Iterate over columns of data in this data grid, working out which columns of data are all ints, and which are all %f-able data
+  blk = data->first;
+  split = 0;
+  while (blk != NULL)
+   {
+    for (i=0; i<blk->BlockPosition; i++)
+     {
+      InRange=1;
+      if (blk->split[i]) split=1;
+      for (k=0; k<Ncolumns; k++)
+       {
+        val = blk->data_real[k + Ncolumns*i];
+        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
+       }
+      if (InRange)
+       {
+        if (split) { fprintf(output, "\n"); split=0; }
+        for (k=0; k<Ncolumns; k++)
+         {
+          val = blk->data_real[k + Ncolumns*i] * multiplier[k];
+          if      (AllInts [k]) fprintf(output, "%10d ", (int)val);
+          else if (AllSmall[k]) fprintf(output, "%11f ",      val);
+          else                  fprintf(output, "%15e ",      val);
+         }
+        fprintf(output, "\n");
+       }
+      else split=1;
+     }
+    blk=blk->next;
+   }
 
   return 0;
  }
