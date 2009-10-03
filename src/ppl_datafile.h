@@ -90,7 +90,7 @@ void __inline__ DataFile_UsingConvert_FetchColumnByName(char *ColumnName, value 
 
 void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
 
-void DataFile_FromFunctions(DataTable **output, int *status, char *errout, char **fnlist, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
+void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter);
 
 #endif
 

@@ -282,11 +282,12 @@ void directive_solve(Dict *command)
   commlink.Nfitvars = 0;
   commlink.Nexprs   = 0;
 
+  // Fetch the names of the variables which we are fitting
   DictLookup(command, "fit_variables,", NULL, (void *)&ViaList);
   ListIter = ListIterateInit(ViaList);
   while (ListIter != NULL)
    {
-    DictLookup(ListIter->data, "fit_variable", NULL, (void *)&VarName);
+    DictLookup(ListIter->data, "fit_variable", NULL, (void *)&VarName); // Look up each fitting variable in the user's variable space
     DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
 
     if (DummyVar!=NULL)
@@ -295,7 +296,7 @@ void directive_solve(Dict *command)
       commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
       commlink.fitvarname[ commlink.Nfitvars ] = VarName;
      }
-    else
+    else // If variable is not defined, create it now
      {
       DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
       DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);

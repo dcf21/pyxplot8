@@ -157,16 +157,17 @@ int directive_tabulate(Dict *command, char *line)
   char         *cptr, *filename;
   wordexp_t     WordExp;
   glob_t        GlobData;
-  int           i, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;;
+  int           i, k, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;;
   long int      j;
-  value        *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX];
+  value        *min[USING_ITEMS_MAX+1], *max[USING_ITEMS_MAX+1];
   double       *ordinate_raster, raster_min, raster_max;
   unsigned char raster_log;
+  value         raster_units;
   DataTable    *data;
-  List         *RangeList, *TabList;
-  ListIterator *ListIter;
-  Dict         *TempDict;
-  char          errtext[LSTR_LENGTH], *tempstr=NULL, *SelectCrit=NULL;
+  List         *RangeList, *TabList, *ExprList;
+  ListIterator *ListIter, *ExprListIter;
+  Dict         *TempDict, *TempExprDict;
+  char          errtext[LSTR_LENGTH], *tempstr=NULL, *SelectCrit=NULL, *fnlist[USING_ITEMS_MAX];
   List         *UsingList=NULL, *EveryList=NULL;
 
 
@@ -182,7 +183,7 @@ int directive_tabulate(Dict *command, char *line)
   // Read in specified data ranges
   DictLookup(command, "range_list", NULL, (void **)&RangeList);
   ListIter = ListIterateInit(RangeList);
-  for (j=0; j<USING_ITEMS_MAX; j++) // Can have up to USING_ITEMS_MAX ranges
+  for (j=0; j<USING_ITEMS_MAX+1; j++) // Can have up to USING_ITEMS_MAX ranges, plus first range which is for ordinate axis when tabulating functions
    if (ListIter == NULL) { min[j]=NULL; max[j]=NULL; }
    else
     {
@@ -197,14 +198,14 @@ int directive_tabulate(Dict *command, char *line)
   // Generate the raster of ordinate values at which we will evaluate any functions
   ordinate_raster = lt_malloc(settings_graph_current.samples * sizeof(double));
   raster_log = 0; // Read from axis x1
-  if (min[0] != NULL)      raster_min = min[0]->real;
+  if (min[0] != NULL)      { raster_min = min[0]->real; raster_units = *(min[0]); }
   // Read minimum of axis x1 here
-  else if (max[0] != NULL) raster_min = raster_log ? (max[0]->real / 100) : (max[0]->real - 20);
+  else if (max[0] != NULL) { raster_min = raster_log ? (max[0]->real / 100) : (max[0]->real - 20); raster_units = *(max[0]); }
   // Read maximum of axis x1 here
-  else                     raster_min = raster_log ?  1.0                 : -10.0;
-  if (max[0] != NULL)      raster_max = max[0]->real;
+  else                     { raster_min = raster_log ?  1.0                 : -10.0; ppl_units_zero(&raster_units); }
+  if ((max[0] != NULL) && (ppl_units_DimEqual(&raster_units,max[0]))) raster_max = max[0]->real;
   // Read maximum of axis x1 here
-  else                     raster_max = raster_log ? (raster_min * 100) : (raster_min + 20);
+  else                                                             raster_max = raster_log ? (raster_min * 100) : (raster_min + 20);
   if (raster_log) LogarithmicRaster(ordinate_raster, raster_min, raster_max, settings_graph_current.samples);
   else            LinearRaster     (ordinate_raster, raster_min, raster_max, settings_graph_current.samples);
 
@@ -263,6 +264,33 @@ int directive_tabulate(Dict *command, char *line)
      }
     else // Case 2: Plotting a function
      {
+      // Read list of expressions supplied instead of filename
+      DictLookup(TempDict, "expression_list:", NULL, (void **)&ExprList);
+      k=0;
+      ExprListIter = ListIterateInit(ExprList);
+      while (ExprListIter != NULL)
+       {
+        TempExprDict = (Dict *)ExprListIter->data;
+        if (k>=USING_ITEMS_MAX) {sprintf(temp_err_string, "Colon-separated lists of expressions can only contain a maximum of %d expressions.",USING_ITEMS_MAX); ppl_error(ERR_SYNTAX,temp_err_string);}
+        DictLookup(TempExprDict, "expression", NULL, (void **)(fnlist+k));
+        k++;
+        ExprListIter = ListIterate(ExprListIter, NULL);
+       }
+
+      // Allocate a new memory context for the data file we're about to read
+      ContextOutput  = lt_GetMemContext();
+      ContextLocalVec= lt_DescendIntoNewContext();
+      ContextDataTab = lt_DescendIntoNewContext();
+
+      // Read data from file
+      DataFile_FromFunctions(ordinate_raster, settings_graph_current.samples, &raster_units,
+                             &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
+      if (status) { ppl_error(ERR_GENERAL, errtext); fclose(output); return 1; }
+      status = DataGridDisplay(output, data, NUsingItems, min+1, max+1); // First range is for ordinate axis
+      if (status) { fclose(output); return 1; }
+
+      // We're finished... can now free DataTable
+      lt_AscendOutOfContext(ContextLocalVec);
      }
     j++;
     ListIter = ListIterate(ListIter, NULL);
