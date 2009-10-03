@@ -180,6 +180,7 @@ void ppl_settings_makedefault()
 
   // Default Axis Settings, used whenever a new axis is created
   settings_axis_default.enabled     = 0;
+  settings_axis_default.invisible   = 0;
   settings_axis_default.log         = SW_BOOL_FALSE;
   settings_axis_default.MaxSet      = SW_BOOL_FALSE;
   settings_axis_default.MinSet      = SW_BOOL_FALSE;
@@ -202,6 +203,7 @@ void ppl_settings_makedefault()
   settings_axis_default.MTickList   = NULL;
   settings_axis_default.TickList    = NULL;
   strcpy(settings_axis_default.label, "");
+  ppl_units_zero(&(settings_axis_default.unit));
 
   // Set up list of input filters
   settings_filters = DictInit();

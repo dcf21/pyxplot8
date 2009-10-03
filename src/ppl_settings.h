@@ -76,11 +76,12 @@ void  ppl_settings_readconfig();
 #include "ListTools/lt_dict.h"
 
 typedef struct settings_axis {
- unsigned char enabled;
- int    MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
- double LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
- char   label[FNAME_LENGTH];
- List   *MTickList, *TickList;
+ unsigned char enabled, invisible;
+ int     MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
+ double  LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
+ char    label[FNAME_LENGTH];
+ double *MTickList, *TickList;
+ value   unit;
  } settings_axis;
 
 // Variables defined in ppl_settings.c

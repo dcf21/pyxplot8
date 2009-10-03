@@ -197,15 +197,16 @@ int directive_tabulate(Dict *command, char *line)
 
   // Generate the raster of ordinate values at which we will evaluate any functions
   ordinate_raster = lt_malloc(settings_graph_current.samples * sizeof(double));
-  raster_log = 0; // Read from axis x1
-  if (min[0] != NULL)      { raster_min = min[0]->real; raster_units = *(min[0]); }
-  // Read minimum of axis x1 here
-  else if (max[0] != NULL) { raster_min = raster_log ? (max[0]->real / 100) : (max[0]->real - 20); raster_units = *(max[0]); }
-  // Read maximum of axis x1 here
-  else                     { raster_min = raster_log ?  1.0                 : -10.0; ppl_units_zero(&raster_units); }
-  if ((max[0] != NULL) && (ppl_units_DimEqual(&raster_units,max[0]))) raster_max = max[0]->real;
-  // Read maximum of axis x1 here
-  else                                                             raster_max = raster_log ? (raster_min * 100) : (raster_min + 20);
+  raster_log = XAxes[0].log; // Read from axis x1
+  if      (min[0] != NULL)                  { raster_min = min[0]->real;                                            raster_units = *(min[0]);     }
+  else if (XAxes[0].MinSet == SW_BOOL_TRUE) { raster_min = XAxes[0].min;                                            raster_units = XAxes[0].unit; }
+  else if (max[0] != NULL)                  { raster_min = raster_log ? (max[0]->real / 100) : (max[0]->real - 20); raster_units = *(max[0]);     }
+  else if (XAxes[0].MaxSet == SW_BOOL_TRUE) { raster_min = raster_log ? (XAxes[0].max / 100) : (XAxes[0].max - 20); raster_units = XAxes[0].unit; }
+  else                                      { raster_min = raster_log ?  1.0                 : -10.0;               ppl_units_zero(&raster_units);}
+  if      ((max[0] != NULL)                  && (ppl_units_DimEqual(&raster_units,max[0]          ))) raster_max = max[0]->real;
+  else if ((XAxes[0].MaxSet == SW_BOOL_TRUE) && (ppl_units_DimEqual(&raster_units,&(XAxes[0].unit)))) raster_max = XAxes[0].max;
+  else                                                                                                raster_max = raster_log ? (raster_min * 100) : (raster_min + 20);
+  if (raster_log && ((raster_min<=0) || (raster_max<=0))) ppl_warning(ERR_NUMERIC,"Attempt to tabulate data using a logarithmic ordinate axis with negative or zero limits set. Reverting limits to finite positive values with well-defined logarithms.");
   if (raster_log) LogarithmicRaster(ordinate_raster, raster_min, raster_max, settings_graph_current.samples);
   else            LinearRaster     (ordinate_raster, raster_min, raster_max, settings_graph_current.samples);
 

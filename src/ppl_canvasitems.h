@@ -24,6 +24,8 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_settings.h"
+
 #define CANVAS_ARROW 22001
 #define CANVAS_TEXT  22002
 #define CANVAS_JPEG  22003
@@ -31,11 +33,15 @@
 
 typedef struct canvas_item {
  int                 type;
- struct canvas_item *next;
+ char               *commandline;
+ settings_graph      settings;
+ settings_axis       XAxes[MAX_AXES], YAxes[MAX_AXES], ZAxes[MAX_AXES];
+ struct canvas_item *prev, *next;
 } canvas_item;
 
 typedef struct canvas_itemlist {
- canvas_item *first;
+ canvas_item  *first, *last;
+ canvas_item **insert_point;
 } canvas_itemlist;
 
 #ifndef _PPL_CANVASITEMS_C
@@ -43,11 +49,11 @@ extern canvas_itemlist *canvas_items;
 #endif
 
 int directive_clear  ();
-int directive_list   (Dict *command);
-int directive_arrow  (Dict *command, int interactive);
-int directive_text   (Dict *command, int interactive);
-int directive_jpeg   (Dict *command, int interactive);
-int directive_plot   (Dict *command, int interactive, int replot);
+int directive_list   ();
+int directive_arrow  (Dict *command, char *line, int interactive);
+int directive_text   (Dict *command, char *line, int interactive);
+int directive_jpeg   (Dict *command, char *line, int interactive);
+int directive_plot   (Dict *command, char *line, int interactive, int replot);
 
 #endif
 

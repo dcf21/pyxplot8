@@ -33,6 +33,7 @@
 
 #include "EPSMaker/eps_colours.h"
 
+#include "ppl_canvasitems.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_papersize.h"
@@ -101,7 +102,7 @@ void directive_unseterror(Dict *command, int interactive)
 
 void directive_set(Dict *command)
  {
-  int     i, j, k, l, m, p, pp, errpos, multiplier;
+  int     i, j, k, l, m, p, pp, *EditNo, errpos, multiplier;
   char   *directive, *setoption;
   value   valobj;
   value  *tempval, *tempval2;
@@ -112,9 +113,30 @@ void directive_set(Dict *command)
   Dict   *tempdict;
   ListIterator *listiter;
   with_words *tempstyle;
+  canvas_item *ptr;
   settings_graph *sg;
+  settings_axis  *xa, *ya, *za;
 
-  sg = &settings_graph_current;
+  DictLookup(command,"editno",NULL,(void **)(&EditNo));
+  if (EditNo == NULL)
+   {
+    sg = &settings_graph_current;
+    xa = XAxes; ya = YAxes; za = ZAxes;
+   }
+  else
+   {
+    if ((*EditNo < 1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) {sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return;}
+    ptr = canvas_items->first;
+    for (i=1; i<*EditNo; i++)
+     {
+      if (ptr==NULL) break;
+      ptr=ptr->next;
+     }
+    if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+
+    sg = &(ptr->settings);
+    xa = ptr->XAxes; ya = ptr->YAxes; za = ptr->ZAxes;
+   }
 
   DictLookup(command,"directive",NULL,(void **)(&directive));
   DictLookup(command,"set_option",NULL,(void **)(&setoption));
@@ -1262,7 +1284,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
-  if (StrAutocomplete(word, "variables", 1)>=0)
+  if ((StrAutocomplete(word, "variables", 1)>=0) || (StrAutocomplete(word, "vars", 1)>=0))
    {
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Variables:\n\n"); i += strlen(out+i); p=1;
@@ -1288,7 +1310,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
-  if (StrAutocomplete(word, "functions", 1)>=0)
+  if ((StrAutocomplete(word, "functions", 1)>=0) || (StrAutocomplete(word, "funcs", 1)>=0))
    {
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# System-Defined Functions:\n\n"); i += strlen(out+i); p=1;
@@ -1308,7 +1330,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
-  if ((StrAutocomplete(word, "functions", 1)>=0) || (StrAutocomplete(word, "userfunctions", 1)>=0))
+  if ((StrAutocomplete(word, "functions", 1)>=0) || (StrAutocomplete(word, "funcs", 1)>=0) || (StrAutocomplete(word, "userfunctions", 1)>=0) || (StrAutocomplete(word, "userfuncs", 1)>=0))
    {
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# User-Defined Functions:\n\n"); i += strlen(out+i); p=1;
@@ -1412,28 +1434,38 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
 void directive_show(Dict *command, int interactive)
  {
-  settings_graph *sg;
-  settings_axis  *xa, *ya, *za;
-
   List         *ShowList;
   ListIterator *ShowIterate;
   Dict         *ShowWordDict;
   char         *ShowWord;
   char          TextBuffer[SSTR_LENGTH], ItemSet[32];
   int           i=0, p=0, *EditNo;
+  canvas_item    *ptr;
+  settings_graph *sg;
+  settings_axis  *xa, *ya, *za;
 
   interactive = ( interactive && (settings_session_default.colour == SW_ONOFF_ON) );
 
-  DictLookup(command, "editno"      , NULL, (void **)&EditNo);
+  DictLookup(command,"editno",NULL,(void **)&EditNo);
   if (EditNo == NULL)
    {
     sg = &settings_graph_current;
     xa = XAxes; ya = YAxes; za = ZAxes;
     ItemSet[0]='\0';
-   } else {
-    if ((*EditNo<0) || (*EditNo>MULTIPLOT_MAXINDEX))
-     { sprintf(temp_err_string, "There is no multiplot item with number %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
-    { sprintf(temp_err_string, "There is no multiplot item with number %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+   }
+  else
+   {
+    if ((*EditNo<1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    ptr = canvas_items->first;
+    for (i=1; i<*EditNo; i++)
+     {   
+      if (ptr==NULL) break;
+      ptr=ptr->next;
+     }
+    if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+  
+    sg = &(ptr->settings);
+    xa = ptr->XAxes; ya = ptr->YAxes; za = ptr->ZAxes;
     sprintf(ItemSet, "item %d ", *EditNo);
    }
 

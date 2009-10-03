@@ -285,7 +285,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
   else if (strcmp(directive, "arrow")==0)
-   directive_arrow(command, interactive);
+   directive_arrow(command, in, interactive);
   else if (strcmp(directive, "break")==0)
    {
     if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_BROKEN=1;
@@ -319,9 +319,11 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "if")==0)
    return directive_if(command, IterLevel+1);
   else if (strcmp(directive, "jpeg")==0)
-   directive_jpeg(command, interactive);
+   directive_jpeg(command, in, interactive);
   else if (strcmp(directive, "linear")==0)
    return directive_interpolate(command,INTERP_LINEAR);
+  else if (strcmp(directive, "list")==0)
+   directive_list();
   else if (strcmp(directive, "load")==0)
    {
     DictLookup(command,"filename",NULL,(void **)(&varstrval));
@@ -344,12 +346,16 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_minimise(command);
   else if (strcmp(directive, "polynomial")==0)
    return directive_interpolate(command,INTERP_POLYN);
+  else if (strcmp(directive, "plot")==0)
+   directive_plot(command, in, interactive, 0);
   else if (strcmp(directive, "print")==0)
    directive_print(command);
   else if (strcmp(directive, "pwd")==0)
    ppl_report(settings_session_default.cwd);
   else if (strcmp(directive, "quit")==0)
    PPL_SHELL_EXITING = 1;
+  else if (strcmp(directive, "replot")==0)
+   directive_plot(command, in, interactive, 1);
   else if (strcmp(directive, "reset")==0)
    {
     settings_term_current  = settings_term_default;
@@ -371,7 +377,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "tabulate")==0)
    return directive_tabulate(command, in);
   else if (strcmp(directive, "text")==0)
-   directive_text(command, interactive);
+   directive_text(command, in, interactive);
   else if (strcmp(directive, "unset")==0)
    directive_set(command);
   else if (strcmp(directive, "unset_error")==0)
