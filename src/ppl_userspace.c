@@ -519,7 +519,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     if (FormatString[i]!='%') { out[j++] = FormatString[i]; continue; }
     k=i+1; // k looks ahead to see experimentally if syntax is right
     RequiredArgs =1; // Normal %f like tokens require 1 argument
-    if ((FormatString[k]=='-')||(FormatString[k]=='-')||(FormatString[k]==' ')||(FormatString[k]=='#')) k++; // optional flag can be <+- #>
+    if ((FormatString[k]=='+')||(FormatString[k]=='-')||(FormatString[k]==' ')||(FormatString[k]=='#')) k++; // optional flag can be <+- #>
     if (FormatString[k]=='*') { k++; RequiredArgs++; }
     else while ((FormatString[k]>='0') && (FormatString[k]<='9')) k++; // length can be * or some digits
     if (FormatString[k]=='.') // precision starts with a . and is followed by * or by digits

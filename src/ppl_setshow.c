@@ -176,21 +176,21 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
    {
     DictLookup(command,"bin_origin",NULL,(void **)&tempdbl);
-    sg->BinOrigin = *tempdbl;
+    settings_term_current.BinOrigin = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binorigin")==0)) /* unset binorigin */
    {
-    sg->BinOrigin = settings_graph_default.BinOrigin;
+    settings_term_current.BinOrigin = settings_term_default.BinOrigin;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
     DictLookup(command,"bin_width",NULL,(void **)&tempdbl);
     if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Width of histogram bins must be greater than zero."); return; }
-    sg->BinWidth = *tempdbl;
+    settings_term_current.BinWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
    {
-    sg->BinWidth = settings_graph_default.BinWidth;
+    settings_term_current.BinWidth = settings_term_default.BinWidth;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
    {
@@ -355,9 +355,12 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
    {
+    settings_term_current.multiplot = SW_ONOFF_ON;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"multiplot")==0)) /* unset multiplot */
    {
+    if ((settings_term_default.multiplot == SW_ONOFF_OFF) && (settings_term_current.multiplot == SW_ONOFF_ON)) directive_clear();
+    settings_term_current.multiplot = settings_term_default.multiplot;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nobackup")==0)) /* set nobackup */
    {
@@ -382,6 +385,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
    {
+    if (settings_term_current.multiplot != SW_ONOFF_OFF) directive_clear();
     settings_term_current.multiplot = SW_ONOFF_OFF;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notics")==0)) /* set notics */
@@ -864,13 +868,13 @@ if (interactive!=0) /* On interactive sessions, highlight those settings which h
  } \
 
 
-void directive_show3(char *out, char *ItemSet, int interactive, char *setting_name, char *setting_value, int modified, char *description)
+void directive_show3(char *out, char *ItemSet, unsigned char ItemSetShow, int interactive, char *setting_name, char *setting_value, int modified, char *description)
  {
   int i=0,j,k;
 
   SHOW_HIGHLIGHT(modified);
 
-  sprintf(out+i, "set %s", ItemSet); i += strlen(out+i); // Start off with a set command
+  sprintf(out+i, "set %*s", (int)strlen(ItemSet), ItemSetShow ? ItemSet : ""); i += strlen(out+i); // Start off with a set command
 
   if (strcmp(setting_value, "On")==0)
    {
@@ -922,69 +926,69 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
-    directive_show3(out+i, ItemSet, interactive, "AxesColour", buf, (settings_graph_default.AxesColour == sg->AxesColour), "The colour used to draw graph axes");
+    directive_show3(out+i, ItemSet, 1, interactive, "AxesColour", buf, (settings_graph_default.AxesColour == sg->AxesColour), "The colour used to draw graph axes");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "backup", 1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.backup, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "backup", buf, (settings_term_default.backup == settings_term_current.backup), "Selects whether existing files are overwritten (Off) or moved (On)");
+    directive_show3(out+i, ItemSet, 0, interactive, "backup", buf, (settings_term_default.backup == settings_term_current.backup), "Selects whether existing files are overwritten (nobackup) or moved (backup)");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "bar",1)>=0))
    { 
     sprintf(buf, "%s", (char *)NumericDisplay(sg->bar,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "bar", buf, (settings_graph_default.bar == sg->bar), "Sets the size of the strokes which mark the lower and upper limits of errorbars");
+    directive_show3(out+i, ItemSet, 1, interactive, "bar", buf, (settings_graph_default.bar == sg->bar), "Sets the size of the strokes which mark the lower and upper limits of errorbars");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binorigin",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)NumericDisplay(sg->BinOrigin,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "BinOrigin", buf, (settings_graph_default.BinOrigin == sg->BinOrigin), "this sets the something");
+    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.BinOrigin,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    directive_show3(out+i, ItemSet, 0, interactive, "BinOrigin", buf, (settings_term_default.BinOrigin == settings_term_current.BinOrigin), "Used to control the exact position of the edges of the bins used by the histogram command");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binwidth",1)>=0))
    { 
-    if (sg->BinWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BinWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    else                    sprintf(buf, "auto");
-    directive_show3(out+i, ItemSet, interactive, "BinWidth", buf, (settings_graph_default.BinWidth == sg->BinWidth), "Sets the width of bins used when constructing histograms");
+    if (settings_term_current.BinWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(settings_term_current.BinWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    else                                      sprintf(buf, "auto");
+    directive_show3(out+i, ItemSet, 0, interactive, "BinWidth", buf, (settings_term_default.BinWidth == settings_term_current.BinWidth), "Sets the width of bins used by the histogram command");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxwidth",1)>=0))
    {
     if (sg->BoxWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BoxWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     else                    sprintf(buf, "auto");
-    directive_show3(out+i, ItemSet, interactive, "BoxWidth", buf, (settings_graph_default.BoxWidth == sg->BoxWidth), "Sets the width of bars on barcharts and histograms");
+    directive_show3(out+i, ItemSet, 1, interactive, "BoxWidth", buf, (settings_graph_default.BoxWidth == sg->BoxWidth), "Sets the width of bars on barcharts and histograms");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxfrom",1)>=0))
    {
     sprintf(buf, "%s", (char *)NumericDisplay(sg->BoxFrom,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "BoxFrom", buf, (settings_graph_default.BoxFrom == sg->BoxFrom), "Sets the vertical level from which the bars of barcharts and histograms are drawn");
+    directive_show3(out+i, ItemSet, 1, interactive, "BoxFrom", buf, (settings_graph_default.BoxFrom == sg->BoxFrom), "Sets the vertical level from which the bars of barcharts and histograms are drawn");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarin",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
-    directive_show3(out+i, ItemSet, interactive, "calendarin", buf, (settings_term_current.CalendarIn == settings_term_default.CalendarIn), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when dates are being input");
+    directive_show3(out+i, ItemSet, 0, interactive, "calendarin", buf, (settings_term_current.CalendarIn == settings_term_default.CalendarIn), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when dates are being input");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarout",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.CalendarOut, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
-    directive_show3(out+i, ItemSet, interactive, "calendarout", buf, (settings_term_current.CalendarOut == settings_term_default.CalendarOut), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when displaying dates");
+    directive_show3(out+i, ItemSet, 0, interactive, "calendarout", buf, (settings_term_current.CalendarOut == settings_term_default.CalendarOut), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when displaying dates");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.display, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "display", buf, (settings_term_default.display == settings_term_current.display), "Sets whether any output is produced; turn on to improve performance whilst setting up large multiplots");
+    directive_show3(out+i, ItemSet, 0, interactive, "display", buf, (settings_term_default.display == settings_term_current.display), "Sets whether any output is produced; turn on to improve performance whilst setting up large multiplots");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "dpi", 1)>=0))
    { 
     sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "DPI", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing gif, jpg or png output");
+    directive_show3(out+i, ItemSet, 0, interactive, "DPI", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing gif, jpg or png output");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "filters",1)>=0))
@@ -996,7 +1000,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       StrEscapify(DictIter->key, buf+16);
       StrEscapify(tempval->string, buf2);
       sprintf(buf,"%s %s",buf+16,buf2);
-      directive_show3(out+i, ItemSet, interactive, "filter", buf, (!tempval->modified), "Sets an input filter to be used when reading datafiles");
+      directive_show3(out+i, ItemSet, 0, interactive, "filter", buf, (!tempval->modified), "Sets an input filter to be used when reading datafiles");
       i += strlen(out+i) ; p=1;
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
@@ -1004,13 +1008,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "fontsize",1)>=0) || (StrAutocomplete(word, "fountsize",1)>=0))
    { 
     sprintf(buf, "%s", (char *)NumericDisplay(sg->FontSize,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "FountSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the fount size of text output: 1.0 is the default, and other values multiply this default size");
+    directive_show3(out+i, ItemSet, 1, interactive, "FontSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the font size of text output: 1.0 is the default, and other values multiply this default size");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "grid",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(sg->grid, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "grid", buf, (settings_graph_default.grid == sg->grid), "Selects whether a grid is drawn on plots");
+    directive_show3(out+i, ItemSet, 0, interactive, "grid", buf, (settings_graph_default.grid == sg->grid), "Selects whether a grid is drawn on plots");
     i += strlen(out+i) ; p=1;
     if (sg->grid == SW_ONOFF_ON)
      {
@@ -1020,7 +1024,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         if (sg->GridAxisX[j] != 0                                   ) { sprintf(bufp, "x%d", j); bufp += strlen(bufp); }
         if (sg->GridAxisX[j] != settings_graph_default.GridAxisX[j] ) k=0;
        }
-      if (bufp != buf) directive_show3(out+i, ItemSet, interactive, "grid", buf, k, "Sets the x axis with whose ticks gridlines are associated");
+      if (bufp != buf) directive_show3(out+i, ItemSet, 1, interactive, "grid", buf, k, "Sets the x axis with whose ticks gridlines are associated");
       i += strlen(out+i);
 
       bufp = buf; k=1;
@@ -1029,7 +1033,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         if (sg->GridAxisY[j] != 0                                   ) { sprintf(bufp, "y%d", j); bufp += strlen(bufp); }
         if (sg->GridAxisY[j] != settings_graph_default.GridAxisY[j] ) k=0;
        }
-      if (bufp != buf) directive_show3(out+i, ItemSet, interactive, "grid", buf, k, "Sets the y axis with whose ticks gridlines are associated");
+      if (bufp != buf) directive_show3(out+i, ItemSet, 1, interactive, "grid", buf, k, "Sets the y axis with whose ticks gridlines are associated");
       i += strlen(out+i);
 
       bufp = buf; k=1;
@@ -1038,78 +1042,78 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         if (sg->GridAxisZ[j] != 0                                   ) { sprintf(bufp, "z%d", j); bufp += strlen(bufp); }
         if (sg->GridAxisZ[j] != settings_graph_default.GridAxisZ[j] ) k=0;
        }
-      if (bufp != buf) directive_show3(out+i, ItemSet, interactive, "grid", buf, k, "Sets the z axis with whose ticks gridlines are associated");
+      if (bufp != buf) directive_show3(out+i, ItemSet, 1, interactive, "grid", buf, k, "Sets the z axis with whose ticks gridlines are associated");
       i += strlen(out+i);
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
-    directive_show3(out+i, ItemSet, interactive, "GridMajColour", buf, (settings_graph_default.GridMajColour == sg->GridMajColour), "The colour of the major gridlines on graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "GridMajColour", buf, (settings_graph_default.GridMajColour == sg->GridMajColour), "The colour of the major gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmincolour",1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
-    directive_show3(out+i, ItemSet, interactive, "GridMinColour", buf, (settings_graph_default.GridMinColour == sg->GridMinColour), "The colour of the minor gridlines on graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "GridMinColour", buf, (settings_graph_default.GridMinColour == sg->GridMinColour), "The colour of the minor gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
 
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(sg->key, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "key", buf, (settings_graph_default.key == sg->key), "Selects whether a legend is included on plots");
+    directive_show3(out+i, ItemSet, 1, interactive, "key", buf, (settings_graph_default.key == sg->key), "Selects whether a legend is included on plots");
     i += strlen(out+i) ; p=1;
    }
   if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (sg->key == SW_ONOFF_ON)  )
    {
     sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0,0));
-    directive_show3(out+i, ItemSet, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.real == sg->KeyXOff.real)&&(settings_graph_default.KeyYOff.real == sg->KeyYOff.real)), "Selects where legends are orientated on graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.real == sg->KeyXOff.real)&&(settings_graph_default.KeyYOff.real == sg->KeyYOff.real)), "Selects where legends are orientated on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "keycolumns",1)>=0))
    { 
     sprintf(buf, "%d", sg->KeyColumns);
-    directive_show3(out+i, ItemSet, interactive, "KeyColumns", buf, (settings_graph_default.KeyColumns == sg->KeyColumns), "Sets the number of columns into which legends on graphs are sorted");
+    directive_show3(out+i, ItemSet, 1, interactive, "KeyColumns", buf, (settings_graph_default.KeyColumns == sg->KeyColumns), "Sets the number of columns into which legends on graphs are sorted");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "linewidth", 1)>=0) || (StrAutocomplete(word, "lw", 2)>=0))
    { 
     sprintf(buf, "%s", NumericDisplay(sg->LineWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "LineWidth", buf, (settings_graph_default.LineWidth == sg->LineWidth), "Sets the widths of lines drawn on graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "LineWidth", buf, (settings_graph_default.LineWidth == sg->LineWidth), "Sets the widths of lines drawn on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "multiplot", 1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.multiplot, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "multiplot", buf, (settings_term_default.multiplot == settings_term_current.multiplot), "Selects whether multiplot mode is currently active");
+    directive_show3(out+i, ItemSet, 0, interactive, "multiplot", buf, (settings_term_default.multiplot == settings_term_current.multiplot), "Selects whether multiplot mode is currently active");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "numerics", 1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.ComplexNumbers, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "numerics complex", buf, (settings_term_default.ComplexNumbers==settings_term_current.ComplexNumbers), "Selects whether numbers are allowed to have imagnary components; affects the behaviour of functions such as sqrt()");
+    directive_show3(out+i, ItemSet, 0, interactive, "numerics complex", buf, (settings_term_default.ComplexNumbers==settings_term_current.ComplexNumbers), "Selects whether numbers are allowed to have imagnary components; affects the behaviour of functions such as sqrt()");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.ExplicitErrors,  SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "numerics errors explicit", buf, (settings_term_default.ExplicitErrors==settings_term_current.ExplicitErrors), "Selects whether numerical errors quietly produce not-a-number results, or throw explicit errors");
+    directive_show3(out+i, ItemSet, 0, interactive, "numerics errors explicit", buf, (settings_term_default.ExplicitErrors==settings_term_current.ExplicitErrors), "Selects whether numerical errors quietly produce not-a-number results, or throw explicit errors");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.SignificantFigures,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "numerics sigfig", buf, (settings_term_default.SignificantFigures == settings_term_current.SignificantFigures), "Sets the (minimum) number of significant figures to which decimal numbers are displayed by default");
+    directive_show3(out+i, ItemSet, 0, interactive, "numerics sigfig", buf, (settings_term_default.SignificantFigures == settings_term_current.SignificantFigures), "Sets the (minimum) number of significant figures to which decimal numbers are displayed by default");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.NumDisplay, SW_DISPLAY_INT, (void **)SW_DISPLAY_STR));
-    directive_show3(out+i, ItemSet, interactive, "numerics display", buf, (settings_term_default.NumDisplay==settings_term_current.NumDisplay), "Selects how numerical results are displayed: in a natural textual way, in a way which can be copied into a terminal, or as LaTeX");
+    directive_show3(out+i, ItemSet, 0, interactive, "numerics display", buf, (settings_term_default.NumDisplay==settings_term_current.NumDisplay), "Selects how numerical results are displayed: in a natural textual way, in a way which can be copied into a terminal, or as LaTeX");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
    { 
     sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0,0));
-    directive_show3(out+i, ItemSet, interactive, "origin", buf, ((settings_graph_default.OriginX.real == sg->OriginX.real)&&(settings_graph_default.OriginY.real == sg->OriginY.real)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
+    directive_show3(out+i, ItemSet, 1, interactive, "origin", buf, ((settings_graph_default.OriginX.real == sg->OriginX.real)&&(settings_graph_default.OriginY.real == sg->OriginY.real)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "output", 1)>=0))
    { 
     StrEscapify(settings_term_current.output, buf);
-    directive_show3(out+i, ItemSet, interactive, "output", buf, (strcmp(settings_term_default.output,settings_term_current.output)==0), "Filename to which graphic output is sent");
+    directive_show3(out+i, ItemSet, 0, interactive, "output", buf, (strcmp(settings_term_default.output,settings_term_current.output)==0), "Filename to which graphic output is sent");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "palette",1)>=0))
@@ -1126,162 +1130,162 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       if (j>0) { sprintf(buf+k, ", "); k+=strlen(buf+k); }
       sprintf(buf+k, "%s", (char *)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void **)SW_COLOUR_STR)); k+=strlen(buf+k);
      }
-    directive_show3(out+i, ItemSet, interactive, "palette", buf, !l, "The sequence of colours used to plot datasets on colour graphs");
+    directive_show3(out+i, ItemSet, 0, interactive, "palette", buf, !l, "The sequence of colours used to plot datasets on colour graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "papersize", 1)>=0))
    {
     sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(settings_term_current.PaperWidth),0,0,0), ppl_units_NumericDisplay(&(settings_term_current.PaperHeight),1,0,0));
-    directive_show3(out+i, ItemSet, interactive, "PaperSize", buf, ((settings_term_default.PaperWidth.real==settings_term_current.PaperWidth.real)&&(settings_term_default.PaperHeight.real==settings_term_current.PaperHeight.real)), "The current papersize for postscript output, in mm");
+    directive_show3(out+i, ItemSet, 0, interactive, "PaperSize", buf, ((settings_term_default.PaperWidth.real==settings_term_current.PaperWidth.real)&&(settings_term_default.PaperHeight.real==settings_term_current.PaperHeight.real)), "The current papersize for postscript output, in mm");
     i += strlen(out+i) ; p=1;
     if (StrAutocomplete("user", settings_term_current.PaperName, 1)<0)
      {
       StrEscapify(settings_term_current.PaperName,buf);
-      directive_show3(out+i, ItemSet, interactive, "PaperSize", buf, (strcmp(settings_term_default.PaperName, settings_term_current.PaperName)==0), NULL);
+      directive_show3(out+i, ItemSet, 0, interactive, "PaperSize", buf, (strcmp(settings_term_default.PaperName, settings_term_current.PaperName)==0), NULL);
       i += strlen(out+i) ; p=1;
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "pointlinewidth",1)>=0) || (StrAutocomplete(word, "plw",3)>=0))
    {
     sprintf(buf, "%s", NumericDisplay(sg->PointLineWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "PointLineWidth", buf, (settings_graph_default.PointLineWidth==sg->PointLineWidth), "The width of the strokes used to mark points on graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "PointLineWidth", buf, (settings_graph_default.PointLineWidth==sg->PointLineWidth), "The width of the strokes used to mark points on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "pointsize",1)>=0) || (StrAutocomplete(word, "ps",2)>=0))
    {
     sprintf(buf, "%s", NumericDisplay(sg->PointSize,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "PointSize", buf, (settings_graph_default.PointSize==sg->PointSize), "The size of points marked on graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "PointSize", buf, (settings_graph_default.PointSize==sg->PointSize), "The size of points marked on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "preamble", 1)>=0))
    {
     StrEscapify(settings_term_current.LatexPreamble,buf);
-    directive_show3(out+i, ItemSet, interactive, "preamble", buf, (strcmp(settings_term_default.LatexPreamble,settings_term_current.LatexPreamble)==0), "Configuration options sent to the LaTeX typesetting system");
+    directive_show3(out+i, ItemSet, 0, interactive, "preamble", buf, (strcmp(settings_term_default.LatexPreamble,settings_term_current.LatexPreamble)==0), "Configuration options sent to the LaTeX typesetting system");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "samples",1)>=0))
    {
     sprintf(buf, "%d", sg->samples);
-    directive_show3(out+i, ItemSet, interactive, "samples", buf, (settings_graph_default.samples==sg->samples), "The number of samples taken when functions are plotted");
+    directive_show3(out+i, ItemSet, 1, interactive, "samples", buf, (settings_graph_default.samples==sg->samples), "The number of samples taken when functions are plotted");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "size",1)>=0))
    {
     if (sg->AutoAspect == SW_ONOFF_ON) sprintf(buf, "auto");
     else                               sprintf(buf, "%s", NumericDisplay(sg->aspect, 0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, interactive, "size ratio", buf, ((settings_graph_default.aspect==sg->aspect)&&(settings_graph_default.AutoAspect==sg->AutoAspect)), "The aspect-ratio of graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "size ratio", buf, ((settings_graph_default.aspect==sg->aspect)&&(settings_graph_default.AutoAspect==sg->AutoAspect)), "The aspect-ratio of graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "data", 1)>=0) || (StrAutocomplete(word, "style", 1)>=0))
    {
     with_words_print(&sg->DataStyle, buf);
-    directive_show3(out+i, ItemSet, interactive, "data style", buf, with_words_compare(&settings_graph_default.DataStyle,&sg->DataStyle), "Default plot options for plotting datafiles");
+    directive_show3(out+i, ItemSet, 1, interactive, "data style", buf, with_words_compare(&settings_graph_default.DataStyle,&sg->DataStyle), "Default plot options for plotting datafiles");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "function", 1)>=0) || (StrAutocomplete(word, "style", 1)>=0))
    {
     with_words_print(&sg->FuncStyle, buf);
-    directive_show3(out+i, ItemSet, interactive, "function style", buf, with_words_compare(&settings_graph_default.FuncStyle,&sg->FuncStyle), "Default plot options for plotting functions");
+    directive_show3(out+i, ItemSet, 1, interactive, "function style", buf, with_words_compare(&settings_graph_default.FuncStyle,&sg->FuncStyle), "Default plot options for plotting functions");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermType, SW_TERMTYPE_INT, (void **)SW_TERMTYPE_STR));
-    directive_show3(out+i, ItemSet, interactive, "terminal", buf, (settings_term_default.TermType==settings_term_current.TermType), "The type of graphic output to be produced");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal", buf, (settings_term_default.TermType==settings_term_current.TermType), "The type of graphic output to be produced");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "antialias",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermAntiAlias, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "terminal AntiAlias", buf, (settings_term_default.TermAntiAlias==settings_term_current.TermAntiAlias), "Selects whether anti-aliasing is applied to bitmap output");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal AntiAlias", buf, (settings_term_default.TermAntiAlias==settings_term_current.TermAntiAlias), "Selects whether anti-aliasing is applied to bitmap output");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "colour", 1)>=0) || (StrAutocomplete(word, "color",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.colour, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "terminal colour", buf, (settings_term_default.colour==settings_term_current.colour), "Selects whether output is colour or monochrome");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal colour", buf, (settings_term_default.colour==settings_term_current.colour), "Selects whether output is colour or monochrome");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "enlargement",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermEnlarge, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "terminal enlarge", buf, (settings_term_default.TermEnlarge==settings_term_current.TermEnlarge), "Selects whether output photo-enlarged to fill the page");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal enlarge", buf, (settings_term_default.TermEnlarge==settings_term_current.TermEnlarge), "Selects whether output photo-enlarged to fill the page");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "invert",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermInvert, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "terminal invert", buf, (settings_term_default.TermInvert==settings_term_current.TermInvert), "Selects whether the colours of bitmap output are inverted");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal invert", buf, (settings_term_default.TermInvert==settings_term_current.TermInvert), "Selects whether the colours of bitmap output are inverted");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "landscape", 1)>=0) || (StrAutocomplete(word, "portrait", 1)>=0))
    {
     if (settings_term_current.landscape == SW_ONOFF_ON) sprintf(buf, "Landscape");
     else                                                sprintf(buf, "Portrait");
-    directive_show3(out+i, ItemSet, interactive, "terminal", buf, (settings_term_default.landscape==settings_term_current.landscape), "Selects the orientation of output");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal", buf, (settings_term_default.landscape==settings_term_current.landscape), "Selects the orientation of output");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "transparent", 1)>=0) || (StrAutocomplete(word, "solid", 1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermTransparent, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "terminal transparent", buf, (settings_term_default.TermTransparent==settings_term_current.TermTransparent), "Selects whether gif and png output is transparent");
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal transparent", buf, (settings_term_default.TermTransparent==settings_term_current.TermTransparent), "Selects whether gif and png output is transparent");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textcolour",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
-    directive_show3(out+i, ItemSet, interactive, "TextColour", buf, (settings_graph_default.TextColour==sg->TextColour), "Selects the colour of text labels");
+    directive_show3(out+i, ItemSet, 1, interactive, "TextColour", buf, (settings_graph_default.TextColour==sg->TextColour), "Selects the colour of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "texthalign",1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(sg->TextHAlign, SW_HALIGN_INT, (void **)SW_HALIGN_STR));
-    directive_show3(out+i, ItemSet, interactive, "TextHAlign", buf, (settings_graph_default.TextHAlign==sg->TextHAlign), "Selects the horizontal alignment of text labels");
+    directive_show3(out+i, ItemSet, 1, interactive, "TextHAlign", buf, (settings_graph_default.TextHAlign==sg->TextHAlign), "Selects the horizontal alignment of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textvalign",1)>=0))
    { 
     sprintf(buf, "%s", (char *)FetchSettingName(sg->TextVAlign, SW_VALIGN_INT, (void **)SW_VALIGN_STR));
-    directive_show3(out+i, ItemSet, interactive, "TextVAlign", buf, (settings_graph_default.TextVAlign==sg->TextVAlign), "Selects the vertical alignment of text labels");
+    directive_show3(out+i, ItemSet, 1, interactive, "TextVAlign", buf, (settings_graph_default.TextVAlign==sg->TextVAlign), "Selects the vertical alignment of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "title", 1)>=0))
    {
     StrEscapify(sg->title, buf); k = strlen(buf);
     sprintf(buf+k, " %s , %s", ppl_units_NumericDisplay(&(sg->TitleXOff), 0, 0, 0), ppl_units_NumericDisplay(&(sg->TitleYOff), 1, 0, 0));
-    directive_show3(out+i, ItemSet, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.real==sg->TitleXOff.real)&&(settings_graph_default.TitleYOff.real==sg->TitleYOff.real)), "A title to be displayed above graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "title", buf, ((strcmp(settings_graph_default.title,sg->title)==0)&&(settings_graph_default.TitleXOff.real==sg->TitleXOff.real)&&(settings_graph_default.TitleYOff.real==sg->TitleYOff.real)), "A title to be displayed above graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "trange", 1)>=0))
    {
     sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Tmin), 0, 0, 0), ppl_units_NumericDisplay(&(sg->Tmax), 1, 0, 0));
-    directive_show3(out+i, ItemSet, interactive, "trange", buf, (settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
+    directive_show3(out+i, ItemSet, 1, interactive, "trange", buf, (settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "units", 1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "unit display abbreviated", buf, (settings_term_default.UnitDisplayAbbrev==settings_term_current.UnitDisplayAbbrev), "Selects whether units are displayed in abbreviated form ('m' vs. 'metres')");
+    directive_show3(out+i, ItemSet, 0, interactive, "unit display abbreviated", buf, (settings_term_default.UnitDisplayAbbrev==settings_term_current.UnitDisplayAbbrev), "Selects whether units are displayed in abbreviated form ('m' vs. 'metres')");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayPrefix, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
-    directive_show3(out+i, ItemSet, interactive, "unit display prefix", buf, (settings_term_default.UnitDisplayPrefix==settings_term_current.UnitDisplayPrefix), "Selects whether SI units are displayed with prefixes");
+    directive_show3(out+i, ItemSet, 0, interactive, "unit display prefix", buf, (settings_term_default.UnitDisplayPrefix==settings_term_current.UnitDisplayPrefix), "Selects whether SI units are displayed with prefixes");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitScheme, SW_UNITSCH_INT, (void **)SW_UNITSCH_STR));
-    directive_show3(out+i, ItemSet, interactive, "unit scheme", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the scheme (e.g. SI or Imperial) of prefered units");
+    directive_show3(out+i, ItemSet, 0, interactive, "unit scheme", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the scheme (e.g. SI or Imperial) of prefered units");
     i += strlen(out+i) ; p=1;
     for (j=0; j<ppl_unit_pos; j++) if (ppl_unit_database[j].UserSel != 0)
      {
       sprintf(buf, "unit of %s", ppl_unit_database[j].quantity);
       if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON) sprintf(buf2, "%s%s", SIprefixes_abbrev[ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameAs);
       else                                                        sprintf(buf2, "%s%s", SIprefixes_full  [ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameFs);
-      directive_show3(out+i, ItemSet, interactive, buf, buf2, 0, "Selects a user-prefered unit for a particular quantity");
+      directive_show3(out+i, ItemSet, 0, interactive, buf, buf2, 0, "Selects a user-prefered unit for a particular quantity");
       i += strlen(out+i) ; p=1;
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
    { 
     sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0, 0));
-    directive_show3(out+i, ItemSet, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "variables", 1)>=0) || (StrAutocomplete(word, "vars", 1)>=0))

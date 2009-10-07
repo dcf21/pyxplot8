@@ -41,6 +41,7 @@
 #include "ListTools/lt_memory.h"
 
 #include "pyxplot.h"
+#include "ppl_canvasitems.h"
 #include "ppl_children.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
@@ -222,6 +223,7 @@ int main(int argc, char **argv)
 
   // Notify the CSP that we are about to quit
   SendCommandToCSP("B\n");
+  directive_clear();
 
   // Save GNU Readline history
   if (WillBeInteractive>0)

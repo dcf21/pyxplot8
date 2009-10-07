@@ -22,7 +22,7 @@
 #ifndef _PPL_CANVASDRAW_H
 #define _PPL_CANVASDRAW_H 1
 
-int canvas_draw();
+void canvas_draw(unsigned char *unsuccessful_ops);
 
 #endif
 

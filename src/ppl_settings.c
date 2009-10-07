@@ -75,6 +75,8 @@ void ppl_settings_makedefault()
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup              = SW_ONOFF_OFF;
+  settings_term_default.BinOrigin           = 0.0;
+  settings_term_default.BinWidth            = 1.0;
   settings_term_default.CalendarIn          = SW_CALENDAR_BRITISH;
   settings_term_default.CalendarOut         = SW_CALENDAR_BRITISH;
   settings_term_default.colour              = SW_ONOFF_ON;
@@ -109,8 +111,6 @@ void ppl_settings_makedefault()
   settings_graph_default.AutoAspect = SW_ONOFF_ON;
   settings_graph_default.AxesColour = COLOUR_BLACK;
   settings_graph_default.bar        = 1.0;
-  settings_graph_default.BinOrigin  = 0.0;
-  settings_graph_default.BinWidth   = 1.0;
   settings_graph_default.BoxFrom    = 0.0;
   settings_graph_default.BoxWidth   = 0.0;
   settings_graph_default.DataStyle.colour     = -1;

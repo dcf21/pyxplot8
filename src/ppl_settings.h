@@ -34,7 +34,7 @@ typedef struct with_words {
 
 typedef struct settings_terminal {
  int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplay, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev;
- double dpi;
+ double dpi, BinOrigin, BinWidth;
  value  PaperHeight, PaperWidth;
  char   output[FNAME_LENGTH];
  char   PaperName[FNAME_LENGTH];
@@ -43,7 +43,7 @@ typedef struct settings_terminal {
 
 typedef struct settings_graph {
  int          aspect, AutoAspect, AxesColour, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
- double       bar, BinOrigin, BinWidth, BoxFrom, BoxWidth, FontSize, LineWidth, PointSize, PointLineWidth;
+ double       bar, BoxFrom, BoxWidth, FontSize, LineWidth, PointSize, PointLineWidth;
  unsigned int GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  value        KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width;
  char         title[FNAME_LENGTH];

@@ -123,10 +123,10 @@ void ReadConfigFile(char *ConfigFname)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.bar           = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BAR."          , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BINORIGIN"    )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.BinOrigin     = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default.BinOrigin      = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BINORIGIN."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BINWIDTH"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.BinWidth      = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default.BinWidth       = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BINWIDTH."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BOXFROM"      )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.BoxFrom       = fl;

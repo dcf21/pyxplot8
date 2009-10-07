@@ -76,11 +76,16 @@ FILE *DataFile_LaunchCoProcess(char *filename, int *status, char *errout)
   FILE         *infile;
   DictIterator *DictIter;
   char         *filter, *FilterArgs, **ArgList;
+  char          LastFilename[FNAME_LENGTH];
   int           i,j,k;
   sigset_t      sigs;
 
   sigemptyset(&sigs);
   sigaddset(&sigs,SIGCHLD);
+
+  // Implement the magic filename '' to refer to the last used filename
+  if (filename[0]=='\0') filename = LastFilename;
+  else                   { strcpy(LastFilename, filename); }
 
   // Check whether we have a specified coprocessor to work on this filetype
   DictIter = DictIterateInit(settings_filters);

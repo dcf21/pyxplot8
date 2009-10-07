@@ -21,8 +21,15 @@
 
 #define _PPL_CANVASDRAW_C 1
 
-int canvas_draw()
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "ppl_canvasitems.h"
+
+void canvas_draw(unsigned char *unsuccessful_ops)
  {
-  return 0;
+  int i;
+  for (i=0;i<MULTIPLOT_MAXINDEX; i++) unsuccessful_ops[i]=0; // By default, all operations are successful
+  return;
  }
 

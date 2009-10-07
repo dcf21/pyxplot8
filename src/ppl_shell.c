@@ -300,8 +300,12 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
     if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_CONTINUED=1;
     else                        ppl_error(ERR_SYNTAX, "The continue statement can only be placed inside a loop structure.");
    }
+  else if (strcmp(directive, "delete")==0)
+   return directive_delete(command);
   else if (strcmp(directive, "do")==0)
    return directive_do(command, IterLevel+1);
+  else if (strcmp(directive, "eps")==0)
+   return directive_eps(command, in, interactive);
   else if (strcmp(directive, "fit")==0)
    return directive_fit(command);
   else if (strcmp(directive, "for")==0)
@@ -344,6 +348,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_maximise(command);
   else if (strcmp(directive, "minimise")==0)
    directive_minimise(command);
+  else if (strcmp(directive, "move")==0)
+   return directive_move(command);
   else if (strcmp(directive, "polynomial")==0)
    return directive_interpolate(command,INTERP_POLYN);
   else if (strcmp(directive, "plot")==0)
@@ -378,6 +384,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_tabulate(command, in);
   else if (strcmp(directive, "text")==0)
    directive_text(command, in, interactive);
+  else if (strcmp(directive, "undelete")==0)
+   return directive_undelete(command);
   else if (strcmp(directive, "unset")==0)
    directive_set(command);
   else if (strcmp(directive, "unset_error")==0)

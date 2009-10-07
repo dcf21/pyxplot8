@@ -27,33 +27,47 @@
 #include "ppl_settings.h"
 
 #define CANVAS_ARROW 22001
-#define CANVAS_TEXT  22002
-#define CANVAS_JPEG  22003
-#define CANVAS_PLOT  22004
+#define CANVAS_EPS   22002
+#define CANVAS_TEXT  22003
+#define CANVAS_JPEG  22004
+#define CANVAS_PLOT  22005
+
+typedef struct plot_descriptor {
+ unsigned char  function;
+ with_words     with_data;
+ char          *text;
+} plot_descriptor;
 
 typedef struct canvas_item {
- int                 type;
- char               *commandline;
+ int                 id, type;
+ double              xpos, ypos, xpos2, ypos2, rotation;
+ char               *commandline, *text;
+ unsigned char       deleted;
+ with_words          with_data;
+ plot_descriptor    *plot_items;
  settings_graph      settings;
  settings_axis       XAxes[MAX_AXES], YAxes[MAX_AXES], ZAxes[MAX_AXES];
- struct canvas_item *prev, *next;
+ struct canvas_item *next;
 } canvas_item;
 
 typedef struct canvas_itemlist {
- canvas_item  *first, *last;
- canvas_item **insert_point;
+ canvas_item  *first;
 } canvas_itemlist;
 
 #ifndef _PPL_CANVASITEMS_C
 extern canvas_itemlist *canvas_items;
 #endif
 
-int directive_clear  ();
-int directive_list   ();
-int directive_arrow  (Dict *command, char *line, int interactive);
-int directive_text   (Dict *command, char *line, int interactive);
-int directive_jpeg   (Dict *command, char *line, int interactive);
-int directive_plot   (Dict *command, char *line, int interactive, int replot);
+int directive_clear   ();
+int directive_list    ();
+int directive_delete  (Dict *command);
+int directive_undelete(Dict *command);
+int directive_move    (Dict *command);
+int directive_arrow   (Dict *command, char *line, int interactive);
+int directive_eps     (Dict *command, char *line, int interactive);
+int directive_text    (Dict *command, char *line, int interactive);
+int directive_jpeg    (Dict *command, char *line, int interactive);
+int directive_plot    (Dict *command, char *line, int interactive, int replot);
 
 #endif
 

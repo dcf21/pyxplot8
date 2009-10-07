@@ -48,14 +48,14 @@
 #include "ppl_userspace.h"
 
 // Display data from a data block
-static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **min, value **max)
+static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **min, value **max, char *format)
  {
   DataBlock *blk;
-  char *cptr;
+  char *cptr, tmpchr;
   double tmpdbl, multiplier[USING_ITEMS_MAX];
   unsigned char InRange, split, AllInts[USING_ITEMS_MAX], AllSmall[USING_ITEMS_MAX];
   long int i,k;
-  int j;
+  int j,l,pos;
   double val;
 
   // Check that the FirstEntries above have the same units as any supplied ranges
@@ -110,7 +110,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
         {
          val = blk->data_real[k + Ncolumns*i] * multiplier[k];
          if ((fabs(val)>1000) || (!ppl_units_DblEqual(val,floor(val+0.5)))) AllInts [k]=0;
-         if ((fabs(val)>1000) || (fabs(val)<0.0999999999999)              ) AllSmall[k]=0;
+         if ((fabs(val)>1000) || (fabs(val)<0.0999999999999)              ) AllSmall[k]=0; // Columns containing only numbers in this range are fprintfed using %f, rather than %e
         }
      }
     blk=blk->next;
@@ -133,12 +133,57 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
       if (InRange)
        {
         if (split) { fprintf(output, "\n"); split=0; }
-        for (k=0; k<Ncolumns; k++)
+        if (format == NULL) // User has not supplied a format string, and so we just list the contents of each column in turn using best-fit format style
          {
-          val = blk->data_real[k + Ncolumns*i] * multiplier[k];
-          if      (AllInts [k]) fprintf(output, "%10d ", (int)val);
-          else if (AllSmall[k]) fprintf(output, "%11f ",      val);
-          else                  fprintf(output, "%15e ",      val);
+          for (k=0; k<Ncolumns; k++)
+           {
+            val = blk->data_real[k + Ncolumns*i] * multiplier[k];
+            if      (AllInts [k]) fprintf(output, "%10d ", (int)val);
+            else if (AllSmall[k]) fprintf(output, "%11f ",      val);
+            else                  fprintf(output, "%15e ",      val);
+           }
+         } else { // The user has supplied a format string, which we now substitute column values into
+          for(pos=l=0; format[pos]!='\0'; pos++)
+           if (format[pos]!='%') fprintf(output, "%c", format[pos]); // Just copy text of format string until we hit a % character
+           else
+            {
+             k=pos+1; // k looks ahead to see experimentally if syntax is right
+             if (format[k]=='%') { fprintf(output, "%%"); continue; }
+             if ((format[k]=='+')||(format[k]=='-')||(format[k]==' ')||(format[k]=='#')) k++; // optional flag can be <+- #>
+             while ((format[k]>='0') && (format[k]<='9')) k++; // length can be some digits
+             if (format[k]=='.') // precision starts with a . and is followed by more digits
+              {
+               k++; while ((format[k]>='0') && (format[k]<='9')) k++; // length can be some digits
+              }
+             // We do not allow user to specify optional length flag, which could potentially be <hlL>
+             if (l>=Ncolumns) val = GSL_NAN;
+             else             val = blk->data_real[l + Ncolumns*i] * multiplier[l]; // Set val to equal data from data table that we're about to print.
+             l++;
+             if (format[k]!='\0') { tmpchr = format[k+1]; format[k+1] = '\0'; } // NULL terminate format token before passing it to fprintf
+             if      (format[k]=='d') // %d -- print quantity as an integer, but take care to avoid overflows
+              {
+               if ((!gsl_finite(val))||(val>INT_MAX-1)||(val<INT_MIN+1)) fprintf(output, "nan");
+               else                                                      fprintf(output, format+pos, (int)floor(val));
+               pos = k;
+              }
+             else if ((format[k]=='e') || (format[k]=='f')) // %f or %e -- print quantity as floating point number
+              {
+               fprintf(output, format+pos, val);
+               pos = k;
+              }
+             else if (format[k]=='s') // %s -- print quantity in our best-fit format style
+              {
+               if (l>Ncolumns)         sprintf(temp_err_string,"nan");
+               else if (AllInts [l-1]) sprintf(temp_err_string, "%10d ", (int)val);
+               else if (AllSmall[l-1]) sprintf(temp_err_string, "%11f ",      val);
+               else                    sprintf(temp_err_string, "%15e ",      val);
+               fprintf(output, format+pos, temp_err_string);
+               pos = k;
+              }
+             else
+              { fprintf(output, "%c", format[pos]); l--; } // l-- because this wasn't a valid format token, so we didn't print any data in the end
+             if (format[k]!='\0') format[k+1] = tmpchr; // Remove temporary NULL termination at the end of the format token
+            }
          }
         fprintf(output, "\n");
        }
@@ -154,7 +199,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
 int directive_tabulate(Dict *command, char *line)
  {
   FILE         *output;
-  char         *cptr, *filename;
+  char         *cptr, *filename, *format;
   wordexp_t     WordExp;
   glob_t        GlobData;
   int           i, k, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;;
@@ -197,7 +242,7 @@ int directive_tabulate(Dict *command, char *line)
 
   // Generate the raster of ordinate values at which we will evaluate any functions
   ordinate_raster = lt_malloc(settings_graph_current.samples * sizeof(double));
-  raster_log = XAxes[0].log; // Read from axis x1
+  raster_log = (XAxes[0].log == SW_BOOL_TRUE); // Read from axis x1
   if      (min[0] != NULL)                  { raster_min = min[0]->real;                                            raster_units = *(min[0]);     }
   else if (XAxes[0].MinSet == SW_BOOL_TRUE) { raster_min = XAxes[0].min;                                            raster_units = XAxes[0].unit; }
   else if (max[0] != NULL)                  { raster_min = raster_log ? (max[0]->real / 100) : (max[0]->real - 20); raster_units = *(max[0]);     }
@@ -229,6 +274,7 @@ int directive_tabulate(Dict *command, char *line)
     if (NUsingItems<2) NUsingItems = 2;
     DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
     DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
+    DictLookup(TempDict, "format", NULL, (void **)(&format));
 
     // Case 1: Plotting a datafile
     DictLookup(TempDict,"filename",NULL,(void **)(&cptr));
@@ -253,7 +299,7 @@ int directive_tabulate(Dict *command, char *line)
           // Read data from file
           DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
           if (status) { ppl_error(ERR_GENERAL, errtext); globfree(&GlobData); wordfree(&WordExp); fclose(output); return 1; }
-          status = DataGridDisplay(output, data, NUsingItems, min, max);
+          status = DataGridDisplay(output, data, NUsingItems, min, max, format);
           if (status) { globfree(&GlobData); wordfree(&WordExp); fclose(output); return 1; }
 
           // We're finished... can now free DataTable
@@ -287,7 +333,7 @@ int directive_tabulate(Dict *command, char *line)
       DataFile_FromFunctions(ordinate_raster, settings_graph_current.samples, &raster_units,
                              &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, errtext); fclose(output); return 1; }
-      status = DataGridDisplay(output, data, NUsingItems, min+1, max+1); // First range is for ordinate axis
+      status = DataGridDisplay(output, data, NUsingItems, min+1, max+1, format); // First range is for ordinate axis
       if (status) { fclose(output); return 1; }
 
       // We're finished... can now free DataTable
