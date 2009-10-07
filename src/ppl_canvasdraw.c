@@ -26,10 +26,31 @@
 
 #include "ppl_canvasitems.h"
 
+// Table of the functions we call for each phase of the canvas drawing process for different object types
+
 void canvas_draw(unsigned char *unsuccessful_ops)
  {
   int i;
   for (i=0;i<MULTIPLOT_MAXINDEX; i++) unsuccessful_ops[i]=0; // By default, all operations are successful
+
+  // for () if type==plot   ReadAccessibleData
+  // for () if type==plot   DecideAxisRanges
+  // for () if type==plot   LinkedAxesPropagate
+  // for () if type==plot   SampleFunctions
+  // for ()                 YieldUpText
+  // cd tempdir
+  // Call LaTeX
+  // Open temporary text buffer with tmpfile()
+  // for ()                 RenderEPS( &bb_tl, ..., tmpfile); MergeBoundingBoxes
+  // Open EPS output file
+  // Write EPS header
+  // Copy tmpfile --> output
+  // Close tmpfile
+  // Write EPS footer
+  // Close EPS file
+  // Convert EPS output as required
+  // cd cwd
+
   return;
  }
 

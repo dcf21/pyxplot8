@@ -38,8 +38,17 @@ from standard input.  To do this one uses the magic filename `{\tt -}':
 plot '-' with lines
 \end{verbatim}
 
-This facility should be used with caution; it is generally preferable to write
-data to a file in order that it can be perused at a later date.
+This makes it possible to call PyXPlot from within a program and to pass it
+some data to plot without ever storing the data on disk.  However, we would
+generally discourage you from doing this. Unless you really {\it need} to do
+otherwise, we would recommend that you write your data to a file on disk, and
+then to plot it from inside PyXPlot in a separate step.  Whilst it is often
+tempting to write programs which both perform calculations and plot the results
+immediately, this can be a dangerous path. A few months after the event, when
+the need arises to replot the same data in a different form or in a different
+style, remembering how to use a sizeable program can prove tricky -- especially
+if the person struggling to do so is not you! But a simple \datafile\ is quite
+straightforward to plot time and again.
 
 \section{Including data within PyXPlot command scripts}
 

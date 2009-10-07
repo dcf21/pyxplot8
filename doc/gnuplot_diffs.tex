@@ -24,8 +24,6 @@
 \chapter{Summary of Differences Between PyXPlot and \gnuplot}
 \label{ch:gnuplot_diffs}
 
-Rewrite Me.
-
 Because PyXPlot is still work in progress, it does not implement all of the
 features of \gnuplot. It currently does not implement any three-dimensional or
 surface plotting -- i.e.\ the \indcmdt{splot} of \gnuplot. It also does not
@@ -40,4 +38,42 @@ vertical axes which may be drawn on a graph.
 
 These extensions to \gnuplot's interface are described in detail in the
 following chapters.
+
+
+
+
+The principal difference between the two programs which \gnuplot\ users will
+need to be aware of is that PyXPlot renders all of its text labels
+automatically in the \LaTeX\ typesetting environment. This produces much neater
+labels than the default typesetting engine used by \gnuplot, and makes it
+straightforward to label graphs with mathematical expressions. Moreover, if you
+plan to import your graphs into a \LaTeX\ document, it makes it straightforward
+to match the fonts used in your figures with those used in the main text of
+your document.
+
+This does, however, necessarily introduce some incompatibility with \gnuplot,
+since some strings which were valid before are no longer valid (see
+Section~\ref{sec:latex_incompatibility} for more details). For
+example:\index{latex}
+
+\begin{dontdo}
+set xlabel 'x\^{}2'
+\end{dontdo}
+
+\noindent would have been valid in \gnuplot, but is not valid input for \LaTeX:
+it needs to be written in \LaTeX\ mathmode as:
+
+\begin{dodo}
+set xlabel '\$x\^{}2\$'
+\end{dodo}
+
+\noindent It is our view, though, that the nuisance of this incompatibility is
+far outweighed by the power that \LaTeX\ brings, however. For users with no
+prior knowledge of \LaTeX\ we recommend Tobias Oetiker's\index{Tobias Oetiker}
+excellent introduction, {\it The Not So Short Guide to \LaTeX\
+$2\epsilon$}\index{Not So Short Guide to \LaTeX\ $2\epsilon$,
+The}\footnote{Download from:\\
+\url{http://www.ctan.org/tex-archive/info/lshort/english/lshort.pdf}}. Later in
+this manual, we will also show that PyXPlot's built-in  {\tt texify()} function
+can also automatically convert strings of text into valid \LaTeX.
 
