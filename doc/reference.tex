@@ -92,6 +92,30 @@ from one, and which are output to the terminal after the {\tt arrow} command is
 called. By reference to these numbers, they can be deleted and undeleted
 subsequently with the {\tt delete} and {\tt undelete} commands respectively.
 
+\section{break}\indcmd{break}
+
+\begin{verbatim}
+break
+\end{verbatim}
+
+The {\tt break} command breaks out of a {\tt do}, {\tt while}, {\tt for} or {\tt
+foreach} loop.  Execution resumes at the statement following the end of the
+loop.  For example, the following example would only print the numbers 1 and 2:
+
+\begin{verbatim}
+for i = 1 to 10
+{
+   print i
+   if (i==2) 
+   {
+      break
+   }
+}
+\end{verbatim}
+      
+The break command can only be used within a loop.  It should not be followed by
+any parameters.
+
 \section{cd}\indcmd{cd}
 
 \begin{verbatim}
@@ -117,6 +141,31 @@ especially useful; it removes the current plot to leave a blank page.
 
 The {\tt clear} command should not be followed by any parameters.
 
+\section{continue}\indcmd{continue}
+
+\begin{verbatim}
+continue
+\end{verbatim}
+
+The continue command is used within {\tt for}, {\tt foreach}, {\tt do} and {\tt
+while} loops.  It causes PyXPlot to skip the remainder of the current iteration
+of the loop, in an analogous manner to the continue statement in the C language.
+For example, the following programme will not print the number `2':
+
+\begin{verbatim}
+for i = 0 to 5
+{
+   if (i==2)
+   {
+      continue
+   }
+   print i
+}
+\end{verbatim}
+
+The {\tt continue} command may only be used in a loop.  It does not take any
+parameters.
+
 \section{delete}\indcmd{delete}
 
 \begin{verbatim}
@@ -137,6 +186,34 @@ delete 1,2,3
 
 Having been deleted, multiplot items can be restored using the {\tt undelete}
 command.
+
+\section{do}\indcmd{do}
+
+\begin{verbatim}
+do {
+  [ ... commands ... ]
+} while ( <condition> )
+\end{verbatim}
+
+The {\tt do} command sets up a loop, in a similar manner to the {\tt while}
+command.  PyXPlot executes the block of commands in the body of the loop, then
+checks the condition given in the while clause at the end.  If the condition is
+true, the loop executes again.  Hence the contents of a {\tt do} loop are {\emph
+always} executed at least once.  The following example prints the numbers 1, 2
+and 3:
+
+\begin{verbatim}
+i=1
+do
+{
+   print i
+   i = i + 1
+} while (i < 4)
+\end{verbatim}
+
+Note that there must always be a newline following the opening brace after the
+\indcmdt{do} command, and the while clause must always be on the same line as the
+closing brace.
 
 \section{edit}\indcmd{edit}
 
