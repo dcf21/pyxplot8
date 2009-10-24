@@ -555,6 +555,36 @@ files matching the given wildcard are executed, for example:
 load '*.script'
 \end{verbatim}
 
+\section{maximise}\indcmd{maximise}
+
+\begin{verbatim}
+maximise <expression> via <variable> [, variable ...]
+\end{verbatim}
+
+The \indcmdt{maximise} command takes a user-supplied expression and finds its
+maximum value obtained by varying the specified variable.  More than one
+variable may be varied for functions of multiple variables.  In the following
+example $x$ ends up being set to $-2$:
+
+\begin{verbatim}
+maximise exp(-(x+2)**2) via x
+\end{verbatim}
+
+\section{minimise}\indcmd{minimise}
+
+\begin{verbatim}
+minimise <expression> via <variable> [, variable ...]
+\end{verbatim}
+
+The \indcmdt{minimise} command takes a user-supplied expression and finds its
+minimum value obtained by varying the specified variable.  More than one
+variable may be varied for functions of multiple variables.  In the following
+example $x$ ends up being set to $-3$ and $y$ to $-1$:
+
+\begin{verbatim}
+minimise (x+3)**2 + (y+1)**2 via x, y
+\end{verbatim}
+
 \section{move}\indcmd{move}
 
 \begin{verbatim}
@@ -2493,3 +2523,26 @@ unset linewidth
 
 The list of keywords which can follow the {\tt unset} command are essentially
 the same as those which can follow the {\tt set} command.
+
+\section{while}\indcmd{while}
+
+\begin{verbatim}
+while ( <condition> ) {
+   < ... commands ... >
+}
+\end{verbatim}
+
+The \indcmdt{while} command causes a set of commands to be executed whilst the
+specified {\tt condition} remains true.  This allows loops to be written.  For
+example, the following code prints out the low-valued Fibbonachi numbers:
+
+\begin{verbatim}
+i = 1
+j = 1
+while (j < 50) {
+   print j
+   i = i + j
+   print i
+   j = j + i
+}
+\end{verbatim}
