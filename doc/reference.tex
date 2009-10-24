@@ -331,6 +331,56 @@ estimating the gradients of datasets.  The syntax is essentially identical to
 that used by \gnuplot, though a few points, outlined in
 Section~\ref{sec:fit_command}, are worth noting.
 
+\section{for}\indcmd{for}
+
+\begin{verbatim}
+for <variable> = <start> to <end> [step <step>] {
+   < ... commands ... >
+}
+\end{verbatim}
+
+The \indcmdt{for} command carries out a set of commands with a specified
+variable taking a different value each time.  In PyXPlot's implementation the
+value of the variable increases by a fixed value {\tt step} each time, which may
+be negative and is equal to unity if not specified.  The {\tt end} value is not
+included in the squence.  The following example prints the squares of the first
+five natural numbers:
+
+\begin{verbatim}
+for i = 1 to 6 {
+   print i**2
+}
+\end{verbatim}
+
+\section{foreach}\indcmd{foreach}
+
+\begin{verbatim}
+foreach <variable> in [ <filename expression> | ( <a>, [<b>, ....] ) ] {
+   < ... commands ... >
+}
+\end{verbatim}
+
+The foreach command has two uses.  The first is to take a set of filename, their
+names produced by expansion of a user-provided expression, and run a set of
+commands with a variable set to each filename.  For example, to plot the data in
+the set of files whose names end with {\tt .dat}:
+
+\begin{verbatim}
+foreach file in *.dat {
+   plot file with lines
+}
+\end{verbatim}
+
+The second form of the command takes a list of values provided by the user and
+runs a block of commands with the specified variable set equal to each value in
+turn.  For example, to plot normal distributions of three different widths:
+
+\begin{verbatim}
+foreach sigma in (1, 2, 3) {
+   replot 1/sigma*exp(-x**2/(2*sigma**2))
+}
+\end{verbatim}
+
 \section{help}\indcmd{help}
 
 \begin{verbatim}
