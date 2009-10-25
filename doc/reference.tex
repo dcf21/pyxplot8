@@ -507,6 +507,37 @@ if (x==2) {
 }
 \end{verbatim}
 
+\section{interpolate}\indcmd{interpolate}
+
+\begin{verbatim}
+interpolate ( linear | loglinear | polynomial | spline )
+       [<range specification>] <function name> '<filename>' 
+       [index <index specification>] [every <every specification>]
+       [using <using specification>]
+       [smooth <smoothing>]
+\end{verbatim}
+
+The {\tt interpolate} command generates a special function which interpolates a
+set of data points supplied from a \datafile.  Four types of interpolation are available; linear, log-linear,
+polynomial and spline.  Log-linear interpolation is equivalent to linear
+interpolation in a log-log space.  For example:
+
+\begin{verbatim}
+interpolate spline f() 'data.1'
+\end{verbatim}
+
+\noindent would create a function $f(x)$ that is a spline fit to the data in the
+file {\tt data.1}. The \indmodt{using} modifier, if present, should supply two
+columns (or rows) to act as the range and domain of the function.  By default,
+the {\tt interpolate} command uses the first two columns of a \datafile\ in a
+manner analogous to the plot command. The {\tt index}, {\tt every} and {\tt
+using} modifiers can be used in the same way as in the {\tt plot} command to
+select which parts of the \datafile\ should be used; see the {\tt datafile}
+section for more details.
+
+Note that trying to interpolate multi-valued functions will not, in general,
+produce useful results.
+
 \section{list}\indcmd{list}
 
 \begin{verbatim}
@@ -2361,32 +2392,17 @@ configuration of all of PyXPlot's axes. {\tt show variables} lists all of the
 currently defined variables. And finally, {\tt show functions} lists all of the
 current user-defined functions.
 
-
 \section{spline}\indcmd{spline}
 
 \begin{verbatim}
 spline [<range specification>] <function name> '<filename>' 
        [index <index specification>] [every <every specification>]
        [using <using specification>]
+       [smooth <smoothing>]
 \end{verbatim}
 
-The {\tt spline} command fits a spline to a \datafile. A special function is
-created that represents the spline fit and can be used in the same way as any
-other user-defined function. For example:
-
-\begin{verbatim}
-spline f() 'data.1'
-\end{verbatim}
-
-\noindent would create a function $f(x)$ that is a fit to the data in the file {\tt
-data.1}. By default, the {\tt spline} command uses the first two columns of a
-\datafile\ in a manner analogous to the plot command. The {\tt index}, {\tt
-every} and {\tt using} modifiers can be used in the same way as in the {\tt
-plot} command to select which parts of the \datafile\ should be used; see the
-{\tt datafile} section for more details.
-
-Note that trying to generate splines of multi-valued functions will not, in
-general, produce useful results.
+The {\tt spline} command is an alias for the {\tt interpolate spline} command.
+See the entry for the {\tt interpolate} command for more details.
 
 \section{tabulate}\indcmd{tabulate}
 
