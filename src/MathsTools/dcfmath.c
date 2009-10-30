@@ -799,6 +799,11 @@ void dcfmath_hypot(value *in1, value *in2, value *output, int *status, char *err
 void dcfmath_imag(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "Im(z)";
+  if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s can only be used when complex arithmetic is enabled; type 'set numerics complex' first.", FunctionDescription); return; }
+    else { NULL_OUTPUT; }
+   }
   CHECK_1NOTNAN;
   output->real = in->imag;
   CHECK_OUTPUT_OKAY;

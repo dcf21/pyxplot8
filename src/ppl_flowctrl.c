@@ -111,20 +111,26 @@ void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel
  }
 
 // Execute a loop chain once through
-int loop_execute(cmd_chain *chain, int IterLevel)
+int loop_execute(cmd_chain *chain, int breakable, int IterLevel)
  {
-  int   status=0;
+  int   status=0, OldBreakable;
   char *OldLB, *OldLBP, *OldLBA;
   char *line_ptr;
 
+  OldBreakable = PPL_FLOWCTRL_BREAKABLE;
+  PPL_FLOWCTRL_BROKEN    = 0;
+  PPL_FLOWCTRL_CONTINUED = 0;
   ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
   while ((!status) && (PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
+    PPL_FLOWCTRL_BREAKABLE = (breakable || OldBreakable);
     SetInputSourceLoop(chain);
     line_ptr = FetchInputStatement("","");
     if (line_ptr == NULL) break;
     if (StrStrip(line_ptr,line_ptr)[0] != '\0') status = ProcessDirective(line_ptr, 0, IterLevel);
    }
+  PPL_FLOWCTRL_BREAKABLE = OldBreakable;
+  if (breakable) PPL_FLOWCTRL_CONTINUED = 0;
   ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
   return status;
  }
@@ -174,7 +180,8 @@ int directive_do(Dict *command, int IterLevel)
   do
    {
     chainiter = chain;
-    status = loop_execute(&chainiter, IterLevel);
+    status = loop_execute(&chainiter, 1, IterLevel);
+    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
     if (status) break;
     i=-1; j=-1;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
@@ -228,7 +235,8 @@ int directive_while(Dict *command, int IterLevel)
     if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;
     chainiter = chain;
-    status = loop_execute(&chainiter, IterLevel);
+    status = loop_execute(&chainiter, 1, IterLevel);
+    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
    }
   while (!status);
   return status;
@@ -298,7 +306,8 @@ int directive_for(Dict *command, int IterLevel)
   while (((!backwards)&&(iterval->real < end->real)) || ((backwards)&&(iterval->real > end->real)))
    {
     chainiter = chain;
-    status = loop_execute(&chainiter, IterLevel);
+    status = loop_execute(&chainiter, 1, IterLevel);
+    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
     if (status) break;
     iterval->real += step->real;
    }
@@ -324,6 +333,7 @@ int directive_foreach(Dict *command, int IterLevel)
   cmd_chain *cmd_put   = NULL;
   wordexp_t  WordExp;
   glob_t     GlobData;
+  unsigned char WordExpNull=1,GlobDataNull=1;
 
   cmd_put = &chain;
 
@@ -357,30 +367,41 @@ int directive_foreach(Dict *command, int IterLevel)
    }
 
   // See if we're iterating over a globbed filename
-  DictLookup     (command,"filename",NULL,(void **)(&cptr));
-  if (cptr != NULL)
+  DictLookup     (command,"filename_list",NULL,(void **)(&listptr));
+  if (listptr != NULL)
    {
-    status=0;
-    if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
-    for (j=0; j<WordExp.we_wordc; j++)
+    listiter = ListIterateInit(listptr);
+    while (listiter != NULL)
      {
-      if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
-      for (i=0; i<GlobData.gl_pathc; i++)
+      dictptr = (Dict *)listiter->data;
+      DictLookup(dictptr,"filename",NULL,(void **)(&cptr));
+      status=0;
+      if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); listiter = ListIterate(listiter, NULL); continue; }
+      WordExpNull = 0;
+      for (j=0; j<WordExp.we_wordc; j++)
        {
-        if (foreachdatum) { directive_foreach_LoopOverData(command, GlobData.gl_pathv[i], &chain, &chainiter, IterLevel, &status); } // Looping over data
-        else
+        if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); GlobDataNull=1; continue; }
+        GlobDataNull=0;
+        for (i=0; i<GlobData.gl_pathc; i++)
          {
-          iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
-          chainiter = chain;
-          status = loop_execute(&chainiter, IterLevel);
+          if (foreachdatum) { directive_foreach_LoopOverData(command, GlobData.gl_pathv[i], &chain, &chainiter, IterLevel, &status); } // Looping over data
+          else
+           {
+            iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
+            chainiter = chain;
+            status = loop_execute(&chainiter, 1, IterLevel);
+            if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+           }
+          if (status) break;
          }
         if (status) break;
        }
+      if (!WordExpNull ) { wordfree(&WordExp ); WordExpNull =1; }
+      if (!foreachdatum) ppl_units_zero(iterval);
+      if (!GlobDataNull) { globfree(&GlobData); GlobDataNull=1; }
       if (status) break;
+      listiter = ListIterate(listiter, NULL);
      }
-    wordfree(&WordExp);
-    if (!foreachdatum) ppl_units_zero(iterval);
-    globfree(&GlobData);
     return status;
    }
 
@@ -399,7 +420,8 @@ int directive_foreach(Dict *command, int IterLevel)
       iterval->string = strptr;
      }
     chainiter = chain;
-    status = loop_execute(&chainiter, IterLevel);
+    status = loop_execute(&chainiter, 1, IterLevel);
+    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
     if (status) break;
     listiter = ListIterate(listiter, NULL);
    }
@@ -506,7 +528,8 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
       if (InRange) // Only run looped script if this data point is within supplied range
        {
        *chainiter = *chain;
-       *status = loop_execute(chainiter, IterLevel);
+       *status = loop_execute(chainiter, 1, IterLevel);
+       if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
        if (*status) break;
       }
      }
@@ -572,7 +595,7 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
 
   // If we were going to do this if ( ) codeblock, execute it now
   status = 0;
-  if (state == 1) status = loop_execute(&chain, IterLevel);
+  if (state == 1) status = loop_execute(&chain, 0, IterLevel);
   return status;
  }
 

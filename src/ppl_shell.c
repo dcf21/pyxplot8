@@ -159,7 +159,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
 
 int ProcessDirective(char *in, int interactive, int IterLevel)
  {
-  int   memcontext, i, is, j, l;
+  int   memcontext, i, is, j, l, breakable;
   int   status=0;
   char  QuoteChar='\0';
   static char *DirectiveLinebuffer = NULL;
@@ -177,6 +177,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
   for (i=0; in[i]!='\0'; i++); for (; ((i>0)&&(in[i]<=' ')); i--);
   if ((i==0) && (in[i]<=' ')) return -1;
 
+  breakable  = PPL_FLOWCTRL_BREAKABLE;
   memcontext = lt_DescendIntoNewContext();
   if ((interactive==0) || (IterLevel > 0) || (sigsetjmp(sigjmp_ToDirective, 1) == 0))  // Set up SIGINT handler, but only if this is an interactive session
    {
@@ -234,12 +235,16 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
       // If command is NULL, we had a syntax error
      }
    } else {
+    PPL_FLOWCTRL_BREAKABLE = breakable; // If we've CTRL-Ced out of a loop, restore breakable flag
+    if (!PPL_FLOWCTRL_BREAKABLE) { PPL_FLOWCTRL_BROKEN = 0; PPL_FLOWCTRL_CONTINUED = 0; }
     sigemptyset(&sigs);
     sigaddset(&sigs,SIGCHLD);
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     ppl_error(ERR_PREFORMED, "\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;
    }
+  PPL_FLOWCTRL_BREAKABLE = breakable;
+  if (!PPL_FLOWCTRL_BREAKABLE) { PPL_FLOWCTRL_BROKEN = 0; PPL_FLOWCTRL_CONTINUED = 0; }
   if (IterLevel == 0) sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   lt_AscendOutOfContext(memcontext);
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory

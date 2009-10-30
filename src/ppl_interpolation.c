@@ -173,19 +173,27 @@ RANGES_DONE:
   qsort((void *)xdata, i, sizeof(double), __compare);
 
   // Filter out repeat values of x
-  for (j=k=1; j<i; j++)
+  for (j=k=0; j<i; j++)
    {
-    if (xdata[j]==xdata[j-1]) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Repeat values for interpolation have been supplied at x=%s.",ppl_units_NumericDisplay(&v, 0, 0, 0)); ppl_warning(ERR_GENERAL, temp_err_string); COUNTEDERR2; continue; }
+    if ( (!gsl_finite(xdata[j])) || (!gsl_finite(ydata[j])) ) continue; // Ignore non-finite datapoints
+    if ( (xmin!=NULL) && (xdata[j]<xmin->real) )              continue; // Ignore out-of-range datapoints
+    if ( (xmax!=NULL) && (xdata[j]>xmax->real) )              continue; // Ignore out-of-range datapoints
+    if ( (ymin!=NULL) && (ydata[j]<ymin->real) )              continue; // Ignore out-of-range datapoints
+    if ( (ymax!=NULL) && (ydata[j]>ymax->real) )              continue; // Ignore out-of-range datapoints
+
+    if ((j>0) && (xdata[j]==xdata[j-1])) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Repeat values for interpolation have been supplied at x=%s.",ppl_units_NumericDisplay(&v, 0, 0, 0)); ppl_warning(ERR_GENERAL, temp_err_string); COUNTEDERR2; continue; }
+
     if (mode == INTERP_LOGLIN)
      {
       if ((xdata[j]<=0.0) || (ydata[j]<=0.0)) { COUNTEDERR1; v=FirstEntries[0]; v.real=xdata[j]; sprintf(temp_err_string,"Negative or zero values are not allowed in power-law interpolation; negative values supplied at x=%s will be ignored.",ppl_units_NumericDisplay(&v, 0, 0, 0)); ppl_warning(ERR_NUMERIC, temp_err_string); COUNTEDERR2; continue; }
       xdata[k]=log(xdata[j]);
       ydata[k]=log(ydata[j]);
+      if ( (!gsl_finite(xdata[k])) || (!gsl_finite(ydata[k])) ) continue;
+     } else {
+      xdata[k]=xdata[j];
+      ydata[k]=ydata[j];
      }
-    xdata[k]=xdata[j];
-    ydata[k]=ydata[j];
-    if (gsl_finite(xdata[k]) && gsl_finite(ydata[k]) && ((xmin==NULL)||(xdata[k]>=xmin->real)) && ((xmax==NULL)||(xdata[k]<=xmax->real)) &&
-                                                        ((ymin==NULL)||(ydata[k]>=ymin->real)) && ((ymax==NULL)||(ydata[k]<=ymax->real))    ) k++; // Ignore non-finite data points
+    k++;
    }
 
   // Check that we have at least three points to interpolate

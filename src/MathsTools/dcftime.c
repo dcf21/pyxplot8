@@ -282,7 +282,7 @@ double JulianDateIslamic(int year, int month, int day, int hour, int min, int se
 
   DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
 
-  return JD + DayFraction;
+  return JD + DayFraction - 0.5;
  }
 
 void InvJulianDateIslamic(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
