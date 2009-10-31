@@ -118,31 +118,35 @@ The same rules concerning the placement of brace characters apply to the
 \section{Foreach Loops}
 
 The \indcmdt{foreach} command may be used to run a script block once for every
-file in the current working directory which matches a supplied file wildcard.
-For example,
+file in the current working directory which matches one or more supplied file
+wildcards.  For example,
 
 \begin{verbatim}
-foreach x in *.dat
+foreach x in "*.dat" "*.txt"
  {
   print x
  }
 \end{verbatim}
 
 \noindent would run the supplied script block once for every file in the
-current working directory with a {\tt .dat} suffix. The effect would be rather
-similar to typing
+current working directory with a {\tt .dat} or a {\tt .txt} suffix. The effect
+would be rather similar to typing
 
 \begin{verbatim}
 !ls *.dat
 \end{verbatim}
 
-An error is returned if there are no files in the present directory which match
-the supplied wildcard. The following example would produce a plot of all of the
-\datafile s in the current directory:
+The quotes around each supplied search string are optional if and only if all
+of the characters in that search string are alphanumeric. Since both of the
+wildcard characters {\tt *} and {\tt ?} are non-alphanumeric, this exception
+applies in practice only to unique explicit filenames in the present working
+directory.  An error is returned if there are no files in the present directory
+which match the supplied wildcard. The following example would produce a plot
+of all of the \datafile s in the current directory:
 
 \begin{verbatim}
 plot
-foreach x in *.dat
+foreach x in "*.dat"
  {
   replot x using 1:2
  }
