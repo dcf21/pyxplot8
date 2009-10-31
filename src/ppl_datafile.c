@@ -976,7 +976,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
   unsigned char AutoUsingList=0, xpreviouslydefined, discontinuity=0;
   int           UsingLen, logi, logj, i, j, k, ContextOutput;
   char         *UsingItems[USING_ITEMS_MAX], buffer[FNAME_LENGTH];
-  value         ColumnData_val[USING_ITEMS_MAX];
+  value         ColumnData_val[USING_ITEMS_MAX+2];
   ListIterator *listiter;
   Dict         *tempdict;
   value        *OrdinateVar, DummyTemp;
@@ -1006,7 +1006,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
     for (i=0; i<Ncolumns; i++)
      {
       if ((UsingItems[i] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
-      sprintf(UsingItems[i], "%d", i); // default using list is 0:1:2... which is in contrast to default using list for datafiles
+      sprintf(UsingItems[i], "%d", i+1);
      }
     UsingLen = Ncolumns;
     AutoUsingList = 1; // We have automatically generated this using list
@@ -1064,18 +1064,20 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
    {
     OrdinateVar->real = OrdinateRaster[i];
     sprintf(buffer, "x=%s", NumericDisplay(OrdinateVar->real, 0, settings_term_current.SignificantFigures, 0));
-    ColumnData_val[0] = *OrdinateVar;
+    ppl_units_zero(ColumnData_val+0);
+    ColumnData_val[0].real = i;
+    ColumnData_val[1] = *OrdinateVar;
     for (j=0; j<fnlist_len; j++)
      {
       *status=-1; k=-1;
-      ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+1, 0, &k, 0, status, errout, 0);
+      ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+2, 0, &k, 0, status, errout, 0);
       if (k<strlen(fnlist[j])) { sprintf(errout, "Expression '%s' is not syntactically valid %d %ld", fnlist[j],k,(long)strlen(fnlist[j])); *status=1; if (DEBUG) ppl_log(errout); return; }
       if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, temp_err_string); COUNTEDERR2F; break; }
       *status=0;
      }
     if (!(*status))
      {
-      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len, UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+1, UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      }
     *status=0;
    }

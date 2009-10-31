@@ -46,6 +46,7 @@
 #include "ppl_fit.h"
 #include "ppl_flowctrl.h"
 #include "ppl_help.h"
+#include "ppl_histogram.h"
 #include "ppl_input.h"
 #include "ppl_interpolation.h"
 #include "ppl_parser.h"
@@ -311,18 +312,20 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_do(command, IterLevel+1);
   else if (strcmp(directive, "eps")==0)
    return directive_eps(command, in, interactive);
+  else if (strcmp(directive, "else")==0)
+   ppl_error(ERR_SYNTAX, "This else statement does not match any earlier if statement.");
+  else if (strcmp(directive, "exec")==0)
+   return directive_exec(command, IterLevel+1);
   else if (strcmp(directive, "fit")==0)
    return directive_fit(command);
   else if (strcmp(directive, "for")==0)
    return directive_for(command, IterLevel+1);
   else if (strcmp(directive, "foreach")==0)
    return directive_foreach(command, IterLevel+1);
-  else if (strcmp(directive, "else")==0)
-   ppl_error(ERR_SYNTAX, "This else statement does not match any earlier if statement.");
-  else if (strcmp(directive, "exec")==0)
-   return directive_exec(command, IterLevel+1);
   else if (strcmp(directive, "help")==0)
    directive_help(command, interactive);
+  else if (strcmp(directive, "histogram")==0)
+   return directive_histogram(command);
   else if (strcmp(directive, "history")==0)
    directive_history(command);
   else if (strcmp(directive, "if")==0)

@@ -906,11 +906,12 @@ void directive_show3(char *out, char *ItemSet, unsigned char ItemSetShow, int in
 
 int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *sg, settings_axis *xa, settings_axis *ya, settings_axis *za)
  {
-  char *out, *buf, *buf2, *bufp;
+  char *out, *buf, *buf2, *bufp, *bufp2, temp1[32], temp2[32];
   int   i=0, p=0,j,k,l,m;
   DictIterator *DictIter;
   FunctionDescriptor *FDiter;
   value *tempval;
+  settings_axis *AxisPtr;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
@@ -1011,7 +1012,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "FontSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the font size of text output: 1.0 is the default, and other values multiply this default size");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "grid",1)>=0))
+  if ((StrAutocomplete(word, "axes_", 1)>=0) || (StrAutocomplete(word, "axis", 1)>=0) || (StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "grid",1)>=0))
    {
     sprintf(buf, "%s", (char *)FetchSettingName(sg->grid, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
     directive_show3(out+i, ItemSet, 0, interactive, "grid", buf, (settings_graph_default.grid == sg->grid), "Selects whether a grid is drawn on plots");
@@ -1288,6 +1289,89 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
+
+  // Show axes
+  l=0;
+  if ((StrAutocomplete(word, "axes_", 1)>=0) || (StrAutocomplete(word, "axis", 1)>=0)) l=1;
+  for (k=0; k<3; k++)
+   for (j=0; j<MAX_AXES; j++)
+    {
+     switch (k)
+      {
+       case 1 : AxisPtr = &(YAxes[j]);
+       case 2 : AxisPtr = &(ZAxes[j]);
+       default: AxisPtr = &(XAxes[j]);
+      }
+     if (!AxisPtr->enabled) continue; // Do not show any information for inactive axes
+
+     sprintf(temp1, "%c%d", "xyz"[k], j);
+     sprintf(temp2, "%c"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {
+       sprintf(buf2, "Settings for the %c%d axis", "xyz"[k], j);
+       directive_show3(out+i, ItemSet, 0, interactive, "axis", temp1, (AxisPtr->enabled==settings_axis_default.enabled), buf2);
+       i += strlen(out+i) ; p=1;
+      }
+
+     sprintf(temp1, "%c%dlabel", "xyz"[k], j);
+     sprintf(temp2, "%clabel"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {
+       StrEscapify(AxisPtr->label, buf);
+       sprintf(buf2, "Textual label for the %c%d axis", "xyz"[k], j);
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, strcmp(AxisPtr->label, settings_axis_default.label)==0, buf2);
+       i += strlen(out+i) ; p=1;
+      }
+
+     if (l || (StrAutocomplete(word, "logscale", 1)>=0) || ((j==1)&&(StrAutocomplete(word, "linearscale", 1)>=0)))
+      {
+       if (AxisPtr->log==SW_BOOL_TRUE) bufp = "logscale";
+       else                            bufp = "nologscale";
+       sprintf(temp1, "%c%d", "xyz"[k], j);
+       sprintf(buf2, "Sets whether the %c%d axis scales linearly or logarithmically", "xyz"[k], j);
+       directive_show3(out+i, ItemSet, 0, interactive, bufp, temp1, (AxisPtr->log==settings_axis_default.log), buf2);
+       i += strlen(out+i) ; p=1;
+      }
+
+     sprintf(temp1, "%c%drange", "xyz"[k], j);
+     sprintf(temp2, "%crange"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {
+       AxisPtr->unit.real = AxisPtr->min;
+       if (AxisPtr->MinSet==SW_BOOL_TRUE) bufp  = ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0);
+       else                               bufp  = "*";
+       AxisPtr->unit.real = AxisPtr->max;
+       if (AxisPtr->MaxSet==SW_BOOL_TRUE) bufp2 = ppl_units_NumericDisplay(&(AxisPtr->unit),1,0,0);
+       else                               bufp2 = "*";
+       sprintf(buf , "[%s:%s]", bufp, bufp2);
+       sprintf(buf2, "Sets the range of the %c%d axis", "xyz"[k], j);
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->min   ==settings_axis_default.min   ) &&
+                                                                   (AxisPtr->MinSet==settings_axis_default.MinSet) &&
+                                                                   (AxisPtr->max   ==settings_axis_default.max   ) &&
+                                                                   (AxisPtr->MaxSet==settings_axis_default.MaxSet)    , buf2);
+       i += strlen(out+i) ; p=1;
+      }
+
+     sprintf(temp1, "%c%dtics", "xyz"[k], j);
+     sprintf(temp2, "%ctics"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {
+      }
+
+     sprintf(temp1, "m%c%dtics", "xyz"[k], j);
+     sprintf(temp2, "m%ctics"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {
+      }
+
+     sprintf(temp1, "%c%dticdir", "xyz"[k], j);
+     sprintf(temp2, "%cticdir"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {
+      }
+    }
+
+  // Show variables
   if ((StrAutocomplete(word, "variables", 1)>=0) || (StrAutocomplete(word, "vars", 1)>=0))
    {
     SHOW_HIGHLIGHT(1);
@@ -1314,6 +1398,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
+
+  // Show system functions
   if ((StrAutocomplete(word, "functions", 1)>=0) || (StrAutocomplete(word, "funcs", 1)>=0))
    {
     SHOW_HIGHLIGHT(1);
@@ -1334,6 +1420,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
+
+  // Show user functions
   if ((StrAutocomplete(word, "functions", 1)>=0) || (StrAutocomplete(word, "funcs", 1)>=0) || (StrAutocomplete(word, "userfunctions", 1)>=0) || (StrAutocomplete(word, "userfuncs", 1)>=0))
    {
     SHOW_HIGHLIGHT(1);
@@ -1387,6 +1475,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }
+
+  // Show list of recognised units
   if (StrAutocomplete(word, "units", 1)>=0)
    {
     SHOW_HIGHLIGHT(1);
