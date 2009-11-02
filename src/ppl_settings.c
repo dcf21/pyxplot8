@@ -51,9 +51,9 @@ settings_graph    settings_graph_current;
 
 settings_axis     settings_axis_default;
 
-settings_axis     XAxes [MAX_AXES];
-settings_axis     YAxes [MAX_AXES];
-settings_axis     ZAxes [MAX_AXES];
+settings_axis     XAxes [MAX_AXES], XAxesDefault[MAX_AXES];
+settings_axis     YAxes [MAX_AXES], YAxesDefault[MAX_AXES];
+settings_axis     ZAxes [MAX_AXES], ZAxesDefault[MAX_AXES];
 
 settings_session  settings_session_default;
 
@@ -75,8 +75,11 @@ void ppl_settings_makedefault()
 
   // Default Terminal Settings, used when these values are not changed by any configuration files
   settings_term_default.backup              = SW_ONOFF_OFF;
-  settings_term_default.BinOrigin           = 0.0;
-  settings_term_default.BinWidth            = 1.0;
+  ppl_units_zero(&(settings_term_default.BinOrigin));
+  settings_term_default.BinOriginAuto       = 1;
+  ppl_units_zero(&(settings_term_default.BinWidth));
+  settings_term_default.BinWidth.real       = 1.0;
+  settings_term_default.BinWidthAuto        = 1;
   settings_term_default.CalendarIn          = SW_CALENDAR_BRITISH;
   settings_term_default.CalendarOut         = SW_CALENDAR_BRITISH;
   settings_term_default.colour              = SW_ONOFF_ON;
@@ -107,32 +110,34 @@ void ppl_settings_makedefault()
   settings_term_default.UnitDisplayAbbrev   = SW_ONOFF_ON;
 
   // Default Graph Settings, used when these values are not changed by any configuration files
-  settings_graph_default.aspect     = 1.0;
-  settings_graph_default.AutoAspect = SW_ONOFF_ON;
-  settings_graph_default.AxesColour = COLOUR_BLACK;
-  settings_graph_default.bar        = 1.0;
-  settings_graph_default.BoxFrom    = 0.0;
-  settings_graph_default.BoxWidth   = 0.0;
-  settings_graph_default.DataStyle.colour     = -1;
-  settings_graph_default.DataStyle.fillcolour = -1;
-  settings_graph_default.DataStyle.linestyle  = -1;
-  settings_graph_default.DataStyle.linetype   = -1;
-  settings_graph_default.DataStyle.pointtype  = -1;
-  settings_graph_default.DataStyle.style      = SW_STYLE_POINTS;
-  settings_graph_default.DataStyle.linewidth  = -1;
+  settings_graph_default.aspect       = 1.0;
+  settings_graph_default.AutoAspect   = SW_ONOFF_ON;
+  settings_graph_default.AxesColour   = COLOUR_BLACK;
+  settings_graph_default.bar          = 1.0;
+  ppl_units_zero(&(settings_graph_default.BoxFrom));
+  settings_graph_default.BoxFromAuto  = 1;
+  ppl_units_zero(&(settings_graph_default.BoxWidth));
+  settings_graph_default.BoxWidthAuto = 1;
+  settings_graph_default.DataStyle.colour         = -1;
+  settings_graph_default.DataStyle.fillcolour     = -1;
+  settings_graph_default.DataStyle.linestyle      = -1;
+  settings_graph_default.DataStyle.linetype       = -1;
+  settings_graph_default.DataStyle.pointtype      = -1;
+  settings_graph_default.DataStyle.style          = SW_STYLE_POINTS;
+  settings_graph_default.DataStyle.linewidth      = -1;
   settings_graph_default.DataStyle.pointlinewidth = -1;
-  settings_graph_default.DataStyle.pointsize  = -1;
-  settings_graph_default.FontSize   = 1.0;
-  settings_graph_default.FuncStyle.colour     = -1;
-  settings_graph_default.FuncStyle.fillcolour = -1;
-  settings_graph_default.FuncStyle.linestyle  = -1;
-  settings_graph_default.FuncStyle.linetype   = -1;
-  settings_graph_default.FuncStyle.pointtype  = -1;
-  settings_graph_default.FuncStyle.style      = SW_STYLE_LINES;
-  settings_graph_default.FuncStyle.linewidth  = -1;
+  settings_graph_default.DataStyle.pointsize      = -1;
+  settings_graph_default.FontSize                 = 1.0;
+  settings_graph_default.FuncStyle.colour         = -1;
+  settings_graph_default.FuncStyle.fillcolour     = -1;
+  settings_graph_default.FuncStyle.linestyle      = -1;
+  settings_graph_default.FuncStyle.linetype       = -1;
+  settings_graph_default.FuncStyle.pointtype      = -1;
+  settings_graph_default.FuncStyle.style          = SW_STYLE_LINES;
+  settings_graph_default.FuncStyle.linewidth      = -1;
   settings_graph_default.FuncStyle.pointlinewidth = -1;
-  settings_graph_default.FuncStyle.pointsize  = -1;
-  settings_graph_default.grid       = SW_ONOFF_OFF;
+  settings_graph_default.FuncStyle.pointsize      = -1;
+  settings_graph_default.grid                     = SW_ONOFF_OFF;
   for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisX[i] = 0;
   for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisY[i] = 0;
   for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisZ[i] = 0;
@@ -141,68 +146,85 @@ void ppl_settings_makedefault()
   settings_graph_default.GridAxisZ[1]  = 1;
   settings_graph_default.GridMajColour = COLOUR_GREY60;
   settings_graph_default.GridMinColour = COLOUR_GREY90;
-  settings_graph_default.key        = SW_ONOFF_ON;
-  settings_graph_default.KeyColumns = 1;
-  settings_graph_default.KeyPos     = SW_KEYPOS_TR;
+  settings_graph_default.key           = SW_ONOFF_ON;
+  settings_graph_default.KeyColumns    = 1;
+  settings_graph_default.KeyPos        = SW_KEYPOS_TR;
   ppl_units_zero(&(settings_graph_default.KeyXOff));
-  settings_graph_default.KeyXOff.real   = 0.0;
+  settings_graph_default.KeyXOff.real  = 0.0;
   settings_graph_default.KeyXOff.dimensionless = 0; settings_graph_default.KeyXOff.exponent[UNIT_LENGTH] = 1;
   ppl_units_zero(&(settings_graph_default.KeyYOff));
-  settings_graph_default.KeyYOff.real   = 0.0;
+  settings_graph_default.KeyYOff.real  = 0.0;
   settings_graph_default.KeyYOff.dimensionless = 0; settings_graph_default.KeyYOff.exponent[UNIT_LENGTH] = 1;
-  settings_graph_default.LineWidth  = 1.0;
+  settings_graph_default.LineWidth     = 1.0;
   ppl_units_zero(&(settings_graph_default.OriginX));
-  settings_graph_default.OriginX.real   = 0.0;
+  settings_graph_default.OriginX.real  = 0.0;
   settings_graph_default.OriginX.dimensionless = 0; settings_graph_default.OriginX.exponent[UNIT_LENGTH] = 1;
   ppl_units_zero(&(settings_graph_default.OriginY));
-  settings_graph_default.OriginY.real   = 0.0;
+  settings_graph_default.OriginY.real  = 0.0;
   settings_graph_default.OriginY.dimensionless = 0; settings_graph_default.OriginY.exponent[UNIT_LENGTH] = 1;
-  settings_graph_default.PointSize  = 1.0;
-  settings_graph_default.PointLineWidth = 1.0;
-  settings_graph_default.samples    = 250;
-  settings_graph_default.TextColour = COLOUR_BLACK;
-  settings_graph_default.TextHAlign = SW_HALIGN_LEFT;
+  settings_graph_default.PointSize     = 1.0;
+  settings_graph_default.PointLineWidth= 1.0;
+  settings_graph_default.projection    = SW_PROJ_FLAT;
+  settings_graph_default.samples       = 250;
+  settings_graph_default.TextColour    = COLOUR_BLACK;
+  settings_graph_default.TextHAlign    = SW_HALIGN_LEFT;
   settings_graph_default.TextVAlign = SW_VALIGN_BOT;
   strcpy(settings_graph_default.title, "");
   ppl_units_zero(&(settings_graph_default.TitleXOff));
-  settings_graph_default.TitleXOff.real   = 0.0;
+  settings_graph_default.TitleXOff.real= 0.0;
   settings_graph_default.TitleXOff.dimensionless = 0; settings_graph_default.TitleXOff.exponent[UNIT_LENGTH] = 1;
   ppl_units_zero(&(settings_graph_default.TitleYOff));
-  settings_graph_default.TitleYOff.real   = 0.0;
+  settings_graph_default.TitleYOff.real= 0.0;
   settings_graph_default.TitleYOff.dimensionless = 0; settings_graph_default.TitleYOff.exponent[UNIT_LENGTH] = 1;
   ppl_units_zero(&(settings_graph_default.Tmin));
   ppl_units_zero(&(settings_graph_default.Tmax));
-  settings_graph_default.Tmin.real    = 0.0;
-  settings_graph_default.Tmax.real    = 1.0;
+  settings_graph_default.Tmin.real     = 0.0;
+  settings_graph_default.Tmax.real     = 1.0;
   ppl_units_zero(&(settings_graph_default.width));
-  settings_graph_default.width.real   = 0.08; // 8cm
+  settings_graph_default.width.real    = 0.08; // 8cm
   settings_graph_default.width.dimensionless = 0; settings_graph_default.width.exponent[UNIT_LENGTH] = 1;
 
   // Default Axis Settings, used whenever a new axis is created
+  settings_axis_default.atzero      = 0;
   settings_axis_default.enabled     = 0;
   settings_axis_default.invisible   = 0;
+  settings_axis_default.linked      = 0;
+  settings_axis_default.topbottom   = 0;
+  settings_axis_default.ArrowType   = SW_AXISDISP_NOARR;
+  settings_axis_default.LinkedAxisCanvasID = 0;
+  settings_axis_default.LinkedAxisToXYZ    = 0;
+  settings_axis_default.LinkedAxisToNum    = 0;
   settings_axis_default.log         = SW_BOOL_FALSE;
   settings_axis_default.MaxSet      = SW_BOOL_FALSE;
   settings_axis_default.MinSet      = SW_BOOL_FALSE;
-  settings_axis_default.TickDirection=SW_TICDIR_IN;
+  settings_axis_default.MirrorType  = SW_AXISMIRROR_AUTO;
+  settings_axis_default.MTickDir    = SW_TICDIR_IN;
   settings_axis_default.MTickMaxSet = SW_BOOL_FALSE;
   settings_axis_default.MTickMinSet = SW_BOOL_FALSE;
   settings_axis_default.MTickStepSet= SW_BOOL_FALSE;
+  settings_axis_default.TickDir     = SW_TICDIR_IN;
+  settings_axis_default.TickLabelRotation  = SW_TICLABDIR_HORI;
   settings_axis_default.TickMaxSet  = SW_BOOL_FALSE;
   settings_axis_default.TickMinSet  = SW_BOOL_FALSE;
   settings_axis_default.TickStepSet = SW_BOOL_FALSE;
+  settings_axis_default.LabelRotate =  0.0;
   settings_axis_default.LogBase     = 10.0;
   settings_axis_default.max         =  0.0;
   settings_axis_default.min         =  0.0;
   settings_axis_default.MTickMax    =  0.0;
   settings_axis_default.MTickMin    =  0.0;
   settings_axis_default.MTickStep   =  0.0;
+  settings_axis_default.TickLabelRotate = 0.0;
   settings_axis_default.TickMax     =  0.0;
   settings_axis_default.TickMin     =  0.0;
   settings_axis_default.TickStep    =  0.0;
+  settings_axis_default.format      = NULL;
+  settings_axis_default.label       = NULL;
+  settings_axis_default.linkusing   = NULL;
   settings_axis_default.MTickList   = NULL;
   settings_axis_default.TickList    = NULL;
-  strcpy(settings_axis_default.label, "");
+  settings_axis_default.MTickStrs   = NULL;
+  settings_axis_default.TickStrs    = NULL;
   ppl_units_zero(&(settings_axis_default.unit));
 
   // Set up list of input filters
@@ -229,6 +251,7 @@ void ppl_settings_makedefault()
   // Set up current axes
   for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;
   XAxes[1].enabled = YAxes[1].enabled = ZAxes[1].enabled = 1;
+  for (i=0; i<MAX_AXES; i++) { XAxesDefault[i] = XAxes[i]; YAxesDefault[i] = YAxes[i]; ZAxesDefault[i] = ZAxes[i]; }
 
   // Setting which affect how we talk to the current interactive session
   settings_session_default.splash    = SW_ONOFF_ON;

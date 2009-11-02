@@ -52,6 +52,22 @@ char *SW_TICDIR_STR[] = {"inwards"    , "outwards"    , "both"         };
 int   SW_TICDIR_ACL[] = {1            , 1             , 1              };
 int   SW_TICDIR_INT[] = {SW_TICDIR_IN , SW_TICDIR_OUT , SW_TICDIR_BOTH , -1};
 
+char *SW_TICLABDIR_STR[] = {"horizontal"      , "vertical"        , "rotate"         };
+int   SW_TICLABDIR_ACL[] = {1                 , 1                 , 1                };
+int   SW_TICLABDIR_INT[] = {SW_TICLABDIR_HORI , SW_TICLABDIR_VERT , SW_TICLABDIR_ROT , -1};
+
+char *SW_AXISDISP_STR[] = {"noarrow"         , "arrow"           , "twowayarrow"     , "reversearrow"    };
+int   SW_AXISDISP_ACL[] = {1                 , 1                 , 1                 , 1                 };
+int   SW_AXISDISP_INT[] = {SW_AXISDISP_NOARR , SW_AXISDISP_ARROW , SW_AXISDISP_TWOAR , SW_AXISDISP_BACKA , -1};
+
+char *SW_AXISMIRROR_STR[] = {"automirrored"     , "mirrored"           , "nomirror"             , "fullmirrored"           };
+int   SW_AXISMIRROR_ACL[] = {1                  , 1                    , 1                      , 1                        };
+int   SW_AXISMIRROR_INT[] = {SW_AXISMIRROR_AUTO , SW_AXISMIRROR_MIRROR , SW_AXISMIRROR_NOMIRROR , SW_AXISMIRROR_FULLMIRROR , -1};
+
+char *SW_PROJ_STR[] = {"flat"       , "gnomonic"   };
+int   SW_PROJ_ACL[] = {1            , 1            };
+int   SW_PROJ_INT[] = {SW_PROJ_FLAT , SW_PROJ_GNOM , -1};
+
 char *SW_HALIGN_STR[] = {"left"         , "centre"       , "right"         };
 int   SW_HALIGN_ACL[] = {1              , 1              , 1               };
 int   SW_HALIGN_INT[] = {SW_HALIGN_LEFT , SW_HALIGN_CENT , SW_HALIGN_RIGHT , -1};

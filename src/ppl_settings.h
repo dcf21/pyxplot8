@@ -34,20 +34,22 @@ typedef struct with_words {
 
 typedef struct settings_terminal {
  int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplay, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev;
- double dpi, BinOrigin, BinWidth;
- value  PaperHeight, PaperWidth;
+ double dpi;
+ unsigned char BinOriginAuto, BinWidthAuto;
+ value  BinOrigin, BinWidth, PaperHeight, PaperWidth;
  char   output[FNAME_LENGTH];
  char   PaperName[FNAME_LENGTH];
  char   LatexPreamble[FNAME_LENGTH];
  } settings_terminal;
 
 typedef struct settings_graph {
- int          aspect, AutoAspect, AxesColour, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
- double       bar, BoxFrom, BoxWidth, FontSize, LineWidth, PointSize, PointLineWidth;
- unsigned int GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
- value        KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width;
- char         title[FNAME_LENGTH];
- with_words   DataStyle, FuncStyle;
+ int           aspect, AutoAspect, AxesColour, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ double        bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
+ unsigned int  GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
+ unsigned char BoxFromAuto, BoxWidthAuto;
+ value         BoxFrom, BoxWidth, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width;
+ char          title[FNAME_LENGTH];
+ with_words    DataStyle, FuncStyle;
  } settings_graph;
 
 typedef struct settings_session {
@@ -76,20 +78,21 @@ void  ppl_settings_readconfig();
 #include "ListTools/lt_dict.h"
 
 typedef struct settings_axis {
- unsigned char enabled, invisible;
- int     MaxSet, MinSet, log, TickDirection, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
- double  LogBase, max, min, MTickMax, MTickMin, MTickStep, TickMax, TickMin, TickStep;
- char    label[FNAME_LENGTH];
+ unsigned char atzero, enabled, invisible, linked, topbottom;
+ int     ArrowType, LinkedAxisCanvasID, LinkedAxisToXYZ, LinkedAxisToNum, log, MaxSet, MinSet, MirrorType, MTickDir, MTickMaxSet, MTickMinSet, MTickStepSet, TickDir, TickLabelRotation, TickMaxSet, TickMinSet, TickStepSet;
+ double  LabelRotate, LogBase, max, min, MTickMax, MTickMin, MTickStep, TickLabelRotate, TickMax, TickMin, TickStep;
+ char   *format, *label, *linkusing;
  double *MTickList, *TickList;
+ char  **MTickStrs,**TickStrs;
  value   unit;
  } settings_axis;
 
 // Variables defined in ppl_settings.c
 #ifndef _PPL_SETTINGS_C
 extern settings_axis     settings_axis_default;
-extern settings_axis     XAxes[];
-extern settings_axis     YAxes[];
-extern settings_axis     ZAxes[];
+extern settings_axis     XAxes[], XAxesDefault[];
+extern settings_axis     YAxes[], YAxesDefault[];
+extern settings_axis     ZAxes[], ZAxesDefault[];
 extern Dict             *settings_filters;
 #endif
 

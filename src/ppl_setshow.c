@@ -104,10 +104,10 @@ void directive_set(Dict *command)
  {
   int     i, j, k, l, m, p, pp, *EditNo, errpos, multiplier;
   char   *directive, *setoption;
-  value   valobj;
+  value   valobj, valobj2;
   value  *tempval, *tempval2;
   int    *tempint, *tempint2;
-  double *tempdbl;
+  double *tempdbl, dblobj;
   char   *tempstr, *tempstr2;
   List   *templist;
   Dict   *tempdict;
@@ -115,7 +115,7 @@ void directive_set(Dict *command)
   with_words *tempstyle;
   canvas_item *ptr;
   settings_graph *sg;
-  settings_axis  *xa, *ya, *za;
+  settings_axis  *xa, *ya, *za, *tempaxis, *tempaxis2;
 
   DictLookup(command,"editno",NULL,(void **)(&EditNo));
   if (EditNo == NULL)
@@ -149,12 +149,108 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(setoption,"autoscale")==0)) /* set autoscale | unset autoscale */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    while (listiter != NULL)
+     {
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      i = (int)GetFloat(tempstr+1,NULL);
+      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+      tempaxis->enabled = 1;
+      tempaxis->MinSet  = SW_BOOL_FALSE;
+      tempaxis->MaxSet  = SW_BOOL_FALSE;
+      tempaxis->min     = tempaxis2->min;
+      tempaxis->max     = tempaxis2->max;
+      listiter = ListIterate(listiter, NULL);
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"axis")==0)) /* set axis */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    while (listiter != NULL)
+     {
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      i = (int)GetFloat(tempstr+1,NULL);
+      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+      tempaxis->enabled=1;
+      DictLookup(command,"invisible",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->invisible=1;
+      DictLookup(command,"visible",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->invisible=0;
+      DictLookup(command,"atzero",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->atzero=1;
+      DictLookup(command,"notatzero",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->atzero=0;
+      DictLookup(command,"notlinked",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->linked=0;
+      DictLookup(command,"linked",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->linked=1;
+      DictLookup(command,"xorient",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
+       {
+        if (tempstr[0]!='x') ppl_warning(ERR_SYNTAX, "Can only specify the positions 'top' or 'bottom' for x axes.");
+        else                 tempaxis->topbottom=(strcmp(tempstr2,"on")==0);
+       }
+      DictLookup(command,"yorient",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
+       {
+        if (tempstr[0]!='y') ppl_warning(ERR_SYNTAX, "Can only specify the positions 'left' and 'right' for y axes.");
+        else                 tempaxis->topbottom=(strcmp(tempstr2,"on")==0);
+       }
+      DictLookup(command,"zorient",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
+       {
+        if (tempstr[0]!='z') ppl_warning(ERR_SYNTAX, "Can only specify the positions 'front' and 'back' for z axes.");
+        else                 tempaxis->topbottom=(strcmp(tempstr2,"on")==0);
+       }
+      DictLookup(command,"mirror",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->MirrorType = FetchSettingByName(tempstr2, SW_AXISMIRROR_INT, SW_AXISMIRROR_STR);
+      DictLookup(command,"axisdisp",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL) tempaxis->ArrowType  = FetchSettingByName(tempstr2, SW_AXISDISP_INT, SW_AXISDISP_STR);
+      DictLookup(command,"linkaxis",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
+       {
+        j = (int)GetFloat(tempstr2+1,NULL);
+        tempaxis->LinkedAxisCanvasID = -1;
+        if (tempaxis->linkusing != NULL) { if (tempaxis->linkusing!=tempaxis2->linkusing) free(tempaxis->linkusing); tempaxis->linkusing = NULL; }
+        tempaxis->LinkedAxisToNum    = j;
+        if      (tempstr2[0]=='y') { tempaxis->LinkedAxisToXYZ = 1; }
+        else if (tempstr2[0]=='z') { tempaxis->LinkedAxisToXYZ = 2; }
+        else                       { tempaxis->LinkedAxisToXYZ = 0; }
+       }
+      DictLookup(command,"linktoid",NULL,(void **)&tempint);
+      if (tempint != NULL) tempaxis->LinkedAxisCanvasID = *tempint;
+      DictLookup(command,"usingexp",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
+       {
+        tempaxis->linkusing = (char *)malloc(strlen(tempstr2)+1);
+        if (tempaxis->linkusing == NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return; }
+        strcpy(tempaxis->linkusing, tempstr2);
+       }
+      listiter = ListIterate(listiter, NULL);
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"axis")==0)) /* unset axis */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    while (listiter != NULL)
+     {
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      i = (int)GetFloat(tempstr+1,NULL);
+      if      (tempstr[0]=='y') { ya[i] = YAxesDefault[i]; } // !!! MEMORY LEAK !!! NEED TO DESTROY AXES CLEANLY.
+      else if (tempstr[0]=='z') { za[i] = ZAxesDefault[i]; }
+      else                      { xa[i] = XAxesDefault[i]; }
+      listiter = ListIterate(listiter, NULL);
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"backup")==0)) /* set backup */
    {
@@ -175,40 +271,72 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
    {
-    DictLookup(command,"bin_origin",NULL,(void **)&tempdbl);
-    settings_term_current.BinOrigin = *tempdbl;
+    DictLookup(command,"auto",NULL,(void **)&tempval);
+    if (tempval!=NULL)
+     {
+      settings_term_current.BinOriginAuto = 1;
+     } else {
+      DictLookup(command,"bin_origin",NULL,(void **)&tempval);
+      settings_term_current.BinOrigin = *tempval;
+      settings_term_current.BinOriginAuto = 0;
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binorigin")==0)) /* unset binorigin */
    {
-    settings_term_current.BinOrigin = settings_term_default.BinOrigin;
+    settings_term_current.BinOrigin     = settings_term_default.BinOrigin;
+    settings_term_current.BinOriginAuto = settings_term_default.BinOriginAuto;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
-    DictLookup(command,"bin_width",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Width of histogram bins must be greater than zero."); return; }
-    settings_term_current.BinWidth = *tempdbl;
+    DictLookup(command,"auto",NULL,(void **)&tempval);
+    if (tempval!=NULL) 
+     { 
+      settings_term_current.BinWidthAuto = 1;
+     } else {
+      DictLookup(command,"bin_width",NULL,(void **)&tempval);
+      if (tempval->real <= 0.0) { ppl_error(ERR_GENERAL, "Width of histogram bins must be greater than zero."); return; }
+      settings_term_current.BinWidth = *tempval;
+      settings_term_current.BinWidthAuto = 0;
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
    {
-    settings_term_current.BinWidth = settings_term_default.BinWidth;
+    settings_term_current.BinWidth     = settings_term_default.BinWidth;
+    settings_term_current.BinWidthAuto = settings_term_default.BinWidthAuto;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
    {
-    DictLookup(command,"box_from",NULL,(void **)&tempdbl);
-    sg->BoxFrom = *tempdbl;
+    DictLookup(command,"auto",NULL,(void **)&tempval);
+    if (tempval!=NULL) 
+     { 
+      sg->BoxFromAuto = 1;
+     } else {
+      DictLookup(command,"box_from",NULL,(void **)&tempval);
+      sg->BoxFrom = *tempval;
+      sg->BoxFromAuto = 0;
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxfrom")==0)) /* unset boxfrom */
    {
-    sg->BoxFrom = settings_graph_default.BoxFrom;
+    sg->BoxFrom     = settings_graph_default.BoxFrom;
+    sg->BoxFromAuto = settings_graph_default.BoxFromAuto;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxwidth")==0)) /* set boxwidth */
    {
-    DictLookup(command,"box_width",NULL,(void **)&tempdbl);
-    sg->BoxWidth = *tempdbl;
+    DictLookup(command,"auto",NULL,(void **)&tempval);
+    if (tempval!=NULL)
+     {
+      sg->BoxWidthAuto = 1;
+     } else {
+      DictLookup(command,"box_width",NULL,(void **)&tempval);
+      sg->BoxWidth = *tempval;
+      sg->BoxWidthAuto = 0;
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxwidth")==0)) /* unset boxwidth */
    {
-    sg->BoxWidth = settings_graph_default.BoxWidth;
+    sg->BoxWidth     = settings_graph_default.BoxWidth;
+    sg->BoxWidthAuto = settings_graph_default.BoxWidthAuto;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"calendar")==0)) /* set calendar */
    {
@@ -352,6 +480,32 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(setoption,"logscale")==0))         /* set logscale */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    while (listiter != NULL)
+     {
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      i = (int)GetFloat(tempstr+1,NULL);
+      if      (tempstr[0]=='y') { tempaxis = &ya[i]; }
+      else if (tempstr[0]=='z') { tempaxis = &za[i]; }
+      else                      { tempaxis = &xa[i]; }
+      tempaxis->enabled = 1;
+      tempaxis->log     = SW_BOOL_TRUE;
+      DictLookup(command,"base",NULL,(void **)&tempint);
+      if (tempint!=NULL)
+       {
+        if ((*tempint < 2) || (*tempint > 1024))
+         {
+          sprintf(temp_err_string, "Attempt to use log axis with base %d. PyXPlot only supports bases in the range 2 - 1024. Defaulting to base 10.", *tempint);
+          ppl_warning(ERR_GENERAL, temp_err_string);
+          tempaxis->LogBase = 10.0;
+         } else {
+          tempaxis->LogBase = (double)(*tempint);
+         }
+       }
+      listiter = ListIterate(listiter, NULL);
+     } 
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
    {
@@ -382,6 +536,18 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    listiter = ListIterateInit(templist);
+    while (listiter != NULL)
+     {
+      tempdict = (Dict *)listiter->data;
+      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      i = (int)GetFloat(tempstr+1,NULL);
+      if      (tempstr[0]=='y') { ya[i].enabled=1; ya[i].log = SW_BOOL_FALSE; }
+      else if (tempstr[0]=='z') { za[i].enabled=1; za[i].log = SW_BOOL_FALSE; }
+      else                      { xa[i].enabled=1; xa[i].log = SW_BOOL_FALSE; }
+      listiter = ListIterate(listiter, NULL);
+     } 
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
    {
@@ -537,6 +703,15 @@ void directive_set(Dict *command)
     strncpy(settings_term_current.LatexPreamble, settings_term_default.LatexPreamble, FNAME_LENGTH-4);
     settings_term_current.LatexPreamble[FNAME_LENGTH-4]='\0';
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"projection")==0)) /* set projection */
+   {
+    DictLookup(command,"projection",NULL,(void **)&tempstr);
+    sg->projection = FetchSettingByName(tempstr, SW_PROJ_INT, SW_PROJ_STR);
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"projection")==0)) /* unset projection */
+   {
+    sg->projection = settings_graph_default.projection;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     DictLookup(command,"samples",NULL,(void **)&tempint);
@@ -556,6 +731,8 @@ void directive_set(Dict *command)
     if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
     sg->Tmin = *tempval;
     sg->Tmax = *tempval2;
+    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { valobj = sg->Tmin; sg->Tmin = sg->Tmax; sg->Tmax = valobj; }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"trange")==0)) /* unset trange */
    {
@@ -661,12 +838,34 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"tics")==0)) /* unset tics */
    {
-   }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"ticdir")==0)) /* set ticdir */
-   {
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"ticdir")==0)) /* unset ticdir */
-   {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    tempaxis->TickMin      = tempaxis2->TickMin;
+    tempaxis->TickMax      = tempaxis2->TickMax;
+    tempaxis->TickStep     = tempaxis2->TickStep;
+    tempaxis->TickMinSet   = tempaxis2->TickMinSet;
+    tempaxis->TickMaxSet   = tempaxis2->TickMaxSet;
+    tempaxis->TickStepSet  = tempaxis2->TickStepSet;
+    tempaxis->MTickMin     = tempaxis2->MTickMin;
+    tempaxis->MTickMax     = tempaxis2->MTickMax;
+    tempaxis->MTickStep    = tempaxis2->MTickStep;
+    tempaxis->MTickMinSet  = tempaxis2->MTickMinSet;
+    tempaxis->MTickMaxSet  = tempaxis2->MTickMaxSet;
+    tempaxis->MTickStepSet = tempaxis2->MTickStepSet;
+    if (tempaxis-> TickList != NULL) { if (tempaxis-> TickList!=tempaxis2-> TickList) free(tempaxis-> TickList); tempaxis-> TickList = NULL; }
+    if (tempaxis-> TickStrs != NULL) { if (tempaxis-> TickStrs!=tempaxis2-> TickStrs) free(tempaxis-> TickStrs); tempaxis-> TickStrs = NULL; }
+    if (tempaxis->MTickList != NULL) { if (tempaxis->MTickList!=tempaxis2->MTickList) free(tempaxis->MTickList); tempaxis->MTickList = NULL; }
+    if (tempaxis->MTickStrs != NULL) { if (tempaxis->MTickStrs!=tempaxis2->MTickStrs) free(tempaxis->MTickStrs); tempaxis->MTickStrs = NULL; }
+    if (ppl_units_DimEqual(&tempaxis->unit,&tempaxis2->unit))
+     {
+      tempaxis-> TickList = tempaxis2-> TickList;
+      tempaxis-> TickStrs = tempaxis2-> TickStrs;
+      tempaxis->MTickList = tempaxis2->MTickList;
+      tempaxis->MTickStrs = tempaxis2->MTickStrs;
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"title")==0)) /* set title */
    {
@@ -830,20 +1029,103 @@ void directive_set(Dict *command)
    {
     sg->width.real = settings_graph_default.width.real;
    }
-  else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
-   {
-   }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"range")==0)) /* set xrange */
-   {
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"range")==0)) /* unset xrange */
-   {
-   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"xformat")==0)) /* unset xformat */
    {
+   }
+  else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
+   {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    if (tempaxis->label != NULL) { if (tempaxis->label!=tempaxis2->label) free(tempaxis->label); tempaxis->label = NULL; }
+    if (strcmp(directive,"unset")==0)
+     {
+      tempaxis->label       = tempaxis2->label;
+      tempaxis->LabelRotate = tempaxis2->LabelRotate;
+     }
+    else
+     {
+      DictLookup(command,"label_text",NULL,(void **)&tempstr2);
+      if ((tempstr2!=NULL)&&(strlen(tempstr2)>0))
+       {
+        tempaxis->label = (char *)malloc(strlen(tempstr2)+1);
+        if (tempaxis->label == NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return; }
+        strcpy(tempaxis->label, tempstr2);
+       }
+      DictLookup(command,"rotation",NULL,(void **)&tempval);
+      if (tempval!=NULL)
+       {
+        if (!(tempval->dimensionless))
+         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+          if (tempval->exponent[i] != (i==UNIT_ANGLE))
+           {
+            sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+            ppl_error(ERR_SYNTAX, temp_err_string);
+            return;
+           }
+        tempaxis->LabelRotate = tempval->real;
+       }
+     }
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"range")==0)) /* set xrange */
+   {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    DictLookup(command,"minauto",NULL,(void **)&tempstr2);
+    if (tempstr2!=NULL) { tempaxis->MinSet = SW_BOOL_FALSE; tempaxis->min = tempaxis2->min; } // Remove range information if user has specified a *
+    DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
+    if (tempstr2!=NULL) { tempaxis->MaxSet = SW_BOOL_FALSE; tempaxis->max = tempaxis2->max; }
+    DictLookup(command,"min",NULL,(void **)&tempval); // Read specified min/max. If these are not specified, read existing values
+    DictLookup(command,"max",NULL,(void **)&tempval2);
+    if ((tempval == NULL) && (tempaxis->MinSet==SW_BOOL_TRUE)) { tempval = &valobj ; valobj = tempaxis->unit; valobj .real = tempaxis->min; }
+    if ((tempval2== NULL) && (tempaxis->MaxSet==SW_BOOL_TRUE)) { tempval2= &valobj2; valobj2= tempaxis->unit; valobj2.real = tempaxis->max; }
+    if ((tempval!=NULL)&&(tempval2!=NULL)&&(!ppl_units_DimEqual(tempval,tempval2))) { ppl_error(ERR_NUMERIC, "Attempt to set axis range with dimensionally incompatible minimum and maximum."); return; }
+    // Write new values, having ensured that they're dimensionally compatible
+    if (tempval != NULL) { tempaxis->min = tempval ->real; tempaxis->MinSet=SW_BOOL_TRUE; }
+    if (tempval2!= NULL) { tempaxis->max = tempval2->real; tempaxis->MaxSet=SW_BOOL_TRUE; }
+    if (tempval2!= NULL) tempval = tempval2; // Check whether we're changing the units of this axis. If so, ticking information needs clearing out
+    if ((tempval != NULL) && (!ppl_units_DimEqual(tempval,&tempaxis->unit)))
+     {
+      tempaxis->unit         = *tempval;
+      tempaxis->TickMin      = tempaxis2->TickMin;
+      tempaxis->TickMax      = tempaxis2->TickMax;
+      tempaxis->TickStep     = tempaxis2->TickStep;
+      tempaxis->TickMinSet   = tempaxis2->TickMinSet;
+      tempaxis->TickMaxSet   = tempaxis2->TickMaxSet;
+      tempaxis->TickStepSet  = tempaxis2->TickStepSet;
+      tempaxis->MTickMin     = tempaxis2->MTickMin;
+      tempaxis->MTickMax     = tempaxis2->MTickMax;
+      tempaxis->MTickStep    = tempaxis2->MTickStep;
+      tempaxis->MTickMinSet  = tempaxis2->MTickMinSet;
+      tempaxis->MTickMaxSet  = tempaxis2->MTickMaxSet;
+      tempaxis->MTickStepSet = tempaxis2->MTickStepSet;
+      if (tempaxis-> TickList != NULL) { if (tempaxis-> TickList!=tempaxis2-> TickList) free(tempaxis-> TickList); tempaxis-> TickList = NULL; }
+      if (tempaxis-> TickStrs != NULL) { if (tempaxis-> TickStrs!=tempaxis2-> TickStrs) free(tempaxis-> TickStrs); tempaxis-> TickStrs = NULL; }
+      if (tempaxis->MTickList != NULL) { if (tempaxis->MTickList!=tempaxis2->MTickList) free(tempaxis->MTickList); tempaxis->MTickList = NULL; }
+      if (tempaxis->MTickStrs != NULL) { if (tempaxis->MTickStrs!=tempaxis2->MTickStrs) free(tempaxis->MTickStrs); tempaxis->MTickStrs = NULL; }
+     }
+    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { dblobj = tempaxis->min; tempaxis->min = tempaxis->max; tempaxis->max = dblobj; }
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"range")==0)) /* unset xrange */
+   {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    tempaxis->max    = tempaxis2->max;
+    tempaxis->MaxSet = tempaxis2->MaxSet;
+    tempaxis->min    = tempaxis2->min;
+    tempaxis->MinSet = tempaxis2->MinSet;
    }
   else
    {
@@ -910,8 +1192,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   int   i=0, p=0,j,k,l,m;
   DictIterator *DictIter;
   FunctionDescriptor *FDiter;
-  value *tempval;
-  settings_axis *AxisPtr;
+  value *tempval, valobj;
+  settings_axis *AxisPtr, *AxisPtrDef;
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
@@ -943,29 +1225,71 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binorigin",1)>=0))
-   { 
-    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.BinOrigin,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, 0, interactive, "BinOrigin", buf, (settings_term_default.BinOrigin == settings_term_current.BinOrigin), "Used to control the exact position of the edges of the bins used by the histogram command");
+   {
+    bufp = "Used to control the exact position of the edges of the bins used by the histogram command";
+    if (settings_term_current.BinOriginAuto)
+     {
+      directive_show3(out+i, ItemSet, 0, interactive, "BinOrigin", "auto", settings_term_current.BinOriginAuto==settings_term_default.BinOriginAuto, bufp);
+     } else {
+      directive_show3(out+i, ItemSet, 0, interactive, "BinOrigin", ppl_units_NumericDisplay(&(settings_term_current.BinOrigin),0,0,0),
+                      (settings_term_current.BinOriginAuto==settings_term_default.BinOriginAuto) &&
+                      ppl_units_DblEqual( settings_term_default.BinOrigin.real , settings_term_current.BinOrigin.real) &&
+                      ppl_units_DblEqual( settings_term_default.BinOrigin.imag , settings_term_current.BinOrigin.imag) &&
+                      ppl_units_DimEqual(&settings_term_default.BinOrigin      ,&settings_term_current.BinOrigin     )    ,
+                      bufp
+                     );
+     }
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binwidth",1)>=0))
-   { 
-    if (settings_term_current.BinWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(settings_term_current.BinWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    else                                      sprintf(buf, "auto");
-    directive_show3(out+i, ItemSet, 0, interactive, "BinWidth", buf, (settings_term_default.BinWidth == settings_term_current.BinWidth), "Sets the width of bins used by the histogram command");
-    i += strlen(out+i) ; p=1;
-   }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxwidth",1)>=0))
    {
-    if (sg->BoxWidth > 0.0) sprintf(buf, "%s",(char *)NumericDisplay(sg->BoxWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    else                    sprintf(buf, "auto");
-    directive_show3(out+i, ItemSet, 1, interactive, "BoxWidth", buf, (settings_graph_default.BoxWidth == sg->BoxWidth), "Sets the width of bars on barcharts and histograms");
+    bufp = "Sets the width of bins used by the histogram command";
+    if (settings_term_current.BinWidthAuto) 
+     { 
+      directive_show3(out+i, ItemSet, 0, interactive, "BinWidth", "auto", settings_term_current.BinWidthAuto==settings_term_default.BinWidthAuto, bufp);
+     } else {
+      directive_show3(out+i, ItemSet, 0, interactive, "BinWidth", ppl_units_NumericDisplay(&(settings_term_current.BinWidth),0,0,0),
+                      (settings_term_current.BinWidthAuto==settings_term_default.BinWidthAuto) &&
+                      ppl_units_DblEqual( settings_term_default.BinWidth.real , settings_term_current.BinWidth.real) &&
+                      ppl_units_DblEqual( settings_term_default.BinWidth.imag , settings_term_current.BinWidth.imag) &&
+                      ppl_units_DimEqual(&settings_term_default.BinWidth      ,&settings_term_current.BinWidth     )    ,
+                      bufp
+                     );
+     }
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxfrom",1)>=0))
    {
-    sprintf(buf, "%s", (char *)NumericDisplay(sg->BoxFrom,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, 1, interactive, "BoxFrom", buf, (settings_graph_default.BoxFrom == sg->BoxFrom), "Sets the vertical level from which the bars of barcharts and histograms are drawn");
+    bufp = "Sets the vertical level from which the bars of barcharts and histograms are drawn";
+    if (sg->BoxFromAuto)
+     { 
+      directive_show3(out+i, ItemSet, 0, interactive, "BoxFrom", "auto", sg->BoxFromAuto==settings_graph_default.BoxFromAuto, bufp);
+     } else {
+      directive_show3(out+i, ItemSet, 0, interactive, "BoxFrom", ppl_units_NumericDisplay(&(sg->BoxFrom),0,0,0),
+                      (sg->BoxFromAuto==settings_graph_default.BoxFromAuto) &&
+                      ppl_units_DblEqual( settings_graph_default.BoxFrom.real , sg->BoxFrom.real) &&
+                      ppl_units_DblEqual( settings_graph_default.BoxFrom.imag , sg->BoxFrom.imag) &&
+                      ppl_units_DimEqual(&settings_graph_default.BoxFrom      ,&sg->BoxFrom     )    ,
+                      bufp
+                     );
+     }
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxwidth",1)>=0))
+   {
+    bufp = "Sets the width of bars on barcharts and histograms";
+    if (sg->BoxWidthAuto) 
+     { 
+      directive_show3(out+i, ItemSet, 0, interactive, "BoxWidth", "auto", sg->BoxWidthAuto==settings_graph_default.BoxWidthAuto, bufp);
+     } else {
+      directive_show3(out+i, ItemSet, 0, interactive, "BoxWidth", ppl_units_NumericDisplay(&(sg->BoxWidth),0,0,0),
+                      (sg->BoxWidthAuto==settings_graph_default.BoxWidthAuto) &&
+                      ppl_units_DblEqual( settings_graph_default.BoxWidth.real , sg->BoxWidth.real) &&
+                      ppl_units_DblEqual( settings_graph_default.BoxWidth.imag , sg->BoxWidth.imag) &&
+                      ppl_units_DimEqual(&settings_graph_default.BoxWidth      ,&sg->BoxWidth     )    ,
+                      bufp
+                     );
+     }
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarin",1)>=0))
@@ -1164,6 +1488,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "preamble", buf, (strcmp(settings_term_default.LatexPreamble,settings_term_current.LatexPreamble)==0), "Configuration options sent to the LaTeX typesetting system");
     i += strlen(out+i) ; p=1;
    }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "projection", 1)>=0))
+   {
+    sprintf(buf, "%s", (char *)FetchSettingName(settings_graph_current.projection, SW_PROJ_INT, (void **)SW_PROJ_STR));
+    directive_show3(out+i, ItemSet, 0, interactive, "projection", buf, (settings_graph_default.projection==settings_graph_current.projection), "The projection used when representing (x,y) data on a graph");
+    i += strlen(out+i) ; p=1;
+   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "samples",1)>=0))
    {
     sprintf(buf, "%d", sg->samples);
@@ -1298,18 +1628,79 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     {
      switch (k)
       {
-       case 1 : AxisPtr = &(YAxes[j]);
-       case 2 : AxisPtr = &(ZAxes[j]);
-       default: AxisPtr = &(XAxes[j]);
+       case 1 : { AxisPtr = &(YAxes[j]); AxisPtrDef = &(YAxesDefault[j]); break; }
+       case 2 : { AxisPtr = &(ZAxes[j]); AxisPtrDef = &(ZAxesDefault[j]); break; }
+       default: { AxisPtr = &(XAxes[j]); AxisPtrDef = &(XAxesDefault[j]); break; }
       }
-     if (!AxisPtr->enabled) continue; // Do not show any information for inactive axes
+     if (!AxisPtr->enabled) // Do not show any information for inactive axes, except that they're disabled
+      {
+       if (AxisPtrDef->enabled)
+        {
+         sprintf(temp1, "%c%d", "xyz"[k], j);
+         sprintf(buf2, "Axis %s has been disabled", temp1);
+         directive_show3(out+i, ItemSet, 0, interactive, "noaxis", temp1, 0, buf2);
+         i += strlen(out+i) ; p=1;
+        }
+       continue;
+      }
 
      sprintf(temp1, "%c%d", "xyz"[k], j);
      sprintf(temp2, "%c"  , "xyz"[k]   );
      if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
       {
+       sprintf(buf  , "%c%d ", "xyz"[k], j); m = strlen(buf);
+       sprintf(buf+m, "%s ", (AxisPtr->invisible ? "invisible" : "visible"  )); m += strlen(buf+m);
+       if      (k==1) sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "right" : "left"  ));
+       else if (k==2) sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "back"  : "front" ));
+       else           sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "top"   : "bottom"));
+       m += strlen(buf+m);
+       sprintf(buf+m, "%s ", (char *)FetchSettingName(AxisPtr->ArrowType, SW_AXISDISP_INT, (void **)SW_AXISDISP_STR)); m += strlen(buf+m);
+       sprintf(buf+m, "%s ", (AxisPtr->atzero    ? "atzero"    : "notatzero")); m += strlen(buf+m);
+       sprintf(buf+m, "%s ", (char *)FetchSettingName(AxisPtr->MirrorType, SW_AXISMIRROR_INT, (void **)SW_AXISMIRROR_STR)); m += strlen(buf+m);
+       if (!AxisPtr->linked)
+        {
+         sprintf(buf+m, "notlinked"); m += strlen(buf+m);
+        }
+       else
+        {
+         strcpy(buf+m, "linked"); m += strlen(buf+m);
+         if (AxisPtr->LinkedAxisCanvasID > 0) { sprintf(buf+m, " item %d", AxisPtr->LinkedAxisCanvasID); m += strlen(buf+m); }
+         sprintf(buf+m, " %c%d", "xyz"[AxisPtr->LinkedAxisToXYZ], AxisPtr->LinkedAxisToNum); m += strlen(buf+m);
+         if (AxisPtr->linkusing != NULL) { sprintf(buf+m, " using %s", AxisPtr->linkusing); m += strlen(buf+m); }
+        }
        sprintf(buf2, "Settings for the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, "axis", temp1, (AxisPtr->enabled==settings_axis_default.enabled), buf2);
+       directive_show3(out+i, ItemSet, 0, interactive, "axis", buf,
+                       (AxisPtr->atzero             == AxisPtrDef->atzero            ) &&
+                       (AxisPtr->enabled            == AxisPtrDef->enabled           ) &&
+                       (AxisPtr->invisible          == AxisPtrDef->invisible         ) &&
+                       (AxisPtr->linked             == AxisPtrDef->linked            ) &&
+                       (AxisPtr->topbottom          == AxisPtrDef->topbottom         ) &&
+                       (AxisPtr->ArrowType          == AxisPtrDef->ArrowType         ) &&
+                       (AxisPtr->LinkedAxisCanvasID == AxisPtrDef->LinkedAxisCanvasID) &&
+                       (AxisPtr->LinkedAxisToXYZ    == AxisPtrDef->LinkedAxisToXYZ   ) &&
+                       (AxisPtr->LinkedAxisToNum    == AxisPtrDef->LinkedAxisToNum   ) &&
+                       (AxisPtr->MirrorType         == AxisPtrDef->MirrorType        )    ,
+                       buf2
+                      );
+       i += strlen(out+i) ; p=1;
+      }
+                       
+     sprintf(temp1, "%c%dformat", "xyz"[k], j);
+     sprintf(temp2, "%cformat"  , "xyz"[k]   );
+     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+      {                
+       StrEscapify(AxisPtr->format==NULL ? "" : AxisPtr->format , buf); m = strlen(buf);
+       sprintf(buf+m, " %s", (char *)FetchSettingName(AxisPtr->TickLabelRotation, SW_TICLABDIR_INT, (void **)SW_TICLABDIR_STR)); m += strlen(buf+m);
+       ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->TickLabelRotate;
+       sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
+       sprintf(buf2, "Format string for the tick labels on the %c%d axis", "xyz"[k], j);
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf,
+                       (  ( AxisPtr->TickLabelRotate  ==AxisPtrDef->TickLabelRotate  ) &&
+                          ( AxisPtr->TickLabelRotation==AxisPtrDef->TickLabelRotation) &&
+                         (((AxisPtr->format==NULL)&&(AxisPtrDef->format==NULL)) ||
+                          ((AxisPtr->format!=NULL)&&(AxisPtrDef->format!=NULL)&&(strcmp(AxisPtr->format,AxisPtrDef->format)==0)))
+                       ) ,
+                       buf2);
        i += strlen(out+i) ; p=1;
       }
 
@@ -1317,9 +1708,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      sprintf(temp2, "%clabel"  , "xyz"[k]   );
      if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
       {
-       StrEscapify(AxisPtr->label, buf);
+       StrEscapify(AxisPtr->label==NULL ? "" : AxisPtr->label , buf); m = strlen(buf);
+       ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->LabelRotate;
+       sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
        sprintf(buf2, "Textual label for the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, strcmp(AxisPtr->label, settings_axis_default.label)==0, buf2);
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf,
+                       (  ( AxisPtr->LabelRotate==AxisPtrDef->LabelRotate) &&
+                         (((AxisPtr->label==NULL)&&(AxisPtrDef->label==NULL)) ||
+                          ((AxisPtr->label!=NULL)&&(AxisPtrDef->label!=NULL)&&(strcmp(AxisPtr->label,AxisPtrDef->label)==0)))
+                       ) ,
+                       buf2);
        i += strlen(out+i) ; p=1;
       }
 
@@ -1327,9 +1725,10 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       {
        if (AxisPtr->log==SW_BOOL_TRUE) bufp = "logscale";
        else                            bufp = "nologscale";
-       sprintf(temp1, "%c%d", "xyz"[k], j);
+       sprintf(buf, "%c%d", "xyz"[k], j); m = strlen(buf);
+       if (AxisPtr->log==SW_BOOL_TRUE) sprintf(buf+m, " base %d", (int)AxisPtr->LogBase);
        sprintf(buf2, "Sets whether the %c%d axis scales linearly or logarithmically", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, bufp, temp1, (AxisPtr->log==settings_axis_default.log), buf2);
+       directive_show3(out+i, ItemSet, 0, interactive, bufp, buf, (AxisPtr->log==AxisPtrDef->log), buf2);
        i += strlen(out+i) ; p=1;
       }
 
@@ -1345,30 +1744,113 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        else                               bufp2 = "*";
        sprintf(buf , "[%s:%s]", bufp, bufp2);
        sprintf(buf2, "Sets the range of the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->min   ==settings_axis_default.min   ) &&
-                                                                   (AxisPtr->MinSet==settings_axis_default.MinSet) &&
-                                                                   (AxisPtr->max   ==settings_axis_default.max   ) &&
-                                                                   (AxisPtr->MaxSet==settings_axis_default.MaxSet)    , buf2);
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->min    == AxisPtrDef->min   ) &&
+                                                                   (AxisPtr->MinSet == AxisPtrDef->MinSet) &&
+                                                                   (AxisPtr->max    == AxisPtrDef->max   ) &&
+                                                                   (AxisPtr->MaxSet == AxisPtrDef->MaxSet)    , buf2);
        i += strlen(out+i) ; p=1;
       }
 
      sprintf(temp1, "%c%dtics", "xyz"[k], j);
      sprintf(temp2, "%ctics"  , "xyz"[k]   );
+     m=0;
      if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
       {
+       sprintf(buf2, "Sets where the major ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
+       sprintf(buf, "%s ", (char *)FetchSettingName(AxisPtr->TickDir, SW_TICDIR_INT, (void **)SW_TICDIR_STR)); m = strlen(buf);
+       if      ((AxisPtr->TickMinSet == SW_BOOL_FALSE) && (AxisPtr->TickList == NULL))
+        {
+         sprintf(buf+m, "autofreq");
+        }
+       else if (AxisPtr->TickList == NULL)
+        {
+         AxisPtr->unit.real = AxisPtr->TickMin;
+         sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+         if      (AxisPtr->TickStepSet != SW_BOOL_FALSE)
+          {
+           AxisPtr->unit.real = AxisPtr->TickStep;
+           sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+           if (AxisPtr->TickMaxSet  != SW_BOOL_FALSE)
+            {
+             AxisPtr->unit.real = AxisPtr->TickMax;
+             sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+            }
+          }
+        }
+       else
+        {
+         buf[m++]='(';
+         for (m=0; AxisPtr->TickStrs[m]!=NULL; m++)
+          {
+           strcpy(buf+m, (m==0)?"":", "); m += strlen(buf+m);
+           StrEscapify(AxisPtr->TickStrs[m], buf+m); m += strlen(buf+m);
+           AxisPtr->unit.real = AxisPtr->TickList[m];
+           sprintf(buf+m, " %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0));
+           m += strlen(buf+m);
+          }
+         sprintf(buf+m, ")");
+        }
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->TickDir    == AxisPtrDef->TickDir   ) &&
+                                                                   (AxisPtr->TickMax    == AxisPtrDef->TickMax   ) &&
+                                                                   (AxisPtr->TickMaxSet == AxisPtrDef->TickMaxSet) &&
+                                                                   (AxisPtr->TickMin    == AxisPtrDef->TickMin   ) &&
+                                                                   (AxisPtr->TickMinSet == AxisPtrDef->TickMinSet) &&
+                                                                   (AxisPtr->TickList   == AxisPtrDef->TickList  ) &&
+                                                                   (AxisPtr->TickStrs   == AxisPtrDef->TickStrs  )    ,
+                       buf2);
+       i += strlen(out+i) ; p=1;
+       m=1; // If we've shown major tics, also show minor ticks too.
       }
 
      sprintf(temp1, "m%c%dtics", "xyz"[k], j);
      sprintf(temp2, "m%ctics"  , "xyz"[k]   );
-     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+     if (l || m || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
       {
+       sprintf(buf2, "Sets where the minor ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
+       sprintf(buf, "%s ", (char *)FetchSettingName(AxisPtr->MTickDir, SW_TICDIR_INT, (void **)SW_TICDIR_STR)); m = strlen(buf);
+       if      ((AxisPtr->MTickMinSet == SW_BOOL_FALSE) && (AxisPtr->MTickList == NULL))
+        {
+         sprintf(buf+m, "autofreq");
+        }
+       else if (AxisPtr->MTickList == NULL)
+        {                
+         AxisPtr->unit.real = AxisPtr->MTickMin;
+         sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+         if      (AxisPtr->MTickStepSet != SW_BOOL_FALSE)
+          { 
+           AxisPtr->unit.real = AxisPtr->MTickStep;
+           sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+           if (AxisPtr->MTickMaxSet  != SW_BOOL_FALSE)
+            {
+             AxisPtr->unit.real = AxisPtr->MTickMax;
+             sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+            }
+          }
+        }
+       else
+        {  
+         buf[m++]='(';
+         for (m=0; AxisPtr->MTickStrs[m]!=NULL; m++)
+          {
+           strcpy(buf+m, (m==0)?"":", "); m += strlen(buf+m);
+           StrEscapify(AxisPtr->MTickStrs[m], buf+m); m += strlen(buf+m);
+           AxisPtr->unit.real = AxisPtr->MTickList[m];
+           sprintf(buf+m, " %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0));
+           m += strlen(buf+m);
+          }
+         sprintf(buf+m, ")");
+        }
+       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->MTickDir    == AxisPtrDef->MTickDir   ) &&
+                                                                   (AxisPtr->MTickMax    == AxisPtrDef->MTickMax   ) &&
+                                                                   (AxisPtr->MTickMaxSet == AxisPtrDef->MTickMaxSet) &&
+                                                                   (AxisPtr->MTickMin    == AxisPtrDef->MTickMin   ) &&
+                                                                   (AxisPtr->MTickMinSet == AxisPtrDef->MTickMinSet) &&
+                                                                   (AxisPtr->MTickList   == AxisPtrDef->MTickList  ) &&
+                                                                   (AxisPtr->MTickStrs   == AxisPtrDef->MTickStrs  )    ,
+                       buf2);
+       i += strlen(out+i) ; p=1;
       }
 
-     sprintf(temp1, "%c%dticdir", "xyz"[k], j);
-     sprintf(temp2, "%cticdir"  , "xyz"[k]   );
-     if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
-      {
-      }
     }
 
   // Show variables

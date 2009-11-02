@@ -22,11 +22,11 @@
 #ifndef _PPL_CONSTANTS_H
 #define _PPL_CONSTANTS_H 1
 
-#define MULTIPLOT_MAXINDEX 8192
+#define MULTIPLOT_MAXINDEX 32768
 
 #define PALETTE_LENGTH 512
 
-#define MAX_AXES 512
+#define MAX_AXES 128
 
 #define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator
 

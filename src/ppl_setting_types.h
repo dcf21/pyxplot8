@@ -114,6 +114,47 @@ extern char *SW_TICDIR_STR[];
 extern int   SW_TICDIR_ACL[];
 extern int   SW_TICDIR_INT[];
 
+// Tick Label Text Direction Switches
+
+#define SW_TICLABDIR_HORI 15011
+#define SW_TICLABDIR_VERT 15012
+#define SW_TICLABDIR_ROT  15013
+
+extern char *SW_TICLABDIR_STR[];
+extern int   SW_TICLABDIR_ACL[];
+extern int   SW_TICLABDIR_INT[];
+
+// Axis Display Schemes
+
+#define SW_AXISDISP_NOARR 15021
+#define SW_AXISDISP_ARROW 15022
+#define SW_AXISDISP_TWOAR 15024
+#define SW_AXISDISP_BACKA 15026
+
+extern char *SW_AXISDISP_STR[];
+extern int   SW_AXISDISP_ACL[];
+extern int   SW_AXISDISP_INT[];
+
+// Axis Display Mirroring Schemes
+
+#define SW_AXISMIRROR_AUTO       15031
+#define SW_AXISMIRROR_MIRROR     15032
+#define SW_AXISMIRROR_NOMIRROR   15033
+#define SW_AXISMIRROR_FULLMIRROR 15034
+
+extern char *SW_AXISMIRROR_STR[];
+extern int   SW_AXISMIRROR_ACL[];
+extern int   SW_AXISMIRROR_INT[];
+
+// Graph Projection Schemes
+
+#define SW_PROJ_FLAT 15041
+#define SW_PROJ_GNOM 15042
+
+extern char *SW_PROJ_STR[];
+extern int   SW_PROJ_ACL[];
+extern int   SW_PROJ_INT[];
+
 // Text Horizontal Alignment
 
 #define SW_HALIGN_LEFT  16001
@@ -126,9 +167,9 @@ extern int   SW_HALIGN_INT[];
 
 // Text Vertical Alignment
 
-#define SW_VALIGN_TOP  16001
-#define SW_VALIGN_CENT 16002
-#define SW_VALIGN_BOT  16003
+#define SW_VALIGN_TOP  16011
+#define SW_VALIGN_CENT 16012
+#define SW_VALIGN_BOT  16013
 
 extern char *SW_VALIGN_STR[];
 extern int   SW_VALIGN_ACL[];

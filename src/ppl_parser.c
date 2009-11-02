@@ -689,7 +689,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
              }
-            else if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX)||(!gsl_finite(MatchVal._dbl)))
+            else if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX)||(MatchVal._dbl>=MAX_AXES)||(!gsl_finite(MatchVal._dbl)))
              {
               sprintf(AlgebraError, "This integer value is too large.");
               *AlgebraLinepos = *linepos;

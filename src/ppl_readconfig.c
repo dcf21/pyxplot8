@@ -123,16 +123,20 @@ void ReadConfigFile(char *ConfigFname)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.bar           = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BAR."          , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BINORIGIN"    )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default.BinOrigin      = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               { settings_term_default.BinOrigin.real = fl;
+                                                                              settings_term_default.BinOriginAuto  = 0;  }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BINORIGIN."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BINWIDTH"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default.BinWidth       = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               { settings_term_default.BinWidth.real  = fl;
+                                                                              settings_term_default.BinWidthAuto   = (fl>0.0);  }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BINWIDTH."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BOXFROM"      )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.BoxFrom       = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               { settings_graph_default.BoxFrom.real  = fl;
+                                                                              settings_graph_default.BoxWidthAuto  = 0;  }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BOXFROM."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BOXWIDTH"     )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.BoxWidth      = fl;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               { settings_graph_default.BoxWidth.real = fl;
+                                                                              settings_graph_default.BoxWidthAuto  = (fl>0.0);  }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BOXWIDTH."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "CALENDARIN"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarIn = fl;
@@ -251,6 +255,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "POINTSIZE"    )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.PointSize     = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting POINTSIZE."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "PROJECTION"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_PROJ_INT, SW_PROJ_STR ))>0)   settings_graph_default.projection    = fl;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting PROJECTION."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "SAMPLES"      )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.samples       = max((int)fl, 2);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting SAMPLES."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
@@ -467,6 +474,7 @@ void ReadConfigFile(char *ConfigFname)
       settings_term_current  = settings_term_default; // Copy settings for directive_set()
       settings_graph_current = settings_graph_default;
       for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+      for (i=0; i<MAX_AXES; i++) { XAxes[i] = XAxesDefault[i]; YAxes[i] = YAxesDefault[i]; ZAxes[i] = ZAxesDefault[i]; }
       ppl_error_setstreaminfo(linecounter, "configuration file");
       scriptcmd = parse(linebuffer);
       if (scriptcmd != NULL)
@@ -481,6 +489,7 @@ void ReadConfigFile(char *ConfigFname)
       settings_term_default  = settings_term_current; // Copy changed settings into defaults
       settings_graph_default = settings_graph_current;
       for (i=0; i<PALETTE_LENGTH; i++) settings_palette_default[i] = settings_palette_current[i];
+      for (i=0; i<MAX_AXES; i++) { XAxesDefault[i] = XAxes[i]; YAxesDefault[i] = YAxes[i]; ZAxesDefault[i] = ZAxes[i]; }
      }
     else
      {
