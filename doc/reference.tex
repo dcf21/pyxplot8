@@ -643,6 +643,7 @@ plot [<range specifier> ...] ('<filename>'|<function>)
      [select <select specifier>]
      [index <index specifier>]
      [every <every specifier>]
+     [title <title>]
      [with <style> [<style modifier> ... ] ]
 \end{verbatim}
 
@@ -693,6 +694,18 @@ following the name of the function or \datafile\ to be plotted, for example:
 \begin{verbatim}
 plot sin(x) axes x2y1
 \end{verbatim}
+
+\subsection{title}\indcmd{plot title}
+
+By default PyXPlot generates its own entry in the key for each set of data
+plotted.  The user can over-ride this default setting by using the {\tt title}
+setting.  For example, to create an axis label with tasteful \LaTeX{}
+equation-mode rendering of the function being plotted:
+
+\begin{verbatim}
+plot sin(x) title '$\sin(x)$'
+\end{verbatim}
+
 
 \subsection{with}\indcmd{plot with}
 
