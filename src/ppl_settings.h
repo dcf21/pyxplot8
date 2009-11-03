@@ -78,9 +78,10 @@ extern with_words        settings_plot_styles[];
 
 void  ppl_settings_makedefault();
 void  ppl_settings_readconfig();
-void  with_words_zero   (with_words *a, unsigned char malloced);
-int   with_words_compare(with_words *a, with_words *b);
-void  with_words_print  (with_words *defn, char *out);
+void  with_words_zero   (with_words *a, const unsigned char malloced);
+int   with_words_compare(const with_words *a, const with_words *b);
+void  with_words_merge  (with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e);
+void  with_words_print  (const with_words *defn, char *out);
 void  with_words_destroy(with_words *a);
 
 // Can now safely include these headers, which need some of the settings above
@@ -105,6 +106,9 @@ extern settings_axis     YAxes[], YAxesDefault[];
 extern settings_axis     ZAxes[], ZAxesDefault[];
 extern Dict             *settings_filters;
 #endif
+
+void  DestroyAxis       (settings_axis *in , const settings_axis *def);
+void  CopyAxis          (settings_axis *out, const settings_axis *in );
 
 // Functions defined in ppl_readconfig.c
 #ifndef _PPL_READCONFIG_C

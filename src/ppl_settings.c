@@ -342,7 +342,7 @@ void ppl_settings_readconfig()
 // ROUTINES FOR MANIPULATING WITH_WORDS STRUCTURES
 // -----------------------------------------------
 
-void with_words_zero(with_words *a, unsigned char malloced)
+void with_words_zero(with_words *a, const unsigned char malloced)
  {
   a->colour = a->fillcolour = a->linespoints = a->linetype = a->pointtype = a->style = 0;
   a->linewidth = a->pointlinewidth = a->pointsize = 1.0;
@@ -354,7 +354,7 @@ void with_words_zero(with_words *a, unsigned char malloced)
   return;
  }
 
-int with_words_compare(with_words *a, with_words *b)
+int with_words_compare(const with_words *a, const with_words *b)
  {
   // Check that the range of items which are defined in both structures are the same
   if ((a->STRcolourR       ==NULL) != (b->STRcolourR       ==NULL)                                                                            ) return 0;
@@ -382,9 +382,20 @@ int with_words_compare(with_words *a, with_words *b)
   return 1; // We have found any differences
  }
 
+void with_words_merge(with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e)
+ {
+  int i;
+  //const with_words *InputArray[5] = {a,b,c,d,e};
+  with_words_zero(out,0);
+  for (i=0; i<5; i++)
+   {
+   }
+  return;
+ }
+
 #define NUMDISP(X) NumericDisplay(X,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L))
 
-void with_words_print(with_words *defn, char *out)
+void with_words_print(const with_words *defn, char *out)
  {
   int i=0;
   if      (defn->USElinespoints)          { sprintf(out+i, "%s "                     , (char *)FetchSettingName(defn->linespoints, SW_STYLE_INT , (void **)SW_STYLE_STR )); i += strlen(out+i); }
@@ -424,11 +435,38 @@ void with_words_destroy(with_words *a)
   if (a->STRfillcolourR    != NULL) { free(a->STRfillcolourR   ); a->STRfillcolourR    = NULL; }
   if (a->STRfillcolourG    != NULL) { free(a->STRfillcolourG   ); a->STRfillcolourG    = NULL; }
   if (a->STRfillcolourB    != NULL) { free(a->STRfillcolourB   ); a->STRfillcolourB    = NULL; }
-
   return;
  }
 
 // ------------------------------------------------------
 // Functions for creating and destroying axis descriptors
 // ------------------------------------------------------
+
+void DestroyAxis(settings_axis *in, const settings_axis *def)
+ {
+  if (((def==NULL) || (in->format    != def->format   )) && (in->format    != NULL)) { free(in->format   ); in->format    = NULL; }
+  if (((def==NULL) || (in->label     != def->label    )) && (in->label     != NULL)) { free(in->label    ); in->label     = NULL; }
+  if (((def==NULL) || (in->linkusing != def->linkusing)) && (in->linkusing != NULL)) { free(in->linkusing); in->linkusing = NULL; }
+  //if (((def==NULL) || (in->MTickList != def->MTickList)) && (in->MTickList != NULL)) { free(in->MTickList); in->MTickList = NULL; }
+  //if (((def==NULL) || (in->MTickStrs != def->MTickStrs)) && (in->MTickStrs != NULL)) { free(in->MTickStrs); in->MTickStrs = NULL; }
+  //if (((def==NULL) || (in->TickList  != def->TickList )) && (in->TickList  != NULL)) { free(in->TickList ); in->TickList  = NULL; }
+  //if (((def==NULL) || (in->TickStrs  != def->TickStrs )) && (in->TickStrs  != NULL)) { free(in->TickStrs ); in->TickStrs  = NULL; }
+  return;
+ }
+
+#define XMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *out = settings_axis_default; return; }
+
+void CopyAxis(settings_axis *out, const settings_axis *in)
+ {
+  void *tmp;
+  *out = *in;
+  if (in->format    != NULL) { out->format   = (char   *)XMALLOC(strlen(in->format    )+1); strcpy(out->format   , in->format    ); }
+  if (in->label     != NULL) { out->label    = (char   *)XMALLOC(strlen(in->label     )+1); strcpy(out->label    , in->label     ); }
+  if (in->linkusing != NULL) { out->linkusing= (char   *)XMALLOC(strlen(in->linkusing )+1); strcpy(out->linkusing, in->linkusing ); }
+  //if (in->MTickList != NULL) { out->MTickList= (double *)XMALLOC(strlen(in->MTickList )+1); strcpy(out->MTickList, in->MTickList ); }
+  //if (in->MTickStrs != NULL) { out->MTickStrs= XMALLOC(strlen(in->MTickStrs )+1); strcpy(out->MTickStrs, in->MTickStrs ); }
+  //if (in->TickList  != NULL) { out->TickList = (double *)XMALLOC(strlen(in->TickList  )+1); strcpy(out->TickList , in->TickList  ); }
+  //if (in->TickStrs  != NULL) { out->TickStrs = XMALLOC(strlen(in->TickStrs  )+1); strcpy(out->TickStrs , in->TickStrs  ); }
+  return;
+ }
 

@@ -43,8 +43,12 @@ canvas_itemlist *canvas_items = NULL;
 // Free a node in the multiplot canvas item list
 static void canvas_item_delete(canvas_item *ptr)
  {
+  int i;
   if (ptr->commandline != NULL) free(ptr->commandline);
   if (ptr->text        != NULL) free(ptr->text);
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->XAxes[i]), NULL);
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->YAxes[i]), NULL);
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->ZAxes[i]), NULL);
   // !!! Delete plot descriptor !!!
   free(ptr);
   return;
@@ -94,9 +98,9 @@ static int canvas_itemlist_add(Dict *command, int type, char *line, canvas_item 
 
   // Copy the user's current settings
   ptr->settings = settings_graph_current;
-  for (i=0; i<MAX_AXES; i++) ptr->XAxes[i] = XAxes[i];
-  for (i=0; i<MAX_AXES; i++) ptr->YAxes[i] = YAxes[i];
-  for (i=0; i<MAX_AXES; i++) ptr->ZAxes[i] = ZAxes[i];
+  for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->XAxes[i]), &(XAxes[i]));
+  for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->YAxes[i]), &(YAxes[i]));
+  for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->ZAxes[i]), &(ZAxes[i]));
 
   *output = ptr; // Return pointer to the newly-created canvas item
   *id     = ptr->id;

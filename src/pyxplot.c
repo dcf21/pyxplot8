@@ -225,6 +225,17 @@ int main(int argc, char **argv)
   SendCommandToCSP("B\n");
   directive_clear();
 
+  // Free all of the axes
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(XAxes[i])       , &(XAxesDefault[i]));
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(YAxes[i])       , &(YAxesDefault[i]));
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ZAxes[i])       , &(ZAxesDefault[i]));
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(XAxesDefault[i]), NULL              );
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(YAxesDefault[i]), NULL              );
+  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ZAxesDefault[i]), NULL              );
+
+  // Free all of the plot styles which are set
+  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_destroy(&(settings_plot_styles[i]));
+
   // Save GNU Readline history
   if (WillBeInteractive>0)
    {
