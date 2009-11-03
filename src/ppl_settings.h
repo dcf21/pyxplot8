@@ -28,8 +28,13 @@
 #include "ppl_units.h"
 
 typedef struct with_words {
- int    colour, fillcolour, linestyle, linetype, pointtype, style;
+ int    colour, fillcolour, linespoints, linetype, pointtype, style; // Core style settings which can be placed after the 'with' modifier
  double linewidth, pointlinewidth, pointsize;
+ int    colourR, colourG, colourB, fillcolourR, fillcolourG, fillcolourB; // Alternatives to the colour and fillcolour settings, RGB settings
+ char  *STRlinetype, *STRlinewidth, *STRpointlinewidth, *STRpointsize, *STRpointtype, *STRstyle; // Alternatives to the above, where expressions are evaluated per use, e.g. $4
+ char  *STRcolourR, *STRcolourG, *STRcolourB, *STRfillcolourR, *STRfillcolourG, *STRfillcolourB;
+ unsigned char USEcolour, USEfillcolour, USElinespoints, USElinetype, USElinewidth, USEpointlinewidth, USEpointsize, USEpointtype, USEstyle, USEcolourRGB, USEfillcolourRGB; // Set to 1 to indicate settings to be used
+ unsigned char malloced; // Indicates whether we need to free strings
  } with_words;
 
 typedef struct settings_terminal {
@@ -68,10 +73,15 @@ extern settings_graph    settings_graph_current;
 extern settings_session  settings_session_default;
 extern int               settings_palette_current[];
 extern int               settings_palette_default[];
+extern with_words        settings_plot_styles[];
+#endif
 
 void  ppl_settings_makedefault();
 void  ppl_settings_readconfig();
-#endif
+void  with_words_zero   (with_words *a, unsigned char malloced);
+int   with_words_compare(with_words *a, with_words *b);
+void  with_words_print  (with_words *defn, char *out);
+void  with_words_destroy(with_words *a);
 
 // Can now safely include these headers, which need some of the settings above
 #include "ListTools/lt_list.h"

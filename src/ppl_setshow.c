@@ -44,30 +44,6 @@
 #include "ppl_userspace.h"
 #include "pyxplot.h"
 
-int with_words_compare(with_words *a, with_words *b)
- {
-  int i;
-  for (i=0; i<sizeof(with_words); i++) if ( *(((char *)a)+i) != *(((char *)b)+i)  ) return (0 == 1);
-  return (0 == 0);
- }
-
-void with_words_print(with_words *defn, char *out)
- {
-  int i=0;
-
-  if (defn->style         >0) { sprintf(out+i, "%s "               , (char *)FetchSettingName(defn->style     , SW_STYLE_INT , (void **)SW_STYLE_STR )); i += strlen(out+i); }
-  if (defn->colour        >0) { sprintf(out+i, "colour %s "        , (char *)FetchSettingName(defn->colour    , SW_COLOUR_INT, (void **)SW_COLOUR_STR)); i += strlen(out+i); }
-  if (defn->fillcolour    >0) { sprintf(out+i, "fillcolour %s "    , (char *)FetchSettingName(defn->fillcolour, SW_COLOUR_INT, (void **)SW_COLOUR_STR)); i += strlen(out+i); }
-  if (defn->linestyle     >0) { sprintf(out+i, "linestyle %d "     ,                          defn->linestyle                                         ); i += strlen(out+i); }
-  if (defn->linetype      >0) { sprintf(out+i, "linetype %d "      ,                          defn->linetype                                          ); i += strlen(out+i); }
-  if (defn->linewidth     >0) { sprintf(out+i, "linewidth %e "     ,                          defn->linewidth                                         ); i += strlen(out+i); }
-  if (defn->pointlinewidth>0) { sprintf(out+i, "pointlinewidth %f ",                          defn->pointlinewidth                                    ); i += strlen(out+i); }
-  if (defn->pointsize     >0) { sprintf(out+i, "pointsize %f "     ,                          defn->pointsize                                         ); i += strlen(out+i); }
-  if (defn->pointtype     >0) { sprintf(out+i, "pointtype %d "     ,                          defn->pointtype                                         ); i += strlen(out+i); }
-
-  return;
- }
-
 void directive_seterror(Dict *command, int interactive)
  {
   char *tempstr;

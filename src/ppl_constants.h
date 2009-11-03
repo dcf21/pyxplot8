@@ -26,6 +26,8 @@
 
 #define PALETTE_LENGTH 512
 
+#define MAX_PLOTSTYLES 128 // The maximum number of plot styles (e.g. plot sin(x) with style 23) which are be defined. Similar to 'with linestyle 23' in gnuplot
+
 #define MAX_AXES 128
 
 #define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator

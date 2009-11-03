@@ -49,6 +49,8 @@ settings_terminal settings_term_current;
 settings_graph    settings_graph_default;
 settings_graph    settings_graph_current;
 
+with_words        settings_plot_styles[MAX_PLOTSTYLES];
+
 settings_axis     settings_axis_default;
 
 settings_axis     XAxes [MAX_AXES], XAxesDefault[MAX_AXES];
@@ -110,34 +112,20 @@ void ppl_settings_makedefault()
   settings_term_default.UnitDisplayAbbrev   = SW_ONOFF_ON;
 
   // Default Graph Settings, used when these values are not changed by any configuration files
-  settings_graph_default.aspect       = 1.0;
-  settings_graph_default.AutoAspect   = SW_ONOFF_ON;
-  settings_graph_default.AxesColour   = COLOUR_BLACK;
-  settings_graph_default.bar          = 1.0;
+  settings_graph_default.aspect                = 1.0;
+  settings_graph_default.AutoAspect            = SW_ONOFF_ON;
+  settings_graph_default.AxesColour            = COLOUR_BLACK;
+  settings_graph_default.bar                   = 1.0;
   ppl_units_zero(&(settings_graph_default.BoxFrom));
-  settings_graph_default.BoxFromAuto  = 1;
+  settings_graph_default.BoxFromAuto           = 1;
   ppl_units_zero(&(settings_graph_default.BoxWidth));
-  settings_graph_default.BoxWidthAuto = 1;
-  settings_graph_default.DataStyle.colour         = -1;
-  settings_graph_default.DataStyle.fillcolour     = -1;
-  settings_graph_default.DataStyle.linestyle      = -1;
-  settings_graph_default.DataStyle.linetype       = -1;
-  settings_graph_default.DataStyle.pointtype      = -1;
-  settings_graph_default.DataStyle.style          = SW_STYLE_POINTS;
-  settings_graph_default.DataStyle.linewidth      = -1;
-  settings_graph_default.DataStyle.pointlinewidth = -1;
-  settings_graph_default.DataStyle.pointsize      = -1;
-  settings_graph_default.FontSize                 = 1.0;
-  settings_graph_default.FuncStyle.colour         = -1;
-  settings_graph_default.FuncStyle.fillcolour     = -1;
-  settings_graph_default.FuncStyle.linestyle      = -1;
-  settings_graph_default.FuncStyle.linetype       = -1;
-  settings_graph_default.FuncStyle.pointtype      = -1;
-  settings_graph_default.FuncStyle.style          = SW_STYLE_LINES;
-  settings_graph_default.FuncStyle.linewidth      = -1;
-  settings_graph_default.FuncStyle.pointlinewidth = -1;
-  settings_graph_default.FuncStyle.pointsize      = -1;
-  settings_graph_default.grid                     = SW_ONOFF_OFF;
+  settings_graph_default.BoxWidthAuto          = 1;
+  with_words_zero(&(settings_graph_default.DataStyle),1);
+  settings_graph_default.DataStyle.linespoints = SW_STYLE_POINTS;
+  settings_graph_default.FontSize              = 1.0;
+  with_words_zero(&(settings_graph_default.FuncStyle),1);
+  settings_graph_default.FuncStyle.linespoints = SW_STYLE_LINES;
+  settings_graph_default.grid                  = SW_ONOFF_OFF;
   for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisX[i] = 0;
   for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisY[i] = 0;
   for (i=0; i<MAX_AXES; i++) settings_graph_default.GridAxisZ[i] = 0;
@@ -248,6 +236,9 @@ void ppl_settings_makedefault()
   DictAppendValue(settings_filters, "ftp://*", tempval);
   #endif
 
+  // Set up array of plot styles
+  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles[i]),1);
+
   // Set up current axes
   for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;
   XAxes[1].enabled = YAxes[1].enabled = ZAxes[1].enabled = 1;
@@ -346,4 +337,98 @@ void ppl_settings_readconfig()
   for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
   return;
  }
+
+// -----------------------------------------------
+// ROUTINES FOR MANIPULATING WITH_WORDS STRUCTURES
+// -----------------------------------------------
+
+void with_words_zero(with_words *a, unsigned char malloced)
+ {
+  a->colour = a->fillcolour = a->linespoints = a->linetype = a->pointtype = a->style = 0;
+  a->linewidth = a->pointlinewidth = a->pointsize = 1.0;
+  a->colourR = a->colourG = a->colourB = a->fillcolourR = a->fillcolourG = a->fillcolourB = 0;
+  a->STRlinetype = a->STRlinewidth = a->STRpointlinewidth = a->STRpointsize = a->STRpointtype = a->STRstyle = NULL;
+  a->STRcolourR = a->STRcolourG = a->STRcolourB = a->STRfillcolourR = a->STRfillcolourG = a->STRfillcolourB = NULL;
+  a->USEcolour = a->USEfillcolour = a->USElinespoints = a->USElinetype = a->USElinewidth = a->USEpointlinewidth = a->USEpointsize = a->USEpointtype = a->USEstyle = a->USEcolourRGB = a->USEfillcolourRGB = 0;
+  a->malloced = malloced;
+  return;
+ }
+
+int with_words_compare(with_words *a, with_words *b)
+ {
+  // Check that the range of items which are defined in both structures are the same
+  if ((a->STRcolourR       ==NULL) != (b->STRcolourR       ==NULL)                                                                            ) return 0;
+  if ((a->STRcolourR       ==NULL)                                 &&                           (a->USEcolourRGB      != b->USEcolourRGB     )) return 0;
+  if ((a->STRcolourR       ==NULL)                                 && (!a->USEcolourRGB    ) && (a->USEcolour         != b->USEcolour        )) return 0;
+  if ((a->STRfillcolourR   ==NULL) != (b->STRfillcolourR   ==NULL)                                                                            ) return 0;
+  if ((a->STRfillcolourR   ==NULL)                                 &&                           (a->USEfillcolourRGB  != b->USEfillcolourRGB )) return 0;
+  if ((a->STRfillcolourR   ==NULL)                                 && (!a->USEfillcolourRGB) && (a->USEfillcolour     != b->USEfillcolour    )) return 0;
+  if (                                                                                          (a->USElinespoints    != b->USElinespoints   )) return 0;
+  if ((a->STRlinetype      ==NULL) != (b->STRlinetype      ==NULL)                                                                            ) return 0;
+  if ((a->STRlinetype      ==NULL)                                                           && (a->USElinetype       != b->USElinetype      )) return 0;
+  if ((a->STRlinewidth     ==NULL) != (b->STRlinewidth     ==NULL)                                                                            ) return 0;
+  if ((a->STRlinewidth     ==NULL)                                                           && (a->USElinewidth      != b->USElinewidth     )) return 0;
+  if ((a->STRpointlinewidth==NULL) != (b->STRpointlinewidth==NULL)                                                                            ) return 0;
+  if ((a->STRpointlinewidth==NULL)                                                           && (a->USEpointlinewidth != b->USEpointlinewidth)) return 0;
+  if ((a->STRpointsize     ==NULL) != (b->STRpointsize     ==NULL)                                                                            ) return 0;
+  if ((a->STRpointsize     ==NULL)                                                           && (a->USEpointsize      != b->USEpointsize     )) return 0;
+  if ((a->STRpointtype     ==NULL) != (b->STRpointtype     ==NULL)                                                                            ) return 0;
+  if ((a->STRpointtype     ==NULL)                                                           && (a->USEpointtype      != b->USEpointtype     )) return 0;
+  if ((a->STRstyle         ==NULL) != (b->STRstyle         ==NULL)                                                                            ) return 0;
+  if ((a->STRstyle         ==NULL)                                                           && (a->USEstyle          != b->USEstyle         )) return 0;
+
+  // Check that the actual values are the same in both structures
+
+  return 1; // We have found any differences
+ }
+
+#define NUMDISP(X) NumericDisplay(X,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L))
+
+void with_words_print(with_words *defn, char *out)
+ {
+  int i=0;
+  if      (defn->USElinespoints)          { sprintf(out+i, "%s "                     , (char *)FetchSettingName(defn->linespoints, SW_STYLE_INT , (void **)SW_STYLE_STR )); i += strlen(out+i); }
+  if      (defn->STRcolourR!=NULL)        { sprintf(out+i, "colour rgb:%s,%s,%s "    , defn->STRcolourR, defn->STRcolourG, defn->STRcolourB);                               i += strlen(out+i); }
+  else if (defn->USEcolourRGB)            { sprintf(out+i, "colour rgb:%d,%d,%d "    , defn->colourR, defn->colourG, defn->colourB);                                        i += strlen(out+i); }
+  else if (defn->USEcolour)               { sprintf(out+i, "colour %s "              , (char *)FetchSettingName(defn->colour     , SW_COLOUR_INT, (void **)SW_COLOUR_STR)); i += strlen(out+i); }
+  if      (defn->STRfillcolourR!=NULL)    { sprintf(out+i, "fillcolour rgb:%s,%s,%s ", defn->STRfillcolourR, defn->STRfillcolourG, defn->STRfillcolourB);                   i += strlen(out+i); }
+  else if (defn->USEfillcolourRGB)        { sprintf(out+i, "fillcolour rgb:%d,%d,%d ", defn->fillcolourR, defn->fillcolourG, defn->fillcolourB);                            i += strlen(out+i); }
+  else if (defn->USEfillcolour)           { sprintf(out+i, "fillcolour %s "          , (char *)FetchSettingName(defn->fillcolour , SW_COLOUR_INT, (void **)SW_COLOUR_STR)); i += strlen(out+i); }
+  if      (defn->STRlinetype!=NULL)       { sprintf(out+i, "linetype %s "            , defn->STRlinetype);                                                                  i += strlen(out+i); }
+  else if (defn->USElinetype)             { sprintf(out+i, "linetype %d "            , defn->linetype);                                                                     i += strlen(out+i); }
+  if      (defn->STRlinewidth!=NULL)      { sprintf(out+i, "linewidth %s "           , defn->STRlinewidth);                                                                 i += strlen(out+i); }
+  else if (defn->USElinewidth)            { sprintf(out+i, "linewidth %s "           , NUMDISP(defn->linewidth));                                                           i += strlen(out+i); }
+  if      (defn->STRpointlinewidth!=NULL) { sprintf(out+i, "pointlinewidth %s "      , defn->STRpointlinewidth);                                                            i += strlen(out+i); }
+  else if (defn->USEpointlinewidth)       { sprintf(out+i, "pointlinewidth %s "      , NUMDISP(defn->pointlinewidth));                                                      i += strlen(out+i); }
+  if      (defn->STRpointsize!=NULL)      { sprintf(out+i, "pointsize %s "           , defn->STRpointsize);                                                                 i += strlen(out+i); }
+  else if (defn->USEpointsize)            { sprintf(out+i, "pointsize %s "           , NUMDISP(defn->pointsize));                                                           i += strlen(out+i); }
+  if      (defn->STRpointtype!=NULL)      { sprintf(out+i, "pointtype %s "           , defn->STRpointtype);                                                                 i += strlen(out+i); }
+  else if (defn->USEpointtype)            { sprintf(out+i, "pointtype %d "           , defn->pointtype);                                                                    i += strlen(out+i); }
+  if      (defn->STRstyle!=NULL)          { sprintf(out+i, "style %s "               , defn->STRstyle);                                                                     i += strlen(out+i); }
+  else if (defn->USEstyle)                { sprintf(out+i, "style %d "               , defn->style);                                                                        i += strlen(out+i); }
+  return;
+ }
+
+void with_words_destroy(with_words *a)
+ {
+  if (!a->malloced) return;
+  if (a->STRlinetype       != NULL) { free(a->STRlinetype      ); a->STRlinetype       = NULL; }
+  if (a->STRlinewidth      != NULL) { free(a->STRlinewidth     ); a->STRlinewidth      = NULL; }
+  if (a->STRpointlinewidth != NULL) { free(a->STRpointlinewidth); a->STRpointlinewidth = NULL; }
+  if (a->STRpointsize      != NULL) { free(a->STRpointsize     ); a->STRpointsize      = NULL; }
+  if (a->STRpointtype      != NULL) { free(a->STRpointtype     ); a->STRpointtype      = NULL; }
+  if (a->STRstyle          != NULL) { free(a->STRstyle         ); a->STRstyle          = NULL; }
+  if (a->STRcolourR        != NULL) { free(a->STRcolourR       ); a->STRcolourR        = NULL; }
+  if (a->STRcolourG        != NULL) { free(a->STRcolourG       ); a->STRcolourG        = NULL; }
+  if (a->STRcolourB        != NULL) { free(a->STRcolourB       ); a->STRcolourB        = NULL; }
+  if (a->STRfillcolourR    != NULL) { free(a->STRfillcolourR   ); a->STRfillcolourR    = NULL; }
+  if (a->STRfillcolourG    != NULL) { free(a->STRfillcolourG   ); a->STRfillcolourG    = NULL; }
+  if (a->STRfillcolourB    != NULL) { free(a->STRfillcolourB   ); a->STRfillcolourB    = NULL; }
+
+  return;
+ }
+
+// ------------------------------------------------------
+// Functions for creating and destroying axis descriptors
+// ------------------------------------------------------
 
