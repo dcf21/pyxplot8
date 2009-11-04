@@ -337,16 +337,6 @@ void directive_set(Dict *command)
    {
     settings_term_current.display = settings_term_default.display;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"dpi")==0)) /* set dpi */
-   {
-    DictLookup(command,"dpi",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 2.0) { ppl_error(ERR_GENERAL, "Output image resolutions below two dots per inch are not supported."); return; }
-    settings_term_current.dpi = *tempdbl;
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"dpi")==0)) /* unset dpi */
-   {
-    settings_term_current.dpi = settings_term_default.dpi;
-   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"filter")==0)) /* set filter */
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
@@ -436,12 +426,6 @@ void directive_set(Dict *command)
     sg->KeyColumns = settings_graph_default.KeyColumns;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"label")==0)) /* set label */
-   {
-   }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linestyle")==0)) /* set linestyle */
-   {
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linestyle")==0)) /* unset linestyle */
    {
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
@@ -698,6 +682,12 @@ void directive_set(Dict *command)
    {
     sg->samples = settings_graph_default.samples;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"style")==0)) /* unset style */
+   {
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"trange")==0)) /* set trange */
    {
     DictLookup(command,"min",NULL,(void **)&tempval);
@@ -770,6 +760,12 @@ void directive_set(Dict *command)
     if (tempstr != NULL) settings_term_current.TermAntiAlias   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
     DictLookup(command,"col"    ,NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.colour          = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
+    DictLookup(command,"dpi",NULL,(void **)&tempdbl);
+    if (tempdbl != NULL)
+     {
+      if (*tempdbl <= 2.0) { ppl_error(ERR_GENERAL, "Output image resolutions below two dots per inch are not supported."); }
+      else                 { settings_term_current.dpi = *tempdbl; }
+     }
     DictLookup(command,"enlarge",NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.TermEnlarge     = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
     DictLookup(command,"land"   ,NULL,(void **)&tempstr);
@@ -782,6 +778,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"terminal")==0)) /* unset terminal */
    {
     settings_term_current.colour         = settings_term_default.colour;
+    settings_term_current.dpi            = settings_term_default.dpi;
     settings_term_current.landscape      = settings_term_default.landscape;
     settings_term_current.TermAntiAlias  = settings_term_default.TermAntiAlias;
     settings_term_current.TermType       = settings_term_default.TermType;
@@ -1286,12 +1283,6 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "display", buf, (settings_term_default.display == settings_term_current.display), "Sets whether any output is produced; turn on to improve performance whilst setting up large multiplots");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "dpi", 1)>=0))
-   { 
-    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, 0, interactive, "DPI", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing gif, jpg or png output");
-    i += strlen(out+i) ; p=1;
-   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "filters",1)>=0))
    {
     DictIter = DictIterateInit(settings_filters);
@@ -1511,6 +1502,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.colour, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal colour", buf, (settings_term_default.colour==settings_term_current.colour), "Selects whether output is colour or monochrome");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "dpi", 1)>=0))
+   {                  
+    sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    directive_show3(out+i, ItemSet, 0, interactive, "terminal dpi", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing bitmap graphic output");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "enlargement",1)>=0))

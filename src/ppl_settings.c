@@ -378,17 +378,59 @@ int with_words_compare(const with_words *a, const with_words *b)
   if ((a->STRstyle         ==NULL)                                                           && (a->USEstyle          != b->USEstyle         )) return 0;
 
   // Check that the actual values are the same in both structures
+  if      ((a->STRcolourR       !=NULL) && ((strcmp(a->STRcolourR,b->STRcolourR)!=0)||(strcmp(a->STRcolourG,b->STRcolourG)!=0)||(strcmp(a->STRcolourB,b->STRcolourB)!=0))) return 0;
+  else if ((a->USEcolourRGB           ) && ((a->colourR!=b->colourR)||(a->colourG!=b->colourG)||(a->colourB!=b->colourB))) return 0;
+  else if ((a->USEcolour              ) && ((a->colour !=b->colour ))) return 0;
+  if      ((a->STRfillcolourR   !=NULL) && ((strcmp(a->STRfillcolourR,b->STRfillcolourR)!=0)||(strcmp(a->STRfillcolourG,b->STRfillcolourG)!=0)||(strcmp(a->STRfillcolourB,b->STRfillcolourB)!=0))) return 0;
+  else if ((a->USEfillcolourRGB       ) && ((a->fillcolourR   !=b->fillcolourR   )||(a->fillcolourG!=b->fillcolourG)||(a->fillcolourB!=b->fillcolourB))) return 0;
+  else if ((a->USEfillcolour          ) && ((a->fillcolour    !=b->fillcolour    ))) return 0;
+  if      ((a->USElinespoints         ) && ((a->linespoints   !=b->linespoints   ))) return 0;
+  if      ((a->STRlinetype      !=NULL) && ((strcmp(a->STRlinetype      ,b->STRlinetype      )!=0))) return 0;
+  else if ((a->USElinetype            ) && ((a->linetype      !=b->linetype      ))) return 0;
+  if      ((a->STRlinewidth     !=NULL) && ((strcmp(a->STRlinewidth     ,b->STRlinewidth     )!=0))) return 0;
+  else if ((a->USElinewidth           ) && ((a->linewidth     !=b->linewidth     ))) return 0;
+  if      ((a->STRpointlinewidth!=NULL) && ((strcmp(a->STRpointlinewidth,b->STRpointlinewidth)!=0))) return 0;
+  else if ((a->USEpointlinewidth      ) && ((a->pointlinewidth!=b->pointlinewidth))) return 0;
+  if      ((a->STRpointsize     !=NULL) && ((strcmp(a->STRpointsize     ,b->STRpointsize     )!=0))) return 0;
+  else if ((a->USEpointsize           ) && ((a->pointsize     !=b->pointsize     ))) return 0;
+  if      ((a->STRpointtype     !=NULL) && ((strcmp(a->STRpointtype     ,b->STRpointtype     )!=0))) return 0;
+  else if ((a->USEpointtype           ) && ((a->pointtype     !=b->pointtype     ))) return 0;
+  if      ((a->STRstyle         !=NULL) && ((strcmp(a->STRstyle         ,b->STRstyle         )!=0))) return 0;
+  else if ((a->USEstyle               ) && ((a->style         !=b->style         ))) return 0;
 
-  return 1; // We have found any differences
+  return 1; // We have not found any differences
  }
 
+// a has highest priority; e has lowest priority
 void with_words_merge(with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e)
  {
   int i;
-  //const with_words *InputArray[5] = {a,b,c,d,e};
+  const with_words *InputArray[5] = {a,b,c,d,e};
+  const with_words *x;
   with_words_zero(out,0);
-  for (i=0; i<5; i++)
+  for (i=4; i<=0; i--)
    {
+    x = InputArray[i];
+    if (x == NULL) continue;
+    if (x->STRcolourR       !=NULL) { out->STRcolourR = x->STRcolourR; out->STRcolourG = x->STRcolourG; out->STRcolourB = x->STRcolourB; }
+    if (x->USEcolourRGB           ) { out->colourR = x->colourR; out->colourG = x->colourG; out->colourB = x->colourB; out->USEcolourRGB = 1; }
+    if (x->USEcolour              ) { out->colour = x->colour; out->USEcolour = 1; }
+    if (x->STRfillcolourR   !=NULL) { out->STRfillcolourR = x->STRfillcolourR; out->STRfillcolourG = x->STRfillcolourG; out->STRfillcolourB = x->STRfillcolourB; }
+    if (x->USEfillcolourRGB       ) { out->fillcolourR = x->fillcolourR; out->fillcolourG = x->fillcolourG; out->fillcolourB = x->fillcolourB; out->USEfillcolourRGB = 1; }
+    if (x->USEfillcolour          ) { out->fillcolour = x->fillcolour; out->USEfillcolour = 1; }
+    if (x->USElinespoints         ) { out->linespoints = x->linespoints; out->USElinespoints = 1; }
+    if (x->STRlinetype      !=NULL) { out->STRlinetype = x->STRlinetype; }
+    if (x->USElinetype            ) { out->linetype = x->linetype; out->USElinetype = 1; }
+    if (x->STRlinewidth     !=NULL) { out->STRlinewidth = x->STRlinewidth; }
+    if (x->USElinewidth           ) { out->linewidth = x->linewidth; out->USElinewidth = 1; }
+    if (x->STRpointlinewidth!=NULL) { out->STRpointlinewidth = x->STRpointlinewidth; }
+    if (x->USEpointlinewidth      ) { out->pointlinewidth = x->pointlinewidth; out->USEpointlinewidth = 1; }
+    if (x->STRpointsize     !=NULL) { out->STRpointsize = x->STRpointsize; }
+    if (x->USEpointsize           ) { out->pointsize = x->pointsize; out->USEpointsize = 1; }
+    if (x->STRpointtype     !=NULL) { out->STRpointtype = x->STRpointtype; }
+    if (x->USEpointtype           ) { out->pointtype = x->pointtype; out->USEpointtype = 1; }
+    if (x->STRstyle         !=NULL) { out->STRstyle = x->STRstyle; }
+    if (x->USEstyle               ) { out->style = x->style; out->USEstyle = 1; }
    }
   return;
  }
@@ -444,13 +486,24 @@ void with_words_destroy(with_words *a)
 
 void DestroyAxis(settings_axis *in, const settings_axis *def)
  {
+  int i;
   if (((def==NULL) || (in->format    != def->format   )) && (in->format    != NULL)) { free(in->format   ); in->format    = NULL; }
   if (((def==NULL) || (in->label     != def->label    )) && (in->label     != NULL)) { free(in->label    ); in->label     = NULL; }
   if (((def==NULL) || (in->linkusing != def->linkusing)) && (in->linkusing != NULL)) { free(in->linkusing); in->linkusing = NULL; }
-  //if (((def==NULL) || (in->MTickList != def->MTickList)) && (in->MTickList != NULL)) { free(in->MTickList); in->MTickList = NULL; }
-  //if (((def==NULL) || (in->MTickStrs != def->MTickStrs)) && (in->MTickStrs != NULL)) { free(in->MTickStrs); in->MTickStrs = NULL; }
-  //if (((def==NULL) || (in->TickList  != def->TickList )) && (in->TickList  != NULL)) { free(in->TickList ); in->TickList  = NULL; }
-  //if (((def==NULL) || (in->TickStrs  != def->TickStrs )) && (in->TickStrs  != NULL)) { free(in->TickStrs ); in->TickStrs  = NULL; }
+  if (((def==NULL) || (in->MTickList != def->MTickList)) && (in->MTickList != NULL)) { free(in->MTickList); in->MTickList = NULL; }
+  if (((def==NULL) || (in->MTickStrs != def->MTickStrs)) && (in->MTickStrs != NULL))
+   {
+    for (i=0; in->MTickStrs[i]!=NULL; i++) free(in->MTickStrs);
+    free(in->MTickStrs);
+    in->MTickStrs = NULL;
+   }
+  if (((def==NULL) || (in->TickList  != def->TickList )) && (in->TickList  != NULL)) { free(in->TickList ); in->TickList  = NULL; }
+  if (((def==NULL) || (in->TickStrs  != def->TickStrs )) && (in->TickStrs  != NULL))
+   {
+    for (i=0; in->TickStrs[i]!=NULL; i++) free(in->TickStrs);
+    free(in->TickStrs );
+    in->TickStrs  = NULL;
+   }
   return;
  }
 
@@ -458,15 +511,36 @@ void DestroyAxis(settings_axis *in, const settings_axis *def)
 
 void CopyAxis(settings_axis *out, const settings_axis *in)
  {
+  int   i,j;
   void *tmp;
   *out = *in;
   if (in->format    != NULL) { out->format   = (char   *)XMALLOC(strlen(in->format    )+1); strcpy(out->format   , in->format    ); }
   if (in->label     != NULL) { out->label    = (char   *)XMALLOC(strlen(in->label     )+1); strcpy(out->label    , in->label     ); }
   if (in->linkusing != NULL) { out->linkusing= (char   *)XMALLOC(strlen(in->linkusing )+1); strcpy(out->linkusing, in->linkusing ); }
-  //if (in->MTickList != NULL) { out->MTickList= (double *)XMALLOC(strlen(in->MTickList )+1); strcpy(out->MTickList, in->MTickList ); }
-  //if (in->MTickStrs != NULL) { out->MTickStrs= XMALLOC(strlen(in->MTickStrs )+1); strcpy(out->MTickStrs, in->MTickStrs ); }
-  //if (in->TickList  != NULL) { out->TickList = (double *)XMALLOC(strlen(in->TickList  )+1); strcpy(out->TickList , in->TickList  ); }
-  //if (in->TickStrs  != NULL) { out->TickStrs = XMALLOC(strlen(in->TickStrs  )+1); strcpy(out->TickStrs , in->TickStrs  ); }
+  if (in->MTickStrs != NULL)
+   {
+    for (i=0; in->MTickStrs[i]!=NULL; i++);
+    out->MTickStrs= XMALLOC((i+1)*sizeof(char *));
+    for (j=0; j<i; j++) { out->MTickStrs[j] = XMALLOC(strlen(in->MTickStrs[j])+1); strcpy(out->MTickStrs[j], in->MTickStrs[j]); }
+    out->MTickStrs[i] = NULL;
+   }
+  if (in->MTickList != NULL)
+   {
+    out->MTickList= (double *)XMALLOC((i+1)*sizeof(double));
+    memcpy(out->MTickList, in->MTickList, (i+1)*sizeof(double)); // NB: For this to be safe, TickLists MUST have double to correspond to NULL in TickStrs
+   }
+  if (in->TickStrs != NULL) 
+   { 
+    for (i=0; in->TickStrs[i]!=NULL; i++);
+    out->TickStrs= XMALLOC((i+1)*sizeof(char *)); 
+    for (j=0; j<i; j++) { out->TickStrs[j] = XMALLOC(strlen(in->TickStrs[j])+1); strcpy(out->TickStrs[j], in->TickStrs[j]); }
+    out->TickStrs[i] = NULL;
+   }
+  if (in->TickList != NULL) 
+   {
+    out->TickList= (double *)XMALLOC((i+1)*sizeof(double));
+    memcpy(out->TickList, in->TickList, (i+1)*sizeof(double)); // NB: For this to be safe, TickLists MUST have double to correspond to NULL in TickStrs
+   }
   return;
  }
 
