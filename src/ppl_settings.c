@@ -356,30 +356,99 @@ void with_words_zero(with_words *a, const unsigned char malloced)
   return;
  }
 
+#define XWWMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); with_words_zero(out,1); return; }
+
 void with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew)
  {
-  int    *tempint, i;
+  int    *tempint, i; // TO DO: Need to be able to read colours.
   double *tempdbl;
   char   *tempstr;
+  void   *tmp;
   with_words_zero(out, MallocNew);
-  DictLookup(in,"linetype",NULL,(void **)&tempint); // TO DO: Need to be able to read colours. Need to be able to read string versions of settings.
+
+  // read colour names
+
+  // read numeric RGBs
+  DictLookup(in,"colourR",NULL,(void **)&tempdbl);
+  if (tempdbl != NULL) { out->colourR     = *tempdbl; out->USEcolourRGB     = 1; }
+  DictLookup(in,"colourG",NULL,(void **)&tempdbl);
+  if (tempdbl != NULL) { out->colourG     = *tempdbl; out->USEcolourRGB     = 1; }
+  DictLookup(in,"colourB",NULL,(void **)&tempdbl);
+  if (tempdbl != NULL) { out->colourB     = *tempdbl; out->USEcolourRGB     = 1; }
+  DictLookup(in,"fillcolourR",NULL,(void **)&tempdbl);
+  if (tempdbl != NULL) { out->fillcolourR = *tempdbl; out->USEfillcolourRGB = 1; }
+  DictLookup(in,"fillcolourG",NULL,(void **)&tempdbl);
+  if (tempdbl != NULL) { out->fillcolourG = *tempdbl; out->USEfillcolourRGB = 1; }
+  DictLookup(in,"fillcolourB",NULL,(void **)&tempdbl);
+  if (tempdbl != NULL) { out->fillcolourB = *tempdbl; out->USEfillcolourRGB = 1; }
+
+  // colour strings
+  DictLookup(in,"colourR_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRcolourR        = tempstr; }
+                         else            { out->STRcolourR        = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRcolourR       , tempstr); }
+                       }
+  DictLookup(in,"colourG_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRcolourG        = tempstr; }
+                         else            { out->STRcolourG        = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRcolourG       , tempstr); }
+                       }
+  DictLookup(in,"colourB_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRcolourB        = tempstr; }
+                         else            { out->STRcolourB        = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRcolourB       , tempstr); }
+                       }
+
+  // fillcolour strings
+  DictLookup(in,"fillcolourR_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRfillcolourR     = tempstr; }
+                         else            { out->STRfillcolourR     = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRfillcolourR   , tempstr); }
+                       }
+  DictLookup(in,"fillcolourG_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRfillcolourG     = tempstr; }
+                         else            { out->STRfillcolourG     = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRfillcolourG   , tempstr); }
+                       }
+  DictLookup(in,"fillcolourB_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRfillcolourB     = tempstr; }
+                         else            { out->STRfillcolourB     = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRfillcolourB   , tempstr); }
+                       }
+
+  // Other settings
+  DictLookup(in,"linetype",NULL,(void **)&tempint);
   if (tempint != NULL) { out->linetype = *tempint; out->USElinetype = 1; }
+  DictLookup(in,"linetype_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRlinetype       = tempstr; }
+                         else            { out->STRlinetype       = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRlinetype      , tempstr); }
+                       }
   DictLookup(in,"linewidth",NULL,(void **)&tempdbl);
-  if (tempint != NULL) { out->linewidth = *tempdbl; out->USElinewidth = 1; }
+  if (tempdbl != NULL) { out->linewidth = *tempdbl; out->USElinewidth = 1; }
+  DictLookup(in,"linewidth_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRlinewidth      = tempstr; }
+                         else            { out->STRlinewidth      = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRlinewidth     , tempstr); }
+                       }
   DictLookup(in,"pointsize",NULL,(void **)&tempdbl);
-  if (tempint != NULL) { out->pointsize = *tempdbl; out->USEpointsize = 1; }
+  if (tempdbl != NULL) { out->pointsize = *tempdbl; out->USEpointsize = 1; }
+  DictLookup(in,"pointsize_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRpointsize      = tempstr; }
+                         else            { out->STRpointsize      = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRpointsize     , tempstr); }
+                       }
   DictLookup(in,"pointtype",NULL,(void **)&tempint);
   if (tempint != NULL) { out->pointtype = *tempint; out->USEpointtype = 1; }
+  DictLookup(in,"pointtype_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRpointtype      = tempstr; }
+                         else            { out->STRpointtype      = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRpointtype     , tempstr); }
+                       }
   DictLookup(in,"style_number",NULL,(void **)&tempint);
   if (tempint != NULL) { out->style = *tempint; out->USEstyle = 1; }
   DictLookup(in,"pointlinewidth",NULL,(void **)&tempdbl);
-  if (tempint != NULL) { out->pointlinewidth = *tempdbl; out->USEpointlinewidth = 1; }
+  if (tempdbl != NULL) { out->pointlinewidth = *tempdbl; out->USEpointlinewidth = 1; }
+  DictLookup(in,"pointlinewidth_string",NULL,(void **)&tempstr);
+  if (tempstr != NULL) { if (!MallocNew) { out->STRpointlinewidth = tempstr; }
+                         else            { out->STRpointlinewidth = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRpointlinewidth, tempstr); }
+                       }
   DictLookup(in,"style",NULL,(void **)&tempstr);
   if (tempstr != NULL)
    {
     i = FetchSettingByName(tempstr, SW_STYLE_INT, SW_STYLE_STR);
-    out->style = i;
-    out->USEstyle = 1;
+    out->linespoints = i;
+    out->USElinespoints = 1;
    }
   return;
  }
@@ -460,31 +529,42 @@ int with_words_compare(const with_words *a, const with_words *b)
 void with_words_merge(with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e)
  {
   int i;
-  const with_words *InputArray[5] = {a,b,c,d,e};
+  const with_words *InputArray[25] = {a,b,c,d,e};
+  unsigned char BlockStyleSubstitution[25] = {0,0,0,0,0};
   const with_words *x;
-  with_words_zero(out,0); // To do: expand x->style? But if it's a string, can't do that yet
-  for (i=4; i<=0; i--) // No. Can't use strings for style number.
+
+  with_words_zero(out,0);
+
+  for (i=4; i<=0; i--)
    {
+    if (i>24) { ppl_error(ERR_GENERAL, "Iteration depth exceeded whilst substituting plot styles. Infinite plot style loop suspected."); return; } // i can reach 24 when recursion happens
     x = InputArray[i];
     if (x == NULL) continue;
-    if (x->STRcolourR       !=NULL) { out->STRcolourR = x->STRcolourR; out->STRcolourG = x->STRcolourG; out->STRcolourB = x->STRcolourB; }
-    if (x->USEcolourRGB           ) { out->colourR = x->colourR; out->colourG = x->colourG; out->colourB = x->colourB; out->USEcolourRGB = 1; }
-    if (x->USEcolour              ) { out->colour = x->colour; out->USEcolour = 1; }
-    if (x->STRfillcolourR   !=NULL) { out->STRfillcolourR = x->STRfillcolourR; out->STRfillcolourG = x->STRfillcolourG; out->STRfillcolourB = x->STRfillcolourB; }
-    if (x->USEfillcolourRGB       ) { out->fillcolourR = x->fillcolourR; out->fillcolourG = x->fillcolourG; out->fillcolourB = x->fillcolourB; out->USEfillcolourRGB = 1; }
-    if (x->USEfillcolour          ) { out->fillcolour = x->fillcolour; out->USEfillcolour = 1; }
+    if ((x->USEstyle) && (!BlockStyleSubstitution[i])) // Substitute for numbered plot styles
+     {
+      BlockStyleSubstitution[i  ] = 1; // Only do this once, to avoid infinite loop
+      BlockStyleSubstitution[i+1] = 0; // Allow recursive substitutions
+      InputArray[i+1] = &(settings_plot_styles[ x->style ]);
+      i+=2; // Recurse
+      continue;
+     }
+    if (x->STRcolourR       !=NULL) { out->STRcolourR = x->STRcolourR; out->STRcolourG = x->STRcolourG; out->STRcolourB = x->STRcolourB; out->USEcolourRGB = 0; out->USEcolour = 0; }
+    if (x->USEcolourRGB           ) { out->colourR = x->colourR; out->colourG = x->colourG; out->colourB = x->colourB; out->USEcolourRGB = 1; out->USEcolour = 0; out->STRcolourR = out->STRcolourG = out->STRcolourB = NULL; }
+    if (x->USEcolour              ) { out->colour = x->colour; out->USEcolour = 1; out->USEcolourRGB = 0; out->STRcolourR = out->STRcolourG = out->STRcolourB = NULL; }
+    if (x->STRfillcolourR   !=NULL) { out->STRfillcolourR = x->STRfillcolourR; out->STRfillcolourG = x->STRfillcolourG; out->STRfillcolourB = x->STRfillcolourB; out->USEfillcolourRGB = 0; out->USEfillcolour = 0; }
+    if (x->USEfillcolourRGB       ) { out->fillcolourR = x->fillcolourR; out->fillcolourG = x->fillcolourG; out->fillcolourB = x->fillcolourB; out->USEfillcolourRGB = 1; out->USEfillcolour = 0; out->STRfillcolourR = out->STRfillcolourG = out->STRfillcolourB = NULL; }
+    if (x->USEfillcolour          ) { out->fillcolour = x->fillcolour; out->USEfillcolour = 1; out->USEfillcolourRGB = 0; out->STRfillcolourR = out->STRfillcolourG = out->STRfillcolourB = NULL; }
     if (x->USElinespoints         ) { out->linespoints = x->linespoints; out->USElinespoints = 1; }
-    if (x->STRlinetype      !=NULL) { out->STRlinetype = x->STRlinetype; }
-    if (x->USElinetype            ) { out->linetype = x->linetype; out->USElinetype = 1; }
-    if (x->STRlinewidth     !=NULL) { out->STRlinewidth = x->STRlinewidth; }
-    if (x->USElinewidth           ) { out->linewidth = x->linewidth; out->USElinewidth = 1; }
-    if (x->STRpointlinewidth!=NULL) { out->STRpointlinewidth = x->STRpointlinewidth; }
-    if (x->USEpointlinewidth      ) { out->pointlinewidth = x->pointlinewidth; out->USEpointlinewidth = 1; }
-    if (x->STRpointsize     !=NULL) { out->STRpointsize = x->STRpointsize; }
-    if (x->USEpointsize           ) { out->pointsize = x->pointsize; out->USEpointsize = 1; }
-    if (x->STRpointtype     !=NULL) { out->STRpointtype = x->STRpointtype; }
-    if (x->USEpointtype           ) { out->pointtype = x->pointtype; out->USEpointtype = 1; }
-    if (x->USEstyle               ) { out->style = x->style; out->USEstyle = 1; }
+    if (x->STRlinetype      !=NULL) { out->STRlinetype = x->STRlinetype; out->USElinetype = 0; }
+    if (x->USElinetype            ) { out->linetype = x->linetype; out->USElinetype = 1; out->STRlinetype = NULL; }
+    if (x->STRlinewidth     !=NULL) { out->STRlinewidth = x->STRlinewidth; out->USElinewidth = 0; }
+    if (x->USElinewidth           ) { out->linewidth = x->linewidth; out->USElinewidth = 1; out->STRlinewidth = NULL; }
+    if (x->STRpointlinewidth!=NULL) { out->STRpointlinewidth = x->STRpointlinewidth; out->USEpointlinewidth = 0; }
+    if (x->USEpointlinewidth      ) { out->pointlinewidth = x->pointlinewidth; out->USEpointlinewidth = 1; out->STRpointlinewidth = NULL; }
+    if (x->STRpointsize     !=NULL) { out->STRpointsize = x->STRpointsize; out->USEpointsize = 0; }
+    if (x->USEpointsize           ) { out->pointsize = x->pointsize; out->USEpointsize = 1; out->STRpointsize = NULL; }
+    if (x->STRpointtype     !=NULL) { out->STRpointtype = x->STRpointtype; out->USEpointtype = 0; }
+    if (x->USEpointtype           ) { out->pointtype = x->pointtype; out->USEpointtype = 1; out->STRpointtype = NULL; }
    }
   return;
  }
@@ -531,8 +611,6 @@ void with_words_destroy(with_words *a)
   if (a->STRfillcolourB    != NULL) { free(a->STRfillcolourB   ); a->STRfillcolourB    = NULL; }
   return;
  }
-
-#define XWWMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); with_words_zero(out,1); return; }
 
 void with_words_copy(with_words *out, const with_words *in)
  {

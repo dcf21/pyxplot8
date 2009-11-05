@@ -88,7 +88,7 @@ void directive_set(Dict *command)
   List   *templist;
   Dict   *tempdict;
   ListIterator *listiter;
-  with_words *tempstyle;
+  with_words *tempstyle, ww_temp1, ww_temp2;
   canvas_item *ptr;
   settings_graph *sg;
   settings_axis  *xa, *ya, *za, *tempaxis, *tempaxis2;
@@ -682,29 +682,6 @@ void directive_set(Dict *command)
    {
     sg->samples = settings_graph_default.samples;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style */
-   {
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"style")==0)) /* unset style */
-   {
-   }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"trange")==0)) /* set trange */
-   {
-    DictLookup(command,"min",NULL,(void **)&tempval);
-    DictLookup(command,"max",NULL,(void **)&tempval2);
-    if (tempval == NULL) tempval = &sg->Tmin;
-    if (tempval2== NULL) tempval2= &sg->Tmax;
-    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
-    sg->Tmin = *tempval;
-    sg->Tmax = *tempval2;
-    DictLookup(command,"reverse",NULL,(void **)&tempstr);
-    if (tempstr != NULL) { valobj = sg->Tmin; sg->Tmin = sg->Tmax; sg->Tmax = valobj; }
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"trange")==0)) /* unset trange */
-   {
-    sg->Tmin = settings_graph_default.Tmin;
-    sg->Tmax = settings_graph_default.Tmax;
-   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
    {
     if (DictContains(command,"width"))
@@ -746,11 +723,29 @@ void directive_set(Dict *command)
     sg->aspect       = settings_graph_default.aspect;
     sg->AutoAspect   = settings_graph_default.AutoAspect;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style */
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style data / function */
    {
     DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
     if (tempstr[0]=='d') tempstyle = &sg->DataStyle;
     else                 tempstyle = &sg->FuncStyle;
+    with_words_fromdict(command, &ww_temp1, 1);
+    with_words_merge(&ww_temp2, &ww_temp1, tempstyle, NULL, NULL, NULL);
+    *tempstyle = ww_temp2;
+    tempstyle->malloced = 1;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style_numbered")==0)) /* set style */
+   {
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"style")==0)) /* unset style */
+   {
+    DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
+    if (tempstr != NULL)
+     {
+      if (tempstr[0]=='d') sg->DataStyle = settings_graph_default.DataStyle;
+      else                 sg->FuncStyle = settings_graph_default.FuncStyle;
+     } else {
+      // unset numbered style
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"terminal")==0)) /* set terminal */
    {
@@ -888,6 +883,23 @@ void directive_set(Dict *command)
     sg->title[FNAME_LENGTH-4]='\0';
     sg->TitleXOff = settings_graph_default.TitleXOff;
     sg->TitleYOff = settings_graph_default.TitleYOff;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"trange")==0)) /* set trange */
+   {
+    DictLookup(command,"min",NULL,(void **)&tempval);
+    DictLookup(command,"max",NULL,(void **)&tempval2);
+    if (tempval == NULL) tempval = &sg->Tmin;
+    if (tempval2== NULL) tempval2= &sg->Tmax;
+    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
+    sg->Tmin = *tempval;
+    sg->Tmax = *tempval2;
+    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { valobj = sg->Tmin; sg->Tmin = sg->Tmax; sg->Tmax = valobj; }
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"trange")==0)) /* unset trange */
+   {
+    sg->Tmin = settings_graph_default.Tmin;
+    sg->Tmax = settings_graph_default.Tmax;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"unit")==0)) /* set unit */
    {
