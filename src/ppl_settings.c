@@ -49,7 +49,8 @@ settings_terminal settings_term_current;
 settings_graph    settings_graph_default;
 settings_graph    settings_graph_current;
 
-with_words        settings_plot_styles[MAX_PLOTSTYLES];
+with_words        settings_plot_styles        [MAX_PLOTSTYLES];
+with_words        settings_plot_styles_default[MAX_PLOTSTYLES];
 
 settings_axis     settings_axis_default;
 
@@ -237,7 +238,8 @@ void ppl_settings_makedefault()
   #endif
 
   // Set up array of plot styles
-  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles[i]),1);
+  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles        [i]),1);
+  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles_default[i]),1);
 
   // Set up current axes
   for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;
@@ -347,11 +349,66 @@ void with_words_zero(with_words *a, const unsigned char malloced)
   a->colour = a->fillcolour = a->linespoints = a->linetype = a->pointtype = a->style = 0;
   a->linewidth = a->pointlinewidth = a->pointsize = 1.0;
   a->colourR = a->colourG = a->colourB = a->fillcolourR = a->fillcolourG = a->fillcolourB = 0;
-  a->STRlinetype = a->STRlinewidth = a->STRpointlinewidth = a->STRpointsize = a->STRpointtype = a->STRstyle = NULL;
+  a->STRlinetype = a->STRlinewidth = a->STRpointlinewidth = a->STRpointsize = a->STRpointtype = NULL;
   a->STRcolourR = a->STRcolourG = a->STRcolourB = a->STRfillcolourR = a->STRfillcolourG = a->STRfillcolourB = NULL;
   a->USEcolour = a->USEfillcolour = a->USElinespoints = a->USElinetype = a->USElinewidth = a->USEpointlinewidth = a->USEpointsize = a->USEpointtype = a->USEstyle = a->USEcolourRGB = a->USEfillcolourRGB = 0;
   a->malloced = malloced;
   return;
+ }
+
+void with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew)
+ {
+  int    *tempint, i;
+  double *tempdbl;
+  char   *tempstr;
+  with_words_zero(out, MallocNew);
+  DictLookup(in,"linetype",NULL,(void **)&tempint); // TO DO: Need to be able to read colours. Need to be able to read string versions of settings.
+  if (tempint != NULL) { out->linetype = *tempint; out->USElinetype = 1; }
+  DictLookup(in,"linewidth",NULL,(void **)&tempdbl);
+  if (tempint != NULL) { out->linewidth = *tempdbl; out->USElinewidth = 1; }
+  DictLookup(in,"pointsize",NULL,(void **)&tempdbl);
+  if (tempint != NULL) { out->pointsize = *tempdbl; out->USEpointsize = 1; }
+  DictLookup(in,"pointtype",NULL,(void **)&tempint);
+  if (tempint != NULL) { out->pointtype = *tempint; out->USEpointtype = 1; }
+  DictLookup(in,"style_number",NULL,(void **)&tempint);
+  if (tempint != NULL) { out->style = *tempint; out->USEstyle = 1; }
+  DictLookup(in,"pointlinewidth",NULL,(void **)&tempdbl);
+  if (tempint != NULL) { out->pointlinewidth = *tempdbl; out->USEpointlinewidth = 1; }
+  DictLookup(in,"style",NULL,(void **)&tempstr);
+  if (tempstr != NULL)
+   {
+    i = FetchSettingByName(tempstr, SW_STYLE_INT, SW_STYLE_STR);
+    out->style = i;
+    out->USEstyle = 1;
+   }
+  return;
+ }
+
+int with_words_compare_zero(const with_words *a)
+ {
+  if (a->STRlinetype != NULL) return 0;
+  if (a->STRlinewidth != NULL) return 0;
+  if (a->STRpointlinewidth != NULL) return 0;
+  if (a->STRpointsize != NULL) return 0;
+  if (a->STRpointtype != NULL) return 0;
+  if (a->STRcolourR != NULL) return 0;
+  if (a->STRcolourG != NULL) return 0;
+  if (a->STRcolourB != NULL) return 0;
+  if (a->STRfillcolourR != NULL) return 0;
+  if (a->STRfillcolourG != NULL) return 0;
+  if (a->STRfillcolourB !=NULL) return 0;
+  if (a->USEcolour) return 0;
+  if (a->USEfillcolour) return 0;
+  if (a->USElinespoints) return 0;
+  if (a->USElinetype) return 0;
+  if (a->USElinewidth) return 0;
+  if (a->USEpointlinewidth) return 0;
+  if (a->USEpointsize) return 0;
+  if (a->USEpointtype) return 0;
+  if (a->USEstyle) return 0;
+  if (a->USEcolourRGB) return 0;
+  if (a->USEfillcolourRGB) return 0;
+  return 1;
  }
 
 int with_words_compare(const with_words *a, const with_words *b)
@@ -374,8 +431,7 @@ int with_words_compare(const with_words *a, const with_words *b)
   if ((a->STRpointsize     ==NULL)                                                           && (a->USEpointsize      != b->USEpointsize     )) return 0;
   if ((a->STRpointtype     ==NULL) != (b->STRpointtype     ==NULL)                                                                            ) return 0;
   if ((a->STRpointtype     ==NULL)                                                           && (a->USEpointtype      != b->USEpointtype     )) return 0;
-  if ((a->STRstyle         ==NULL) != (b->STRstyle         ==NULL)                                                                            ) return 0;
-  if ((a->STRstyle         ==NULL)                                                           && (a->USEstyle          != b->USEstyle         )) return 0;
+  if (                                                                                          (a->USEstyle          != b->USEstyle         )) return 0;
 
   // Check that the actual values are the same in both structures
   if      ((a->STRcolourR       !=NULL) && ((strcmp(a->STRcolourR,b->STRcolourR)!=0)||(strcmp(a->STRcolourG,b->STRcolourG)!=0)||(strcmp(a->STRcolourB,b->STRcolourB)!=0))) return 0;
@@ -395,8 +451,7 @@ int with_words_compare(const with_words *a, const with_words *b)
   else if ((a->USEpointsize           ) && ((a->pointsize     !=b->pointsize     ))) return 0;
   if      ((a->STRpointtype     !=NULL) && ((strcmp(a->STRpointtype     ,b->STRpointtype     )!=0))) return 0;
   else if ((a->USEpointtype           ) && ((a->pointtype     !=b->pointtype     ))) return 0;
-  if      ((a->STRstyle         !=NULL) && ((strcmp(a->STRstyle         ,b->STRstyle         )!=0))) return 0;
-  else if ((a->USEstyle               ) && ((a->style         !=b->style         ))) return 0;
+  if      ((a->USEstyle               ) && ((a->style         !=b->style         ))) return 0;
 
   return 1; // We have not found any differences
  }
@@ -407,8 +462,8 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
   int i;
   const with_words *InputArray[5] = {a,b,c,d,e};
   const with_words *x;
-  with_words_zero(out,0);
-  for (i=4; i<=0; i--)
+  with_words_zero(out,0); // To do: expand x->style? But if it's a string, can't do that yet
+  for (i=4; i<=0; i--) // No. Can't use strings for style number.
    {
     x = InputArray[i];
     if (x == NULL) continue;
@@ -429,7 +484,6 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
     if (x->USEpointsize           ) { out->pointsize = x->pointsize; out->USEpointsize = 1; }
     if (x->STRpointtype     !=NULL) { out->STRpointtype = x->STRpointtype; }
     if (x->USEpointtype           ) { out->pointtype = x->pointtype; out->USEpointtype = 1; }
-    if (x->STRstyle         !=NULL) { out->STRstyle = x->STRstyle; }
     if (x->USEstyle               ) { out->style = x->style; out->USEstyle = 1; }
    }
   return;
@@ -457,8 +511,7 @@ void with_words_print(const with_words *defn, char *out)
   else if (defn->USEpointsize)            { sprintf(out+i, "pointsize %s "           , NUMDISP(defn->pointsize));                                                           i += strlen(out+i); }
   if      (defn->STRpointtype!=NULL)      { sprintf(out+i, "pointtype %s "           , defn->STRpointtype);                                                                 i += strlen(out+i); }
   else if (defn->USEpointtype)            { sprintf(out+i, "pointtype %d "           , defn->pointtype);                                                                    i += strlen(out+i); }
-  if      (defn->STRstyle!=NULL)          { sprintf(out+i, "style %s "               , defn->STRstyle);                                                                     i += strlen(out+i); }
-  else if (defn->USEstyle)                { sprintf(out+i, "style %d "               , defn->style);                                                                        i += strlen(out+i); }
+  if      (defn->USEstyle)                { sprintf(out+i, "style %d "               , defn->style);                                                                        i += strlen(out+i); }
   return;
  }
 
@@ -470,7 +523,6 @@ void with_words_destroy(with_words *a)
   if (a->STRpointlinewidth != NULL) { free(a->STRpointlinewidth); a->STRpointlinewidth = NULL; }
   if (a->STRpointsize      != NULL) { free(a->STRpointsize     ); a->STRpointsize      = NULL; }
   if (a->STRpointtype      != NULL) { free(a->STRpointtype     ); a->STRpointtype      = NULL; }
-  if (a->STRstyle          != NULL) { free(a->STRstyle         ); a->STRstyle          = NULL; }
   if (a->STRcolourR        != NULL) { free(a->STRcolourR       ); a->STRcolourR        = NULL; }
   if (a->STRcolourG        != NULL) { free(a->STRcolourG       ); a->STRcolourG        = NULL; }
   if (a->STRcolourB        != NULL) { free(a->STRcolourB       ); a->STRcolourB        = NULL; }
@@ -479,6 +531,28 @@ void with_words_destroy(with_words *a)
   if (a->STRfillcolourB    != NULL) { free(a->STRfillcolourB   ); a->STRfillcolourB    = NULL; }
   return;
  }
+
+#define XWWMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); with_words_zero(out,1); return; }
+
+void with_words_copy(with_words *out, const with_words *in)
+ {
+  void *tmp;
+  *out = *in;
+  out->malloced = 1;
+  if (in->STRlinetype      != NULL) { out->STRlinetype      = (char   *)XWWMALLOC(strlen(in->STRlinetype      )+1); strcpy(out->STRlinetype      , in->STRlinetype      ); }
+  if (in->STRlinewidth     != NULL) { out->STRlinewidth     = (char   *)XWWMALLOC(strlen(in->STRlinewidth     )+1); strcpy(out->STRlinewidth     , in->STRlinewidth     ); }
+  if (in->STRpointlinewidth!= NULL) { out->STRpointlinewidth= (char   *)XWWMALLOC(strlen(in->STRpointlinewidth)+1); strcpy(out->STRpointlinewidth, in->STRpointlinewidth); }
+  if (in->STRpointsize     != NULL) { out->STRpointsize     = (char   *)XWWMALLOC(strlen(in->STRpointsize     )+1); strcpy(out->STRpointsize     , in->STRpointsize     ); }
+  if (in->STRpointtype     != NULL) { out->STRpointtype     = (char   *)XWWMALLOC(strlen(in->STRpointtype     )+1); strcpy(out->STRpointtype     , in->STRpointtype     ); }
+  if (in->STRcolourR       != NULL) { out->STRcolourR       = (char   *)XWWMALLOC(strlen(in->STRcolourR       )+1); strcpy(out->STRcolourR       , in->STRcolourR       ); }
+  if (in->STRcolourG       != NULL) { out->STRcolourG       = (char   *)XWWMALLOC(strlen(in->STRcolourG       )+1); strcpy(out->STRcolourG       , in->STRcolourG       ); }
+  if (in->STRcolourB       != NULL) { out->STRcolourB       = (char   *)XWWMALLOC(strlen(in->STRcolourB       )+1); strcpy(out->STRcolourB       , in->STRcolourB       ); }
+  if (in->STRfillcolourR   != NULL) { out->STRfillcolourR   = (char   *)XWWMALLOC(strlen(in->STRfillcolourR   )+1); strcpy(out->STRfillcolourR   , in->STRfillcolourR   ); }
+  if (in->STRfillcolourG   != NULL) { out->STRfillcolourG   = (char   *)XWWMALLOC(strlen(in->STRfillcolourG   )+1); strcpy(out->STRfillcolourG   , in->STRfillcolourG   ); }
+  if (in->STRfillcolourB   != NULL) { out->STRfillcolourB   = (char   *)XWWMALLOC(strlen(in->STRfillcolourB   )+1); strcpy(out->STRfillcolourB   , in->STRfillcolourB   ); }
+  return;
+ }
+
 
 // ------------------------------------------------------
 // Functions for creating and destroying axis descriptors

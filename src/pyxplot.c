@@ -234,7 +234,8 @@ int main(int argc, char **argv)
   for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ZAxesDefault[i]), NULL              );
 
   // Free all of the plot styles which are set
-  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_destroy(&(settings_plot_styles[i]));
+  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_destroy(&(settings_plot_styles        [i]));
+  for (i=0; i<MAX_PLOTSTYLES; i++) with_words_destroy(&(settings_plot_styles_default[i]));
 
   // Save GNU Readline history
   if (WillBeInteractive>0)

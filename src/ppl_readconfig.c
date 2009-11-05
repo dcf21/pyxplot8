@@ -475,6 +475,7 @@ void ReadConfigFile(char *ConfigFname)
       settings_graph_current = settings_graph_default;
       for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
       for (i=0; i<MAX_AXES; i++) { XAxes[i] = XAxesDefault[i]; YAxes[i] = YAxesDefault[i]; ZAxes[i] = ZAxesDefault[i]; }
+      for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
       ppl_error_setstreaminfo(linecounter, "configuration file");
       scriptcmd = parse(linebuffer);
       if (scriptcmd != NULL)
@@ -490,6 +491,7 @@ void ReadConfigFile(char *ConfigFname)
       settings_graph_default = settings_graph_current;
       for (i=0; i<PALETTE_LENGTH; i++) settings_palette_default[i] = settings_palette_current[i];
       for (i=0; i<MAX_AXES; i++) { XAxesDefault[i] = XAxes[i]; YAxesDefault[i] = YAxes[i]; ZAxesDefault[i] = ZAxes[i]; }
+      for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles_default[i])); with_words_copy(&(settings_plot_styles_default[i]) , &(settings_plot_styles[i])); }
      }
     else
      {

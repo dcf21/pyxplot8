@@ -31,7 +31,7 @@ typedef struct with_words {
  int    colour, fillcolour, linespoints, linetype, pointtype, style; // Core style settings which can be placed after the 'with' modifier
  double linewidth, pointlinewidth, pointsize;
  int    colourR, colourG, colourB, fillcolourR, fillcolourG, fillcolourB; // Alternatives to the colour and fillcolour settings, RGB settings
- char  *STRlinetype, *STRlinewidth, *STRpointlinewidth, *STRpointsize, *STRpointtype, *STRstyle; // Alternatives to the above, where expressions are evaluated per use, e.g. $4
+ char  *STRlinetype, *STRlinewidth, *STRpointlinewidth, *STRpointsize, *STRpointtype; // Alternatives to the above, where expressions are evaluated per use, e.g. $4
  char  *STRcolourR, *STRcolourG, *STRcolourB, *STRfillcolourR, *STRfillcolourG, *STRfillcolourB;
  unsigned char USEcolour, USEfillcolour, USElinespoints, USElinetype, USElinewidth, USEpointlinewidth, USEpointsize, USEpointtype, USEstyle, USEcolourRGB, USEfillcolourRGB; // Set to 1 to indicate settings to be used
  unsigned char malloced; // Indicates whether we need to free strings
@@ -73,20 +73,24 @@ extern settings_graph    settings_graph_current;
 extern settings_session  settings_session_default;
 extern int               settings_palette_current[];
 extern int               settings_palette_default[];
-extern with_words        settings_plot_styles[];
+extern with_words        settings_plot_styles[], settings_plot_styles_default[];
 #endif
 
 void  ppl_settings_makedefault();
 void  ppl_settings_readconfig();
-void  with_words_zero   (with_words *a, const unsigned char malloced);
-int   with_words_compare(const with_words *a, const with_words *b);
-void  with_words_merge  (with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e);
-void  with_words_print  (const with_words *defn, char *out);
-void  with_words_destroy(with_words *a);
+void  with_words_zero    (with_words *a, const unsigned char malloced);
+int   with_words_compare (const with_words *a, const with_words *b);
+int   with_words_compare_zero(const with_words *a);
+void  with_words_merge   (with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e);
+void  with_words_print   (const with_words *defn, char *out);
+void  with_words_destroy (with_words *a);
+void  with_words_copy    (with_words *out, const with_words *in);
 
 // Can now safely include these headers, which need some of the settings above
 #include "ListTools/lt_list.h"
 #include "ListTools/lt_dict.h"
+
+void  with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew);
 
 typedef struct settings_axis {
  unsigned char atzero, enabled, invisible, linked, topbottom;

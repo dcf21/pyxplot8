@@ -1826,6 +1826,23 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
     }
 
+  // Show numbered styles
+  if ((StrAutocomplete(word, "styles", 1)>=0) || (StrAutocomplete(word, "linestyles", 1)>=0))
+   {
+    SHOW_HIGHLIGHT(1);
+    sprintf(out+i, "\n# Numbered styles:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
+    for (j=0; j<MAX_PLOTSTYLES; j++)
+     {
+      if (with_words_compare_zero(&(settings_plot_styles[j]))) continue;
+      with_words_print(&(settings_plot_styles[j]),buf);
+      sprintf(buf2, "style %4d", j);
+      directive_show3(out+i, ItemSet, 0, interactive, buf2, buf, !with_words_compare(&(settings_plot_styles[j]),&(settings_plot_styles_default[j])), buf2);
+      i += strlen(out+i) ; p=1;
+     }
+   }
+
+
   // Show variables
   if ((StrAutocomplete(word, "variables", 1)>=0) || (StrAutocomplete(word, "vars", 1)>=0))
    {
