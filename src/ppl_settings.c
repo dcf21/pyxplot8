@@ -535,7 +535,7 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
 
   with_words_zero(out,0);
 
-  for (i=4; i<=0; i--)
+  for (i=4; i>=0; i--)
    {
     if (i>24) { ppl_error(ERR_GENERAL, "Iteration depth exceeded whilst substituting plot styles. Infinite plot style loop suspected."); return; } // i can reach 24 when recursion happens
     x = InputArray[i];

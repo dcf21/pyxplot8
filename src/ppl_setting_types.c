@@ -44,9 +44,9 @@ char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"
 int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1               };
 int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , -1};
 
-char *SW_KEYPOS_STR[] = {"top right"  , "top middle" , "top left"   , "middle right" , "middle middle" , "middle left" , "bottom right" , "bottom middle" , "bottom left" , "below"         , "outside"         };
-int   SW_KEYPOS_ACL[] = {1            , 5            , 5            , 1              , 8               , 8             , 1              , 8               , 8             , 2               , 1                 };
-int   SW_KEYPOS_INT[] = {SW_KEYPOS_TR , SW_KEYPOS_TM , SW_KEYPOS_TL , SW_KEYPOS_MR   , SW_KEYPOS_MM    , SW_KEYPOS_ML  , SW_KEYPOS_BR   , SW_KEYPOS_BM    , SW_KEYPOS_BL  , SW_KEYPOS_BELOW , SW_KEYPOS_OUTSIDE , -1};
+char *SW_KEYPOS_STR[] = {"top right"  , "top xcentre" , "top left"   , "ycentre right" , "ycentre xcentre" , "ycentre left" , "bottom right" , "bottom xcentre" , "bottom left" , "above"         , "below"         , "outside"         };
+int   SW_KEYPOS_ACL[] = {5            , 5             , 5            , 9               , 9                 , 9              , 8              , 8                , 8             , 1               , 2               , 1                 };
+int   SW_KEYPOS_INT[] = {SW_KEYPOS_TR , SW_KEYPOS_TM  , SW_KEYPOS_TL , SW_KEYPOS_MR    , SW_KEYPOS_MM      , SW_KEYPOS_ML   , SW_KEYPOS_BR   , SW_KEYPOS_BM     , SW_KEYPOS_BL  , SW_KEYPOS_ABOVE , SW_KEYPOS_BELOW , SW_KEYPOS_OUTSIDE , -1};
 
 char *SW_TICDIR_STR[] = {"inwards"    , "outwards"    , "both"         };
 int   SW_TICDIR_ACL[] = {1            , 1             , 1              };

@@ -222,9 +222,9 @@ void directive_set(Dict *command)
       tempdict = (Dict *)listiter->data;
       DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
       i = (int)GetFloat(tempstr+1,NULL);
-      if      (tempstr[0]=='y') { ya[i] = YAxesDefault[i]; } // !!! MEMORY LEAK !!! NEED TO DESTROY AXES CLEANLY.
-      else if (tempstr[0]=='z') { za[i] = ZAxesDefault[i]; }
-      else                      { xa[i] = XAxesDefault[i]; }
+      if      (tempstr[0]=='y') { DestroyAxis(&(ya[i]), &(YAxesDefault[i])); ya[i] = YAxesDefault[i]; }
+      else if (tempstr[0]=='z') { DestroyAxis(&(za[i]), &(ZAxesDefault[i])); za[i] = ZAxesDefault[i]; }
+      else                      { DestroyAxis(&(xa[i]), &(XAxesDefault[i])); xa[i] = XAxesDefault[i]; }
       listiter = ListIterate(listiter, NULL);
      }
    }
@@ -397,6 +397,23 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"grid")==0)) /* set grid */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    if (ListLen(templist)==0)
+     {
+      sg->grid = SW_ONOFF_ON;
+     } else {
+      listiter = ListIterateInit(templist);
+      while (listiter != NULL)
+       {   
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        i = (int)GetFloat(tempstr+1,NULL); 
+        if      (tempstr[0]=='y') { sg->GridAxisY[i] = 1; }
+        else if (tempstr[0]=='z') { sg->GridAxisZ[i] = 1; }
+        else                      { sg->GridAxisX[i] = 1; }
+        listiter = ListIterate(listiter, NULL);
+       }
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"grid")==0)) /* unset grid */
    {
@@ -407,6 +424,91 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"key")==0)) /* set key */
    {
+    sg->key = SW_ONOFF_ON; // Turn key on
+    DictLookup(command,"x_offset",NULL,(void **)&tempval); // Horizontal offset
+    if (tempval != NULL)
+     {
+      if (!(tempval->dimensionless))
+       { 
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_LENGTH))
+          { 
+           sprintf(temp_err_string, "The horizontal offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           ppl_error(ERR_NUMERIC, temp_err_string);
+           return;
+          }
+       }
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      sg->KeyXOff.real = tempval->real;
+     }
+    DictLookup(command,"y_offset",NULL,(void **)&tempval); // Vertical offset
+    if (tempval != NULL)
+     {
+      if (!(tempval->dimensionless))
+       {
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_LENGTH))
+          {
+           sprintf(temp_err_string, "The vertical offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           ppl_error(ERR_NUMERIC, temp_err_string);
+           return;
+          }
+       }
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      sg->KeyYOff.real = tempval->real;
+     }
+
+    // Now work out position of key
+    DictLookup(command,"pos",NULL,(void **)&tempstr);
+    if (tempstr != NULL)
+     { sg->KeyPos = FetchSettingByName(tempstr, SW_KEYPOS_INT, SW_KEYPOS_STR); }
+    else
+     {
+      DictLookup(command,"xpos",NULL,(void **)&tempstr);
+      if (tempstr != NULL)
+       {
+        if (strcmp(tempstr,"left")==0)
+         {
+          if      ((sg->KeyPos==SW_KEYPOS_TR)||(sg->KeyPos==SW_KEYPOS_TM)||(sg->KeyPos==SW_KEYPOS_TL)) sg->KeyPos=SW_KEYPOS_TL;
+          else if ((sg->KeyPos==SW_KEYPOS_BR)||(sg->KeyPos==SW_KEYPOS_BM)||(sg->KeyPos==SW_KEYPOS_BL)) sg->KeyPos=SW_KEYPOS_BL;
+          else                                                                                         sg->KeyPos=SW_KEYPOS_ML;
+         }
+        if (strcmp(tempstr,"xcentre")==0)
+         {
+          if      ((sg->KeyPos==SW_KEYPOS_TR)||(sg->KeyPos==SW_KEYPOS_TM)||(sg->KeyPos==SW_KEYPOS_TL)) sg->KeyPos=SW_KEYPOS_TM;
+          else if ((sg->KeyPos==SW_KEYPOS_BR)||(sg->KeyPos==SW_KEYPOS_BM)||(sg->KeyPos==SW_KEYPOS_BL)) sg->KeyPos=SW_KEYPOS_BM;
+          else                                                                                         sg->KeyPos=SW_KEYPOS_MM;
+         }
+        if (strcmp(tempstr,"right")==0)
+         {
+          if      ((sg->KeyPos==SW_KEYPOS_TR)||(sg->KeyPos==SW_KEYPOS_TM)||(sg->KeyPos==SW_KEYPOS_TL)) sg->KeyPos=SW_KEYPOS_TR;
+          else if ((sg->KeyPos==SW_KEYPOS_BR)||(sg->KeyPos==SW_KEYPOS_BM)||(sg->KeyPos==SW_KEYPOS_BL)) sg->KeyPos=SW_KEYPOS_BR;
+          else                                                                                         sg->KeyPos=SW_KEYPOS_MR;
+         }
+       }
+      DictLookup(command,"ypos",NULL,(void **)&tempstr);
+      if (tempstr != NULL)
+       {
+        if (strcmp(tempstr,"top")==0)
+         {
+          if      ((sg->KeyPos==SW_KEYPOS_TL)||(sg->KeyPos==SW_KEYPOS_ML)||(sg->KeyPos==SW_KEYPOS_BL)) sg->KeyPos=SW_KEYPOS_TL;
+          else if ((sg->KeyPos==SW_KEYPOS_TR)||(sg->KeyPos==SW_KEYPOS_MR)||(sg->KeyPos==SW_KEYPOS_BR)) sg->KeyPos=SW_KEYPOS_TR;
+          else                                                                                         sg->KeyPos=SW_KEYPOS_TM;
+         }
+        if (strcmp(tempstr,"ycentre")==0)
+         {
+          if      ((sg->KeyPos==SW_KEYPOS_TL)||(sg->KeyPos==SW_KEYPOS_ML)||(sg->KeyPos==SW_KEYPOS_BL)) sg->KeyPos=SW_KEYPOS_ML;
+          else if ((sg->KeyPos==SW_KEYPOS_TR)||(sg->KeyPos==SW_KEYPOS_MR)||(sg->KeyPos==SW_KEYPOS_BR)) sg->KeyPos=SW_KEYPOS_MR;
+          else                                                                                         sg->KeyPos=SW_KEYPOS_MM;
+         }
+        if (strcmp(tempstr,"bottom")==0)
+         {
+          if      ((sg->KeyPos==SW_KEYPOS_TL)||(sg->KeyPos==SW_KEYPOS_ML)||(sg->KeyPos==SW_KEYPOS_BL)) sg->KeyPos=SW_KEYPOS_BL;
+          else if ((sg->KeyPos==SW_KEYPOS_TR)||(sg->KeyPos==SW_KEYPOS_MR)||(sg->KeyPos==SW_KEYPOS_BR)) sg->KeyPos=SW_KEYPOS_BR;
+          else                                                                                         sg->KeyPos=SW_KEYPOS_BM;
+         }
+       }
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"key")==0)) /* unset key */
    {
@@ -486,6 +588,23 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nogrid")==0)) /* set nogrid */
    {
+    DictLookup(command,"axes",NULL,(void **)&templist);
+    if (ListLen(templist)==0)
+     {
+      sg->grid = SW_ONOFF_OFF;
+     } else {
+      listiter = ListIterateInit(templist);
+      while (listiter != NULL)
+       {   
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        i = (int)GetFloat(tempstr+1,NULL);
+        if      (tempstr[0]=='y') { sg->GridAxisY[i] = 0; }
+        else if (tempstr[0]=='z') { sg->GridAxisZ[i] = 0; }
+        else                      { sg->GridAxisX[i] = 0; }
+        listiter = ListIterate(listiter, NULL);
+       }
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nokey")==0)) /* set nokey */
    {
@@ -735,6 +854,11 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style_numbered")==0)) /* set style */
    {
+    DictLookup(command,"style_set_number"   ,NULL,(void **)&tempint);
+    if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    with_words_fromdict(command, &ww_temp1, 0);
+    with_words_destroy (&(settings_plot_styles[*tempint]));
+    with_words_copy    (&(settings_plot_styles[*tempint]), &ww_temp1);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"style")==0)) /* unset style */
    {
@@ -744,7 +868,20 @@ void directive_set(Dict *command)
       if (tempstr[0]=='d') sg->DataStyle = settings_graph_default.DataStyle;
       else                 sg->FuncStyle = settings_graph_default.FuncStyle;
      } else {
-      // unset numbered style
+      DictLookup(command,"style_ids,",NULL,(void **)&templist);
+      listiter = ListIterateInit(templist);
+      while (listiter != NULL)
+       {   
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"id",NULL,(void **)&tempint);
+        if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, temp_err_string); }
+        else
+         {
+          with_words_destroy(&(settings_plot_styles[*tempint]));
+          with_words_copy   (&(settings_plot_styles[*tempint]) , &(settings_plot_styles_default[*tempint]));
+         }
+        listiter = ListIterate(listiter, NULL);
+       }
      }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"terminal")==0)) /* set terminal */
