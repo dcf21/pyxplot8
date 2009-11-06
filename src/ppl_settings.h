@@ -48,7 +48,7 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int           aspect, AutoAspect, AxesColour, grid, GridMajColour, GridMinColour, key, KeyColumns, KeyPos, samples, TextColour, TextHAlign, TextVAlign;
+ int           aspect, AutoAspect, AxesColour, AxesColourR, AxesColourG, AxesColourB, grid, GridMajColour, GridMajColourR, GridMajColourG, GridMajColourB, GridMinColour, GridMinColourR, GridMinColourG, GridMinColourB, key, KeyColumns, KeyPos, samples, TextColour, TextColourR, TextColourG, TextColourB, TextHAlign, TextVAlign;
  double        bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
@@ -71,8 +71,8 @@ extern settings_terminal settings_term_current;
 extern settings_graph    settings_graph_default;
 extern settings_graph    settings_graph_current;
 extern settings_session  settings_session_default;
-extern int               settings_palette_current[];
-extern int               settings_palette_default[];
+extern int               settings_palette_current[], settings_paletteR_current[], settings_paletteG_current[], settings_paletteB_current[];
+extern int               settings_palette_default[], settings_paletteR_default[], settings_paletteG_default[], settings_paletteB_default[];
 extern with_words        settings_plot_styles[], settings_plot_styles_default[];
 #endif
 
@@ -81,7 +81,7 @@ void  ppl_settings_readconfig();
 void  with_words_zero    (with_words *a, const unsigned char malloced);
 int   with_words_compare (const with_words *a, const with_words *b);
 int   with_words_compare_zero(const with_words *a);
-void  with_words_merge   (with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e);
+void  with_words_merge   (with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e, const unsigned char ExpandStyles);
 void  with_words_print   (const with_words *defn, char *out);
 void  with_words_destroy (with_words *a);
 void  with_words_copy    (with_words *out, const with_words *in);

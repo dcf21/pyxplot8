@@ -237,7 +237,11 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "OUTPUT"       )==0)
         strcpy(settings_term_default.output , setvalue);
       else if (strcmp(setkey, "PAPER_HEIGHT" )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperHeight.real  = fl/1000;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               { settings_term_default .PaperHeight.real  = fl/1000;
+                                                                              PaperHeight = settings_term_default.PaperHeight.real * 1000;
+                                                                              PaperWidth  = settings_term_default.PaperWidth .real * 1000;
+                                                                              ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
+                                                                            }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting PAPER_HEIGHT." , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "PAPER_NAME"   )==0)
         {
@@ -245,9 +249,14 @@ void ReadConfigFile(char *ConfigFname)
          if (PaperHeight <= 0) {sprintf(temp_err_string, "Error in line %d of configuration file %s: Unrecognised papersize specified for setting PAPER_NAME."  , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
          settings_term_default.PaperHeight.real = PaperHeight/1000;
          settings_term_default.PaperWidth.real  = PaperWidth/1000;
+         ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
         }
       else if (strcmp(setkey, "PAPER_WIDTH"  )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .PaperWidth.real  = fl/1000;
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               { settings_term_default .PaperWidth.real  = fl/1000;
+                                                                              PaperHeight = settings_term_default.PaperHeight.real * 1000;
+                                                                              PaperWidth  = settings_term_default.PaperWidth .real * 1000;
+                                                                              ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
+                                                                            }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting PAPER_WIDTH."  , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "POINTLINEWIDTH")==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.PointLineWidth= fl;
@@ -359,7 +368,10 @@ void ReadConfigFile(char *ConfigFname)
              {
               sprintf(temp_err_string, "Error in line %d of configuration file %s: Colour '%s' not recognised.", linecounter, ConfigFname, ColourName); ppl_warning(ERR_PREFORMED, temp_err_string);
              } else {
-              settings_palette_default[PalettePos++] = ColourNumber;
+              settings_palette_default [PalettePos  ] = ColourNumber;
+              settings_paletteR_default[PalettePos  ] = 0;
+              settings_paletteG_default[PalettePos  ] = 0;
+              settings_paletteB_default[PalettePos++] = 0;
              }
            }
          }
@@ -473,7 +485,13 @@ void ReadConfigFile(char *ConfigFname)
      {
       settings_term_current  = settings_term_default; // Copy settings for directive_set()
       settings_graph_current = settings_graph_default;
-      for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+      for (i=0; i<PALETTE_LENGTH; i++)
+       {
+        settings_palette_current [i] = settings_palette_default [i];
+        settings_paletteR_current[i] = settings_paletteR_default[i];
+        settings_paletteG_current[i] = settings_paletteG_default[i];
+        settings_paletteB_current[i] = settings_paletteB_default[i];
+       }
       for (i=0; i<MAX_AXES; i++) { XAxes[i] = XAxesDefault[i]; YAxes[i] = YAxesDefault[i]; ZAxes[i] = ZAxesDefault[i]; }
       for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
       ppl_error_setstreaminfo(linecounter, "configuration file");
@@ -489,7 +507,13 @@ void ReadConfigFile(char *ConfigFname)
        }
       settings_term_default  = settings_term_current; // Copy changed settings into defaults
       settings_graph_default = settings_graph_current;
-      for (i=0; i<PALETTE_LENGTH; i++) settings_palette_default[i] = settings_palette_current[i];
+      for (i=0; i<PALETTE_LENGTH; i++)
+       {
+        settings_palette_default [i] = settings_palette_current [i];
+        settings_paletteR_default[i] = settings_paletteR_current[i];
+        settings_paletteG_default[i] = settings_paletteG_current[i];
+        settings_paletteB_default[i] = settings_paletteB_current[i];
+       }
       for (i=0; i<MAX_AXES; i++) { XAxesDefault[i] = XAxes[i]; YAxesDefault[i] = YAxes[i]; ZAxesDefault[i] = ZAxes[i]; }
       for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles_default[i])); with_words_copy(&(settings_plot_styles_default[i]) , &(settings_plot_styles[i])); }
      }

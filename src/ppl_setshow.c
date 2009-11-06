@@ -83,7 +83,7 @@ void directive_set(Dict *command)
   value   valobj, valobj2;
   value  *tempval, *tempval2;
   int    *tempint, *tempint2;
-  double *tempdbl, dblobj;
+  double *tempdbl, dblobj, dbl1, dbl2;
   char   *tempstr, *tempstr2;
   List   *templist;
   Dict   *tempdict;
@@ -730,9 +730,20 @@ void directive_set(Dict *command)
       if (i == PALETTE_LENGTH-1) { ppl_warning(ERR_GENERAL, "The set palette command has been passed a palette which is too long; truncating it."); break; }
       tempdict = (Dict *)listiter->data;
       DictLookup(tempdict,"colour",NULL,(void **)&tempstr);
-      j = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
-      if (j<0) { sprintf(temp_err_string, "The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
-      else     { settings_palette_current[i++] = j; }
+      if (tempstr != NULL)
+       {
+        j = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
+        if (j<0) { sprintf(temp_err_string, "The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
+        else     { settings_palette_current[i++] = j; }
+       } else {
+        DictLookup(tempdict,"colourR",NULL,(void **)&tempint);
+        settings_paletteR_current[i] = *tempint;
+        DictLookup(tempdict,"colourG",NULL,(void **)&tempint);
+        settings_paletteG_current[i] = *tempint;
+        DictLookup(tempdict,"colourB",NULL,(void **)&tempint);
+        settings_paletteB_current[i] = *tempint;
+        settings_palette_current[i++] = 0;
+       }
       listiter = ListIterate(listiter, NULL);
      }
     if (i==0) { ppl_error(ERR_GENERAL, "The set palette command has been passed a palette which does not contain any colours."); return; }
@@ -740,10 +751,59 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"palette")==0)) /* unset palette */
    {
-    for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+    for (i=0; i<PALETTE_LENGTH; i++)
+     {
+      settings_palette_current [i] = settings_palette_default [i];
+      settings_paletteR_current[i] = settings_paletteR_default[i];
+      settings_paletteG_current[i] = settings_paletteG_default[i];
+      settings_paletteB_current[i] = settings_paletteB_default[i];
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"papersize")==0)) /* set papersize */
    {
+    DictLookup(command,"paper_name",NULL,(void **)&tempstr);
+    if (tempstr != NULL)
+     {
+      ppl_PaperSizeByName(tempstr, &dbl1, &dbl2);
+      if (dbl1 > 0)
+       {
+        settings_term_current.PaperHeight.real   = dbl1/1000;
+        settings_term_current.PaperWidth.real    = dbl2/1000;
+        ppl_GetPaperName(settings_term_current.PaperName, &dbl1, &dbl2);
+       } else {
+        sprintf(temp_err_string, "Unrecognised paper size '%s'.", tempstr); ppl_error(ERR_GENERAL, temp_err_string);
+       }
+     } else {
+      DictLookup(command,"x_size",NULL,(void **)&tempval);
+      DictLookup(command,"y_size",NULL,(void **)&tempval2);
+      if (!(tempval->dimensionless))
+       { 
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_LENGTH))
+          {
+           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));  
+           ppl_error(ERR_NUMERIC, temp_err_string);
+           return;
+          }
+       } 
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!(tempval2->dimensionless))
+       {
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval2->exponent[i] != (i==UNIT_LENGTH))
+          {
+           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+           ppl_error(ERR_NUMERIC, temp_err_string);
+           return;
+          }
+       }
+      else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
+      settings_term_current.PaperWidth .real = tempval ->real;
+      settings_term_current.PaperHeight.real = tempval2->real;
+      tempval ->real *= 1000; // Function below takes size input in mm
+      tempval2->real *= 1000;
+      ppl_GetPaperName(settings_term_current.PaperName, &(tempval2->real), &(tempval ->real));
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"papersize")==0)) /* unset papersize */
    {
@@ -848,7 +908,7 @@ void directive_set(Dict *command)
     if (tempstr[0]=='d') tempstyle = &sg->DataStyle;
     else                 tempstyle = &sg->FuncStyle;
     with_words_fromdict(command, &ww_temp1, 1);
-    with_words_merge(&ww_temp2, &ww_temp1, tempstyle, NULL, NULL, NULL);
+    with_words_merge(&ww_temp2, &ww_temp1, tempstyle, NULL, NULL, NULL, 0);
     *tempstyle = ww_temp2;
     tempstyle->malloced = 1;
    }
@@ -1330,7 +1390,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   out[0] = buf[0] = '\0';
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    if (sg->AxesColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    else                  sprintf(buf, "rgb%d:%d:%d", sg->AxesColourR, sg->AxesColourG, sg->AxesColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "AxesColour", buf, (settings_graph_default.AxesColour == sg->AxesColour), "The colour used to draw graph axes");
     i += strlen(out+i) ; p=1;
    }
@@ -1488,14 +1549,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0))
-   { 
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+   {
+    if (sg->GridMajColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMajColourR, sg->GridMajColourG, sg->GridMajColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "GridMajColour", buf, (settings_graph_default.GridMajColour == sg->GridMajColour), "The colour of the major gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmincolour",1)>=0))
-   { 
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+   {
+    if (sg->GridMinColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMinColourR, sg->GridMinColourG, sg->GridMinColourB); 
     directive_show3(out+i, ItemSet, 1, interactive, "GridMinColour", buf, (settings_graph_default.GridMinColour == sg->GridMinColour), "The colour of the minor gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -1563,13 +1626,15 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     for (j=0; j<PALETTE_LENGTH; j++) // Check whether the palette has been changed from its default setting
      {
       if ((settings_palette_current[j] == -1) && (settings_palette_default[j] == -1)) break;
-      if  (settings_palette_current[j] == settings_palette_default[j]) continue;
+      if ((settings_palette_current[j] == settings_palette_default[j])&&(settings_paletteR_current[j] == settings_paletteR_default[j])&&(settings_paletteG_current[j] == settings_paletteG_default[j])&&(settings_paletteB_current[j] == settings_paletteB_default[j])) continue;
       l=1; break;
      }
-    for (j=k=0; settings_palette_current[j]>0; j++)
+    for (j=k=0; settings_palette_current[j]>=0; j++)
      {
       if (j>0) { sprintf(buf+k, ", "); k+=strlen(buf+k); }
-      sprintf(buf+k, "%s", (char *)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void **)SW_COLOUR_STR)); k+=strlen(buf+k);
+      if (settings_palette_current[j]>0) sprintf(buf+k, "%s", (char *)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+      else                               sprintf(buf+k, "rgb%d:%d:%d", settings_paletteR_current[j], settings_paletteG_current[j], settings_paletteB_current[j]);
+      k+=strlen(buf+k);
      }
     directive_show3(out+i, ItemSet, 0, interactive, "palette", buf, !l, "The sequence of colours used to plot datasets on colour graphs");
     i += strlen(out+i) ; p=1;
@@ -1686,7 +1751,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textcolour",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    if (sg->TextColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    else                  sprintf(buf, "rgb%d:%d:%d", sg->TextColourR, sg->TextColourG, sg->TextColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "TextColour", buf, (settings_graph_default.TextColour==sg->TextColour), "Selects the colour of text labels");
     i += strlen(out+i) ; p=1;
    }

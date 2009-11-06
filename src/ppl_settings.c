@@ -60,8 +60,14 @@ settings_axis     ZAxes [MAX_AXES], ZAxesDefault[MAX_AXES];
 
 settings_session  settings_session_default;
 
-int               settings_palette_default[PALETTE_LENGTH] = {COLOUR_BLACK, COLOUR_RED, COLOUR_BLUE, COLOUR_MAGENTA, COLOUR_CYAN, COLOUR_BROWN, COLOUR_SALMON, COLOUR_GRAY, COLOUR_GREEN, COLOUR_NAVYBLUE, COLOUR_PERIWINKLE, COLOUR_PINEGREEN, COLOUR_SEAGREEN, COLOUR_GREENYELLOW, COLOUR_ORANGE, COLOUR_CARNATIONPINK, COLOUR_PLUM, -1};
-int               settings_palette_current[PALETTE_LENGTH];
+int               settings_palette_default [PALETTE_LENGTH] = {COLOUR_BLACK, COLOUR_RED, COLOUR_BLUE, COLOUR_MAGENTA, COLOUR_CYAN, COLOUR_BROWN, COLOUR_SALMON, COLOUR_GRAY, COLOUR_GREEN, COLOUR_NAVYBLUE, COLOUR_PERIWINKLE, COLOUR_PINEGREEN, COLOUR_SEAGREEN, COLOUR_GREENYELLOW, COLOUR_ORANGE, COLOUR_CARNATIONPINK, COLOUR_PLUM, -1};
+int               settings_paletteR_default[PALETTE_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int               settings_paletteG_default[PALETTE_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int               settings_paletteB_default[PALETTE_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int               settings_palette_current [PALETTE_LENGTH];
+int               settings_paletteR_current[PALETTE_LENGTH];
+int               settings_paletteG_current[PALETTE_LENGTH];
+int               settings_paletteB_current[PALETTE_LENGTH];
 
 Dict             *settings_filters;
 
@@ -96,11 +102,11 @@ void ppl_settings_makedefault()
   settings_term_default.NumDisplay          = SW_DISPLAY_N;
   strcpy(settings_term_default.output, "");
   ppl_units_zero(&(settings_term_default.PaperHeight));
-  settings_term_default.PaperHeight.real    = 297.0 / 1000;
+  settings_term_default.PaperHeight.real    = 297.30178 / 1000;
   settings_term_default.PaperHeight.dimensionless = 0; settings_term_default.PaperHeight.exponent[UNIT_LENGTH] = 1;
-  strcpy(settings_term_default.PaperName, "A4");
+  strcpy(settings_term_default.PaperName, "a4");
   ppl_units_zero(&(settings_term_default.PaperWidth));
-  settings_term_default.PaperWidth.real     = 210.0 / 1000;
+  settings_term_default.PaperWidth.real     = 210.2241 / 1000;
   settings_term_default.PaperWidth.dimensionless = 0; settings_term_default.PaperWidth.exponent[UNIT_LENGTH] = 1;
   settings_term_default.SignificantFigures  = 8;
   settings_term_default.TermAntiAlias       = SW_ONOFF_ON;
@@ -116,6 +122,9 @@ void ppl_settings_makedefault()
   settings_graph_default.aspect                = 1.0;
   settings_graph_default.AutoAspect            = SW_ONOFF_ON;
   settings_graph_default.AxesColour            = COLOUR_BLACK;
+  settings_graph_default.AxesColourR           = 0;
+  settings_graph_default.AxesColourG           = 0;
+  settings_graph_default.AxesColourB           = 0;
   settings_graph_default.bar                   = 1.0;
   ppl_units_zero(&(settings_graph_default.BoxFrom));
   settings_graph_default.BoxFromAuto           = 1;
@@ -134,7 +143,13 @@ void ppl_settings_makedefault()
   settings_graph_default.GridAxisY[1]  = 1;
   settings_graph_default.GridAxisZ[1]  = 1;
   settings_graph_default.GridMajColour = COLOUR_GREY60;
+  settings_graph_default.GridMajColourR= 0;
+  settings_graph_default.GridMajColourG= 0;
+  settings_graph_default.GridMajColourB= 0;
   settings_graph_default.GridMinColour = COLOUR_GREY90;
+  settings_graph_default.GridMinColourR= 0;
+  settings_graph_default.GridMinColourG= 0;
+  settings_graph_default.GridMinColourB= 0;
   settings_graph_default.key           = SW_ONOFF_ON;
   settings_graph_default.KeyColumns    = 1;
   settings_graph_default.KeyPos        = SW_KEYPOS_TR;
@@ -156,6 +171,9 @@ void ppl_settings_makedefault()
   settings_graph_default.projection    = SW_PROJ_FLAT;
   settings_graph_default.samples       = 250;
   settings_graph_default.TextColour    = COLOUR_BLACK;
+  settings_graph_default.TextColourR   = 0;
+  settings_graph_default.TextColourG   = 0;
+  settings_graph_default.TextColourB   = 0;
   settings_graph_default.TextHAlign    = SW_HALIGN_LEFT;
   settings_graph_default.TextVAlign = SW_VALIGN_BOT;
   strcpy(settings_graph_default.title, "");
@@ -277,6 +295,7 @@ void ppl_settings_makedefault()
     settings_term_default.PaperWidth.real    = PaperWidth /1000;
     if (0) { LC_PAPERSIZE_DONE: if (DEBUG) ppl_log("Failed to read papersize from the locale command."); }
     pclose(LocalePipe);
+    ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
    }
 
   // Try and find out the default papersize from /etc/papersize
@@ -292,6 +311,7 @@ void ppl_settings_makedefault()
       if (DEBUG) { sprintf(temp_err_string, "Read papersize %s, with dimensions %f x %f", ConfigFname, PaperWidth, PaperHeight); ppl_log(temp_err_string); }
       settings_term_default.PaperHeight.real   = PaperHeight/1000;
       settings_term_default.PaperWidth.real    = PaperWidth /1000;
+      ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
      } else {
       if (DEBUG) ppl_log("/etc/papersize returned an unrecognised papersize.");
      }
@@ -311,6 +331,7 @@ void ppl_settings_makedefault()
       if (DEBUG) { sprintf(temp_err_string, "Read papersize %s, with dimensions %f x %f", PaperSizePtr, PaperWidth, PaperHeight); ppl_log(temp_err_string); }
       settings_term_default.PaperHeight.real   = PaperHeight/1000;
       settings_term_default.PaperWidth.real    = PaperWidth /1000;
+      ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
      } else {
       if (DEBUG) ppl_log("$PAPERSIZE returned an unrecognised paper size."); 
      }
@@ -319,7 +340,13 @@ void ppl_settings_makedefault()
   // Copy Default Settings to Current Settings
   settings_term_current  = settings_term_default;
   settings_graph_current = settings_graph_default;
-  for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+  for (i=0; i<PALETTE_LENGTH; i++)
+   { 
+    settings_palette_current [i] = settings_palette_default [i];
+    settings_paletteR_current[i] = settings_paletteR_default[i];
+    settings_paletteG_current[i] = settings_paletteG_default[i];
+    settings_paletteB_current[i] = settings_paletteB_default[i];
+   }
   return;
  }
 
@@ -336,7 +363,13 @@ void ppl_settings_readconfig()
   // Copy Default Settings to Current Settings
   settings_term_current  = settings_term_default;
   settings_graph_current = settings_graph_default;
-  for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+  for (i=0; i<PALETTE_LENGTH; i++)
+   {
+    settings_palette_current [i] = settings_palette_default [i];
+    settings_paletteR_current[i] = settings_paletteR_default[i];
+    settings_paletteG_current[i] = settings_paletteG_default[i];
+    settings_paletteB_current[i] = settings_paletteB_default[i];
+   }
   return;
  }
 
@@ -526,7 +559,7 @@ int with_words_compare(const with_words *a, const with_words *b)
  }
 
 // a has highest priority; e has lowest priority
-void with_words_merge(with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e)
+void with_words_merge(with_words *out, const with_words *a, const with_words *b, const with_words *c, const with_words *d, const with_words *e, const unsigned char ExpandStyles)
  {
   int i;
   const with_words *InputArray[25] = {a,b,c,d,e};
@@ -542,11 +575,16 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
     if (x == NULL) continue;
     if ((x->USEstyle) && (!BlockStyleSubstitution[i])) // Substitute for numbered plot styles
      {
-      BlockStyleSubstitution[i  ] = 1; // Only do this once, to avoid infinite loop
-      BlockStyleSubstitution[i+1] = 0; // Allow recursive substitutions
-      InputArray[i+1] = &(settings_plot_styles[ x->style ]);
-      i+=2; // Recurse
-      continue;
+      if (ExpandStyles)
+       {
+        BlockStyleSubstitution[i  ] = 1; // Only do this once, to avoid infinite loop
+        BlockStyleSubstitution[i+1] = 0; // Allow recursive substitutions
+        InputArray[i+1] = &(settings_plot_styles[ x->style ]);
+        i+=2; // Recurse
+        continue;
+       } else {
+        out->style = x->style; out->USEstyle = 1;
+       }
      }
     if (x->STRcolourR       !=NULL) { out->STRcolourR = x->STRcolourR; out->STRcolourG = x->STRcolourG; out->STRcolourB = x->STRcolourB; out->USEcolourRGB = 0; out->USEcolour = 0; }
     if (x->USEcolourRGB           ) { out->colourR = x->colourR; out->colourG = x->colourG; out->colourB = x->colourB; out->USEcolourRGB = 1; out->USEcolour = 0; out->STRcolourR = out->STRcolourG = out->STRcolourB = NULL; }
@@ -592,6 +630,7 @@ void with_words_print(const with_words *defn, char *out)
   if      (defn->STRpointtype!=NULL)      { sprintf(out+i, "pointtype %s "           , defn->STRpointtype);                                                                 i += strlen(out+i); }
   else if (defn->USEpointtype)            { sprintf(out+i, "pointtype %d "           , defn->pointtype);                                                                    i += strlen(out+i); }
   if      (defn->USEstyle)                { sprintf(out+i, "style %d "               , defn->style);                                                                        i += strlen(out+i); }
+  out[i]='\0';
   return;
  }
 
