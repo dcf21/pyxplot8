@@ -373,6 +373,109 @@ void ppl_settings_readconfig()
   return;
  }
 
+// ----------------------------------------------
+// ROUTINES FOR READING COLOURS FROM DICTIONARIES
+// ----------------------------------------------
+
+#include "ppl_userspace.h"
+#include "ppl_units.h"
+#define COLMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *outcolRS=*outcolGS=*outcolBS=NULL; return 1; }
+
+int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outcolG, int *outcolB, char **outcolRS, char **outcolGS, char **outcolBS,
+                    unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced)
+ {
+  char *tempstr, *tempstr2, DictName[32];
+  int  *tempint, cindex, i, j;
+  void *tmp;
+  value valobj;
+
+  sprintf(DictName, "%scolour", prefix);
+  DictLookup(in,DictName,NULL,(void **)&tempstr);
+  sprintf(DictName, "%scolourR", prefix);
+  DictLookup(in,DictName,NULL,(void **)&tempint);
+  sprintf(DictName, "%scolourRexpr", prefix);
+  DictLookup(in,DictName,NULL,(void **)&tempstr2);
+  if (tempstr != NULL) // Colour is specified by name or by palette index
+   {
+    i = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
+    if (i >= 0)
+     {
+      cindex = i;
+      *outcolR = *outcolG = *outcolB = 0;
+     }
+    else
+     {
+      j = strlen(tempstr);
+      *errpos = -1;
+      ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, errpos, temp_err_string, 0);
+      if (*errpos>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+      if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+      if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+      for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
+      cindex   = settings_palette_current [((int)valobj.real)%j];
+      *outcolR = settings_paletteR_current[((int)valobj.real)%j];
+      *outcolG = settings_paletteG_current[((int)valobj.real)%j];
+      *outcolB = settings_paletteB_current[((int)valobj.real)%j];
+     }
+    *outcol  = cindex;
+    if (outcolRS !=NULL)
+     {
+      if (malloced && (*outcolRS!=NULL)) free(*outcolRS);
+      if (malloced && (*outcolGS!=NULL)) free(*outcolGS);
+      if (malloced && (*outcolBS!=NULL)) free(*outcolBS);
+      *outcolRS=*outcolGS=*outcolBS=NULL;
+     }
+    if (USEcol   !=NULL) *USEcol    = (cindex> 0);
+    if (USEcolRGB!=NULL) *USEcolRGB = (cindex==0);
+   } else if (tempint != NULL) { // Colour is specified by RGB components
+    *outcol  = 0;
+    *outcolR = *tempint;
+    sprintf(DictName, "%scolourG", prefix);
+    DictLookup(in,DictName,NULL,(void **)&tempint);
+    *outcolG = *tempint;
+    sprintf(DictName, "%scolourB", prefix);
+    DictLookup(in,DictName,NULL,(void **)&tempint);
+    *outcolB = *tempint;
+    if (USEcol   !=NULL) *USEcol    = 0;
+    if (USEcolRGB!=NULL) *USEcolRGB = 1;
+    if (outcolRS !=NULL)
+     {
+      if (malloced && (*outcolRS!=NULL)) free(*outcolRS);
+      if (malloced && (*outcolGS!=NULL)) free(*outcolGS);
+      if (malloced && (*outcolBS!=NULL)) free(*outcolBS);
+      *outcolRS=*outcolGS=*outcolBS=NULL;
+     }
+   } else if (tempstr2 != NULL) { // Colour is specified by RGB expressions
+    if (USEcol   !=NULL) *USEcol    = 0;
+    if (USEcolRGB!=NULL) *USEcolRGB = 0;
+    if (outcolRS ==NULL) { ppl_error(ERR_INTERNAL, "Received RGB colour expressions, but have not received strings to put them into"); return 1; }
+    if (malloced)
+     {
+      if (*outcolRS!=NULL) free(*outcolRS);
+      if (*outcolGS!=NULL) free(*outcolGS);
+      if (*outcolBS!=NULL) free(*outcolBS);
+      *outcolRS = (char *)COLMALLOC(strlen(tempstr2)+1); strcpy(*outcolRS , tempstr2);
+      sprintf(DictName, "%scolourGexpr", prefix);
+      DictLookup(in,DictName,NULL,(void **)&tempstr2);
+      *outcolGS = (char *)COLMALLOC(strlen(tempstr2)+1); strcpy(*outcolGS , tempstr2);
+      sprintf(DictName, "%scolourBexpr", prefix);
+      DictLookup(in,DictName,NULL,(void **)&tempstr2);
+      *outcolBS = (char *)COLMALLOC(strlen(tempstr2)+1); strcpy(*outcolBS , tempstr2);
+     }
+    else
+     {
+      *outcolRS = tempstr2;
+      sprintf(DictName, "%scolourGexpr", prefix);
+      DictLookup(in,DictName,NULL,(void **)&tempstr2);
+      *outcolGS = tempstr2;
+      sprintf(DictName, "%scolourBexpr", prefix);
+      DictLookup(in,DictName,NULL,(void **)&tempstr2);
+      *outcolBS = tempstr2;
+     }
+   }
+  return 0;
+ }
+
 // -----------------------------------------------
 // ROUTINES FOR MANIPULATING WITH_WORDS STRUCTURES
 // -----------------------------------------------

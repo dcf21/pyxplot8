@@ -82,7 +82,7 @@ void directive_set(Dict *command)
   char   *directive, *setoption;
   value   valobj, valobj2;
   value  *tempval, *tempval2;
-  int    *tempint, *tempint2;
+  int    *tempint;
   double *tempdbl, dblobj, dbl1, dbl2;
   char   *tempstr, *tempstr2;
   List   *templist;
@@ -365,34 +365,17 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(setoption,"axescolour")==0) || (strcmp(setoption,"gridmajcolour")==0) || (strcmp(setoption,"gridmincolour")==0) || (strcmp(setoption,"textcolour")==0)) /* set axescolour | set gridmajcolour | set gridmincolour */
    {
-    if (strcmp(setoption,"axescolour"   )==0) { tempint = &sg->AxesColour    ; tempint2 = &settings_graph_default.AxesColour;    }
-    if (strcmp(setoption,"gridmajcolour")==0) { tempint = &sg->GridMajColour ; tempint2 = &settings_graph_default.GridMajColour; }
-    if (strcmp(setoption,"gridmincolour")==0) { tempint = &sg->GridMinColour ; tempint2 = &settings_graph_default.GridMinColour; }
-    if (strcmp(setoption,"textcolour"   )==0) { tempint = &sg->TextColour    ; tempint2 = &settings_graph_default.TextColour;    }
-
     if (strcmp(directive,"unset")==0)
      {
-      *tempint = *tempint2;
-     }
-    else
-     {
-      DictLookup(command,"colour",NULL,(void **)&tempstr);
-      i = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
-      if (i >= 0)
-       {
-        *tempint = i;
-       }
-      else
-       {
-        j = strlen(tempstr);
-        errpos = -1;
-        ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, &errpos, temp_err_string, 0);
-        if (errpos>=0) { ppl_error(ERR_GENERAL, temp_err_string); return; }
-        if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return; }
-        if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return; }
-        for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
-        *tempint = settings_palette_current[((int)valobj.real)%j];
-       }
+      if (strcmp(setoption,"axescolour"   )==0) { sg->AxesColour=settings_graph_default.AxesColour; sg->AxesColourR=settings_graph_default.AxesColourR; sg->AxesColourG=settings_graph_default.AxesColourG; sg->AxesColourB=settings_graph_default.AxesColourB; }
+      if (strcmp(setoption,"gridmajcolour")==0) { sg->GridMajColour=settings_graph_default.GridMajColour; sg->GridMajColourR=settings_graph_default.GridMajColourR; sg->GridMajColourG=settings_graph_default.GridMajColourG; sg->GridMajColourB=settings_graph_default.GridMajColourB; }
+      if (strcmp(setoption,"gridmincolour")==0) { sg->GridMinColour=settings_graph_default.GridMinColour; sg->GridMinColourR=settings_graph_default.GridMinColourR; sg->GridMinColourG=settings_graph_default.GridMinColourG; sg->GridMinColourB=settings_graph_default.GridMinColourB; }
+      if (strcmp(setoption,"textcolour"   )==0) { sg->TextColour=settings_graph_default.TextColour; sg->TextColourR=settings_graph_default.TextColourR; sg->TextColourG=settings_graph_default.TextColourG; sg->TextColourB=settings_graph_default.TextColourB; }
+     } else {
+      if (strcmp(setoption,"axescolour"   )==0) colour_fromdict(command,"",&sg->AxesColour   ,&sg->AxesColourR   ,&sg->AxesColourG   ,&sg->AxesColourB   ,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"gridmajcolour")==0) colour_fromdict(command,"",&sg->GridMajColour,&sg->GridMajColourR,&sg->GridMajColourG,&sg->GridMajColourB,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"gridmincolour")==0) colour_fromdict(command,"",&sg->GridMinColour,&sg->GridMinColourR,&sg->GridMinColourG,&sg->GridMinColourB,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"textcolour"   )==0) colour_fromdict(command,"",&sg->TextColour   ,&sg->TextColourR   ,&sg->TextColourG   ,&sg->TextColourB   ,NULL,NULL,NULL,NULL,NULL,&errpos,1);
      }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"grid")==0)) /* set grid */
