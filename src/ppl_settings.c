@@ -397,6 +397,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
   DictLookup(in,DictName,NULL,(void **)&tempstr2);
   if (tempstr != NULL) // Colour is specified by name or by palette index
    {
+    StrStrip(tempstr,tempstr);
     i = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
     if (i >= 0)
      {
@@ -476,6 +477,30 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
   return 0;
  }
 
+// -------------------------------------------
+// ROUTINES FOR MANIPULATING ARROWS STRUCTURES
+// -------------------------------------------
+
+// store x0,y0,z0,x1,y1,z1,arrowtype,with_words
+//       system type for each coordinate
+
+// void arrow_add(ArrowItem **list, Dict *in);
+// void arrow_remove(ArrowItem **list, Dict *in);
+// void arrow_list_copy(ArrowItem **out, ArrowItem **in);
+// void arrow_list_destroy(ArrowItem **list);
+
+// -------------------------------------------
+// ROUTINES FOR MANIPULATING LABELS STRUCTURES
+// -------------------------------------------
+
+// store x0,y0,z0,text,with_words
+//       system type for each coordinate
+
+// void label_add(LabelItem **list, Dict *in);
+// void label_remove(LabelItem **list, Dict *in);
+// void label_list_copy(LabelItem **out, LabelItem **in);
+// void label_list_destroy(LabelItem **list);
+
 // -----------------------------------------------
 // ROUTINES FOR MANIPULATING WITH_WORDS STRUCTURES
 // -----------------------------------------------
@@ -503,48 +528,10 @@ void with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNe
   with_words_zero(out, MallocNew);
 
   // read colour names
-
-  // read numeric RGBs
-  DictLookup(in,"colourR",NULL,(void **)&tempdbl);
-  if (tempdbl != NULL) { out->colourR     = *tempdbl; out->USEcolourRGB     = 1; }
-  DictLookup(in,"colourG",NULL,(void **)&tempdbl);
-  if (tempdbl != NULL) { out->colourG     = *tempdbl; out->USEcolourRGB     = 1; }
-  DictLookup(in,"colourB",NULL,(void **)&tempdbl);
-  if (tempdbl != NULL) { out->colourB     = *tempdbl; out->USEcolourRGB     = 1; }
-  DictLookup(in,"fillcolourR",NULL,(void **)&tempdbl);
-  if (tempdbl != NULL) { out->fillcolourR = *tempdbl; out->USEfillcolourRGB = 1; }
-  DictLookup(in,"fillcolourG",NULL,(void **)&tempdbl);
-  if (tempdbl != NULL) { out->fillcolourG = *tempdbl; out->USEfillcolourRGB = 1; }
-  DictLookup(in,"fillcolourB",NULL,(void **)&tempdbl);
-  if (tempdbl != NULL) { out->fillcolourB = *tempdbl; out->USEfillcolourRGB = 1; }
-
-  // colour strings
-  DictLookup(in,"colourR_string",NULL,(void **)&tempstr);
-  if (tempstr != NULL) { if (!MallocNew) { out->STRcolourR        = tempstr; }
-                         else            { out->STRcolourR        = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRcolourR       , tempstr); }
-                       }
-  DictLookup(in,"colourG_string",NULL,(void **)&tempstr);
-  if (tempstr != NULL) { if (!MallocNew) { out->STRcolourG        = tempstr; }
-                         else            { out->STRcolourG        = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRcolourG       , tempstr); }
-                       }
-  DictLookup(in,"colourB_string",NULL,(void **)&tempstr);
-  if (tempstr != NULL) { if (!MallocNew) { out->STRcolourB        = tempstr; }
-                         else            { out->STRcolourB        = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRcolourB       , tempstr); }
-                       }
-
-  // fillcolour strings
-  DictLookup(in,"fillcolourR_string",NULL,(void **)&tempstr);
-  if (tempstr != NULL) { if (!MallocNew) { out->STRfillcolourR     = tempstr; }
-                         else            { out->STRfillcolourR     = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRfillcolourR   , tempstr); }
-                       }
-  DictLookup(in,"fillcolourG_string",NULL,(void **)&tempstr);
-  if (tempstr != NULL) { if (!MallocNew) { out->STRfillcolourG     = tempstr; }
-                         else            { out->STRfillcolourG     = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRfillcolourG   , tempstr); }
-                       }
-  DictLookup(in,"fillcolourB_string",NULL,(void **)&tempstr);
-  if (tempstr != NULL) { if (!MallocNew) { out->STRfillcolourB     = tempstr; }
-                         else            { out->STRfillcolourB     = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRfillcolourB   , tempstr); }
-                       }
+  colour_fromdict(in,""    ,&out->colour    ,&out->colourR    ,&out->colourG    ,&out->colourB    ,&out->STRcolourR    ,&out->STRcolourG    ,&out->STRcolourB    ,
+                  &out->USEcolour    ,&out->USEcolourRGB    ,&i,MallocNew);
+  colour_fromdict(in,"fill",&out->fillcolour,&out->fillcolourR,&out->fillcolourG,&out->fillcolourB,&out->STRfillcolourR,&out->STRfillcolourG,&out->STRfillcolourB,
+                  &out->USEfillcolour,&out->USEfillcolourRGB,&i,MallocNew);
 
   // Other settings
   DictLookup(in,"linetype",NULL,(void **)&tempint);
