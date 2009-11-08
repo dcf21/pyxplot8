@@ -121,7 +121,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   char *OldLB, *OldLBP, *OldLBA;
   FILE *infile;
 
-  sprintf(temp_err_string, "Processing input from the script file '%s'.", input); ppl_log(temp_err_string);
+  if (DEBUG) { sprintf(temp_err_string, "Processing input from the script file '%s'.", input); ppl_log(temp_err_string); }
   UnixExpandUserHomeDir(input , settings_session_default.cwd, full_filename);
   sprintf(filename_description, "file '%s'", input);
   if ((infile=fopen(full_filename,"r")) == NULL)

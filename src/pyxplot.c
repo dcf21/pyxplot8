@@ -196,7 +196,7 @@ int main(int argc, char **argv)
                                                   (strcmp(GHOSTVIEW_COMMAND, "/bin/false")==0) ||
                                                   (isatty(STDIN_FILENO) != 1)))
      {
-      ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");
+      if (DEBUG) ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");
       settings_term_default.TermType = SW_TERMTYPE_EPS;
      }
 

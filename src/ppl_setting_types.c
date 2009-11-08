@@ -40,6 +40,14 @@ char *SW_STYLE_STR[] = {"points"        , "lines"        , "LinesPoints"        
 int   SW_STYLE_ACL[] = {1               , 1              , 6                    , 1                   , 1                   , 2                    , 7                    , 7                    , 8                     , 1             , 1                 , 1              , 1               , 1              , 1               , 1                , 1                    , 8                      , 8                       , 1                 , 1                  };
 int   SW_STYLE_INT[] = {SW_STYLE_POINTS , SW_STYLE_LINES , SW_STYLE_LINESPOINTS , SW_STYLE_XERRORBARS , SW_STYLE_YERRORBARS , SW_STYLE_XYERRORBARS , SW_STYLE_XERRORRANGE , SW_STYLE_YERRORRANGE , SW_STYLE_XYERRORRANGE , SW_STYLE_DOTS , SW_STYLE_IMPULSES , SW_STYLE_BOXES , SW_STYLE_WBOXES , SW_STYLE_STEPS , SW_STYLE_FSTEPS , SW_STYLE_HISTEPS , SW_STYLE_ARROWS_HEAD , SW_STYLE_ARROWS_NOHEAD , SW_STYLE_ARROWS_TWOHEAD , SW_STYLE_CSPLINES , SW_STYLE_ACSPLINES , -1};
 
+char *SW_SYSTEM_STR[] = {"first"         , "second"         , "page"         , "graph"         , "axis"          };
+int   SW_SYSTEM_ACL[] = {1               , 1                , 1              , 1               , 1               };
+int   SW_SYSTEM_INT[] = {SW_SYSTEM_FIRST , SW_SYSTEM_SECOND , SW_SYSTEM_PAGE , SW_SYSTEM_GRAPH , SW_SYSTEM_AXISN , -1};
+
+char *SW_ARROWTYPE_STR[] = {"head"            , "nohead"            , "twoway"            };
+int   SW_ARROWTYPE_ACL[] = {1                 , 1                   , 1                   };
+int   SW_ARROWTYPE_INT[] = {SW_ARROWTYPE_HEAD , SW_ARROWTYPE_NOHEAD , SW_ARROWTYPE_TWOWAY , -1};
+
 char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"    , "ps"           , "eps"           , "pdf"           , "png"           , "jpg"           , "gif"           , "bmp"           , "tif"           };
 int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1               };
 int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , -1};

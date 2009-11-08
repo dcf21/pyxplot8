@@ -103,6 +103,24 @@ typedef struct settings_axis {
  value   unit;
  } settings_axis;
 
+typedef struct arrow_object {
+ int        id;
+ double     x0       ,y0       ,z0       ,x1       ,y1       ,z1;
+ int        system_x0,system_y0,system_z0,system_x1,system_y1,system_z1;
+ int        axis_x0  ,axis_y0  ,axis_z0  ,axis_x1  ,axis_y1  ,axis_z1;
+ with_words style;
+ struct arrow_object *next;
+ } arrow_object;
+
+typedef struct label_object {
+ int         id;
+ double      x       ,y       ,z;
+ int         system_x,system_y,system_z;
+ int         axis_x  ,axis_y  ,axis_z;
+ with_words style;
+ struct label_object *next;
+ } label_object;
+
 // Variables defined in ppl_settings.c
 #ifndef _PPL_SETTINGS_C
 extern settings_axis     settings_axis_default;
@@ -110,6 +128,8 @@ extern settings_axis     XAxes[], XAxesDefault[];
 extern settings_axis     YAxes[], YAxesDefault[];
 extern settings_axis     ZAxes[], ZAxesDefault[];
 extern Dict             *settings_filters;
+extern arrow_object     *arrow_list, *arrow_list_default;
+extern label_object     *label_list, *label_list_default;
 #endif
 
 void  DestroyAxis       (settings_axis *in , const settings_axis *def);

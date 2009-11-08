@@ -33,8 +33,8 @@ extern int   SW_BOOL_INT[];
 
 // On/Off Switches
 
-#define SW_ONOFF_ON  11001
-#define SW_ONOFF_OFF 11002
+#define SW_ONOFF_ON  10011
+#define SW_ONOFF_OFF 10012
 
 extern char *SW_ONOFF_STR[];
 extern int   SW_ONOFF_ACL[];
@@ -42,31 +42,53 @@ extern int   SW_ONOFF_INT[];
 
 // Plot Style Switches
 
-#define SW_STYLE_POINTS         12001
-#define SW_STYLE_LINES          12002
-#define SW_STYLE_LINESPOINTS    12003
-#define SW_STYLE_XERRORBARS     12004
-#define SW_STYLE_YERRORBARS     12005
-#define SW_STYLE_XYERRORBARS    12006
-#define SW_STYLE_XERRORRANGE    12007
-#define SW_STYLE_YERRORRANGE    12008
-#define SW_STYLE_XYERRORRANGE   12009
-#define SW_STYLE_DOTS           12010
-#define SW_STYLE_IMPULSES       12011
-#define SW_STYLE_BOXES          12012
-#define SW_STYLE_WBOXES         12013
-#define SW_STYLE_STEPS          12014
-#define SW_STYLE_FSTEPS         12015
-#define SW_STYLE_HISTEPS        12016
-#define SW_STYLE_ARROWS_HEAD    12017
-#define SW_STYLE_ARROWS_NOHEAD  12018
-#define SW_STYLE_ARROWS_TWOHEAD 12019
-#define SW_STYLE_CSPLINES       12020
-#define SW_STYLE_ACSPLINES      12021
+#define SW_STYLE_POINTS         10101
+#define SW_STYLE_LINES          10102
+#define SW_STYLE_LINESPOINTS    10103
+#define SW_STYLE_XERRORBARS     10104
+#define SW_STYLE_YERRORBARS     10105
+#define SW_STYLE_XYERRORBARS    10106
+#define SW_STYLE_XERRORRANGE    10107
+#define SW_STYLE_YERRORRANGE    10108
+#define SW_STYLE_XYERRORRANGE   10109
+#define SW_STYLE_DOTS           10110
+#define SW_STYLE_IMPULSES       10111
+#define SW_STYLE_BOXES          10112
+#define SW_STYLE_WBOXES         10113
+#define SW_STYLE_STEPS          10114
+#define SW_STYLE_FSTEPS         10115
+#define SW_STYLE_HISTEPS        10116
+#define SW_STYLE_ARROWS_HEAD    10117
+#define SW_STYLE_ARROWS_NOHEAD  10118
+#define SW_STYLE_ARROWS_TWOHEAD 10119
+#define SW_STYLE_CSPLINES       10120
+#define SW_STYLE_ACSPLINES      10121
 
 extern char *SW_STYLE_STR[];
 extern int   SW_STYLE_ACL[];
 extern int   SW_STYLE_INT[];
+
+// Systems in which coordinates can be specified in 'set arrow' and 'set label'
+
+#define SW_SYSTEM_FIRST  10201
+#define SW_SYSTEM_SECOND 10202
+#define SW_SYSTEM_PAGE   10203
+#define SW_SYSTEM_GRAPH  10204
+#define SW_SYSTEM_AXISN  10205
+
+extern char *SW_SYSTEM_STR[];
+extern int   SW_SYSTEM_ACL[];
+extern int   SW_SYSTEM_INT[];
+
+// Arrow types understood by the 'set arrow' command
+
+#define SW_ARROWTYPE_HEAD   10301
+#define SW_ARROWTYPE_NOHEAD 10302
+#define SW_ARROWTYPE_TWOWAY 10303
+
+extern char *SW_ARROWTYPE_STR[];
+extern int   SW_ARROWTYPE_ACL[];
+extern int   SW_ARROWTYPE_INT[];
 
 // Terminal Type Switches
 

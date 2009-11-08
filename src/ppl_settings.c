@@ -71,6 +71,9 @@ int               settings_paletteB_current[PALETTE_LENGTH];
 
 Dict             *settings_filters;
 
+arrow_object     *arrow_list, *arrow_list_default;
+label_object     *label_list, *label_list_default;
+
 #include "ppl_units_fns.h"
 
 void ppl_settings_makedefault()
@@ -255,6 +258,9 @@ void ppl_settings_makedefault()
   DictAppendValue(settings_filters, "ftp://*", tempval);
   #endif
 
+  // Set up empty lists of arrows and labels
+  arrow_list = arrow_list_default = label_list = label_list_default = NULL;
+
   // Set up array of plot styles
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles        [i]),1);
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles_default[i]),1);
@@ -363,6 +369,7 @@ void ppl_settings_readconfig()
   // Copy Default Settings to Current Settings
   settings_term_current  = settings_term_default;
   settings_graph_current = settings_graph_default;
+
   for (i=0; i<PALETTE_LENGTH; i++)
    {
     settings_palette_current [i] = settings_palette_default [i];
@@ -370,6 +377,15 @@ void ppl_settings_readconfig()
     settings_paletteG_current[i] = settings_paletteG_default[i];
     settings_paletteB_current[i] = settings_paletteB_default[i];
    }
+  for (i=0; i<MAX_AXES; i++) { DestroyAxis(&(XAxes[i]), &(XAxesDefault[i])); XAxes[i] = XAxesDefault[i]; 
+                               DestroyAxis(&(YAxes[i]), &(YAxesDefault[i])); YAxes[i] = YAxesDefault[i]; 
+                               DestroyAxis(&(ZAxes[i]), &(ZAxesDefault[i])); ZAxes[i] = ZAxesDefault[i]; 
+                             }
+  for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
+  // arrow_list_destroy(&arrow_list);
+  // arrow_list_copy(&arrow_list, &arrow_list_default);
+  // label_list_destroy(&arrow_list);
+  // label_list_copy(&label_list, &label_list_default);
   return;
  }
 
