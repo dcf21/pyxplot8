@@ -259,7 +259,8 @@ void ppl_settings_makedefault()
   #endif
 
   // Set up empty lists of arrows and labels
-  arrow_list = arrow_list_default = label_list = label_list_default = NULL;
+  arrow_list = arrow_list_default = NULL;
+  label_list = label_list_default = NULL;
 
   // Set up array of plot styles
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles        [i]),1);
@@ -382,10 +383,10 @@ void ppl_settings_readconfig()
                                DestroyAxis(&(ZAxes[i]), &(ZAxesDefault[i])); ZAxes[i] = ZAxesDefault[i]; 
                              }
   for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
-  // arrow_list_destroy(&arrow_list);
-  // arrow_list_copy(&arrow_list, &arrow_list_default);
-  // label_list_destroy(&arrow_list);
-  // label_list_copy(&label_list, &label_list_default);
+  //arrow_list_destroy(&arrow_list);
+  //arrow_list_copy(&arrow_list, &arrow_list_default);
+  //label_list_destroy(&arrow_list);
+  //label_list_copy(&label_list, &label_list_default);
   return;
  }
 
@@ -499,6 +500,70 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
 
 // store x0,y0,z0,x1,y1,z1,arrowtype,with_words
 //       system type for each coordinate
+
+void arrow_add(arrow_object **list, Dict *in)
+ {
+  int   *tempint;
+  char  *tempstr;
+  value *tempval;
+  arrow_object *out;
+
+  DictLookup(in,"arrow_id",NULL,(void **)&tempint);
+  while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
+  if ((*list != NULL) && ((*list)->id == *tempint))
+   {
+    out = *list;
+    // sort out with_words structure
+   } else {
+    out = (arrow_object *)malloc(sizeof(arrow_object));
+    if (out == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    out->id   = *tempint;
+    out->next = *list;
+    *list     = out;
+   }
+  DictLookup(in,"x0_system",NULL,(void **)&tempstr);
+  if (tempstr == NULL) out->system_x0 = SW_SYSTEM_FIRST;
+  else                 out->system_x0 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+  DictLookup(in,"y0_system",NULL,(void **)&tempstr);
+  if (tempstr == NULL) out->system_y0 = SW_SYSTEM_FIRST;
+  else                 out->system_y0 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+  DictLookup(in,"z0_system",NULL,(void **)&tempstr);
+  if (tempstr == NULL) out->system_z0 = SW_SYSTEM_FIRST;
+  else                 out->system_z0 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+  DictLookup(in,"x1_system",NULL,(void **)&tempstr);
+  if (tempstr == NULL) out->system_x1 = SW_SYSTEM_FIRST;
+  else                 out->system_x1 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+  DictLookup(in,"y1_system",NULL,(void **)&tempstr);
+  if (tempstr == NULL) out->system_y1 = SW_SYSTEM_FIRST;
+  else                 out->system_y1 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+  DictLookup(in,"z1_system",NULL,(void **)&tempstr);
+  if (tempstr == NULL) out->system_z1 = SW_SYSTEM_FIRST;
+  else                 out->system_z1 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+
+  DictLookup(in,"x0_axis",NULL,(void **)&tempint);
+  if (tempstr == NULL) out->axis_x0 = 0;
+  else                 out->axis_x0 = *tempint;
+  DictLookup(in,"y0_axis",NULL,(void **)&tempint);
+  if (tempstr == NULL) out->axis_y0 = 0;
+  else                 out->axis_y0 = *tempint;
+  DictLookup(in,"z0_axis",NULL,(void **)&tempint);
+  if (tempstr == NULL) out->axis_z0 = 0;
+  else                 out->axis_z0 = *tempint;
+  DictLookup(in,"x1_axis",NULL,(void **)&tempint);
+  if (tempstr == NULL) out->axis_x1 = 0;
+  else                 out->axis_x1 = *tempint;
+  DictLookup(in,"y1_axis",NULL,(void **)&tempint);
+  if (tempstr == NULL) out->axis_y1 = 0;
+  else                 out->axis_y1 = *tempint;
+  DictLookup(in,"z1_axis",NULL,(void **)&tempint);
+  if (tempstr == NULL) out->axis_z1 = 0;
+  else                 out->axis_z1 = *tempint;
+
+  DictLookup(in,"x0",NULL,(void **)&tempval);
+  out->x0 = tempval->real; // Check units
+
+  return;
+ }
 
 // void arrow_add(ArrowItem **list, Dict *in);
 // void arrow_remove(ArrowItem **list, Dict *in);
