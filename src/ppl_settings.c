@@ -560,6 +560,7 @@ void arrow_add(arrow_object **list, Dict *in)
   else                 out->axis_z1 = *tempint;
 
   DictLookup(in,"x0",NULL,(void **)&tempval);
+  
   out->x0 = tempval->real; // Check units
 
   return;
