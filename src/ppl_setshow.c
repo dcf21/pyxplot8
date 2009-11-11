@@ -91,12 +91,16 @@ void directive_set(Dict *command)
   with_words *tempstyle, ww_temp1, ww_temp2;
   canvas_item *ptr;
   settings_graph *sg;
+  arrow_object  **al;
+  label_object  **ll;
   settings_axis  *xa, *ya, *za, *tempaxis, *tempaxis2;
 
   DictLookup(command,"editno",NULL,(void **)(&EditNo));
   if (EditNo == NULL)
    {
     sg = &settings_graph_current;
+    al = &arrow_list;
+    ll = &label_list;
     xa = XAxes; ya = YAxes; za = ZAxes;
    }
   else
@@ -111,6 +115,8 @@ void directive_set(Dict *command)
     if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
 
     sg = &(ptr->settings);
+    al = &(ptr->arrow_list);
+    ll = &(ptr->label_list);
     xa = ptr->XAxes; ya = ptr->YAxes; za = ptr->ZAxes;
    }
 
@@ -119,9 +125,11 @@ void directive_set(Dict *command)
 
   if      ((strcmp(directive,"set")==0) && (strcmp(setoption,"arrow")==0)) /* set arrow */
    {
+    arrow_add(al, command);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"arrow")==0)) /* unset arrow */
    {
+    arrow_remove(al, command);
    }
   else if ((strcmp(setoption,"autoscale")==0)) /* set autoscale | unset autoscale */
    {
@@ -512,6 +520,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"label")==0)) /* set label */
    {
+    label_add(ll, command);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
    {
@@ -595,6 +604,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"label")==0)) /* set nolabel | unset label */
    {
+    label_remove(ll, command);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
    {
@@ -1351,7 +1361,7 @@ void directive_show3(char *out, char *ItemSet, unsigned char ItemSetShow, int in
   return;
  }
 
-int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *sg, settings_axis *xa, settings_axis *ya, settings_axis *za)
+int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *sg, arrow_object **al, label_object **ll, settings_axis *xa, settings_axis *ya, settings_axis *za)
  {
   char *out, *buf, *buf2, *bufp, *bufp2, temp1[32], temp2[32];
   int   i=0, p=0,j,k,l,m;
@@ -1359,6 +1369,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   FunctionDescriptor *FDiter;
   value *tempval, valobj;
   settings_axis *AxisPtr, *AxisPtrDef;
+  arrow_object *ai;
+  label_object *li;
+
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
   buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
@@ -1799,9 +1812,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     {
      switch (k)
       {
-       case 1 : { AxisPtr = &(YAxes[j]); AxisPtrDef = &(YAxesDefault[j]); break; }
-       case 2 : { AxisPtr = &(ZAxes[j]); AxisPtrDef = &(ZAxesDefault[j]); break; }
-       default: { AxisPtr = &(XAxes[j]); AxisPtrDef = &(XAxesDefault[j]); break; }
+       case 1 : { AxisPtr = &(ya[j]); AxisPtrDef = &(YAxesDefault[j]); break; }
+       case 2 : { AxisPtr = &(za[j]); AxisPtrDef = &(ZAxesDefault[j]); break; }
+       default: { AxisPtr = &(xa[j]); AxisPtrDef = &(XAxesDefault[j]); break; }
       }
      if (!AxisPtr->enabled) // Do not show any information for inactive axes, except that they're disabled
       {
@@ -1809,7 +1822,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         {
          sprintf(temp1, "%c%d", "xyz"[k], j);
          sprintf(buf2, "Axis %s has been disabled", temp1);
-         directive_show3(out+i, ItemSet, 0, interactive, "noaxis", temp1, 0, buf2);
+         directive_show3(out+i, ItemSet, 1, interactive, "noaxis", temp1, 0, buf2);
          i += strlen(out+i) ; p=1;
         }
        continue;
@@ -1840,7 +1853,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          if (AxisPtr->linkusing != NULL) { sprintf(buf+m, " using %s", AxisPtr->linkusing); m += strlen(buf+m); }
         }
        sprintf(buf2, "Settings for the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, "axis", buf,
+       directive_show3(out+i, ItemSet, 1, interactive, "axis", buf,
                        (AxisPtr->atzero             == AxisPtrDef->atzero            ) &&
                        (AxisPtr->enabled            == AxisPtrDef->enabled           ) &&
                        (AxisPtr->invisible          == AxisPtrDef->invisible         ) &&
@@ -1865,7 +1878,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->TickLabelRotate;
        sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
        sprintf(buf2, "Format string for the tick labels on the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf,
+       directive_show3(out+i, ItemSet, 1, interactive, temp1, buf,
                        (  ( AxisPtr->TickLabelRotate  ==AxisPtrDef->TickLabelRotate  ) &&
                           ( AxisPtr->TickLabelRotation==AxisPtrDef->TickLabelRotation) &&
                          (((AxisPtr->format==NULL)&&(AxisPtrDef->format==NULL)) ||
@@ -1883,7 +1896,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->LabelRotate;
        sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
        sprintf(buf2, "Textual label for the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf,
+       directive_show3(out+i, ItemSet, 1, interactive, temp1, buf,
                        (  ( AxisPtr->LabelRotate==AxisPtrDef->LabelRotate) &&
                          (((AxisPtr->label==NULL)&&(AxisPtrDef->label==NULL)) ||
                           ((AxisPtr->label!=NULL)&&(AxisPtrDef->label!=NULL)&&(strcmp(AxisPtr->label,AxisPtrDef->label)==0)))
@@ -1899,7 +1912,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        sprintf(buf, "%c%d", "xyz"[k], j); m = strlen(buf);
        if (AxisPtr->log==SW_BOOL_TRUE) sprintf(buf+m, " base %d", (int)AxisPtr->LogBase);
        sprintf(buf2, "Sets whether the %c%d axis scales linearly or logarithmically", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, bufp, buf, (AxisPtr->log==AxisPtrDef->log), buf2);
+       directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (AxisPtr->log==AxisPtrDef->log), buf2);
        i += strlen(out+i) ; p=1;
       }
 
@@ -1915,7 +1928,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        else                               bufp2 = "*";
        sprintf(buf , "[%s:%s]", bufp, bufp2);
        sprintf(buf2, "Sets the range of the %c%d axis", "xyz"[k], j);
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->min    == AxisPtrDef->min   ) &&
+       directive_show3(out+i, ItemSet, 1, interactive, temp1, buf, (AxisPtr->min    == AxisPtrDef->min   ) &&
                                                                    (AxisPtr->MinSet == AxisPtrDef->MinSet) &&
                                                                    (AxisPtr->max    == AxisPtrDef->max   ) &&
                                                                    (AxisPtr->MaxSet == AxisPtrDef->MaxSet)    , buf2);
@@ -1961,7 +1974,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           }
          sprintf(buf+m, ")");
         }
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->TickDir    == AxisPtrDef->TickDir   ) &&
+       directive_show3(out+i, ItemSet, 1, interactive, temp1, buf, (AxisPtr->TickDir    == AxisPtrDef->TickDir   ) &&
                                                                    (AxisPtr->TickMax    == AxisPtrDef->TickMax   ) &&
                                                                    (AxisPtr->TickMaxSet == AxisPtrDef->TickMaxSet) &&
                                                                    (AxisPtr->TickMin    == AxisPtrDef->TickMin   ) &&
@@ -2011,7 +2024,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           }
          sprintf(buf+m, ")");
         }
-       directive_show3(out+i, ItemSet, 0, interactive, temp1, buf, (AxisPtr->MTickDir    == AxisPtrDef->MTickDir   ) &&
+       directive_show3(out+i, ItemSet, 1, interactive, temp1, buf, (AxisPtr->MTickDir    == AxisPtrDef->MTickDir   ) &&
                                                                    (AxisPtr->MTickMax    == AxisPtrDef->MTickMax   ) &&
                                                                    (AxisPtr->MTickMaxSet == AxisPtrDef->MTickMaxSet) &&
                                                                    (AxisPtr->MTickMin    == AxisPtrDef->MTickMin   ) &&
@@ -2023,6 +2036,36 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       }
 
     }
+
+  // Showed numbered arrows
+  if (StrAutocomplete(word, "arrows", 1)>=0)
+   {
+    SHOW_HIGHLIGHT(1);
+    sprintf(out+i, "\n# Numbered arrows:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
+    for (ai=*al; ai!=NULL; ai=ai->next)
+     {
+      arrow_print(ai,buf);
+      sprintf(buf2, "arrow %6d", ai->id);
+      directive_show3(out+i, ItemSet, 1, interactive, buf2, buf, 1, buf2);
+      i += strlen(out+i);
+     }
+   }
+
+  // Show numbered text labels
+  if (StrAutocomplete(word, "labels", 1)>=0)
+   {
+    SHOW_HIGHLIGHT(1);
+    sprintf(out+i, "\n# Numbered text labels:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
+    for (li=*ll; li!=NULL; li=li->next)
+     {
+      label_print(li,buf);
+      sprintf(buf2, "label %6d", li->id);
+      directive_show3(out+i, ItemSet, 1, interactive, buf2, buf, 1, buf2);
+      i += strlen(out+i);
+     }
+   }
 
   // Show numbered styles
   if ((StrAutocomplete(word, "styles", 1)>=0) || (StrAutocomplete(word, "linestyles", 1)>=0))
@@ -2036,7 +2079,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       with_words_print(&(settings_plot_styles[j]),buf);
       sprintf(buf2, "style %4d", j);
       directive_show3(out+i, ItemSet, 0, interactive, buf2, buf, !with_words_compare(&(settings_plot_styles[j]),&(settings_plot_styles_default[j])), buf2);
-      i += strlen(out+i) ; p=1;
+      i += strlen(out+i);
      }
    }
 
@@ -2206,6 +2249,8 @@ void directive_show(Dict *command, int interactive)
   int           i=0, p=0, *EditNo;
   canvas_item    *ptr;
   settings_graph *sg;
+  arrow_object  **al;
+  label_object  **ll;
   settings_axis  *xa, *ya, *za;
 
   interactive = ( interactive && (settings_session_default.colour == SW_ONOFF_ON) );
@@ -2214,6 +2259,8 @@ void directive_show(Dict *command, int interactive)
   if (EditNo == NULL)
    {
     sg = &settings_graph_current;
+    al = &arrow_list;
+    ll = &label_list;
     xa = XAxes; ya = YAxes; za = ZAxes;
     ItemSet[0]='\0';
    }
@@ -2229,6 +2276,8 @@ void directive_show(Dict *command, int interactive)
     if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
   
     sg = &(ptr->settings);
+    al = &(ptr->arrow_list);
+    ll = &(ptr->label_list);
     xa = ptr->XAxes; ya = ptr->YAxes; za = ptr->ZAxes;
     sprintf(ItemSet, "item %d ", *EditNo);
    }
@@ -2261,17 +2310,19 @@ void directive_show(Dict *command, int interactive)
       DictLookup(ShowWordDict,"setting",NULL,(void **)&ShowWord);
       if (StrAutocomplete(ShowWord,"all",1)>=0)
        {
-        directive_show2("settings"  ,ItemSet, interactive, sg, xa, ya, za);
-        directive_show2("axes_"     ,ItemSet, interactive, sg, xa, ya, za);
-        directive_show2("linestyles",ItemSet, interactive, sg, xa, ya, za);
-        directive_show2("variables" ,ItemSet, interactive, sg, xa, ya, za);
-        directive_show2("functions" ,ItemSet, interactive, sg, xa, ya, za);
-        directive_show2("units"     ,ItemSet, interactive, sg, xa, ya, za);
+        directive_show2("settings"  ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("axes_"     ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("arrows"    ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("labels"    ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("linestyles",ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("variables" ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("functions" ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("units"     ,ItemSet, interactive, sg, al, ll, xa, ya, za);
         p=1;
        }
       else
        {
-        p = (directive_show2(ShowWord, ItemSet, interactive, sg, xa, ya, za) || p);
+        p = (directive_show2(ShowWord, ItemSet, interactive, sg, al, ll, xa, ya, za) || p);
        }
      }
     if (p==0) { ppl_error(ERR_SYNTAX, "Invalid show option."); ppl_error(ERR_PREFORMED, txt_show); }

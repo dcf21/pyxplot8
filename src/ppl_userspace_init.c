@@ -140,6 +140,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_randomln      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandomln   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random\\_lognormal}@<@1,@2@>", "random_lognormal(zeta,sigma) returns a random sample from the log normal distribution centred on zeta, and of width sigma"};
   FunctionDescriptor fd_randomp       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_frandomp    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random\\_poisson}@<@1@>", "random_poisson(n) returns a random integer from a Poisson distribution with mean n"};
   FunctionDescriptor fd_real          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_real        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{Re}@<@1@>", "Re(z) returns the magnitude of the real part of z"};
+  FunctionDescriptor fd_root          = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_root        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{root}@<@1,@2@>", "root(z,n) returns the nth root of z"};
   FunctionDescriptor fd_sec           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sec}@<@1@>", "sec(x) returns the secant of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_sech          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sech        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sech}@<@1@>", "sech(x) returns the hyperbolic secant of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_sin           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sin         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sin}@<@1@>", "sin(x) returns the sine of x. If x is dimensionless, it is assumed to be measured in radians"};
@@ -372,6 +373,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "random_lognormal",(void *)&fd_randomln    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "random_poisson" , (void *)&fd_randomp     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Re"             , (void *)&fd_real        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "root"           , (void *)&fd_root        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sec"            , (void *)&fd_sec         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sech"           , (void *)&fd_sech        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sin"            , (void *)&fd_sin         , sizeof(FunctionDescriptor), DATATYPE_VOID);

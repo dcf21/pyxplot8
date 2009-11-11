@@ -1083,6 +1083,15 @@ void dcfmath_real(value *in, value *output, int *status, char *errtext)
   ppl_units_DimCpy(output, in);
  }
 
+void dcfmath_root(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  value *in = in2; // Only check that in2 is dimensionless
+  char *FunctionDescription = "root(z,n)";
+  CHECK_2NOTNAN;
+  CHECK_1INPUT_DIMLESS; // THIS IS CORRECT. Only check in2
+  CHECK_OUTPUT_OKAY;
+ }
+
 void dcfmath_sec(value *in, value *output, int *status, char *errtext)
  {  
   char *FunctionDescription = "sec(x)";

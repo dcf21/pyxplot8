@@ -46,9 +46,13 @@ static void canvas_item_delete(canvas_item *ptr)
   int i;
   if (ptr->commandline != NULL) free(ptr->commandline);
   if (ptr->text        != NULL) free(ptr->text);
+  with_words_destroy(&(ptr->settings.DataStyle));
+  with_words_destroy(&(ptr->settings.FuncStyle));
   for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->XAxes[i]), NULL);
   for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->YAxes[i]), NULL);
   for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->ZAxes[i]), NULL);
+  arrow_list_destroy(&(ptr->arrow_list));
+  label_list_destroy(&(ptr->label_list));
   // !!! Delete plot descriptor !!!
   free(ptr);
   return;
@@ -98,9 +102,13 @@ static int canvas_itemlist_add(Dict *command, int type, char *line, canvas_item 
 
   // Copy the user's current settings
   ptr->settings = settings_graph_current;
+  with_words_copy(&ptr->settings.DataStyle , &settings_graph_current.DataStyle);
+  with_words_copy(&ptr->settings.FuncStyle , &settings_graph_current.FuncStyle);
   for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->XAxes[i]), &(XAxes[i]));
   for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->YAxes[i]), &(YAxes[i]));
   for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->ZAxes[i]), &(ZAxes[i]));
+  arrow_list_copy(&ptr->arrow_list , &arrow_list);
+  label_list_copy(&ptr->label_list , &label_list);
 
   *output = ptr; // Return pointer to the newly-created canvas item
   *id     = ptr->id;

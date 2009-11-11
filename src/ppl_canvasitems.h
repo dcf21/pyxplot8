@@ -47,6 +47,8 @@ typedef struct canvas_item {
  plot_descriptor    *plot_items;
  settings_graph      settings;
  settings_axis       XAxes[MAX_AXES], YAxes[MAX_AXES], ZAxes[MAX_AXES];
+ arrow_object       *arrow_list;
+ label_object       *label_list;
  struct canvas_item *next;
 } canvas_item;
 

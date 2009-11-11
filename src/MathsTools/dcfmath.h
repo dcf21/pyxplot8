@@ -116,6 +116,7 @@ void dcfmath_frandomg(value *in, value *output, int *status, char *errtext);
 void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_frandomp(value *in, value *output, int *status, char *errtext);
 void dcfmath_real(value *in, value *output, int *status, char *errtext);
+void dcfmath_root(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_sec(value *in, value *output, int *status, char *errtext);
 void dcfmath_sech(value *in, value *output, int *status, char *errtext);
 void dcfmath_sin(value *in, value *output, int *status, char *errtext);

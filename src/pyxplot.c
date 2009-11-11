@@ -237,6 +237,10 @@ int main(int argc, char **argv)
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_destroy(&(settings_plot_styles        [i]));
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_destroy(&(settings_plot_styles_default[i]));
 
+  // Free arrows and text labels which are set
+  arrow_list_destroy(&arrow_list); arrow_list_destroy(&arrow_list_default);
+  label_list_destroy(&label_list); label_list_destroy(&label_list_default);
+
   // Save GNU Readline history
   if (WillBeInteractive>0)
    {

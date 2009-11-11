@@ -105,7 +105,7 @@ typedef struct settings_axis {
 
 typedef struct arrow_object {
  int        id;
- double     x0       ,y0       ,z0       ,x1       ,y1       ,z1;
+ value      x0       ,y0       ,z0       ,x1       ,y1       ,z1;
  int        system_x0,system_y0,system_z0,system_x1,system_y1,system_z1;
  int        axis_x0  ,axis_y0  ,axis_z0  ,axis_x1  ,axis_y1  ,axis_z1;
  with_words style;
@@ -114,10 +114,11 @@ typedef struct arrow_object {
 
 typedef struct label_object {
  int         id;
- double      x       ,y       ,z;
+ value       x       ,y       ,z;
  int         system_x,system_y,system_z;
  int         axis_x  ,axis_y  ,axis_z;
- with_words style;
+ char       *text;
+ with_words  style;
  struct label_object *next;
  } label_object;
 
@@ -131,6 +132,17 @@ extern Dict             *settings_filters;
 extern arrow_object     *arrow_list, *arrow_list_default;
 extern label_object     *label_list, *label_list_default;
 #endif
+
+void arrow_add         (arrow_object **list, Dict *in);
+void arrow_remove      (arrow_object **list, Dict *in);
+void arrow_list_copy   (arrow_object **out, arrow_object **in);
+void arrow_list_destroy(arrow_object **list);
+void arrow_print       (arrow_object  *in, char *out);
+void label_add         (label_object **list, Dict *in);
+void label_remove      (label_object **list, Dict *in);
+void label_list_copy   (label_object **out, label_object **in);
+void label_list_destroy(label_object **list);
+void label_print       (label_object  *in, char *out);
 
 void  DestroyAxis       (settings_axis *in , const settings_axis *def);
 void  CopyAxis          (settings_axis *out, const settings_axis *in );

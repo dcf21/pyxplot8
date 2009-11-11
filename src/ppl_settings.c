@@ -383,10 +383,10 @@ void ppl_settings_readconfig()
                                DestroyAxis(&(ZAxes[i]), &(ZAxesDefault[i])); ZAxes[i] = ZAxesDefault[i]; 
                              }
   for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
-  //arrow_list_destroy(&arrow_list);
-  //arrow_list_copy(&arrow_list, &arrow_list_default);
-  //label_list_destroy(&arrow_list);
-  //label_list_copy(&label_list, &label_list_default);
+  arrow_list_destroy(&arrow_list);
+  arrow_list_copy(&arrow_list, &arrow_list_default);
+  label_list_destroy(&label_list);
+  label_list_copy(&label_list, &label_list_default);
   return;
  }
 
@@ -498,22 +498,54 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
 // ROUTINES FOR MANIPULATING ARROWS STRUCTURES
 // -------------------------------------------
 
-// store x0,y0,z0,x1,y1,z1,arrowtype,with_words
-//       system type for each coordinate
+#define arrow_add_get_system(X,Y) \
+  DictLookup(in,X "_system",NULL,(void **)&tempstr); \
+  if (tempstr == NULL) Y = SW_SYSTEM_FIRST; \
+  else                 Y = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+
+#define arrow_add_get_axis(X,Y) \
+  DictLookup(in,X "_axis",NULL,(void **)&tempint); \
+  if (tempint == NULL) Y = 0; \
+  else                 Y = *tempint;
+
+#define arrow_add_check_dimensions(X,Y) \
+  DictLookup(in,X,NULL,(void **)&tempval); \
+  if (tempval == NULL) { tempval = &tempvalobj; ppl_units_zero(tempval); } \
+  if ((Y == SW_SYSTEM_GRAPH) || (Y == SW_SYSTEM_PAGE)) \
+   if (!tempval->dimensionless) \
+    for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (tempval->exponent[i] != (i==UNIT_LENGTH)) \
+     { \
+      sprintf(temp_err_string, "Coordinates specified in the graph and page systems must have dimensions of length. Received coordinate with dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 0, 0)); \
+      ppl_error(ERR_GENERAL, temp_err_string); return; \
+     };
+
+#define arrow_add_copy_coordinate(X,Y,Z) \
+  DictLookup(in,X,NULL,(void **)&tempval); \
+  if (tempval == NULL) { tempval = &tempvalobj; ppl_units_zero(tempval); } \
+  if ((Y == SW_SYSTEM_GRAPH) || (Y == SW_SYSTEM_PAGE)) \
+   if (tempval->dimensionless) { tempval->dimensionless=0; tempval->exponent[UNIT_LENGTH]=1; tempval->real /= 100; } \
+  Z = *tempval;
 
 void arrow_add(arrow_object **list, Dict *in)
  {
-  int   *tempint;
+  int   *tempint, i, system_x0, system_y0, system_z0, system_x1, system_y1, system_z1;
   char  *tempstr;
-  value *tempval;
+  value *tempval, tempvalobj;
+  with_words ww_temp1;
   arrow_object *out;
+
+  arrow_add_get_system("x0",system_x0); arrow_add_get_system("y0",system_y0); arrow_add_get_system("z0",system_z0);
+  arrow_add_get_system("x1",system_x1); arrow_add_get_system("y1",system_y1); arrow_add_get_system("z1",system_z1);
+
+  arrow_add_check_dimensions("x0",system_x0); arrow_add_check_dimensions("y0",system_y0); arrow_add_check_dimensions("z0",system_z0);
+  arrow_add_check_dimensions("x1",system_x1); arrow_add_check_dimensions("y1",system_y1); arrow_add_check_dimensions("z1",system_z1);
 
   DictLookup(in,"arrow_id",NULL,(void **)&tempint);
   while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
   if ((*list != NULL) && ((*list)->id == *tempint))
    {
     out = *list;
-    // sort out with_words structure
+    with_words_destroy(&out->style);
    } else {
     out = (arrow_object *)malloc(sizeof(arrow_object));
     if (out == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
@@ -521,67 +553,248 @@ void arrow_add(arrow_object **list, Dict *in)
     out->next = *list;
     *list     = out;
    }
-  DictLookup(in,"x0_system",NULL,(void **)&tempstr);
-  if (tempstr == NULL) out->system_x0 = SW_SYSTEM_FIRST;
-  else                 out->system_x0 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
-  DictLookup(in,"y0_system",NULL,(void **)&tempstr);
-  if (tempstr == NULL) out->system_y0 = SW_SYSTEM_FIRST;
-  else                 out->system_y0 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
-  DictLookup(in,"z0_system",NULL,(void **)&tempstr);
-  if (tempstr == NULL) out->system_z0 = SW_SYSTEM_FIRST;
-  else                 out->system_z0 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
-  DictLookup(in,"x1_system",NULL,(void **)&tempstr);
-  if (tempstr == NULL) out->system_x1 = SW_SYSTEM_FIRST;
-  else                 out->system_x1 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
-  DictLookup(in,"y1_system",NULL,(void **)&tempstr);
-  if (tempstr == NULL) out->system_y1 = SW_SYSTEM_FIRST;
-  else                 out->system_y1 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
-  DictLookup(in,"z1_system",NULL,(void **)&tempstr);
-  if (tempstr == NULL) out->system_z1 = SW_SYSTEM_FIRST;
-  else                 out->system_z1 = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
 
-  DictLookup(in,"x0_axis",NULL,(void **)&tempint);
-  if (tempstr == NULL) out->axis_x0 = 0;
-  else                 out->axis_x0 = *tempint;
-  DictLookup(in,"y0_axis",NULL,(void **)&tempint);
-  if (tempstr == NULL) out->axis_y0 = 0;
-  else                 out->axis_y0 = *tempint;
-  DictLookup(in,"z0_axis",NULL,(void **)&tempint);
-  if (tempstr == NULL) out->axis_z0 = 0;
-  else                 out->axis_z0 = *tempint;
-  DictLookup(in,"x1_axis",NULL,(void **)&tempint);
-  if (tempstr == NULL) out->axis_x1 = 0;
-  else                 out->axis_x1 = *tempint;
-  DictLookup(in,"y1_axis",NULL,(void **)&tempint);
-  if (tempstr == NULL) out->axis_y1 = 0;
-  else                 out->axis_y1 = *tempint;
-  DictLookup(in,"z1_axis",NULL,(void **)&tempint);
-  if (tempstr == NULL) out->axis_z1 = 0;
-  else                 out->axis_z1 = *tempint;
+  with_words_fromdict(in, &ww_temp1, 1);
+  with_words_copy(&out->style, &ww_temp1);
 
-  DictLookup(in,"x0",NULL,(void **)&tempval);
-  
-  out->x0 = tempval->real; // Check units
+  out->system_x0 = system_x0; out->system_y0 = system_y0; out->system_z0 = system_z0;
+  out->system_x1 = system_x1; out->system_y1 = system_y1; out->system_z1 = system_z1;
+
+  arrow_add_get_axis("x0", out->axis_x0); arrow_add_get_axis("y0", out->axis_y0); arrow_add_get_axis("z0", out->axis_z0);
+  arrow_add_get_axis("x1", out->axis_x1); arrow_add_get_axis("y1", out->axis_y1); arrow_add_get_axis("z1", out->axis_z1);
+
+  arrow_add_copy_coordinate("x0",system_x0,out->x0); arrow_add_copy_coordinate("y0",system_y0,out->y0); arrow_add_copy_coordinate("z0",system_z0,out->z0);
+  arrow_add_copy_coordinate("x1",system_x1,out->x1); arrow_add_copy_coordinate("y1",system_y1,out->y1); arrow_add_copy_coordinate("z1",system_z1,out->z1);
 
   return;
  }
 
-// void arrow_add(ArrowItem **list, Dict *in);
-// void arrow_remove(ArrowItem **list, Dict *in);
-// void arrow_list_copy(ArrowItem **out, ArrowItem **in);
-// void arrow_list_destroy(ArrowItem **list);
+void arrow_remove(arrow_object **list, Dict *in)
+ {
+  int          *tempint;
+  arrow_object *obj, **first;
+  List         *templist;
+  Dict         *tempdict;
+  ListIterator *listiter;
+
+  first = list;
+  DictLookup(in,"arrow_list,",NULL,(void **)&templist);
+  listiter = ListIterateInit(templist);
+  if (listiter == NULL) arrow_list_destroy(list); // set noarrow with no number specified means all arrows deleted
+  while (listiter != NULL)
+   {
+    tempdict = (Dict *)listiter->data;
+    DictLookup(tempdict,"arrow_id",NULL,(void **)&tempint);
+    list = first;
+    while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
+    if ((*list != NULL) && ((*list)->id == *tempint))
+     {
+      obj   = *list;
+      *list = (*list)->next;
+      with_words_destroy(&obj->style);
+      free(obj);
+     } else {
+      sprintf(temp_err_string,"Arrow number %d is not defined", *tempint);
+      ppl_error(ERR_GENERAL, temp_err_string);
+     }
+    listiter = ListIterate(listiter, NULL);
+   }
+  return;
+ }
+
+void arrow_list_copy(arrow_object **out, arrow_object **in)
+ {
+  *out = NULL;
+  while (*in != NULL)
+   {
+    *out = (arrow_object *)malloc(sizeof(arrow_object));
+    if (*out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    **out = **in;
+    (*out)->next = NULL;
+    with_words_copy(&(*out)->style, &(*in)->style);
+    in  = &((*in )->next);
+    out = &((*out)->next);
+   }
+  return;
+ }
+
+void arrow_list_destroy(arrow_object **list)
+ {
+  arrow_object *obj, **first;
+
+  first = list;
+  while (*list != NULL)
+   {
+    obj = *list;
+    *list = (*list)->next;
+    with_words_destroy(&obj->style);
+    free(obj);
+   }
+  *first = NULL;
+  return;
+ }
+
+void arrow_print(arrow_object *in, char *out)
+ {
+  int i;
+  sprintf(out, "from %s", (char *)FetchSettingName(in->system_x0, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR));
+  i = strlen(out);
+  if (in->system_x0==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_x0); i+=strlen(out+i); }
+  sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->x0),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_y0, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_y0==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_y0); i+=strlen(out+i); }
+  sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->y0),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_z0, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_z0==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z0); i+=strlen(out+i); }
+  sprintf(out+i, " %s ", ppl_units_NumericDisplay(&(in->z0),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, "to %s", (char *)FetchSettingName(in->system_x1, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_x1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_x1); i+=strlen(out+i); }
+  sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->x1),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_y1, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_y1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_y1); i+=strlen(out+i); }
+  sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->y1),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_z1, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_z1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z1); i+=strlen(out+i); }
+  sprintf(out+i, " %s", ppl_units_NumericDisplay(&(in->z1),0,0,0)); i+=strlen(out+i);
+  with_words_print(&in->style, out+i+6);
+  if (strlen(out+i+6)>0) { sprintf(out+i, " with"); out[i+5]=' '; }
+  else                   { out[i]='\0'; }
+  return;
+ }
 
 // -------------------------------------------
 // ROUTINES FOR MANIPULATING LABELS STRUCTURES
 // -------------------------------------------
 
-// store x0,y0,z0,text,with_words
-//       system type for each coordinate
+void label_add(label_object **list, Dict *in)
+ {
+  int   *tempint, i, system_x, system_y, system_z;
+  char  *tempstr, *label;
+  value *tempval, tempvalobj;
+  with_words ww_temp1;
+  label_object *out;
 
-// void label_add(LabelItem **list, Dict *in);
-// void label_remove(LabelItem **list, Dict *in);
-// void label_list_copy(LabelItem **out, LabelItem **in);
-// void label_list_destroy(LabelItem **list);
+  arrow_add_get_system("x",system_x); arrow_add_get_system("y",system_y); arrow_add_get_system("z",system_z);
+
+  arrow_add_check_dimensions("x",system_x); arrow_add_check_dimensions("y",system_y); arrow_add_check_dimensions("z",system_z);
+
+  DictLookup(in,"label_text",NULL,(void **)&tempstr);
+  label = (char *)malloc(strlen(tempstr)+1);
+  if (label == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+  strcpy(label, tempstr);
+
+  DictLookup(in,"label_id",NULL,(void **)&tempint);
+  while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
+  if ((*list != NULL) && ((*list)->id == *tempint))
+   {
+    out = *list;
+    with_words_destroy(&out->style);
+   } else {
+    out = (label_object *)malloc(sizeof(label_object));
+    if (out == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    out->id   = *tempint;
+    out->next = *list;
+    *list     = out;
+   }
+
+  with_words_fromdict(in, &ww_temp1, 1);
+  with_words_copy(&out->style, &ww_temp1);
+  out->text  = label;
+  out->system_x = system_x; out->system_y = system_y; out->system_z = system_z;
+  arrow_add_get_axis("x", out->axis_x); arrow_add_get_axis("y", out->axis_y); arrow_add_get_axis("z", out->axis_z);
+  arrow_add_copy_coordinate("x",system_x,out->x); arrow_add_copy_coordinate("y",system_y,out->y); arrow_add_copy_coordinate("z",system_z,out->z);
+  return;
+ }
+
+void label_remove(label_object **list, Dict *in)
+ {
+  int          *tempint;
+  label_object *obj, **first;
+  List         *templist;
+  Dict         *tempdict;
+  ListIterator *listiter;
+
+  first = list;
+  DictLookup(in,"label_list,",NULL,(void **)&templist);
+  listiter = ListIterateInit(templist);
+  if (listiter == NULL) label_list_destroy(list); // set nolabel with no number specified means all labels deleted
+  while (listiter != NULL)
+   {
+    tempdict = (Dict *)listiter->data;
+    DictLookup(tempdict,"label_id",NULL,(void **)&tempint);
+    list = first;
+    while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
+    if ((*list != NULL) && ((*list)->id == *tempint))
+     {
+      obj   = *list;
+      *list = (*list)->next;
+      with_words_destroy(&obj->style);
+      free(obj->text);
+      free(obj);
+     } else {
+      sprintf(temp_err_string,"Label number %d is not defined", *tempint);
+      ppl_error(ERR_GENERAL, temp_err_string);
+     }
+    listiter = ListIterate(listiter, NULL);
+   }
+  return;
+ }
+
+void label_list_copy(label_object **out, label_object **in)
+ {
+  *out = NULL;
+  while (*in != NULL)
+   {
+    *out = (label_object *)malloc(sizeof(label_object));
+    if (*out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    **out = **in;
+    (*out)->next = NULL;
+    (*out)->text = (char *)malloc(strlen((*in)->text)+1);
+    if ((*out)->text == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); free(*out); *out=NULL; return; }
+    strcpy((*out)->text, (*in)->text);
+    with_words_copy(&(*out)->style, &(*in)->style);
+    in  = &((*in )->next);
+    out = &((*out)->next);
+   }
+  return;
+ }
+
+void label_list_destroy(label_object **list)
+ {
+  label_object *obj, **first;
+
+  first = list;
+  while (*list != NULL)
+   {
+    obj = *list;
+    *list = (*list)->next;
+    with_words_destroy(&obj->style);
+    free(obj->text);
+    free(obj);
+   }
+  *first = NULL;
+  return;
+ }
+
+void label_print(label_object *in, char *out)
+ {
+  int i;
+  StrEscapify(in->text, out);
+  i = strlen(out);
+  sprintf(out+i, " at %s", (char *)FetchSettingName(in->system_x, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_x==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_x); i+=strlen(out+i); }
+  sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->x),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_y, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_y==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_y); i+=strlen(out+i); }
+  sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->y),0,0,0)); i+=strlen(out+i);
+  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_z, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  if (in->system_z==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z); i+=strlen(out+i); }
+  sprintf(out+i, " %s", ppl_units_NumericDisplay(&(in->z),0,0,0)); i+=strlen(out+i);
+  with_words_print(&in->style, out+i+6);
+  if (strlen(out+i+6)>0) { sprintf(out+i, " with"); out[i+5]=' '; }
+  else                   { out[i]='\0'; }
+  return;
+ }
 
 // -----------------------------------------------
 // ROUTINES FOR MANIPULATING WITH_WORDS STRUCTURES
