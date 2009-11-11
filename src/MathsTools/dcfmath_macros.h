@@ -38,7 +38,7 @@
 
 #define CHECK_NEEDINT(X, DESCRIPTION) \
  { \
-  if (((X)->real < 0) || ((X)->real >= INT_MAX)) \
+  if (((X)->FlagComplex) || ((X)->real < 0) || ((X)->real >= INT_MAX)) \
    { \
     if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range 0 <= k < %d.",FunctionDescription,DESCRIPTION,INT_MAX); return; } \
     else { NULL_OUTPUT; } \

@@ -602,6 +602,21 @@ void arrow_remove(arrow_object **list, Dict *in)
   return;
  }
 
+#define CMPVAL(X,Y) (ppl_units_DimEqual(&X,&Y) && ppl_units_DblEqual(X.real , Y.real))
+
+unsigned char arrow_compare(arrow_object *a, arrow_object *b)
+ {
+  if (a->id!=b->id) return 0;
+  if ( (!CMPVAL(a->x0 , b->x0)) || (!CMPVAL(a->y0 , b->y0)) || (!CMPVAL(a->z0 , b->z0)) ) return 0;
+  if ( (!CMPVAL(a->x1 , b->x1)) || (!CMPVAL(a->y1 , b->y1)) || (!CMPVAL(a->z1 , b->z1)) ) return 0;
+  if ( (a->system_x0!=b->system_x0) || (a->system_y0!=b->system_y0) || (a->system_z0!=b->system_z0) ) return 0;
+  if ( (a->system_x1!=b->system_x1) || (a->system_y1!=b->system_y1) || (a->system_z1!=b->system_z1) ) return 0;
+  if ( (a->axis_x0!=b->axis_x0) || (a->axis_y0!=b->axis_y0) || (a->axis_z0!=b->axis_z0) ) return 0;
+  if ( (a->axis_x1!=b->axis_x1) || (a->axis_y1!=b->axis_y1) || (a->axis_z1!=b->axis_z1) ) return 0;
+  if (!with_words_compare(&a->style , &b->style)) return 0;
+  return 1;
+ }
+
 void arrow_list_copy(arrow_object **out, arrow_object **in)
  {
   *out = NULL;
@@ -738,6 +753,17 @@ void label_remove(label_object **list, Dict *in)
     listiter = ListIterate(listiter, NULL);
    }
   return;
+ }
+
+unsigned char label_compare(label_object *a, label_object *b)
+ {
+  if (a->id!=b->id) return 0;
+  if ( (!CMPVAL(a->x , b->x)) || (!CMPVAL(a->y , b->y)) || (!CMPVAL(a->z , b->z)) ) return 0;
+  if ( (a->system_x!=b->system_x) || (a->system_y!=b->system_y) || (a->system_z!=b->system_z) ) return 0;
+  if ( (a->axis_x!=b->axis_x) || (a->axis_y!=b->axis_y) || (a->axis_z!=b->axis_z) ) return 0;
+  if (!with_words_compare(&a->style , &b->style)) return 0;
+  if (strcmp(a->text , b->text)!=0) return 0;
+  return 1;
  }
 
 void label_list_copy(label_object **out, label_object **in)

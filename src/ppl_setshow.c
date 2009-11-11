@@ -1365,12 +1365,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
  {
   char *out, *buf, *buf2, *bufp, *bufp2, temp1[32], temp2[32];
   int   i=0, p=0,j,k,l,m;
+  unsigned char unchanged;
   DictIterator *DictIter;
   FunctionDescriptor *FDiter;
   value *tempval, valobj;
   settings_axis *AxisPtr, *AxisPtrDef;
-  arrow_object *ai;
-  label_object *li;
+  arrow_object *ai, *ai_default, *ai_default_prev;
+  label_object *li, *li_default, *li_default_prev;
 
   out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
   buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
@@ -2043,12 +2044,34 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Numbered arrows:\n\n"); i += strlen(out+i); p=1;
     SHOW_DEHIGHLIGHT;
+    ai_default = ai_default_prev = arrow_list_default;
     for (ai=*al; ai!=NULL; ai=ai->next)
      {
+      while ((ai_default != NULL) && (ai_default->id <= ai->id)) 
+       {
+        if (ai_default->id < ai->id)
+         { 
+          sprintf(buf2, "noarrow %6d", ai_default->id); 
+          sprintf(buf,"remove arrow %6d", ai_default->id);
+          directive_show3(out+i, ItemSet, 1, interactive, buf2, "", 1, buf);
+          i += strlen(out+i);
+         }
+        ai_default_prev = ai_default;
+        ai_default      = ai_default->next;
+       }
       arrow_print(ai,buf);
       sprintf(buf2, "arrow %6d", ai->id);
-      directive_show3(out+i, ItemSet, 1, interactive, buf2, buf, 1, buf2);
+      if ((unchanged = ((ai_default_prev != NULL) && (ai_default_prev->id == ai->id)))!=0) unchanged = arrow_compare(ai , ai_default_prev);
+      directive_show3(out+i, ItemSet, 1, interactive, buf2, buf, unchanged, buf2);
       i += strlen(out+i);
+     }
+    while (ai_default != NULL)
+     {
+      sprintf(buf2, "noarrow %6d", ai_default->id); 
+      sprintf(buf,"remove arrow %6d", ai_default->id);
+      directive_show3(out+i, ItemSet, 1, interactive, buf2, "", 1, buf);
+      i += strlen(out+i);
+      ai_default      = ai_default->next;
      }
    }
 
@@ -2058,12 +2081,34 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Numbered text labels:\n\n"); i += strlen(out+i); p=1;
     SHOW_DEHIGHLIGHT;
+    li_default = li_default_prev = label_list_default;
     for (li=*ll; li!=NULL; li=li->next)
      {
+      while ((li_default != NULL) && (li_default->id <= li->id))
+       {
+        if (li_default->id < li->id)
+         {
+          sprintf(buf2, "nolabel %6d", li_default->id);
+          sprintf(buf,"remove label %6d", li_default->id);
+          directive_show3(out+i, ItemSet, 1, interactive, buf2, "", 1, buf);
+          i += strlen(out+i);
+         }
+        li_default_prev = li_default;
+        li_default      = li_default->next;
+       }
       label_print(li,buf);
       sprintf(buf2, "label %6d", li->id);
-      directive_show3(out+i, ItemSet, 1, interactive, buf2, buf, 1, buf2);
+      if ((unchanged = ((li_default_prev != NULL) && (li_default_prev->id == li->id)))!=0) unchanged = label_compare(li , li_default_prev);
+      directive_show3(out+i, ItemSet, 1, interactive, buf2, buf, unchanged, buf2);
       i += strlen(out+i);
+     }
+    while (li_default != NULL)
+     {
+      sprintf(buf2, "nolabel %6d", li_default->id);
+      sprintf(buf,"remove label %6d", li_default->id);
+      directive_show3(out+i, ItemSet, 1, interactive, buf2, "", 1, buf);
+      i += strlen(out+i);
+      li_default      = li_default->next;
      }
    }
 

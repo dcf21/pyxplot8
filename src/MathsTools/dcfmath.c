@@ -1086,9 +1086,40 @@ void dcfmath_real(value *in, value *output, int *status, char *errtext)
 void dcfmath_root(value *in1, value *in2, value *output, int *status, char *errtext)
  {
   value *in = in2; // Only check that in2 is dimensionless
+  value x1,x2;
+  double tmpdbl;
   char *FunctionDescription = "root(z,n)";
+  unsigned char negated = 0;
   CHECK_2NOTNAN;
   CHECK_1INPUT_DIMLESS; // THIS IS CORRECT. Only check in2
+  if ((in2->FlagComplex) || (in2->real < 2) || (in2->real >= INT_MAX))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range 2 <= n < %d.",FunctionDescription,"function's second argument must be an integer in the range",INT_MAX); return; }
+    else { NULL_OUTPUT; }
+   }
+  ppl_units_zero(&x2);
+  x1=*in1;
+  if (x1.real < 0.0) { negated=1; x1.real=-x1.real; if (x1.imag!=0.0) x1.imag=-x1.imag; }
+  x2.real = 1.0 / floor(in2->real);
+  ppl_units_pow(&x1, &x2, output, status, errtext);
+  if (*status) return;
+  if (negated)
+   {
+    if (fmod(floor(in2->real) , 2) == 1)
+     {
+      output->real=-output->real; if (output->imag!=0.0) output->imag=-output->imag;
+     } else {
+      if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { QUERY_OUT_OF_RANGE; }
+      else
+       {
+        tmpdbl = output->imag;
+        output->imag = output->real;
+        output->real = -tmpdbl;
+        output->FlagComplex = !ppl_units_DblEqual(output->imag, 0);
+        if (!output->FlagComplex) output->imag=0.0; // Enforce that real numbers have positive zero imaginary components
+       } 
+     }
+   }
   CHECK_OUTPUT_OKAY;
  }
 
