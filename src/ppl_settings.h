@@ -135,6 +135,7 @@ extern label_object     *label_list, *label_list_default;
 
 void arrow_add         (arrow_object **list, Dict *in);
 void arrow_remove      (arrow_object **list, Dict *in);
+void arrow_unset       (arrow_object **list, Dict *in);
 void arrow_default     (arrow_object **list, Dict *in);
 unsigned char arrow_compare(arrow_object *a, arrow_object *b);
 void arrow_list_copy   (arrow_object **out, arrow_object **in);
@@ -142,6 +143,7 @@ void arrow_list_destroy(arrow_object **list);
 void arrow_print       (arrow_object  *in, char *out);
 void label_add         (label_object **list, Dict *in);
 void label_remove      (label_object **list, Dict *in);
+void label_unset       (label_object **list, Dict *in);
 void label_default     (label_object **list, Dict *in);
 unsigned char label_compare(label_object *a, label_object *b);
 void label_list_copy   (label_object **out, label_object **in);

@@ -594,8 +594,44 @@ void arrow_remove(arrow_object **list, Dict *in)
       with_words_destroy(&obj->style);
       free(obj);
      } else {
-      sprintf(temp_err_string,"Arrow number %d is not defined", *tempint);
-      ppl_error(ERR_GENERAL, temp_err_string);
+      //sprintf(temp_err_string,"Arrow number %d is not defined", *tempint);
+      //ppl_error(ERR_GENERAL, temp_err_string);
+     }
+    listiter = ListIterate(listiter, NULL);
+   }
+  return;
+ }
+
+void arrow_unset(arrow_object **list, Dict *in)
+ {
+  int          *tempint;
+  arrow_object *obj, *new, **first;
+  List         *templist;
+  Dict         *tempdict;
+  ListIterator *listiter;
+
+  arrow_remove(list, in); // First of all, remove any arrows which we are unsetting
+  first = list;
+  DictLookup(in,"arrow_list,",NULL,(void **)&templist);
+  listiter = ListIterateInit(templist);
+
+  if (listiter == NULL) arrow_list_copy(list, &arrow_list_default); // Check to see whether we are unsetting ALL arrows, and if so, use the copy command
+  while (listiter != NULL)
+   {
+    tempdict = (Dict *)listiter->data;
+    DictLookup(tempdict,"arrow_id",NULL,(void **)&tempint); // Go through each arrow_id in supplied list and copy items from default list into current settings
+    obj  = arrow_list_default;
+    while ((obj != NULL) && (obj->id < *tempint)) obj = (obj->next);
+    if ((obj != NULL) && (obj->id == *tempint))
+     {
+      list = first;
+      while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
+      new = (arrow_object *)malloc(sizeof(arrow_object));
+      if (new == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      *new = *obj;
+      new->next = *list;
+      with_words_copy(&new->style, &obj->style);
+      *list = new;
      }
     listiter = ListIterate(listiter, NULL);
    }
@@ -747,8 +783,47 @@ void label_remove(label_object **list, Dict *in)
       free(obj->text);
       free(obj);
      } else {
-      sprintf(temp_err_string,"Label number %d is not defined", *tempint);
-      ppl_error(ERR_GENERAL, temp_err_string);
+      //sprintf(temp_err_string,"Label number %d is not defined", *tempint);
+      //ppl_error(ERR_GENERAL, temp_err_string);
+     }
+    listiter = ListIterate(listiter, NULL);
+   }
+  return;
+ }
+
+void label_unset(label_object **list, Dict *in)
+ {
+  int          *tempint;
+  label_object *obj, *new, **first;
+  List         *templist;
+  Dict         *tempdict;
+  ListIterator *listiter;
+
+  label_remove(list, in); // First of all, remove any labels which we are unsetting
+  first = list;
+  DictLookup(in,"label_list,",NULL,(void **)&templist);
+  listiter = ListIterateInit(templist);
+
+  if (listiter == NULL) label_list_copy(list, &label_list_default); // Check to see whether we are unsetting ALL labels, and if so, use the copy command
+  while (listiter != NULL)
+   {
+    tempdict = (Dict *)listiter->data;
+    DictLookup(tempdict,"label_id",NULL,(void **)&tempint); // Go through each label_id in supplied list and copy items from default list into current settings
+    obj  = label_list_default;
+    while ((obj != NULL) && (obj->id < *tempint)) obj = (obj->next);
+    if ((obj != NULL) && (obj->id == *tempint))
+     {
+      list = first;
+      while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
+      new = (label_object *)malloc(sizeof(label_object));
+      if (new == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      *new = *obj;
+      new->next = *list;
+      new->text = (char *)malloc(strlen(obj->text)+1);
+      if (new->text == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); free(new); return; }
+      strcpy(new->text, obj->text);
+      with_words_copy(&new->style, &obj->style);
+      *list = new;
      }
     listiter = ListIterate(listiter, NULL);
    }

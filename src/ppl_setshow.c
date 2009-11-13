@@ -129,7 +129,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"arrow")==0)) /* unset arrow */
    {
-    arrow_remove(al, command);
+    arrow_unset(al, command);
    }
   else if ((strcmp(setoption,"autoscale")==0)) /* set autoscale | unset autoscale */
    {
@@ -522,6 +522,10 @@ void directive_set(Dict *command)
    {
     label_add(ll, command);
    }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"label")==0)) /* unset label */
+   {
+    label_unset(ll, command);
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
    {
     DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
@@ -570,6 +574,10 @@ void directive_set(Dict *command)
     if ((settings_term_default.multiplot == SW_ONOFF_OFF) && (settings_term_current.multiplot == SW_ONOFF_ON)) directive_clear();
     settings_term_current.multiplot = settings_term_default.multiplot;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"noarrow")==0)) /* set noarrow */
+   {
+    arrow_remove(al, command);
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nobackup")==0)) /* set nobackup */
    {
     settings_term_current.backup = SW_ONOFF_OFF;
@@ -602,7 +610,7 @@ void directive_set(Dict *command)
    {
     sg->key = SW_ONOFF_OFF;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"label")==0)) /* set nolabel | unset label */
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nolabel")==0)) /* set nolabel */
    {
     label_remove(ll, command);
    }
