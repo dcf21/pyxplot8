@@ -50,6 +50,7 @@
 #include "ppl_units_fns.h"
 
 #include "dcfmath.h"
+#include "airy_functions.h"
 #include "zeta_riemann.h"
 
 #include "dcfmath_macros.h"
@@ -196,6 +197,58 @@ void dcfmath_acsch(value *in, value *output, int *status, char *errtext)
   GSL_SET_COMPLEX(&z,in->real,in->imag); z=gsl_complex_arccsch(z);
   CLEANUP_GSLCOMPLEX;
   CLEANUP_APPLYUNIT(UNIT_ANGLE);
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_airy_ai(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "airy_ai(x)";
+  gsl_complex zi,z;
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  GSL_SET_COMPLEX(&zi,in->real,in->imag);
+  airy_ai(zi,&z,status,errtext);
+  if (*status) return;
+  CLEANUP_GSLCOMPLEX;
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_airy_ai_diff(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "airy_ai_diff(x)";
+  gsl_complex zi,z;
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  GSL_SET_COMPLEX(&zi,in->real,in->imag);
+  airy_ai_diff(zi,&z,status,errtext);
+  if (*status) return;
+  CLEANUP_GSLCOMPLEX;
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_airy_bi(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "airy_bi(x)";
+  gsl_complex zi,z;
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  GSL_SET_COMPLEX(&zi,in->real,in->imag);
+  airy_bi(zi,&z,status,errtext);
+  if (*status) return;
+  CLEANUP_GSLCOMPLEX;
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_airy_bi_diff(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "airy_bi_diff(x)";
+  gsl_complex zi,z;
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  GSL_SET_COMPLEX(&zi,in->real,in->imag);
+  airy_bi_diff(zi,&z,status,errtext);
+  if (*status) return;
+  CLEANUP_GSLCOMPLEX;
   CHECK_OUTPUT_OKAY;
  }
 

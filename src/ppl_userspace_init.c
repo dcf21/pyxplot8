@@ -57,6 +57,10 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_acoth         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acoth       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acoth}@<@1@>", "acoth(x) returns the hyperbolic arccotangent of x"};
   FunctionDescriptor fd_acsc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsc        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acsc}@<@1@>", "acsc(x) returns the arccosecant of x"};
   FunctionDescriptor fd_acsch         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_acsch       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{acsch}@<@1@>", "acsch(x) returns the hyperbolic arccosecant of x"};
+  FunctionDescriptor fd_airy_ai       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_airy_ai     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{airy\\_ai}@<@1@>", "airy_ai(z) returns the Airy function Ai evaluated at z"};
+  FunctionDescriptor fd_airy_ai_diff  = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_airy_ai_diff, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{airy\\_ai\\_diff}@<@1@>", "airy_ai_diff(z) returns the first derivative of the Airy function Ai evaluated at z"};
+  FunctionDescriptor fd_airy_bi       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_airy_bi     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{airy\\_bi}@<@1@>", "airy_bi(z) returns the Airy function Bi evaluated at z"};
+  FunctionDescriptor fd_airy_bi_diff  = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_airy_bi_diff, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{airy\\_bi\\_diff}@<@1@>", "airy_bi_diff(z) returns the first derivative of the Airy function Bi evaluated at z"};
   FunctionDescriptor fd_arg           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_arg         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{arg}@<@1@>", "arg(z) returns the argument of the complex number z"};
   FunctionDescriptor fd_asec          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asec        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asec}@<@1@>", "asec(x) returns the arcsecant of x"};
   FunctionDescriptor fd_asech         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_asech       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{asech}@<@1@>", "asech(x) returns the hyperbolic arcsecant of x"};
@@ -290,6 +294,10 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acoth"          , (void *)&fd_acoth       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acsc"           , (void *)&fd_acsc        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "acsch"          , (void *)&fd_acsch       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "airy_ai"        , (void *)&fd_airy_ai     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "airy_ai_diff"   , (void *)&fd_airy_ai_diff, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "airy_bi"        , (void *)&fd_airy_bi     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "airy_bi_diff"   , (void *)&fd_airy_bi_diff, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "arg"            , (void *)&fd_arg         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asec"           , (void *)&fd_asec        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "asech"          , (void *)&fd_asech       , sizeof(FunctionDescriptor), DATATYPE_VOID);

@@ -1,4 +1,4 @@
-// zeta.c
+// zeta_riemann.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
