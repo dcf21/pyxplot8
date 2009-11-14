@@ -135,12 +135,10 @@ fit f() 'data.dat' index 1 using 2:3 via a,b
 The first line specifies the functional form which is to be used.  The
 coefficients within this function which are to be varied during the fitting
 process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
-The modifiers \indmodt{index}, \indmodt{every} and
-\indmodt{using}\indmod{select} have the same meanings here as in the plot
-command.\footnote{The {\tt select} modifier, to be introduced in
-Section~\ref{sec:select_modifier} can also be used.}  For example, given the
-following data file which contains a sampled square wave, entitled {\tt
-square.dat}:
+The modifiers \indmodt{index}, \indmodt{every}, \indmodt{select} and
+\indmodt{using} have the same meanings here as in the plot command.  For
+example, given the following data file which contains a sampled square wave,
+entitled {\tt square.dat}:
 
 \begin{verbatim}
     0.314159          1
@@ -240,13 +238,13 @@ assessment of the probability distribution of the parameters.
 \label{sec:spline_command}
 \index{best fit lines}
 
-The \indcmdt{interpolate} can be used to generate a special function with
+The \indcmdt{interpolate} can be used to generate a special function within
 PyXPlot which interpolates a set of \datapoint s supplied from a data file.
 Various different types of interpolation are supported: linear interpolation,
 power-law interpolation\footnote{Power-law interpolation is equivalent to
 linear interpolation in log-log space.}, polynomial interpolation and
 cubic-spline interpolation. The use of polynomial interpolation with large
-datasets is strong discouraged, as polynomial fits tend to show severe
+datasets is strongly discouraged, as polynomial fits tend to show severe
 oscillations between \datapoint s.
 
 The \indcmdt{interpolate} has similar syntax to the \indcmdt{fit}:
@@ -292,7 +290,7 @@ not to smooth at all -- equivalent to {\tt smooth 0.0} -- and a value of $1.0$
 corresponds to a moderate degree of smoothing.
 
 The \indcmdt{spline} command is an alias for {\tt interpolate spline}; the
-following two statements have equivalent meaning:
+following two statements are equivalent:
 
 \begin{verbatim}
 spline f() 'data1.dat'
@@ -311,16 +309,16 @@ For example:
 histogram f() 'input.dat'
 \end{verbatim}
 
-\noindent would bin the points in the first column of the file {\tt input.dat}
-into bins of unit width and produce a function $f()$, the value of which at any
-given point was equal to the number of items in the bin at that point.
+\noindent bins the points in the first column of the file {\tt input.dat}
+into bins of unit width and produces a function $f()$, the value of which at any
+given point is equal to the number of items in the bin at that point.
 
 Modifiers can be supplied to the \indcmdt{histogram} command to control the bins
 that it uses.  The \indmodt{binwidth} modifier sets the width of the bins used
 and the \indmodt{binorigin} modifier their origin.  For example:
 
 \begin{verbatim}
-histogram wabbitcount() 'rabits.dat' binorigin 0.5 binwidth 2
+histogram wabbitcount() 'rabbits.dat' binorigin 0.5 binwidth 2
 \end{verbatim}
 
 \noindent bins the rabbit data into bins between $0.5$ and $2.5$, $2.5$ and
@@ -336,7 +334,7 @@ into two bins, $x=1\to 2$ and $x=2\to 4$.
 
 A range can be supplied immediately following the command, using the same
 syntax as in the {\tt plot} and {\tt fit} commands; only points that fall in
-that range will then be binned.  In the same way as for the {\tt plot} command,
+that range will be binned.  In the same way as for the {\tt plot} command,
 the \indmodt{index}, \indmodt{every}, \indmodt{using} and \indmodt{select}
 modifiers can also be used to bin different portions of a datafile.
 

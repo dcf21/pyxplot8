@@ -80,9 +80,9 @@ The #1 function #2
 \funcdef{Bv($\nu,T$)}{returns the power emitted by a blackbody of temperature $T$ at frequency $\nu$ per unit area, per unit solid angle, per unit frequency. $T$ should have physical dimensions of temperature, or be a dimensionless number, in which case it is understood to be a temperature in Kelvin. $\nu$ should have physical dimensions of frequency, or be a dimensionless number, in which case it is understood to be a frequency measured in Hertz. The output has physical dimensions of power per unit area per unit solid angle per unit frequency.}
 \funcdef{Bvmax($T$)}{returns the frequency at which the function Bv($\nu,T$) reaches its maximum, as calculated by the Wien Displacement Law. The inputs are subject to the same constraints as above.}
 \funcdef{ceil($x$)}{returns the smallest integer value greater than or equal to $x$. $x$ must be a dimensionless real number.}
-\funcdef{chisqCDF($x,nu$)}{returns the cumulative probability desity at $x$ in a $\chi$-squared distribution with $\nu$ degrees of freedom. $\nu$ must be a positive real dimensionless integer. $x$ must be a positive real dimensionless number.}
-\funcdef{chisqCDFi($P,nu$)}{returns the point $x$ at which the cumulative probability desity in a $\chi$-squared distribution with $\nu$ degrees of freedom is $P$. $\nu$ must be a positive real dimensionless integer. $P$ must be a real number in the range $0\leq p \leq 1$.}
-\funcdef{chisqPDF($x,nu$)}{returns the probability desity at $x$ in a $\chi$-squared distribution with $\nu$ degrees of freedom. $\nu$ must be a positive real dimensionless integer. $x$ must be a positive real dimensionless number.}
+\funcdef{chisqCDF($x,nu$)}{returns the cumulative probability density at $x$ in a $\chi$-squared distribution with $\nu$ degrees of freedom. $\nu$ must be a positive real dimensionless integer. $x$ must be a positive real dimensionless number.}
+\funcdef{chisqCDFi($P,nu$)}{returns the point $x$ at which the cumulative probability density in a $\chi$-squared distribution with $\nu$ degrees of freedom is $P$. $\nu$ must be a positive real dimensionless integer. $P$ must be a real number in the range $0\leq p \leq 1$.}
+\funcdef{chisqPDF($x,nu$)}{returns the probability density at $x$ in a $\chi$-squared distribution with $\nu$ degrees of freedom. $\nu$ must be a positive real dimensionless integer. $x$ must be a positive real dimensionless number.}
 \funcdef{conjugate($z$)}{returns the complex conjugate of the complex number $z$, which may have any physical dimensions.}
 \funcdef{cos($z$)}{returns the cosine of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{cosh($z$)}{returns the hyperbolic cosine of $z$. $z$ may be any complex number, and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
@@ -96,7 +96,7 @@ The #1 function #2
 \funcdef{ellipticintK($k$)}{evaluates the following complete elliptic integral: \begin{displaymath} K(k) = \int_0^1 \frac{\mathrm{d}t}{\sqrt{(1-t^2)(1-k^2 t^2)}}. \end{displaymath} }
 \funcdef{ellipticintP($k,n$)}{evaluates the following complete elliptic integral: \begin{displaymath} P(k,n) = \int_0^{\nicefrac{\pi}{2}} \frac{\mathrm{d}\theta}{(1+n\sin^2\theta)(1-k^2\sin^2\theta)}.\end{displaymath} }
 \funcdef{erf($x$)}{evaluates the error function at $x$. $x$ must be a dimensionless real number.}
-\funcdef{erfc($x$)}{evaluates the complimentary error function at $x$. $x$ must be a dimensionless real number.}
+\funcdef{erfc($x$)}{evaluates the complementary error function at $x$. $x$ must be a dimensionless real number.}
 \funcdef{exp($z$)}{returns $e^z$. $z$ can be a complex number, but must either be dimensionless or be an angle.}
 \funcdef{expint($n,x$)}{evaluates the following integral: \begin{displaymath} \int_{t=1}^{t=\infty} \exp(-xt)/t^n \, \mathrm{d}t. \end{displaymath} $n$ must be a positive real dimensionless integer and $x$ must be a real dimensionless number.}
 \funcdef{expm1($x$)}{accurately evaluates $\exp(x)-1$. $x$ must be a dimensionless real number.}

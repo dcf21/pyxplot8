@@ -660,7 +660,7 @@ as above, may optionally placed in quotes for clarity. This should be followed
 by the numerical value of the dummy variable at the point where the given
 expression is to be differentiated. This value may have any physical
 dimensions, and may be a complex number. When complex arithmetic is enabled,
-PyXPlot checks that the function being differentiated satisfied the
+PyXPlot checks that the function being differentiated satisfies the
 Cauchy-Riemann equations, and returns an error if it does not to indicate that it
 is not differentiable.  The final, optional, parameter to the {\tt diff\_dx()}
 function is an approximate step size which indicates the range of argument
@@ -676,9 +676,9 @@ print diff\_dx('cos(x)', 1.0)
 The following is an example of a function which is not differentiable, and
 which throws an error because the Cauchy-Riemann equations are not satisfied:
 
-\begin{dontdo}
-pyxplot> set num comp
-pyxplot> print diff\_dx(Re(sin(x)),1)
+\begin{dontdo}\\
+set num comp\\
+print diff\_dx(Re(sin(x)),1)
 \end{dontdo}
 
 Advanced users may be interested to know that \indfunt{int\_dx()} function is
@@ -690,8 +690,8 @@ numerical calculus routines.
 
 \section{Equation Solving and Searching for Minima and Maxima}
 
-The \indcmdt{solve} can be used to numerically solve simple systems of
-equations, as in the following example, which solves a simple pair of
+The \indcmdt{solve} can be used to solve simple systems of
+equations numerically, as in the following example, which solves a simple pair of
 simultaneous equations of two variables:
 
 \begin{verbatim}
@@ -703,10 +703,10 @@ varied to achieve a numerical fit should be supplied as a comma-separated list
 after the word {\tt via}. No output is returned if the numerical solver
 succeeds, otherwise an error message is displayed. If any of the fitting
 variables are already defined prior to the \indcmdt{solve} being called, their
-values are used as initial guesses, otherwise an initial guess of one for each
+values are used as initial guesses, otherwise an initial guess of unity for each
 fitting variable is assumed.
 
-The \indcmdt{solve} works by minimised the square residuals of all of the
+The \indcmdt{solve} works by minimising the squares of the residuals of all of the
 equations supplied, and so even when no exact solution can be found, the best
 compromise is returned. The following example has no solution -- a system of
 three equations with two variables is over-constrained -- but PyXPlot
@@ -745,10 +745,10 @@ locally} optimum solution which is closest to the supplied initial guess, and
 this may or may not be the {\it globally} optimum solution.
 
 Furthermore, these commands usually work best when the optimum value they are
-searching for is of order one, and if the convergence radius of this solution
+searching for is of order unity, and if the convergence radius of this solution
 is of at least similar magnitude. PyXPlot does attempt to correct cases where
 the supplied initial guess turns out to be many orders of magnitude different
-from the true solution, but cannot be gauranteed in these cases not to wildly
+from the true solution, but cannot be guaranteed in these cases not to wildly
 overshoot and produce unexpected results.
 
 Wherever possible, it is strongly advised that the results returned by these
