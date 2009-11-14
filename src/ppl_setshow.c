@@ -230,9 +230,9 @@ void directive_set(Dict *command)
       tempdict = (Dict *)listiter->data;
       DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
       i = (int)GetFloat(tempstr+1,NULL);
-      if      (tempstr[0]=='y') { DestroyAxis(&(ya[i]), &(YAxesDefault[i])); ya[i] = YAxesDefault[i]; }
-      else if (tempstr[0]=='z') { DestroyAxis(&(za[i]), &(ZAxesDefault[i])); za[i] = ZAxesDefault[i]; }
-      else                      { DestroyAxis(&(xa[i]), &(XAxesDefault[i])); xa[i] = XAxesDefault[i]; }
+      if      (tempstr[0]=='y') { DestroyAxis( &(ya[i]) ); CopyAxis(&(ya[i]), &(YAxesDefault[i])); }
+      else if (tempstr[0]=='z') { DestroyAxis( &(za[i]) ); CopyAxis(&(za[i]), &(ZAxesDefault[i])); }
+      else                      { DestroyAxis( &(xa[i]) ); CopyAxis(&(xa[i]), &(XAxesDefault[i])); }
       listiter = ListIterate(listiter, NULL);
      }
    }
@@ -1021,17 +1021,17 @@ void directive_set(Dict *command)
     tempaxis->MTickMinSet  = tempaxis2->MTickMinSet;
     tempaxis->MTickMaxSet  = tempaxis2->MTickMaxSet;
     tempaxis->MTickStepSet = tempaxis2->MTickStepSet;
-    if (tempaxis-> TickList != NULL) { if (tempaxis-> TickList!=tempaxis2-> TickList) free(tempaxis-> TickList); tempaxis-> TickList = NULL; }
-    if (tempaxis-> TickStrs != NULL) { if (tempaxis-> TickStrs!=tempaxis2-> TickStrs) free(tempaxis-> TickStrs); tempaxis-> TickStrs = NULL; }
-    if (tempaxis->MTickList != NULL) { if (tempaxis->MTickList!=tempaxis2->MTickList) free(tempaxis->MTickList); tempaxis->MTickList = NULL; }
-    if (tempaxis->MTickStrs != NULL) { if (tempaxis->MTickStrs!=tempaxis2->MTickStrs) free(tempaxis->MTickStrs); tempaxis->MTickStrs = NULL; }
-    if (ppl_units_DimEqual(&tempaxis->unit,&tempaxis2->unit))
-     {
-      tempaxis-> TickList = tempaxis2-> TickList;
-      tempaxis-> TickStrs = tempaxis2-> TickStrs;
-      tempaxis->MTickList = tempaxis2->MTickList;
-      tempaxis->MTickStrs = tempaxis2->MTickStrs;
-     }
+    if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } // Delete old explicit tick lists
+    if (tempaxis-> TickStrs != NULL) { free(tempaxis-> TickStrs); tempaxis-> TickStrs = NULL; }
+    if (tempaxis->MTickList != NULL) { free(tempaxis->MTickList); tempaxis->MTickList = NULL; }
+    if (tempaxis->MTickStrs != NULL) { free(tempaxis->MTickStrs); tempaxis->MTickStrs = NULL; }
+    //if (ppl_units_DimEqual(&tempaxis->unit,&tempaxis2->unit))
+    // {
+    //  tempaxis-> TickList = tempaxis2-> TickList;
+    //  tempaxis-> TickStrs = tempaxis2-> TickStrs;
+    //  tempaxis->MTickList = tempaxis2->MTickList;
+    //  tempaxis->MTickStrs = tempaxis2->MTickStrs;
+    // }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"title")==0)) /* set title */
    {

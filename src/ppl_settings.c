@@ -266,7 +266,7 @@ void ppl_settings_makedefault()
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles        [i]),1);
   for (i=0; i<MAX_PLOTSTYLES; i++) with_words_zero(&(settings_plot_styles_default[i]),1);
 
-  // Set up current axes
+  // Set up current axes. Because default axis contains no malloced strings, we don't need to use AxisCopy() here.
   for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;
   XAxes[1].enabled = YAxes[1].enabled = ZAxes[1].enabled = 1;
   for (i=0; i<MAX_AXES; i++) { XAxesDefault[i] = XAxes[i]; YAxesDefault[i] = YAxes[i]; ZAxesDefault[i] = ZAxes[i]; }
@@ -378,9 +378,9 @@ void ppl_settings_readconfig()
     settings_paletteG_current[i] = settings_paletteG_default[i];
     settings_paletteB_current[i] = settings_paletteB_default[i];
    }
-  for (i=0; i<MAX_AXES; i++) { DestroyAxis(&(XAxes[i]), &(XAxesDefault[i])); XAxes[i] = XAxesDefault[i]; 
-                               DestroyAxis(&(YAxes[i]), &(YAxesDefault[i])); YAxes[i] = YAxesDefault[i]; 
-                               DestroyAxis(&(ZAxes[i]), &(ZAxesDefault[i])); ZAxes[i] = ZAxesDefault[i]; 
+  for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i])); 
+                               DestroyAxis( &(YAxes[i]) ); CopyAxis(&(YAxes[i]), &(YAxesDefault[i]));
+                               DestroyAxis( &(ZAxes[i]) ); CopyAxis(&(ZAxes[i]), &(ZAxesDefault[i]));
                              }
   for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
   arrow_list_destroy(&arrow_list);
@@ -1156,26 +1156,25 @@ void with_words_copy(with_words *out, const with_words *in)
   return;
  }
 
-
 // ------------------------------------------------------
 // Functions for creating and destroying axis descriptors
 // ------------------------------------------------------
 
-void DestroyAxis(settings_axis *in, const settings_axis *def)
+void DestroyAxis(settings_axis *in)
  {
   int i;
-  if (((def==NULL) || (in->format    != def->format   )) && (in->format    != NULL)) { free(in->format   ); in->format    = NULL; }
-  if (((def==NULL) || (in->label     != def->label    )) && (in->label     != NULL)) { free(in->label    ); in->label     = NULL; }
-  if (((def==NULL) || (in->linkusing != def->linkusing)) && (in->linkusing != NULL)) { free(in->linkusing); in->linkusing = NULL; }
-  if (((def==NULL) || (in->MTickList != def->MTickList)) && (in->MTickList != NULL)) { free(in->MTickList); in->MTickList = NULL; }
-  if (((def==NULL) || (in->MTickStrs != def->MTickStrs)) && (in->MTickStrs != NULL))
+  if (in->format    != NULL) { free(in->format   ); in->format    = NULL; }
+  if (in->label     != NULL) { free(in->label    ); in->label     = NULL; }
+  if (in->linkusing != NULL) { free(in->linkusing); in->linkusing = NULL; }
+  if (in->MTickList != NULL) { free(in->MTickList); in->MTickList = NULL; }
+  if (in->MTickStrs != NULL)
    {
     for (i=0; in->MTickStrs[i]!=NULL; i++) free(in->MTickStrs);
     free(in->MTickStrs);
     in->MTickStrs = NULL;
    }
-  if (((def==NULL) || (in->TickList  != def->TickList )) && (in->TickList  != NULL)) { free(in->TickList ); in->TickList  = NULL; }
-  if (((def==NULL) || (in->TickStrs  != def->TickStrs )) && (in->TickStrs  != NULL))
+  if (in->TickList  != NULL) { free(in->TickList ); in->TickList  = NULL; }
+  if (in->TickStrs  != NULL)
    {
     for (i=0; in->TickStrs[i]!=NULL; i++) free(in->TickStrs);
     free(in->TickStrs );
@@ -1184,6 +1183,7 @@ void DestroyAxis(settings_axis *in, const settings_axis *def)
   return;
  }
 
+// settings_axis_default is a safe fallback axis because it contains no malloced strings
 #define XMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *out = settings_axis_default; return; }
 
 void CopyAxis(settings_axis *out, const settings_axis *in)

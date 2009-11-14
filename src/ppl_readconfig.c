@@ -492,9 +492,9 @@ void ReadConfigFile(char *ConfigFname)
         settings_paletteG_current[i] = settings_paletteG_default[i];
         settings_paletteB_current[i] = settings_paletteB_default[i];
        }
-      for (i=0; i<MAX_AXES; i++) { DestroyAxis(&(XAxes[i]), &(XAxesDefault[i])); XAxes[i] = XAxesDefault[i];
-                                   DestroyAxis(&(YAxes[i]), &(YAxesDefault[i])); YAxes[i] = YAxesDefault[i];
-                                   DestroyAxis(&(ZAxes[i]), &(ZAxesDefault[i])); ZAxes[i] = ZAxesDefault[i];
+      for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i]));
+                                   DestroyAxis( &(YAxes[i]) ); CopyAxis(&(YAxes[i]), &(YAxesDefault[i]));
+                                   DestroyAxis( &(ZAxes[i]) ); CopyAxis(&(ZAxes[i]), &(ZAxesDefault[i]));
                                  }
       for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
       arrow_list_destroy(&arrow_list);
@@ -521,9 +521,9 @@ void ReadConfigFile(char *ConfigFname)
         settings_paletteG_default[i] = settings_paletteG_current[i];
         settings_paletteB_default[i] = settings_paletteB_current[i];
        }
-      for (i=0; i<MAX_AXES; i++) { DestroyAxis(&(XAxesDefault[i]), &(XAxes[i])); XAxesDefault[i] = XAxes[i];    
-                                   DestroyAxis(&(YAxesDefault[i]), &(YAxes[i])); YAxesDefault[i] = YAxes[i];     
-                                   DestroyAxis(&(ZAxesDefault[i]), &(ZAxes[i])); ZAxesDefault[i] = ZAxes[i];     
+      for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxesDefault[i]) ); CopyAxis(&(XAxesDefault[i]), &(XAxes[i]));
+                                   DestroyAxis( &(YAxesDefault[i]) ); CopyAxis(&(YAxesDefault[i]), &(YAxes[i]));
+                                   DestroyAxis( &(ZAxesDefault[i]) ); CopyAxis(&(ZAxesDefault[i]), &(ZAxes[i]));
                                  }
       for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles_default[i])); with_words_copy(&(settings_plot_styles_default[i]) , &(settings_plot_styles[i])); }
       arrow_list_destroy(&arrow_list_default);

@@ -150,8 +150,8 @@ void label_list_copy   (label_object **out, label_object **in);
 void label_list_destroy(label_object **list);
 void label_print       (label_object  *in, char *out);
 
-void  DestroyAxis       (settings_axis *in , const settings_axis *def);
-void  CopyAxis          (settings_axis *out, const settings_axis *in );
+void  DestroyAxis       (settings_axis *in);
+void  CopyAxis          (settings_axis *out, const settings_axis *in);
 
 // Functions defined in ppl_readconfig.c
 #ifndef _PPL_READCONFIG_C

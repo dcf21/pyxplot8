@@ -48,9 +48,9 @@ static void canvas_item_delete(canvas_item *ptr)
   if (ptr->text        != NULL) free(ptr->text);
   with_words_destroy(&(ptr->settings.DataStyle));
   with_words_destroy(&(ptr->settings.FuncStyle));
-  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->XAxes[i]), NULL);
-  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->YAxes[i]), NULL);
-  for (i=0; i<MAX_AXES; i++) DestroyAxis(&(ptr->ZAxes[i]), NULL);
+  for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->XAxes[i]) );
+  for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->YAxes[i]) );
+  for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->ZAxes[i]) );
   arrow_list_destroy(&(ptr->arrow_list));
   label_list_destroy(&(ptr->label_list));
   // !!! Delete plot descriptor !!!
