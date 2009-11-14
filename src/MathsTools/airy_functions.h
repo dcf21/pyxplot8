@@ -6,7 +6,7 @@
 // Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
 //               2008-9 Ross Church
 //
-// $Id: zeta_riemann.h 338 2009-08-22 21:42:18Z dcf21 $
+// $Id$
 //
 // PyXPlot is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software

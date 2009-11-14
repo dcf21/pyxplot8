@@ -1072,12 +1072,14 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
       *status=-1; k=-1;
       ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+2, 0, &k, 0, status, errout, 0);
       if (k<strlen(fnlist[j])) { sprintf(errout, "Expression '%s' is not syntactically valid %d %ld", fnlist[j],k,(long)strlen(fnlist[j])); *status=1; if (DEBUG) ppl_log(errout); return; }
-      if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, temp_err_string); COUNTEDERR2F; break; }
-      *status=0;
+      if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, temp_err_string); COUNTEDERR2F; *status=1; break; }
+      else            { *status=0; }
      }
     if (!(*status))
      {
       DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+1, UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+     } else {
+      discontinuity = (continuity == DATAFILE_DISCONTINUOUS);
      }
     *status=0;
    }

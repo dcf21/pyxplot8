@@ -8,7 +8,7 @@
 //
 //               2009   Matthew Smith
 //
-// $Id: zeta_riemann.c 344 2009-09-04 00:46:52Z dcf21 $
+// $Id$
 //
 // PyXPlot is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
