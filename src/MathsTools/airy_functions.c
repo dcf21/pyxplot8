@@ -124,7 +124,7 @@ void airy_lookup_ai(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         break;
         case 1:
         *a = gsl_complex_rect(0.000000107088798376430528,0.0000000376445041341328399);
-        *b = gsl_complex_rect(-0.000000291595748545378589,0.000000146296178088760197);
+        *b = gsl_complex_rect(-0.000000291595748545378589,-0.000000146296178088760197);
         break;
         case 2:
         *a = gsl_complex_rect(-0.000000843663635658861037,0.0000000316868610357800936);
@@ -132,63 +132,75 @@ void airy_lookup_ai(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         break;
         case 3:
         *a = gsl_complex_rect(0.0000140556717230700034,0.00000320688133083177304);
-        *b = gsl_complex_rect(-0.0000358156878450108478,0.0000205769639137091060);
+        *b = gsl_complex_rect(-0.0000358156878450108478,-0.0000205769639137091060);
         break;
         case 4:
-        *a = gsl_complex_rect(-0.000117019946243633813,0.000450917530047182554);
+        *a = gsl_complex_rect(-0.000117019946243633813,-0.000450917530047182554);
         *b = gsl_complex_rect(-0.000171337835527373982,0.00132059445165182243);
         break;
         case 5:
-        *a = gsl_complex_rect(-0.0218589721702940673,0.00523876961256432212);
+        *a = gsl_complex_rect(-0.0218589721702940673,-0.00523876961256432212);
         *b = gsl_complex_rect(0.0488267177114627294,0.0415074442551386387);
         break;
         case 6:
-        *a = gsl_complex_rect(-1.220790901269847527,0.236893925052021750);
+        *a = gsl_complex_rect(-1.220790901269847527,-0.236893925052021750);
         *b = gsl_complex_rect(2.591486551263149471,2.404933894000426047);
         break;
         case 7:
-        *a = gsl_complex_rect(-22.514625855155557690,55.623907050365362497);
+        *a = gsl_complex_rect(-22.514625855155557690,-55.623907050365362497);
         *b = gsl_complex_rect(-43.675188242376714544,164.421821533868615198);
         break;
         case 8:
         *a = gsl_complex_rect(1939.251073448379473234,12.475098475038992649);
-        *b = gsl_complex_rect(-4052.273683400929841763,3694.490657407860271925);
+        *b = gsl_complex_rect(-4052.273683400929841763,-3694.490657407860271925);
         break;
         case 9:
         *a = gsl_complex_rect(-31195.242506641886866766,11129.366826404318139359);
         *b = gsl_complex_rect(82915.787936565613332283,43101.341852362617253660);
         break;
         case 10:
-        *a = gsl_complex_rect(246008.113121887508591838,13409.753242896082955272);
-        *b = gsl_complex_rect(-454161.417817375165755840,524788.703881302459800912);
+        *a = gsl_complex_rect(246008.113121887508591838,-13409.753242896082955272);
+        *b = gsl_complex_rect(-454161.417817375165755840,-524788.703881302459800912);
         break;
         case 11:
-        *a = gsl_complex_rect(-560698.611396051473207968,412629.256090998659764942);
+        *a = gsl_complex_rect(-560698.611396051473207968,-412629.256090998659764942);
         *b = gsl_complex_rect(-128601.959446731032061736,1955193.832628681094297427);
         break;
         case 12:
         *a = gsl_complex_rect(76998.112421476293620880,691893.869381105492291665);
-        *b = gsl_complex_rect(1628946.548655847031109700,1088969.480171653175994800);
+        *b = gsl_complex_rect(1628946.548655847031109700,-1088969.480171653175994800);
         break;
         case 13:
-        *a = gsl_complex_rect(134617.243527793463413968,206344.398879070883749585);
-        *b = gsl_complex_rect(-681561.058089277244582407,130920.973307774865193561);
+        *a = gsl_complex_rect(134617.243527793463413968,-206344.398879070883749585);
+        *b = gsl_complex_rect(-681561.058089277244582407,-130920.973307774865193561);
         break;
         case 14:
         *a = gsl_complex_rect(-25235.935653472152988056,21451.189074051074287957);
         *b = gsl_complex_rect(78784.750951183600305216,50256.507799831144930004);
         break;
         case 15:
-        *a = gsl_complex_rect(958.821788780688620313,1685.678229384048972271);
-        *b = gsl_complex_rect(-5225.659640787960704555,1662.126603479601054409);
+        *a = gsl_complex_rect(958.821788780688620313,-1685.678229384048972271);
+        *b = gsl_complex_rect(-5225.659640787960704555,-1662.126603479601054409);
         break;
         case 16:
         *a = gsl_complex_rect(36.914735631845878659,47.309864671438115295);
-        *b = gsl_complex_rect(120.556938263078583107,120.033924619755946995);
+        *b = gsl_complex_rect(120.556938263078583107,-120.033924619755946995);
         break;
         case 17:
         *a = gsl_complex_rect(-0.411631872053758450,1.154133085728225467);
         *b = gsl_complex_rect(3.438836982285023958,1.020294784165429366);
+       }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(8.3,0.0);
+        *a=gsl_complex_rect(1.97486174966769314e-8,0.0);
+        *b=gsl_complex_rect(-5.74753973633800903e-8,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-8.1,0.0);
+        *a=gsl_complex_rect(-0.142908147093581424,0.0);
+        *b=gsl_complex_rect(0.856218586328624562,0.0);
        }
      }
     else
@@ -258,6 +270,18 @@ void airy_lookup_ai(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         *a = gsl_complex_rect(-0.369525268938545475,-0.982363120132267512);
         *b = gsl_complex_rect(-2.640584453161403622,1.000850197648983227);
        }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(6.9,0.0);
+        *a=gsl_complex_rect(9.78611333926603763e-7,0.0);
+        *b=gsl_complex_rect(-2.60492608708626216e-6,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-6.7,0.0);
+        *a=gsl_complex_rect(-0.0783124718012559192,0.0);
+        *b=gsl_complex_rect(-0.887907965255553545,0.0);
+       }
      }
    }
   else
@@ -317,6 +341,18 @@ void airy_lookup_ai(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         *a = gsl_complex_rect(0.565834486636532210,0.702465032137459288);
         *b = gsl_complex_rect(1.693217682289265054,-1.266250187624501159);
        }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(5.5,0.0);
+        *a=gsl_complex_rect(0.0000336853119085998144,0.0);
+        *b=gsl_complex_rect(-0.0000804633913055651434,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-5.3,0.0);
+        *a=gsl_complex_rect(0.182567931068339499,0.0);
+        *b=gsl_complex_rect(0.754575419947011041,0.0);
+       }
      }
     else
      {
@@ -360,6 +396,39 @@ void airy_lookup_ai(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         case 8:
         *a = gsl_complex_rect(-0.399255021084886709,-0.620073474688977667);
         *b = gsl_complex_rect(-1.356140170328659265,0.747979061496786733);
+       }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(4.1,0.0);
+        *a=gsl_complex_rect(0.000773629663781597187,0.0);
+        *b=gsl_complex_rect(-0.00161061146122698678,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-3.9,0.0);
+        *a=gsl_complex_rect(-0.147419905640744195,0.0);
+        *b=gsl_complex_rect(-0.747558085535477472,0.0);
+       }
+      if (mod<3.2)
+       {
+        if (arg<0.349)
+         {
+          *z0=gsl_complex_rect(2.7,0.0);
+          *a=gsl_complex_rect(0.0111985354510658809,0.0);
+          *b=gsl_complex_rect(-0.0193255606923776375,0.0);
+         }
+        else if (arg<0.698)
+         {
+          *z0=gsl_complex_rect(2.25,1.3);
+          *a=gsl_complex_rect(-0.0151244789566325122,-0.0263137408361838169);
+          *b=gsl_complex_rect(0.0147456584151680829,0.0487809489452374034);
+         }
+        else
+         {
+          *z0=gsl_complex_rect(1.67,1.99);
+          *a=gsl_complex_rect(-0.103601851239231523,-0.0262786874985897695);
+          *b=gsl_complex_rect(0.141916105307775135,0.104258228554974092);
+         }
        }
      }
    }
@@ -450,6 +519,18 @@ void airy_lookup_bi(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         *a = gsl_complex_rect(-1.197232705740973243,-0.398846715021573711);
         *b = gsl_complex_rect(-1.063357695753367352,3.318117262231328193);
        }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(7.9,0.0);
+        *a=gsl_complex_rect(907790.616061993809,0.0);
+        *b=gsl_complex_rect(2.52192411395678168e6,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-8.1,0.0);
+        *a=gsl_complex_rect(-0.302303309060702033,0.0);
+        *b=gsl_complex_rect(-0.416156639540127581,0.0);
+       }
      }
     else
      {
@@ -518,6 +599,18 @@ void airy_lookup_bi(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         *a = gsl_complex_rect(1.035372887759647344,-0.347508845565481187);
         *b = gsl_complex_rect(-1.048748656729446018,-2.499497840255305692);
        }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(6.5,0.0);
+        *a=gsl_complex_rect(22340.6077183969982,0.0);
+        *b=gsl_complex_rect(56062.4958425228607,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-6.7,0.0);
+        *a=gsl_complex_rect(0.341727738606750260,0.0);
+        *b=gsl_complex_rect(-0.190098777163749660,0.0);
+       }
      }
    }
   else
@@ -577,6 +670,18 @@ void airy_lookup_bi(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         *a = gsl_complex_rect(-0.760409929247544386,0.516811161929970686);
         *b = gsl_complex_rect(1.367896840330848079,1.549999754654686720);
        }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(5.1,0.0);
+        *a=gsl_complex_rect(819.209658679961277,0.0);
+        *b=gsl_complex_rect(1807.33448135136778,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-5.3,0.0);
+        *a=gsl_complex_rect(-0.323716076748792404,0.0);
+        *b=gsl_complex_rect(0.405556940883315528,0.0);
+       }
      }
     else
      {
@@ -620,6 +725,18 @@ void airy_lookup_bi(double mod, double arg, gsl_complex *a, gsl_complex *b, gsl_
         case 8:
         *a = gsl_complex_rect(0.707766208050378964,-0.340021058812675720);
         *b = gsl_complex_rect(-0.845016967250801511,-1.168521092980009461);
+       }
+      if (arg<0.04)
+       {
+        *z0=gsl_complex_rect(3.7,0.0);
+        *a=gsl_complex_rect(47.5607474995894429,0.0);
+        *b=gsl_complex_rect(87.8907272628334109,0.0);
+       }
+      if (arg>3.0543)
+       {
+        *z0=gsl_complex_rect(-3.9,0.0);
+        *a=gsl_complex_rect(0.372890578319395619,0.0);
+        *b=gsl_complex_rect(-0.268298362892145679,0.0);
        }
      }
    }
@@ -763,7 +880,7 @@ void airy_ai(gsl_complex in, gsl_complex *out, int *status, char *errtext)
   gsl_complex a,b,c,d,dp,dq,zah,zd,z0;
   mod = gsl_complex_abs(in);
   arg = gsl_complex_arg(in);
-  if (mod<3.2)
+  if (mod<3.2 && (mod<2.0 || arg>1.05 || arg<-1.05))
    {
     d = gsl_complex_mul_real(airy_series_y1(in),0.355028053887817239);
     d = gsl_complex_sub(d,gsl_complex_mul_real(airy_series_y2(in),0.258819403792806798));
@@ -798,7 +915,7 @@ void airy_ai(gsl_complex in, gsl_complex *out, int *status, char *errtext)
     if (log(mod)>440.0)
      {
       *status = 2; // calculation will overflow
-      sprintf(errtext,"Overflow error within Airy Function");
+      sprintf(errtext,"Overflow error within Airy function");
       return;
      }
     if (arg<-2.094395102393195492 || arg>2.094395102393195492)
@@ -824,7 +941,7 @@ void airy_ai(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_IMAG(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       dp = gsl_complex_mul(dp,gsl_complex_sin(c));
@@ -854,7 +971,7 @@ void airy_ai(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_REAL(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       d = gsl_complex_mul(d,gsl_complex_exp(c));
@@ -907,16 +1024,16 @@ void airy_bi(gsl_complex in, gsl_complex *out, int *status, char *errtext)
     if (log(mod)>440.0)
      {
       *status = 2; // calculation will overflow
-      sprintf(errtext,"Overflow error within Airy Function");
+      sprintf(errtext,"Overflow error within Airy function");
       return;
      }
-    if (arg<-1.570796326794896619 || arg>1.570796326794896619)
+    if (arg<-1.63 || arg>1.63)
      {
       zah = gsl_complex_pow_real(gsl_complex_negative(in),1.5);
       max = 29;
-      if(mod>10.0) max = 20;
-      if(mod>12.0) max = 16;
-      if(mod>16.0) max = 12;
+      if (mod>10.0) max = 20;
+      if (mod>12.0) max = 16;
+      if (mod>16.0) max = 12;
       c  = GSL_COMPLEX_ONE;
       dp = GSL_COMPLEX_ZERO;
       dq = GSL_COMPLEX_ZERO;
@@ -933,7 +1050,7 @@ void airy_bi(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_IMAG(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       dp = gsl_complex_mul(dp,gsl_complex_cos(c));
@@ -942,7 +1059,7 @@ void airy_bi(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       d  = gsl_complex_mul(d,gsl_complex_pow_real(gsl_complex_negative(in),-0.25));
       d  = gsl_complex_div_real(d,1.772453850905516027);
      }
-    else if (arg>-0.523598775598298873 && arg<0.523598775598298873)
+    else if (arg>-0.51 && arg<0.51)
      {
       zah = gsl_complex_pow_real(in,1.5);
       max = 29;
@@ -963,7 +1080,7 @@ void airy_bi(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_REAL(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       d = gsl_complex_mul(d,gsl_complex_exp(c));
@@ -995,7 +1112,7 @@ void airy_ai_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
   gsl_complex a,b,c,d,dp,dq,zah,zd,z0;
   mod = gsl_complex_abs(in);
   arg = gsl_complex_arg(in);
-  if (mod<3.2)
+  if (mod<3.2 && (mod<2.0 || arg>1.05 || arg<-1.05))
    {
     d = gsl_complex_mul_real(airy_series_y1_diff(in),0.355028053887817239);
     d = gsl_complex_sub(d,gsl_complex_mul_real(airy_series_y2_diff(in),0.258819403792806798));
@@ -1005,7 +1122,7 @@ void airy_ai_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
    }
   else if (mod<8.8)
    {
-    if(arg<0.0) {
+    if (arg<0.0) {
     conjugate = 1;
     in = gsl_complex_conjugate(in);
     arg = -arg;
@@ -1027,7 +1144,7 @@ void airy_ai_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
     if (log(mod)>440.0)
      {
       *status = 2; // calculation will overflow
-      sprintf(errtext,"Overflow error within Airy Function");
+      sprintf(errtext,"Overflow error within Airy function");
       return;
      }
     if (arg<-2.094395102393195492 || arg>2.094395102393195492)
@@ -1053,22 +1170,22 @@ void airy_ai_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_IMAG(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       dp = gsl_complex_mul(dp,gsl_complex_cos(c));
       dq = gsl_complex_mul(dq,gsl_complex_sin(c));
       d  = gsl_complex_add(dp,dq);
       d  = gsl_complex_mul(d,gsl_complex_pow_real(gsl_complex_negative(in),+0.25));
-      d  = gsl_complex_div_real(d,1.772453850905516027);
+      d  = gsl_complex_div_real(d,-1.772453850905516027);
      }
     else
      {
       zah = gsl_complex_pow_real(in,1.5);
       max = 29;
-      if(mod>10.0) max = 20;
-      if(mod>12.0) max = 16;
-      if(mod>16.0) max = 12;
+      if (mod>10.0) max = 20;
+      if (mod>12.0) max = 16;
+      if (mod>16.0) max = 12;
       c = GSL_COMPLEX_ONE;
       d = GSL_COMPLEX_ZERO;
       for (i=0;i<=max;i++)
@@ -1083,7 +1200,7 @@ void airy_ai_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_REAL(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       d = gsl_complex_mul(d,gsl_complex_exp(c));
@@ -1136,16 +1253,16 @@ void airy_bi_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
     if (log(mod)>440.0)
      {
       *status = 2; // calculation will overflow
-      sprintf(errtext,"Overflow error within Airy Function");
+      sprintf(errtext,"Overflow error within Airy function");
       return;
      }
-    if (arg<-1.570796326794896619 || arg>1.570796326794896619)
+    if (arg<-1.63 || arg>1.63)
      {
       zah = gsl_complex_pow_real(gsl_complex_negative(in),1.5);
       max = 29;
-      if(mod>10.0) max = 20;
-      if(mod>12.0) max = 16;
-      if(mod>16.0) max = 12;
+      if (mod>10.0) max = 20;
+      if (mod>12.0) max = 16;
+      if (mod>16.0) max = 12;
       c  = GSL_COMPLEX_ONE;
       dp = GSL_COMPLEX_ZERO;
       dq = GSL_COMPLEX_ZERO;
@@ -1162,16 +1279,16 @@ void airy_bi_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_IMAG(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       dp = gsl_complex_mul(dp,gsl_complex_sin(c));
       dq = gsl_complex_mul(dq,gsl_complex_cos(c));
       d  = gsl_complex_sub(dq,dp);
       d  = gsl_complex_mul(d,gsl_complex_pow_real(gsl_complex_negative(in),+0.25));
-      d  = gsl_complex_div_real(d,1.772453850905516027);
+      d  = gsl_complex_div_real(d,-1.772453850905516027);
      }
-    else if (arg>-0.523598775598298873 && arg<0.523598775598298873)
+    else if (arg>-0.51 && arg<0.51)
      {
       zah = gsl_complex_pow_real(in,1.5);
       max = 29;
@@ -1192,7 +1309,7 @@ void airy_bi_diff(gsl_complex in, gsl_complex *out, int *status, char *errtext)
       if (GSL_REAL(c)>650.0)
        {
         *status = 2; // risk of overflow
-        sprintf(errtext,"Overflow error within Airy Function");
+        sprintf(errtext,"Overflow error within Airy function");
         return;
        }
       d = gsl_complex_mul(d,gsl_complex_exp(c));
