@@ -48,7 +48,7 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int           aspect, AutoAspect, AxesColour, AxesColourR, AxesColourG, AxesColourB, grid, GridMajColour, GridMajColourR, GridMajColourG, GridMajColourB, GridMinColour, GridMinColourR, GridMinColourG, GridMinColourB, key, KeyColumns, KeyPos, samples, TextColour, TextColourR, TextColourG, TextColourB, TextHAlign, TextVAlign;
+ int           aspect, AutoAspect, AxesColour, AxesColourR, AxesColourG, AxesColourB, grid, GridMajColour, GridMajColourR, GridMajColourG, GridMajColourB, GridMinColour, GridMinColourR, GridMinColourG, GridMinColourB, key, KeyColumns, KeyPos, samples, TextColour, TextColourR, TextColourG, TextColourB, TextHAlign, TextVAlign, Tlog;
  double        bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
@@ -150,8 +150,12 @@ void label_list_copy   (label_object **out, label_object **in);
 void label_list_destroy(label_object **list);
 void label_print       (label_object  *in, char *out);
 
-void  DestroyAxis       (settings_axis *in);
-void  CopyAxis          (settings_axis *out, const settings_axis *in);
+void DestroyAxis       (settings_axis *in);
+void CopyAxis          (settings_axis *out, const settings_axis *in);
+void CopyAxisTics      (settings_axis *out, const settings_axis *in);
+void CopyAxisMTics     (settings_axis *out, const settings_axis *in);
+unsigned char CompareAxisTics (const settings_axis *a, const settings_axis *b);
+unsigned char CompareAxisMTics(const settings_axis *a, const settings_axis *b);
 
 // Functions defined in ppl_readconfig.c
 #ifndef _PPL_READCONFIG_C

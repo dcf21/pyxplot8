@@ -205,8 +205,8 @@ int directive_tabulate(Dict *command, char *line)
   int           i, k, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;;
   long int      j;
   value        *min[USING_ITEMS_MAX+1], *max[USING_ITEMS_MAX+1];
-  double       *ordinate_raster, raster_min, raster_max;
-  unsigned char raster_log;
+  double       *ordinate_raster, *parametric_raster, raster_min, raster_max;
+  unsigned char raster_log, FlagParametric;
   value         raster_units;
   DataTable    *data;
   List         *RangeList, *TabList, *ExprList;
@@ -255,6 +255,13 @@ int directive_tabulate(Dict *command, char *line)
   if (raster_log) LogarithmicRaster(ordinate_raster, raster_min, raster_max, settings_graph_current.samples);
   else            LinearRaster     (ordinate_raster, raster_min, raster_max, settings_graph_current.samples);
 
+  // Generate the raster of values for t at which we will evaluate any parametric functions
+  parametric_raster = lt_malloc(settings_graph_current.samples * sizeof(double));
+  raster_log = (settings_graph_current.Tlog == SW_BOOL_TRUE); // Read from current graph settings
+  if (raster_log && ((settings_graph_current.Tmin.real<=0) || (settings_graph_current.Tmax.real<=0))) ppl_warning(ERR_NUMERIC,"Attempt to tabulate data using a logarithmic ordinate axis with negative or zero limits set. Reverting limits to finite positive values with well-defined logarithms.");
+  if (raster_log) LogarithmicRaster(parametric_raster, settings_graph_current.Tmin.real, settings_graph_current.Tmax.real, settings_graph_current.samples);
+  else            LinearRaster     (parametric_raster, settings_graph_current.Tmin.real, settings_graph_current.Tmax.real, settings_graph_current.samples);
+
   // Iterate over all of the items we are about to tabulate
   DictLookup(command, "tabulate_list,", NULL, (void **)&TabList);
   i = ListLen(TabList);
@@ -270,8 +277,6 @@ int directive_tabulate(Dict *command, char *line)
     DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
     DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
     DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
-    NUsingItems = ListLen(UsingList);
-    if (NUsingItems<2) NUsingItems = 2;
     DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
     DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
     DictLookup(TempDict, "format", NULL, (void **)(&format));
@@ -280,12 +285,15 @@ int directive_tabulate(Dict *command, char *line)
     DictLookup(TempDict,"filename",NULL,(void **)(&cptr));
     if (cptr!=NULL)
      {
+      NUsingItems = ListLen(UsingList);
+      if (NUsingItems<1) NUsingItems = 2;
+
       // Expand filename if it contains wildcards
       status=0;
       if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
       for (iwe=0; iwe<WordExp.we_wordc; iwe++)
        {
-        if ((glob(WordExp.we_wordv[iwe], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); fclose(output); return 1; }
+        if ((glob(WordExp.we_wordv[iwe], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[iwe]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); fclose(output); return 1; }
         for (igl=0; igl<GlobData.gl_pathc; igl++)
          {
           filename = GlobData.gl_pathv[igl];
@@ -311,8 +319,15 @@ int directive_tabulate(Dict *command, char *line)
      }
     else // Case 2: Plotting a function
      {
+      // See whether we are plotting parametric or explicit function
+      DictLookup(TempDict, "parametric", NULL, (void **)&cptr);
+      FlagParametric = (cptr != NULL);
+
       // Read list of expressions supplied instead of filename
       DictLookup(TempDict, "expression_list:", NULL, (void **)&ExprList);
+      NUsingItems = ListLen(UsingList);
+      if (NUsingItems<1) NUsingItems = ListLen(ExprList)+(!FlagParametric); // Only have x in column 1 for non-parametric function plotting
+
       k=0;
       ExprListIter = ListIterateInit(ExprList);
       while (ExprListIter != NULL)
@@ -330,7 +345,8 @@ int directive_tabulate(Dict *command, char *line)
       ContextDataTab = lt_DescendIntoNewContext();
 
       // Read data from file
-      DataFile_FromFunctions(ordinate_raster, settings_graph_current.samples, &raster_units,
+      DataFile_FromFunctions((FlagParametric ? parametric_raster : ordinate_raster), FlagParametric,
+                             settings_graph_current.samples, (FlagParametric ? &settings_graph_current.Tmin : &raster_units),
                              &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, errtext); fclose(output); return 1; }
       status = DataGridDisplay(output, data, NUsingItems, min+1, max+1, format); // First range is for ordinate axis

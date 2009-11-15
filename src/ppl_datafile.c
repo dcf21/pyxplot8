@@ -656,7 +656,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     UsingLen = Ncolumns;
     AutoUsingList = 1; // We have automatically generated this using list
    }
-  else if (UsingLen==1) // Prepend data point number if only one number specified in using statement
+  else if ((UsingLen==1) && (Ncolumns==2)) // Prepend data point number if only one number specified in using statement
    {
     UsingItems[1] = UsingItems[0];
     UsingItems[0] = "0";
@@ -971,7 +971,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 #define COUNTEDERR2F if (*ErrCounter==0) { sprintf(temp_err_string, "%s: Too many errors: no more errors will be shown.",buffer); ppl_warning(ERR_STACKED, temp_err_string); } }
 
-void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
+void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
  {
   unsigned char AutoUsingList=0, xpreviouslydefined, discontinuity=0;
   int           UsingLen, logi, logj, i, j, k, ContextOutput;
@@ -1011,7 +1011,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
     UsingLen = Ncolumns;
     AutoUsingList = 1; // We have automatically generated this using list
    }
-  else if (UsingLen==1) // Prepend ordinate value if only one number specified in using statement
+  else if ((UsingLen==1) && (Ncolumns==2)) // Prepend ordinate value if only one number specified in using statement
    {
     UsingItems[1] = UsingItems[0];
     UsingItems[0] = "0";
@@ -1040,7 +1040,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
   if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
 
   // Get a pointer to the value of the variable 'x' in the user's variable space
-  DictLookup(_ppl_UserSpace_Vars, "x", NULL, (void **)&OrdinateVar);
+  DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":"x", NULL, (void **)&OrdinateVar);
   if (OrdinateVar!=NULL)
    {
     DummyTemp = *OrdinateVar;
@@ -1050,8 +1050,8 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
    {
     xpreviouslydefined = 0;
     ppl_units_zero(&DummyTemp);
-    DictAppendValue(_ppl_UserSpace_Vars, "x", DummyTemp);
-    DictLookup(_ppl_UserSpace_Vars, "x", NULL, (void **)&OrdinateVar);
+    DictAppendValue(_ppl_UserSpace_Vars, FlagParametric?"t":"x", DummyTemp);
+    DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":"x", NULL, (void **)&OrdinateVar);
     DummyTemp.modified = 2;
    }
   *OrdinateVar = *RasterUnits;
@@ -1063,21 +1063,21 @@ void DataFile_FromFunctions(double *OrdinateRaster, int RasterLen, value *Raster
   for (i=0; i<RasterLen; i++)
    {
     OrdinateVar->real = OrdinateRaster[i];
-    sprintf(buffer, "x=%s", NumericDisplay(OrdinateVar->real, 0, settings_term_current.SignificantFigures, 0));
+    sprintf(buffer, "%c=%s", (FlagParametric?'t':'x'), NumericDisplay(OrdinateVar->real, 0, settings_term_current.SignificantFigures, 0));
     ppl_units_zero(ColumnData_val+0);
     ColumnData_val[0].real = i;
-    ColumnData_val[1] = *OrdinateVar;
+    if (!FlagParametric) ColumnData_val[1] = *OrdinateVar;
     for (j=0; j<fnlist_len; j++)
      {
       *status=-1; k=-1;
-      ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+2, 0, &k, 0, status, errout, 0);
+      ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+1+(!FlagParametric), 0, &k, 0, status, errout, 0);
       if (k<strlen(fnlist[j])) { sprintf(errout, "Expression '%s' is not syntactically valid %d %ld", fnlist[j],k,(long)strlen(fnlist[j])); *status=1; if (DEBUG) ppl_log(errout); return; }
       if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, temp_err_string); COUNTEDERR2F; *status=1; break; }
       else            { *status=0; }
      }
     if (!(*status))
      {
-      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+1, UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric), UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      } else {
       discontinuity = (continuity == DATAFILE_DISCONTINUOUS);
      }

@@ -47,18 +47,29 @@ int directive_histogram(Dict *command)
   //DataBlock *blk;
   //long int   i, j, k, Nrows;
   int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=DATAFILE_NERRS;
-  char       errtext[LSTR_LENGTH], *filename=NULL, *histfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
+  char       errtext[LSTR_LENGTH], *cptr, *filename=NULL, *histfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
+  wordexp_t  WordExp;
+  glob_t     GlobData;
   //double    *xdata, *ydata;
   List      *UsingList=NULL, *EveryList=NULL;
   FunctionDescriptor *FuncPtr /*, *FuncPtrNext, *FuncPtr2 */ ;
   //value      v, FirstEntries[2];
+  value        *xmin=NULL, *xmax=NULL;
 
-  List         *RangeList;
-  ListIterator *ListIter;
-  Dict         *TempDict;
-  value        *xmin=NULL, *ymin=NULL, *xmax=NULL, *ymax=NULL;
+  // Expand filename if it contains wildcards
+  DictLookup(command,"filename",NULL,(void **)(&cptr));
+  if (cptr==NULL) ppl_error(ERR_INTERNAL, "File attribute not found in histogram command.");
+  status=0;
+  if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
+  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
+  if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
+  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return 1; }
+  filename = lt_malloc(strlen(GlobData.gl_pathv[0])+1);
+  if (filename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); return 1; }
+  strcpy(filename, GlobData.gl_pathv[0]);
+  wordfree(&WordExp);
+  globfree(&GlobData);
 
-  DictLookup(command, "filename"     , NULL, (void **)&filename);   if (filename == NULL) { ppl_error(ERR_INTERNAL, "ppl_histogram could not read filename."); return 1; }
   DictLookup(command, "hist_function", NULL, (void **)&histfunc);   if (histfunc == NULL) { ppl_error(ERR_INTERNAL, "ppl_histogram could not read name of function for output."); return 1; }
   DictLookup(command, "index"        , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
   DictLookup(command, "use_rows"     , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
@@ -67,24 +78,9 @@ int directive_histogram(Dict *command)
   DictLookup(command, "every_list:"  , NULL, (void **)&EveryList);
   DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
 
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
-  if (RangeList == NULL) goto RANGES_DONE;
-  ListIter = ListIterateInit(RangeList);
-  if (ListIter == NULL) goto RANGES_DONE;
-  TempDict = (Dict *)ListIter->data;
-  DictLookup(TempDict,"min",NULL,(void **)&xmin);
-  DictLookup(TempDict,"max",NULL,(void **)&xmax);
+  DictLookup(command,"min",NULL,(void **)&xmin);
+  DictLookup(command,"max",NULL,(void **)&xmax);
   if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-  ListIter = ListIterate(ListIter, NULL);
-  if (ListIter == NULL) goto RANGES_DONE;
-  TempDict = (Dict *)ListIter->data;
-  DictLookup(TempDict,"min",NULL,(void **)&ymin);
-  DictLookup(TempDict,"max",NULL,(void **)&ymax);
-  if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-  ListIter = ListIterate(ListIter, NULL);
-  if (ListIter != NULL) { ppl_error(ERR_SYNTAX, "Too many ranges have been supplied to the histogram command. Only two are allowed: one for each ordinate."); return 1; }
-
-RANGES_DONE:
 
   continuity = DATAFILE_CONTINUOUS;
 

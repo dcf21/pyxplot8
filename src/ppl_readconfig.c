@@ -305,6 +305,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "TITLE_YOFF"   )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.TitleYOff.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TITLE_YOFF."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "TRANGE_LOG"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)     settings_graph_default.Tlog            = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TRANGE_LOG."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "TRANGE_MIN"   )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.Tmin.real       = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TRANGE_MIN."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

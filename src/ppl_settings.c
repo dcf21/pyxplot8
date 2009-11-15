@@ -186,6 +186,7 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_graph_default.TitleYOff));
   settings_graph_default.TitleYOff.real= 0.0;
   settings_graph_default.TitleYOff.dimensionless = 0; settings_graph_default.TitleYOff.exponent[UNIT_LENGTH] = 1;
+  settings_graph_default.Tlog          = SW_BOOL_FALSE;
   ppl_units_zero(&(settings_graph_default.Tmin));
   ppl_units_zero(&(settings_graph_default.Tmax));
   settings_graph_default.Tmin.real     = 0.0;
@@ -1188,12 +1189,39 @@ void DestroyAxis(settings_axis *in)
 
 void CopyAxis(settings_axis *out, const settings_axis *in)
  {
-  int   i,j;
   void *tmp;
   *out = *in;
   if (in->format    != NULL) { out->format   = (char   *)XMALLOC(strlen(in->format    )+1); strcpy(out->format   , in->format    ); }
   if (in->label     != NULL) { out->label    = (char   *)XMALLOC(strlen(in->label     )+1); strcpy(out->label    , in->label     ); }
   if (in->linkusing != NULL) { out->linkusing= (char   *)XMALLOC(strlen(in->linkusing )+1); strcpy(out->linkusing, in->linkusing ); }
+  CopyAxisTics (out,in);
+  CopyAxisMTics(out,in);
+  return;
+ }
+
+void CopyAxisTics(settings_axis *out, const settings_axis *in)
+ {
+  int   i,j;
+  void *tmp;
+  if (in->TickStrs != NULL)
+   {
+    for (i=0; in->TickStrs[i]!=NULL; i++);
+    out->TickStrs= XMALLOC((i+1)*sizeof(char *));
+    for (j=0; j<i; j++) { out->TickStrs[j] = XMALLOC(strlen(in->TickStrs[j])+1); strcpy(out->TickStrs[j], in->TickStrs[j]); }
+    out->TickStrs[i] = NULL;
+   }
+  if (in->TickList != NULL)
+   {
+    out->TickList= (double *)XMALLOC((i+1)*sizeof(double));
+    memcpy(out->TickList, in->TickList, (i+1)*sizeof(double)); // NB: For this to be safe, TickLists MUST have double to correspond to NULL in TickStrs
+   }
+  return;
+ }
+
+void CopyAxisMTics(settings_axis *out, const settings_axis *in)
+ {
+  int   i,j;
+  void *tmp;
   if (in->MTickStrs != NULL)
    {
     for (i=0; in->MTickStrs[i]!=NULL; i++);
@@ -1206,18 +1234,38 @@ void CopyAxis(settings_axis *out, const settings_axis *in)
     out->MTickList= (double *)XMALLOC((i+1)*sizeof(double));
     memcpy(out->MTickList, in->MTickList, (i+1)*sizeof(double)); // NB: For this to be safe, TickLists MUST have double to correspond to NULL in TickStrs
    }
-  if (in->TickStrs != NULL) 
-   { 
-    for (i=0; in->TickStrs[i]!=NULL; i++);
-    out->TickStrs= XMALLOC((i+1)*sizeof(char *)); 
-    for (j=0; j<i; j++) { out->TickStrs[j] = XMALLOC(strlen(in->TickStrs[j])+1); strcpy(out->TickStrs[j], in->TickStrs[j]); }
-    out->TickStrs[i] = NULL;
-   }
-  if (in->TickList != NULL) 
-   {
-    out->TickList= (double *)XMALLOC((i+1)*sizeof(double));
-    memcpy(out->TickList, in->TickList, (i+1)*sizeof(double)); // NB: For this to be safe, TickLists MUST have double to correspond to NULL in TickStrs
-   }
   return;
+ }
+
+unsigned char CompareAxisTics(const settings_axis *a, const settings_axis *b)
+ {
+  int i,j;
+  if ((a->TickList==NULL)&&(b->TickList==NULL)) return 1;
+  if ((a->TickList==NULL)||(b->TickList==NULL)) return 0;
+  for (i=0; a->TickStrs[i]!=NULL; i++);
+  for (j=0; b->TickStrs[j]!=NULL; j++);
+  if (i!=j) return 0; // Tick lists have different lengths
+  for (j=0; j<i; j++)
+   {
+    if (a->TickList[j] != b->TickList[j]) return 0;
+    if (strcmp(a->TickStrs[j], b->TickStrs[j])!=0) return 0;
+   }
+  return 1;
+ }
+
+unsigned char CompareAxisMTics(const settings_axis *a, const settings_axis *b)
+ {
+  int i,j;
+  if ((a->MTickList==NULL)&&(b->MTickList==NULL)) return 1;
+  if ((a->MTickList==NULL)||(b->MTickList==NULL)) return 0;
+  for (i=0; a->MTickStrs[i]!=NULL; i++);
+  for (j=0; b->MTickStrs[j]!=NULL; j++);
+  if (i!=j) return 0; // Tick lists have different lengths
+  for (j=0; j<i; j++)
+   {
+    if (a->MTickList[j] != b->MTickList[j]) return 0;
+    if (strcmp(a->MTickStrs[j], b->MTickStrs[j])!=0) return 0;
+   }
+  return 1;
  }
 
