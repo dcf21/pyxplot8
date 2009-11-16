@@ -28,9 +28,9 @@
 
 #define CANVAS_ARROW 22001
 #define CANVAS_EPS   22002
-#define CANVAS_TEXT  22003
-#define CANVAS_JPEG  22004
-#define CANVAS_PLOT  22005
+#define CANVAS_IMAGE 22003
+#define CANVAS_PLOT  22004
+#define CANVAS_TEXT  22005
 
 typedef struct plot_descriptor {
  unsigned char  function;

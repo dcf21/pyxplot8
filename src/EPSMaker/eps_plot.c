@@ -1,4 +1,4 @@
-// ppl_canvasdraw.h
+// eps_plot.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,14 +19,41 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CANVASDRAW_H
-#define _PPL_CANVASDRAW_H 1
+#define _PPL_EPS_PLOT 1
 
-#include "EPSMaker/eps_comm.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-void canvas_draw(unsigned char *unsuccessful_ops);
-void canvas_CallLaTeX(EPSComm *x);
-void canvas_EPSWrite(EPSComm *x);
+#include "eps_comm.h"
+#include "eps_plot.h"
 
-#endif
+void eps_plot_ReadAccessibleData(EPSComm *x)
+ {
+  return;
+ }
+
+void eps_plot_DecideAxisRanges(EPSComm *x)
+ {
+  return;
+ }
+
+void eps_plot_LinkedAxesPropagate(EPSComm *x)
+ {
+  return;
+ }
+
+void eps_plot_SampleFunctions(EPSComm *x)
+ {
+  return;
+ }
+
+void eps_plot_YieldUpText(EPSComm *x)
+ {
+  return;
+ }
+
+void eps_plot_RenderEPS(EPSComm *x)
+ {
+  return;
+ }
 

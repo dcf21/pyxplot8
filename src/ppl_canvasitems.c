@@ -388,7 +388,7 @@ int directive_jpeg(Dict *command, char *line, int interactive)
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_JPEG,line,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_IMAGE,line,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
   if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
   if (y  !=NULL) { ptr->ypos     = y  ->real; } else { ptr->ypos      = settings_graph_current.OriginY.real; }

@@ -1,4 +1,4 @@
-// ppl_canvasdraw.h
+// eps_arrow.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,14 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CANVASDRAW_H
-#define _PPL_CANVASDRAW_H 1
+#ifndef _PPL_EPS_ARROW_H
+#define _PPL_EPS_ARROW_H 1
 
-#include "EPSMaker/eps_comm.h"
+#include "eps_comm.h"
 
-void canvas_draw(unsigned char *unsuccessful_ops);
-void canvas_CallLaTeX(EPSComm *x);
-void canvas_EPSWrite(EPSComm *x);
+void eps_arrow_RenderEPS(EPSComm *x);
 
 #endif
 

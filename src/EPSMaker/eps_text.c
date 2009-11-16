@@ -1,4 +1,4 @@
-// ppl_canvasdraw.h
+// eps_text.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,14 +19,21 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_CANVASDRAW_H
-#define _PPL_CANVASDRAW_H 1
+#define _PPL_EPS_TEXT 1
 
-#include "EPSMaker/eps_comm.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-void canvas_draw(unsigned char *unsuccessful_ops);
-void canvas_CallLaTeX(EPSComm *x);
-void canvas_EPSWrite(EPSComm *x);
+#include "eps_comm.h"
+#include "eps_text.h"
 
-#endif
+void eps_text_YieldUpText(EPSComm *x)
+ {
+  return;
+ }
+
+void eps_text_RenderEPS(EPSComm *x)
+ {
+  return;
+ }
 
