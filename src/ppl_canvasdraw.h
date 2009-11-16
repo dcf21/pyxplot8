@@ -26,6 +26,7 @@
 
 void canvas_draw(unsigned char *unsuccessful_ops);
 void canvas_CallLaTeX(EPSComm *x);
+void canvas_MakeEPSBuffer(EPSComm *x);
 void canvas_EPSWrite(EPSComm *x);
 
 #endif

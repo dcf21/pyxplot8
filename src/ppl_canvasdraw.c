@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_arrow.h"
@@ -33,15 +34,16 @@
 
 #include "ppl_canvasitems.h"
 #include "ppl_canvasdraw.h"
+#include "ppl_error.h"
 
 // Table of the functions we call for each phase of the canvas drawing process for different object types
 
-static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , eps_arrow_RenderEPS, NULL};
-static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , eps_eps_RenderEPS  , NULL};
-static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , eps_image_RenderEPS, NULL};
-static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, eps_plot_RenderEPS , NULL};
-static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , eps_text_YieldUpText, eps_text_RenderEPS , NULL};
-static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , canvas_CallLaTeX    , canvas_EPSWrite    , NULL};
+static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
+static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
+static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_image_RenderEPS, NULL};
+static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
+static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , eps_text_YieldUpText, NULL                , eps_text_RenderEPS , NULL};
+static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , canvas_CallLaTeX    , canvas_MakeEPSBuffer, canvas_EPSWrite    , NULL};
 
 // Main entry point for rendering a canvas to graphical output
 
@@ -60,11 +62,16 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   // By default, we record all operations as having been successful
   for (i=0;i<MULTIPLOT_MAXINDEX; i++) unsuccessful_ops[i]=0;
 
-  comm.itemlist = canvas_items;
-  comm.status = &status;
+  comm.itemlist    = canvas_items;
+  comm.bb_left     = comm.bb_right = comm.bb_top = comm.bb_bottom = 0.0;
+  comm.bb_left_set = comm.bb_right_set = comm.bb_top_set = comm.bb_bottom_set = 0;
+  comm.epsbuffer   = NULL;
+  comm.status      = &status;
+
+  // Prepare a buffer into which strings to be passed to LaTeX will be put
 
   // Rendering of EPS occurs in a series of phases which we now loop over
-  for (j=0; ; j++)
+  for (j=0 ; ; j++)
    {
     ArrowHandler = ArrowHandlers[j]; // Each object type has a handler for each phase of postscript generation
     EPSHandler   = EPSHandlers  [j];
@@ -88,9 +95,13 @@ void canvas_draw(unsigned char *unsuccessful_ops)
       status = 0;
      }
     if (AfterHandler != NULL) (*AfterHandler)(&comm); // At the end of each phase, a canvas-wide handler may be called
+    if (status) { return; }
    }
 
   // Now convert eps output to bitmaped graphics if requested
+
+  // Return to user's current working directory
+  if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
 
   // for () if type==plot   ReadAccessibleData
   // for () if type==plot   DecideAxisRanges
@@ -115,11 +126,20 @@ void canvas_draw(unsigned char *unsuccessful_ops)
 
 void canvas_CallLaTeX(EPSComm *x)
  {
+  // chdir into temporary directory
+  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+  return;
+ }
+
+void canvas_MakeEPSBuffer(EPSComm *x)
+ {
+  x->epsbuffer = tmpfile();
   return;
  }
 
 void canvas_EPSWrite(EPSComm *x)
  {
+  fclose(x->epsbuffer);
   return;
  }
 

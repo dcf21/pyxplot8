@@ -101,7 +101,7 @@ void InteractiveSession()
     sigaddset(&sigs,SIGCHLD);
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     ppl_error(ERR_PREFORMED, "\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
-    if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
+    if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir out of temporary directory
    }
   PPL_SHELL_EXITING = 0;
   ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
