@@ -112,6 +112,7 @@ set@2:directive { item@1 %d:editno } < nologscale@3:set_option | linearscale@3:s
 set@2:directive                      nomultiplot@3:set_option =\n\
 set@2:directive { item@1 %d:editno } no@n { m@n:minor } { %a:axis } tics:set_option:notics =\n\
 set@2:directive { item@1 %d:editno } notitle@3:set_option =\n\
+set@2:directive { item@1 %d:editno } no@n %a:axis format@1:set_option:noxformat = \n\
 set@2:directive                      numerics@2:set_option = ( < sigfig@3 | sf@2 > %d:number_significant_figures ~ errors@2 < explicit@1:errortype:On | nan@1:errortype:Off | quiet@1:errortype:Off | nonan@3:errortype:On | noquiet@3:errortype:On | noexplicit@3:errortype:Off > ~ < complex@1:complex:On | real@1:complex:Off | nocomplex@3:complex:Off | noreal@3:complex:On > ~ display@1 < typeable@1:display | natural@2:display | latex@1:display | tex@1:display:latex > )\n\
 set@2:directive { item@1 %d:editno } origin@2:set_option = %fu:x_origin ,@n %fu:y_origin\n\
 set@2:directive { item@1 %d:editno } output@1:set_option = < %q:filename | %S:filename >\n\
@@ -139,6 +140,7 @@ solve@2:directive = [ %e:left_expression \\=@n %e:right_expression ]:expressions
 tabulate@2:directive = [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list [ < %q:filename | { parametric@1:parametric } [ %e:expression ]:expression_list: > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) { with@1 ( format@1 %q:format ) } ]:@tabulate_list, \n\
 text@3:directive = { item@1 %d:editno } < %q:string | %s:string > ( at@1 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ) { with@1 < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > }\n\
 undelete@3:directive = { item@1 } [ %d:number ]:undeleteno,\n\
+unset@3:directive { item@1 %d:editno } { no@n } %a:axis format@1:set_option:xformat = \n\
 unset@3:directive { item@1 %d:editno } %a:axis label@1:set_option:xlabel =\n\
 unset@3:directive { item@1 %d:editno } %a:axis range@1:set_option =\n\
 unset@3:directive { item@1 %d:editno } { no@n } { m@n:minor } { %a:axis } tics@1:set_option = \n\

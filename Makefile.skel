@@ -55,10 +55,6 @@ PPL_FILES   = EPSMaker/eps_colours.c ListTools/lt_dict.c ListTools/lt_list.c Lis
 
 PPL_HEADERS = ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h ListTools/lt_StringProc.h MathsTools/airy_functions.h MathsTools/dcfast.h MathsTools/dcfmath.h MathsTools/dcftime.h MathsTools/zeta_riemann.h ppl_calculus.h ppl_canvasdraw.h ppl_canvasitems.h ppl_children.h ppl_constants.h ppl_datafile.h ppl_eqnsolve.h ppl_error.h ppl_fit.h ppl_flowctrl.h ppl_histogram.h ppl_input.h ppl_interpolation.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_tabulate.h ppl_texify.h ppl_units.h ppl_userspace.h ppl_userspace_init.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
 
-TESTCARD_FILES   = EPSMaker/eps_colours.c EPSMaker/eps_hub.c EPSMaker/eps_latex.c EPSMaker/eps_testcard.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c StringTools/asciidouble.c
-
-TESTCARD_HEADERS =                        EPSMaker/eps_hub.h EPSMaker/eps_latex.h EPSMaker/eps_testcard.h ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h StringTools/asciidouble.h
-
 PPLW_FILES   = Helpers/pyxplot_watch.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c StringTools/asciidouble.c ppl_error.c ppl_setting_types.c
 
 PPLW_HEADERS =                         ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h ListTools/lt_StringProc.h StringTools/asciidouble.h ppl_error.h ppl_setting_types.h ppl_settings.h
@@ -71,10 +67,6 @@ PPL_OBJECTS         = $(PPL_FILES:%.c=$(LOCAL_OBJDIR)/%.o)
 PPL_OBJECTS_DEBUG   = $(PPL_OBJECTS:%.o=%.debug.o)
 PPL_OBJECTS_INSTALL = $(PPL_OBJECTS:%.o=%.install.o)
 PPL_HFILES          = $(PPL_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
-
-TESTCARD_SOURCES    = $(TESTCARD_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
-TESTCARD_OBJECTS    = $(TESTCARD_FILES:%.c=$(LOCAL_OBJDIR)/%.debug.o)
-TESTCARD_HFILES     = $(TESTCARD_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
 
 PPLW_SOURCES        = $(PPLW_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
 PPLW_OBJECTS        = $(PPLW_FILES:%.c=$(LOCAL_OBJDIR)/%.o)
@@ -94,8 +86,6 @@ INSTALL_SWITCHES    = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLIN
 DEBUG_SWITCHES      = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/debug/pyxplot\"  -D FITSHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_fitshelper\"  -D TIMEHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_timehelper\"  $(HAVE_READLINE)  $(HAVE_FITSIO)  -D LATEX_COMMAND=\"$(LATEX_COMMAND)\"  -D CONVERT_COMMAND=\"$(CONVERT_COMMAND)\"  -D SED_COMMAND=\"$(SED_COMMAND)\"  $(GUNZIP_COMMAND)  $(WGET_COMMAND)  -D GHOSTVIEW_COMMAND=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"
 
 all: $(LOCAL_BINDIR)/pyxplot $(LOCAL_BINDIR)/pyxplot_watch $(LOCAL_BINDIR)/pyxplot_fitshelper $(LOCAL_BINDIR)/pyxplot_timehelper $(LOCAL_BINDIR)/debug/pyxplot $(LOCAL_BINDIR)/debug/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot $(LOCAL_BINDIR)/install/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot_fitshelper $(LOCAL_BINDIR)/install/pyxplot_timehelper
-
-testcard: $(LOCAL_BINDIR)/testcard.debug
 
 src/EPSMaker/eps_colours.c: colourlist_generate.py
 	python colourlist_generate.py
@@ -173,15 +163,6 @@ $(LOCAL_BINDIR)/pyxplot_timehelper:
 $(LOCAL_BINDIR)/install/pyxplot_timehelper:
 	mkdir -p $(LOCAL_BINDIR)/install
 	cp $(LOCAL_SRCDIR)/Helpers/pyxplot_timehelper.sh $@
-
-#
-# Make the testcard for the EPS library
-#
-
-$(LOCAL_BINDIR)/debug/testcard:  $(TESTCARD_OBJECTS)
-	mkdir -p $(LOCAL_BINDIR)
-	$(LINK) $(OPTIMISATION) $(TESTCARD_OBJECTS)    -o $(LOCAL_BINDIR)/debug/testcard
-
 
 #
 # Install step

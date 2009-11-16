@@ -1286,6 +1286,17 @@ void directive_set(Dict *command)
    {
     strcpy(sg->title, "");
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"noxformat")==0)) /* set noxformat */
+   {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
+    tempaxis->TickLabelRotation = tempaxis2->TickLabelRotation;
+    tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
+   }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"title")==0)) /* unset title */
    {
     strncpy(sg->title, settings_graph_default.title, FNAME_LENGTH-4);
@@ -1425,9 +1436,57 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    DictLookup(command,"format_string",NULL,(void **)&tempstr);
+    if (tempstr != NULL)
+     {
+      if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
+      tempaxis->format = (char *)malloc(strlen(tempstr)+1);
+      if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      strcpy(tempaxis->format , tempstr);
+     }
+    DictLookup(command,"orient",NULL,(void **)&tempstr);
+    if (tempstr != NULL)
+     {
+      tempaxis->TickLabelRotation = FetchSettingByName(tempstr, SW_TICLABDIR_INT, SW_TICLABDIR_STR);
+      tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
+     }
+    DictLookup(command,"rotation",NULL,(void **)&tempval);
+    if (tempval != NULL)
+     {
+      if (!(tempval->dimensionless))
+       {
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_ANGLE))
+          {
+           sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           ppl_error(ERR_SYNTAX, temp_err_string);
+           return;
+          }
+        tempaxis->TickLabelRotate = tempval->real;
+       } else { tempaxis->TickLabelRotate = tempval->real * M_PI / 180; }
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"xformat")==0)) /* unset xformat */
    {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+    else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+    else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+    if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
+    if (tempaxis2->format != NULL)
+     {
+      tempaxis->format = (char *)malloc(strlen(tempaxis2->format)+1);
+      if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      strcpy(tempaxis->format , tempaxis2->format);
+     }
+    tempaxis->TickLabelRotation = tempaxis2->TickLabelRotation;
+    tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
    }
   else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
    {
@@ -1436,7 +1495,7 @@ void directive_set(Dict *command)
     if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
     else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
     else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-    if (tempaxis->label != NULL) { if (tempaxis->label!=tempaxis2->label) free(tempaxis->label); tempaxis->label = NULL; }
+    if (tempaxis->label != NULL) { free(tempaxis->label); tempaxis->label = NULL; }
     if (strcmp(directive,"unset")==0)
      {
       tempaxis->label       = tempaxis2->label;
@@ -1455,14 +1514,16 @@ void directive_set(Dict *command)
       if (tempval!=NULL)
        {
         if (!(tempval->dimensionless))
-         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
-          if (tempval->exponent[i] != (i==UNIT_ANGLE))
-           {
-            sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
-            ppl_error(ERR_SYNTAX, temp_err_string);
-            return;
-           }
-        tempaxis->LabelRotate = tempval->real;
+         {
+          for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+           if (tempval->exponent[i] != (i==UNIT_ANGLE))
+            {
+             sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+             ppl_error(ERR_SYNTAX, temp_err_string);
+             return;
+            }
+          tempaxis->LabelRotate = tempval->real;
+         } else { tempaxis->LabelRotate = tempval->real * M_PI / 180; }
        }
      }
    }
@@ -2111,11 +2172,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      sprintf(temp1, "%c%dformat", "xyz"[k], j);
      sprintf(temp2, "%cformat"  , "xyz"[k]   );
      if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
-      {                
-       StrEscapify(AxisPtr->format==NULL ? "" : AxisPtr->format , buf); m = strlen(buf);
-       sprintf(buf+m, " %s", (char *)FetchSettingName(AxisPtr->TickLabelRotation, SW_TICLABDIR_INT, (void **)SW_TICLABDIR_STR)); m += strlen(buf+m);
-       ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->TickLabelRotate;
-       sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
+      {
+       if (AxisPtr->format != NULL) sprintf(buf, "%s ", AxisPtr->format);
+       else                         buf[0]='\0';
+       m = strlen(buf);                
+       sprintf(buf+m, "%s", (char *)FetchSettingName(AxisPtr->TickLabelRotation, SW_TICLABDIR_INT, (void **)SW_TICLABDIR_STR)); m += strlen(buf+m);
+       if (AxisPtr->TickLabelRotation == SW_TICLABDIR_ROT)
+        {
+         ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->TickLabelRotate;
+         sprintf(buf+m, " %s", ppl_units_NumericDisplay(&valobj,0,0,0));
+        }
        sprintf(buf2, "Format string for the tick labels on the %c%d axis", "xyz"[k], j);
        directive_show3(out+i, ItemSet, 1, interactive, temp1, buf,
                        (  ( AxisPtr->TickLabelRotate  ==AxisPtrDef->TickLabelRotate  ) &&
