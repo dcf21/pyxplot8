@@ -146,7 +146,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
       PPLKillAllHelpers();
       if ((ProcessedALine==0) && (status>0)) // If an error occurs on the first line of a script, aborted processing it
        {
-        ppl_error(ERR_FILE, "Error on first line of command file. Is this is valid script? Aborting.");
+        ppl_error(ERR_FILE, "Error on first line of command file.  Is this a valid script?  Aborting.");
         break;
        }
       if (status==0) ProcessedALine = 1;
