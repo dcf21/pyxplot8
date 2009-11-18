@@ -32,7 +32,8 @@ extern char ppl_commands[];
 
 /* Functions defined in ppl_shell.c */
 #ifndef _PPL_SHELL_C
-extern int  PPL_SHELL_EXITING;
+extern int       PPL_SHELL_EXITING;
+extern long int  history_NLinesWritten; // The number of lines written to the GNU history library in this session
 #endif
 void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input, int IterLevel);
@@ -41,6 +42,7 @@ int         ProcessDirective2   (char *in, Dict *command, int interactive, int m
 void        directive_cd        (Dict *command);
 int         directive_exec      (Dict *command, int IterLevel);
 void        directive_history   (Dict *command);
+void        directive_save      (Dict *command);
 void        directive_print     (Dict *command);
 int         directive_regex     (Dict *command);
 

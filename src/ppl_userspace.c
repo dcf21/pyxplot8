@@ -40,6 +40,7 @@
 #include "ppl_calculus.h"
 #include "ppl_constants.h"
 #include "ppl_datafile.h"
+#include "ppl_histogram.h"
 #include "ppl_interpolation.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
@@ -279,6 +280,14 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
      {
       if (((SplineDescriptor *)in->FunctionPtr)->SplineObj   != NULL ) gsl_spline_free      (((SplineDescriptor *)in->FunctionPtr)->SplineObj  );
       if (((SplineDescriptor *)in->FunctionPtr)->accelerator != NULL ) gsl_interp_accel_free(((SplineDescriptor *)in->FunctionPtr)->accelerator);
+     }
+   }
+  else if (in->FunctionType == PPL_USERSPACE_HISTOGRAM)
+   {
+    if (in->FunctionPtr!=NULL)
+     {
+      if (((HistogramDescriptor *)in->FunctionPtr)->bins   != NULL ) free(((HistogramDescriptor *)in->FunctionPtr)->bins   );
+      if (((HistogramDescriptor *)in->FunctionPtr)->binvals!= NULL ) free(((HistogramDescriptor *)in->FunctionPtr)->binvals);
      }
    }
   else
@@ -843,6 +852,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
         ppl_spline_evaluate(DictIter->key, (SplineDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        if (j>0) { *errpos = start+i; return; }
+       }
+      else if (FunctionType == PPL_USERSPACE_HISTOGRAM)
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+        j=0;
+        ppl_histogram_evaluate(DictIter->key, (HistogramDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_USERDEF)

@@ -2475,7 +2475,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      {
       FDiter = (FunctionDescriptor *)DictIter->data;
       SHOW_HIGHLIGHT((FDiter->modified==0));
-      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) )
+      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) && (FDiter->FunctionType != PPL_USERSPACE_HISTOGRAM) )
        {
         sprintf(out+i, "# %-17s: %s.\n", DictIter->key, FDiter->description);
        }
@@ -2525,12 +2525,20 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
           SHOW_DEHIGHLIGHT;
          }
-        if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
+        else if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
          {
           SHOW_HIGHLIGHT((FDiter->modified==0));
           sprintf(out+i,"%s(x)= [%s interpolation of data from the file '%s']\n",DictIter->key,
                                                                                 ((SplineDescriptor *)FDiter->FunctionPtr)->SplineType,
                                                                                 ((SplineDescriptor *)FDiter->FunctionPtr)->filename   );
+          i+=strlen(out+i);
+          SHOW_DEHIGHLIGHT;
+         }
+        else if (FDiter->FunctionType == PPL_USERSPACE_HISTOGRAM)
+         {
+          SHOW_HIGHLIGHT((FDiter->modified==0));
+          sprintf(out+i,"%s(x)= [histogram of data from the file '%s']\n",DictIter->key,
+                                                                                ((HistogramDescriptor *)FDiter->FunctionPtr)->filename   );
           i+=strlen(out+i);
           SHOW_DEHIGHLIGHT;
          }

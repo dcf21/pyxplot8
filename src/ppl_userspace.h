@@ -31,12 +31,13 @@
 #define PPL_USERSPACE_NUMERIC 32000
 #define PPL_USERSPACE_STRING  32001
 
-#define PPL_USERSPACE_USERDEF 32050
-#define PPL_USERSPACE_SYSTEM  32051
-#define PPL_USERSPACE_STRFUNC 32052
-#define PPL_USERSPACE_SPLINE  32053
-#define PPL_USERSPACE_UNIT    32054
-#define PPL_USERSPACE_INT     32055
+#define PPL_USERSPACE_USERDEF   32050
+#define PPL_USERSPACE_SYSTEM    32051
+#define PPL_USERSPACE_STRFUNC   32052
+#define PPL_USERSPACE_SPLINE    32053
+#define PPL_USERSPACE_HISTOGRAM 32054
+#define PPL_USERSPACE_UNIT      32055
+#define PPL_USERSPACE_INT       32056
 
 typedef struct SplineDescriptor {
  gsl_spline       *SplineObj;
@@ -45,6 +46,14 @@ typedef struct SplineDescriptor {
  unsigned char     LogInterp;
  char             *filename, *SplineType;
  } SplineDescriptor;
+
+typedef struct HistogramDescriptor {
+ long int  Nbins;
+ double   *bins;
+ double   *binvals;
+ value     unit;
+ char     *filename;
+ } HistogramDescriptor;
 
 typedef struct FunctionDescriptor {
  int   FunctionType;

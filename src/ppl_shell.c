@@ -41,6 +41,7 @@
 #include "pyxplot.h"
 #include "ppl_canvasitems.h"
 #include "ppl_children.h"
+#include "ppl_datafile.h"
 #include "ppl_eqnsolve.h"
 #include "ppl_error.h"
 #include "ppl_fit.h"
@@ -60,6 +61,7 @@
 #include "ppl_userspace.h"
 
 int PPL_SHELL_EXITING;
+long int history_NLinesWritten=0;
 
 void InteractiveSession()
  {
@@ -374,10 +376,28 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    {
     settings_term_current  = settings_term_default;
     settings_graph_current = settings_graph_default;
-    for (i=0; i<PALETTE_LENGTH; i++) settings_palette_current[i] = settings_palette_default[i];
+
+    for (i=0; i<PALETTE_LENGTH; i++)
+     {
+      settings_palette_current [i] = settings_palette_default [i];
+      settings_paletteR_current[i] = settings_paletteR_default[i];
+      settings_paletteG_current[i] = settings_paletteG_default[i];
+      settings_paletteB_current[i] = settings_paletteB_default[i];
+     }
+    for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i]));
+                                 DestroyAxis( &(YAxes[i]) ); CopyAxis(&(YAxes[i]), &(YAxesDefault[i]));
+                                 DestroyAxis( &(ZAxes[i]) ); CopyAxis(&(ZAxes[i]), &(ZAxesDefault[i]));
+                               }
+    for (i=0; i<MAX_PLOTSTYLES; i++) { with_words_destroy(&(settings_plot_styles[i])); with_words_copy(&(settings_plot_styles[i]) , &(settings_plot_styles_default[i])); }
+    arrow_list_destroy(&arrow_list);
+    arrow_list_copy(&arrow_list, &arrow_list_default);
+    label_list_destroy(&label_list);
+    label_list_copy(&label_list, &label_list_default);
     directive_clear();
     SendCommandToCSP("A");
    }
+  else if (strcmp(directive, "save")==0)
+   directive_save(command);
   else if (strcmp(directive, "set")==0)
    directive_set(command);
   else if (strcmp(directive, "set_error")==0)
@@ -500,6 +520,37 @@ void directive_history(Dict *command)
   for (k=start; k<endpos; k++) ppl_report(history_data[k]->line);
   return;
  }
+
+void directive_save(Dict *command)
+ {
+  int start=0,endpos,k;
+  long x;
+  char *outfname;
+  FILE *outfile = NULL;
+  HIST_ENTRY **history_data;
+
+  DictLookup(command,"filename",NULL,(void **)&outfname);
+  if ((outfname != NULL) && (outfname[0]!='\0'))
+   {
+    DataFile_CreateBackupIfRequired(outfname);
+    outfile = fopen(outfname , "w");
+   }
+  if (outfile == NULL) { sprintf(temp_err_string, "The save command could not open output file '%s' for writing.", outfname); ppl_error(ERR_FILE, temp_err_string); return; }
+  fprintf(outfile, "# Command script saved by PyXPlot %s\n# Timestamp: %s\n", VERSION, StrStrip(FriendlyTimestring(),temp_err_string));
+  fprintf(outfile, "# User: %s\n\n", UnixGetIRLName());
+
+  endpos       = where_history();
+  history_data = history_list();
+
+  x = endpos - history_NLinesWritten;
+  if (x < 0) x=0;
+  start = (int)x;
+
+  for (k=start; k<endpos; k++) fprintf(outfile, "%s\n", (history_data[k]->line));
+  fclose(outfile);
+  return;
+ }
+
 
 void directive_print(Dict *command)
  {

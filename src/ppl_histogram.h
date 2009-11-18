@@ -24,7 +24,11 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_units.h"
+#include "ppl_userspace.h"
+
 int directive_histogram(Dict *command);
+void ppl_histogram_evaluate(char *FuncName, HistogramDescriptor *desc, value *in, value *out, int *status, char *errout);
 
 #endif
 

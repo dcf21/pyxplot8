@@ -32,6 +32,7 @@
 
 #include "ppl_error.h"
 #include "ppl_flowctrl.h"
+#include "pyxplot.h"
 
 #define INPUT_PIPE       101
 #define INPUT_READLINE   102
@@ -124,6 +125,7 @@ char *FetchInputLine(char *output, char *prompt)
     line_ptr = readline(prompt);
     if (line_ptr==NULL) return NULL;
     add_history(line_ptr);
+    history_NLinesWritten++;
     strcpy(output, line_ptr);
     free(line_ptr);
     return output;
