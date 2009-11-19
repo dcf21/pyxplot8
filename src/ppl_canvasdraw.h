@@ -28,6 +28,8 @@ void canvas_draw(unsigned char *unsuccessful_ops);
 void canvas_CallLaTeX(EPSComm *x);
 void canvas_MakeEPSBuffer(EPSComm *x);
 void canvas_EPSWrite(EPSComm *x);
+void canvas_EPSLandscapify(EPSComm *x, char *transform);
+void canvas_EPSEnlarge(EPSComm *x, char *transform);
 
 #endif
 

@@ -199,7 +199,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
 int directive_tabulate(Dict *command, char *line)
  {
   FILE         *output;
-  char         *cptr, *filename, *format;
+  char         *cptr, *filename, *format, FilenameTemp[FNAME_LENGTH];
   wordexp_t     WordExp;
   glob_t        GlobData;
   int           i, k, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;;
@@ -216,9 +216,18 @@ int directive_tabulate(Dict *command, char *line)
   List         *UsingList=NULL, *EveryList=NULL;
 
 
-  // Open output file and write header at the top of it
+  // Work out filename for output file
   filename = settings_term_current.output;
   if ((filename==NULL)||(filename[0]=='\0')) filename = "pyxplot.txt";
+
+  // Perform expansion of shell filename shortcuts such as ~
+  if ((wordexp(filename, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not find directory containing filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); return 1; }
+  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", filename); ppl_error(ERR_FILE, temp_err_string); return 1; }
+  strcpy(FilenameTemp, WordExp.we_wordv[0]);
+  wordfree(&WordExp);
+  filename = FilenameTemp;
+
+  // Open output file and write header at the top of it
   DataFile_CreateBackupIfRequired(filename);
   output = fopen(filename , "w");
   if (output == NULL) { sprintf(temp_err_string, "The tabulate command could not open output file '%s' for writing.", filename); ppl_error(ERR_FILE, temp_err_string); return 1; }

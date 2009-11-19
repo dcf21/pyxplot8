@@ -26,6 +26,9 @@
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
+#include <wordexp.h>
+
+#include <gsl/gsl_const_mksa.h>
 
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_arrow.h"
@@ -118,6 +121,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   int i, j, termtype, status=0, CSPCommand;
   static long TempFile_counter=0;
   char EPSFilenameTemp[FNAME_LENGTH], TitleTemp[FNAME_LENGTH], FinalFilenameTemp[FNAME_LENGTH], GSOutputTemp[FNAME_LENGTH];
+  wordexp_t WordExp;
   char *EnvDisplay;
   EPSComm comm;
   canvas_item *item;
@@ -131,14 +135,21 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   // By default, we record all operations as having been successful
   for (i=0;i<MULTIPLOT_MAXINDEX; i++) unsuccessful_ops[i]=0;
 
-  // Work out filename to save output postscript as
-  termtype = settings_term_current.TermType;
+  // Work out filename to save output postscript to
+  comm.termtype = termtype = settings_term_current.TermType;
   comm.FinalFilename = settings_term_current.output; // The final filename of whatever kind of output we're planning to produce
   if ((comm.FinalFilename==NULL)||(comm.FinalFilename[0]=='\0'))
    {
     comm.FinalFilename = FinalFilenameTemp; // If final target filename is blank, use pyxplot.<filetype>
     sprintf(FinalFilenameTemp, "pyxplot.%s", (char *)FetchSettingName(termtype, SW_TERMTYPE_INT, (void **)SW_TERMTYPE_STR));
    }
+
+  // Perform expansion of shell filename shortcuts such as ~
+  if ((wordexp(comm.FinalFilename, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not find directory containing filename '%s'.", comm.FinalFilename); ppl_error(ERR_FILE, temp_err_string); return; }
+  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", comm.FinalFilename); ppl_error(ERR_FILE, temp_err_string); return; }
+  strcpy(FinalFilenameTemp, WordExp.we_wordv[0]);
+  wordfree(&WordExp);
+  comm.FinalFilename = FinalFilenameTemp;
 
   // Case 1: EPS and PS terminals. Postscript output will be saved immediately in situ.
   if ((termtype == SW_TERMTYPE_EPS) || (termtype == SW_TERMTYPE_PS))
@@ -324,10 +335,16 @@ void canvas_MakeEPSBuffer(EPSComm *x)
 void canvas_EPSWrite(EPSComm *x)
  {
   FILE *epsout;
+  char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH];
 
   // Test code.
   fprintf(x->epsbuffer, "newpath 0 0 moveto 10 10 lineto stroke\n");
   x->bb_top = 10.0; x->bb_right = 10.0;
+
+  // Apply enlarge and landscape terminals as required
+  LandscapifyText[0] = EnlargementText[0] = '\0';
+  if  (settings_term_current.landscape   == SW_ONOFF_ON)                                     canvas_EPSLandscapify(x, LandscapifyText);
+  if ((settings_term_current.TermEnlarge == SW_ONOFF_ON) && (x->termtype == SW_TERMTYPE_PS)) canvas_EPSEnlarge    (x, EnlargementText);
 
   // Return to user's current working directory
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
@@ -360,6 +377,10 @@ void canvas_EPSWrite(EPSComm *x)
     fprintf(epsout, "%%%%EndPageSetup\n\n");
    }
 
+  // Now write any global transformations needed by the enlarge and landscape terminals.
+  fprintf(epsout, "%s", LandscapifyText);
+  fprintf(epsout, "%s", EnlargementText);
+
   // Copy contents of eps buffer into postscript output
   fflush(x->epsbuffer);
   rewind(x->epsbuffer);
@@ -376,6 +397,64 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "showpage\n%%%%EOF\n"); // End of document
   fclose(x->epsbuffer);
   fclose(epsout);
+  return;
+ }
+
+// Constant to convert between millimetres and 72nds of an inch
+static double M_TO_PS = 1.0 / (GSL_CONST_MKSA_INCH / 72.0);
+
+// Convert a portrait EPS file to landscape by changing its bounding box and adding a linear transformation to the top
+void canvas_EPSLandscapify(EPSComm *x, char *transform)
+ {
+  double width, height;
+  width  = x->bb_right - x->bb_left;
+  height = x->bb_top   - x->bb_bottom;
+  sprintf(transform, "-90 rotate\n%f %f translate\n", -x->bb_right, -x->bb_bottom);
+  x->bb_left   = 0.0;
+  x->bb_bottom = 0.0;
+  x->bb_right  = height;
+  x->bb_top    = width;
+  return;
+ }
+
+// Enlarge an EPS file to fill a page by changing its bounding box and adding a linear transformation to the top
+void canvas_EPSEnlarge(EPSComm *x, char *transform)
+ {
+  double EPSwidth, EPSheight, PAGEwidth, PAGEheight;
+  double margin_left, margin_right, margin_top, margin_bottom;
+  double scaling_x, scaling_y, translate_x, translate_y;
+
+  // Read dimensions of page
+  PAGEwidth  = settings_term_current.PaperWidth .real;
+  PAGEheight = settings_term_current.PaperHeight.real;
+
+  // Calculate dimensions of EPS image
+  EPSwidth  = x->bb_right - x->bb_left;
+  EPSheight = x->bb_top   - x->bb_bottom;
+
+  // Work out some sensible margins for page
+  margin_left = PAGEwidth / 10;
+  margin_top  = PAGEheight / 10;
+  if (margin_left > 15e-3) margin_left = 15e-3; // mm
+  if (margin_top  > 15e-3) margin_top  = 15e-3; // mm
+  margin_right  =   margin_left;
+  margin_bottom = 2*margin_top;
+
+  // Work out what scaling factors will make page fit
+  scaling_x = (PAGEwidth  - margin_left - margin_right ) / EPSwidth  * M_TO_PS;
+  scaling_y = (PAGEheight - margin_top  - margin_bottom) / EPSheight * M_TO_PS;
+  if (scaling_y < scaling_x) scaling_x = scaling_y; // Lowest scaling factor is biggest enlargement we can do
+
+  // Work out how to translate origin to (0,0)
+  translate_x =                          margin_left * M_TO_PS  -  x->bb_left * scaling_x;
+  translate_y = PAGEheight * M_TO_PS  -  margin_top  * M_TO_PS  -  x->bb_top  * scaling_x;
+
+  // Write out transformation
+  sprintf(transform, "%f %f translate\n%f %f scale\n", translate_x, translate_y, scaling_x, scaling_x);
+  x->bb_left   = margin_left * M_TO_PS;
+  x->bb_right  = margin_left * M_TO_PS  +  EPSwidth * scaling_x;
+  x->bb_top    = (PAGEheight - margin_top) * M_TO_PS;
+  x->bb_bottom = (PAGEheight - margin_top) * M_TO_PS  -  EPSheight * scaling_x;
   return;
  }
 

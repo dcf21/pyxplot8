@@ -31,7 +31,7 @@ typedef struct EPSComm {
   unsigned char bb_left_set, bb_right_set, bb_top_set, bb_bottom_set;
   char *EPSFilename, *FinalFilename, *title;
   FILE *epsbuffer;
-  int *status;
+  int *status, termtype;
  } EPSComm;
 
 #endif
