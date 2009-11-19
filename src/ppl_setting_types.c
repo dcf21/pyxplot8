@@ -48,9 +48,9 @@ char *SW_ARROWTYPE_STR[] = {"head"            , "nohead"            , "twoway"  
 int   SW_ARROWTYPE_ACL[] = {1                 , 1                   , 1                   };
 int   SW_ARROWTYPE_INT[] = {SW_ARROWTYPE_HEAD , SW_ARROWTYPE_NOHEAD , SW_ARROWTYPE_TWOWAY , -1};
 
-char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"    , "ps"           , "eps"           , "pdf"           , "png"           , "jpg"           , "gif"           , "bmp"           , "tif"           };
-int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1               };
-int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , -1};
+char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"    , "ps"           , "eps"           , "pdf"           , "png"           , "jpg"           , "gif"           , "bmp"           , "tif"          , "svg"           };
+int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1              , 1               };
+int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , SW_TERMTYPE_SVG , -1};
 
 char *SW_KEYPOS_STR[] = {"top right"  , "top xcentre" , "top left"   , "ycentre right" , "ycentre xcentre" , "ycentre left" , "bottom right" , "bottom xcentre" , "bottom left" , "above"         , "below"         , "outside"         };
 int   SW_KEYPOS_ACL[] = {5            , 5             , 5            , 9               , 9                 , 9              , 8              , 8                , 8             , 1               , 2               , 1                 };

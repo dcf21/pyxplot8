@@ -29,6 +29,7 @@ typedef struct EPSComm {
   canvas_item *current;
   double bb_left, bb_right, bb_top, bb_bottom;
   unsigned char bb_left_set, bb_right_set, bb_top_set, bb_bottom_set;
+  char *EPSFilename, *FinalFilename, *title;
   FILE *epsbuffer;
   int *status;
  } EPSComm;

@@ -103,6 +103,7 @@ extern int   SW_ARROWTYPE_INT[];
 #define SW_TERMTYPE_GIF  13009
 #define SW_TERMTYPE_BMP  13010
 #define SW_TERMTYPE_TIF  13011
+#define SW_TERMTYPE_SVG  13012
 
 extern char *SW_TERMTYPE_STR[];
 extern int   SW_TERMTYPE_ACL[];

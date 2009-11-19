@@ -172,6 +172,7 @@ int main(int argc, char **argv)
 
     // Wait for temporary directory to appear, and change directory into it
     if (DEBUG) ppl_log("Waiting for temporary directory to appear.");
+    strcpy(tempdirpath, settings_session_default.tempdir);
     for (i=0; i<100; i++) { if (access(tempdirpath, F_OK) == 0) break; nanosleep(&waitperiod,&waitedperiod); } // Wait for temp dir to be created by child process
     if (access(tempdirpath, F_OK) != 0) { fail=1; } // If it never turns up, fail.
     else

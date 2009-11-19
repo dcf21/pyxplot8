@@ -48,7 +48,7 @@
 // Routine which creates a backup of a datafile if 'set backup' is turned on
 // -------------------------------------------------------------------------
 
-void DataFile_CreateBackupIfRequired(char *filename)
+void DataFile_CreateBackupIfRequired(const char *filename)
  {
   char newname[FNAME_LENGTH];
   int i,j;
