@@ -201,7 +201,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
     // Loop over all of the items on the canvas
     for (item=comm.itemlist->first; item!=NULL; item=item->next)
      {
-      if (unsuccessful_ops[item->id]) continue; // ... except those which have already failed
+      if (item->deleted)              continue; // ... except those which have been deleted
+      if (unsuccessful_ops[item->id]) continue; // ... or which have already failed
       comm.current = item;
       if      ((item->type == CANVAS_ARROW) && (ArrowHandler != NULL)) (*ArrowHandler)(&comm); // Call the relevant handler for each one
       else if ((item->type == CANVAS_EPS  ) && (EPSHandler   != NULL)) (*EPSHandler  )(&comm);
@@ -377,7 +378,7 @@ void canvas_EPSWrite(EPSComm *x)
   // Now write any global transformations needed by the enlarge and landscape terminals.
   if ((LandscapifyText[0]!='\0')||(EnlargementText[0]!='\0'))
    {
-    fprintf(epsout, "%% Global transformations to give %soutput%s", (LandscapifyText[0]!='\0')?"landscape ":"", (EnlargementText[0]!='\0')?" which fills tha page":"");
+    fprintf(epsout, "%% Global transformations to give %soutput%s\n", (LandscapifyText[0]!='\0')?"landscape ":"", (EnlargementText[0]!='\0')?" which fills the page":"");
     fprintf(epsout, "%s", LandscapifyText);
     fprintf(epsout, "%s", EnlargementText);
     fprintf(epsout, "\n");
