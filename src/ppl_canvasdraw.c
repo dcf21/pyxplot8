@@ -28,13 +28,12 @@
 #include <unistd.h>
 #include <wordexp.h>
 
-#include <gsl/gsl_const_mksa.h>
-
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_arrow.h"
 #include "EPSMaker/eps_eps.h"
 #include "EPSMaker/eps_image.h"
 #include "EPSMaker/eps_plot.h"
+#include "EPSMaker/eps_settings.h"
 #include "EPSMaker/eps_text.h"
 
 #include "StringTools/asciidouble.h"
@@ -141,7 +140,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   if ((comm.FinalFilename==NULL)||(comm.FinalFilename[0]=='\0'))
    {
     comm.FinalFilename = FinalFilenameTemp; // If final target filename is blank, use pyxplot.<filetype>
-    sprintf(FinalFilenameTemp, "pyxplot.%s", (char *)FetchSettingName(termtype, SW_TERMTYPE_INT, (void **)SW_TERMTYPE_STR));
+    sprintf(FinalFilenameTemp, "pyxplot.%s", *(char **)FetchSettingName(termtype, SW_TERMTYPE_INT, (void *)SW_TERMTYPE_STR, sizeof(char *)));
    }
 
   // Perform expansion of shell filename shortcuts such as ~
@@ -180,9 +179,11 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   // Set up communications data structure for objects we are rendering
   comm.itemlist    = canvas_items;
   comm.bb_left     = comm.bb_right = comm.bb_top = comm.bb_bottom = 0.0;
-  comm.bb_left_set = comm.bb_right_set = comm.bb_top_set = comm.bb_bottom_set = 0;
+  comm.bb_set      = 0;
   comm.epsbuffer   = NULL;
   comm.status      = &status;
+  comm.LastEPSColour[0] = '\0';
+  comm.LastLinewidth    = -1.0;
 
   // Prepare a buffer into which strings to be passed to LaTeX will be put
 
@@ -232,7 +233,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
        {
         if (termtype!=SW_TERMTYPE_X11P)
          {
-          sprintf(temp_err_string, "An attempt is being made to use the %s terminal in a non-interactive PyXPlot session. This won't work, as the window will close as soon as PyXPlot exits. Reverting to the X11_persist terminal instead.", (char *)FetchSettingName(termtype, SW_TERMTYPE_INT, (void **)SW_TERMTYPE_STR));
+          sprintf(temp_err_string, "An attempt is being made to use the %s terminal in a non-interactive PyXPlot session. This won't work, as the window will close as soon as PyXPlot exits. Reverting to the X11_persist terminal instead.", *(char **)FetchSettingName(termtype, SW_TERMTYPE_INT, (void *)SW_TERMTYPE_STR, sizeof(char *)));
           ppl_error(ERR_GENERAL, temp_err_string);
          }
         CSPCommand = 2;
@@ -337,10 +338,6 @@ void canvas_EPSWrite(EPSComm *x)
   FILE *epsout;
   char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH];
 
-  // Test code.
-  fprintf(x->epsbuffer, "newpath 0 0 moveto 10 10 lineto stroke\n");
-  x->bb_top = 10.0; x->bb_right = 10.0;
-
   // Apply enlarge and landscape terminals as required
   LandscapifyText[0] = EnlargementText[0] = '\0';
   if  (settings_term_current.landscape   == SW_ONOFF_ON)                                     canvas_EPSLandscapify(x, LandscapifyText);
@@ -378,8 +375,13 @@ void canvas_EPSWrite(EPSComm *x)
    }
 
   // Now write any global transformations needed by the enlarge and landscape terminals.
-  fprintf(epsout, "%s", LandscapifyText);
-  fprintf(epsout, "%s", EnlargementText);
+  if ((LandscapifyText[0]!='\0')||(EnlargementText[0]!='\0'))
+   {
+    fprintf(epsout, "%% Global transformations to give %soutput%s", (LandscapifyText[0]!='\0')?"landscape ":"", (EnlargementText[0]!='\0')?" which fills tha page":"");
+    fprintf(epsout, "%s", LandscapifyText);
+    fprintf(epsout, "%s", EnlargementText);
+    fprintf(epsout, "\n");
+   }
 
   // Copy contents of eps buffer into postscript output
   fflush(x->epsbuffer);
@@ -399,9 +401,6 @@ void canvas_EPSWrite(EPSComm *x)
   fclose(epsout);
   return;
  }
-
-// Constant to convert between millimetres and 72nds of an inch
-static double M_TO_PS = 1.0 / (GSL_CONST_MKSA_INCH / 72.0);
 
 // Convert a portrait EPS file to landscape by changing its bounding box and adding a linear transformation to the top
 void canvas_EPSLandscapify(EPSComm *x, char *transform)

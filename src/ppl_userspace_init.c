@@ -665,6 +665,28 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pt"; // Point (typesetting unit)
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pt";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "point";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "points";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_INCH / 72.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
+  ppl_unit_database[ppl_unit_pos].nameAs     = "pc"; // Pica (typesetting unit)
+  ppl_unit_database[ppl_unit_pos].nameAp     = "pc";
+  ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;
+  ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
+  ppl_unit_database[ppl_unit_pos].nameFs     = "pica";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "pica";
+  ppl_unit_database[ppl_unit_pos].quantity   = "length";
+  ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_INCH / 6.0;
+  ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
+  ppl_unit_pos++;
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "cubit"; // Cubit
   ppl_unit_database[ppl_unit_pos].nameAp     = "cubits";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;

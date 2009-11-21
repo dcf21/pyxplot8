@@ -689,23 +689,23 @@ void arrow_list_destroy(arrow_object **list)
 void arrow_print(arrow_object *in, char *out)
  {
   int i;
-  sprintf(out, "from %s", (char *)FetchSettingName(in->system_x0, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR));
+  sprintf(out, "from %s", *(char **)FetchSettingName(in->system_x0, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *)));
   i = strlen(out);
   if (in->system_x0==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_x0); i+=strlen(out+i); }
   sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->x0),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_y0, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_y0, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_y0==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_y0); i+=strlen(out+i); }
   sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->y0),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_z0, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_z0, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_z0==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z0); i+=strlen(out+i); }
   sprintf(out+i, " %s ", ppl_units_NumericDisplay(&(in->z0),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, "to %s", (char *)FetchSettingName(in->system_x1, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, "to %s", *(char **)FetchSettingName(in->system_x1, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_x1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_x1); i+=strlen(out+i); }
   sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->x1),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_y1, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_y1, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_y1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_y1); i+=strlen(out+i); }
   sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->y1),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_z1, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_z1, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_z1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z1); i+=strlen(out+i); }
   sprintf(out+i, " %s", ppl_units_NumericDisplay(&(in->z1),0,0,0)); i+=strlen(out+i);
   with_words_print(&in->style, out+i+6);
@@ -883,13 +883,13 @@ void label_print(label_object *in, char *out)
   int i;
   StrEscapify(in->text, out);
   i = strlen(out);
-  sprintf(out+i, " at %s", (char *)FetchSettingName(in->system_x, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " at %s", *(char **)FetchSettingName(in->system_x, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_x==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_x); i+=strlen(out+i); }
   sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->x),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_y, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_y, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_y==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_y); i+=strlen(out+i); }
   sprintf(out+i, " %s,", ppl_units_NumericDisplay(&(in->y),0,0,0)); i+=strlen(out+i);
-  sprintf(out+i, " %s", (char *)FetchSettingName(in->system_z, SW_SYSTEM_INT, (void **)SW_SYSTEM_STR)); i+=strlen(out+i);
+  sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_z, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_z==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z); i+=strlen(out+i); }
   sprintf(out+i, " %s", ppl_units_NumericDisplay(&(in->z),0,0,0)); i+=strlen(out+i);
   with_words_print(&in->style, out+i+6);
@@ -1099,24 +1099,24 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
 void with_words_print(const with_words *defn, char *out)
  {
   int i=0;
-  if      (defn->USElinespoints)          { sprintf(out+i, "%s "                     , (char *)FetchSettingName(defn->linespoints, SW_STYLE_INT , (void **)SW_STYLE_STR )); i += strlen(out+i); }
-  if      (defn->STRcolourR!=NULL)        { sprintf(out+i, "colour rgb:%s,%s,%s "    , defn->STRcolourR, defn->STRcolourG, defn->STRcolourB);                               i += strlen(out+i); }
-  else if (defn->USEcolourRGB)            { sprintf(out+i, "colour rgb:%d,%d,%d "    , defn->colourR, defn->colourG, defn->colourB);                                        i += strlen(out+i); }
-  else if (defn->USEcolour)               { sprintf(out+i, "colour %s "              , (char *)FetchSettingName(defn->colour     , SW_COLOUR_INT, (void **)SW_COLOUR_STR)); i += strlen(out+i); }
-  if      (defn->STRfillcolourR!=NULL)    { sprintf(out+i, "fillcolour rgb:%s,%s,%s ", defn->STRfillcolourR, defn->STRfillcolourG, defn->STRfillcolourB);                   i += strlen(out+i); }
-  else if (defn->USEfillcolourRGB)        { sprintf(out+i, "fillcolour rgb:%d,%d,%d ", defn->fillcolourR, defn->fillcolourG, defn->fillcolourB);                            i += strlen(out+i); }
-  else if (defn->USEfillcolour)           { sprintf(out+i, "fillcolour %s "          , (char *)FetchSettingName(defn->fillcolour , SW_COLOUR_INT, (void **)SW_COLOUR_STR)); i += strlen(out+i); }
-  if      (defn->STRlinetype!=NULL)       { sprintf(out+i, "linetype %s "            , defn->STRlinetype);                                                                  i += strlen(out+i); }
-  else if (defn->USElinetype)             { sprintf(out+i, "linetype %d "            , defn->linetype);                                                                     i += strlen(out+i); }
-  if      (defn->STRlinewidth!=NULL)      { sprintf(out+i, "linewidth %s "           , defn->STRlinewidth);                                                                 i += strlen(out+i); }
-  else if (defn->USElinewidth)            { sprintf(out+i, "linewidth %s "           , NUMDISP(defn->linewidth));                                                           i += strlen(out+i); }
-  if      (defn->STRpointlinewidth!=NULL) { sprintf(out+i, "pointlinewidth %s "      , defn->STRpointlinewidth);                                                            i += strlen(out+i); }
-  else if (defn->USEpointlinewidth)       { sprintf(out+i, "pointlinewidth %s "      , NUMDISP(defn->pointlinewidth));                                                      i += strlen(out+i); }
-  if      (defn->STRpointsize!=NULL)      { sprintf(out+i, "pointsize %s "           , defn->STRpointsize);                                                                 i += strlen(out+i); }
-  else if (defn->USEpointsize)            { sprintf(out+i, "pointsize %s "           , NUMDISP(defn->pointsize));                                                           i += strlen(out+i); }
-  if      (defn->STRpointtype!=NULL)      { sprintf(out+i, "pointtype %s "           , defn->STRpointtype);                                                                 i += strlen(out+i); }
-  else if (defn->USEpointtype)            { sprintf(out+i, "pointtype %d "           , defn->pointtype);                                                                    i += strlen(out+i); }
-  if      (defn->USEstyle)                { sprintf(out+i, "style %d "               , defn->style);                                                                        i += strlen(out+i); }
+  if      (defn->USElinespoints)          { sprintf(out+i, "%s "            , *(char **)FetchSettingName(defn->linespoints, SW_STYLE_INT , (void *)SW_STYLE_STR , sizeof(char *))); i += strlen(out+i); }
+  if      (defn->STRcolourR!=NULL)        { sprintf(out+i, "colour rgb:%s,%s,%s "    , defn->STRcolourR, defn->STRcolourG, defn->STRcolourB);                                       i += strlen(out+i); }
+  else if (defn->USEcolourRGB)            { sprintf(out+i, "colour rgb:%d,%d,%d "    , defn->colourR, defn->colourG, defn->colourB);                                                i += strlen(out+i); }
+  else if (defn->USEcolour)               { sprintf(out+i, "colour %s "     , *(char **)FetchSettingName(defn->colour     , SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *))); i += strlen(out+i); }
+  if      (defn->STRfillcolourR!=NULL)    { sprintf(out+i, "fillcolour rgb:%s,%s,%s ", defn->STRfillcolourR, defn->STRfillcolourG, defn->STRfillcolourB);                           i += strlen(out+i); }
+  else if (defn->USEfillcolourRGB)        { sprintf(out+i, "fillcolour rgb:%d,%d,%d ", defn->fillcolourR, defn->fillcolourG, defn->fillcolourB);                                    i += strlen(out+i); }
+  else if (defn->USEfillcolour)           { sprintf(out+i, "fillcolour %s " , *(char **)FetchSettingName(defn->fillcolour , SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *))); i += strlen(out+i); }
+  if      (defn->STRlinetype!=NULL)       { sprintf(out+i, "linetype %s "            , defn->STRlinetype);                                                                          i += strlen(out+i); }
+  else if (defn->USElinetype)             { sprintf(out+i, "linetype %d "            , defn->linetype);                                                                             i += strlen(out+i); }
+  if      (defn->STRlinewidth!=NULL)      { sprintf(out+i, "linewidth %s "           , defn->STRlinewidth);                                                                         i += strlen(out+i); }
+  else if (defn->USElinewidth)            { sprintf(out+i, "linewidth %s "           , NUMDISP(defn->linewidth));                                                                   i += strlen(out+i); }
+  if      (defn->STRpointlinewidth!=NULL) { sprintf(out+i, "pointlinewidth %s "      , defn->STRpointlinewidth);                                                                    i += strlen(out+i); }
+  else if (defn->USEpointlinewidth)       { sprintf(out+i, "pointlinewidth %s "      , NUMDISP(defn->pointlinewidth));                                                              i += strlen(out+i); }
+  if      (defn->STRpointsize!=NULL)      { sprintf(out+i, "pointsize %s "           , defn->STRpointsize);                                                                         i += strlen(out+i); }
+  else if (defn->USEpointsize)            { sprintf(out+i, "pointsize %s "           , NUMDISP(defn->pointsize));                                                                   i += strlen(out+i); }
+  if      (defn->STRpointtype!=NULL)      { sprintf(out+i, "pointtype %s "           , defn->STRpointtype);                                                                         i += strlen(out+i); }
+  else if (defn->USEpointtype)            { sprintf(out+i, "pointtype %d "           , defn->pointtype);                                                                            i += strlen(out+i); }
+  if      (defn->USEstyle)                { sprintf(out+i, "style %d "               , defn->style);                                                                                i += strlen(out+i); }
   out[i]='\0';
   return;
  }

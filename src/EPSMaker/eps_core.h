@@ -1,4 +1,4 @@
-// eps_comm.h
+// eps_core.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,24 +19,13 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_COMM_H
-#define _PPL_EPS_COMM_H 1
+#ifndef _PPL_EPS_CORE_H
+#define _PPL_EPS_CORE_H 1
 
-#include <stdio.h>
-
-#include "ppl_canvasitems.h"
-
-typedef struct EPSComm {
-  canvas_itemlist *itemlist;
-  canvas_item *current;
-  double bb_left, bb_right, bb_top, bb_bottom;
-  unsigned char bb_set;
-  char *EPSFilename, *FinalFilename, *title;
-  char  LastEPSColour[256];
-  double LastLinewidth;
-  FILE *epsbuffer;
-  int *status, termtype;
- } EPSComm;
+void eps_core_clear       (EPSComm *x);
+void eps_core_SetColour   (EPSComm *x, with_words *colour);
+void eps_core_SetLinewidth(EPSComm *x, double lw);
+void eps_core_BoundingBox (EPSComm *x, double xpos, double ypos, double lw);
 
 #endif
 

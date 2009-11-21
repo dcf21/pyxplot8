@@ -381,7 +381,7 @@ double JulianDate(int year, int month, int day, int hour, int min, int sec, int 
   else if (ReqDate >= FirstGregorian)
    { b = (year/400) - (year/100) + (year/4); } // Gregorian calendar
   else
-   { *status=1; sprintf(errtext, "The requested date never happened in the %s calendar: it was lost in the transition from the Julian to the Gregorian calendar.", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR )); return 0.0; }
+   { *status=1; sprintf(errtext, "The requested date never happened in the %s calendar: it was lost in the transition from the Julian to the Gregorian calendar.", *(char **)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void *)SW_CALENDAR_STR, sizeof(char *))); return 0.0; }
 
   JD = 365.0*year - 679004.0 + 2400000.5 + b + floor(30.6001*(month+1)) + day;
 

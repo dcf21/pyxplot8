@@ -27,18 +27,22 @@
 #define SW_BOOL_TRUE  10001
 #define SW_BOOL_FALSE 10002
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_BOOL_STR[];
 extern int   SW_BOOL_ACL[];
 extern int   SW_BOOL_INT[];
+#endif
 
 // On/Off Switches
 
 #define SW_ONOFF_ON  10011
 #define SW_ONOFF_OFF 10012
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_ONOFF_STR[];
 extern int   SW_ONOFF_ACL[];
 extern int   SW_ONOFF_INT[];
+#endif
 
 // Plot Style Switches
 
@@ -64,9 +68,11 @@ extern int   SW_ONOFF_INT[];
 #define SW_STYLE_CSPLINES       10120
 #define SW_STYLE_ACSPLINES      10121
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_STYLE_STR[];
 extern int   SW_STYLE_ACL[];
 extern int   SW_STYLE_INT[];
+#endif
 
 // Systems in which coordinates can be specified in 'set arrow' and 'set label'
 
@@ -76,9 +82,11 @@ extern int   SW_STYLE_INT[];
 #define SW_SYSTEM_GRAPH  10204
 #define SW_SYSTEM_AXISN  10205
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_SYSTEM_STR[];
 extern int   SW_SYSTEM_ACL[];
 extern int   SW_SYSTEM_INT[];
+#endif
 
 // Arrow types understood by the 'set arrow' command
 
@@ -86,9 +94,24 @@ extern int   SW_SYSTEM_INT[];
 #define SW_ARROWTYPE_NOHEAD 10302
 #define SW_ARROWTYPE_TWOWAY 10303
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_ARROWTYPE_STR[];
 extern int   SW_ARROWTYPE_ACL[];
 extern int   SW_ARROWTYPE_INT[];
+#endif
+
+// Bitmap types understood by the 'image' command
+
+#define SW_BITMAP_BMP 10401
+#define SW_BITMAP_GIF 10402
+#define SW_BITMAP_JPG 10403
+#define SW_BITMAP_PNG 10404
+
+#ifndef _PPL_SETTING_TYPES_C
+extern char *SW_BITMAP_STR[];
+extern int   SW_BITMAP_ACL[];
+extern int   SW_BITMAP_INT[];
+#endif
 
 // Terminal Type Switches
 
@@ -105,9 +128,11 @@ extern int   SW_ARROWTYPE_INT[];
 #define SW_TERMTYPE_TIF  13011
 #define SW_TERMTYPE_SVG  13012
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_TERMTYPE_STR[];
 extern int   SW_TERMTYPE_ACL[];
 extern int   SW_TERMTYPE_INT[];
+#endif
 
 // Key Position Switches
 
@@ -124,9 +149,11 @@ extern int   SW_TERMTYPE_INT[];
 #define SW_KEYPOS_BELOW 14011
 #define SW_KEYPOS_OUTSIDE 14012
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_KEYPOS_STR[];
 extern int   SW_KEYPOS_ACL[];
 extern int   SW_KEYPOS_INT[];
+#endif
 
 // Tick Direction Switches
 
@@ -134,9 +161,11 @@ extern int   SW_KEYPOS_INT[];
 #define SW_TICDIR_OUT  15002
 #define SW_TICDIR_BOTH 15003
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_TICDIR_STR[];
 extern int   SW_TICDIR_ACL[];
 extern int   SW_TICDIR_INT[];
+#endif
 
 // Tick Label Text Direction Switches
 
@@ -144,9 +173,11 @@ extern int   SW_TICDIR_INT[];
 #define SW_TICLABDIR_VERT 15012
 #define SW_TICLABDIR_ROT  15013
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_TICLABDIR_STR[];
 extern int   SW_TICLABDIR_ACL[];
 extern int   SW_TICLABDIR_INT[];
+#endif
 
 // Axis Display Schemes
 
@@ -155,9 +186,11 @@ extern int   SW_TICLABDIR_INT[];
 #define SW_AXISDISP_TWOAR 15024
 #define SW_AXISDISP_BACKA 15026
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_AXISDISP_STR[];
 extern int   SW_AXISDISP_ACL[];
 extern int   SW_AXISDISP_INT[];
+#endif
 
 // Axis Display Mirroring Schemes
 
@@ -166,18 +199,22 @@ extern int   SW_AXISDISP_INT[];
 #define SW_AXISMIRROR_NOMIRROR   15033
 #define SW_AXISMIRROR_FULLMIRROR 15034
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_AXISMIRROR_STR[];
 extern int   SW_AXISMIRROR_ACL[];
 extern int   SW_AXISMIRROR_INT[];
+#endif
 
 // Graph Projection Schemes
 
 #define SW_PROJ_FLAT 15041
 #define SW_PROJ_GNOM 15042
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_PROJ_STR[];
 extern int   SW_PROJ_ACL[];
 extern int   SW_PROJ_INT[];
+#endif
 
 // Text Horizontal Alignment
 
@@ -185,9 +222,11 @@ extern int   SW_PROJ_INT[];
 #define SW_HALIGN_CENT  16002
 #define SW_HALIGN_RIGHT 16003
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_HALIGN_STR[];
 extern int   SW_HALIGN_ACL[];
 extern int   SW_HALIGN_INT[];
+#endif
 
 // Text Vertical Alignment
 
@@ -195,9 +234,11 @@ extern int   SW_HALIGN_INT[];
 #define SW_VALIGN_CENT 16012
 #define SW_VALIGN_BOT  16013
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_VALIGN_STR[];
 extern int   SW_VALIGN_ACL[];
 extern int   SW_VALIGN_INT[];
+#endif
 
 // Colours for displaying on terminals
 
@@ -210,10 +251,12 @@ extern int   SW_VALIGN_INT[];
 #define SW_TERMCOL_CYN 17007
 #define SW_TERMCOL_WHT 17008
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_TERMCOL_STR[];
 extern int   SW_TERMCOL_ACL[];
 extern int   SW_TERMCOL_INT[];
 extern char *SW_TERMCOL_TXT[];
+#endif
 
 // Schemes in which units can be displayed
 
@@ -224,9 +267,11 @@ extern char *SW_TERMCOL_TXT[];
 #define SW_UNITSCH_US  18005
 #define SW_UNITSCH_PLK 18006
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_UNITSCH_STR[];
 extern int   SW_UNITSCH_ACL[];
 extern int   SW_UNITSCH_INT[];
+#endif
 
 // Schemes in which we can display numeric results
 
@@ -234,9 +279,11 @@ extern int   SW_UNITSCH_INT[];
 #define SW_DISPLAY_T 18051
 #define SW_DISPLAY_L 18052
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_DISPLAY_STR[];
 extern int   SW_DISPLAY_ACL[];
 extern int   SW_DISPLAY_INT[];
+#endif
 
 // Calendars which we can use
 
@@ -250,11 +297,13 @@ extern int   SW_DISPLAY_INT[];
 #define SW_CALENDAR_HEBREW    19020
 #define SW_CALENDAR_ISLAMIC   19021
 
+#ifndef _PPL_SETTING_TYPES_C
 extern char *SW_CALENDAR_STR[];
 extern int   SW_CALENDAR_ACL[];
 extern int   SW_CALENDAR_INT[];
+#endif
 
-void *FetchSettingName      (int id, int *id_list, void **name_list);
+void *FetchSettingName      (int id, int *id_list, void *name_list, const int name_list_size);
 int   FetchSettingByName    (char *name, int *id_list, char **name_list);
 
 #endif

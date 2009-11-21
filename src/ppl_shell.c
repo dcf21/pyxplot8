@@ -293,7 +293,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
   else if (strcmp(directive, "arrow")==0)
-   directive_arrow(command, in, interactive);
+   directive_arrow(command, interactive);
   else if (strcmp(directive, "break")==0)
    {
     if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_BROKEN=1;
@@ -313,7 +313,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "do")==0)
    return directive_do(command, IterLevel+1);
   else if (strcmp(directive, "eps")==0)
-   return directive_eps(command, in, interactive);
+   return directive_eps(command, interactive);
   else if (strcmp(directive, "else")==0)
    ppl_error(ERR_SYNTAX, "This else statement does not match any earlier if statement.");
   else if (strcmp(directive, "exec")==0)
@@ -332,8 +332,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_history(command);
   else if (strcmp(directive, "if")==0)
    return directive_if(command, IterLevel+1);
-  else if (strcmp(directive, "jpeg")==0)
-   directive_jpeg(command, in, interactive);
+  else if (strcmp(directive, "image")==0)
+   directive_image(command, interactive);
   else if (strcmp(directive, "linear")==0)
    return directive_interpolate(command,INTERP_LINEAR);
   else if (strcmp(directive, "list")==0)
@@ -363,7 +363,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "polynomial")==0)
    return directive_interpolate(command,INTERP_POLYN);
   else if (strcmp(directive, "plot")==0)
-   directive_plot(command, in, interactive, 0);
+   directive_plot(command, interactive, 0);
   else if (strcmp(directive, "print")==0)
    directive_print(command);
   else if (strcmp(directive, "pwd")==0)
@@ -371,7 +371,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "quit")==0)
    PPL_SHELL_EXITING = 1;
   else if (strcmp(directive, "replot")==0)
-   directive_plot(command, in, interactive, 1);
+   directive_plot(command, interactive, 1);
   else if (strcmp(directive, "reset")==0)
    {
     settings_term_current  = settings_term_default;
@@ -411,7 +411,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "tabulate")==0)
    return directive_tabulate(command, in);
   else if (strcmp(directive, "text")==0)
-   directive_text(command, in, interactive);
+   directive_text(command, interactive);
   else if (strcmp(directive, "undelete")==0)
    return directive_undelete(command);
   else if (strcmp(directive, "unset")==0)

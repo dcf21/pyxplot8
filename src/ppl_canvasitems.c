@@ -44,7 +44,6 @@ canvas_itemlist *canvas_items = NULL;
 static void canvas_item_delete(canvas_item *ptr)
  {
   int i;
-  if (ptr->commandline != NULL) free(ptr->commandline);
   if (ptr->text        != NULL) free(ptr->text);
   with_words_destroy(&(ptr->settings.DataStyle));
   with_words_destroy(&(ptr->settings.FuncStyle));
@@ -53,13 +52,14 @@ static void canvas_item_delete(canvas_item *ptr)
   for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->ZAxes[i]) );
   arrow_list_destroy(&(ptr->arrow_list));
   label_list_destroy(&(ptr->label_list));
-  // !!! Delete plot descriptor !!!
+  with_words_destroy(&(ptr->with_data));
+  // !!! Delete plot data structure !!!
   free(ptr);
   return;
  }
 
 // Add a new multiplot canvas item to the list above
-static int canvas_itemlist_add(Dict *command, int type, char *line, canvas_item **output, int *id)
+static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, int *id)
  {
   canvas_item *ptr, *next, **insertpoint;
   int i, PrevId, *EditNo;
@@ -94,11 +94,7 @@ static int canvas_itemlist_add(Dict *command, int type, char *line, canvas_item 
   ptr->id      = (EditNo == NULL) ? (PrevId+1) : (*EditNo);
   ptr->type    = type;
   ptr->deleted = 0;
-
-  // Store the commandline that the user typed
-  ptr->commandline = (char *)malloc(strlen(line)+1);
-  if (ptr->commandline==NULL) { free(ptr); *insertpoint = next; return 1; }
-  strcpy(ptr->commandline, line);
+  with_words_zero(&ptr->with_data, 0);
 
   // Copy the user's current settings
   ptr->settings = settings_graph_current;
@@ -133,9 +129,90 @@ int directive_clear()
   return 0;
  }
 
+// Produce a textual representation of the command which would need to be typed to produce any given canvas item
+char *canvas_item_textify(canvas_item *ptr, char *output)
+ {
+  int i;
+  if      (ptr->type == CANVAS_ARROW) // Produce textual representations of arrow commands
+   {
+    sprintf(output, "arrow item %d from %s,%s to %s,%s", ptr->id,
+             NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay((ptr->xpos+ptr->xpos2)*100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay((ptr->ypos+ptr->ypos2)*100, 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i = strlen(output);
+    with_words_print(&ptr->with_data, output+i+6);
+    if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+    else                      { output[i]='\0'; }
+   }
+  else if (ptr->type == CANVAS_EPS  ) // Produce textual representations of eps commands
+   {
+    sprintf(output, "image item %d eps ", ptr->id);
+    i = strlen(output);
+    StrEscapify(ptr->text, output+i);
+    i += strlen(output+i);
+    sprintf(output+i, " at %s,%s",
+             NumericDisplay(ptr->xpos*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay(ptr->ypos*100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i += strlen(output+i);
+    if (ptr->xpos2set) sprintf(output+i, " width %s" , NumericDisplay(ptr->xpos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    i += strlen(output+i);
+    if (ptr->ypos2set) sprintf(output+i, " height %s", NumericDisplay(ptr->ypos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    i += strlen(output+i);
+    sprintf(output+i, " rotate %s",
+             NumericDisplay(ptr->rotation * 180/M_PI , 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+   }
+  else if (ptr->type == CANVAS_IMAGE) // Produce textual representations of image commands
+   {
+    sprintf(output, "image item %d %s ", ptr->id, *(char **)FetchSettingName(ptr->ImageType, SW_BITMAP_INT, (void *)SW_BITMAP_STR, sizeof(char *)));
+    i = strlen(output);
+    StrEscapify(ptr->text, output+i);
+    i += strlen(output+i);
+    sprintf(output+i, " at %s,%s",
+             NumericDisplay(ptr->xpos*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay(ptr->ypos*100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i += strlen(output+i);
+    if (ptr->xpos2set) sprintf(output+i, " width %s" , NumericDisplay(ptr->xpos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    i += strlen(output+i);
+    if (ptr->ypos2set) sprintf(output+i, " height %s", NumericDisplay(ptr->ypos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    i += strlen(output+i);
+    sprintf(output+i, " rotate %s",
+             NumericDisplay(ptr->rotation * 180/M_PI , 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+   }
+  else if (ptr->type == CANVAS_PLOT ) // Produce textual representations of plot commands
+   {
+    sprintf(output, "[plot]");
+   }
+  else if (ptr->type == CANVAS_TEXT ) // Produce textual representations of text commands
+   {
+    sprintf(output, "text item %d ", ptr->id);
+    i = strlen(output);
+    StrEscapify(ptr->text, output+i);
+    i += strlen(output+i);
+    sprintf(output+i, " at %s,%s rotate %s",
+             NumericDisplay( ptr->xpos     * 100     , 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->ypos     * 100     , 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->rotation * 180/M_PI, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i += strlen(output+i);
+    with_words_print(&ptr->with_data, output+i+6);
+    if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+    else                      { output[i]='\0'; }
+   }
+  else
+   { sprintf(output, "[unknown object]"); } // Ooops.
+  return output;
+ }
+
 // Implementation of the list command.
 int directive_list()
  {
+  int i;
   canvas_item *ptr;
 
   ppl_report("# ID   Command");
@@ -143,7 +220,9 @@ int directive_list()
   ptr = canvas_items->first;
   while (ptr != NULL)
    {
-    sprintf(temp_err_string, "%5d  %s%s", ptr->id, (ptr->deleted) ? "[deleted] " : "", ptr->commandline);
+    sprintf(temp_err_string, "%5d  %s", ptr->id, (ptr->deleted) ? "[deleted] " : "");
+    i = strlen(temp_err_string);
+    canvas_item_textify(ptr, temp_err_string+i);
     ppl_report(temp_err_string);
     ptr = ptr->next;
    }
@@ -164,9 +243,10 @@ static int canvas_delete(int id)
 
 int directive_delete(Dict *command)
  {
-  List         *DelList;
-  ListIterator *ListIter;
-  int          *id;
+  List          *DelList;
+  ListIterator  *ListIter;
+  int           *id;
+  unsigned char *unsuccessful_ops;
 
   if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
 
@@ -178,16 +258,24 @@ int directive_delete(Dict *command)
     canvas_delete(*id);
     ListIter = ListIterate(ListIter, NULL);
    }
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+   }
   return 0;
  }
 
 // Implementation of the undelete command.
 int directive_undelete(Dict *command)
  {
-  List         *UndelList;
-  ListIterator *ListIter;
-  int          *id;
-  canvas_item  *ptr;
+  List          *UndelList;
+  ListIterator  *ListIter;
+  int           *id;
+  unsigned char *unsuccessful_ops;
+  canvas_item   *ptr;
 
   if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
 
@@ -201,6 +289,13 @@ int directive_undelete(Dict *command)
     if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *id); ppl_warning(ERR_GENERAL, temp_err_string); }
     else           { ptr->deleted = 0; }
     ListIter = ListIterate(ListIter, NULL);
+   }
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
    }
   return 0;
  }
@@ -234,10 +329,11 @@ int directive_undelete(Dict *command)
 // Implementation of the move command.
 int directive_move(Dict *command)
  {
-  int          *moveno, i;
-  value        *x, *y, *ang;
-  unsigned char rotatable;
-  canvas_item  *ptr;
+  int           *moveno, i;
+  value         *x, *y, *ang;
+  unsigned char  rotatable;
+  canvas_item   *ptr;
+  unsigned char *unsuccessful_ops;
 
   if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
 
@@ -258,29 +354,48 @@ int directive_move(Dict *command)
   ptr->xpos = x->real;
   ptr->ypos = y->real;
   if ((ang != NULL) && (rotatable)) ptr->rotation = ang->real;
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+   }
   return 0;
  }
 
 // Implementation of the arrow command.
-int directive_arrow(Dict *command, char *line, int interactive)
+int directive_arrow(Dict *command, int interactive)
  {
   canvas_item   *ptr;
   int            i, id;
   value         *x1, *x2, *y1, *y2;
+  char          *tempstr;
   unsigned char *unsuccessful_ops;
 
+  // Look up the start and end point of the arrow, and ensure that they are either dimensionless or in units of length
   DictLookup(command, "x1", NULL, (void *)&x1); DictLookup(command, "y1", NULL, (void *)&y1);
   DictLookup(command, "x2", NULL, (void *)&x2); DictLookup(command, "y2", NULL, (void *)&y2);
 
   ASSERT_LENGTH(x1,"arrow","x1"); ASSERT_LENGTH(y1,"arrow","y1");
   ASSERT_LENGTH(x2,"arrow","x2"); ASSERT_LENGTH(y2,"arrow","y2");
 
-  if (canvas_itemlist_add(command,CANVAS_ARROW,line,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  // Add this arrow to the linked list which decribes the canvas
+  if (canvas_itemlist_add(command,CANVAS_ARROW,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real - x1->real;
   ptr->ypos2 = y2->real - y1->real;
 
+  // Read in colour and linewidth information, if available
+  with_words_fromdict(command, &ptr->with_data, 1);
+
+  // Work out whether this arrow is in the 'head', 'nohead' or 'twoway' style
+  DictLookup(command, "arrow_style", NULL, (void *)&tempstr);
+  if (tempstr != NULL) ptr->ArrowType = FetchSettingByName(tempstr, SW_ARROWTYPE_INT, SW_ARROWTYPE_STR);
+  else                 ptr->ArrowType = SW_ARROWTYPE_HEAD;
+
+  // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
@@ -291,34 +406,42 @@ int directive_arrow(Dict *command, char *line, int interactive)
  }
 
 // Implementation of the eps command.
-int directive_eps(Dict *command, char *line, int interactive)
+int directive_eps(Dict *command, int interactive)
  {
   canvas_item   *ptr;
   int            i, id;
-  value         *x, *y, *ang;
+  value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
   char          *text, *fname;
 
-  DictLookup(command, "x"     , NULL, (void *)&x  );
-  DictLookup(command, "y"     , NULL, (void *)&y  );
-  DictLookup(command, "rotate", NULL, (void *)&ang);
+  // Read in positional information for this eps image, and ensure that values are either dimensionless, or have units of length / angle as required
+  DictLookup(command, "x"     , NULL, (void *)&x     );
+  DictLookup(command, "y"     , NULL, (void *)&y     );
+  DictLookup(command, "rotate", NULL, (void *)&ang   );
+  DictLookup(command, "width" , NULL, (void *)&width );
+  DictLookup(command, "height", NULL, (void *)&height);
 
-  if (x  !=NULL) { ASSERT_LENGTH(x  ,"eps","x"); }
-  if (y  !=NULL) { ASSERT_LENGTH(y  ,"eps","y"); }
-  if (ang!=NULL) { ASSERT_ANGLE (ang,"eps"    ); }
+  if (x     !=NULL) { ASSERT_LENGTH(x     ,"eps","x"     ); }
+  if (y     !=NULL) { ASSERT_LENGTH(y     ,"eps","y"     ); }
+  if (ang   !=NULL) { ASSERT_ANGLE (ang   ,"eps"         ); }
+  if (width !=NULL) { ASSERT_LENGTH(width ,"eps","width" ); }
+  if (height!=NULL) { ASSERT_LENGTH(height,"eps","height"); }
 
   DictLookup(command, "filename", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_EPS,line,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_EPS,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
-  if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
-  if (y  !=NULL) { ptr->ypos     = y  ->real; } else { ptr->ypos      = settings_graph_current.OriginY.real; }
-  if (ang!=NULL) { ptr->rotation = ang->real; } else { ptr->rotation  = 0.0;                                 }
+  if (x     !=NULL) { ptr->xpos     = x     ->real; }                    else { ptr->xpos     = settings_graph_current.OriginX.real; }
+  if (y     !=NULL) { ptr->ypos     = y     ->real; }                    else { ptr->ypos     = settings_graph_current.OriginY.real; }
+  if (ang   !=NULL) { ptr->rotation = ang   ->real; }                    else { ptr->rotation = 0.0;                                 }
+  if (width !=NULL) { ptr->xpos2    = width ->real; ptr->xpos2set = 1; } else { ptr->xpos2    = 0.0; ptr->xpos2set = 0; }
+  if (height!=NULL) { ptr->ypos2    = height->real; ptr->ypos2set = 1; } else { ptr->ypos2    = 0.0; ptr->ypos2set = 0; }
   ptr->text = text;
 
+  // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
@@ -329,7 +452,7 @@ int directive_eps(Dict *command, char *line, int interactive)
  }
 
 // Implementation of the text command.
-int directive_text(Dict *command, char *line, int interactive)
+int directive_text(Dict *command, int interactive)
  {
   canvas_item   *ptr;
   int            i, id;
@@ -350,13 +473,17 @@ int directive_text(Dict *command, char *line, int interactive)
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_TEXT,line,&ptr, &id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr, &id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
   if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
   if (y  !=NULL) { ptr->ypos     = y  ->real; } else { ptr->ypos      = settings_graph_current.OriginY.real; }
   if (ang!=NULL) { ptr->rotation = ang->real; } else { ptr->rotation  = 0.0;                                 }
   ptr->text = text;
 
+  // Read in colour information, if available
+  with_words_fromdict(command, &ptr->with_data, 1);
+
+  // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
@@ -366,47 +493,57 @@ int directive_text(Dict *command, char *line, int interactive)
   return 0;
  }
 
-// Implementation of the jpeg command.
-int directive_jpeg(Dict *command, char *line, int interactive)
+// Implementation of the image command.
+int directive_image(Dict *command, int interactive)
  {
   canvas_item *ptr;
   int            i, id;
-  value         *x, *y, *ang;
+  value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
-  char          *text, *fname;
+  char          *text, *fname, *tempstr;
 
+  // Read in positional information for this bitmap image, and ensure that values are either dimensionless, or have units of length / angle as required
   DictLookup(command, "x"     , NULL, (void *)&x  );
   DictLookup(command, "y"     , NULL, (void *)&y  );
   DictLookup(command, "rotate", NULL, (void *)&ang);
+  DictLookup(command, "width" , NULL, (void *)&width );
+  DictLookup(command, "height", NULL, (void *)&height);
 
-  if (x  !=NULL) { ASSERT_LENGTH(x  ,"eps","x"); }
-  if (y  !=NULL) { ASSERT_LENGTH(y  ,"eps","y"); }
-  if (ang!=NULL) { ASSERT_ANGLE (ang,"eps"    ); }
+  if (x     !=NULL) { ASSERT_LENGTH(x     ,"eps","x"     ); }
+  if (y     !=NULL) { ASSERT_LENGTH(y     ,"eps","y"     ); }
+  if (ang   !=NULL) { ASSERT_ANGLE (ang   ,"eps"         ); }
+  if (width !=NULL) { ASSERT_LENGTH(width ,"eps","width" ); }
+  if (height!=NULL) { ASSERT_LENGTH(height,"eps","height"); }
 
   DictLookup(command, "filename", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_IMAGE,line,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_IMAGE,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
-  if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
-  if (y  !=NULL) { ptr->ypos     = y  ->real; } else { ptr->ypos      = settings_graph_current.OriginY.real; }
-  if (ang!=NULL) { ptr->rotation = ang->real; } else { ptr->rotation  = 0.0;                                 }
-  ptr->text = text;
+  if (x     !=NULL) { ptr->xpos     = x     ->real; }                    else { ptr->xpos     = settings_graph_current.OriginX.real; }
+  if (y     !=NULL) { ptr->ypos     = y     ->real; }                    else { ptr->ypos     = settings_graph_current.OriginY.real; }
+  if (ang   !=NULL) { ptr->rotation = ang   ->real; }                    else { ptr->rotation = 0.0;                                 }
+  if (width !=NULL) { ptr->xpos2    = width ->real; ptr->xpos2set = 1; } else { ptr->xpos2    = 0.0; ptr->xpos2set = 0; }
+  if (height!=NULL) { ptr->ypos2    = height->real; ptr->ypos2set = 1; } else { ptr->ypos2    = 0.0; ptr->ypos2set = 0; }
+  ptr->text      = text;
 
+  DictLookup(command, "image_type", NULL, (void *)&tempstr);
+  ptr->ImageType = FetchSettingByName(tempstr, SW_BITMAP_INT, SW_BITMAP_STR);
+
+  // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("JPEG image has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Bitmap image has been removed from multiplot, because it generated an error.")); return 1; }
    }
-  ppl_report(DictPrint(command, temp_err_string, LSTR_LENGTH));
   return 0;
  }
 
 // Implementation of the plot and replot commands.
-int directive_plot(Dict *command, char *line, int interactive, int replot)
+int directive_plot(Dict *command, int interactive, int replot)
  {
   canvas_item   *ptr;
   int            id;
@@ -414,9 +551,10 @@ int directive_plot(Dict *command, char *line, int interactive, int replot)
 
   if (!replot)
    {
-    if (canvas_itemlist_add(command,CANVAS_PLOT,line,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
    }
 
+  // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);

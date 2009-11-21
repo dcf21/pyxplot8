@@ -51,9 +51,9 @@ LOCAL_OBJDIR = obj
 LOCAL_DOCDIR = doc
 LOCAL_BINDIR = bin
 
-PPL_FILES   = EPSMaker/eps_arrow.c EPSMaker/eps_colours.c EPSMaker/eps_eps.c EPSMaker/eps_image.c EPSMaker/eps_plot.c EPSMaker/eps_text.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c MathsTools/airy_functions.c MathsTools/dcfast.c MathsTools/dcfmath.c MathsTools/dcftime.c MathsTools/zeta_riemann.c ppl_calculus.c ppl_canvasdraw.c ppl_canvasitems.c ppl_children.c ppl_commands.c ppl_datafile.c ppl_eqnsolve.c ppl_error.c ppl_fit.c ppl_flowctrl.c ppl_help.c ppl_histogram.c ppl_input.c ppl_interpolation.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_setshow.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_tabulate.c ppl_texify.c ppl_text.c ppl_units.c ppl_userspace.c ppl_userspace_init.c pyxplot.c StringTools/asciidouble.c
+PPL_FILES   = EPSMaker/eps_arrow.c EPSMaker/eps_colours.c EPSMaker/eps_core.c EPSMaker/eps_eps.c EPSMaker/eps_image.c EPSMaker/eps_plot.c EPSMaker/eps_settings.c EPSMaker/eps_text.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c MathsTools/airy_functions.c MathsTools/dcfast.c MathsTools/dcfmath.c MathsTools/dcftime.c MathsTools/zeta_riemann.c ppl_calculus.c ppl_canvasdraw.c ppl_canvasitems.c ppl_children.c ppl_commands.c ppl_datafile.c ppl_eqnsolve.c ppl_error.c ppl_fit.c ppl_flowctrl.c ppl_help.c ppl_histogram.c ppl_input.c ppl_interpolation.c ppl_papersize.c ppl_parser.c ppl_passwd.c ppl_readconfig.c ppl_setshow.c ppl_settings.c ppl_setting_types.c ppl_shell.c ppl_tabulate.c ppl_texify.c ppl_text.c ppl_units.c ppl_userspace.c ppl_userspace_init.c pyxplot.c StringTools/asciidouble.c
 
-PPL_HEADERS = EPSMaker/eps_arrow.h EPSMaker/eps_comm.h EPSMaker/eps_eps.h EPSMaker/eps_image.h EPSMaker/eps_plot.h EPSMaker/eps_text.h ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h ListTools/lt_StringProc.h MathsTools/airy_functions.h MathsTools/dcfast.h MathsTools/dcfmath.h MathsTools/dcftime.h MathsTools/zeta_riemann.h ppl_calculus.h ppl_canvasdraw.h ppl_canvasitems.h ppl_children.h ppl_constants.h ppl_datafile.h ppl_eqnsolve.h ppl_error.h ppl_fit.h ppl_flowctrl.h ppl_histogram.h ppl_input.h ppl_interpolation.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_tabulate.h ppl_texify.h ppl_units.h ppl_userspace.h ppl_userspace_init.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
+PPL_HEADERS = EPSMaker/eps_arrow.h EPSMaker/eps_colours.h EPSMaker/eps_comm.h EPSMaker/eps_core.h EPSMaker/eps_eps.h EPSMaker/eps_image.h EPSMaker/eps_plot.h EPSMaker/eps_settings.h EPSMaker/eps_text.h ListTools/lt_dict.h ListTools/lt_list.h ListTools/lt_memory.h ListTools/lt_StringProc.h MathsTools/airy_functions.h MathsTools/dcfast.h MathsTools/dcfmath.h MathsTools/dcftime.h MathsTools/zeta_riemann.h ppl_calculus.h ppl_canvasdraw.h ppl_canvasitems.h ppl_children.h ppl_constants.h ppl_datafile.h ppl_eqnsolve.h ppl_error.h ppl_fit.h ppl_flowctrl.h ppl_histogram.h ppl_input.h ppl_interpolation.h ppl_papersize.h ppl_parser.h ppl_passwd.h ppl_settings.h ppl_setting_types.h ppl_tabulate.h ppl_texify.h ppl_units.h ppl_userspace.h ppl_userspace_init.h pyxplot.h StringTools/asciidouble.h StringTools/str_constants.h
 
 PPLW_FILES   = Helpers/pyxplot_watch.c ListTools/lt_dict.c ListTools/lt_list.c ListTools/lt_memory.c ListTools/lt_StringProc.c StringTools/asciidouble.c ppl_error.c ppl_setting_types.c
 
@@ -87,8 +87,10 @@ DEBUG_SWITCHES      = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLIN
 
 all: $(LOCAL_BINDIR)/pyxplot $(LOCAL_BINDIR)/pyxplot_watch $(LOCAL_BINDIR)/pyxplot_fitshelper $(LOCAL_BINDIR)/pyxplot_timehelper $(LOCAL_BINDIR)/debug/pyxplot $(LOCAL_BINDIR)/debug/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot $(LOCAL_BINDIR)/install/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot_fitshelper $(LOCAL_BINDIR)/install/pyxplot_timehelper
 
-src/EPSMaker/eps_colours.c: colourlist_generate.py
+src/EPSMaker/eps_colours.h: colourlist_generate.py
 	python colourlist_generate.py
+
+src/EPSMaker/eps_colours.c: src/EPSMaker/eps_colours.h
 
 #
 # General macros for the compile steps

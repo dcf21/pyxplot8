@@ -1602,15 +1602,15 @@ void directive_set(Dict *command)
 #define SHOW_HIGHLIGHT(modified) \
 if (interactive!=0) /* On interactive sessions, highlight those settings which have been manually set by the user */ \
  { \
-  if (modified == 0) strcpy(out+i, (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) ); \
-  else               strcpy(out+i, (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) ); \
+  if (modified == 0) strcpy(out+i, *(char **)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)) ); \
+  else               strcpy(out+i, *(char **)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)) ); \
   i += strlen(out+i); \
  }
 
 #define SHOW_DEHIGHLIGHT \
 if (interactive!=0) /* On interactive sessions, highlight those settings which have been manually set by the user */ \
  { \
-  strcpy(out+i, (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT) ); \
+  strcpy(out+i, *(char **)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)) ); \
   i += strlen(out+i); \
  } \
 
@@ -1677,14 +1677,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   out[0] = buf[0] = '\0';
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
    {
-    if (sg->AxesColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    if (sg->AxesColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                  sprintf(buf, "rgb%d:%d:%d", sg->AxesColourR, sg->AxesColourG, sg->AxesColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "AxesColour", buf, (settings_graph_default.AxesColour == sg->AxesColour), "The colour used to draw graph axes");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "backup", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.backup, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.backup, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "backup", buf, (settings_term_default.backup == settings_term_current.backup), "Selects whether existing files are overwritten (nobackup) or moved (backup)");
     i += strlen(out+i) ; p=1;
    }
@@ -1764,19 +1764,19 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarin",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.CalendarIn, SW_CALENDAR_INT, (void *)SW_CALENDAR_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "calendarin", buf, (settings_term_current.CalendarIn == settings_term_default.CalendarIn), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when dates are being input");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarout",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.CalendarOut, SW_CALENDAR_INT, (void **)SW_CALENDAR_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.CalendarOut, SW_CALENDAR_INT, (void *)SW_CALENDAR_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "calendarout", buf, (settings_term_current.CalendarOut == settings_term_default.CalendarOut), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when displaying dates");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
    { 
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.display, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.display, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "display", buf, (settings_term_default.display == settings_term_current.display), "Sets whether any output is produced; turn on to improve performance whilst setting up large multiplots");
     i += strlen(out+i) ; p=1;
    }
@@ -1802,7 +1802,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "axes_", 1)>=0) || (StrAutocomplete(word, "axis", 1)>=0) || (StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "grid",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->grid, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->grid, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "grid", buf, (settings_graph_default.grid == sg->grid), "Selects whether a grid is drawn on plots");
     i += strlen(out+i) ; p=1;
     if (sg->grid == SW_ONOFF_ON)
@@ -1837,14 +1837,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0))
    {
-    if (sg->GridMajColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    if (sg->GridMajColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMajColourR, sg->GridMajColourG, sg->GridMajColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "GridMajColour", buf, (settings_graph_default.GridMajColour == sg->GridMajColour), "The colour of the major gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmincolour",1)>=0))
    {
-    if (sg->GridMinColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    if (sg->GridMinColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMinColourR, sg->GridMinColourG, sg->GridMinColourB); 
     directive_show3(out+i, ItemSet, 1, interactive, "GridMinColour", buf, (settings_graph_default.GridMinColour == sg->GridMinColour), "The colour of the minor gridlines on graphs");
     i += strlen(out+i) ; p=1;
@@ -1852,13 +1852,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->key, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->key, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 1, interactive, "key", buf, (settings_graph_default.key == sg->key), "Selects whether a legend is included on plots");
     i += strlen(out+i) ; p=1;
    }
   if ( ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0)) && (sg->key == SW_ONOFF_ON)  )
    {
-    sprintf(buf, "%s %s , %s", (char *)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void **)SW_KEYPOS_STR),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0,0));
+    sprintf(buf, "%s %s , %s", *(char **)FetchSettingName(sg->KeyPos, SW_KEYPOS_INT, (void *)SW_KEYPOS_STR, sizeof(char *)),ppl_units_NumericDisplay(&(sg->KeyXOff),0,0,0),ppl_units_NumericDisplay(&(sg->KeyYOff),1,0,0));
     directive_show3(out+i, ItemSet, 1, interactive, "key", buf, ((settings_graph_default.KeyPos == sg->KeyPos)&&(settings_graph_default.KeyXOff.real == sg->KeyXOff.real)&&(settings_graph_default.KeyYOff.real == sg->KeyYOff.real)), "Selects where legends are orientated on graphs");
     i += strlen(out+i) ; p=1;
    }
@@ -1876,22 +1876,22 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "multiplot", 1)>=0))
    { 
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.multiplot, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.multiplot, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "multiplot", buf, (settings_term_default.multiplot == settings_term_current.multiplot), "Selects whether multiplot mode is currently active");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "numerics", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.ComplexNumbers, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.ComplexNumbers, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "numerics complex", buf, (settings_term_default.ComplexNumbers==settings_term_current.ComplexNumbers), "Selects whether numbers are allowed to have imagnary components; affects the behaviour of functions such as sqrt()");
     i += strlen(out+i) ; p=1;
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.ExplicitErrors,  SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.ExplicitErrors,  SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "numerics errors explicit", buf, (settings_term_default.ExplicitErrors==settings_term_current.ExplicitErrors), "Selects whether numerical errors quietly produce not-a-number results, or throw explicit errors");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.SignificantFigures,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, 0, interactive, "numerics sigfig", buf, (settings_term_default.SignificantFigures == settings_term_current.SignificantFigures), "Sets the (minimum) number of significant figures to which decimal numbers are displayed by default");
     i += strlen(out+i) ; p=1;
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.NumDisplay, SW_DISPLAY_INT, (void **)SW_DISPLAY_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.NumDisplay, SW_DISPLAY_INT, (void *)SW_DISPLAY_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "numerics display", buf, (settings_term_default.NumDisplay==settings_term_current.NumDisplay), "Selects how numerical results are displayed: in a natural textual way, in a way which can be copied into a terminal, or as LaTeX");
     i += strlen(out+i) ; p=1;
    }
@@ -1919,7 +1919,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     for (j=k=0; settings_palette_current[j]>=0; j++)
      {
       if (j>0) { sprintf(buf+k, ", "); k+=strlen(buf+k); }
-      if (settings_palette_current[j]>0) sprintf(buf+k, "%s", (char *)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+      if (settings_palette_current[j]>0) sprintf(buf+k, "%s", *(char **)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
       else                               sprintf(buf+k, "rgb%d:%d:%d", settings_paletteR_current[j], settings_paletteG_current[j], settings_paletteB_current[j]);
       k+=strlen(buf+k);
      }
@@ -1958,7 +1958,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "projection", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_graph_current.projection, SW_PROJ_INT, (void **)SW_PROJ_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_graph_current.projection, SW_PROJ_INT, (void *)SW_PROJ_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "projection", buf, (settings_graph_default.projection==settings_graph_current.projection), "The projection used when representing (x,y) data on a graph");
     i += strlen(out+i) ; p=1;
    }
@@ -1989,19 +1989,19 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermType, SW_TERMTYPE_INT, (void **)SW_TERMTYPE_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.TermType, SW_TERMTYPE_INT, (void *)SW_TERMTYPE_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal", buf, (settings_term_default.TermType==settings_term_current.TermType), "The type of graphic output to be produced");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "antialias",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermAntiAlias, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.TermAntiAlias, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal AntiAlias", buf, (settings_term_default.TermAntiAlias==settings_term_current.TermAntiAlias), "Selects whether anti-aliasing is applied to bitmap output");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "colour", 1)>=0) || (StrAutocomplete(word, "color",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.colour, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.colour, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal colour", buf, (settings_term_default.colour==settings_term_current.colour), "Selects whether output is colour or monochrome");
     i += strlen(out+i) ; p=1;
    }
@@ -2013,13 +2013,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "enlargement",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermEnlarge, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.TermEnlarge, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal enlarge", buf, (settings_term_default.TermEnlarge==settings_term_current.TermEnlarge), "Selects whether output photo-enlarged to fill the page");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "invert",1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermInvert, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.TermInvert, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal invert", buf, (settings_term_default.TermInvert==settings_term_current.TermInvert), "Selects whether the colours of bitmap output are inverted");
     i += strlen(out+i) ; p=1;
    }
@@ -2032,26 +2032,26 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "transparent", 1)>=0) || (StrAutocomplete(word, "solid", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.TermTransparent, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.TermTransparent, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal transparent", buf, (settings_term_default.TermTransparent==settings_term_current.TermTransparent), "Selects whether gif and png output is transparent");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textcolour",1)>=0))
    {
-    if (sg->TextColour>0) sprintf(buf, "%s", (char *)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void **)SW_COLOUR_STR));
+    if (sg->TextColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                  sprintf(buf, "rgb%d:%d:%d", sg->TextColourR, sg->TextColourG, sg->TextColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "TextColour", buf, (settings_graph_default.TextColour==sg->TextColour), "Selects the colour of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "texthalign",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->TextHAlign, SW_HALIGN_INT, (void **)SW_HALIGN_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextHAlign, SW_HALIGN_INT, (void *)SW_HALIGN_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 1, interactive, "TextHAlign", buf, (settings_graph_default.TextHAlign==sg->TextHAlign), "Selects the horizontal alignment of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textvalign",1)>=0))
    { 
-    sprintf(buf, "%s", (char *)FetchSettingName(sg->TextVAlign, SW_VALIGN_INT, (void **)SW_VALIGN_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextVAlign, SW_VALIGN_INT, (void *)SW_VALIGN_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 1, interactive, "TextVAlign", buf, (settings_graph_default.TextVAlign==sg->TextVAlign), "Selects the vertical alignment of text labels");
     i += strlen(out+i) ; p=1;
    }
@@ -2079,13 +2079,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "units", 1)>=0))
    {
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "unit display abbreviated", buf, (settings_term_default.UnitDisplayAbbrev==settings_term_current.UnitDisplayAbbrev), "Selects whether units are displayed in abbreviated form ('m' vs. 'metres')");
     i += strlen(out+i) ; p=1;
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitDisplayPrefix, SW_ONOFF_INT, (void **)SW_ONOFF_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitDisplayPrefix, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "unit display prefix", buf, (settings_term_default.UnitDisplayPrefix==settings_term_current.UnitDisplayPrefix), "Selects whether SI units are displayed with prefixes");
     i += strlen(out+i) ; p=1;
-    sprintf(buf, "%s", (char *)FetchSettingName(settings_term_current.UnitScheme, SW_UNITSCH_INT, (void **)SW_UNITSCH_STR));
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitScheme, SW_UNITSCH_INT, (void *)SW_UNITSCH_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "unit scheme", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the scheme (e.g. SI or Imperial) of prefered units");
     i += strlen(out+i) ; p=1;
     for (j=0; j<ppl_unit_pos; j++) if (ppl_unit_database[j].UserSel != 0)
@@ -2138,9 +2138,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        else if (k==2) sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "back"  : "front" ));
        else           sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "top"   : "bottom"));
        m += strlen(buf+m);
-       sprintf(buf+m, "%s ", (char *)FetchSettingName(AxisPtr->ArrowType, SW_AXISDISP_INT, (void **)SW_AXISDISP_STR)); m += strlen(buf+m);
+       sprintf(buf+m, "%s ", *(char **)FetchSettingName(AxisPtr->ArrowType, SW_AXISDISP_INT, (void *)SW_AXISDISP_STR, sizeof(char *))); m += strlen(buf+m);
        sprintf(buf+m, "%s ", (AxisPtr->atzero    ? "atzero"    : "notatzero")); m += strlen(buf+m);
-       sprintf(buf+m, "%s ", (char *)FetchSettingName(AxisPtr->MirrorType, SW_AXISMIRROR_INT, (void **)SW_AXISMIRROR_STR)); m += strlen(buf+m);
+       sprintf(buf+m, "%s ", *(char **)FetchSettingName(AxisPtr->MirrorType, SW_AXISMIRROR_INT, (void *)SW_AXISMIRROR_STR, sizeof(char *))); m += strlen(buf+m);
        if (!AxisPtr->linked)
         {
          sprintf(buf+m, "notlinked"); m += strlen(buf+m);
@@ -2176,7 +2176,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        if (AxisPtr->format != NULL) sprintf(buf, "%s ", AxisPtr->format);
        else                         buf[0]='\0';
        m = strlen(buf);                
-       sprintf(buf+m, "%s", (char *)FetchSettingName(AxisPtr->TickLabelRotation, SW_TICLABDIR_INT, (void **)SW_TICLABDIR_STR)); m += strlen(buf+m);
+       sprintf(buf+m, "%s", *(char **)FetchSettingName(AxisPtr->TickLabelRotation, SW_TICLABDIR_INT, (void *)SW_TICLABDIR_STR, sizeof(char *))); m += strlen(buf+m);
        if (AxisPtr->TickLabelRotation == SW_TICLABDIR_ROT)
         {
          ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->TickLabelRotate;
@@ -2246,7 +2246,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
       {
        sprintf(buf2, "Sets where the major ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
-       sprintf(buf, "%s ", (char *)FetchSettingName(AxisPtr->TickDir, SW_TICDIR_INT, (void **)SW_TICDIR_STR)); m = strlen(buf);
+       sprintf(buf, "%s ", *(char **)FetchSettingName(AxisPtr->TickDir, SW_TICDIR_INT, (void *)SW_TICDIR_STR, sizeof(char *))); m = strlen(buf);
        if      ((AxisPtr->TickMinSet == SW_BOOL_FALSE) && (AxisPtr->TickList == NULL))
         {
          sprintf(buf+m, "autofreq");
@@ -2297,7 +2297,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      if (l || m || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
       {
        sprintf(buf2, "Sets where the minor ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
-       sprintf(buf, "%s ", (char *)FetchSettingName(AxisPtr->MTickDir, SW_TICDIR_INT, (void **)SW_TICDIR_STR)); m = strlen(buf);
+       sprintf(buf, "%s ", *(char **)FetchSettingName(AxisPtr->MTickDir, SW_TICDIR_INT, (void *)SW_TICDIR_STR, sizeof(char *))); m = strlen(buf);
        if      ((AxisPtr->MTickMinSet == SW_BOOL_FALSE) && (AxisPtr->MTickList == NULL))
         {
          sprintf(buf+m, "autofreq");
@@ -2571,7 +2571,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         k=0;
         SHOW_HIGHLIGHT((ppl_unit_database[m].modified==0));
 
-        #define SHOW_ALL_UNIT_NAMES 0
+        #define SHOW_ALL_UNIT_NAMES 1
 
         sprintf(out+i, "# The '%s', also known as", ppl_unit_database[m].nameFs); i+=strlen(out+i);
         if ((SHOW_ALL_UNIT_NAMES) || (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0)) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }
@@ -2649,15 +2649,15 @@ void directive_show(Dict *command, int interactive)
     if (interactive!=0) // On interactive sessions, highlight those settings which have been manually set by the user
      {
       sprintf(TextBuffer+i,"%sSettings which have not been changed by the user are shown in %s.%s\n",
-              (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-              (char *)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void **)SW_TERMCOL_STR),
-              (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT)
+              *(char **)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)),
+              *(char **)FetchSettingName( settings_session_default.colour_rep , SW_TERMCOL_INT , (void *)SW_TERMCOL_STR, sizeof(char *)),
+              *(char **)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *))
              );
       i += strlen(TextBuffer+i);
       sprintf(TextBuffer+i,"%sSettings which have been changed by the user are shown in %s.%s\n",
-              (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT),
-              (char *)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void **)SW_TERMCOL_STR),
-              (char *)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void **)SW_TERMCOL_TXT)
+              *(char **)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)),
+              *(char **)FetchSettingName( settings_session_default.colour_wrn , SW_TERMCOL_INT , (void *)SW_TERMCOL_STR, sizeof(char *)),
+              *(char **)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *))
              );
       i += strlen(TextBuffer+i);
       ppl_report(TextBuffer);

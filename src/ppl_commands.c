@@ -38,7 +38,7 @@ char ppl_commands[] = "\
 { < let@3 > } %v:varname \\=~@n:directive:var_set_regex = s@n %r:regex\n\
 { < let@3 > } %v:varname \\=@n:directive:var_set = { < %fi:numeric_value | %q:string_value > }\n\
 %v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list \\=@n:directive:func_set = { %e:definition } \n\
-arrow@2:directive = { item@1 %d:editno } { from@1 } %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style | twoway@2:arrow_style:twohead > ) } \n\
+arrow@2:directive = { item@1 %d:editno } { from@1 } %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style:twoway | twoway@2:arrow_style > ) } \n\
 break@2:directive =\n\
 cd@2:directive = [ < %q:directory | %S:directory > ]:path\n\
 clear@3:directive =\n\
@@ -46,7 +46,7 @@ continue@2:directive =\n\
 delete@3:directive = { item@1 } [ %d:number ]:deleteno,\n\
 do@2:directive = ( \\{@n:brace ( %r:command ) )\n\
 \\}@n else@4:directive = ( if@2:if %f:criterion ) ( \\{@n:brace ( %r:command ) )\n\
-eps@2:directive = { item@1 %d:editno } < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ width@1 %fu:width ~ height@1 %fu:height )\n\
+eps@2:directive = { item@1 %d:editno } < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ < width@1 %fu:width | height@1 %fu:height > )\n\
 exec@3:directive: = %q:command \n\
 exit@2:directive:quit =\n\
 fit@3:directive = [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:fit_function \\(@n [ %v:inputvar ]:@operands, \\)@n < %q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) via@1 [ %v:fit_variable ]:fit_variables,\n\
@@ -56,7 +56,7 @@ foreach@4:directive = < %v:var_name in@n:in < \\(@n [ < %fi:value | %q:string | 
 help@2:directive = %r:topic\n\
 history@2:directive = { %d:number_lines }\n\
 histogram@5:directive = { \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n } %v:hist_function \\()@2 < %q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ~ binwidth@4 %fu:binwidth ~ binorigin@4 %fu:binorigin ~ bins@n \\(@n [ %fu:x ]:bin_list, \\)@n )\n\
-< jpeg@1:directive | jpg@2:directive:jpeg > = { item@1 %d:editno } < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ width@1 %fu:width ~ height@1 %fu:height )\n\
+image@2:directive = { item@1 %d:editno } < bmp@1:image_type | eps@1:directive | gif@1:image_type | jpeg@1:image_type | jpg@3:image_type:jpeg | png@1:image_type > = < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ < width@1 %fu:width | height@1 %fu:height > )\n\
 if@2:directive = %f:criterion ( \\{@n:brace ( %r:command ) )\n\
 < list@2:directive | ls@2:directive:list > =\n\
 load@2:directive = < %q:filename | %S:filename >\n\

@@ -19,6 +19,8 @@
 
 // ----------------------------------------------------------------------------
 
+#define _PPL_SETTING_TYPES_C 1
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -47,6 +49,10 @@ int   SW_SYSTEM_INT[] = {SW_SYSTEM_FIRST , SW_SYSTEM_SECOND , SW_SYSTEM_PAGE , S
 char *SW_ARROWTYPE_STR[] = {"head"            , "nohead"            , "twoway"            };
 int   SW_ARROWTYPE_ACL[] = {1                 , 1                   , 1                   };
 int   SW_ARROWTYPE_INT[] = {SW_ARROWTYPE_HEAD , SW_ARROWTYPE_NOHEAD , SW_ARROWTYPE_TWOWAY , -1};
+
+char *SW_BITMAP_STR[] = {"bmp"        , "gif"        , "jpeg"       , "png"        };
+int   SW_BITMAP_ACL[] = {1            , 1            , 1            , 1            };
+int   SW_BITMAP_INT[] = {SW_BITMAP_BMP, SW_BITMAP_GIF, SW_BITMAP_JPG, SW_BITMAP_PNG, -1};
 
 char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"    , "ps"           , "eps"           , "pdf"           , "png"           , "jpg"           , "gif"           , "bmp"           , "tif"          , "svg"           };
 int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1              , 1               };
@@ -101,7 +107,7 @@ char *SW_CALENDAR_STR[] = {"Gregorian"          , "Julian"          , "British" 
 int   SW_CALENDAR_INT[] = {SW_CALENDAR_GREGORIAN, SW_CALENDAR_JULIAN, SW_CALENDAR_BRITISH, SW_CALENDAR_FRENCH, SW_CALENDAR_CATHOLIC, SW_CALENDAR_RUSSIAN, SW_CALENDAR_GREEK, SW_CALENDAR_HEBREW, SW_CALENDAR_ISLAMIC, -1};
 int   SW_CALENDAR_ACL[] = {1                    , 1                 , 1                  , 1                 , 1                   , 1                  , 5                , 1                 , 1                  , -1};
 
-void *FetchSettingName(int id, int *id_list, void **name_list)
+void *FetchSettingName(int id, int *id_list, void *name_list, const int name_list_size)
  {
   int first;
   static int latch=0;
@@ -109,7 +115,7 @@ void *FetchSettingName(int id, int *id_list, void **name_list)
   first = *id_list;
   while(1)
    {
-    if (*id_list == id) return *name_list;
+    if (*id_list == id) return name_list;
     if (*id_list == -1)
      {
       if (latch==1) return dummyout; // Prevent recursive calling
@@ -117,7 +123,7 @@ void *FetchSettingName(int id, int *id_list, void **name_list)
       sprintf(temp_err_string, "Setting with illegal value %d; should have had a value of type %d.", id, first);
       ppl_fatal(__FILE__, __LINE__, temp_err_string);
      }
-    id_list++; name_list++;
+    id_list++; name_list+=name_list_size;
    }
   if (latch==1) return dummyout;
   latch=1;

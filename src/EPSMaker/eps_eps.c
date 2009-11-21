@@ -26,9 +26,11 @@
 
 #include "eps_comm.h"
 #include "eps_eps.h"
+#include "eps_settings.h"
 
 void eps_eps_RenderEPS(EPSComm *x)
  {
+  fprintf(x->epsbuffer, "%% Canvas item %d [eps image]\n", x->current->id);
   return;
  }
 

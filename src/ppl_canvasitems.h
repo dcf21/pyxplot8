@@ -33,16 +33,17 @@
 #define CANVAS_TEXT  22005
 
 typedef struct plot_descriptor {
- unsigned char  function;
- with_words     with_data;
- char          *text;
+ unsigned char           function;
+ with_words              with_data;
+ char                   *text;
+ struct plot_descriptor *next;
 } plot_descriptor;
 
 typedef struct canvas_item {
- int                 id, type;
+ int                 id, type, ImageType, ArrowType;
  double              xpos, ypos, xpos2, ypos2, rotation;
- char               *commandline, *text;
- unsigned char       deleted;
+ char               *text;
+ unsigned char       deleted, xpos2set, ypos2set;
  with_words          with_data;
  plot_descriptor    *plot_items;
  settings_graph      settings;
@@ -65,11 +66,11 @@ int directive_list    ();
 int directive_delete  (Dict *command);
 int directive_undelete(Dict *command);
 int directive_move    (Dict *command);
-int directive_arrow   (Dict *command, char *line, int interactive);
-int directive_eps     (Dict *command, char *line, int interactive);
-int directive_text    (Dict *command, char *line, int interactive);
-int directive_jpeg    (Dict *command, char *line, int interactive);
-int directive_plot    (Dict *command, char *line, int interactive, int replot);
+int directive_arrow   (Dict *command, int interactive);
+int directive_eps     (Dict *command, int interactive);
+int directive_text    (Dict *command, int interactive);
+int directive_image   (Dict *command, int interactive);
+int directive_plot    (Dict *command, int interactive, int replot);
 
 #endif
 

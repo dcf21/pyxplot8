@@ -26,6 +26,7 @@
 
 #include "eps_comm.h"
 #include "eps_plot.h"
+#include "eps_settings.h"
 
 void eps_plot_ReadAccessibleData(EPSComm *x)
  {
@@ -54,6 +55,7 @@ void eps_plot_YieldUpText(EPSComm *x)
 
 void eps_plot_RenderEPS(EPSComm *x)
  {
+  fprintf(x->epsbuffer, "%% Canvas item %d [plot]\n", x->current->id);
   return;
  }
 

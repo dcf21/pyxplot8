@@ -1,4 +1,4 @@
-// eps_comm.h
+// eps_settings.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,24 +19,22 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_COMM_H
-#define _PPL_EPS_COMM_H 1
+// This file contains various numerical constants which are used by the eps
+// generation routines
 
-#include <stdio.h>
+#define _PPL_EPS_SETTINGS_C 1
 
-#include "ppl_canvasitems.h"
+#include <math.h>
 
-typedef struct EPSComm {
-  canvas_itemlist *itemlist;
-  canvas_item *current;
-  double bb_left, bb_right, bb_top, bb_bottom;
-  unsigned char bb_set;
-  char *EPSFilename, *FinalFilename, *title;
-  char  LastEPSColour[256];
-  double LastLinewidth;
-  FILE *epsbuffer;
-  int *status, termtype;
- } EPSComm;
+#include <gsl/gsl_const_mksa.h>
 
-#endif
+#include "eps_settings.h"
+
+// Constant to convert between millimetres and 72nds of an inch
+double M_TO_PS = 1.0 / (GSL_CONST_MKSA_INCH / 72.0);
+
+double EPS_DEFAULT_LINEWIDTH = 1.0 * EPS_BASE_DEFAULT_LINEWIDTH;
+double EPS_ARROW_ANGLE       = 1.0 * EPS_BASE_ARROW_ANGLE;
+double EPS_ARROW_CONSTRICT   = 1.0 * EPS_BASE_ARROW_CONSTRICT;
+double EPS_ARROW_HEADSIZE    = 1.0 * EPS_BASE_ARROW_HEADSIZE;
 

@@ -1,4 +1,4 @@
-// eps_comm.h
+// eps_settings.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,24 +19,23 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_COMM_H
-#define _PPL_EPS_COMM_H 1
+#ifndef _PPL_EPS_SETTINGS_H
+#define _PPL_EPS_SETTINGS_H 1
 
-#include <stdio.h>
+// Baseline values of settings used by the eps generation routines
+#define EPS_BASE_DEFAULT_LINEWIDTH ( 0.566929       ) /* 0.2mm in TeX points */
+#define EPS_BASE_ARROW_ANGLE       ( 45.0 *M_PI/180 )
+#define EPS_BASE_ARROW_CONSTRICT   ( 0.2            )
+#define EPS_BASE_ARROW_HEADSIZE    ( 6.0            )
 
-#include "ppl_canvasitems.h"
-
-typedef struct EPSComm {
-  canvas_itemlist *itemlist;
-  canvas_item *current;
-  double bb_left, bb_right, bb_top, bb_bottom;
-  unsigned char bb_set;
-  char *EPSFilename, *FinalFilename, *title;
-  char  LastEPSColour[256];
-  double LastLinewidth;
-  FILE *epsbuffer;
-  int *status, termtype;
- } EPSComm;
+// Copies of the values actually used by the eps generation routines, which may have been scaled relative to their baselines
+#ifndef _PPL_EPS_SETTINGS_C
+extern double M_TO_PS;
+extern double EPS_DEFAULT_LINEWIDTH;
+extern double EPS_ARROW_ANGLE;
+extern double EPS_ARROW_CONSTRICT;
+extern double EPS_ARROW_HEADSIZE;
+#endif
 
 #endif
 

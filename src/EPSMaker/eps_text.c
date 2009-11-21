@@ -26,6 +26,7 @@
 
 #include "eps_comm.h"
 #include "eps_text.h"
+#include "eps_settings.h"
 
 void eps_text_YieldUpText(EPSComm *x)
  {
@@ -34,6 +35,7 @@ void eps_text_YieldUpText(EPSComm *x)
 
 void eps_text_RenderEPS(EPSComm *x)
  {
+  fprintf(x->epsbuffer, "%% Canvas item %d [text label]\n", x->current->id);
   return;
  }
 
