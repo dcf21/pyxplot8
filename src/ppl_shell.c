@@ -39,6 +39,7 @@
 #include "ListTools/lt_memory.h"
 
 #include "pyxplot.h"
+#include "ppl_canvasdraw.h"
 #include "ppl_canvasitems.h"
 #include "ppl_children.h"
 #include "ppl_datafile.h"
@@ -257,12 +258,13 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
 
 int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, int IterLevel)
  {
-  char      *directive, *varname, *varstrval;
-  value     *varnumval;
-  wordexp_t  WordExp;
-  glob_t     GlobData;
-  char       buffer[LSTR_LENGTH]="";
-  int        i,j;
+  char          *directive, *varname, *varstrval;
+  value         *varnumval;
+  wordexp_t      WordExp;
+  glob_t         GlobData;
+  char           buffer[LSTR_LENGTH]="";
+  int            i,j;
+  unsigned char *unsuccessful_ops;
 
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
 
@@ -370,6 +372,14 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    ppl_report(settings_session_default.cwd);
   else if (strcmp(directive, "quit")==0)
    PPL_SHELL_EXITING = 1;
+  else if (strcmp(directive, "refresh")==0)
+   {
+    if (settings_term_current.display == SW_ONOFF_ON)
+     {
+      unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+      canvas_draw(unsuccessful_ops);
+     }
+   }
   else if (strcmp(directive, "replot")==0)
    directive_plot(command, interactive, 1);
   else if (strcmp(directive, "reset")==0)
@@ -432,16 +442,6 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else
    ppl_report(DictPrint(command, buffer, LSTR_LENGTH));
-
-  //SendCommandToCSP("2/home/dcf21/pyxplot/pyxplot/doc/figures/pyx_colours.eps\n");
-
-  //if (chdir(settings_session_default.tempdir < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into temporary directory failed."); } // chdir into temporary directory
-
-  //command = DictInit();
-  //DictAppendString(command, "topic", 0, "c set");
-  //directive_help(command,interactive);
-
-  //directive_show2("settings",interactive);
 
   return 0;
  }

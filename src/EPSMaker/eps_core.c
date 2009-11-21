@@ -48,8 +48,10 @@ void eps_core_SetColour(EPSComm *x, with_words *colour)
   char NewColour[256];
 
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
-  if      (x->current->with_data.USEcolourRGB) sprintf(NewColour, "%d %d %d setrgbcolor", x->current->with_data.colourR, x->current->with_data.colourG, x->current->with_data.colourB);
-  else if (x->current->with_data.USEcolour   ) sprintf(NewColour, "%f %f %f %f setcmykcolor",
+  if      (x->current->with_data.USEcolourRGB) sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)x->current->with_data.colourR/255,
+                                                                                                (double)x->current->with_data.colourG/255,
+                                                                                                (double)x->current->with_data.colourB/255  );
+  else if (x->current->with_data.USEcolour   ) sprintf(NewColour, "%.3f %.3f %.3f %.3f setcmykcolor",
                                                         *(double *)FetchSettingName(x->current->with_data.colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_C, sizeof(double)),
                                                         *(double *)FetchSettingName(x->current->with_data.colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_M, sizeof(double)),
                                                         *(double *)FetchSettingName(x->current->with_data.colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_Y, sizeof(double)),

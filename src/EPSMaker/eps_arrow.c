@@ -36,7 +36,7 @@
 
 void eps_arrow_RenderEPS(EPSComm *x)
  {
-  double lw, lw_scale, x1, x2, y1, y2, x3, y3, x4, y4, x5, y5, direction;
+  double lw, lw_scale, x1, x2, y1, y2, x3, y3, x4, y4, x5, y5, xstart, ystart, xend, yend, direction;
 
   // Print label at top of postscript description of arrow
   fprintf(x->epsbuffer, "%% Canvas item %d [arrow]\n", x->current->id);
@@ -47,17 +47,16 @@ void eps_arrow_RenderEPS(EPSComm *x)
 
   // Set linewidth
   if (x->current->with_data.USElinewidth) lw_scale = x->current->with_data.linewidth;
-  else                                    lw_scale = 1.0;
+  else                                    lw_scale = x->current->settings.LineWidth;
   lw = EPS_DEFAULT_LINEWIDTH * lw_scale;
   eps_core_SetLinewidth(x, lw);
 
-  // Draw stalk of arrow
-  x1 =  x->current->xpos                      * M_TO_PS;
+  // Calculate positions of start and end of arrow
+  x1 =  x->current->xpos                      * M_TO_PS; // Start of arrow
   y1 =  x->current->ypos                      * M_TO_PS;
-  x2 = (x->current->xpos2 + x->current->xpos) * M_TO_PS;
+  x2 = (x->current->xpos2 + x->current->xpos) * M_TO_PS; // End of arrow
   y2 = (x->current->ypos2 + x->current->ypos) * M_TO_PS;
 
-  fprintf(x->epsbuffer, "newpath\n%f %f moveto\n%f %f lineto\nstroke\n", x1, y1, x2, y2);
   eps_core_BoundingBox(x, x1, y1, lw);
   eps_core_BoundingBox(x, x2, y2, lw);
 
@@ -65,7 +64,28 @@ void eps_arrow_RenderEPS(EPSComm *x)
   if (hypot(x2-x1,y2-y1) < 1e-200) direction = 0.0;
   else                             direction = atan2(x2-x1,y2-y1);
 
-  // Draw head of arrow if desired
+  // Draw arrowhead on beginning of arrow if desired
+  if (x->current->ArrowType == SW_ARROWTYPE_TWOWAY)
+   {
+    x3 = x1 - EPS_ARROW_HEADSIZE * lw_scale * sin((direction+M_PI) - EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on one side
+    y3 = y1 - EPS_ARROW_HEADSIZE * lw_scale * cos((direction+M_PI) - EPS_ARROW_ANGLE / 2);
+    x5 = x1 - EPS_ARROW_HEADSIZE * lw_scale * sin((direction+M_PI) + EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on other side
+    y5 = y1 - EPS_ARROW_HEADSIZE * lw_scale * cos((direction+M_PI) + EPS_ARROW_ANGLE / 2);
+
+    x4 = x1 - EPS_ARROW_HEADSIZE * lw_scale * sin(direction+M_PI) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
+    y4 = y1 - EPS_ARROW_HEADSIZE * lw_scale * cos(direction+M_PI) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
+
+    fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x1,y1,x5,y5);
+    eps_core_BoundingBox(x, x3, y3, lw);
+    eps_core_BoundingBox(x, x5, y5, lw);
+    xstart = x4;
+    ystart = y4;
+   } else {
+    xstart = x1;
+    ystart = y1;
+   }
+
+  // Draw arrowhead on end of arrow if desired
   if ((x->current->ArrowType == SW_ARROWTYPE_HEAD) || (x->current->ArrowType == SW_ARROWTYPE_TWOWAY))
    {
     x3 = x2 - EPS_ARROW_HEADSIZE * lw_scale * sin(direction - EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on one side
@@ -76,15 +96,18 @@ void eps_arrow_RenderEPS(EPSComm *x)
     x4 = x2 - EPS_ARROW_HEADSIZE * lw_scale * sin(direction) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
     y4 = y2 - EPS_ARROW_HEADSIZE * lw_scale * cos(direction) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
 
-    fprintf(x->epsbuffer, "newpath\n%f %f moveto\n%f %f lineto\n%f %f lineto\n%f %f lineto\nclosepath\nfill\n", x2, y2, x3, y3, x4, y4, x5, y5);
+    fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
     eps_core_BoundingBox(x, x3, y3, lw);
     eps_core_BoundingBox(x, x5, y5, lw);
+    xend = x4;
+    yend = y4;
+   } else {
+    xend = x2;
+    yend = y2;
    }
 
-  // Draw second head of arrow is desired
-  if (x->current->ArrowType == SW_ARROWTYPE_TWOWAY)
-   {
-   }
+  // Draw stalk of arrow
+  fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nstroke\n", xstart, ystart, xend, yend);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

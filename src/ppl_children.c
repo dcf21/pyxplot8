@@ -181,8 +181,8 @@ void CSPCheckForChildExits(int signo)
      {
       if (DEBUG) { sprintf(temp_err_string, "A ghostview process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
       ListRemovePtr(GhostViews, (void *)gv_pid); // Stabat mater dolorosa
+      if (GhostView_pid == *gv_pid) GhostView_pid = 0;
      }
-    if (GhostView_pid == *gv_pid) GhostView_pid = 0;
    }
   iter = ListIterateInit(GhostView_Persists);
   while (iter != NULL)
@@ -192,8 +192,8 @@ void CSPCheckForChildExits(int signo)
      {
       if (DEBUG) { sprintf(temp_err_string, "A persistent ghostview process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
       ListRemovePtr(GhostView_Persists, (void *)gv_pid); // Stabat mater dolorosa
+      if (GhostView_pid == *gv_pid) GhostView_pid = 0;
      }
-    if (GhostView_pid == *gv_pid) GhostView_pid = 0;
    }
   return;
  }
