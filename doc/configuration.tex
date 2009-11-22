@@ -1,4 +1,4 @@
-% CONFIGURATION.TEX
+% COnFIGURATIOn.TEX
 %
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
@@ -88,62 +88,82 @@ which would represent PyXPlot's default configuration:
 
 \begin{verbatim}
 [settings]
-ASPECT=1.0
-AUTOASPECT=ON
-AXESCOLOUR=Black
-BACKUP=OFF
-BAR=1.0
-BINORIGIN=0
-BINWIDTH=1
-BOXFROM=0
-BOXWIDTH=0
-COLOUR=ON
-DATASTYLE=points
-DISPLAY=ON
-DPI=300
-ENLARGE=OFF
-FONTSIZE=0
-FUNCSTYLE=lines
-GRID=OFF
-GRIDAXISX=1
-GRIDAXISY=1
-GRIDMAJCOLOUR=Grey60
-GRIDMINCOLOUR=Grey90
-KEY=ON
-KEYCOLUMNS=1
-KEYPOS=TOP RIGHT
-KEY_XOFF=0.0
-KEY_YOFF=0.0
-LANDSCAPE=OFF
-LINEWIDTH=1.0
-MULTIPLOT=OFF
-ORIGINX=0.0
-ORIGINY=0.0
-OUTPUT=
-PAPERHEIGHT=297
-PAPERWIDTH=210
-POINTLINEWIDTH=1.0
-POINTSIZE=1.0 
-SAMPLES=250
-TERMANTIALIAS=ON
-TERMENLARGE=OFF
-TERMINVERT=OFF
-TERMTRANSPARENT=OFF
-TERMTYPE=X11_singlewindow
-TEXTCOLOUR=Black
-TEXTHALIGN=Left
-TEXTVALIGN=Bottom
-TITLE=
-TITLE_XOFF=0.0
-TITLE_YOFF=0.0
-WIDTH=8.0
+Aspect = 1.0
+AutoAspect = On
+AxesColour = Black
+Backup = Off
+Bar = 1.0
+BinOrigin = 0
+BinWidth = 1
+BoxFrom = 0
+BoxWidth = 0
+CalendarIn = British
+CalendarOut = British
+Colour = On
+DataStyle = Points
+Display = On
+DPI = 300
+FontSize = 0
+FuncStyle = Lines
+Grid = Off
+GridAxisX = 1
+GridAxisY = 1
+GridAxisZ = 1
+GridMajColour = Grey60
+GridMinColour = Grey90
+Key = On
+KeyColumns=1
+KeyPos = Top Right
+Key_XOff = 0.0
+Key_YOff = 0.0
+Landscape = Off
+LineWidth = 1.0
+MultiPlot = Off
+NumComplex = Off
+NumDisplay = Natural
+NumErr = On
+NumSF = 8
+OriginX = 0.0
+OriginY = 0.0
+Output =
+PaperHeight = 297
+PaperName = a4
+PaperWidth = 210
+PointLineWidth = 1.0
+PointSize = 1.0
+Projection = Flat
+Samples = 250
+TermAntiAlias = On
+TermEnlarge = Off
+TermInvert = Off
+TermTransparent = Off
+TermType = X11_SingleWindow
+TextColour = Black
+TextHAlign = Left
+TextVAlign = Bottom
+TRange_Log = Off
+TRange_Max = 1.0
+TRange_Min = 0.0
+UnitAbbrev = On
+UnitPrefix = On
+UnitScheme = SI
+Title =
+Title_XOff = 0.0
+Title_YOff = 0.0
+Width = 8.0
 
 [terminal]
-COLOUR=OFF
-COLOUR_ERR=Red
-COLOUR_REP=Green
-COLOUR_WRN=Brown
-SPLASH=ON
+Colour = Off
+Colour_Err = Red
+Colour_Rep = Green
+Colour_Wrn = Brown
+Splash = On
+
+[styling]
+Arrow_HeadAngle = 45
+Arrow_HeadSize = 1.0
+Arrow_HeadBackIndent = 0.2
+Baseline_LineWidth = 1.0
 
 [variables]
 pi = 3.14159265358979
@@ -154,7 +174,7 @@ Green, NavyBlue, Periwinkle, PineGreen, SeaGreen, GreenYellow,
 Orange, CarnationPink, Plum
 
 [latex]
-PREAMBLE=
+Preamble =
 \end{verbatim}
 
 \section{Configuration Options: {\tt settings} section}
@@ -165,77 +185,77 @@ parameters in the {\tt settings} section of the above configuration file,
 with a list of possible values for each:
 
 \begin{longtable}{p{3.4cm}p{9cm}}
-{\tt ASPECT} & {\bf Possible values:} Any floating-point number.
+{\tt Aspect} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set size ratio}
 
                Sets the aspect ratio of plots.
                \\
-{\tt AUTOASPECT} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt AutoAspect} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} {\tt set size ratio}
 
-               Sets whether plots have the automatic aspect ratio, which is the golden ratio. If {\tt ON}, then the above setting is ignored.
+               Sets whether plots have the automatic aspect ratio, which is the golden ratio. If {\tt On}, then the above setting is ignored.
                \\
-{\tt AXESCOLOUR} & {\bf Possible values:} Any recognised colour.
+{\tt AxesColour} & {\bf Possible values:} Any recognised colour.
 
                {\bf Analogous set command:} \indcmdts{set axescolour}
 
                Sets the colour of axis lines and ticks.
                \\
-{\tt BACKUP} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Backup} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set backup}
 
-               When this switch is set to `{\tt ON}', and plot output is being directed to file, attempts to write output over existing files cause a copy of the existing file to be preserved, with a tilde after its old filename (see Section~\ref{sec:file_backup}).
+               When this switch is set to `{\tt On}', and plot output is being directed to file, attempts to write output over existing files cause a copy of the existing file to be preserved, with a tilde after its old filename (see Section~\ref{sec:file_backup}).
                \\
-{\tt BAR}     & {\bf Possible values:}  Any floating-point number.
+{\tt Bar}     & {\bf Possible values:}  Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set bar}
 
                Sets the horizontal length of the lines drawn at the end of errorbars, in units of their default length.
                \\
-{\tt BINORIGIN} & {\bf Possible values:} Any floating-point number
+{\tt BinOrigin} & {\bf Possible values:} Any floating-point number
 
                {\bf Analogous set command:} \indcmdts{set binorigin}
 
                Sets the point along the $x$ axis from which the bins used by the \indcmdt{histogram} originate.
                \\
-{\tt BINWIDTH} & {\bf Possible values:} Any floating-point number
+{\tt BinWidth} & {\bf Possible values:} Any floating-point number
 
                {\bf Analogous set command:} \indcmdts{set binwidth}
 
                Sets the widths of the bins used by the \indcmdt{histogram}.
                \\
-{\tt BOXFROM} & {\bf Possible values:} Any floating-point number.
+{\tt BoxFrom} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set boxfrom}
 
                Sets the horizontal point from which bars on bar charts appear to emanate.
                \\
-{\tt BOXWIDTH} & {\bf Possible values:} Any floating-point number.
+{\tt BoxWidth} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set boxwidth}
 
                Sets the default width of boxes on barcharts. If negative, then the boxes have automatically selected widths, so that the interfaces between bars occur at the horizontal midpoints between the specified datapoints.
                \\
-{\tt COLOUR} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Colour} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               Sets whether output should be colour ({\tt ON}) or monochrome ({\tt OFF}).
+               Sets whether output should be colour ({\tt On}) or monochrome ({\tt Off}).
                \\
-{\tt DATASTYLE} & {\bf Possible values:} Any plot style. 
+{\tt DataStyle} & {\bf Possible values:} Any plot style. 
 
                {\bf Analogous set command:} \indcmdts{set data style}
                    
                Sets the plot style used by default when plotting \datafile s.
                \\
-{\tt DISPLAY} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Display} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set display}
 
-               When set to `{\tt ON}', no output is produced until the \indcmdt{set display} is issued. This is useful for speeding up scripts which produce large multiplots; see Section~\ref{sec:set_display} for more details.
+               When set to `{\tt On}', no output is produced until the \indcmdt{set display} is issued. This is useful for speeding up scripts which produce large multiplots; see Section~\ref{sec:set_display} for more details.
                \\
 {\tt DPI} & {\bf Possible values:} Any floating-point number.
 
@@ -243,176 +263,182 @@ with a list of possible values for each:
 
                Sets the sampling quality used, in dots per inch, when output is sent to a bitmapped terminal (the jpeg/gif/png terminals).
                \\
-{\tt FONTSIZE} & {\bf Possible values:} Integers in the range $-4 \to 5$.
+{\tt FontSize} & {\bf Possible values:} Integers in the range $-4 \to 5$.
 
                {\bf Analogous set command:} \indcmdts{set fontsize}
 
                Sets the fontsize of text, varying between \LaTeX's {\tt tiny} ($-4$) and {\tt Huge} (5).
                \\
-{\tt FUNCSTYLE} & {\bf Possible values:} Any plot style.
+{\tt FuncStyle} & {\bf Possible values:} Any plot style.
 
                {\bf Analogous set command:} \indcmdts{set function style}
 
                Sets the plot style used by default when plotting functions.
                \\
-{\tt GRID} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Grid} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set grid}
 
                Sets whether a grid should be displayed on plots.
                \\
-{\tt GRIDAXISX} & {\bf Possible values:} Any integer.
+{\tt GridAxisX} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} None
 
                Sets the default $x$-axis to which gridlines should attach, if the {\tt set grid} command is called without specifying which axes to use.
                \\
-{\tt GRIDAXISY} & {\bf Possible values:} Any integer.
+{\tt GridAxisY} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} None
 
                Sets the default $y$-axis to which gridlines should attach, if the {\tt set grid} command is called without specifying which axes to use.
                \\
-{\tt GRIDMAJCOLOUR} & {\bf Possible values:} Any recognised colour.
+{\tt GridAxisZ} & {\bf Possible values:} Any integer.
+
+               {\bf Analogous set command:} None
+
+               Sets the default $z$-axis to which gridlines should attach, if the {\tt set grid} command is called without specifying which axes to use.
+               \\
+{\tt GridMajColour} & {\bf Possible values:} Any recognised colour.
 
                {\bf Analogous set command:} \indcmdts{set gridmajcolour}
 
                Sets the colour of major grid lines.
                \\
-{\tt GRIDMINCOLOUR} & {\bf Possible values:} Any recognised colour.
+{\tt GridMinColour} & {\bf Possible values:} Any recognised colour.
 
                {\bf Analogous set command:} \indcmdts{set gridmincolour}
 
                Sets the colour of minor grid lines.
                \\
-{\tt KEY} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Key} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set key}
 
                Sets whether a legend is displayed on plots.
                \\
-{\tt KEYCOLUMNS} & {\bf Possible values:} Any integer $>0$.
+{\tt KeyColumns} & {\bf Possible values:} Any integer $>0$.
 
                {\bf Analogous set command:} \indcmdts{set keycolumns}
 
                Sets the number of columns into which the legends of plots should be divided.
                \\
-{\tt KEYPOS} & {\bf Possible values:} `TOP RIGHT', `TOP MIDDLE', `TOP LEFT', `MIDDLE RIGHT', `MIDDLE MIDDLE', `MIDDLE LEFT', `BOTTOM RIGHT', `BOTTOM MIDDLE', `BOTTOM LEFT', `BELOW', `OUTSIDE'.
+{\tt KeyPos} & {\bf Possible values:} `Top Right', `Top XCentre', `Top Left', `YCentre Right', `YCentre XCentre', `YCentre Left', `Bottom Right', `Bottom XCentre', `Bottom Left', `Above', `Below', `Outside'.
 
                {\bf Analogous set command:} \indcmdts{set key}
 
                Sets where the legend should appear on plots.
                \\
-{\tt KEY\_XOFF} & {\bf Possible values:} Any floating-point number.
+{\tt Key\_XOff} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set key}
 
                Sets the horizontal offset, in approximate graph-widths, that should be applied to the legend, relative to its default position, as set by {\tt KEYPOS}.
                \\
-{\tt KEY\_YOFF} & {\bf Possible values:} Any floating-point number.
+{\tt Key\_YOff} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set key}
 
                Sets the vertical offset, in approximate graph-heights, that should be applied to the legend, relative to its default position, as set by {\tt KEYPOS}.
                \\
-{\tt LANDSCAPE} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Landscape} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               Sets whether output is in portrait orientation ({\tt OFF}), or landscape orientation ({\tt ON}).
+               Sets whether output is in portrait orientation ({\tt Off}), or landscape orientation ({\tt On}).
                \\
-{\tt LINEWIDTH} & {\bf Possible values:} Any floating-point number.
+{\tt LineWidth} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set linewidth}
 
                Sets the width of lines on plots, as a  multiple of the default.
                \\
-{\tt MULTIPLOT} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt MultiPlot} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set multiplot}
 
                Sets whether multiplot mode is on or off.
                \\
-{\tt ORIGINX} & {\bf Possible values:} Any floating point number.
+{\tt OriginX} & {\bf Possible values:} Any floating point number.
 
                {\bf Analogous set command:} \indcmdts{set origin}
 
                Sets the horizontal position, in centimetres, of the default origin of plots on the page. Most useful when multiplotting many plots.
                \\
-{\tt ORIGINY} & {\bf Possible values:} Any floating point number.
+{\tt OriginY} & {\bf Possible values:} Any floating point number.
 
                {\bf Analogous set command:} \indcmdts{set origin}
 
                Sets the vertical position, in centimetres, of the default origin of plots on the page. Most useful when multiplotting many plots.
                \\
-{\tt OUTPUT} & {\bf Possible values:} Any string.
+{\tt Output} & {\bf Possible values:} Any string.
 
                {\bf Analogous set command:} \indcmdts{set output}
 
                Sets the output filename for plots. If blank, the default filename of pyxplot.foo is used, where `foo' is an extension appropriate for the file format.
                \\
-{\tt PAPER\_HEIGHT} & {\bf Possible values:} Any floating-point number.
+{\tt PaperHeight} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
                Sets the height of the papersize for postscript output in millimetres.
                \\
-{\tt PAPER\_NAME} & {\bf Possible values:} A string matching any of the papersizes listed in Chapter~\ref{ch:paper_sizes}.
+{\tt PaperName} & {\bf Possible values:} A string matching any of the papersizes listed in Chapter~\ref{ch:paper_sizes}.
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
                Sets the papersize for postscript output to one of the pre-defined papersizes listed in Chapter~\ref{ch:paper_sizes}.
                \\
-{\tt PAPER\_WIDTH} & {\bf Possible values:} Any floating-point number.
+{\tt PaperWidth} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
                Sets the width of the papersize for postscript output in millimetres.
                \\
-{\tt POINTLINEWIDTH} & {\bf Possible values:} Any floating-point number.
+{\tt PointLineWidth} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set pointlinewidth}
 
                Sets the linewidth used to stroke points onto plots, as a multiple of the default.
                \\
-{\tt POINTSIZE} & {\bf Possible values:} Any floating-point number.
+{\tt PointSize} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set pointsize}
 
                Sets the sizes of points on plots, as a multiple of their normal sizes.
                \\
-{\tt SAMPLES} & {\bf Possible values:} Any integer.
+{\tt Samples} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
                Sets the number of samples (datapoints) to be evaluated along the $x$-axis when plotting a function.
                \\
-{\tt TERMANTIALIAS} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt TermAntiAlias} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
                Sets whether jpeg/gif/png output is antialiased, i.e.\ whether colour boundaries are smoothed to disguise the effects of pixelisation.
                \\
-{\tt TERMENLARGE} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt TermEnlarge} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               When set to `{\tt ON}' output is enlarged or shrunk to fit the current paper size.
+               When set to `{\tt On}' output is enlarged or shrunk to fit the current paper size.
                \\
 
-{\tt TERMINVERT} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt TermInvert} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               Sets whether jpeg/gif/png output has normal colours ({\tt OFF}), or inverted colours ({\tt ON}).
+               Sets whether jpeg/gif/png output has normal colours ({\tt Off}), or inverted colours ({\tt On}).
                \\
-{\tt TERMTRANSPARENT} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt TermTransparent} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               Sets whether jpeg/gif/png output has transparent background ({\tt ON}), or solid background ({\tt OFF}).
+               Sets whether jpeg/gif/png output has transparent background ({\tt On}), or solid background ({\tt Off}).
                \\
-{\tt TERMTYPE} & {\bf Possible values:} {\tt X11\_singlewindow},
+{\tt TermType} & {\bf Possible values:} {\tt X11\_singlewindow},
 
                {\tt X11\_multiwindow}, {\tt X11\_persist}, {\tt PS}, {\tt EPS}, {\tt PDF}, {\tt PNG}, {\tt JPG}, {\tt GIF}
 
@@ -420,43 +446,43 @@ with a list of possible values for each:
 
                Sets whether output is sent to the screen or to disk, and, in the latter case, the format of the output. The {\tt ps} option should be used for both encapsulated and normal postscript output; these are distinguished using the {\tt ENHANCED} option, above.
                \\
-{\tt TEXTCOLOUR} & {\bf Possible values:} Any recognised colour.
+{\tt TextColour} & {\bf Possible values:} Any recognised colour.
 
                {\bf Analogous set command:} \indcmdts{set textcolour}
 
                Sets the colour of all text output.
                \\
-{\tt TEXTHALIGN} & {\bf Possible values:} {\tt Left}, {\tt Centre}, {\tt Right}
+{\tt TextHAlign} & {\bf Possible values:} {\tt Left}, {\tt Centre}, {\tt Right}
 
                {\bf Analogous set command:} \indcmdts{set texthalign}
 
                Sets the horizontal alignment of text labels to their given reference positions.
                \\
-{\tt TEXTVALIGN} & {\bf Possible values:} {\tt Top}, {\tt Centre}, {\tt Bottom}
+{\tt TextVAlign} & {\bf Possible values:} {\tt Top}, {\tt Centre}, {\tt Bottom}
 
                {\bf Analogous set command:} \indcmdts{set textvalign}
 
                Sets the vertical alignment of text labels to their given reference positions.
                \\
-{\tt TITLE} & {\bf Possible values:} Any string.
+{\tt Title} & {\bf Possible values:} Any string.
 
                {\bf Analogous set command:} \indcmdts{set title}
 
                Sets the title to appear at the top of the plot.
                \\
-{\tt TITLE\_XOFF} & {\bf Possible values:} Any floating point number.
+{\tt Title\_XOff} & {\bf Possible values:} Any floating point number.
 
                {\bf Analogous set command:} \indcmdts{set title}
 
                Sets the horizontal offset of the title of the plot from its default central location.
                \\
-{\tt TITLE\_YOFF} & {\bf Possible values:} Any floating point number.
+{\tt Title\_YOff} & {\bf Possible values:} Any floating point number.
 
                {\bf Analogous set command:} \indcmdts{set title}
 
                Sets the vertical offset of the title of the plot from its default location at the top of the plot.
                \\
-{\tt WIDTH} & {\bf Possible values:} Any floating-point number.
+{\tt Width} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set width} / \indcmdts{set size}
 
@@ -472,31 +498,31 @@ parameters in the {\tt terminal} section of the above configuration file,
 with a list of possible values for each:
 
 \begin{longtable}{p{3.4cm}p{9cm}}
-{\tt COLOUR} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Colour} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous command-line switches:} {\tt -c}, {\tt --colour}, {\tt -m}, {\tt --monochrome}
 
                Sets whether colour highlighting should be used in the interactive terminal. If turned on, output is displayed in green, warning messages in amber, and error messages in red; these colours are configurable, as described below. Note that not all UNIX terminals support the use of colour.
                \\
-{\tt COLOUR\_ERR} & {\bf Possible values:} Any recognised terminal colour.
+{\tt Colour\_Err} & {\bf Possible values:} Any recognised terminal colour (see below).
 
                {\bf Analogous command-line switches:} None.
 
                Sets the colour in which error messages are displayed when colour highlighting is used. Note that the list of recognised colour names differs from that used in PyXPlot; a list is given at the end of this section.
                \\
-{\tt COLOUR\_REP} & {\bf Possible values:} Any recognised terminal colour.
+{\tt Colour\_Rep} & {\bf Possible values:} Any recognised terminal colour (see below).
 
                {\bf Analogous command-line switches:} None.
 
                As above, but sets the colour in which PyXPlot displays its non-error-related output.
                \\
-{\tt COLOUR\_WRN} & {\bf Possible values:} Any recognised terminal colour.
+{\tt Colour\_Wrn} & {\bf Possible values:} Any recognised terminal colour (see below).
 
                {\bf Analogous command-line switches:} None.
 
                As above, but sets the colour in which PyXPlot displays its warning messages.
                \\
-{\tt SPLASH} & {\bf Possible values:} {\tt ON} / {\tt OFF}
+{\tt Splash} & {\bf Possible values:} {\tt On} / {\tt Off}
 
                {\bf Analogous command-line switches:} {\tt -q}, {\tt --quiet}, {\tt -V}, {\tt --verbose}
 

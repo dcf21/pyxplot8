@@ -39,8 +39,10 @@ char ppl_commands[] = "\
 { < let@3 > } %v:varname \\=@n:directive:var_set = { < %fi:numeric_value | %q:string_value > }\n\
 %v:function_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list \\=@n:directive:func_set = { %e:definition } \n\
 arrow@2:directive = { item@1 %d:editno } { from@1 } %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style:twoway | twoway@2:arrow_style > ) } \n\
+box@2:directive = { item@1 %d:editno } { from@1 } %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < fillcolour@1 | fillcolor@1 > < rgb@n %d:fillcolourR \\:@n %d:fillcolourG \\:@n %d:fillcolourB | %e:fillcolour > ) } \n\
 break@2:directive =\n\
 cd@2:directive = [ < %q:directory | %S:directory > ]:path\n\
+circle@2:directive = { item@1 %d:editno } { at@1 } %fu:x ,@n %fu:y radius@1 %fu:r  { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < fillcolour@1 | fillcolor@1 > < rgb@n %d:fillcolourR \\:@n %d:fillcolourG \\:@n %d:fillcolourB | %e:fillcolour > ) } \n\
 clear@3:directive =\n\
 continue@2:directive =\n\
 delete@3:directive = { item@1 } [ %d:number ]:deleteno,\n\

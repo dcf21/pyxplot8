@@ -22,10 +22,15 @@
 #ifndef _PPL_EPS_CORE_H
 #define _PPL_EPS_CORE_H 1
 
-void eps_core_clear       (EPSComm *x);
-void eps_core_SetColour   (EPSComm *x, with_words *colour);
-void eps_core_SetLinewidth(EPSComm *x, double lw);
-void eps_core_BoundingBox (EPSComm *x, double xpos, double ypos, double lw);
+#define IF_NOT_INVISIBLE if (x->LastEPSColour[0]!='\0')
+
+void eps_core_clear                (EPSComm *x);
+void eps_core_SetColour            (EPSComm *x, with_words *colour);
+void eps_core_SetFillColour        (EPSComm *x, with_words *colour);
+void eps_core_SwitchTo_FillColour  (EPSComm *x);
+void eps_core_SwitchFrom_FillColour(EPSComm *x);
+void eps_core_SetLinewidth         (EPSComm *x, double lw, int lt);
+void eps_core_BoundingBox          (EPSComm *x, double xpos, double ypos, double lw);
 
 #endif
 

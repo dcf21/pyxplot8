@@ -146,6 +146,31 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
     if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
     else                      { output[i]='\0'; }
    }
+  else if (ptr->type == CANVAS_BOX  ) // Produce textual representations of box commands
+   {
+    sprintf(output, "box item %d from %s,%s to %s,%s", ptr->id,
+             NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay((ptr->xpos+ptr->xpos2)*100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay((ptr->ypos+ptr->ypos2)*100, 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i = strlen(output);
+    with_words_print(&ptr->with_data, output+i+6);
+    if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+    else                      { output[i]='\0'; }
+   }
+  else if (ptr->type == CANVAS_CIRC ) // Produce textual representations of circle commands
+   {
+    sprintf(output, "circle item %d at %s,%s radius %s", ptr->id,
+             NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->xpos2           *100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i = strlen(output);
+    with_words_print(&ptr->with_data, output+i+6);
+    if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+    else                      { output[i]='\0'; }
+   }
   else if (ptr->type == CANVAS_EPS  ) // Produce textual representations of eps commands
    {
     sprintf(output, "image item %d eps ", ptr->id);
@@ -349,7 +374,7 @@ int directive_move(Dict *command)
   ptr = canvas_items->first;
   while ((ptr!=NULL)&&(ptr->id!=*moveno)) ptr=ptr->next;
   if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *moveno); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  rotatable = (ptr->type!=CANVAS_ARROW);
+  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_BOX)&&(ptr->type!=CANVAS_CIRC));
   if ((ang != NULL) && (!rotatable)) { sprintf(temp_err_string, "It is not possible to rotate the specified multiplot item."); ppl_warning(ERR_GENERAL, temp_err_string); }
   ptr->xpos = x->real;
   ptr->ypos = y->real;
@@ -394,6 +419,77 @@ int directive_arrow(Dict *command, int interactive)
   DictLookup(command, "arrow_style", NULL, (void *)&tempstr);
   if (tempstr != NULL) ptr->ArrowType = FetchSettingByName(tempstr, SW_ARROWTYPE_INT, SW_ARROWTYPE_STR);
   else                 ptr->ArrowType = SW_ARROWTYPE_HEAD;
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Arrow has been removed from multiplot, because it generated an error.")); return 1; }
+   }
+  return 0;
+ }
+
+// Implementation of the box command.
+int directive_box(Dict *command, int interactive)
+ {
+  canvas_item   *ptr;
+  int            i, id;
+  value         *x1, *x2, *y1, *y2;
+  unsigned char *unsuccessful_ops;
+
+  // Look up the positions of the two corners of the box, and ensure that they are either dimensionless or in units of length
+  DictLookup(command, "x1", NULL, (void *)&x1); DictLookup(command, "y1", NULL, (void *)&y1);
+  DictLookup(command, "x2", NULL, (void *)&x2); DictLookup(command, "y2", NULL, (void *)&y2);
+
+  ASSERT_LENGTH(x1,"box","x1"); ASSERT_LENGTH(y1,"box","y1");
+  ASSERT_LENGTH(x2,"box","x2"); ASSERT_LENGTH(y2,"box","y2");
+
+  // Add this box to the linked list which decribes the canvas
+  if (canvas_itemlist_add(command,CANVAS_BOX,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  ptr->xpos  = x1->real;
+  ptr->ypos  = y1->real;
+  ptr->xpos2 = x2->real - x1->real;
+  ptr->ypos2 = y2->real - y1->real;
+
+  // Read in colour and linewidth information, if available
+  with_words_fromdict(command, &ptr->with_data, 1);
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Arrow has been removed from multiplot, because it generated an error.")); return 1; }
+   }
+  return 0;
+ }
+
+// Implementation of the circle command.
+int directive_circle(Dict *command, int interactive)
+ {
+  canvas_item   *ptr;
+  int            i, id;
+  value         *x1, *x2, *y1;
+  unsigned char *unsuccessful_ops;
+
+  // Look up the position of the centre of the arrow and its radius
+  DictLookup(command, "x", NULL, (void *)&x1);
+  DictLookup(command, "y", NULL, (void *)&y1);
+  DictLookup(command, "r", NULL, (void *)&x2);
+
+  ASSERT_LENGTH(x1,"arrow","x");
+  ASSERT_LENGTH(y1,"arrow","y");
+  ASSERT_LENGTH(x2,"arrow","r");
+
+  // Add this arrow to the linked list which decribes the canvas
+  if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  ptr->xpos  = x1->real;
+  ptr->ypos  = y1->real;
+  ptr->xpos2 = x2->real;
+
+  // Read in colour and linewidth information, if available
+  with_words_fromdict(command, &ptr->with_data, 1);
 
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)

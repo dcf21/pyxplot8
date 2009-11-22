@@ -30,6 +30,8 @@
 
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_arrow.h"
+#include "EPSMaker/eps_box.h"
+#include "EPSMaker/eps_circle.h"
 #include "EPSMaker/eps_eps.h"
 #include "EPSMaker/eps_image.h"
 #include "EPSMaker/eps_plot.h"
@@ -108,6 +110,8 @@ static char *GHOSTSCRIPT_STANDARD_FLAGS = "-dQUIET -dSAFER -dBATCH -dNOPAUSE -dE
 
 // Table of the functions we call for each phase of the canvas drawing process for different object types
 static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
+static void(*BoxHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_box_RenderEPS  , NULL};
+static void(*CircHandlers[] )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_circ_RenderEPS , NULL};
 static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
 static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_image_RenderEPS, NULL};
 static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
@@ -125,6 +129,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   EPSComm comm;
   canvas_item *item;
   void(*ArrowHandler)(EPSComm *);
+  void(*BoxHandler  )(EPSComm *);
+  void(*CircHandler )(EPSComm *);
   void(*EPSHandler  )(EPSComm *);
   void(*ImageHandler)(EPSComm *);
   void(*PlotHandler )(EPSComm *);
@@ -177,13 +183,15 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   sprintf(GSOutputTemp, "%s%spyxplot_%d_%ld%s", settings_session_default.tempdir, PATHLINK, getpid(), TempFile_counter, (termtype==SW_TERMTYPE_GIF)?".gif":".tmp");
 
   // Set up communications data structure for objects we are rendering
-  comm.itemlist    = canvas_items;
-  comm.bb_left     = comm.bb_right = comm.bb_top = comm.bb_bottom = 0.0;
-  comm.bb_set      = 0;
-  comm.epsbuffer   = NULL;
-  comm.status      = &status;
-  comm.LastEPSColour[0] = '\0';
-  comm.LastLinewidth    = -1.0;
+  comm.itemlist             = canvas_items;
+  comm.bb_left              = comm.bb_right = comm.bb_top = comm.bb_bottom = 0.0;
+  comm.bb_set               = 0;
+  comm.epsbuffer            = NULL;
+  comm.status               = &status;
+  comm.LastEPSColour[0]     = '\0';
+  comm.LastEPSFillColour[0] = '\0';
+  comm.LastLinewidth        = -1.0;
+  comm.LastLinetype         = 0;
 
   // Prepare a buffer into which strings to be passed to LaTeX will be put
 
@@ -191,6 +199,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   for (j=0 ; ; j++)
    {
     ArrowHandler = ArrowHandlers[j]; // Each object type has a handler for each phase of postscript generation
+    BoxHandler   = BoxHandlers  [j];
+    CircHandler  = CircHandlers [j];
     EPSHandler   = EPSHandlers  [j];
     ImageHandler = ImageHandlers[j];
     PlotHandler  = PlotHandlers [j];
@@ -205,6 +215,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
       if (unsuccessful_ops[item->id]) continue; // ... or which have already failed
       comm.current = item;
       if      ((item->type == CANVAS_ARROW) && (ArrowHandler != NULL)) (*ArrowHandler)(&comm); // Call the relevant handler for each one
+      else if ((item->type == CANVAS_BOX  ) && (BoxHandler   != NULL)) (*BoxHandler  )(&comm);
+      else if ((item->type == CANVAS_CIRC ) && (CircHandler  != NULL)) (*CircHandler )(&comm);
       else if ((item->type == CANVAS_EPS  ) && (EPSHandler   != NULL)) (*EPSHandler  )(&comm);
       else if ((item->type == CANVAS_IMAGE) && (ImageHandler != NULL)) (*ImageHandler)(&comm);
       else if ((item->type == CANVAS_PLOT ) && (PlotHandler  != NULL)) (*PlotHandler )(&comm);

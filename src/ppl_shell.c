@@ -296,6 +296,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_regex(command);
   else if (strcmp(directive, "arrow")==0)
    directive_arrow(command, interactive);
+  else if (strcmp(directive, "box")==0)
+   directive_box(command, interactive);
   else if (strcmp(directive, "break")==0)
    {
     if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_BROKEN=1;
@@ -303,6 +305,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
+  else if (strcmp(directive, "circle")==0)
+   directive_circle(command, interactive);
   else if (strcmp(directive, "clear")==0)
    { directive_clear(); SendCommandToCSP("A"); }
   else if (strcmp(directive, "continue")==0)

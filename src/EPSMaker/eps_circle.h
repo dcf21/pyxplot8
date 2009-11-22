@@ -1,4 +1,4 @@
-// eps_arrow.h
+// eps_circle.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_ARROW_H
-#define _PPL_EPS_ARROW_H 1
-
-#include "ppl_settings.h"
+#ifndef _PPL_EPS_CIRCLE_H
+#define _PPL_EPS_CIRCLE_H 1
 
 #include "eps_comm.h"
 
-void eps_arrow_RenderEPS(EPSComm *x);
-void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double x2, double y2, with_words *with_data);
+void eps_circ_RenderEPS(EPSComm *x);
 
 #endif
 

@@ -1,4 +1,4 @@
-// eps_arrow.h
+// eps_circle.c
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,35 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_ARROW_H
-#define _PPL_EPS_ARROW_H 1
+#define _PPL_EPS_CIRCLE 1
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 
 #include "ppl_settings.h"
+#include "ppl_setting_types.h"
 
 #include "eps_comm.h"
+#include "eps_core.h"
+#include "eps_circle.h"
+#include "eps_settings.h"
 
-void eps_arrow_RenderEPS(EPSComm *x);
-void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double x2, double y2, with_words *with_data);
+void eps_circ_RenderEPS(EPSComm *x)
+ {
+  double xpos, ypos, r;
 
-#endif
+  // Print label at top of postscript description of circle
+  fprintf(x->epsbuffer, "%% Canvas item %d [circle]\n", x->current->id);
+  eps_core_clear(x);
+
+  // Calculate position of centre of circle
+  xpos = x->current->xpos  * M_TO_PS;
+  ypos = x->current->ypos  * M_TO_PS;
+  r    = x->current->ypos2 * M_TO_PS;
+
+  // Final newline at end of canvas item
+  fprintf(x->epsbuffer, "\n");
+  return;
+ }
 

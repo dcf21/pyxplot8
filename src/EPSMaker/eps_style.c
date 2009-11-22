@@ -1,4 +1,4 @@
-// eps_arrow.h
+// eps_style.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,23 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_ARROW_H
-#define _PPL_EPS_ARROW_H 1
+#define _PPL_EPS_STYLE_C 1
 
-#include "ppl_settings.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "eps_comm.h"
+// Line types
+char *eps_LineType(int lt, double lw)
+ {
+  static char output[256];
+  lt = lt % 4;
+  if      (lt==0) sprintf(output, "0 setlinecap [] 0 setdash");                                   // solid
+  else if (lt==1) sprintf(output, "0 setlinecap [%.2f] 0 setdash", 2*lw);                         // dashed
+  else if (lt==2) sprintf(output, "1 setlinecap [0 %.2f] 0 setdash", 2*lw);                       // dotted
+  else if (lt==3) sprintf(output, "1 setlinecap [0 %.2f %.2f %.2f] 0 setdash", 2*lw, 2*lw, 2*lw); // dash-dotted
+  return output;
+ }
 
-void eps_arrow_RenderEPS(EPSComm *x);
-void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double x2, double y2, with_words *with_data);
-
-#endif
+// Point types
 

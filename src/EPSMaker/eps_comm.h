@@ -32,8 +32,9 @@ typedef struct EPSComm {
   double bb_left, bb_right, bb_top, bb_bottom;
   unsigned char bb_set;
   char *EPSFilename, *FinalFilename, *title;
-  char  LastEPSColour[256];
+  char  LastEPSColour[256], LastEPSFillColour[256];
   double LastLinewidth;
+  int LastLinetype;
   FILE *epsbuffer;
   int *status, termtype;
  } EPSComm;

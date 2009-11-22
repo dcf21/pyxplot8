@@ -27,10 +27,12 @@
 #include "ppl_settings.h"
 
 #define CANVAS_ARROW 22001
-#define CANVAS_EPS   22002
-#define CANVAS_IMAGE 22003
-#define CANVAS_PLOT  22004
-#define CANVAS_TEXT  22005
+#define CANVAS_BOX   22002
+#define CANVAS_CIRC  22003
+#define CANVAS_EPS   22004
+#define CANVAS_IMAGE 22005
+#define CANVAS_PLOT  22006
+#define CANVAS_TEXT  22007
 
 typedef struct plot_descriptor {
  unsigned char           function;
@@ -67,6 +69,8 @@ int directive_delete  (Dict *command);
 int directive_undelete(Dict *command);
 int directive_move    (Dict *command);
 int directive_arrow   (Dict *command, int interactive);
+int directive_box     (Dict *command, int interactive);
+int directive_circle  (Dict *command, int interactive);
 int directive_eps     (Dict *command, int interactive);
 int directive_text    (Dict *command, int interactive);
 int directive_image   (Dict *command, int interactive);
