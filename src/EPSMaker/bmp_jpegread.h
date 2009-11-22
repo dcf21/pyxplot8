@@ -1,10 +1,12 @@
-// eps_image.h
+// bmp_jpegread.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
 // Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
 //               2008-9 Ross Church
+//
+//               2009   Michael Rutter
 //
 // $Id$
 //
@@ -19,35 +21,19 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_IMAGE_H
-#define _PPL_EPS_IMAGE_H 1
+// This file is edited from code which was kindly contributed to PyXPlot by
+// Michael Rutter. It reads in data from JPEG files without performing any
+// decompression, since the DCT-compressed data can be rewritten straight out
+// to postscript for decompression by the postscript rasterising engine.
 
-#include "eps_comm.h"
+#ifndef _PPL_BMP_JPEGREAD_H
+#define _PPL_BMP_JPEGREAD_H 1
 
-void eps_image_RenderEPS(EPSComm *x);
+#include <stdio.h>
 
-// Colour channel configurations
+#include "eps_image.h"
 
-#define BMP_COLOUR_BMP     1001
-#define BMP_COLOUR_PALETTE 1002
-#define BMP_COLOUR_GREY    1003
-#define BMP_COLOUR_RGB     1004
-
-// Image compression types
-
-#define BMP_ENCODING_RLE    1
-#define BMP_ENCODING_LZW    2
-#define BMP_ENCODING_CCITT  4
-#define BMP_ENCODING_FLATE  8
-#define BMP_ENCODING_RLE24 16
-#define BMP_ENCODING_DCT   32
-
-typedef struct bitmap_data
- {
-  unsigned char *data, *palette, *trans;
-  unsigned       data_len;
-  int            pal_len, width, height, depth, type, colour, compression, flags;
- } bitmap_data;
+void jpegread(FILE *jpeg, bitmap_data *image);
 
 #endif
 

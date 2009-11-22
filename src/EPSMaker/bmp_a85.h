@@ -1,10 +1,12 @@
-// eps_image.h
+// bmp_a85.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
 // Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
 //               2008-9 Ross Church
+//
+//               2009   Michael Rutter
 //
 // $Id$
 //
@@ -19,35 +21,17 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_IMAGE_H
-#define _PPL_EPS_IMAGE_H 1
+// This file is edited from code which was kindly contributed to PyXPlot by
+// Michael Rutter. It efficiently encodes a string of raw image data into
+// postscript's ASCII 85 data format, making use of all of the printable ASCII
+// characters.
 
-#include "eps_comm.h"
+#ifndef _PPL_BMP_A85_H
+#define _PPL_BMP_A85_H 1
 
-void eps_image_RenderEPS(EPSComm *x);
+#include <stdio.h>
 
-// Colour channel configurations
-
-#define BMP_COLOUR_BMP     1001
-#define BMP_COLOUR_PALETTE 1002
-#define BMP_COLOUR_GREY    1003
-#define BMP_COLOUR_RGB     1004
-
-// Image compression types
-
-#define BMP_ENCODING_RLE    1
-#define BMP_ENCODING_LZW    2
-#define BMP_ENCODING_CCITT  4
-#define BMP_ENCODING_FLATE  8
-#define BMP_ENCODING_RLE24 16
-#define BMP_ENCODING_DCT   32
-
-typedef struct bitmap_data
- {
-  unsigned char *data, *palette, *trans;
-  unsigned       data_len;
-  int            pal_len, width, height, depth, type, colour, compression, flags;
- } bitmap_data;
+unsigned int bmp_A85(FILE* fout, unsigned char* in, int len);
 
 #endif
 

@@ -54,7 +54,7 @@ void eps_core_SetColour(EPSComm *x, with_words *ww)
   if      (ww->USEcolourRGB)  sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->colourR/255,
                                                                                (double)ww->colourG/255,
                                                                                (double)ww->colourB/255  );
-  else if((ww->USEcolour   ) && ((ww->colour==COLOUR_NULL)||(ww->colour==COLOUR_INVISIBLE)))
+  else if((ww->USEcolour   ) && ((ww->colour==COLOUR_NULL)||(ww->colour==COLOUR_INVISIBLE)||(ww->colour==COLOUR_TRANSPARENT)))
                               strcpy (NewColour, ""); // This is code to tell us we're writing in invisible ink
   else if (ww->USEcolour   )  sprintf(NewColour, "%.3f %.3f %.3f %.3f setcmykcolor",
                                           *(double *)FetchSettingName(ww->colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_C, sizeof(double)),
@@ -80,7 +80,7 @@ void eps_core_SetFillColour(EPSComm *x, with_words *ww)
   if      (ww->USEfillcolourRGB)  sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->fillcolourR/255,
                                                                                    (double)ww->fillcolourG/255,
                                                                                    (double)ww->fillcolourB/255  );
-  else if((ww->USEfillcolour   ) && ((ww->fillcolour==COLOUR_NULL)||(ww->fillcolour==COLOUR_INVISIBLE)))
+  else if((ww->USEfillcolour   ) && ((ww->fillcolour==COLOUR_NULL)||(ww->fillcolour==COLOUR_INVISIBLE)||(ww->fillcolour==COLOUR_TRANSPARENT)))
                                   strcpy (NewColour, ""); // This is code to tell us we're writing in invisible ink
   else if (ww->USEfillcolour   )  sprintf(NewColour, "%.3f %.3f %.3f %.3f setcmykcolor",
                                               *(double *)FetchSettingName(ww->fillcolour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_C, sizeof(double)),

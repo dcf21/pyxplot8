@@ -91,6 +91,7 @@ colour_list={
 "White": [0, 0, 0, 0],
 "Invisible": [-1, -1, -1, -1],
 "Null": [-1, -1, -1, -1],
+"Transparent": [-1, -1, -1, -1],
 }
 
 for greylevel in range(0,101):

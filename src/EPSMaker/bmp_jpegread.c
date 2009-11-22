@@ -1,0 +1,189 @@
+// bmp_jpegread.c
+//
+// The code in this file is part of PyXPlot
+// <http://www.pyxplot.org.uk>
+//
+// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-9 Ross Church
+//
+//               2009   Michael Rutter
+//
+// $Id$
+//
+// PyXPlot is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation; either version 2 of the License, or (at your option) any later
+// version.
+//
+// You should have received a copy of the GNU General Public License along with
+// PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+// Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+// ----------------------------------------------------------------------------
+
+// This file is edited from code which was kindly contributed to PyXPlot by
+// Michael Rutter. It reads in data from JPEG files without performing any
+// decompression, since the DCT-compressed data can be rewritten straight out
+// to postscript for decompression by the postscript rasterising engine.
+
+#define _PPL_BMP_JPEGREAD_C 1
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "ListTools/lt_memory.h"
+
+#include "ppl_error.h"
+
+#include "eps_image.h"
+#include "bmp_jpegread.h"
+
+#define HEADLEN 8*1024
+
+void jpegread(FILE *jpeg, bitmap_data *image)
+ {
+  int comps=0, prec=0, i, j;
+
+  unsigned int width=0, height=0, save;
+  unsigned int len, chunk=64*1024;
+  unsigned char *buff, *header, *headp, *headendp, type=0, comp=0, *p;
+
+  buff     = (unsigned char *)lt_malloc(chunk);
+  header   = (unsigned char *)lt_malloc(HEADLEN);
+  headp    = header;
+  headendp = header + HEADLEN - 8;
+
+  if (DEBUG) ppl_log("Beginning to decode JPEG image file");
+
+  if ((buff == NULL)||(header == NULL)) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+
+  fread(buff,3,1,jpeg);
+  i=buff[0];
+  if (i<0xe0) { ppl_error(ERR_FILE, "In supplied JPEG image, first marker is not APPn. Aborting."); return; }
+  len=buff[1]*256+buff[2]-2;
+
+  fread(buff,len,1,jpeg);
+
+  if (DEBUG)
+   {
+    if (!strcmp((char*)buff,"JFIF")&&(i=0xe0))
+     {
+      sprintf(temp_err_string,"JPEG version %d.%02d\n",(int)buff[5],(int)buff[6]);   ppl_log(temp_err_string);
+      sprintf(temp_err_string,"Thumbnail size %dx%d\n",(int)buff[12],(int)buff[13]); ppl_log(temp_err_string);
+      sprintf(temp_err_string,"JFIF APP0 entry length 0x%x\n",len+2);                ppl_log(temp_err_string);
+     } else if (!strcmp((char*)buff,"Exif")&&(i=0xe1)) {
+      sprintf(temp_err_string,"Exif JPEG file\n");                                   ppl_log(temp_err_string);
+      sprintf(temp_err_string,"Exif APP1 entry length 0x%x\n",len+2);                ppl_log(temp_err_string);
+    }
+  }
+
+  *(headp++) = 0xff;
+  *(headp++) = 0xd8;
+
+  if (DEBUG) { sprintf(temp_err_string, "JFIF APP%d entry discarded", i-0xe0); ppl_log(temp_err_string); }
+
+  while ((type!=0xda) && fread(buff,1,1,jpeg) && (buff[0]=0xff))
+   {
+    fread(buff,3,1,jpeg);
+    type = buff[0];
+    len  = buff[1]*256+buff[2]-2;
+    save = 0;
+    fread(buff,len,1,jpeg);
+
+    if (DEBUG) { sprintf(temp_err_string, "Entry type %x length 0x%x",(int)type,len+2); ppl_log(temp_err_string); }
+
+    if (((type&0xf0)==0xc0) && (type!=0xc4) && (type!=0xcc))
+     {
+      if (comp) { ppl_error(ERR_FILE, "Cannot decode JPEG image file: it contains multiple images?"); return; }
+      comp   = type;
+      prec   = buff[0];
+      height = 256*buff[1]+buff[2];
+      width  = 256*buff[3]+buff[4];
+      comps  = buff[5];
+      save   = 1;
+     }
+
+    if ((type==0xfe) && (DEBUG)) { buff[len]=0; sprintf(temp_err_string,"JPEG Comment: %s",buff); ppl_log(temp_err_string); }
+    if ((type==0xe0) && (DEBUG)) { sprintf(temp_err_string,"APP0 Marker: %s",buff); ppl_log(temp_err_string); }
+
+    if ((type==0xdb)||(type==0xc4)||(type==0xda)||(type==0xdd)) save=1;
+    if (save)
+     {
+      *(headp++) = 0xff;
+      *(headp++) = type;
+      *(headp++) = (len+2)>>8;
+      *(headp++) = (len+2)&0xff;
+      if (headp+len>headendp) { ppl_error(ERR_FILE,"Header storage for JPEG image exhausted"); return; }
+      for (i=0; i<len; i++) *(headp++) = buff[i];
+     }
+    else if (DEBUG) ppl_log("Discarding section of JPEG image file");
+   }
+
+  if (DEBUG) { sprintf(temp_err_string, "Image size %dx%d with %d components\n",width,height,comps); ppl_log(temp_err_string); }
+
+  switch (comp)
+   {
+    case 0xc0:
+      if (DEBUG) ppl_log("Encoding: baseline JPEG");
+      break;
+    case 0xc1:
+      if (DEBUG) ppl_log("Encoding: extended sequential, Huffman JPEG");
+      break;
+    case 0xc2:
+      ppl_error(ERR_FILE, "JPEG image detected to have progressive encoding, which PyXPlot does not support. Please convert to baseline JPEG and try again.");
+      return;
+    default:
+      sprintf(temp_err_string, "JPEG image detected to have unsupported compression type SOF%d. Please convert to baseline JPEG and try again.",((int)comp)&0xf);
+      ppl_error(ERR_FILE, temp_err_string);
+      return;
+   }
+
+  if ((comps!=3) && (comps!=1)) { sprintf(temp_err_string,"JPEG image contains %d colour components; PyXPlot only supports JPEG images with one (greyscale) or three (RGB) components", comps); ppl_error(ERR_FILE, temp_err_string); return; }
+
+  if (comps ==3 )
+   {
+    image->colour = BMP_COLOUR_RGB;
+    image->depth  = 24;
+   }
+  else
+   {
+    image->colour = BMP_COLOUR_GREY;
+    image->depth  = 8;
+   }
+
+  image->width  = width;
+  image->height = height;
+  image->type   = BMP_ENCODING_DCT;
+
+  // Now read JPEG image data. Unfortunately, we don't know how much we'll get
+
+  if (DEBUG) { sprintf(temp_err_string, "%d bytes of header read\n",(int)(headp-header)); ppl_log(temp_err_string); }
+
+  for(i=0; header+i<headp; i++) buff[i] = header[i];
+  len = chunk-(headp-header);
+  j   = fread(buff+i,1,len,jpeg);
+
+  if (j<len)
+   {
+    image->data     = buff;
+    image->data_len = i+j;
+    return;
+   }
+
+  i=j;
+  while (i==len)
+   {
+    chunk *= 2;
+    p      = realloc(buff,chunk); // CAN'T DO THIS!!!!
+    if (p == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    buff = p;
+    len  = chunk/2;
+    i    = fread(buff+len,1,len,jpeg);
+   }
+
+  image->data=buff;
+  image->data_len=len+i;
+  return;
+ }
+
