@@ -473,7 +473,7 @@ int directive_circle(Dict *command, int interactive)
   value         *x1, *x2, *y1;
   unsigned char *unsuccessful_ops;
 
-  // Look up the position of the centre of the arrow and its radius
+  // Look up the position of the centre of the circle and its radius
   DictLookup(command, "x", NULL, (void *)&x1);
   DictLookup(command, "y", NULL, (void *)&y1);
   DictLookup(command, "r", NULL, (void *)&x2);
@@ -482,7 +482,7 @@ int directive_circle(Dict *command, int interactive)
   ASSERT_LENGTH(y1,"arrow","y");
   ASSERT_LENGTH(x2,"arrow","r");
 
-  // Add this arrow to the linked list which decribes the canvas
+  // Add this circle to the linked list which decribes the canvas
   if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
