@@ -46,10 +46,9 @@ void eps_core_clear(EPSComm *x)
  }
 
 // Set the colour of the EPS we are painting
-void eps_core_SetColour(EPSComm *x, with_words *colour)
+void eps_core_SetColour(EPSComm *x, with_words *ww)
  {
   char NewColour[256];
-  with_words *ww = &x->current->with_data;
 
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
   if      (ww->USEcolourRGB)  sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->colourR/255,
@@ -73,10 +72,9 @@ void eps_core_SetColour(EPSComm *x, with_words *colour)
   return;
  }
 
-void eps_core_SetFillColour(EPSComm *x, with_words *colour)
+void eps_core_SetFillColour(EPSComm *x, with_words *ww)
  {
   char *NewColour = x->LastEPSFillColour;
-  with_words *ww  = &x->current->with_data;
 
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
   if      (ww->USEfillcolourRGB)  sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->fillcolourR/255,

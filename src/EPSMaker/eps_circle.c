@@ -26,7 +26,6 @@
 #include <math.h>
 
 #include "ppl_settings.h"
-#include "ppl_setting_types.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
@@ -35,16 +34,50 @@
 
 void eps_circ_RenderEPS(EPSComm *x)
  {
-  double xpos, ypos, r;
+  int    lt;
+  double lw, lw_scale, xpos, ypos, r;
+  with_words ww;
 
   // Print label at top of postscript description of circle
   fprintf(x->epsbuffer, "%% Canvas item %d [circle]\n", x->current->id);
   eps_core_clear(x);
 
-  // Calculate position of centre of circle
+  // Calculate position of centre of circle and its radius in TeX points
   xpos = x->current->xpos  * M_TO_PS;
   ypos = x->current->ypos  * M_TO_PS;
-  r    = x->current->ypos2 * M_TO_PS;
+  r    = x->current->xpos2 * M_TO_PS;
+
+  // Expand any numbered styles which may appear in the with words we are passed
+  with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
+
+  // Set fill colour of circle
+  eps_core_SetFillColour(x, &ww);
+  eps_core_SwitchTo_FillColour(x);
+
+  // Fill circle
+  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "%.2f %.2f %.2f 0 360 arc\nclosepath\nfill\n", xpos,ypos,r);
+
+  // Set colour of outline of circle
+  eps_core_SetColour(x, &ww);
+
+  // Set linewidth and linetype of outline
+  if (ww.USElinewidth) lw_scale = ww.linewidth;
+  else                 lw_scale = x->current->settings.LineWidth;
+  lw = EPS_DEFAULT_LINEWIDTH * lw_scale;
+
+  if (ww.USElinetype)  lt = ww.linetype;
+  else                 lt = 0;
+
+  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt);
+
+  // Stroke outline of circle
+  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "%.2f %.2f %.2f 0 360 arc\nclosepath\nstroke\n", xpos,ypos,r);
+
+  // Factor circle into EPS file's bounding box
+  eps_core_BoundingBox(x, xpos-r, ypos  , lw);
+  eps_core_BoundingBox(x, xpos+r, ypos  , lw);
+  eps_core_BoundingBox(x, xpos  , ypos-r, lw);
+  eps_core_BoundingBox(x, xpos  , ypos+r, lw);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

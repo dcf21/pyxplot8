@@ -36,6 +36,7 @@
 void eps_arrow_RenderEPS(EPSComm *x)
  {
   double x1, x2, y1, y2;
+  with_words ww;
 
   // Print label at top of postscript description of arrow
   fprintf(x->epsbuffer, "%% Canvas item %d [arrow]\n", x->current->id);
@@ -47,8 +48,11 @@ void eps_arrow_RenderEPS(EPSComm *x)
   x2 = (x->current->xpos2 + x->current->xpos) * M_TO_PS; // End of arrow
   y2 = (x->current->ypos2 + x->current->ypos) * M_TO_PS;
 
+  // Expand any numbered styles which may appear in the with words we are passed
+  with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
+
   // Call primitive routine
-  eps_primitive_arrow(x, x->current->ArrowType, x1, y1, x2, y2, &x->current->with_data);
+  eps_primitive_arrow(x, x->current->ArrowType, x1, y1, x2, y2, &ww);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");
