@@ -31,6 +31,8 @@
 #include "ListTools/lt_dict.h"
 #include "ListTools/lt_list.h"
 
+#include "MathsTools/dcfmath.h" // Needed to set random seed
+
 #include "EPSMaker/eps_colours.h"
 
 #include "ppl_canvasitems.h"
@@ -79,6 +81,7 @@ void directive_unseterror(Dict *command, int interactive)
 void directive_set(Dict *command)
  {
   int     i, j, k, l, m, p, pp, *EditNo, errpos, multiplier;
+  long    li;
   char   *directive, *setoption;
   value   valobj, valobj2;
   value  *tempval, *tempval2, *tempval3;
@@ -933,6 +936,14 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
    {
     sg->samples = settings_graph_default.samples;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"seed")==0)) /* set seed */
+   {
+    DictLookup(command,"seed",NULL,(void **)&tempdbl);
+    if      (*tempdbl < LONG_MIN) li = LONG_MIN;
+    else if (*tempdbl > LONG_MAX) li = LONG_MAX;
+    else                          li = (long)(*tempdbl);
+    dcfmath_SetRandomSeed(li);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
    {

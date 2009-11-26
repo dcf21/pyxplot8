@@ -104,11 +104,6 @@ double radians(double degrees)
   return degrees*M_PI/180;
  }
 
-double frandom()
- {
-  return (double)rand() / RAND_MAX;
- }
-
 // Wrappers for mathematical functions to make them take values as inputs
 
 void dcfmath_abs(value *in, value *output, int *status, char *errtext)
@@ -1056,18 +1051,26 @@ void dcfmath_radians(value *in, value *output, int *status, char *errtext)
   CHECK_OUTPUT_OKAY;
  }
 
+static gsl_rng *rndgen = NULL; // Random number generator for next five functions
+
+void dcfmath_SetRandomSeed(long i)
+ {
+  if (rndgen==NULL) rndgen = gsl_rng_alloc(gsl_rng_default);
+  gsl_rng_set(rndgen, i);
+  return;
+ }
+
 void dcfmath_frandom(value *output, int *status, char *errtext)
  {
   WRAPPER_INIT;
-  output->real = frandom();
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
+  output->real = gsl_rng_uniform(rndgen);
  }
-
-static gsl_rng *rndgen = NULL; // Random number generator for next five functions
 
 void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "random_binomial(p,n)";
-  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
   CHECK_NEEDINT(in2, "function's second argument must be an integer in the range");
@@ -1080,7 +1083,7 @@ void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char
 void dcfmath_frandomcs(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "random_chisq(mu)";
-  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
@@ -1092,7 +1095,7 @@ void dcfmath_frandomcs(value *in, value *output, int *status, char *errtext)
 void dcfmath_frandomg(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "random_gaussian(sigma)";
-  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_1NOTNAN;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_ran_gaussian(rndgen, in->real); }
@@ -1105,7 +1108,7 @@ void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char 
  {
   value *in = in2; // Only check that in2 is dimensionless
   char *FunctionDescription = "random_lognormal(zeta,sigma)";
-  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_2NOTNAN;
   CHECK_1INPUT_DIMLESS; // THIS IS CORRECT. Only check in2
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
@@ -1118,7 +1121,7 @@ void dcfmath_frandomln(value *in1, value *in2, value *output, int *status, char 
 void dcfmath_frandomp(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "random_poisson(n)";
-  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, rand()); }
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }

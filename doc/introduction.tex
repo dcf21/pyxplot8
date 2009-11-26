@@ -136,8 +136,12 @@ print x*x + x
 being added to a term with dimensions of length. More details of the use of
 physical units in PyXPlot are given in Section~\ref{sec:units}, and
 Appendix~\ref{ch:unit_list} lists all of the physical units which PyXPlot
-recognises by default. In addition, Chapter~\ref{ch:configuration} describes a
-way to add new physical units to PyXPlot's repertoire.
+recognises by default. Users can add additional units to those recognised by
+PyXPlot by means of a configuration file, and the new units can be declared
+with to be alternative ways of measuring quantities such as length which can be
+defined in terms of the SI base units, or to be new base units, such as
+man-hours of labour or numbers of CPU cycles.  More details about how to do
+this are given in Chapter~\ref{ch:configuration}.
 
 PyXPlot can perform algebra on complex as well as real numbers. By default,
 evaluation of {\tt sqrt(-1)} throws an error, as the emergence of complex

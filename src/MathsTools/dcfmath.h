@@ -35,7 +35,8 @@ void   LinearRaster     (double *out, double min, double max, int Nsteps);
 void   LogarithmicRaster(double *out, double min, double max, int Nsteps);
 double degrees(double rad);
 double radians(double degrees);
-double frandom();
+
+void dcfmath_SetRandomSeed(long i);
 
 void dcfmath_abs(value *in, value *output, int *status, char *errtext);
 void dcfmath_acos(value *in, value *output, int *status, char *errtext);

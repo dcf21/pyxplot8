@@ -126,6 +126,7 @@ set@2:directive { item@1 %d:editno } < pointsize@1:set_option | ps@2:set_option:
 set@2:directive { item@1 %d:editno } preamble@2:set_option = < %q:preamble | %r:preamble > \n\
 set@2:directive { item@1 %d:editno } projection@3:set_option = < flat@1:projection | gnomonic@1:projection > \n\
 set@2:directive { item@1 %d:editno } samples@2:set_option = %d:samples\n\
+set@2:directive                      seed@2:set_option = %f:seed\n\
 set@2:directive { item@1 %d:editno } size@1:set_option = < %fu:width | ratio@1 %f:ratio | noratio@1:noratio | square@1:square >\n\
 set@2:directive                      terminal@1:set_option = ( < x11_singlewindow@1:term:X11_SingleWindow | x11_multiwindow@5:term:X11_MultiWindow | x11_persist@5:term:X11_Persist | postscript@1:term:ps | ps@2:term:ps | eps@1:term:eps | pdf@2:term:pdf | png@2:term:png | gif@1:term:gif | jpg@1:term:jpg | jpeg@1:term:jpg | bmp@1:term:bmp | tiff@1:term:tif | svg@1:term:svg > ~ < colour@1:col:On | color@1:col:On | monochrome@1:col:Off | nocolour@1:col:Off | nocolor@1:col:Off > ~ < enlarge@1:enlarge:On | noenlarge@3:enlarge:Off > ~ < landscape@1:land:On | portrait@2:land:Off > ~ < notransparent@1:trans:Off | nosolid@1:trans:On | transparent@1:trans:On | solid@1:trans:Off > ~ < invert@1:invert:On | noinvert@1:invert:Off > ~ < antialias@1:antiali:On | noantialias@3:antiali:Off > ~ < dpi@3 | resolution@3 > %f:dpi )\n\
 set@2:directive { item@1 %d:editno } < textcolour@5:set_option | textcolor@5:set_option:textcolour > = < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > \n\
