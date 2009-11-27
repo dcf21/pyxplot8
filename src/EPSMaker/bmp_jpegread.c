@@ -28,9 +28,11 @@
 
 #define _PPL_BMP_JPEGREAD_C 1
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+
+#include <gsl/gsl_const_mksa.h>
 
 #include "ListTools/lt_memory.h"
 
@@ -69,12 +71,35 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
    {
     if (!strcmp((char*)buff,"JFIF")&&(i=0xe0))
      {
-      sprintf(temp_err_string,"JPEG version %d.%02d\n",(int)buff[5],(int)buff[6]);   ppl_log(temp_err_string);
-      sprintf(temp_err_string,"Thumbnail size %dx%d\n",(int)buff[12],(int)buff[13]); ppl_log(temp_err_string);
-      sprintf(temp_err_string,"JFIF APP0 entry length 0x%x\n",len+2);                ppl_log(temp_err_string);
+      sprintf(temp_err_string,"JPEG version %d.%02d",(int)buff[5],(int)buff[6]);   ppl_log(temp_err_string);
+      sprintf(temp_err_string,"Thumbnail size %dx%d",(int)buff[12],(int)buff[13]); ppl_log(temp_err_string);
+      sprintf(temp_err_string,"JFIF APP0 entry length 0x%x",len+2);                ppl_log(temp_err_string);
+      switch ((int)buff[7])
+       {
+        case 0:
+         ppl_log("No DPI information available");
+         break;
+        case 1:
+          sprintf(temp_err_string,"DPI specified as %dx%d dots per inch",(256*((int)buff[ 8])+((int)buff[ 9])),
+                                                                         (256*((int)buff[10])+((int)buff[11])) );
+          ppl_log(temp_err_string);
+          image->XDPI = (256*((int)buff[ 8])+((int)buff[ 9]));
+          image->YDPI = (256*((int)buff[10])+((int)buff[11]));
+          break;
+        case 2:
+          sprintf(temp_err_string,"DPI specified as %dx%d dots per cm"  ,(256*((int)buff[ 8])+((int)buff[ 9])),
+                                                                         (256*((int)buff[10])+((int)buff[11])) );
+          ppl_log(temp_err_string);
+          image->XDPI = (256*((int)buff[ 8])+((int)buff[ 9])) * 100 * GSL_CONST_MKSA_INCH;
+          image->YDPI = (256*((int)buff[10])+((int)buff[11])) * 100 * GSL_CONST_MKSA_INCH;
+          break;
+        default:
+          sprintf(temp_err_string,"DPI specified in unrecognised unit number %d",(int)buff[7]);
+          break;
+       }
      } else if (!strcmp((char*)buff,"Exif")&&(i=0xe1)) {
       sprintf(temp_err_string,"Exif JPEG file\n");                                   ppl_log(temp_err_string);
-      sprintf(temp_err_string,"Exif APP1 entry length 0x%x\n",len+2);                ppl_log(temp_err_string);
+      sprintf(temp_err_string,"Exif APP1 entry length 0x%x",len+2);                ppl_log(temp_err_string);
     }
   }
 
@@ -120,7 +145,7 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
     else if (DEBUG) ppl_log("Discarding section of JPEG image file");
    }
 
-  if (DEBUG) { sprintf(temp_err_string, "Image size %dx%d with %d components\n",width,height,comps); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "Image size %dx%d with %d components",width,height,comps); ppl_log(temp_err_string); }
 
   switch (comp)
    {
@@ -152,13 +177,13 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
     image->depth  = 8;
    }
 
-  image->width       = width;
-  image->height      = height;
-  image->compression = BMP_ENCODING_DCT;
+  image->width             = width;
+  image->height            = height;
+  image->TargetCompression = BMP_ENCODING_DCT;
 
   // Now read JPEG image data. Unfortunately, we don't know how much we'll get
 
-  if (DEBUG) { sprintf(temp_err_string, "%d bytes of header read\n",(int)(headp-header)); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "%d bytes of header read",(int)(headp-header)); ppl_log(temp_err_string); }
 
   for(i=0; header+i<headp; i++) buff[i] = header[i];
   len = chunk-(headp-header);

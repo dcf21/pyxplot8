@@ -41,11 +41,13 @@ void eps_image_RenderEPS(EPSComm *x)
   bitmap_data   data;
   FILE         *infile;
   int           ImageType, i, j;
-  double        xscale, yscale, r, PhysicalSize;
+  double        xscale, yscale, r;
   unsigned char buff[10];
 
   data.data = data.palette = data.trans = NULL;
   data.type = 0;
+  data.XDPI = data.YDPI = 180;
+  data.TargetCompression = BMP_ENCODING_FLATE;
 
   fprintf(x->epsbuffer, "%% Canvas item %d [bitmap image]\n", x->current->id);
 
@@ -98,18 +100,17 @@ void eps_image_RenderEPS(EPSComm *x)
     xscale = x->current->ypos2 * M_TO_PS * ((double)data.width / (double)data.height);
     yscale = x->current->ypos2 * M_TO_PS;
    }
-  else // Neither height nor width has been set
+  else // Neither height nor width has been set; use DPI information to work out how big image should be
    {
-    PhysicalSize = 0.1; // We're stuck... so let's just make the image 10cm across and hope for the best
-    xscale = PhysicalSize * M_TO_PS;
-    yscale = PhysicalSize * M_TO_PS * ((double)data.height / (double)data.width);
+    xscale = ((double)data.width ) / data.XDPI * 72;
+    yscale = ((double)data.height) / data.YDPI * 72;
    }
 
   // Make it into postscript
   fprintf(x->epsbuffer, "gsave\n");
   fprintf(x->epsbuffer, "%.2f %.2f translate\n", x->current->xpos * M_TO_PS, x->current->ypos * M_TO_PS);
-  fprintf(x->epsbuffer, "%.2f %.2f scale\n", xscale, yscale);
   fprintf(x->epsbuffer, "%.2f rotate\n", x->current->rotation * 180 / M_PI);
+  fprintf(x->epsbuffer, "%.2f %.2f scale\n", xscale, yscale);
 
   if      (data.colour == BMP_COLOUR_RGB ) fprintf(x->epsbuffer, "/DeviceRGB setcolorspace\n");
   else if (data.colour == BMP_COLOUR_GREY) fprintf(x->epsbuffer, "/DeviceGray setcolorspace\n");
@@ -117,7 +118,8 @@ void eps_image_RenderEPS(EPSComm *x)
 
   fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", (data.trans!=NULL)?4:1, data.width, data.height, data.width, -data.height, data.height);
   fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter");
-  if (data.compression == BMP_ENCODING_DCT) fprintf(x->epsbuffer, " /DCTDecode filter");
+  if      (data.TargetCompression == BMP_ENCODING_DCT  ) fprintf(x->epsbuffer, " /DCTDecode filter");
+  else if (data.TargetCompression == BMP_ENCODING_FLATE) fprintf(x->epsbuffer, " /FlateDecode filter");
   fprintf(x->epsbuffer, "\n /BitsPerComponent %d\n /Decode [0 %d%s]\n", (data.colour==BMP_COLOUR_RGB)?(data.depth/3):(data.depth),
                                                                         (data.type==BMP_COLOUR_PALETTE)?((1<<data.depth)-1):1,
                                                                         (data.colour==BMP_COLOUR_RGB)?" 0 1 0 1":"");
