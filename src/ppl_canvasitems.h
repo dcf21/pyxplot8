@@ -42,7 +42,7 @@ typedef struct plot_descriptor {
 } plot_descriptor;
 
 typedef struct canvas_item {
- int                 id, type, ImageType, ArrowType;
+ int                 id, type, ArrowType;
  double              xpos, ypos, xpos2, ypos2, rotation;
  char               *text;
  unsigned char       deleted, xpos2set, ypos2set;

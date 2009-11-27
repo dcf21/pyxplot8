@@ -173,7 +173,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
    }
   else if (ptr->type == CANVAS_EPS  ) // Produce textual representations of eps commands
    {
-    sprintf(output, "image item %d eps ", ptr->id);
+    sprintf(output, "eps item %d ", ptr->id);
     i = strlen(output);
     StrEscapify(ptr->text, output+i);
     i += strlen(output+i);
@@ -192,7 +192,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
    }
   else if (ptr->type == CANVAS_IMAGE) // Produce textual representations of image commands
    {
-    sprintf(output, "image item %d %s ", ptr->id, *(char **)FetchSettingName(ptr->ImageType, SW_BITMAP_INT, (void *)SW_BITMAP_STR, sizeof(char *)));
+    sprintf(output, "image item %d ", ptr->id);
     i = strlen(output);
     StrEscapify(ptr->text, output+i);
     i += strlen(output+i);
@@ -511,11 +511,11 @@ int directive_eps(Dict *command, int interactive)
   char          *text, *fname;
 
   // Read in positional information for this eps image, and ensure that values are either dimensionless, or have units of length / angle as required
-  DictLookup(command, "x"     , NULL, (void *)&x     );
-  DictLookup(command, "y"     , NULL, (void *)&y     );
-  DictLookup(command, "rotate", NULL, (void *)&ang   );
-  DictLookup(command, "width" , NULL, (void *)&width );
-  DictLookup(command, "height", NULL, (void *)&height);
+  DictLookup(command, "x"       , NULL, (void *)&x     );
+  DictLookup(command, "y"       , NULL, (void *)&y     );
+  DictLookup(command, "rotation", NULL, (void *)&ang   );
+  DictLookup(command, "width"   , NULL, (void *)&width );
+  DictLookup(command, "height"  , NULL, (void *)&height);
 
   if (x     !=NULL) { ASSERT_LENGTH(x     ,"eps","x"     ); }
   if (y     !=NULL) { ASSERT_LENGTH(y     ,"eps","y"     ); }
@@ -556,9 +556,9 @@ int directive_text(Dict *command, int interactive)
   unsigned char *unsuccessful_ops;
   char          *text, *fname;
 
-  DictLookup(command, "x"     , NULL, (void *)&x  );
-  DictLookup(command, "y"     , NULL, (void *)&y  );
-  DictLookup(command, "rotate", NULL, (void *)&ang);
+  DictLookup(command, "x"       , NULL, (void *)&x  );
+  DictLookup(command, "y"       , NULL, (void *)&y  );
+  DictLookup(command, "rotation", NULL, (void *)&ang);
 
   if (x  !=NULL) { ASSERT_LENGTH(x  ,"eps","x"); }
   if (y  !=NULL) { ASSERT_LENGTH(y  ,"eps","y"); }
@@ -596,14 +596,14 @@ int directive_image(Dict *command, int interactive)
   int            i, id;
   value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
-  char          *text, *fname, *tempstr;
+  char          *text, *fname;
 
   // Read in positional information for this bitmap image, and ensure that values are either dimensionless, or have units of length / angle as required
-  DictLookup(command, "x"     , NULL, (void *)&x  );
-  DictLookup(command, "y"     , NULL, (void *)&y  );
-  DictLookup(command, "rotate", NULL, (void *)&ang);
-  DictLookup(command, "width" , NULL, (void *)&width );
-  DictLookup(command, "height", NULL, (void *)&height);
+  DictLookup(command, "x"       , NULL, (void *)&x  );
+  DictLookup(command, "y"       , NULL, (void *)&y  );
+  DictLookup(command, "rotation", NULL, (void *)&ang);
+  DictLookup(command, "width"   , NULL, (void *)&width );
+  DictLookup(command, "height"  , NULL, (void *)&height);
 
   if (x     !=NULL) { ASSERT_LENGTH(x     ,"eps","x"     ); }
   if (y     !=NULL) { ASSERT_LENGTH(y     ,"eps","y"     ); }
@@ -624,9 +624,6 @@ int directive_image(Dict *command, int interactive)
   if (width !=NULL) { ptr->xpos2    = width ->real; ptr->xpos2set = 1; } else { ptr->xpos2    = 0.0; ptr->xpos2set = 0; }
   if (height!=NULL) { ptr->ypos2    = height->real; ptr->ypos2set = 1; } else { ptr->ypos2    = 0.0; ptr->ypos2set = 0; }
   ptr->text      = text;
-
-  DictLookup(command, "image_type", NULL, (void *)&tempstr);
-  ptr->ImageType = FetchSettingByName(tempstr, SW_BITMAP_INT, SW_BITMAP_STR);
 
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)

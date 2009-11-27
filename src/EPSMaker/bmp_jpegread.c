@@ -41,7 +41,7 @@
 
 #define HEADLEN 8*1024
 
-void jpegread(FILE *jpeg, bitmap_data *image)
+void bmp_jpegread(FILE *jpeg, bitmap_data *image)
  {
   int comps=0, prec=0, i, j;
 
@@ -152,9 +152,9 @@ void jpegread(FILE *jpeg, bitmap_data *image)
     image->depth  = 8;
    }
 
-  image->width  = width;
-  image->height = height;
-  image->type   = BMP_ENCODING_DCT;
+  image->width       = width;
+  image->height      = height;
+  image->compression = BMP_ENCODING_DCT;
 
   // Now read JPEG image data. Unfortunately, we don't know how much we'll get
 
@@ -175,8 +175,9 @@ void jpegread(FILE *jpeg, bitmap_data *image)
   while (i==len)
    {
     chunk *= 2;
-    p      = realloc(buff,chunk); // CAN'T DO THIS!!!!
+    p      = (unsigned char *)lt_malloc(chunk); // We didn't malloc enough memory, and lt_malloc can't realloc, so just have to malloc a new chunk :(
     if (p == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    memcpy(p, buff, chunk/2);
     buff = p;
     len  = chunk/2;
     i    = fread(buff+len,1,len,jpeg);

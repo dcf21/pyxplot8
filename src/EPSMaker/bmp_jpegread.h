@@ -33,7 +33,7 @@
 
 #include "eps_image.h"
 
-void jpegread(FILE *jpeg, bitmap_data *image);
+void bmp_jpegread(FILE *jpeg, bitmap_data *image);
 
 #endif
 

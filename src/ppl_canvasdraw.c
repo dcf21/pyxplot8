@@ -349,13 +349,17 @@ void canvas_MakeEPSBuffer(EPSComm *x)
 void canvas_EPSWrite(EPSComm *x)
  {
   FILE *epsout;
-  char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH];
+  char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName;
 
   // Apply enlarge and landscape terminals as required
   LandscapifyText[0] = EnlargementText[0] = '\0';
   if  (settings_term_current.landscape   == SW_ONOFF_ON)                                     canvas_EPSLandscapify(x, LandscapifyText);
   if ((settings_term_current.TermEnlarge == SW_ONOFF_ON) && (x->termtype == SW_TERMTYPE_PS)) canvas_EPSEnlarge    (x, EnlargementText);
 
+
+  // Work out name to call papersize
+  PaperName = settings_term_current.PaperName;
+  if (strcmp(PaperName,"User-defined papersize")==0) PaperName = "CustomPageSize";
   // Return to user's current working directory
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
 
@@ -370,7 +374,20 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "%%%%Title: (%s)\n", x->title);
   fprintf(epsout, "%%%%CreationDate: (%s)\n", StrStrip(FriendlyTimestring(), temp_err_string));
   if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "%%%%Pages: 1\n");
+  fprintf(epsout, "%%%%DocumentData: Clean7Bit\n");
+  if (settings_term_current.landscape == SW_ONOFF_ON) fprintf(epsout, "%%%%Orientation: Landscape\n");
+  else                                                fprintf(epsout, "%%%%Orientation: Portrait\n");
+  if (settings_term_current.TermType == SW_TERMTYPE_PS)
+    fprintf(epsout, "%%%%DocumentMedia: %s %d %d white { }\n", PaperName, (int)(settings_term_current.PaperWidth.real * M_TO_PS), (int)(settings_term_current.PaperHeight.real * M_TO_PS));
   fprintf(epsout, "%%%%EndComments\n\n");
+
+  // In postscript files, now set up page size
+  if (settings_term_current.TermType == SW_TERMTYPE_PS)
+   {
+    fprintf(epsout, "%%%%BeginDefaults\n");
+    fprintf(epsout, "%%%%PageMedia: %s\n", PaperName);
+    fprintf(epsout, "%%%%EndDefaults\n");
+   }
 
   // Write EPS prolog
   fprintf(epsout, "%%%%BeginProlog\n");
@@ -381,6 +398,7 @@ void canvas_EPSWrite(EPSComm *x)
   // In postscript files, now set up page 1
   if (settings_term_current.TermType == SW_TERMTYPE_PS)
    {
+    fprintf(epsout, "<< /PageSize [ %d %d ] >> setpagedevice\n", (int)(settings_term_current.PaperWidth.real * M_TO_PS), (int)(settings_term_current.PaperHeight.real * M_TO_PS));
     fprintf(epsout, "%%%%Page: 1 1\n");
     fprintf(epsout, "%%%%BeginPageSetup\n");
     fprintf(epsout, "/pgsave save def\n");

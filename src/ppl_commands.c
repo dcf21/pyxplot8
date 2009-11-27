@@ -58,7 +58,7 @@ foreach@4:directive = < %v:var_name in@n:in < \\(@n [ < %fi:value | %q:string | 
 help@2:directive = %r:topic\n\
 history@2:directive = { %d:number_lines }\n\
 histogram@5:directive = { \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n } %v:hist_function \\()@2 < %q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion { < continuous@1:select_cont | discontinuous@1:select_cont > } ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ~ binwidth@4 %fu:binwidth ~ binorigin@4 %fu:binorigin ~ bins@n \\(@n [ %fu:x ]:bin_list, \\)@n )\n\
-image@2:directive = { item@1 %d:editno } < bmp@1:image_type | eps@1:directive | gif@1:image_type | jpeg@1:image_type | jpg@3:image_type:jpeg | png@1:image_type > = < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ < width@1 %fu:width | height@1 %fu:height > )\n\
+image@2:directive = { item@1 %d:editno } = < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ < width@1 %fu:width | height@1 %fu:height > )\n\
 if@2:directive = %f:criterion ( \\{@n:brace ( %r:command ) )\n\
 < list@2:directive | ls@2:directive:list > =\n\
 load@2:directive = < %q:filename | %S:filename >\n\
