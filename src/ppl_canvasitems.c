@@ -189,6 +189,9 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
     sprintf(output+i, " rotate %s",
              NumericDisplay(ptr->rotation * 180/M_PI , 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
+    i += strlen(output+i);
+    if (ptr->clip    ) { sprintf(output+i, " clip"    ); i += strlen(output+i); }
+    if (ptr->calcbbox) { sprintf(output+i, " calcbbox"); i += strlen(output+i); }
    }
   else if (ptr->type == CANVAS_IMAGE) // Produce textual representations of image commands
    {
@@ -508,7 +511,7 @@ int directive_eps(Dict *command, int interactive)
   int            i, id;
   value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
-  char          *text, *fname;
+  char          *text, *fname, *tempstr1, *tempstr2;
 
   // Read in positional information for this eps image, and ensure that values are either dimensionless, or have units of length / angle as required
   DictLookup(command, "x"       , NULL, (void *)&x     );
@@ -516,6 +519,8 @@ int directive_eps(Dict *command, int interactive)
   DictLookup(command, "rotation", NULL, (void *)&ang   );
   DictLookup(command, "width"   , NULL, (void *)&width );
   DictLookup(command, "height"  , NULL, (void *)&height);
+  DictLookup(command, "clip"    , NULL, (void *)&tempstr1);
+  DictLookup(command, "calcbbox", NULL, (void *)&tempstr2);
 
   if (x     !=NULL) { ASSERT_LENGTH(x     ,"eps","x"     ); }
   if (y     !=NULL) { ASSERT_LENGTH(y     ,"eps","y"     ); }
@@ -536,6 +541,8 @@ int directive_eps(Dict *command, int interactive)
   if (width !=NULL) { ptr->xpos2    = width ->real; ptr->xpos2set = 1; } else { ptr->xpos2    = 0.0; ptr->xpos2set = 0; }
   if (height!=NULL) { ptr->ypos2    = height->real; ptr->ypos2set = 1; } else { ptr->ypos2    = 0.0; ptr->ypos2set = 0; }
   ptr->text = text;
+  if (tempstr1!=NULL) { ptr->clip     = 1; } else { ptr->clip     = 0; }
+  if (tempstr2!=NULL) { ptr->calcbbox = 1; } else { ptr->calcbbox = 0; }
 
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)

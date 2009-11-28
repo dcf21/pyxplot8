@@ -25,6 +25,7 @@
 #include "eps_comm.h"
 
 void eps_eps_RenderEPS(EPSComm *x);
+void eps_eps_ExtractBBox(FILE *in, double *bl, double *bb, double *br, double *bt, unsigned char *GotBox);
 
 #endif
 

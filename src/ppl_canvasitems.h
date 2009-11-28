@@ -45,7 +45,7 @@ typedef struct canvas_item {
  int                 id, type, ArrowType;
  double              xpos, ypos, xpos2, ypos2, rotation;
  char               *text;
- unsigned char       deleted, xpos2set, ypos2set;
+ unsigned char       deleted, xpos2set, ypos2set, clip, calcbbox;
  with_words          with_data;
  plot_descriptor    *plot_items;
  settings_graph      settings;
