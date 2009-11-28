@@ -80,8 +80,6 @@ static int filecopy(const char *in, const char *out)
 
 // Standard postscript prolog text for EPS and PS files
 static char *EPS_PROLOG_TEXT = "\
-";
-static char *PS_PROLOG_TEXT = "\
 /BeginEPSF { %def                                     % Prepare for EPS file\n\
  /b4_Inc_state save def                               % Save state for cleanup\n\
  /dict_count countdictstack def                       % Count objects on dict stack\n\
@@ -103,6 +101,8 @@ static char *PS_PROLOG_TEXT = "\
  countdictstack dict_count sub {end} repeat\n\
  b4_Inc_state restore\n\
 } bind def\n\
+";
+static char *PS_PROLOG_TEXT = "\
 ";
 
 // Standard commandline flags to pass to ghostscript
