@@ -29,6 +29,7 @@
 #include "ppl_setting_types.h"
 
 #include "bmp_a85.h"
+#include "bmp_bmpread.h"
 #include "bmp_jpegread.h"
 
 #include "eps_comm.h"
@@ -112,9 +113,14 @@ void eps_image_RenderEPS(EPSComm *x)
   fprintf(x->epsbuffer, "%.2f rotate\n", x->current->rotation * 180 / M_PI);
   fprintf(x->epsbuffer, "%.2f %.2f scale\n", xscale, yscale);
 
-  if      (data.colour == BMP_COLOUR_RGB ) fprintf(x->epsbuffer, "/DeviceRGB setcolorspace\n");
-  else if (data.colour == BMP_COLOUR_GREY) fprintf(x->epsbuffer, "/DeviceGray setcolorspace\n");
-  // Deal with palette here
+  if      (data.colour == BMP_COLOUR_RGB ) fprintf(x->epsbuffer, "/DeviceRGB setcolorspace\n");  // RGB palette
+  else if (data.colour == BMP_COLOUR_GREY) fprintf(x->epsbuffer, "/DeviceGray setcolorspace\n"); // Greyscale palette
+  else if (data.colour == BMP_COLOUR_PALETTE) // Indexed palette
+   {
+    fprintf(x->epsbuffer, "[/Indexed /DeviceRGB %d <~\n", data.pal_len-1);
+    bmp_A85(x->epsbuffer, data.palette, 3*data.pal_len);
+    fprintf(x->epsbuffer, "] setcolorspace\n\n");
+   }
 
   fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", (data.trans!=NULL)?4:1, data.width, data.height, data.width, -data.height, data.height);
   fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter");

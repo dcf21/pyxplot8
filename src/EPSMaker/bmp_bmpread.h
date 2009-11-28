@@ -22,9 +22,7 @@
 // ----------------------------------------------------------------------------
 
 // This file is edited from code which was kindly contributed to PyXPlot by
-// Michael Rutter. It reads in data from JPEG files without performing any
-// decompression, since the DCT-compressed data can be rewritten straight out
-// to postscript for decompression by the postscript rasterising engine.
+// Michael Rutter. It reads in data from Windows and OS/2 bitmap files.
 
 #ifndef _PPL_BMP_BMPREAD_H
 #define _PPL_BMP_BMPREAD_H 1
@@ -33,8 +31,9 @@
 
 #include "eps_image.h"
 
-void bmpread  (FILE *in, bitmap_data *image);
-void bmp16read(FILE *in, unsigned char *header, bitmap_data *image);
+void bmpread    (FILE *in, bitmap_data *image);
+void bmp16read  (FILE *in, unsigned char *header, bitmap_data *image);
+int  bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned len);
 
 #endif
 

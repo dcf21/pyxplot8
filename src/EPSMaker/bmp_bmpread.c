@@ -87,7 +87,7 @@ void bmpread(FILE *in, bitmap_data *image)
     size   = buff[20] + (((int)(buff[21]))<<8) + (((int)(buff[22]))<<16) + (((int)(buff[23]))<<24);
   }
 
-  if (DEBUG) sprintf(temp_err_string, "Size %dx%d depth %d bits",width,height,depth); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "Size %dx%d depth %d bits",width,height,depth); ppl_log(temp_err_string); }
 
   if (encode!=0)
    {
@@ -109,7 +109,7 @@ void bmpread(FILE *in, bitmap_data *image)
 
     image->pal_len = ncols;
     image->palette = lt_malloc(3*image->pal_len);
-    off 2+= (4-os2)*image->pal_len;
+    off2 += (4-os2)*image->pal_len;
     if (image->palette == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
     p = image->palette;
     for (i=0; i<image->pal_len; i+=2)
@@ -181,9 +181,9 @@ void bmpread(FILE *in, bitmap_data *image)
      }
    } else {  // if (rle)
     p = lt_malloc(size);
-    if (p==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (p==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); image->data = NULL; return; }
     fread(p,size,1,in);
-    de_msrle(image,p,size);
+    if (bmp_demsrle(image,p,size) != 0) { image->data = NULL; return; }
    }
   return;
  }
@@ -247,5 +247,96 @@ void bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
     if (width&1) fread(rowptr,2,1,in); // rows are dword aligned
    }
   return;
+ }
+
+int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned len)
+ {
+  unsigned char *out,*c_in,*c_out,code,*end,odd,even;
+  unsigned i,j,delta,size,height,width;
+  int eol,rle;
+
+  height = image->height;
+  width  = image->width;
+  rle    = image->depth;
+  if ((rle!=4)&&(rle!=8)) { ppl_error(ERR_FILE,"This bitmap file has an impossible MSRLE image depth"); return 1; }
+  if (DEBUG) { sprintf(temp_err_string, "Bitmap image has RLE%d compression\n",rle); ppl_log(temp_err_string); }
+
+  image->depth = 8;
+  size = height*width;
+  image->data_len = size;
+
+  out = (unsigned char *)lt_malloc(size);
+  if (out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+
+  c_in  = in;
+  c_out = out;
+
+  for (i=1; i<=height; i++)
+   {
+    c_out = out + (height-i)*width;
+    end   = c_out + width - 1;
+    eol   = 0;
+    while ((c_out<=end)&&(eol==0))
+     {
+      code = *c_in++;
+      if (code) // a run
+       {
+        if (rle==8) odd = even = *c_in++;
+        else
+         {
+          odd  =  *c_in&0xf;
+          even = (*c_in&0xf0)>>4;
+          c_in++;
+         }
+        for (j=0; (j<code/2)&&(c_out<=end); j++) { *c_out++=even; *c_out++=odd; }
+        if (code&1) *c_out++ = even;
+       } else {
+        code = *c_in++;
+        switch (code)
+         {
+          case(0): // EOL
+            eol = 1;
+            break;
+          case(1): // EOD
+            eol = 2;
+            break;
+          case(2): // Delta
+            delta = *c_in++;    // dx
+            for (j=0; (j<delta)&&(c_out<=end); j++) { *c_out++ = 0; }
+            delta = *c_in++;    // dy
+            if (i+delta>height) { ppl_error(ERR_FILE,"Image overflow whilst decoding RLE in bitmap image file"); return 1; }
+            for(j=0; j<delta*width; j++) { *c_out++ =0; }
+            i   += delta;
+            end += width*delta;
+            break;
+          default: // Literal
+            if (rle==8)
+             {
+              for (j=0; (j<code)&&(c_out<=end); j++) { *c_out++ = *c_in++; }
+              if (code&1) c_in++; // Keep word aligned
+             }
+            else
+             {
+              for (j=0; (j<code/2)&&(c_out<=end); j++)
+               {
+                *c_out++ = (*c_in&0xf0)>>4;
+                *c_out++ = (*c_in++)&0xf;
+               }
+              if (code&1) *c_out++ = ((*c_in++)&0xf0)>>4;
+              if ((code+1)&2) c_in++; // Keep word aligned
+             }
+         }
+       }
+     }
+    if (eol) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%d\n",i); return 1; }
+
+    // Should now have an EOL or EOD code
+    if (*(c_in++) != 0) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%d\n",i); return 1; }
+    if ((*c_in!=0)&&((*c_in!=1)&&(i=height))) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%d\n",i); return 1; }
+    c_in++;
+   }
+
+  image->data=out;
+  return 0;
  }
 
