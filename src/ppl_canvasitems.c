@@ -78,8 +78,8 @@ static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, in
   DictLookup(command, "editno", NULL, (void *)&EditNo);
   insertpoint = &(canvas_items->first);
   PrevId      = 0;
-  while ((*insertpoint != NULL) && ((EditNo==NULL) ? ((*insertpoint)->id <= PrevId+1) : ((*insertpoint)->id <= *EditNo))) { PrevId=(*insertpoint)->id; insertpoint = &((*insertpoint)->next); }
-  if ((EditNo != NULL) && (*insertpoint != NULL) && ((*insertpoint)->id = *EditNo))
+  while ((*insertpoint != NULL) && ((EditNo==NULL) ? ((*insertpoint)->id <= PrevId+1) : ((*insertpoint)->id < *EditNo))) { PrevId=(*insertpoint)->id; insertpoint = &((*insertpoint)->next); }
+  if ((EditNo != NULL) && (*insertpoint != NULL) && ((*insertpoint)->id == *EditNo))
    {
     next = (*insertpoint)->next;
     canvas_item_delete(*insertpoint);
@@ -204,7 +204,9 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
              NumericDisplay(ptr->ypos*100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i += strlen(output+i);
-    if (ptr->smooth  ) { sprintf(output+i, " smooth"); i += strlen(output+i); }
+    if (ptr->smooth            ) { sprintf(output+i, " smooth");                                                                  i += strlen(output+i); }
+    if (ptr->NoTransparency    ) { sprintf(output+i, " NoTransparency");                                                          i += strlen(output+i); }
+    if (ptr->CustomTransparency) { sprintf(output+i, " transparent rgb%d:%d:%d", ptr->TransColR, ptr->TransColG, ptr->TransColB); i += strlen(output+i); }
     if (ptr->xpos2set) sprintf(output+i, " width %s" , NumericDisplay(ptr->xpos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
     i += strlen(output+i);
     if (ptr->ypos2set) sprintf(output+i, " height %s", NumericDisplay(ptr->ypos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
@@ -601,10 +603,10 @@ int directive_text(Dict *command, int interactive)
 int directive_image(Dict *command, int interactive)
  {
   canvas_item *ptr;
-  int            i, id;
+  int            i, id, *TransColR, *TransColG, *TransColB;
   value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
-  char          *text, *fname, *smooth;
+  char          *text, *fname, *smooth, *NoTransparency;
 
   // Read in positional information for this bitmap image, and ensure that values are either dimensionless, or have units of length / angle as required
   DictLookup(command, "x"       , NULL, (void *)&x     );
@@ -613,6 +615,10 @@ int directive_image(Dict *command, int interactive)
   DictLookup(command, "rotation", NULL, (void *)&ang   );
   DictLookup(command, "width"   , NULL, (void *)&width );
   DictLookup(command, "height"  , NULL, (void *)&height);
+  DictLookup(command, "notrans" , NULL, (void *)&NoTransparency);
+  DictLookup(command, "colourR" , NULL, (void *)&TransColR     );
+  DictLookup(command, "colourG" , NULL, (void *)&TransColG     );
+  DictLookup(command, "colourB" , NULL, (void *)&TransColB     );
 
   if (x     !=NULL) { ASSERT_LENGTH(x     ,"eps","x"     ); }
   if (y     !=NULL) { ASSERT_LENGTH(y     ,"eps","y"     ); }
@@ -633,6 +639,14 @@ int directive_image(Dict *command, int interactive)
   if (width !=NULL) { ptr->xpos2    = width ->real; ptr->xpos2set = 1; } else { ptr->xpos2    = 0.0; ptr->xpos2set = 0; }
   if (height!=NULL) { ptr->ypos2    = height->real; ptr->ypos2set = 1; } else { ptr->ypos2    = 0.0; ptr->ypos2set = 0; }
   if (smooth!=NULL) { ptr->smooth   = 1; }                               else { ptr->smooth   = 0; }
+  if (NoTransparency != NULL) { ptr->NoTransparency = 1; } else { ptr->NoTransparency = 0; }
+  if (TransColR      != NULL)
+   {
+    ptr->CustomTransparency = 1;
+    ptr->TransColR = (*TransColR <= 0) ? 0 : ((*TransColR >= 255) ? 255 : *TransColR); // Make sure that colour component is in the range 0-255
+    ptr->TransColG = (*TransColG <= 0) ? 0 : ((*TransColG >= 255) ? 255 : *TransColG); // Make sure that colour component is in the range 0-255
+    ptr->TransColB = (*TransColB <= 0) ? 0 : ((*TransColB >= 255) ? 255 : *TransColB); // Make sure that colour component is in the range 0-255
+   } else { ptr->CustomTransparency = 0; }
   ptr->text      = text;
 
   // Redisplay the canvas as required

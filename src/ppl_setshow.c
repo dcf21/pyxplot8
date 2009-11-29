@@ -813,11 +813,11 @@ void directive_set(Dict *command)
         else     { settings_palette_current[i++] = j; }
        } else {
         DictLookup(tempdict,"colourR",NULL,(void **)&tempint);
-        settings_paletteR_current[i] = *tempint;
+        settings_paletteR_current[i] = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
         DictLookup(tempdict,"colourG",NULL,(void **)&tempint);
-        settings_paletteG_current[i] = *tempint;
+        settings_paletteG_current[i] = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
         DictLookup(tempdict,"colourB",NULL,(void **)&tempint);
-        settings_paletteB_current[i] = *tempint;
+        settings_paletteB_current[i] = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
         settings_palette_current[i++] = 0;
        }
       listiter = ListIterate(listiter, NULL);

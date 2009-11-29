@@ -448,13 +448,13 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
     if (USEcolRGB!=NULL) *USEcolRGB = (cindex==0);
    } else if (tempint != NULL) { // Colour is specified by RGB components
     *outcol  = 0;
-    *outcolR = *tempint;
+    *outcolR = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
     sprintf(DictName, "%scolourG", prefix);
     DictLookup(in,DictName,NULL,(void **)&tempint);
-    *outcolG = *tempint;
+    *outcolG = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
     sprintf(DictName, "%scolourB", prefix);
     DictLookup(in,DictName,NULL,(void **)&tempint);
-    *outcolB = *tempint;
+    *outcolB = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
     if (USEcol   !=NULL) *USEcol    = 0;
     if (USEcolRGB!=NULL) *USEcolRGB = 1;
     if (outcolRS !=NULL)
@@ -1100,11 +1100,11 @@ void with_words_print(const with_words *defn, char *out)
  {
   int i=0;
   if      (defn->USElinespoints)          { sprintf(out+i, "%s "            , *(char **)FetchSettingName(defn->linespoints, SW_STYLE_INT , (void *)SW_STYLE_STR , sizeof(char *))); i += strlen(out+i); }
-  if      (defn->STRcolourR!=NULL)        { sprintf(out+i, "colour rgb:%s,%s,%s "    , defn->STRcolourR, defn->STRcolourG, defn->STRcolourB);                                       i += strlen(out+i); }
-  else if (defn->USEcolourRGB)            { sprintf(out+i, "colour rgb:%d,%d,%d "    , defn->colourR, defn->colourG, defn->colourB);                                                i += strlen(out+i); }
+  if      (defn->STRcolourR!=NULL)        { sprintf(out+i, "colour rgb%s:%s:%s "     , defn->STRcolourR, defn->STRcolourG, defn->STRcolourB);                                       i += strlen(out+i); }
+  else if (defn->USEcolourRGB)            { sprintf(out+i, "colour rgb%d:%d:%d "     , defn->colourR, defn->colourG, defn->colourB);                                                i += strlen(out+i); }
   else if (defn->USEcolour)               { sprintf(out+i, "colour %s "     , *(char **)FetchSettingName(defn->colour     , SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *))); i += strlen(out+i); }
-  if      (defn->STRfillcolourR!=NULL)    { sprintf(out+i, "fillcolour rgb:%s,%s,%s ", defn->STRfillcolourR, defn->STRfillcolourG, defn->STRfillcolourB);                           i += strlen(out+i); }
-  else if (defn->USEfillcolourRGB)        { sprintf(out+i, "fillcolour rgb:%d,%d,%d ", defn->fillcolourR, defn->fillcolourG, defn->fillcolourB);                                    i += strlen(out+i); }
+  if      (defn->STRfillcolourR!=NULL)    { sprintf(out+i, "fillcolour rgb%s:%s:%s " , defn->STRfillcolourR, defn->STRfillcolourG, defn->STRfillcolourB);                           i += strlen(out+i); }
+  else if (defn->USEfillcolourRGB)        { sprintf(out+i, "fillcolour rgb%d:%d:%d " , defn->fillcolourR, defn->fillcolourG, defn->fillcolourB);                                    i += strlen(out+i); }
   else if (defn->USEfillcolour)           { sprintf(out+i, "fillcolour %s " , *(char **)FetchSettingName(defn->fillcolour , SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *))); i += strlen(out+i); }
   if      (defn->STRlinetype!=NULL)       { sprintf(out+i, "linetype %s "            , defn->STRlinetype);                                                                          i += strlen(out+i); }
   else if (defn->USElinetype)             { sprintf(out+i, "linetype %d "            , defn->linetype);                                                                             i += strlen(out+i); }

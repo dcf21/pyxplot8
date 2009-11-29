@@ -34,8 +34,10 @@
 
 #include "bmp_a85.h"
 #include "bmp_bmpread.h"
+#include "bmp_gifread.h"
 #include "bmp_jpegread.h"
 #include "bmp_optimise.h"
+#include "bmp_pngread.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
@@ -50,6 +52,7 @@ void eps_image_RenderEPS(EPSComm *x)
   double        xscale, yscale, r;
   unsigned char buff[10], *imagez;
   uLongf        zlen; // Length of buffer passed to zlib
+  static unsigned char transparency_buff[3];
 
   data.data = data.palette = data.trans = NULL;
   data.type = 0;
@@ -85,20 +88,45 @@ void eps_image_RenderEPS(EPSComm *x)
   switch (ImageType)
    {
     case SW_BITMAP_BMP: bmp_bmpread (infile , &data); break;
-    case SW_BITMAP_GIF: return; break;
+    case SW_BITMAP_GIF: bmp_gifread (infile , &data); break;
     case SW_BITMAP_JPG: bmp_jpegread(infile , &data); break;
-    case SW_BITMAP_PNG: return; break;
+    case SW_BITMAP_PNG: bmp_pngread (infile , &data); break;
     default: ppl_error(ERR_INTERNAL, "Unrecognised image type"); *(x->status) = 1; return;
    }
 
   // Check to see whether reading of data failed
-  if (data.data == NULL) return;
+  if (data.data == NULL) { *(x->status) = 1; return; }
 
   // Apply palette optimisations to images if possible
   if ((data.depth ==  8) && (data.type==BMP_COLOUR_PALETTE)) bmp_palette_check(&data); // If we did not construct palette, check for trailing unused entries
   if ((data.depth == 24) && (data.type==BMP_COLOUR_BMP    )) bmp_colour_count(&data);  // Check full colour image to ensure more than 256 colours
   if ((data.depth ==  8) && (data.type==BMP_COLOUR_PALETTE)) bmp_grey_check(&data);    // Check paletted images for greyscale conversion
   if ((data.type == BMP_COLOUR_PALETTE) && (data.pal_len <= 16) && (data.depth == 8)) bmp_compact(&data); // Compact images with few palette entries
+
+  // If user has specified a transparent colour, change transparency properties now
+  if (x->current->CustomTransparency)
+   {
+    data.trans = NULL; // Turn off any transparency which may have been present in the original image
+    if (data.colour == BMP_COLOUR_PALETTE)
+     {
+      for(i=0; i<data.pal_len; i++)
+       if ( ((unsigned char)x->current->TransColR == data.palette[3*i  ]) &&
+            ((unsigned char)x->current->TransColG == data.palette[3*i+1]) &&
+            ((unsigned char)x->current->TransColB == data.palette[3*i+2])    )
+        {
+         data.trans  = transparency_buff;
+         *data.trans = (unsigned char)i;
+         break;
+        }
+     }
+    else if ((data.colour == BMP_COLOUR_RGB) || ((data.colour == BMP_COLOUR_GREY) && (x->current->TransColR==x->current->TransColG) && (x->current->TransColR==x->current->TransColB))) // RGB and greyscale
+     {
+      data.trans    = transparency_buff;
+      data.trans[0] = (unsigned char)x->current->TransColR;
+      data.trans[1] = (unsigned char)x->current->TransColG;
+      data.trans[2] = (unsigned char)x->current->TransColB;
+     }
+   }
 
   // Apply compression to image data
   switch (data.TargetCompression)
@@ -121,6 +149,7 @@ void eps_image_RenderEPS(EPSComm *x)
       if (DEBUG) { sprintf(temp_err_string, "zlib has completed compression. Before flate: %ld bytes. After flate: %ld bytes", data.data_len, (long)zlen); ppl_log(temp_err_string); }
       if (zlen >= data.data_len)
        {
+        if (DEBUG) { ppl_log("Using original uncompressed data since zlib made it bigger than it was to start with"); }
         data.TargetCompression = BMP_ENCODING_NULL; // Give up trying to compress data; result was larger than original data size
         break;
        }
@@ -157,7 +186,7 @@ void eps_image_RenderEPS(EPSComm *x)
   fprintf(x->epsbuffer, "gsave\n");
   fprintf(x->epsbuffer, "%.2f %.2f translate\n", x->current->xpos * M_TO_PS, x->current->ypos * M_TO_PS);
   fprintf(x->epsbuffer, "%.2f rotate\n", x->current->rotation * 180 / M_PI);
-  fprintf(x->epsbuffer, "%.2f %.2f scale\n", xscale, yscale);
+  fprintf(x->epsbuffer, "%.2f %.2f scale\n", xscale, yscale); // We render image onto a unit square; use scale to make it the size we actually want
 
   if      (data.colour == BMP_COLOUR_RGB ) fprintf(x->epsbuffer, "/DeviceRGB setcolorspace\n");  // RGB palette
   else if (data.colour == BMP_COLOUR_GREY) fprintf(x->epsbuffer, "/DeviceGray setcolorspace\n"); // Greyscale palette
@@ -168,14 +197,20 @@ void eps_image_RenderEPS(EPSComm *x)
     fprintf(x->epsbuffer, "] setcolorspace\n\n");
    }
 
-  fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", (data.trans!=NULL)?4:1, data.width, data.height, data.width, -data.height, data.height);
-  fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter");
+  fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", ((!x->current->NoTransparency) && (data.trans!=NULL))?4:1, data.width, data.height, data.width, -data.height, data.height);
+  fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter"); // Image data is stored in currentfile, but need to apply filters to decode it
   if      (data.TargetCompression == BMP_ENCODING_DCT  ) fprintf(x->epsbuffer, " /DCTDecode filter");
   else if (data.TargetCompression == BMP_ENCODING_FLATE) fprintf(x->epsbuffer, " /FlateDecode filter");
   fprintf(x->epsbuffer, "\n /BitsPerComponent %d\n /Decode [0 %d%s]\n", (data.colour==BMP_COLOUR_RGB)?(data.depth/3):(data.depth),
                                                                         (data.type==BMP_COLOUR_PALETTE)?((1<<data.depth)-1):1,
                                                                         (data.colour==BMP_COLOUR_RGB)?" 0 1 0 1":"");
-  if (x->current->smooth) fprintf(x->epsbuffer, " /Interpolate true\n");
+  if ((!x->current->NoTransparency) && (data.trans != NULL)) // If image has transparency, set mask colour
+   {
+    fprintf(x->epsbuffer," /MaskColor [");
+    if (data.colour == BMP_COLOUR_RGB) fprintf(x->epsbuffer, "%d %d %d]\n",(int)data.trans[0], (int)data.trans[1], (int)data.trans[2]);
+    else                               fprintf(x->epsbuffer, "%d]\n"      ,(int)data.trans[0]);
+   }
+  if (x->current->smooth) fprintf(x->epsbuffer, " /Interpolate true\n"); // If image has smooth flag set, tell postscript interpretter to interpolate image
   fprintf(x->epsbuffer, ">> image\n");
   bmp_A85(x->epsbuffer, data.data, data.data_len);
   fprintf(x->epsbuffer, "grestore\n");

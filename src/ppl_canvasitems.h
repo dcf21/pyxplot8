@@ -42,10 +42,10 @@ typedef struct plot_descriptor {
 } plot_descriptor;
 
 typedef struct canvas_item {
- int                 id, type, ArrowType;
+ int                 id, type, ArrowType, TransColR, TransColG, TransColB;
  double              xpos, ypos, xpos2, ypos2, rotation;
  char               *text;
- unsigned char       deleted, xpos2set, ypos2set, clip, calcbbox, smooth;
+ unsigned char       deleted, xpos2set, ypos2set, clip, calcbbox, smooth, NoTransparency, CustomTransparency;
  with_words          with_data;
  plot_descriptor    *plot_items;
  settings_graph      settings;
