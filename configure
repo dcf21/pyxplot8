@@ -210,19 +210,7 @@ else
  exit
 fi
 
-# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBJPEG HEADERS
-
-echo $ECHO_N "Checking for libjpeg-dev       ............. $ECHO_C"
-if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <jpeglib.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
-then
- echo "YES"
-else
- echo "NO"
- echo "ERROR: Header files for required library 'libjpeg' could not be found." >&2
- exit
-fi
-
-# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
+# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
 
 echo $ECHO_N "Checking for libpng-dev        ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <png.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -234,7 +222,7 @@ else
  exit
 fi
 
-# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
+# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
 
 echo $ECHO_N "Checking for libkpathsea-dev   ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <kpathsea/kpathsea.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -246,7 +234,7 @@ else
  exit
 fi
 
-# 17. OUTPUT MAKEFILE
+# 16. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 

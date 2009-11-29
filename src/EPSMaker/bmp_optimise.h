@@ -1,4 +1,4 @@
-// bmp_bmpread.h
+// bmp_optimise.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -22,18 +22,19 @@
 // ----------------------------------------------------------------------------
 
 // This file is edited from code which was kindly contributed to PyXPlot by
-// Michael Rutter. It reads in data from Windows and OS/2 bitmap files.
+// Michael Rutter. It checks paletted images for possible optimisations of the
+// palette size if there are unused entries, and checks RGB images to see if
+// they can efficiently be reduced to paletted images.
 
-#ifndef _PPL_BMP_BMPREAD_H
-#define _PPL_BMP_BMPREAD_H 1
-
-#include <stdio.h>
+#ifndef _PPL_BMP_OPTIMISE_H
+#define _PPL_BMP_OPTIMISE_H 1
 
 #include "eps_image.h"
 
-void bmp_bmpread   (FILE *in, bitmap_data *image);
-void bmp_bmp16read (FILE *in, unsigned char *header, bitmap_data *image);
-int  bmp_demsrle   (bitmap_data *image, unsigned char *in, unsigned long len);
+void bmp_colour_count (bitmap_data *image);
+void bmp_palette_check(bitmap_data *image);
+void bmp_grey_check   (bitmap_data *image);
+void bmp_compact      (bitmap_data *image);
 
 #endif
 

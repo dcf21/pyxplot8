@@ -37,10 +37,11 @@
 #include "eps_image.h"
 #include "bmp_bmpread.h"
 
-void bmpread(FILE *in, bitmap_data *image)
+void bmp_bmpread(FILE *in, bitmap_data *image)
  {
   unsigned char buff[60],encode,*p,c;
-  unsigned width,height,depth,dw,offset,off2,size;
+  unsigned width,height,depth,dw;
+  unsigned long offset,off2,size;
   int i,j,ncols,os2,rle;
 
   if (DEBUG) ppl_log("Beginning to decode BMP image file");
@@ -138,7 +139,7 @@ void bmpread(FILE *in, bitmap_data *image)
   if      (offset<off2) { ppl_error(ERR_FILE, "This bitmap file appears to be corrupted"); return; }
   else if (offset>off2)
    {
-    if (DEBUG) { sprintf(temp_err_string, "%d bytes of extra data", offset-off2); ppl_log(temp_err_string); }
+    if (DEBUG) { sprintf(temp_err_string, "%ld bytes of extra data", offset-off2); ppl_log(temp_err_string); }
     for ( ; off2<offset ; off2++) fgetc(in);
    }
 
@@ -151,7 +152,7 @@ void bmpread(FILE *in, bitmap_data *image)
 
   if (depth==16)
    {
-    bmp16read(in, buff, image);
+    bmp_bmp16read(in, buff, image);
     return;
   }
 
@@ -188,7 +189,7 @@ void bmpread(FILE *in, bitmap_data *image)
   return;
  }
 
-void bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
+void bmp_bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
  {
   unsigned char *palette;
   unsigned char *rowptr,*ptr;
@@ -249,10 +250,10 @@ void bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
   return;
  }
 
-int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned len)
+int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned long len)
  {
   unsigned char *out,*c_in,*c_out,code,*end,odd,even;
-  unsigned i,j,delta,size,height,width;
+  unsigned long i,j,delta,size,height,width;
   int eol,rle;
 
   height = image->height;
@@ -328,11 +329,11 @@ int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned len)
          }
        }
      }
-    if (eol) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%d\n",i); return 1; }
+    if (eol) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%ld\n",i); return 1; }
 
     // Should now have an EOL or EOD code
-    if (*(c_in++) != 0) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%d\n",i); return 1; }
-    if ((*c_in!=0)&&((*c_in!=1)&&(i=height))) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%d\n",i); return 1; }
+    if (*(c_in++) != 0) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%ld\n",i); return 1; }
+    if ((*c_in!=0)&&((*c_in!=1)&&(i=height))) { sprintf(temp_err_string, "Whilst decoding bitmap image file, encountered bad line length in RLE decode line=%ld\n",i); return 1; }
     c_in++;
    }
 

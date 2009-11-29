@@ -35,17 +35,15 @@ void eps_image_RenderEPS(EPSComm *x);
 
 // Image compression types
 
-#define BMP_ENCODING_RLE    1
-#define BMP_ENCODING_LZW    2
-#define BMP_ENCODING_CCITT  4
-#define BMP_ENCODING_FLATE  8
-#define BMP_ENCODING_RLE24 16
-#define BMP_ENCODING_DCT   32
+#define BMP_ENCODING_NULL  1100
+#define BMP_ENCODING_LZW   1101
+#define BMP_ENCODING_FLATE 1102
+#define BMP_ENCODING_DCT   1103
 
 typedef struct bitmap_data
  {
   unsigned char *data, *palette, *trans;
-  unsigned       data_len;
+  unsigned long  data_len;
   int            pal_len, width, height, depth, type, colour, TargetCompression, flags;
   double         XDPI, YDPI;
  } bitmap_data;

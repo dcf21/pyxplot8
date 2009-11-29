@@ -26,11 +26,14 @@
 
 #include "ppl_canvasitems.h"
 
+#include "eps_style.h"
+
 typedef struct EPSComm {
   canvas_itemlist *itemlist;
   canvas_item *current;
   double bb_left, bb_right, bb_top, bb_bottom;
   unsigned char bb_set;
+  unsigned char PointTypesUsed[N_POINTTYPES], StarTypesUsed[N_STARTYPES];
   char *EPSFilename, *FinalFilename, *title;
   char  LastEPSColour[256], LastEPSFillColour[256];
   double LastLinewidth;

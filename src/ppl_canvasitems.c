@@ -204,6 +204,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
              NumericDisplay(ptr->ypos*100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i += strlen(output+i);
+    if (ptr->smooth  ) { sprintf(output+i, " smooth"); i += strlen(output+i); }
     if (ptr->xpos2set) sprintf(output+i, " width %s" , NumericDisplay(ptr->xpos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
     i += strlen(output+i);
     if (ptr->ypos2set) sprintf(output+i, " height %s", NumericDisplay(ptr->ypos2*100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)));
@@ -603,12 +604,13 @@ int directive_image(Dict *command, int interactive)
   int            i, id;
   value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
-  char          *text, *fname;
+  char          *text, *fname, *smooth;
 
   // Read in positional information for this bitmap image, and ensure that values are either dimensionless, or have units of length / angle as required
-  DictLookup(command, "x"       , NULL, (void *)&x  );
-  DictLookup(command, "y"       , NULL, (void *)&y  );
-  DictLookup(command, "rotation", NULL, (void *)&ang);
+  DictLookup(command, "x"       , NULL, (void *)&x     );
+  DictLookup(command, "y"       , NULL, (void *)&y     );
+  DictLookup(command, "smooth"  , NULL, (void *)&smooth);
+  DictLookup(command, "rotation", NULL, (void *)&ang   );
   DictLookup(command, "width"   , NULL, (void *)&width );
   DictLookup(command, "height"  , NULL, (void *)&height);
 
@@ -630,6 +632,7 @@ int directive_image(Dict *command, int interactive)
   if (ang   !=NULL) { ptr->rotation = ang   ->real; }                    else { ptr->rotation = 0.0;                                 }
   if (width !=NULL) { ptr->xpos2    = width ->real; ptr->xpos2set = 1; } else { ptr->xpos2    = 0.0; ptr->xpos2set = 0; }
   if (height!=NULL) { ptr->ypos2    = height->real; ptr->ypos2set = 1; } else { ptr->ypos2    = 0.0; ptr->ypos2set = 0; }
+  if (smooth!=NULL) { ptr->smooth   = 1; }                               else { ptr->smooth   = 0; }
   ptr->text      = text;
 
   // Redisplay the canvas as required

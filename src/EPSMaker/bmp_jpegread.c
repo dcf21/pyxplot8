@@ -45,10 +45,10 @@
 
 void bmp_jpegread(FILE *jpeg, bitmap_data *image)
  {
-  int comps=0, prec=0, i, j;
+  int  comps=0, prec=0;
+  long i, j, len, chunk=64*1024;
 
   unsigned int width=0, height=0, save;
-  unsigned int len, chunk=64*1024;
   unsigned char *buff, *header, *headp, *headendp, type=0, comp=0, *p;
 
   buff     = (unsigned char *)lt_malloc(chunk);
@@ -73,7 +73,7 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
      {
       sprintf(temp_err_string,"JPEG version %d.%02d",(int)buff[5],(int)buff[6]);   ppl_log(temp_err_string);
       sprintf(temp_err_string,"Thumbnail size %dx%d",(int)buff[12],(int)buff[13]); ppl_log(temp_err_string);
-      sprintf(temp_err_string,"JFIF APP0 entry length 0x%x",len+2);                ppl_log(temp_err_string);
+      sprintf(temp_err_string,"JFIF APP0 entry length 0x%x",(int)len+2);           ppl_log(temp_err_string);
       switch ((int)buff[7])
        {
         case 0:
@@ -98,15 +98,15 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
           break;
        }
      } else if (!strcmp((char*)buff,"Exif")&&(i=0xe1)) {
-      sprintf(temp_err_string,"Exif JPEG file\n");                                   ppl_log(temp_err_string);
-      sprintf(temp_err_string,"Exif APP1 entry length 0x%x",len+2);                ppl_log(temp_err_string);
+      sprintf(temp_err_string,"Exif JPEG file\n");                                 ppl_log(temp_err_string);
+      sprintf(temp_err_string,"Exif APP1 entry length 0x%x",(int)len+2);           ppl_log(temp_err_string);
     }
   }
 
   *(headp++) = 0xff;
   *(headp++) = 0xd8;
 
-  if (DEBUG) { sprintf(temp_err_string, "JFIF APP%d entry discarded", i-0xe0); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "JFIF APP%d entry discarded", (int)i-0xe0); ppl_log(temp_err_string); }
 
   while ((type!=0xda) && fread(buff,1,1,jpeg) && (buff[0]=0xff))
    {
@@ -116,7 +116,7 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
     save = 0;
     fread(buff,len,1,jpeg);
 
-    if (DEBUG) { sprintf(temp_err_string, "Entry type %x length 0x%x",(int)type,len+2); ppl_log(temp_err_string); }
+    if (DEBUG) { sprintf(temp_err_string, "Entry type %x length 0x%x",(int)type,(int)len+2); ppl_log(temp_err_string); }
 
     if (((type&0xf0)==0xc0) && (type!=0xc4) && (type!=0xcc))
      {

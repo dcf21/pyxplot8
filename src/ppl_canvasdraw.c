@@ -40,6 +40,8 @@
 
 #include "StringTools/asciidouble.h"
 
+#include "EPSMaker/eps_style.h"
+
 #include "ppl_canvasitems.h"
 #include "ppl_canvasdraw.h"
 #include "ppl_children.h"
@@ -192,6 +194,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   comm.LastEPSFillColour[0] = '\0';
   comm.LastLinewidth        = -1.0;
   comm.LastLinetype         = 0;
+  for (i=0; i<N_POINTTYPES; i++) comm.PointTypesUsed[i] = 0; // Record which point and star macros we've used and need to include in postscript prolog
+  for (i=0; i<N_STARTYPES ; i++) comm.StarTypesUsed [i] = 0;
 
   // Prepare a buffer into which strings to be passed to LaTeX will be put
 
@@ -348,6 +352,7 @@ void canvas_MakeEPSBuffer(EPSComm *x)
 // Finally output postscript file, once all of the eps fragments are written to temporary buffer and bounding box is known
 void canvas_EPSWrite(EPSComm *x)
  {
+  int i;
   FILE *epsout;
   char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName;
 
@@ -393,6 +398,10 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "%%%%BeginProlog\n");
   if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "%s", PS_PROLOG_TEXT);
   fprintf(epsout, "%s", EPS_PROLOG_TEXT);
+  fprintf(epsout, "/ps { 1 } def\n/ps75 { ps .75 mul } def\n"); // Pointsize variables
+  if (x->PointTypesUsed[2]) { x->PointTypesUsed[0]=x->PointTypesUsed[1]=1; } // pt3 depends upon pt1 and pt2
+  for (i=0; i<N_POINTTYPES; i++) if (x->PointTypesUsed[i]) fprintf(epsout, "%s\n", eps_PointTypes[i]);
+  for (i=0; i<N_STARTYPES ; i++) if (x->StarTypesUsed [i]) fprintf(epsout, "%s\n", eps_StarTypes [i]);
   fprintf(epsout, "%%%%EndProlog\n\n");
 
   // In postscript files, now set up page 1
