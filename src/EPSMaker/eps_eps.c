@@ -92,7 +92,7 @@ void eps_eps_RenderEPS(EPSComm *x)
 
   // Begin encapsulation of EPS file
   fprintf(x->epsbuffer, "BeginEPSF\n");
-  fprintf(x->epsbuffer, "%.2f %.2f translate %% Position the EPS file\n", x->current->xpos, x->current->ypos);
+  fprintf(x->epsbuffer, "%.2f %.2f translate %% Position the EPS file\n", x->current->xpos * M_TO_PS, x->current->ypos * M_TO_PS);
   fprintf(x->epsbuffer, "%.2f rotate         %% Rotation of EPS graphic\n", x->current->rotation * 180 / M_PI);
   fprintf(x->epsbuffer, "%f %f scale         %% Scale to desired size\n", xscale, yscale);
   fprintf(x->epsbuffer, "%f %f translate     %% Move to lower left of the EPS\n", -bb_left, -bb_bottom);
