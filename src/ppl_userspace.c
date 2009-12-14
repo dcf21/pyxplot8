@@ -40,6 +40,7 @@
 #include "ppl_calculus.h"
 #include "ppl_constants.h"
 #include "ppl_datafile.h"
+#include "ppl_fft.h"
 #include "ppl_histogram.h"
 #include "ppl_interpolation.h"
 #include "ppl_units.h"
@@ -288,6 +289,15 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
      {
       if (((HistogramDescriptor *)in->FunctionPtr)->bins   != NULL ) free(((HistogramDescriptor *)in->FunctionPtr)->bins   );
       if (((HistogramDescriptor *)in->FunctionPtr)->binvals!= NULL ) free(((HistogramDescriptor *)in->FunctionPtr)->binvals);
+     }
+   }
+  else if (in->FunctionType == PPL_USERSPACE_FFT)
+   {
+    if (in->FunctionPtr!=NULL)
+     {
+      if (((FFTDescriptor *)in->FunctionPtr)->XSize    != NULL )      free(((FFTDescriptor *)in->FunctionPtr)->XSize   );
+      if (((FFTDescriptor *)in->FunctionPtr)->range    != NULL )      free(((FFTDescriptor *)in->FunctionPtr)->range   );
+      if (((FFTDescriptor *)in->FunctionPtr)->datagrid != NULL ) fftw_free(((FFTDescriptor *)in->FunctionPtr)->datagrid);
      }
    }
   else
@@ -859,6 +869,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
         ppl_histogram_evaluate(DictIter->key, (HistogramDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        if (j>0) { *errpos = start+i; return; }
+       }
+      else if (FunctionType == PPL_USERSPACE_FFT)
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+        j=0;
+        ppl_fft_evaluate(DictIter->key, (FFTDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_USERDEF)

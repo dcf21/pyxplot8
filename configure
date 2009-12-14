@@ -197,7 +197,19 @@ else
  exit
 fi
 
-# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
+# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS FFTW HEADERS
+
+echo $ECHO_N "Checking for libfftw-dev       ............. $ECHO_C"
+if printf '#include <fftw3.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
+then
+ echo "YES"
+else
+ echo "NO"
+ echo "ERROR: Header files for required library 'libfftw' could not be found." >&2
+ exit
+fi
+
+# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
 
 echo $ECHO_N "Checking for libxml2-dev       ............. $ECHO_C"
 whichout=`which xml2-config 2> /dev/null`
@@ -210,7 +222,7 @@ else
  exit
 fi
 
-# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
+# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
 
 echo $ECHO_N "Checking for libpng-dev        ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <png.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -222,7 +234,7 @@ else
  exit
 fi
 
-# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
+# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
 
 echo $ECHO_N "Checking for libkpathsea-dev   ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <kpathsea/kpathsea.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -234,7 +246,7 @@ else
  exit
 fi
 
-# 16. OUTPUT MAKEFILE
+# 17. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 

@@ -332,10 +332,48 @@ void canvas_draw(unsigned char *unsuccessful_ops)
  }
 
 // Run LaTeX to turn set of strings for typesetting into eps code
+#define FPRINTF_LINECOUNT( X ) \
+  fprintf(output, "%s", X); \
+  for (i=0; X[i]!='\0'; i++) if (X[i]=='\n') linecount++;
+
 void canvas_CallLaTeX(EPSComm *x)
  {
+  int   linecount=1, i;
+  char  filename[FNAME_LENGTH];
+  FILE *output;
+  ListIterator *ListIter;
+  CanvasTextItem *TempTextItem;
+
+  const char TextHeader[] = "\\pagestyle{plain}\n\\begin{document}\n";
+  const char ItemHeader[] = "\\vbox{\\hbox{\n";
+  const char ItemFooter[] = "\n}}\n";
+  const char TextFooter[] = "\\end{document}\n";
+
   // chdir into temporary directory so that LaTeX's mess goes into /tmp
   if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+
+  // Start writing LaTeX document
+  sprintf(filename, "%s.tex", x->EPSFilename);
+  output = fopen(filename, "w");
+  if (output == NULL) { ppl_error(ERR_INTERNAL, "Could not create temporary LaTeX document"); *(x->status)=1; return; }
+  FPRINTF_LINECOUNT(TextHeader);
+
+  // Sequentially print out text strings
+  ListIter = ListIterateInit(x->TextItems);
+  while (ListIter != NULL)
+   {
+    TempTextItem = (CanvasTextItem *)ListIter->data;
+    TempTextItem->LaTeXstartline = linecount;
+    FPRINTF_LINECOUNT(ItemHeader);
+    FPRINTF_LINECOUNT(TempTextItem->text);
+    FPRINTF_LINECOUNT(ItemFooter);
+    TempTextItem->LaTeXendline   = linecount;
+    ListIter = ListIterate(ListIter, NULL);
+   }
+
+  // Finish writing LaTeX document
+  FPRINTF_LINECOUNT(TextFooter);
+  fclose(output);
 
   // Return to user's current working directory after LaTeX has finished making a mess
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }

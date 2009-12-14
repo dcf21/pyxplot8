@@ -23,6 +23,7 @@
 #define _PPL_USERSPACE_H 1
 
 #include <gsl/gsl_spline.h>
+#include <fftw3.h>
 
 #include "ListTools/lt_dict.h"
 
@@ -36,8 +37,9 @@
 #define PPL_USERSPACE_STRFUNC   32052
 #define PPL_USERSPACE_SPLINE    32053
 #define PPL_USERSPACE_HISTOGRAM 32054
-#define PPL_USERSPACE_UNIT      32055
-#define PPL_USERSPACE_INT       32056
+#define PPL_USERSPACE_FFT       32055
+#define PPL_USERSPACE_UNIT      32056
+#define PPL_USERSPACE_INT       32057
 
 typedef struct SplineDescriptor {
  gsl_spline       *SplineObj;
@@ -54,6 +56,14 @@ typedef struct HistogramDescriptor {
  value     unit;
  char     *filename;
  } HistogramDescriptor;
+
+typedef struct FFTDescriptor {
+ int           Ndims;
+ int          *XSize;
+ fftw_complex *datagrid;
+ value        *range;
+ double        normalisation;
+ } FFTDescriptor;
 
 typedef struct FunctionDescriptor {
  int   FunctionType;

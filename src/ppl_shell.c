@@ -46,6 +46,7 @@
 #include "ppl_eqnsolve.h"
 #include "ppl_error.h"
 #include "ppl_fit.h"
+#include "ppl_fft.h"
 #include "ppl_flowctrl.h"
 #include "ppl_help.h"
 #include "ppl_histogram.h"
@@ -326,6 +327,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_exec(command, IterLevel+1);
   else if (strcmp(directive, "fit")==0)
    return directive_fit(command);
+  else if ( (strcmp(directive, "fft")==0) || (strcmp(directive, "ifft")==0) )
+   return directive_fft(command);
   else if (strcmp(directive, "for")==0)
    return directive_for(command, IterLevel+1);
   else if (strcmp(directive, "foreach")==0)
