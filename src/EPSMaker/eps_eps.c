@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <glob.h>
+#include <wordexp.h>
+
+#include "ListTools/lt_memory.h"
 
 #include "StringTools/asciidouble.h"
 
@@ -39,33 +43,48 @@
 void eps_eps_RenderEPS(EPSComm *x)
  {
   FILE *inf;
-  char  tmpdata[FNAME_LENGTH], command[LSTR_LENGTH];
+  char  tmpdata[FNAME_LENGTH], command[LSTR_LENGTH], *filename, *cptr;
   double bb_left=0.0, bb_right=0.0, bb_top=0.0, bb_bottom=0.0;
   double xscale, yscale, r;
   unsigned char GotBBox;
+  wordexp_t WordExp;
+  glob_t GlobData;
 
   fprintf(x->epsbuffer, "%% Canvas item %d [eps image]\n", x->current->id);
+
+  // Expand filename if it contains wildcards
+  cptr = x->current->text;
+  if (cptr==NULL) { ppl_error(ERR_INTERNAL, "File attribute not found in eps data structure."); *(x->status) = 1; return; }
+  if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", cptr); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); *(x->status) = 1; return; }
+  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); *(x->status) = 1; return; }
+  filename = lt_malloc(strlen(GlobData.gl_pathv[0])+1);
+  if (filename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); *(x->status) = 1; return; }
+  strcpy(filename, GlobData.gl_pathv[0]);
+  wordfree(&WordExp);
+  globfree(&GlobData);
 
   // Work out bounding box of EPS image
   GotBBox = 0;
   if (!x->current->calcbbox) // Read bounding box from headers of EPS file
    {
-    inf = fopen(x->current->text, "r");
-    if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", x->current->text); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+    inf = fopen(filename, "r");
+    if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
     eps_eps_ExtractBBox(inf, &bb_left, &bb_bottom, &bb_right, &bb_top, &GotBBox);
     fclose(inf);
-    if (!GotBBox) { sprintf(temp_err_string, "Could not extract bounding box from EPS file '%s'. Will therefore process file in calcbbox mode, and attempt to determine its bounding box using ghostview.", x->current->text); ppl_warning(ERR_GENERAL, temp_err_string); }
+    if (!GotBBox) { sprintf(temp_err_string, "Could not extract bounding box from EPS file '%s'. Will therefore process file in calcbbox mode, and attempt to determine its bounding box using ghostview.", filename); ppl_warning(ERR_GENERAL, temp_err_string); }
    }
   if ((x->current->calcbbox) || (!GotBBox)) // Calculate bounding box for EPS file using ghostview
    {
     sprintf(tmpdata, "%s%s%s", settings_session_default.tempdir, PATHLINK, "bbox_in"); // Temporary file for gs to output bounding box into
-    sprintf(command, "%s -dQUIET -dSAFER -dBATCH -dNOPAUSE -sDEVICE=bbox %s > %s 2> %s", GHOSTSCRIPT_COMMAND, x->current->text, tmpdata, tmpdata);
+    sprintf(command, "%s -dQUIET -dSAFER -dBATCH -dNOPAUSE -sDEVICE=bbox %s > %s 2> %s", GHOSTSCRIPT_COMMAND, filename, tmpdata, tmpdata);
     system(command);
     inf = fopen(tmpdata, "r");
     if (inf==NULL) { sprintf(temp_err_string, "Could not open temporary file '%s'.", tmpdata); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
     eps_eps_ExtractBBox(inf, &bb_left, &bb_bottom, &bb_right, &bb_top, &GotBBox);
     fclose(inf);
-    if (!GotBBox) { sprintf(temp_err_string, "Could not calculate bounding box for EPS file '%s'.", x->current->text); ppl_warning(ERR_GENERAL, temp_err_string); }
+    if (!GotBBox) { sprintf(temp_err_string, "Could not calculate bounding box for EPS file '%s'.", filename); ppl_warning(ERR_GENERAL, temp_err_string); }
    }
 
   // Work out scaling factor to apply to EPS image
@@ -107,12 +126,12 @@ void eps_eps_RenderEPS(EPSComm *x)
 
   // Copy contents of EPS into output postscript file
   fprintf(x->epsbuffer, "%% ---- Beginning of included EPS graphic ----\n");
-  inf = fopen(x->current->text, "r");
-  if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", x->current->text); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  inf = fopen(filename, "r");
+  if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
   while (fgets(temp_err_string, FNAME_LENGTH, inf) != NULL)
    if (fputs(temp_err_string, x->epsbuffer) == EOF)
     {
-     sprintf(temp_err_string, "Error while reading EPS file '%s'.", x->current->text); ppl_error(ERR_FILE, temp_err_string);
+     sprintf(temp_err_string, "Error while reading EPS file '%s'.", filename); ppl_error(ERR_FILE, temp_err_string);
      *(x->status)=1;
      return;
     }

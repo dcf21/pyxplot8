@@ -24,12 +24,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "ListTools/lt_memory.h"
+
+#include "ppl_error.h"
+
 #include "eps_comm.h"
 #include "eps_text.h"
 #include "eps_settings.h"
 
 void eps_text_YieldUpText(EPSComm *x)
  {
+  CanvasTextItem *i;
+  i = (CanvasTextItem *)lt_malloc(sizeof(CanvasTextItem));
+  if (i==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *(x->status) = 1; return; }
+  i->text              = x->current->text;
+  i->CanvasMultiplotID = x->current->id;
+  ListAppendPtr(x->TextItems, i, sizeof(CanvasTextItem), 0, DATATYPE_VOID);
   return;
  }
 

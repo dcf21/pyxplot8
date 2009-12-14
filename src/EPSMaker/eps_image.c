@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <string.h>
+#include <glob.h>
+#include <wordexp.h>
 #include <zlib.h>
 
 #include "ListTools/lt_memory.h"
@@ -51,8 +53,11 @@ void eps_image_RenderEPS(EPSComm *x)
   int           ImageType, i, j;
   double        xscale, yscale, r;
   unsigned char buff[10], *imagez;
+  char         *filename, *cptr;
   uLongf        zlen; // Length of buffer passed to zlib
   static unsigned char transparency_buff[3];
+  wordexp_t WordExp;
+  glob_t GlobData;
 
   data.data = data.palette = data.trans = NULL;
   data.type = 0;
@@ -61,15 +66,28 @@ void eps_image_RenderEPS(EPSComm *x)
 
   fprintf(x->epsbuffer, "%% Canvas item %d [bitmap image]\n", x->current->id);
 
+  // Expand filename if it contains wildcards
+  cptr = x->current->text;
+  if (cptr==NULL) { ppl_error(ERR_INTERNAL, "File attribute not found in eps data structure."); *(x->status) = 1; return; }
+  if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", cptr); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); *(x->status) = 1; return; }
+  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); *(x->status) = 1; return; }
+  filename = lt_malloc(strlen(GlobData.gl_pathv[0])+1);
+  if (filename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); *(x->status) = 1; return; }
+  strcpy(filename, GlobData.gl_pathv[0]);
+  wordfree(&WordExp);
+  globfree(&GlobData);
+
   // Open input data file
-  infile = fopen(x->current->text, "r");
-  if (infile==NULL) { sprintf(temp_err_string, "Could not open input file '%s'", x->current->text); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  infile = fopen(filename, "r");
+  if (infile==NULL) { sprintf(temp_err_string, "Could not open input file '%s'", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
 
   // Use magic to determine file type
   for (i=0; i<3; i++)
    {
     j = fgetc(infile);
-    if (j==EOF) { sprintf(temp_err_string, "Could not read any image data from the input file '%s'", x->current->text); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+    if (j==EOF) { sprintf(temp_err_string, "Could not read any image data from the input file '%s'", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
     buff[i] = (unsigned char)j;
    }
   if      ((buff[0]=='G' )&&(buff[1]=='I' )&&(buff[2]=='F' )) ImageType = SW_BITMAP_GIF;
@@ -78,7 +96,7 @@ void eps_image_RenderEPS(EPSComm *x)
   else if ((buff[0]==137 )&&(buff[1]=='P' )&&(buff[2]=='N' )) ImageType = SW_BITMAP_PNG;
   else
    {
-    sprintf(temp_err_string, "Could not determine the file type of input file '%s'. The image command only supports bmp, gif, jpeg and png images. The supplied image does not appear to be in any of these formats.", x->current->text);
+    sprintf(temp_err_string, "Could not determine the file type of input file '%s'. The image command only supports bmp, gif, jpeg and png images. The supplied image does not appear to be in any of these formats.", filename);
     ppl_error(ERR_FILE, temp_err_string);
     *(x->status) = 1;
     return;

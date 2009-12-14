@@ -47,9 +47,9 @@ static void canvas_item_delete(canvas_item *ptr)
   if (ptr->text        != NULL) free(ptr->text);
   with_words_destroy(&(ptr->settings.DataStyle));
   with_words_destroy(&(ptr->settings.FuncStyle));
-  for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->XAxes[i]) );
-  for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->YAxes[i]) );
-  for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->ZAxes[i]) );
+  if (ptr->XAxes != NULL) { for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->XAxes[i]) ); free(ptr->XAxes); }
+  if (ptr->YAxes != NULL) { for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->YAxes[i]) ); free(ptr->YAxes); }
+  if (ptr->ZAxes != NULL) { for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->ZAxes[i]) ); free(ptr->ZAxes); }
   arrow_list_destroy(&(ptr->arrow_list));
   label_list_destroy(&(ptr->label_list));
   with_words_destroy(&(ptr->with_data));
@@ -59,7 +59,7 @@ static void canvas_item_delete(canvas_item *ptr)
  }
 
 // Add a new multiplot canvas item to the list above
-static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, int *id)
+static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, int *id, unsigned char IncludeAxes)
  {
   canvas_item *ptr, *next, **insertpoint;
   int i, PrevId, *EditNo;
@@ -100,11 +100,31 @@ static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, in
   ptr->settings = settings_graph_current;
   with_words_copy(&ptr->settings.DataStyle , &settings_graph_current.DataStyle);
   with_words_copy(&ptr->settings.FuncStyle , &settings_graph_current.FuncStyle);
-  for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->XAxes[i]), &(XAxes[i]));
-  for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->YAxes[i]), &(YAxes[i]));
-  for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->ZAxes[i]), &(ZAxes[i]));
-  arrow_list_copy(&ptr->arrow_list , &arrow_list);
-  label_list_copy(&ptr->label_list , &label_list);
+  if (IncludeAxes)
+   {
+    ptr->XAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
+    ptr->YAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
+    ptr->ZAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
+    if ((ptr->XAxes==NULL)||(ptr->YAxes==NULL)||(ptr->ZAxes==NULL))
+     {
+      ppl_error(ERR_MEMORY,"Out of memory");
+      if (ptr->XAxes!=NULL) { free(ptr->XAxes); ptr->XAxes = NULL; }
+      if (ptr->YAxes!=NULL) { free(ptr->YAxes); ptr->YAxes = NULL; }
+      if (ptr->ZAxes!=NULL) { free(ptr->ZAxes); ptr->ZAxes = NULL; }
+     }
+    else
+     {
+      for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->XAxes[i]), &(XAxes[i]));
+      for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->YAxes[i]), &(YAxes[i]));
+      for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->ZAxes[i]), &(ZAxes[i]));
+     }
+    arrow_list_copy(&ptr->arrow_list , &arrow_list);
+    label_list_copy(&ptr->label_list , &label_list);
+   } else {
+    ptr->XAxes = ptr->YAxes = ptr->ZAxes = NULL;
+    ptr->arrow_list = NULL;
+    ptr->label_list = NULL;
+   }
 
   *output = ptr; // Return pointer to the newly-created canvas item
   *id     = ptr->id;
@@ -412,7 +432,7 @@ int directive_arrow(Dict *command, int interactive)
   ASSERT_LENGTH(x2,"arrow","x2"); ASSERT_LENGTH(y2,"arrow","y2");
 
   // Add this arrow to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_ARROW,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_ARROW,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real - x1->real;
@@ -452,7 +472,7 @@ int directive_box(Dict *command, int interactive)
   ASSERT_LENGTH(x2,"box","x2"); ASSERT_LENGTH(y2,"box","y2");
 
   // Add this box to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_BOX,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_BOX,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real - x1->real;
@@ -489,7 +509,7 @@ int directive_circle(Dict *command, int interactive)
   ASSERT_LENGTH(x2,"arrow","r");
 
   // Add this circle to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real;
@@ -536,7 +556,7 @@ int directive_eps(Dict *command, int interactive)
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_EPS,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_EPS,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
   if (x     !=NULL) { ptr->xpos     = x     ->real; }                    else { ptr->xpos     = settings_graph_current.OriginX.real; }
   if (y     !=NULL) { ptr->ypos     = y     ->real; }                    else { ptr->ypos     = settings_graph_current.OriginY.real; }
@@ -579,7 +599,7 @@ int directive_text(Dict *command, int interactive)
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr, &id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
   if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
   if (y  !=NULL) { ptr->ypos     = y  ->real; } else { ptr->ypos      = settings_graph_current.OriginY.real; }
@@ -631,7 +651,7 @@ int directive_image(Dict *command, int interactive)
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_IMAGE,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_IMAGE,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
   if (x     !=NULL) { ptr->xpos     = x     ->real; }                    else { ptr->xpos     = settings_graph_current.OriginX.real; }
   if (y     !=NULL) { ptr->ypos     = y     ->real; }                    else { ptr->ypos     = settings_graph_current.OriginY.real; }
@@ -668,7 +688,7 @@ int directive_plot(Dict *command, int interactive, int replot)
 
   if (!replot)
    {
-    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id,1)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
    }
 
   // Redisplay the canvas as required

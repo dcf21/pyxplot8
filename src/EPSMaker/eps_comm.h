@@ -28,12 +28,19 @@
 
 #include "eps_style.h"
 
+typedef struct CanvasTextItem {
+  char *text;
+  int   CanvasMultiplotID;
+  int   LaTeXstartline, LaTeXendline;
+ } CanvasTextItem;
+
 typedef struct EPSComm {
   canvas_itemlist *itemlist;
   canvas_item *current;
   double bb_left, bb_right, bb_top, bb_bottom;
   unsigned char bb_set;
   unsigned char PointTypesUsed[N_POINTTYPES], StarTypesUsed[N_STARTYPES];
+  List *TextItems;
   char *EPSFilename, *FinalFilename, *title;
   char  LastEPSColour[256], LastEPSFillColour[256];
   double LastLinewidth;
