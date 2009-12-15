@@ -28,6 +28,12 @@
 #include <limits.h>
 #include <math.h>
 
+#ifdef HAVE_FFTW3
+#include <fftw3.h>
+#else
+#include <fftw.h>
+#endif
+
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_spline.h>
 

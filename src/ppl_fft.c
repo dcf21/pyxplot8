@@ -30,7 +30,11 @@
 
 #include <gsl/gsl_math.h>
 
+#ifdef HAVE_FFTW3
 #include <fftw3.h>
+#else
+#include <fftw.h>
+#endif
 
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
@@ -47,7 +51,7 @@
 // Main entry point for the implementation of the fft command
 int directive_fft(Dict *command)
  {
-  int           i, Ndims, Nsamples, Nsteps[USING_ITEMS_MAX];
+  int           i, status, Ndims, Nsamples, Nsteps[USING_ITEMS_MAX];
   int           ContextOutput, ContextLocalVec, ContextDataTab;
   FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   FFTDescriptor      *output;
@@ -61,7 +65,12 @@ int directive_fft(Dict *command)
   ListIterator *ListIter;
   Dict         *TempDict;
   fftw_complex *datagrid;
-  fftw_plan     fftwplan;
+
+  #ifdef HAVE_FFTW3
+  fftw_plan     fftwplan; // FFTW 3.x
+  #else
+  fftwnd_plan   fftwplan; // FFTW 2.x
+  #endif
 
   // Check whether we are doing a forward or a backward FFT
   DictLookup(command, "directive", NULL, (void **)&cptr);
@@ -134,9 +143,15 @@ int directive_fft(Dict *command)
    }
 
   // FFT data
-  fftwplan = fftw_plan_dft(Ndims, Nsteps, datagrid, datagrid, inverse ? FFTW_BACKWARD : FFTW_FORWARD, FFTW_ESTIMATE);
+  #ifdef HAVE_FFTW3
+  fftwplan = fftw_plan_dft(Ndims, Nsteps, datagrid, datagrid, inverse ? FFTW_BACKWARD : FFTW_FORWARD, FFTW_ESTIMATE); // FFTW 3.x
   fftw_execute(fftwplan);
   fftw_destroy_plan(fftwplan);
+  #else
+  fftwplan = fftwnd_create_plan(Ndims, Nsteps, inverse ? FFTW_BACKWARD : FFTW_FORWARD, FFTW_ESTIMATE);                // FFTW 2.x
+  fftwnd_one(fftwplan, datagrid, datagrid);
+  fftwnd_destroy_plan(fftwplan);
+  #endif
 
   // Make FFTDescriptor data structure
   output = (FFTDescriptor *)lt_malloc_incontext(sizeof(FFTDescriptor), 0);
@@ -144,9 +159,23 @@ int directive_fft(Dict *command)
   output->Ndims    = Ndims;
   output->XSize    = (int   *)malloc(Ndims * sizeof(int  ));
   output->range    = (value *)malloc(Ndims * sizeof(value));
-  if ((output->XSize==NULL)||(output->range==NULL)) { free(output); fftw_free(datagrid); ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+  output->invrange = (value *)malloc(Ndims * sizeof(value));
+  if ((output->XSize==NULL)||(output->range==NULL)||(output->invrange==NULL)) { free(output); fftw_free(datagrid); ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+  for (i=0; i<Ndims; i++) output->XSize[i] = Nsteps[i];
+  for (i=0; i<Ndims; i++) { ppl_units_sub(max[i], min[i], &output->range[i], &status, temp_err_string); if (status) break; }
+  if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
+  for (i=0; i<Ndims; i++) { ppl_units_sub(max[i], min[i], &output->range[i], &status, temp_err_string); if (status) break; }
+  if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
+  for (i=0; i<Ndims; i++) ppl_units_DimInverse(&output->invrange[i], &output->range[i]);
   output->datagrid = datagrid;
   output->normalisation = 1.0/sqrt((double)Nsamples);
+
+  // Make output unit
+  ppl_units_zero(&output->OutputUnit);
+  for (i=0; i<Ndims; i++) { ppl_units_mult(&output->OutputUnit, &output->invrange[i], &output->OutputUnit, &status, temp_err_string); if (status>=0) break; }
+  if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
+  output->OutputUnit.real = output->OutputUnit.imag = 0.0;
+  output->OutputUnit.FlagComplex = 0; // Output unit has zero magnitude
 
   // Make a new function descriptor
   FuncPtr2 = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor), 0);
@@ -179,16 +208,17 @@ int directive_fft(Dict *command)
 
 void ppl_fft_evaluate(char *FuncName, FFTDescriptor *desc, value *in, value *out, int *status, char *errout)
  {
-  int i, pos[USING_ITEMS_MAX];
+  int i, j;
   double TempDbl;
+
+  *out = desc->OutputUnit;
 
   // Check dimensions of input arguments and ensure that they are all real
   for (i=0; i<desc->Ndims; i++)
    {
-    if (!ppl_units_DimEqual(in+i, &desc->range[i]))
+    if (!ppl_units_DimEqual(in+i, &desc->invrange[i]))
      {
-      // WRONG. compare to inverse
-      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects argument %d to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, i+1, ppl_units_GetUnitStr(&desc->range[i], NULL, NULL, 0, 0), ppl_units_GetUnitStr(in+i, NULL, NULL, 1, 0)); }
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects argument %d to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, i+1, ppl_units_GetUnitStr(&desc->invrange[i], NULL, NULL, 0, 0), ppl_units_GetUnitStr(in+i, NULL, NULL, 1, 0)); }
       else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
       *status=1;
       return;
@@ -203,13 +233,25 @@ void ppl_fft_evaluate(char *FuncName, FFTDescriptor *desc, value *in, value *out
    }
 
   // Work out closest datapoint in FFT datagrid to the one we want
+  j=0;
   for (i=0; i<desc->Ndims; i++)
    {
     TempDbl = floor((in+i)->real * desc->range[i].real + 0.5);
-    pos[i] = 0;
+    if ((TempDbl < 0.0) && (TempDbl >= desc->XSize[i])) { return; } // Query out of range; return zero with appropriate output unit
+    j *= desc->XSize[i];
+    j += (int)TempDbl;
    }
 
-  ppl_units_zero(out);
+  // Write output value to out
+  #ifdef HAVE_FFTW3
+  out->real = desc->datagrid[j][0];
+  if (desc->datagrid[j][1] == 0.0) { out->FlagComplex = 0; out->imag = 0.0;                  }
+  else                             { out->FlagComplex = 1; out->imag = desc->datagrid[j][1]; }
+  #else
+  out->real = desc->datagrid[j].re;
+  if (desc->datagrid[j].im == 0.0) { out->FlagComplex = 0; out->imag = 0.0;                  }
+  else                             { out->FlagComplex = 1; out->imag = desc->datagrid[j].im; }
+  #endif
   return;
  }
 

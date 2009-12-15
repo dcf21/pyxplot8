@@ -23,7 +23,12 @@
 #define _PPL_USERSPACE_H 1
 
 #include <gsl/gsl_spline.h>
+
+#ifdef HAVE_FFTW3
 #include <fftw3.h>
+#else
+#include <fftw.h>
+#endif
 
 #include "ListTools/lt_dict.h"
 
@@ -61,7 +66,7 @@ typedef struct FFTDescriptor {
  int           Ndims;
  int          *XSize;
  fftw_complex *datagrid;
- value        *range;
+ value        *range, *invrange, OutputUnit;
  double        normalisation;
  } FFTDescriptor;
 

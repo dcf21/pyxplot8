@@ -199,14 +199,36 @@ fi
 
 # 13. CHECK TO SEE WHETHER THIS SYSTEM HAS FFTW HEADERS
 
-echo $ECHO_N "Checking for libfftw-dev       ............. $ECHO_C"
+echo $ECHO_N "Checking for libfftw3-dev      ............. $ECHO_C"
 if printf '#include <fftw3.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
 then
  echo "YES"
+ echo "HAVE_FFTW3=-D HAVE_FFTW3=1" >> Makefile
+ echo "LINK_FFTW=-lfftw3" >> Makefile
 else
  echo "NO"
- echo "ERROR: Header files for required library 'libfftw' could not be found." >&2
- exit
+ echo $ECHO_N "Checking for libfftw2-dev      ............. $ECHO_C"
+ if printf '#include <fftw.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
+ then
+  echo "YES"
+  echo "LINK_FFTW=-lfftw" >> Makefile
+ else
+  echo "NO"
+  echo "ERROR: Header files for required library 'libfftw' could not be found." >&2
+  exit
+ fi
+fi
+
+echo $ECHO_N "Checking for gunzip            ............. $ECHO_C"
+whichout=`which gunzip 2> /dev/null`
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
+ echo "YES"
+ echo "GUNZIP_COMMAND=-D GUNZIP_COMMAND=\"\\\"${whichout} -c\\\"\"" >> Makefile
+else
+ echo "NO"
+ echo "GUNZIP_COMMAND=" >> Makefile
+ echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files." >&2
 fi
 
 # 14. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS

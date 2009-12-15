@@ -344,9 +344,9 @@ void canvas_CallLaTeX(EPSComm *x)
   ListIterator *ListIter;
   CanvasTextItem *TempTextItem;
 
-  const char TextHeader[] = "\\pagestyle{plain}\n\\begin{document}\n";
+  const char TextHeader[] = "\\documentclass[fail]{article}\n\\pagestyle{plain}\n\\begin{document}\nIgnore page 1\n\\newpage\n";
   const char ItemHeader[] = "\\vbox{\\hbox{\n";
-  const char ItemFooter[] = "\n}}\n";
+  const char ItemFooter[] = "\n\\hskip 0pt plus 1filll minus 1filll}\n\\vskip 0pt plus 1filll minus 1filll}\n";
   const char TextFooter[] = "\\end{document}\n";
 
   // chdir into temporary directory so that LaTeX's mess goes into /tmp
