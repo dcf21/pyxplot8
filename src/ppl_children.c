@@ -315,7 +315,6 @@ void CSPKillAllGvs()
    {
     iter = ListIterate(iter, (void **)&gv_pid);
     kill(*gv_pid, SIGTERM); // Dulce et decorum est pro patria mori
-    ListRemovePtr(GhostViews, (void *)gv_pid);
     if (GhostView_pid == *gv_pid) GhostView_pid = 0;
    }
   return;
@@ -335,13 +334,15 @@ void PPLCheckForChildExits(int signo)
  {
   ListIterator *iter;
   int          *pid;
+  char          text[256];
+
   iter = ListIterateInit(HelperPIDs);
   while (iter != NULL)
    {
     iter = ListIterate(iter, (void **)&pid);
     if (waitpid(*pid,NULL,WNOHANG) != 0)
      {
-      if (DEBUG) { sprintf(temp_err_string, "A helper process with pid %d has terminated.", *pid); ppl_log(temp_err_string); }
+      if (DEBUG) { sprintf(text, "A helper process with pid %d has terminated.", *pid); ppl_log(text); }
       ListRemovePtr(HelperPIDs, (void *)pid); // Stabat mater dolorosa
      }
    }
@@ -357,7 +358,6 @@ void PPLKillAllHelpers()
    {
     iter = ListIterate(iter, (void **)&pid);
     kill(*pid, SIGTERM); // Dulce et decorum est pro patria mori
-    ListRemovePtr(HelperPIDs, (void *)pid);
    }
   return;
  }
@@ -413,6 +413,62 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
      }
     if (execl(SED_COMMAND, SED_COMMAND, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
     ppl_error(ERR_GENERAL, "Execution of helper process 'sed' failed."); // execlp call should not return
+    exit(1);
+   }
+  return;
+ }
+
+// NB: Leaves SIGCHLD blocked
+void ForkLaTeX(char *filename, int *PidOut, int *fstdin, int *fstdout)
+ {
+  int fd0[2], fd1[2];
+  int pid;
+  sigset_t sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
+
+  if ((pipe(fd0)<0) || (pipe(fd1)<0)) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
+
+  sigprocmask(SIG_BLOCK, &sigs, NULL);
+
+  if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for latex process.");
+  else if ( pid        != 0)
+   {
+    // Parent process
+    close(fd0[0]); *fstdin  = fd0[1];
+    close(fd1[1]); *fstdout = fd1[0];
+    *PidOut = pid;
+    ListAppendInt(HelperPIDs, pid);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+    return;
+   }
+  else
+   {
+    // Child process
+    close(fd0[1]); close(fd1[0]);
+    close(PipeCSP2MAIN[0]);
+    close(PipeMAIN2CSP[1]);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+    sprintf(ppl_error_source, "TEX%6d", getpid());
+    settings_session_default.colour = SW_ONOFF_OFF;
+    if (DEBUG) { sprintf(temp_err_string, "New latex process alive; going to latex file \"%s\".", filename); ppl_log(temp_err_string); }
+    if (fd0[0] != STDIN_FILENO) // Redirect stdin to pipe
+     {
+      if (dup2(fd0[0], STDIN_FILENO) != STDIN_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdin to pipe.");
+      close(fd0[0]);
+     }
+    if (fd1[1] != STDOUT_FILENO) // Redirect stdout to pipe
+     {
+      if (dup2(fd1[1], STDOUT_FILENO) != STDOUT_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdout to pipe.");
+     }
+    if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe
+     {
+      if (dup2(fd1[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
+      close(fd1[1]);
+     }
+    if (execl(LATEX_COMMAND, LATEX_COMMAND, "-file-line-error", filename, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute latex returned error code."); // Execute latex
+    ppl_error(ERR_GENERAL, "Execution of helper process 'latex' failed."); // execlp call should not return
     exit(1);
    }
   return;

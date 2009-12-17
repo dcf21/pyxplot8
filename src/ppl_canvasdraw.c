@@ -26,7 +26,10 @@
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <wordexp.h>
+#include <sys/select.h>
+#include <sys/wait.h>
 
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_arrow.h"
@@ -230,7 +233,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
       status = 0;
      }
     if (AfterHandler != NULL) (*AfterHandler)(&comm); // At the end of each phase, a canvas-wide handler may be called
-    if (status) { return; }
+    if (status) { return; } // The failure of a canvas-wide handler is fatal
    }
 
   // Now convert eps output to bitmaped graphics if requested
@@ -338,16 +341,24 @@ void canvas_draw(unsigned char *unsuccessful_ops)
 
 void canvas_CallLaTeX(EPSComm *x)
  {
-  int   linecount=1, i;
+  int   linecount=1, i, pid, LatexStatus, LatexStdIn, LatexOut;
   char  filename[FNAME_LENGTH];
   FILE *output;
   ListIterator *ListIter;
   CanvasTextItem *TempTextItem;
+  struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
+  unsigned char   FirstIter;
+  fd_set          readable;
+  sigset_t        sigs;
 
-  const char TextHeader[] = "\\documentclass[fail]{article}\n\\pagestyle{plain}\n\\begin{document}\nIgnore page 1\n\\newpage\n";
-  const char ItemHeader[] = "\\vbox{\\hbox{\n";
-  const char ItemFooter[] = "\n\\hskip 0pt plus 1filll minus 1filll}\n\\vskip 0pt plus 1filll minus 1filll}\n";
-  const char TextFooter[] = "\\end{document}\n";
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
+
+  const char TextHeader1[] = "\\documentclass{article}\n\\pagestyle{plain}\n";
+  const char TextHeader2[] = "\\begin{document}\nIgnore page 1\n\\newpage\n";
+  const char ItemHeader [] = "\\vbox{\\hbox{\n";
+  const char ItemFooter [] = "\n\\hskip 0pt plus 1filll minus 1filll}\n\\vskip 0pt plus 1filll minus 1filll}\n";
+  const char TextFooter [] = "\\end{document}\n";
 
   // chdir into temporary directory so that LaTeX's mess goes into /tmp
   if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
@@ -356,7 +367,9 @@ void canvas_CallLaTeX(EPSComm *x)
   sprintf(filename, "%s.tex", x->EPSFilename);
   output = fopen(filename, "w");
   if (output == NULL) { ppl_error(ERR_INTERNAL, "Could not create temporary LaTeX document"); *(x->status)=1; return; }
-  FPRINTF_LINECOUNT(TextHeader);
+  FPRINTF_LINECOUNT(TextHeader1);
+  FPRINTF_LINECOUNT(settings_term_current.LatexPreamble);
+  FPRINTF_LINECOUNT(TextHeader2);
 
   // Sequentially print out text strings
   ListIter = ListIterateInit(x->TextItems);
@@ -374,6 +387,43 @@ void canvas_CallLaTeX(EPSComm *x)
   // Finish writing LaTeX document
   FPRINTF_LINECOUNT(TextFooter);
   fclose(output);
+
+  // Fork LaTeX process
+  ForkLaTeX(filename, &pid, &LatexStdIn, &LatexOut);
+
+  // Wait for latex process's stdout to become readable. Get bored if this takes too long.
+  FirstIter = 1;
+  LatexStatus = 0;
+  while (1)
+   {
+    waitperiod.tv_sec  = FirstIter ? 10 : 0; waitperiod.tv_nsec = 250000000; // Wait 10 seconds first time around; otherwise wait 0.25 seconds
+    FirstIter = 0;
+    FD_ZERO(&readable); FD_SET(LatexOut, &readable);
+    if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1) { LatexStatus=1; ppl_log("pselect returned -1"); break; }
+    if (!FD_ISSET(LatexOut , &readable)) { LatexStatus=1; ppl_log("latex's output pipe has not become readable within time limit"); break; }
+    else
+     {
+      if (read(LatexOut, temp_err_string, LSTR_LENGTH) > 0)
+       {
+        // Scan temp_err_string for error messages in file:line:message format
+       }
+      else { break; } // read function returned zero; indicates EOF
+     }
+   }
+
+  // Finish talking to LaTeX process
+  close(LatexStdIn); // This has the effect of killing latex
+  close(LatexOut);
+  sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+
+  // Return error message if latex has failed
+  if (LatexStatus)
+   {
+    ppl_error(ERR_GENERAL,"latex fail");
+    if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
+    *(x->status) = 1;
+    return;
+   }
 
   // Return to user's current working directory after LaTeX has finished making a mess
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
