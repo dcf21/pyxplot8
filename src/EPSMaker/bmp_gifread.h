@@ -3,10 +3,10 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-9 Ross Church
+// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2010 Ross Church
 //
-//               2009   Michael Rutter
+//               2009-2010 Michael Rutter
 //
 // $Id$
 //

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-9 Ross Church
+// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2010 Ross Church
 //
 // $Id: dcfmath.c 347 2009-09-09 14:59:19Z dcf21 $
 //

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-9 Ross Church
+// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2010 Ross Church
 //
 // $Id$
 //
@@ -73,8 +73,8 @@ sprintf(txt_init, "\n\
 |  _ \\ _   _\\ \\/ /  _ \\| | ___ | |_    Version %s\n\
 | |_) | | | |\\  /| |_) | |/ _ \\| __|   %s\n\
 |  __/| |_| |/  \\|  __/| | (_) | |_ \n\
-|_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-9 Dominic Ford\n\
-       |___/                                         2008-9 Ross Church\n\
+|_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-2010 Dominic Ford\n\
+       |___/                                         2008-2010 Ross Church\n\
 \n\
 \n\
 THIS PRE-ALPHA RELEASE IS HIGHLY UNSTABLE AND NOT FOR DISTRIBUTION\n\

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-9 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-9 Ross Church
+// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2010 Ross Church
 //
 // $Id: ppl_units.h 337 2009-08-19 23:06:39Z dcf21 $
 //
