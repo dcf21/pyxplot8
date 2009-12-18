@@ -71,9 +71,9 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
   fp = fopen(filename, "r");
   if (fp==NULL)
    {
-    dvi_error(ERR_INTERNAL,"dvi file does not exist!");
+    ppl_error(ERR_INTERNAL,"dvi file does not exist!");
     *status = 1;
-    return;
+    return NULL;
    }
 
   // This is the main loop for the dvi parser
@@ -98,7 +98,7 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
      {
       if (op.s[i]!=NULL)
        {
-        free(op.s[i]);
+        //free(op.s[i]);
         op.s[i] = NULL;
        }
      }
@@ -152,8 +152,8 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
    }
   else if (v == DVI_SETRULE)
    {
-    if ((err = ReadSignedInt(fp, op->sl, 4))!=0) return 0;
-    if ((err = ReadSignedInt(fp, op->sl+1, 4))!=0) return 0;
+    if ((err = ReadSignedInt(fp, op->sl, 4))!=0) return err;
+    if ((err = ReadSignedInt(fp, op->sl+1, 4))!=0) return err;
     return 0;
    }
   else if (v < DVI_PUT1234+4)
@@ -165,8 +165,8 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
    }
   else if (v == DVI_PUTRULE)
    {
-    if ((err = ReadSignedInt(fp, op->sl, 4))!=0) return 0;
-    if ((err = ReadSignedInt(fp, op->sl+1, 4))!=0) return 0;
+    if ((err = ReadSignedInt(fp, op->sl, 4))!=0) return err;
+    if ((err = ReadSignedInt(fp, op->sl+1, 4))!=0) return err;
     return 0;
    }
   else if (v == DVI_NOP)
@@ -177,9 +177,9 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
    {
     for (i=0; i<10; i++)
      {
-      if ((err = ReadLongInt(fp, op->ul+i, 4))!=0) return 0;
+      if ((err = ReadLongInt(fp, op->ul+i, 4))!=0) return err;
      }
-    if ((err= ReadSignedInt(fp, op->sl, 4))!=0) return 0;
+    if ((err= ReadSignedInt(fp, op->sl, 4))!=0) return err;
     return 0;
    }
   else if (v >= DVI_EOP && v <= DVI_POP)
@@ -280,6 +280,7 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
      }
     Ndata = op->ul[4] + op->ul[5];
     op->s[0] = (char *)lt_malloc((Ndata+1)*sizeof(char));
+    if (op->s[0]==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
     op->s[0][Ndata] = '\0';
     for (i=0; i<Ndata; i++)
      {

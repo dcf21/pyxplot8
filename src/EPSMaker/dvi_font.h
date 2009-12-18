@@ -90,7 +90,7 @@ typedef struct dviFontDetails
 
 // Call the first of these functions, passing it a font structure. It will find and read the corresponding TFM file.
 int     dviGetTFM    (dviFontDetails *font);
-dviTFM *dviReadTFM   (FILE *fp);
+dviTFM *dviReadTFM   (FILE *fp, int *err);
 int     pfb2pfa      (FILE *in, FILE *out);
 char   *psNameFromPFA(char *PFApath);
 

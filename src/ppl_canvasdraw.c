@@ -31,6 +31,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
+#include "EPSMaker/dvi_read.h"
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_arrow.h"
 #include "EPSMaker/eps_box.h"
@@ -425,6 +426,11 @@ void canvas_CallLaTeX(EPSComm *x)
     return;
    }
 
+  // Convert dvi into postscript fragments
+  sprintf(filename, "%s.dvi", x->EPSFilename);
+  x->dvi = ReadDviFile(filename, x->status);
+  if (*(x->status)) return; // DVI interpreter failed
+
   // Return to user's current working directory after LaTeX has finished making a mess
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
   return;
@@ -444,6 +450,7 @@ void canvas_EPSWrite(EPSComm *x)
   int i;
   FILE *epsout;
   char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName;
+  ListIterator *ListIter;
 
   // Apply enlarge and landscape terminals as required
   LandscapifyText[0] = EnlargementText[0] = '\0';
@@ -473,6 +480,14 @@ void canvas_EPSWrite(EPSComm *x)
   else                                                fprintf(epsout, "%%%%Orientation: Portrait\n");
   if (settings_term_current.TermType == SW_TERMTYPE_PS)
     fprintf(epsout, "%%%%DocumentMedia: %s %d %d white { }\n", PaperName, (int)(settings_term_current.PaperWidth.real * M_TO_PS), (int)(settings_term_current.PaperHeight.real * M_TO_PS));
+  fprintf(epsout, "%%%%DocumentFonts:");
+  ListIter = ListIterateInit(x->dvi->fonts);
+  while (ListIter != NULL)
+   {
+    fprintf(epsout, " %s", ((dviFontDetails *)ListIter->data)->psName);
+    ListIter = ListIterate(ListIter, NULL);
+   }
+  fprintf(epsout, "\n");
   fprintf(epsout, "%%%%EndComments\n\n");
 
   // In postscript files, now set up page size

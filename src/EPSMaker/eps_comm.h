@@ -26,6 +26,7 @@
 
 #include "ppl_canvasitems.h"
 
+#include "dvi_read.h"
 #include "eps_style.h"
 
 typedef struct CanvasTextItem {
@@ -41,6 +42,7 @@ typedef struct EPSComm {
   unsigned char bb_set;
   unsigned char PointTypesUsed[N_POINTTYPES], StarTypesUsed[N_STARTYPES];
   List *TextItems;
+  dviInterpreterState *dvi;
   char *EPSFilename, *FinalFilename, *title;
   char  LastEPSColour[256], LastEPSFillColour[256];
   double LastLinewidth;

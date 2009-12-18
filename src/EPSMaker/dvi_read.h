@@ -27,8 +27,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// "Public" function definitions
-int ReadDviFile(char *filename);
+#include "ListTools/lt_list.h"
+
+#include "dvi_font.h"
 
 // Structure to store a DVI operator and the data that goes with it
 typedef struct DVIOperator
@@ -49,13 +50,13 @@ typedef struct dviStackState
 typedef struct postscriptPage
  {
   double *boundingBox;  // The current bounding box 
-  dlListItem *text;     // The big list of strings of postscript
+  List *text;           // The big list of strings of postscript
  } postscriptPage;
 
 // Structure to store the state of some postscript in the process of being produced
 typedef struct postscriptState
  {
-  dlListItem *pages;                // List of pages of postscript
+  List *pages;                      // List of pages of postscript
   int Npages;                       // The number of pages
   postscriptPage *currentPage;      // The current page
   dviStackState *currentPosition;   // The current position in dvi units
@@ -66,20 +67,21 @@ typedef struct dviInterpreterState
  {
   dviStackState *state;      // h,v,w,x,y,z;  // Positions
   unsigned int f;            // Current font
-  dlListItem *curFnt;        //       and a pointer to it
+  dviFontDetails *curFnt;    //       and a pointer to it
   char *currentString;       // The string, if any, currently being rendered
   int currentStrlen;         //       and its current length
   double scale;              // Scale from dvi->ps units
-  dlListItem *stack;         // The stack
-  dlListItem *fonts;         // The fonts currently defined
+  List *stack;               // The stack
+  List *fonts;               // The fonts currently defined
   postscriptState *output;   // The output postscript
   int special;               // A magic flag for special actions
   char *spString;            // String to store special information
-  dlListItem *colStack;      // Stack of colour items
+  List *colStack;            // Stack of colour items
   double *boundingBox;       // Current bounding box
  } dviInterpreterState;
 
 // Functions allowing dvi interpreters to be manipulated
+dviInterpreterState *ReadDviFile(char *filename, int *status);
 dviInterpreterState *dviNewInterpreter();
 int dviInterpretOperator(dviInterpreterState *interp, DVIOperator *op);
 int dviDeleteInterpreter(dviInterpreterState *interp);
@@ -100,7 +102,7 @@ int dviGetCharSize(dviInterpreterState *interp, char s, double *size);
 int ReadUChar(FILE *fp, int *uc);
 int ReadLongInt(FILE *fp, unsigned long int *uli, int n);
 int ReadSignedInt(FILE *fp, signed long int *sli, int n);
-double ReadFixWord(FILE *fp);
+double ReadFixWord(FILE *fp, int *err);
 
 int DisplayDVIOperator(DVIOperator *op);
 int GetDVIOperator(DVIOperator *op, FILE *fp);
