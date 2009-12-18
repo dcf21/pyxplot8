@@ -63,20 +63,22 @@ static void fftwindow_blackman    (value *x, int Ndim, int *Npos, int *Nstep) { 
 // Main entry point for the implementation of the fft command
 int directive_fft(Dict *command)
  {
-  int           i, j, k, l, status, Ndims, Nsamples, Nsteps[USING_ITEMS_MAX], Npos[USING_ITEMS_MAX];
-  int           ContextOutput, ContextLocalVec, ContextDataTab;
+  int           i, j, k, l, m, status, Ndims, Nsamples, Nsteps[USING_ITEMS_MAX], Npos[USING_ITEMS_MAX];
+  int           ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
   FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   FFTDescriptor      *output;
   double        TempDbl, pos[USING_ITEMS_MAX];
   value        *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX], *step[USING_ITEMS_MAX], x, FirstVal;
   unsigned char inverse;
-  char         *cptr, *filename, *outfunc, *infunc, *scratchpad, *errtext;
+  char         *cptr, *tempstr, *filename, *outfunc, *infunc, *scratchpad, *errtext, *SelectCrit=NULL;
   void (*WindowType)(value *,int,int *,int *);
   wordexp_t     WordExp;
   glob_t        GlobData;
-  List         *RangeList;
+  List         *RangeList=NULL, *UsingList=NULL, *EveryList=NULL;
   ListIterator *ListIter;
   Dict         *TempDict;
+  DataTable    *data;
+  DataBlock    *blk;
   fftw_complex *datagrid;
 
   #ifdef HAVE_FFTW3
@@ -168,6 +170,76 @@ int directive_fft(Dict *command)
   // Fetch data which we are going to FFT
   if (cptr != NULL) // We are FFTing data from a file
    {
+    // Look up index , using , every modifiers to datafile reading
+    DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
+    DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+    DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+    DictLookup(command, "using_list:", NULL, (void **)&UsingList);
+    DictLookup(command, "every_list:", NULL, (void **)&EveryList);
+    DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+
+    // Read data from file
+    status=0;
+    errtext = (char *)lt_malloc(LSTR_LENGTH);
+    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, Ndims+2, SelectCrit, DATAFILE_CONTINUOUS, &ErrCount);
+    if (status) { ppl_error(ERR_GENERAL, errtext); return 1; }
+    if (data->Nrows==0) { ppl_error(ERR_FILE, "No data was read from file"); return 1; }
+
+    // Check that units of data returned from file was as we expected
+    for (i=0; i<Ndims; i++)
+     if (!ppl_units_DimEqual(min[i], &data->FirstEntries[i]))
+      {
+       sprintf(temp_err_string, "Data in column %d of the data table supplied to the fft command has conflicting units with range %d: the former has units of <%s> while the latter has units of <%s>.", i+1, i+1, ppl_units_GetUnitStr(min[i],NULL,NULL,0,0), ppl_units_GetUnitStr(&data->FirstEntries[i],NULL,NULL,1,0));
+       ppl_error(ERR_NUMERIC, temp_err_string);
+       return 1;
+      }
+
+    // Read unit of f(x) in final column of data table
+    FirstVal = data->FirstEntries[Ndims];
+    FirstVal.real=1.0; FirstVal.imag=0.0; FirstVal.FlagComplex=0;
+    if (!ppl_units_DimEqual(&data->FirstEntries[Ndims], &data->FirstEntries[Ndims+1])) { sprintf(temp_err_string, "Data in columns %d and %d of the data table supplied to the fft command have conflicting units of <%s> and <%s> respectively. These represent the real and imaginary components of an input sample, and must have the same units.", Ndims+1, Ndims+2, ppl_units_GetUnitStr(&data->FirstEntries[Ndims],NULL,NULL,0,0), ppl_units_GetUnitStr(&data->FirstEntries[Ndims+1],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+
+    // Loop through data table
+    blk = data->first; j=0;
+    for (i=0; i<Nsamples; i++)
+     {
+      if ((blk==NULL)||(j==blk->BlockPosition)) { sprintf(temp_err_string, "Premature end to data table supplied to the fft command. To perform a "); k=strlen(temp_err_string); for (l=0;l<Ndims;l++) { sprintf(temp_err_string+k, "%dx", Nsteps[l]); k+=strlen(temp_err_string+k); } k-=(Ndims>0); sprintf(temp_err_string+k, " Fourier transform, need a grid of %d samples. Only received %d samples.", Nsamples, i); ppl_error(ERR_FILE, temp_err_string); return 1; }
+
+      // Work out what position we're expecting this data point to represent
+      for (k=i, l=Ndims-1; l>=0; l--) { Npos[l] = (k % Nsteps[l]); pos[l] = min[l]->real+step[l]->real*Npos[l]; k /= Nsteps[l]; }
+
+      // Check that first Ndims columns indeed represent this point
+      for (k=0; k<Ndims; k++)
+       if (!ppl_units_DblEqual(blk->data_real[k + (Ndims+2)*j] , pos[k]))
+        {
+         sprintf(temp_err_string, "Data supplied to fft command must be on a regular rectangular grid and in row-major ordering. Row %d should represent a data point at position (", i+1);
+         m=strlen(temp_err_string);
+         for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); }
+         m-=(Ndims>0);
+         sprintf(temp_err_string+m, "). In fact, it contained a data point at position ("); m+=strlen(temp_err_string+m);
+         for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=blk->data_real[l + (Ndims+2)*j]; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); } 
+         m-=(Ndims>0);
+         sprintf(temp_err_string+m, ")."); j=strlen(temp_err_string);
+         ppl_error(ERR_NUMERIC, temp_err_string);
+         return 1;
+        }
+
+      ppl_units_zero(&x);
+      x.real = blk->data_real[(Ndims+0) + (Ndims+2)*j];
+      x.imag = blk->data_real[(Ndims+1) + (Ndims+2)*j];
+      if (x.imag==0) { x.FlagComplex=0; x.imag=0.0; } else { x.FlagComplex=1; }
+      (*WindowType)(&x, Ndims, Npos, Nsteps); // Apply window function to data
+      #ifdef HAVE_FFTW3
+      datagrid[i][0] = x.real; datagrid[i][1] = x.imag;
+      #else
+      datagrid[i].re = x.real; datagrid[i].im = x.imag;
+      #endif
+      j++;
+      if (j==blk->BlockPosition) { j=0; blk=blk->next; }
+     }
+
+    // We're finished... can now free DataTable
+    lt_AscendOutOfContext(ContextLocalVec);
    }
   else // We are FFTing data from a function
    {
@@ -191,7 +263,7 @@ int directive_fft(Dict *command)
       for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(scratchpad+j,"%s,",ppl_units_NumericDisplay(&x,0,1,20)); j+=strlen(scratchpad+j); }
       sprintf(scratchpad+j-(Ndims>0),")");
       ppl_EvaluateAlgebra(scratchpad, &x, 0, NULL, 0, &status, errtext, 0);
-      if ((status>=0)||(!gsl_finite(x.real))||(!gsl_finite(x.imag))) { sprintf(temp_err_string, "Could not evaluate input function at position %s(", infunc); j=strlen(temp_err_string); for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+j,"%s,",ppl_units_NumericDisplay(&x,0,1,0)); j+=strlen(temp_err_string+j); } sprintf(temp_err_string+j-(Ndims>0),")"); ppl_error(ERR_NUMERIC, temp_err_string); return 1; } // Evaluation of algebra failed
+      if ((status>=0)||(!gsl_finite(x.real))||(!gsl_finite(x.imag))) { sprintf(temp_err_string, "Could not evaluate input function at position %s(", infunc); j=strlen(temp_err_string); for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+j,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); j+=strlen(temp_err_string+j); } sprintf(temp_err_string+j-(Ndims>0),")"); ppl_error(ERR_NUMERIC, temp_err_string); return 1; } // Evaluation of algebra failed
       if (i==0) { FirstVal=x; FirstVal.real=1.0; FirstVal.imag=0.0; FirstVal.FlagComplex=0; }
       else if (!ppl_units_DimEqual(&x, &FirstVal)) { sprintf(temp_err_string, "The supplied function to FFT does not produce values with consistent units; has produced values with units of <%s> and of <%s>.", ppl_units_GetUnitStr(&FirstVal,NULL,NULL,0,0), ppl_units_GetUnitStr(&x,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
       (*WindowType)(&x, Ndims, Npos, Nsteps); // Apply window function to data
@@ -233,8 +305,8 @@ int directive_fft(Dict *command)
   output->normalisation = 1.0/sqrt((double)Nsamples);
 
   // Make output unit
-  output->OutputUnit = FirstVal; // Output of an FFT has units of fn being FFTed, multiplied by the reciprocal of the units of all arguments being FFTed
-  for (i=0; i<Ndims; i++) { ppl_units_mult(&output->OutputUnit, &output->invrange[i], &output->OutputUnit, &status, temp_err_string); if (status>=0) break; }
+  output->OutputUnit = FirstVal; // Output of an FFT has units of fn being FFTed, multiplied by the units of all of the arguments being FFTed
+  for (i=0; i<Ndims; i++) { ppl_units_mult(&output->OutputUnit, &output->range[i], &output->OutputUnit, &status, temp_err_string); if (status>=0) break; }
   if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
   output->OutputUnit.real = output->OutputUnit.imag = 0.0;
   output->OutputUnit.FlagComplex = 0; // Output unit has zero magnitude
