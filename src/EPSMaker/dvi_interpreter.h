@@ -62,10 +62,10 @@ int dviInOpPost       (dviInterpreterState *interp, DVIOperator *op);
 int dviInOpPostPost   (dviInterpreterState *interp, DVIOperator *op);
 
 // Functions called by operator interpreter functions
-void dviSpecialChar      (dviInterpreterState *interp, DVIOperator *op);
-int  dviSpecialImplement (dviInterpreterState *interp);
-int  dviNonAsciiChar     (dviInterpreterState *interp, int c, char move);
-void dviUpdateBoundingBox(dviInterpreterState *interp, double width, double height, double depth);
+int dviSpecialChar      (dviInterpreterState *interp, DVIOperator *op);
+int dviSpecialImplement (dviInterpreterState *interp);
+int dviNonAsciiChar     (dviInterpreterState *interp, int c, char move);
+int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double height, double depth);
 
 #endif
 

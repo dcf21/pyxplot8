@@ -34,7 +34,7 @@
 #include "dvi_font.h"
 #include "dvi_read.h"
 
-// Big table of the operator functions to allow quick lookup without a long if ... else if ... statement
+// Table of the operator functions to allow quick lookup without a long if ... else if ... statement
 int (*dviOpTable[58])(dviInterpreterState *interp, DVIOperator *op);
 
 void makeDviOpTable()
@@ -114,12 +114,10 @@ int dviInterpretOperator(dviInterpreterState *interp, DVIOperator *op)
    {
     if (op->op <= DVI_CHARMAX)
      {
-      dviSpecialChar(interp, op);
-      return DVIE_SUCCESS;
+      return dviSpecialChar(interp, op);
      } else {
-      // The following function turns the special flag off, and hence 
-      // op is evaluated below
-      if ((err=dviSpecialImplement(interp)) > DVIE_WARNING) return err;
+      // The following function turns the special flag off, and hence op is evaluated below
+      if ((err=dviSpecialImplement(interp)) != 0) return err;
      }
    }
 
@@ -144,18 +142,19 @@ int dviInterpretOperator(dviInterpreterState *interp, DVIOperator *op)
    }
   else
    {
-    ppl_error(ERR_GENERAL,"DVI interpreter found illegal operator!");
+    ppl_error(ERR_INTERNAL,"dvi interpreter found an illegal operator");
     return DVIE_CORRUPT;
    }
   if (func==NULL)
    {
-    snprintf(errStr, SSTR_LENGTH, "Failed to find function for operator %d i=%d !\n", op->op, i);
-    ppl_error(ERR_GENERAL,errStr);
+    snprintf(errStr, SSTR_LENGTH, "Failed to find handler for dvi operator %d i=%d", op->op, i);
+    ppl_error(ERR_INTERNAL,errStr);
     return DVIE_CORRUPT;
    }
 
   // If we are not typesetting a character and moving right, check if we need to set accumulated text
-  if (op->op > DVI_SET1234+3 && interp->currentString != NULL) dviTypeset(interp);
+  if (op->op > DVI_SET1234+3 && interp->currentString != NULL)
+   if ((err=dviTypeset(interp))!=0) return err;
 
   // Call the function to interpret the operator
   return (*func)(interp, op);
@@ -168,10 +167,10 @@ int dviInterpretOperator(dviInterpreterState *interp, DVIOperator *op)
 // Typeset a special character
 int dviNonAsciiChar(dviInterpreterState *interp, int c, char move)
  {
-  char *s;
+  char s[64];
+  int err;
   dviStackState *postPos, *dviPos;   // Current positions in dvi and postscript code
   double width, height, depth, italic, size[4];
-  int chars;
 
   postPos = interp->output->currentPosition;
   dviPos = interp->state;
@@ -193,17 +192,14 @@ int dviNonAsciiChar(dviInterpreterState *interp, int c, char move)
   height = size[1] / interp->scale;
   depth  = size[2] / interp->scale;
   italic = size[3] / interp->scale;
-  if (DEBUG) { sprintf(temp_err_string, "width of glyph %g height of glyph %g\n", width, height); ppl_log(temp_err_string); }
-  dviUpdateBoundingBox(interp, width+italic, height, depth);
+  if (DEBUG) { sprintf(temp_err_string, "width of glyph %g height of glyph %g", width, height); ppl_log(temp_err_string); }
+  if ((err=dviUpdateBoundingBox(interp, width+italic, height, depth))!=0) return err;
 
   // Count the number of characters to write to the ps string
-  chars = 15;
-  s = (char *)lt_malloc(chars*sizeof(char));
-  snprintf(s, chars, "(\\%o) show\n", c);
+  snprintf(s, 64, "(\\%o) show\n", c);
 
   // Send the string off to the postscript routine and clean up memory
-  dviPostscriptAppend(interp, s);
-  free(s);
+  if ((err=dviPostscriptAppend(interp, s))!=0) return err;
   free(interp->currentString);
   interp->currentString = NULL;
   interp->currentStrlen = 0;
@@ -221,6 +217,7 @@ int dviNonAsciiChar(dviInterpreterState *interp, int c, char move)
 int dviInOpChar(dviInterpreterState *interp, DVIOperator *op)
  {
   int charToTypeset = op->op;
+  int err;
   char *s;
 
   // Typeset non-printable characters separately
@@ -230,22 +227,25 @@ int dviInOpChar(dviInterpreterState *interp, DVIOperator *op)
         (charToTypeset>126)                           )
    {
     // Clear the queue if there's anything on it
-    if (interp->currentString != NULL) dviTypeset(interp);
-    dviNonAsciiChar(interp, charToTypeset, DVI_YES);
+    if (interp->currentString != NULL)
+     if ((err=dviTypeset(interp))!=0) return err;
+    if ((err=dviNonAsciiChar(interp, charToTypeset, DVI_YES))!=0) return err;
     return 0;
    }
 
   // See if we have anywhere to put the character
   if (interp->currentString == NULL)
    {
-    interp->currentString = (char *)malloc(SSTR_LENGTH*sizeof(char)); // XXX !!!!!!!!!!!!!!!!!!!!!
+    interp->currentString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
     *(interp->currentString) = '\0';
     interp->currentStrlen = LSTR_LENGTH;
    }
   else if (strlen(interp->currentString) == interp->currentStrlen-2) // If the string is full, extend it
    {
-    interp->currentStrlen += SSTR_LENGTH;
-    interp->currentString = (char *)realloc(interp->currentString, interp->currentStrlen*sizeof(char)); // XXX !!!!!!!!!!!!!!!!!!!
+    if ((err=dviTypeset(interp))!=0) return err;
+    interp->currentString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char)); 
+    *(interp->currentString) = '\0';
+    interp->currentStrlen = LSTR_LENGTH;
    }
   // Write the character to the string
   s = interp->currentString+strlen(interp->currentString); // s now points to the \0
@@ -265,26 +265,26 @@ int dviInOpSet1234(dviInterpreterState *interp, DVIOperator *op)
 // Set a rule and move right
 int dviInOpSetRule(dviInterpreterState *interp, DVIOperator *op)
  {
-  int err = DVIE_SUCCESS;
+  int err=0;
 
   // Don't set a rule if movements are -ve
   if (op->sl[0]<0 || op->sl[1]<0)
    {
-    if (DEBUG) ppl_log("Silent Rule!");
+    if (DEBUG) ppl_log("silent rule");
     interp->state->h += op->sl[1];
-    dviPostscriptMoveto(interp);
+    if ((err=dviPostscriptMoveto(interp))!=0) return err;
    }
   else
    {
-    dviUpdateBoundingBox(interp, (int)op->sl[1], (int)op->sl[0], 0.);
-    dviPostscriptMoveto(interp);
+    if ((err=dviUpdateBoundingBox(interp, (int)op->sl[1], (int)op->sl[0], 0.0))!=0) return err;
+    if ((err=dviPostscriptMoveto (interp)                                     )!=0) return err;
     interp->state->v -= op->sl[0];
-    if ((err=dviPostscriptLineto       (interp)) > DVIE_WARNING) return err;
+    if ((err=dviPostscriptLineto       (interp))!=0) return err;
     interp->state->h += op->sl[1];
-    if ((err=dviPostscriptLineto       (interp)) > DVIE_WARNING) return err;
+    if ((err=dviPostscriptLineto       (interp))!=0) return err;
     interp->state->v += op->sl[0];
-    if ((err=dviPostscriptLineto       (interp)) > DVIE_WARNING) return err;
-    if ((err=dviPostscriptClosepathFill(interp)) > DVIE_WARNING) return err;
+    if ((err=dviPostscriptLineto       (interp))!=0) return err;
+    if ((err=dviPostscriptClosepathFill(interp))!=0) return err;
    }
   return err;
  }
@@ -292,32 +292,31 @@ int dviInOpSetRule(dviInterpreterState *interp, DVIOperator *op)
 // DVI_PUT
 int dviInOpPut1234(dviInterpreterState *interp, DVIOperator *op)
  {
-  dviNonAsciiChar(interp, op->ul[0], DVI_NO);
-  return 0;
+  return dviNonAsciiChar(interp, op->ul[0], DVI_NO);
  }
 
 // DVI_PUTRULE
 // Set a rule and don't move right
 int dviInOpPutRule(dviInterpreterState *interp, DVIOperator *op)
  {
-  int err=DVIE_SUCCESS;
+  int err=0;
 
   // Don't set a rule if movements are -ve
   if (op->sl[0]<0 || op->sl[1]<0)
    {
-    if (DEBUG) ppl_log("Silent Rule!");
+    if (DEBUG) ppl_log("silent rule");
    }
   else
    {
-    dviUpdateBoundingBox(interp, (int)op->sl[1], (int)op->sl[0], 0.);
-    dviPostscriptMoveto(interp);
+    if ((err=dviUpdateBoundingBox(interp, (int)op->sl[1], (int)op->sl[0], 0.0))!=0) return err;
+    if ((err=dviPostscriptMoveto(interp)                                      )!=0) return err;
     interp->state->v -= op->sl[0];
-    if ((err=dviPostscriptLineto       (interp)) > DVIE_WARNING) return err;
+    if ((err=dviPostscriptLineto       (interp))!=0) return err;
     interp->state->h += op->sl[1];
-    if ((err=dviPostscriptLineto       (interp)) > DVIE_WARNING) return err;
+    if ((err=dviPostscriptLineto       (interp))!=0) return err;
     interp->state->v += op->sl[0];
-    if ((err=dviPostscriptLineto       (interp)) > DVIE_WARNING) return err;
-    if ((err=dviPostscriptClosepathFill(interp)) > DVIE_WARNING) return err;
+    if ((err=dviPostscriptLineto       (interp))!=0) return err;
+    if ((err=dviPostscriptClosepathFill(interp))!=0) return err;
     interp->state->h -= op->sl[1];
    }
   return err;
@@ -346,13 +345,14 @@ int dviInOpBop(dviInterpreterState *interp, DVIOperator *op)
     newItem = dlAppendItem(interp->output->pages);
    }
   newItem->p = (void *) dviNewPostscriptPage();
+  if (newItem->p == NULL) return DVIE_MEMORY;
   interp->output->currentPage = (postscriptPage *)newItem->p;
   interp->output->Npages++;
 
   // Check that the stack is empty
   if (interp->stack != NULL)
    {
-    ppl_error(ERR_GENERAL,"Warning: malformed DVI file: stack not empty at start of new page!");
+    ppl_warning(ERR_INTERNAL,"malformed DVI file: stack not empty at start of new page");
     dlDeleteList(interp->stack);
     interp->stack = NULL;
    }
@@ -360,7 +360,7 @@ int dviInOpBop(dviInterpreterState *interp, DVIOperator *op)
   // There should not be a string in progress on the stack
   if (interp->currentStrlen != 0)
    {
-    ppl_error(ERR_GENERAL,"Warning: error in DVI interpreter: string on stack at newpage!");
+    ppl_warning(ERR_INTERNAL,"error in DVI interpreter: string on stack at newpage");
     interp->currentStrlen = 0;
     free(interp->currentString);
     interp->currentString = NULL;
@@ -413,8 +413,9 @@ int dviInOpPush(dviInterpreterState *interp, DVIOperator *op)
    }
   // Create a new stack object and clone the stack on to it
   newItem->p = (void *)dviCloneInterpState(interp->state);
-  /* lt_malloc(sizeof(dviStackState));
-  memcpy(newItem->p, (void *)interp->state, sizeof(dviStackState)); */
+  if (newItem->p == NULL) return DVIE_MEMORY;
+  // lt_malloc(sizeof(dviStackState));
+  // memcpy(newItem->p, (void *)interp->state, sizeof(dviStackState));
   return 0;
  }
 
@@ -425,7 +426,7 @@ int dviInOpPop(dviInterpreterState *interp, DVIOperator *op)
   dlListItem *item;
   if (interp->stack == NULL)
    {
-    ppl_error(ERR_GENERAL,"WARNING: corrupt dvi file (attempt to pop off empty stack)!");
+    ppl_error(ERR_INTERNAL,"corrupt dvi file -- attempt to pop off empty stack");
     return 1;
    }
 
@@ -542,7 +543,7 @@ int dviInOpSpecial1234(dviInterpreterState *interp, DVIOperator *op)
   interp->special = spesh;
   interp->spString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
   *(interp->spString) = '\0';
-  if (DEBUG) { sprintf(temp_err_string, "Special! %d %lu %d\n", spesh, op->ul[0], strlen(interp->spString)); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "dvi special: %d %lu %d", spesh, op->ul[0], strlen(interp->spString)); ppl_log(temp_err_string); }
   // NOP
   return 0;
  }
@@ -560,6 +561,7 @@ int dviInOpFntdef1234(dviInterpreterState *interp, DVIOperator *op)
   if (interp->fonts == NULL)
    {
     item = dlNewList();
+    if (item == NULL) return DVIE_MEMORY;
     interp->fonts = item;
    }
   else
@@ -567,6 +569,7 @@ int dviInOpFntdef1234(dviInterpreterState *interp, DVIOperator *op)
     item = dlAppendItem(interp->fonts);
    }
   font = (dviFontDetails *)lt_malloc(sizeof(dviFontDetails));
+  if (font==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
   item->p = (void *)font;
 
   // Populate with information from operator
@@ -594,12 +597,12 @@ int dviInOpPre(dviInterpreterState *interp, DVIOperator *op)
   mag = op->ul[3];
   if (i != 2)
    {
-    ppl_error(ERR_GENERAL,"Error interpreting dvi file: not dvi version 2!");
+    ppl_error(ERR_INTERNAL,"Error interpreting dvi file: not dvi version 2");
     return 1;
    }
   // Convert mag, num and den into points (for ps)
-  interp->scale = (double)mag / 1000. * (double)num / (double)den / 1.e3 * 72. / 254;    
-  if (DEBUG) { sprintf(temp_err_string, "Scale %g V=%lu num=%lu den=%lu mag=%lu\n", interp->scale,i,num,den,mag); ppl_log(temp_err_string); }
+  interp->scale = (double)mag / 1000.0 * (double)num / (double)den / 1.0e3 * 72.0 / 254;    
+  if (DEBUG) { sprintf(temp_err_string, "Scale %g V=%lu num=%lu den=%lu mag=%lu", interp->scale,i,num,den,mag); ppl_log(temp_err_string); }
   return 0;
  }
 
@@ -620,34 +623,33 @@ int dviInOpPostPost(dviInterpreterState *interp, DVIOperator *op)
 // ----------------------------------------------------------
 
 // Accumulate characters output in special mode into a string
-void dviSpecialChar(dviInterpreterState *interp, DVIOperator *op)
+int dviSpecialChar(dviInterpreterState *interp, DVIOperator *op)
  {
   int c;
   char *s;
   c = op->op;
   s = interp->spString+strlen(interp->spString);
   snprintf(s, SSTR_LENGTH, "%s", (char *)&c);
-  return;
+  return 0;
  }
 
 // Implement an accumulated special-mode command
 int dviSpecialImplement(dviInterpreterState *interp)
  {
-  int err = DVIE_SUCCESS;
+  int err = 0;
   char errString[SSTR_LENGTH];
 
-  if (DEBUG) { sprintf(temp_err_string, "Special!  Final string=%s\n", interp->spString); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "dvi special. Final string=%s", interp->spString); ppl_log(temp_err_string); }
   // Test for a colour string
   if (strncmp(interp->spString, "color ", 6) == 0)
    {
-    dviSpecialColourCommand(interp, interp->spString+6);
+    if ((err=dviSpecialColourCommand(interp, interp->spString+6))!=0) return err;
    }
   else
    {
     // Unhandled special command (e.g. includegraphics)
-    snprintf(errString, SSTR_LENGTH, "Warning! ignoring unhandled DVI special string %s\n", interp->spString);
-    ppl_error(ERR_GENERAL,errString);
-    err = DVIE_WARNING;
+    snprintf(errString, SSTR_LENGTH, "ignoring unhandled DVI special string %s", interp->spString);
+    ppl_warning(ERR_GENERAL, errString);
    }
 
   // Clean up
@@ -669,7 +671,7 @@ int dviSpecialColourCommand(dviInterpreterState *interp, char *command)
   if (strncmp(command, "push ", 4)==0)
    {
     // New colour to push onto stack
-    if (DEBUG) { sprintf(temp_err_string, "%s says push\n", command); ppl_log(temp_err_string); }
+    if (DEBUG) { sprintf(temp_err_string, "%s says push", command); ppl_log(temp_err_string); }
     command += 5;
     while (command[0] == ' ') command++;
     if (strncmp(command, "cmyk ", 5)==0)
@@ -684,21 +686,20 @@ int dviSpecialColourCommand(dviInterpreterState *interp, char *command)
      }
     else if (strncmp(command, "Black", 5)==0)
      {
-      snprintf(psText, SSTR_LENGTH, "0 0 0 setrgbcolor\n");
+      snprintf(psText, SSTR_LENGTH, "0 0 0 setrgbcolor\n"); // black
      }
-    else if (strncmp(command, "gray ", 5)==0 || strncmp(command, "grey ", 5)==0)
+    else if (strncmp(command, "gray ", 5)==0 || strncmp(command, "grey ", 5)==0) // grey colour
      {
       command += 5;
       snprintf(psText, SSTR_LENGTH, "%s %s %s setrgbcolor\n", command, command, command);
      }
     else
      {
-      snprintf(psText, SSTR_LENGTH, "Failed to comprehend colour %s\n", command);
-      ppl_error(ERR_GENERAL,psText);
-      return 1;
+      snprintf(psText, SSTR_LENGTH, "failed to interpret dvi colour %s", command);
+      ppl_warning(ERR_INTERNAL,psText);
+      return 0;
      }
-    dviSpecialColourStackPush(interp, psText);
-    return 0;
+    return dviSpecialColourStackPush(interp, psText);
    }
   else if (strncmp(command, "pop", 3)==0)
    {
@@ -706,9 +707,9 @@ int dviSpecialColourCommand(dviInterpreterState *interp, char *command)
    }
   else
    {
-    snprintf(psText, SSTR_LENGTH, "Warning! Ignoring incomprehensible colour command %s\n", command);
-    ppl_error(ERR_GENERAL,psText);
-    return 3;
+    snprintf(psText, SSTR_LENGTH, "ignoring incomprehensible dvi colour command %s", command);
+    ppl_warning(ERR_INTERNAL,psText);
+    return 0;
    }
   return 0;
  }
@@ -722,8 +723,8 @@ int dviSpecialColourStackPop(dviInterpreterState *interp)
   item = interp->colStack;
   if (item==NULL)
    {
-    ppl_error(ERR_GENERAL,"Warning!  DVI colour pop from empty stack!\n");
-    return 1;
+    ppl_warning(ERR_INTERNAL,"dvi colour pop from empty stack");
+    return 0;
    }
   while (item->nxt != NULL) item = item->nxt;
 
@@ -736,11 +737,11 @@ int dviSpecialColourStackPop(dviInterpreterState *interp)
    {
     // Hit the bottom of the colour stack; default colour is black
     interp->colStack = NULL;
-    dviPostscriptAppend(interp, "0 0 0 setrgbcolor\n");
+    if ((err=dviPostscriptAppend(interp, "0 0 0 setrgbcolor\n"))!=0) return err;
    }
   else
    {
-    dviPostscriptAppend(interp, (char *)item->p);
+    if ((err=dviPostscriptAppend(interp, (char *)item->p))!=0) return err;
    }
   return 0;
  }
@@ -770,7 +771,7 @@ int dviSpecialColourStackPush(dviInterpreterState *interp, char *psText)
   item->p = (void *)s;
 
   // Also append to the postscript stack
-  dviPostscriptAppend(interp, psText);
+  if ((err=dviPostscriptAppend(interp, psText))!=0) return err;
   return 0;
  }
 
@@ -805,7 +806,7 @@ dviInterpreterState *dviNewInterpreter()
   interp->f=0;
   interp->curFnt = NULL;
   interp->boundingBox = NULL;
-  interp->scale=0.;
+  interp->scale=0.0;
 
   // No string currently being assembled
   interp->currentString = NULL;
@@ -825,7 +826,7 @@ dviInterpreterState *dviNewInterpreter()
  }
 
 // Delete an interpreter
-void dviDeleteInterpreter(dviInterpreterState *interp)
+int dviDeleteInterpreter(dviInterpreterState *interp)
  {
   dviInterpreterState *state;
   dlListItem *item;
@@ -858,7 +859,7 @@ void dviDeleteInterpreter(dviInterpreterState *interp)
    
   // Delete the interpreter shell
   free(interp);
-  return;
+  return 0;
  }
 
 // Clone an interpreter state, returning a pointer to the new version
@@ -867,7 +868,7 @@ dviStackState *dviCloneInterpState(dviStackState *orig)
  {
   void *clone;
   clone = lt_malloc(sizeof(dviStackState));
-  memcpy(clone, (void *)orig, sizeof(dviStackState));
+  if (clone != NULL) memcpy(clone, (void *)orig, sizeof(dviStackState));
   return (dviStackState *) clone;
  }
 
@@ -889,7 +890,7 @@ postscriptPage *dviNewPostscriptPage()
  }
 
 // Delete a page of postscript output
-void dviDeletePostscriptPage(postscriptPage *page)
+int dviDeletePostscriptPage(postscriptPage *page)
  {
   if (page->boundingBox != NULL)
    {
@@ -901,11 +902,11 @@ void dviDeletePostscriptPage(postscriptPage *page)
   dlClearList(page->text);
   dlDeleteList(page->text);
   free(page);
-  return;
+  return 0;
  }
 
 // Clear a set of postscript pages and state
-void dviDeletePostscriptState(postscriptState *state)
+int dviDeletePostscriptState(postscriptState *state)
  {
   if (state->Npages > 0)
    {
@@ -920,7 +921,7 @@ void dviDeletePostscriptState(postscriptState *state)
     state->currentPage = NULL;
    }
   free(state);
-  return;
+  return 0;
  }
 
 // -------------------------------------------
@@ -928,7 +929,7 @@ void dviDeletePostscriptState(postscriptState *state)
 // -------------------------------------------
 
 // Append a string to the set of postscript strings
-void dviPostscriptAppend(dviInterpreterState *interp, char *new)
+int dviPostscriptAppend(dviInterpreterState *interp, char *new)
  {
   dlListItem *item;   // Temporary storage for a list item
   char *s;            // A temporary string pointer
@@ -950,23 +951,25 @@ void dviPostscriptAppend(dviInterpreterState *interp, char *new)
   s = (char *)lt_malloc(len*sizeof(char));
   strncpy(s, new, len);
   item->p = (void *)s;
-  return;
+  return 0;
  }
 
 // Write some postscript to move to the current co-ordinates
-void dviPostscriptMoveto(dviInterpreterState *interp)
+int dviPostscriptMoveto(dviInterpreterState *interp)
  {
+  int err=0;
   char s[SSTR_LENGTH];
   double x, y;
   x = interp->state->h * interp->scale;
   y = 765 - interp->state->v * interp->scale;
   snprintf(s, SSTR_LENGTH, "%f %f moveto\n", x, y);
-  dviPostscriptAppend(interp, s);
+  if ((err=dviPostscriptAppend(interp, s))!=0) return err;
 
   // If we don't have a current position make one, else set the current ps position to the dvi one
   if (interp->output->currentPosition == NULL)
    {
     interp->output->currentPosition = dviCloneInterpState(interp->state);
+    if (interp->output->currentPosition == NULL) return DVIE_MEMORY;
    }
   else
    {
@@ -979,17 +982,18 @@ void dviPostscriptMoveto(dviInterpreterState *interp)
 // Write some postscript to draw a line to the current co-ordinates
 int dviPostscriptLineto(dviInterpreterState *interp)
  {
+  int err=0;
   char s[SSTR_LENGTH];
   double x, y;
   x = interp->state->h * interp->scale;
   y = 765 - interp->state->v * interp->scale;
   snprintf(s, SSTR_LENGTH, "%f %f lineto\n", x, y);
-  dviPostscriptAppend(interp, s);
+  if ((err=dviPostscriptAppend(interp, s))!=0) return err;
 
   // If we don't have a current position make one, else set the current ps position to the dvi one
   if (interp->output->currentPosition == NULL)
    {
-    ppl_error(ERR_GENERAL,"Postscript error: lineto command issued with NULL current state!");
+    ppl_error(ERR_INTERNAL,"postscript error: lineto command issued with NULL current state!");
     return DVIE_INTERNAL;
    }
   else
@@ -997,21 +1001,22 @@ int dviPostscriptLineto(dviInterpreterState *interp)
     interp->output->currentPosition->h = interp->state->h;
     interp->output->currentPosition->v = interp->state->v;
    }
-  return DVIE_SUCCESS;
+  return 0;
  }
 
 // Write some postscript to close a path
 int dviPostscriptClosepathFill(dviInterpreterState *interp)
  {
+  int err=0;
   char s[SSTR_LENGTH];
   double x, y;
   x = interp->state->h * interp->scale;
   y = 765 - interp->state->v * interp->scale;
   snprintf(s, SSTR_LENGTH, "closepath fill\n");
-  dviPostscriptAppend(interp, s);
+  if ((err=dviPostscriptAppend(interp, s))!=0) return err;
   if (interp->output->currentPosition == NULL)
    {
-    ppl_error(ERR_GENERAL,"Postscript error: closepath command issued with NULL current state!");
+    ppl_error(ERR_INTERNAL,"postscript error: closepath command issued with NULL current state!");
     return DVIE_INTERNAL;
    }
   else
@@ -1019,18 +1024,18 @@ int dviPostscriptClosepathFill(dviInterpreterState *interp)
     free(interp->output->currentPosition);
     interp->output->currentPosition = NULL;
    }
-  return DVIE_SUCCESS;
+  return 0;
  }
 
 // Typeset the current buffered text
-void dviTypeset(dviInterpreterState *interp)
+int dviTypeset(dviInterpreterState *interp)
  {
   // This subroutine does the bulk of the actual postscript work, typesetting runs of characters
   dviStackState *postPos, *dviPos;   // Current positions in dvi and postscript code
   char *s;
   double width, height, depth, italic;
   double size[4];               // Width, height, depth
-  int chars;
+  int chars, err=0;
 
   postPos = interp->output->currentPosition;
   dviPos = interp->state;
@@ -1038,12 +1043,13 @@ void dviTypeset(dviInterpreterState *interp)
   // First check if we need to move before typesetting
   if (postPos== NULL)
    {
-    dviPostscriptMoveto(interp);
+    if ((err=dviPostscriptMoveto(interp))!=0) return err;
     interp->output->currentPosition = dviCloneInterpState(dviPos);
+    if (interp->output->currentPosition == NULL) return DVIE_MEMORY;
    }
   else if (postPos->h != dviPos->h || postPos->v != dviPos->v)
    {
-    dviPostscriptMoveto(interp);
+    if ((err=dviPostscriptMoveto(interp))!=0) return err;
    }
 
   s = interp->currentString;
@@ -1052,7 +1058,7 @@ void dviTypeset(dviInterpreterState *interp)
   depth  = 0.0;
   while (*s != '\0')
    {
-    dviGetCharSize(interp, *s, size);
+    if ((err=dviGetCharSize(interp, *s, size))!=0) return err;
     width += size[0];
     height = size[1]>height ? size[1] : height;
     depth  = size[2]>depth  ? size[2] : depth;
@@ -1068,7 +1074,7 @@ void dviTypeset(dviInterpreterState *interp)
   if (DEBUG) { sprintf(temp_err_string, "width of glyph %g height of glyph %g\n", width, height); ppl_log(temp_err_string); }
 
   // Only need to consider extra italic width for the final glyph
-  dviUpdateBoundingBox(interp, width+italic, height, depth);
+  if ((err=dviUpdateBoundingBox(interp, width+italic, height, depth))!=0) return err;
    
   // Count the number of characters to write to the ps string
   chars = strlen(interp->currentString)+9;
@@ -1076,7 +1082,7 @@ void dviTypeset(dviInterpreterState *interp)
   snprintf(s, chars, "(%s) show\n", interp->currentString);
 
   // Send the string off to the postscript routine and clean up memory
-  dviPostscriptAppend(interp, s);
+  if ((err=dviPostscriptAppend(interp, s))!=0) return err;
   free(s);
   free(interp->currentString);
   interp->currentString = NULL;
@@ -1085,7 +1091,7 @@ void dviTypeset(dviInterpreterState *interp)
   // Adjust the current position
   interp->state->h += width;
   interp->output->currentPosition->h += width;
-  return;
+  return 0;
  }
 
 // Change to a new font
@@ -1113,7 +1119,7 @@ int dviChngFnt(dviInterpreterState *interp, int fn)
    }
   if (interp->curFnt == NULL)
    {
-    ppl_error(ERR_GENERAL,"Corrupt DVI file: failed to find current font!");
+    ppl_error(ERR_INTERNAL,"Corrupt DVI file: failed to find current font");
     return DVIE_CORRUPT;
    }
 
@@ -1122,15 +1128,15 @@ int dviChngFnt(dviInterpreterState *interp, int fn)
   len = strlen(font->psName) + 20;
   s = (char *)lt_malloc(len*sizeof(char));
   size = font->useSize*interp->scale;
-  if (DEBUG) { sprintf(temp_err_string, "Font useSize %d size %g changed to %d\n", font->useSize, size, (int)ceil(size-.5)); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "Font useSize %d size %g changed to %d", font->useSize, size, (int)ceil(size-.5)); ppl_log(temp_err_string); }
   snprintf(s, len, "/%s %d selectfont\n", font->psName, (int)ceil(size-.5));
-  dviPostscriptAppend(interp, s);
+  if ((err=dviPostscriptAppend(interp, s))!=0) return err;
   free(s);
-  return DVIE_SUCCESS;
+  return 0;
  }
 
 // Get the size (width, height, depth) of a glyph
-void dviGetCharSize(dviInterpreterState *interp, char s, double *size)
+int dviGetCharSize(dviInterpreterState *interp, char s, double *size)
  {
   dviTFM *tfm;               // Details of this font
   int chnum;                 // Character number in this font
@@ -1155,11 +1161,11 @@ void dviGetCharSize(dviInterpreterState *interp, char s, double *size)
   size[3] = tfm->italic[ii] * scale;
 
   if (DEBUG) { sprintf(temp_err_string, "Character %d chnum %d has indices %d %d %d %d width %g height %g depth %g italic %g useSize %g\n", s, chnum, wi, di, hi, ii, size[0], size[1], size[2], size[3], font->useSize*interp->scale); ppl_log(temp_err_string); }
-  return;
+  return 0;
  }
 
 // Update a bounding box with the position and size of the current object to be typeset
-void dviUpdateBoundingBox(dviInterpreterState *interp, double width, double height, double depth)
+int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double height, double depth)
  {
   double *bb;
   double bbObj[4];      // Bounding box of the object that we are typeseting
@@ -1190,6 +1196,6 @@ void dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heig
     bb[2] = bb[2] > bbObj[2] ? bb[2] : bbObj[2];
     bb[3] = bb[3] < bbObj[3] ? bb[3] : bbObj[3];
    }
-  return;
+  return 0;
  }
 

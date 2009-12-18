@@ -82,19 +82,19 @@ typedef struct dviInterpreterState
 // Functions allowing dvi interpreters to be manipulated
 dviInterpreterState *dviNewInterpreter();
 int dviInterpretOperator(dviInterpreterState *interp, DVIOperator *op);
-void dviDeleteInterpreter(dviInterpreterState *interp);
-void dviTypeset(dviInterpreterState *interp);
+int dviDeleteInterpreter(dviInterpreterState *interp);
+int dviTypeset(dviInterpreterState *interp);
 
 dviStackState *dviCloneInterpState(dviStackState *state);
 
 postscriptPage *dviNewPostscriptPage();
-void dviDeletePostscriptPage(postscriptPage *page);
-void dviDeletePostscriptState(postscriptState *state);
+int dviDeletePostscriptPage(postscriptPage *page);
+int dviDeletePostscriptState(postscriptState *state);
 
-void dviPostscriptMoveto(dviInterpreterState *interp);
-void dviPostscriptAppend(dviInterpreterState *interp, char *s);
+int dviPostscriptMoveto(dviInterpreterState *interp);
+int dviPostscriptAppend(dviInterpreterState *interp, char *s);
 
-void dviGetCharSize(dviInterpreterState *interp, char s, double *size);
+int dviGetCharSize(dviInterpreterState *interp, char s, double *size);
 
 // Routines for reading from files
 int ReadUChar(FILE *fp, int *uc);
@@ -144,11 +144,6 @@ int GetDVIOperator(DVIOperator *op, FILE *fp);
 
 // Error states
 
-// Overall error states (success, warning of some kind, unspecified fatal error)
-#define DVIE_SUCCESS 0
-#define DVIE_WARNING 1
-#define DVIE_FATAL   9
-
 // Errors related to file operations
 #define DVIE_NOENT   10
 #define DVIE_EOF     11
@@ -159,7 +154,8 @@ int GetDVIOperator(DVIOperator *op, FILE *fp);
 #define DVIE_NOFONT  21
 
 // Internal errors (inconsistent internal state => bug!)
-#define DVIE_INTERNAL 30
+#define DVIE_MEMORY   30
+#define DVIE_INTERNAL 31
 
 #endif
 

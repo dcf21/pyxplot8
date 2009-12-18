@@ -71,7 +71,9 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
   fp = fopen(filename, "r");
   if (fp==NULL)
    {
-    dvi_fatal("dvi_read", 1, "dvi file does not exist!");
+    dvi_error(ERR_INTERNAL,"dvi file does not exist!");
+    *status = 1;
+    return;
    }
 
   // This is the main loop for the dvi parser
@@ -80,16 +82,17 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
     // Read the next operator from the dvi file
     if ((err=GetDVIOperator(&op, fp))!=0)
      {
-      if (err > DVIE_WARNING) { *status=err; return NULL; }
+      if (err) { *status=err; return NULL; }
       else { continue; }
      }
-    DisplayDVIOperator(&op);
+
+    if (DEBUG) DisplayDVIOperator(&op); // Producing debugging output
 
     // A slightly more sophisticated interpreter that makes some postscript
     if (!POST)
      {
       err = dviInterpretOperator(interpreter, &op);
-      if (err > DVIE_WARNING) { *status=err; return NULL; }
+      if (err) { *status=err; return NULL; }
      }
     for (i=0; i<2; i++)
      {
@@ -122,7 +125,7 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
   // First read in the opcode
   if ((err=ReadUChar(fp,&v))!=0)
    {
-    ppl_error(ERR_GENERAL,"Error reading operator from disc!");
+    ppl_error(ERR_INTERNAL,"Error reading dvi operator from disk");
     return err;
    }
   op->op = v;
@@ -130,8 +133,8 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
   // Now work out what it represents and get any extra data if needed
   if (v < DVI_CHARMIN)
    {
-    ppl_error(ERR_GENERAL,"Illegal opcode whilst parsing DVI file!");
-    return -1;
+    ppl_error(ERR_INTERNAL,"Illegal opcode whilst parsing DVI file");
+    return 1;
    }
   else if (v >= DVI_CHARMIN && v <= DVI_CHARMAX)
    {
@@ -332,31 +335,31 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
    }
   else
    {
-    ppl_error(ERR_GENERAL,"Unidentified opcode in dvi file!");
-    return -1;
+    ppl_error(ERR_INTERNAL,"Unidentified opcode in dvi file");
+    return 1;
    }
 
   // Once we've got an operator we return, so we should never get here
-  dvi_fatal("dvi_read.c", 252, "GetDVIOperator: you are not reading this error message!");
-  return -1;
+  ppl_error(ERR_INTERNAL, "GetDVIOperator: flow control has gone wrong");
+  return 1;
  }
 
 // Read an unsigned char from a dvi file
-int ReadUChar (FILE *fp, int *uc)
+int ReadUChar(FILE *fp, int *uc)
  {
   int i;
   i = getc(fp);
   if (i==EOF)
    {
-    dvi_fatal("Unexpected EOF in dvi file!", -1, "ReadUChar");
-    return -1;
+    ppl_error(ERR_INTERNAL, "Unexpected EOF in dvi file");
+    return 1;
    }
   *uc = i;
   return 0;
  }
 
 // Read a long int from a dvi file (using the DVI long int format)
-int ReadLongInt (FILE *fp, unsigned long int *uli, int n)
+int ReadLongInt(FILE *fp, unsigned long int *uli, int n)
  {
   int err,v,i;
   unsigned long int fv;
@@ -387,7 +390,7 @@ int ReadSignedInt (FILE *fp, signed long int *sli, int n)
   return 0;
  }
 
-// Provide a display of a dvi operator (for debugging purposes)
+// Provide a log message about a dvi operator for debugging purposes
 int DisplayDVIOperator(DVIOperator *op)
  {
   char *s, s2[128];
@@ -422,7 +425,7 @@ int DisplayDVIOperator(DVIOperator *op)
   else if (op->op <= DVI_FNTNUMMAX)
    {
     snprintf(s2, 128, "Font number %d", op->op-DVI_FNTNUMMIN);
-    s = s2;
+    s=s2;
    }
   else if (op->op <= DVI_POSTPOST)
    {
@@ -432,10 +435,10 @@ int DisplayDVIOperator(DVIOperator *op)
    }
   else
    {
-    snprintf(s2, 128, "ERROR!!!");
+    snprintf(s2, 128, "dvi error");
     s=s2;
    }
-  if (DVI_DEBUG) printf("%s\n", s);
+  ppl_log(s);
   return 0;
  }
 
