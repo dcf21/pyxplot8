@@ -30,6 +30,7 @@
 #include "ppl_canvasdraw.h"
 
 #include "eps_comm.h"
+#include "eps_core.h"
 #include "eps_text.h"
 #include "eps_settings.h"
 
@@ -46,9 +47,22 @@ void eps_text_YieldUpText(EPSComm *x)
 
 void eps_text_RenderEPS(EPSComm *x)
  {
-  char *colstr = "0 0 0 setrgbcolor";
+  with_words def, merged;
+  char *colstr;
   int pageno = x->LaTeXpageno++;
+
+  // Write header at top of postscript
   fprintf(x->epsbuffer, "%% Canvas item %d [text label]\n", x->current->id);
+
+  // Work out text colour
+  with_words_zero(&def,0);
+  def.colour    = x->current->settings.TextColour;
+  def.USEcolour = 1;
+  with_words_merge(&merged, &x->current->with_data, &def, NULL, NULL, NULL, 1);
+  eps_core_SetColour(x, &merged);
+  colstr = x->LastEPSColour;
+
+  // Render text item to eps
   canvas_EPSRenderTextItem(x, pageno, x->current->xpos, x->current->ypos, x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation);
 
   // Final newline at end of canvas item

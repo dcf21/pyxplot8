@@ -24,6 +24,9 @@
 
 #include "ListTools/lt_dict.h"
 
+// Maximum permitted iteration level
+#define MAX_ITERLEVEL_DEPTH 100
+
 typedef struct cmd_chain_item {
  char *line;
  struct cmd_chain_item *next;
@@ -34,9 +37,11 @@ typedef struct cmd_chain_item {
 typedef struct cmd_chain_item *cmd_chain;
 
 #ifndef _PPL_FLOWCTRL_C
-extern int PPL_FLOWCTRL_BREAKABLE;
-extern int PPL_FLOWCTRL_BROKEN;
-extern int PPL_FLOWCTRL_CONTINUED;
+extern char *PPL_FLOWCTRL_LOOPNAME[MAX_ITERLEVEL_DEPTH+1];
+extern int   PPL_FLOWCTRL_BREAKABLE;
+extern int   PPL_FLOWCTRL_BREAKLEVEL;
+extern int   PPL_FLOWCTRL_BROKEN;
+extern int   PPL_FLOWCTRL_CONTINUED;
 #endif
 
 int directive_do     (Dict *command, int IterLevel);

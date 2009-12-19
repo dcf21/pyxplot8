@@ -47,6 +47,7 @@
 #include "ppl_children.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
+#include "ppl_flowctrl.h"
 #include "ppl_input.h"
 #include "ppl_papersize.h"
 #include "ppl_parser.h"
@@ -86,6 +87,9 @@ int main(int argc, char **argv)
   ppl_PaperSizeInit();
   ppl_settings_makedefault();
   ppl_text_init();
+
+  // Make all loop names NULL
+  for (i=0; i<MAX_ITERLEVEL_DEPTH+1; i++) PPL_FLOWCTRL_LOOPNAME[i]=NULL;
 
   // Turn off GSL's automatic error handler
   gsl_set_error_handler_off();

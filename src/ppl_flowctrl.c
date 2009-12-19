@@ -46,9 +46,12 @@
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
-int PPL_FLOWCTRL_BREAKABLE = 0;
-int PPL_FLOWCTRL_BROKEN    = 0;
-int PPL_FLOWCTRL_CONTINUED = 0;
+
+char *PPL_FLOWCTRL_LOOPNAME[MAX_ITERLEVEL_DEPTH+1];
+int   PPL_FLOWCTRL_BREAKABLE  = 0;
+int   PPL_FLOWCTRL_BREAKLEVEL = -1;
+int   PPL_FLOWCTRL_BROKEN     = 0;
+int   PPL_FLOWCTRL_CONTINUED  = 0;
 
 void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel, int *status)
  {
@@ -118,8 +121,9 @@ int loop_execute(cmd_chain *chain, int breakable, int IterLevel)
   char *line_ptr;
 
   OldBreakable = PPL_FLOWCTRL_BREAKABLE;
-  PPL_FLOWCTRL_BROKEN    = 0;
-  PPL_FLOWCTRL_CONTINUED = 0;
+  PPL_FLOWCTRL_BREAKLEVEL = -1;
+  PPL_FLOWCTRL_BROKEN     = 0;
+  PPL_FLOWCTRL_CONTINUED  = 0;
   ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
   while ((!status) && (PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
@@ -130,7 +134,7 @@ int loop_execute(cmd_chain *chain, int breakable, int IterLevel)
     if (StrStrip(line_ptr,line_ptr)[0] != '\0') status = ProcessDirective(line_ptr, 0, IterLevel);
    }
   PPL_FLOWCTRL_BREAKABLE = OldBreakable;
-  if (breakable) PPL_FLOWCTRL_CONTINUED = 0;
+  if ((breakable) && ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel))) PPL_FLOWCTRL_CONTINUED = 0;
   ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
   return status;
  }
@@ -176,19 +180,24 @@ int directive_do(Dict *command, int IterLevel)
   if (strcmp(cptr,"while")!=0) { ppl_error(ERR_SYNTAX, "Only the statement 'while' can be placed after a } here."); return 1; }
   DictLookup(cmd2,"criterion",NULL,(void **)(&criterion));
 
+  // Set loop name, if we have one
+  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
+
   // Execute this do loop repeatedly
   do
    {
     chainiter = chain;
     status = loop_execute(&chainiter, 1, IterLevel);
-    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
     if (status) break;
     i=-1; j=-1;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
-    if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
    }
   while ((!status) && ((!ppl_units_DblEqual(criterion_val.real,0.0)) || (!ppl_units_DblEqual(criterion_val.imag,0.0))));
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   return status;
  }
 
@@ -226,19 +235,24 @@ int directive_while(Dict *command, int IterLevel)
   if      (status ==  1) { ppl_error(ERR_SYNTAX, "while statement should be followed by { ... }."); return 1; }
   else if (status == -1) { ppl_error(ERR_SYNTAX, "while clause should be terminated with a }."); return 1; }
 
+  // Set loop name, if we have one
+  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
+
   // Execute this while loop repeatedly
   do
    {
     i=-1; j=-1; status=0;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
-    if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
     if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;
     chainiter = chain;
     status = loop_execute(&chainiter, 1, IterLevel);
-    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
    }
   while (!status);
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   return status;
  }
 
@@ -301,16 +315,21 @@ int directive_for(Dict *command, int IterLevel)
   DictAppendValue(_ppl_UserSpace_Vars , loopvar , *start);
   DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval);
 
-  // Execute this while loop repeatedly
+  // Set loop name, if we have one
+  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
+
+  // Execute this for loop repeatedly
   status = 0;
   while (((!backwards)&&(iterval->real < end->real)) || ((backwards)&&(iterval->real > end->real)))
    {
     chainiter = chain;
     status = loop_execute(&chainiter, 1, IterLevel);
-    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
     if (status) break;
     iterval->real += step->real;
    }
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   return status;
  }
 
@@ -366,6 +385,10 @@ int directive_foreach(Dict *command, int IterLevel)
     DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval); // Have one loop variable if not looping over a datafile
    }
 
+  // Set loop name, if we have one
+  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
+
   // See if we're iterating over a globbed filename
   DictLookup     (command,"filename_list",NULL,(void **)(&listptr));
   if (listptr != NULL)
@@ -390,7 +413,7 @@ int directive_foreach(Dict *command, int IterLevel)
             iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
             chainiter = chain;
             status = loop_execute(&chainiter, 1, IterLevel);
-            if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+            if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
            }
           if (status) break;
          }
@@ -402,6 +425,7 @@ int directive_foreach(Dict *command, int IterLevel)
       if (status) break;
       listiter = ListIterate(listiter, NULL);
      }
+    PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
     return status;
    }
 
@@ -421,11 +445,12 @@ int directive_foreach(Dict *command, int IterLevel)
      }
     chainiter = chain;
     status = loop_execute(&chainiter, 1, IterLevel);
-    if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
     if (status) break;
     listiter = ListIterate(listiter, NULL);
    }
   if (!foreachdatum) ppl_units_zero(iterval);
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   return status;
  }
 
@@ -529,7 +554,7 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
        {
        *chainiter = *chain;
        *status = loop_execute(chainiter, 1, IterLevel);
-       if (PPL_FLOWCTRL_BROKEN) { PPL_FLOWCTRL_BROKEN=0; break; }
+       if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
        if (*status) break;
       }
      }
@@ -554,6 +579,9 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
   cmd_chain  chain   = NULL;
   cmd_chain *cmd_put = NULL;
   cmd_put = &chain;
+
+  // if clauses have no loop names
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
   // Check whether if statement had { and/or first command on same line
   DictLookup(command,"brace",NULL,(void **)(&cptr));
@@ -604,6 +632,9 @@ int directive_if(Dict *command, int IterLevel)
  {
   double *criterion;
   int     status=0;
+
+  // if clauses have no loop names
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
   DictLookup(command,"criterion",NULL,(void **)(&criterion));
   if (ppl_units_DblEqual(*criterion, 0.0)) status = directive_ifelse(command, 0, IterLevel);

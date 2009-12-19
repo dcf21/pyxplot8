@@ -577,7 +577,11 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
  {
   postscriptPage *dviPage;
   ListIterator *ListIter;
+  char *cptr;
   double bb_left, bb_right, bb_top, bb_bottom, xanchor, yanchor;
+
+  // If colstr is blank, we are painting with null ink
+  if (colstr[0]=='\0') return;
 
   // Fetch requested page of postscript
   dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, pageno+1);
@@ -614,13 +618,18 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   fprintf(x->epsbuffer, "%.2f rotate\n", rotate * 180 / M_PI);
   fprintf(x->epsbuffer, "%f %f scale\n", fontsize, fontsize);
   fprintf(x->epsbuffer, "%f %f translate\n", -xanchor, -yanchor);
-  fprintf(x->epsbuffer, "%s\n", colstr);
 
   // Copy postscript description of page out of dvi buffer
   ListIter = ListIterateInit(dviPage->text);
   while (ListIter!=NULL)
    {
-    fprintf(x->epsbuffer, "%s", (char *)ListIter->data);
+    cptr = (char *)ListIter->data;
+    while (*cptr!='\0')
+     {
+      if (*cptr!='\x01') fprintf(x->epsbuffer, "%c", *cptr);
+      else               fprintf(x->epsbuffer, "%s", colstr); // ASCII x01 is a magic code to tell us to revert to default colour
+      cptr++;
+     }
     ListIter = ListIterate(ListIter, NULL);
    }
 

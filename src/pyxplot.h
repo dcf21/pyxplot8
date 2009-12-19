@@ -39,6 +39,8 @@ void        InteractiveSession  ();
 void        ProcessPyXPlotScript(char *input, int IterLevel);
 int         ProcessDirective    (char *in, int interactive, int IterLevel);
 int         ProcessDirective2   (char *in, Dict *command, int interactive, int memcontext, int IterLevel);
+int         directive_break     (Dict *command, int IterLevel);
+int         directive_continue  (Dict *command, int IterLevel);
 void        directive_cd        (Dict *command);
 int         directive_exec      (Dict *command, int IterLevel);
 void        directive_history   (Dict *command);

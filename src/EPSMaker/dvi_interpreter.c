@@ -699,8 +699,8 @@ int dviSpecialColourStackPop(dviInterpreterState *interp)
   // Set colour to item on top of stack
   if (item==NULL)
    {
-    // Hit the bottom of the colour stack; default colour is black
-    if ((err=dviPostscriptAppend(interp, "0 0 0 setrgbcolor\n"))!=0) return err;
+    // Hit the bottom of the colour stack; returning to default colour. Spit out ASCII x01, and this will be dealt with later
+    if ((err=dviPostscriptAppend(interp, "\x01\n"))!=0) return err;
    }
   else
    {

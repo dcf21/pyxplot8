@@ -298,11 +298,10 @@ int directive_fft(Dict *command)
   status=0;
   for (i=0; i<Ndims; i++) { ppl_units_sub(max[i], min[i], &output->range[i], &status, temp_err_string); if (status) break; }
   if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
-  for (i=0; i<Ndims; i++) { ppl_units_sub(max[i], min[i], &output->range[i], &status, temp_err_string); if (status) break; }
-  if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
   for (i=0; i<Ndims; i++) ppl_units_DimInverse(&output->invrange[i], &output->range[i]);
   output->datagrid = datagrid;
-  output->normalisation = 1.0/sqrt((double)Nsamples);
+  output->normalisation = 1.0;
+  for (i=0; i<Ndims; i++) output->normalisation *= output->range[i].real / Nsteps[i];
 
   // Make output unit
   output->OutputUnit = FirstVal; // Output of an FFT has units of fn being FFTed, multiplied by the units of all of the arguments being FFTed

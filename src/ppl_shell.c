@@ -73,6 +73,7 @@ void InteractiveSession()
   sigset_t sigs;
 
   if (DEBUG) ppl_log("Starting an interactive session.");
+  PPL_FLOWCTRL_LOOPNAME[0] = NULL;
 
   // Set up SIGINT handler
   if (sigsetjmp(sigjmp_ToInteractive, 1) == 0)
@@ -124,6 +125,8 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   char *line_ptr;
   char *OldLB, *OldLBP, *OldLBA;
   FILE *infile;
+
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
   if (DEBUG) { sprintf(temp_err_string, "Processing input from the script file '%s'.", input); ppl_log(temp_err_string); }
   UnixExpandUserHomeDir(input , settings_session_default.cwd, full_filename);
@@ -269,7 +272,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
 
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
 
-  if (IterLevel > 100) { ppl_error(ERR_GENERAL, "Maximum recursion depth exceeded."); return 1; }
+  if (IterLevel > MAX_ITERLEVEL_DEPTH) { ppl_error(ERR_GENERAL, "Maximum recursion depth exceeded."); return 1; }
 
   DictLookup(command,"directive",NULL,(void **)(&directive));
 
@@ -300,10 +303,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "box")==0)
    directive_box(command, interactive);
   else if (strcmp(directive, "break")==0)
-   {
-    if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_BROKEN=1;
-    else                        ppl_error(ERR_SYNTAX, "The break statement can only be placed inside a loop structure.");
-   }
+   return directive_break(command, IterLevel);
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
   else if (strcmp(directive, "circle")==0)
@@ -311,10 +311,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "clear")==0)
    { directive_clear(); SendCommandToCSP("A"); }
   else if (strcmp(directive, "continue")==0)
-   {
-    if (PPL_FLOWCTRL_BREAKABLE) PPL_FLOWCTRL_CONTINUED=1;
-    else                        ppl_error(ERR_SYNTAX, "The continue statement can only be placed inside a loop structure.");
-   }
+   return directive_continue(command, IterLevel);
   else if (strcmp(directive, "delete")==0)
    return directive_delete(command);
   else if (strcmp(directive, "do")==0)
@@ -453,6 +450,42 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   return 0;
  }
 
+int directive_break(Dict *command, int IterLevel)
+ {
+  char *loopname;
+  int i;
+  if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, "The break statement can only be placed inside a loop structure."); return 1; }
+  DictLookup(command,"loopname",NULL,(void **)(&loopname));
+  if (loopname != NULL)
+   {
+    for (i=IterLevel; i>=0; i--) if ((PPL_FLOWCTRL_LOOPNAME[i]!=NULL) && (strcmp(loopname, PPL_FLOWCTRL_LOOPNAME[i])==0)) break;
+    if (i<0) { sprintf(temp_err_string, "Not inside any loop with the name '%s'", loopname); ppl_error(ERR_SYNTAX,temp_err_string); return 1; }
+    PPL_FLOWCTRL_BREAKLEVEL = i;
+   } else {
+    PPL_FLOWCTRL_BREAKLEVEL = -1;
+   }
+  PPL_FLOWCTRL_BROKEN=1;
+  return 0;
+ }
+
+int directive_continue(Dict *command, int IterLevel)
+ {
+  char *loopname;
+  int i;
+  if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, "The continue statement can only be placed inside a loop structure."); return 1; }
+  DictLookup(command,"loopname",NULL,(void **)(&loopname));
+  if (loopname != NULL)
+   {
+    for (i=IterLevel; i>=0; i--) if ((PPL_FLOWCTRL_LOOPNAME[i]!=NULL) && (strcmp(loopname, PPL_FLOWCTRL_LOOPNAME[i])==0)) break;
+    if (i<0) { sprintf(temp_err_string, "Not inside any loop with the name '%s'", loopname); ppl_error(ERR_SYNTAX,temp_err_string); return 1; }
+    PPL_FLOWCTRL_BREAKLEVEL = i;
+   } else {
+    PPL_FLOWCTRL_BREAKLEVEL = -1;
+   }
+  PPL_FLOWCTRL_CONTINUED=1;
+  return 0;
+ }
+
 void directive_cd(Dict *command)
  {
   List         *DirList;
@@ -490,6 +523,8 @@ int directive_exec(Dict *command, int IterLevel)
   char *strval, *line_ptr;
   char *OldLB, *OldLBP, *OldLBA;
   int   i=0;
+
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
   DictLookup(command,"command",NULL,(void **)(&strval));
   SetInputSourceString(strval, &i);
