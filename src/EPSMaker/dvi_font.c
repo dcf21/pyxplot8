@@ -45,10 +45,6 @@ int dviGetTFM(dviFontDetails *font)
   FILE *TFMfp;
   FILE *fpin, *fpout;
 
-  // Set program name within kpathsea
-  kpse_set_program_name("pyxplot", NULL);
-  // kpse_init_prog();
-
   // Get the TFM file
   s = (char *)lt_malloc((strlen(font->name)+5)*sizeof(char));
   if (s==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }

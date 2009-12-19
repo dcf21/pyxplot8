@@ -27,6 +27,7 @@
 #include "ListTools/lt_memory.h"
 
 #include "ppl_error.h"
+#include "ppl_canvasdraw.h"
 
 #include "eps_comm.h"
 #include "eps_text.h"
@@ -45,7 +46,13 @@ void eps_text_YieldUpText(EPSComm *x)
 
 void eps_text_RenderEPS(EPSComm *x)
  {
+  char *colstr = "0 0 0 setrgbcolor";
+  int pageno = x->LaTeXpageno++;
   fprintf(x->epsbuffer, "%% Canvas item %d [text label]\n", x->current->id);
+  canvas_EPSRenderTextItem(x, pageno, x->current->xpos, x->current->ypos, x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation);
+
+  // Final newline at end of canvas item
+  fprintf(x->epsbuffer, "\n");
   return;
  }
 

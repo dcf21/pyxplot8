@@ -33,6 +33,7 @@
 
 #include "EPSMaker/dvi_read.h"
 #include "EPSMaker/eps_comm.h"
+#include "EPSMaker/eps_core.h"
 #include "EPSMaker/eps_arrow.h"
 #include "EPSMaker/eps_box.h"
 #include "EPSMaker/eps_circle.h"
@@ -199,6 +200,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   comm.LastEPSFillColour[0] = '\0';
   comm.LastLinewidth        = -1.0;
   comm.LastLinetype         = 0;
+  comm.LaTeXpageno          = 0; // Used to count items off as we render them to postscript
   for (i=0; i<N_POINTTYPES; i++) comm.PointTypesUsed[i] = 0; // Record which point and star macros we've used and need to include in postscript prolog
   for (i=0; i<N_STARTYPES ; i++) comm.StarTypesUsed [i] = 0;
 
@@ -355,10 +357,10 @@ void canvas_CallLaTeX(EPSComm *x)
   sigemptyset(&sigs);
   sigaddset(&sigs,SIGCHLD);
 
-  const char TextHeader1[] = "\\documentclass{article}\n\\pagestyle{plain}\n";
+  const char TextHeader1[] = "\\documentclass{article}\n\\pagestyle{empty}\n";
   const char TextHeader2[] = "\\begin{document}\nIgnore page 1\n\\newpage\n";
   const char ItemHeader [] = "\\vbox{\\hbox{\n";
-  const char ItemFooter [] = "\n\\hskip 0pt plus 1filll minus 1filll}\n\\vskip 0pt plus 1filll minus 1filll}\n";
+  const char ItemFooter [] = "\n\\hskip 0pt plus 1filll minus 1filll}\n\\vskip 0pt plus 1filll minus 1filll}\n\\newpage\n";
   const char TextFooter [] = "\\end{document}\n";
 
   // chdir into temporary directory so that LaTeX's mess goes into /tmp
@@ -448,8 +450,8 @@ void canvas_MakeEPSBuffer(EPSComm *x)
 void canvas_EPSWrite(EPSComm *x)
  {
   int i;
-  FILE *epsout;
-  char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName;
+  FILE *epsout, *PFAfile;
+  char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName, *PFAfilename;
   ListIterator *ListIter;
 
   // Apply enlarge and landscape terminals as required
@@ -480,7 +482,7 @@ void canvas_EPSWrite(EPSComm *x)
   else                                                fprintf(epsout, "%%%%Orientation: Portrait\n");
   if (settings_term_current.TermType == SW_TERMTYPE_PS)
     fprintf(epsout, "%%%%DocumentMedia: %s %d %d white { }\n", PaperName, (int)(settings_term_current.PaperWidth.real * M_TO_PS), (int)(settings_term_current.PaperHeight.real * M_TO_PS));
-  fprintf(epsout, "%%%%DocumentFonts:");
+  fprintf(epsout, "%%%%DocumentFonts:"); // %%DocumentFonts has a list of all of the fonts that we use
   ListIter = ListIterateInit(x->dvi->fonts);
   while (ListIter != NULL)
    {
@@ -500,6 +502,30 @@ void canvas_EPSWrite(EPSComm *x)
 
   // Write EPS prolog
   fprintf(epsout, "%%%%BeginProlog\n");
+
+  // Output all of the fonts which we're going to use
+  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+  ListIter = ListIterateInit(x->dvi->fonts);
+  while (ListIter != NULL)
+   {
+    fprintf(epsout, "%%%%BeginFont: %s\n", ((dviFontDetails *)ListIter->data)->psName);
+    PFAfilename = ((dviFontDetails *)ListIter->data)->pfaPath;
+    PFAfile = fopen(PFAfilename,"r");
+    if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, temp_err_string); *(x->status)=1; return; }
+    while (fgets(temp_err_string, FNAME_LENGTH, PFAfile) != NULL)
+     if (fputs(temp_err_string, epsout) == EOF)
+      {
+       sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, temp_err_string);
+       *(x->status)=1;
+       return;
+      }
+    fclose(PFAfile);
+    fprintf(epsout, "\n%%%%EndFont\n");
+    ListIter = ListIterate(ListIter, NULL);
+   }
+  if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
+
+  // Output macros which PyXPlot needs
   if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "%s", PS_PROLOG_TEXT);
   fprintf(epsout, "%s", EPS_PROLOG_TEXT);
   fprintf(epsout, "/ps { 1 } def\n/ps75 { ps .75 mul } def\n"); // Pointsize variables
@@ -543,6 +569,63 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "showpage\n%%%%EOF\n"); // End of document
   fclose(x->epsbuffer);
   fclose(epsout);
+  return;
+ }
+
+// Write a text item out from dvi buffer
+void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, int halign, int valign, char *colstr, double fontsize, double rotate)
+ {
+  postscriptPage *dviPage;
+  ListIterator *ListIter;
+  double bb_left, bb_right, bb_top, bb_bottom, xanchor, yanchor;
+
+  // Fetch requested page of postscript
+  dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, pageno+1);
+  if (dviPage==NULL) { ppl_error(ERR_INTERNAL, "Not all text items were rendered by LaTeX"); *(x->status)=1; return; }
+  bb_left   = dviPage->boundingBox[0];
+  bb_bottom = dviPage->boundingBox[1];
+  bb_right  = dviPage->boundingBox[2];
+  bb_top    = dviPage->boundingBox[3];
+
+  // Work out where our anchor point is on postscript
+  if      (halign == SW_HALIGN_LEFT ) xanchor = bb_left;
+  else if (halign == SW_HALIGN_CENT ) xanchor = (bb_left + bb_right)/2.0;
+  else if (halign == SW_HALIGN_RIGHT) xanchor = bb_right;
+  else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
+  if      (valign == SW_VALIGN_TOP  ) yanchor = bb_top;
+  else if (valign == SW_VALIGN_CENT ) yanchor = (bb_top + bb_bottom)/2.0;
+  else if (valign == SW_VALIGN_BOT  ) yanchor = bb_bottom;
+  else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
+
+  // Update bounding box of canvas
+  eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),
+                          ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0);
+  eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_right - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),
+                          ypos*M_TO_PS + (bb_right - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0);
+  eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_top    - yanchor)*fontsize*-sin(rotate),
+                          ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_top    - yanchor)*fontsize* cos(rotate), 0);
+  eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_right - xanchor)*fontsize*cos(rotate) + (bb_top    - yanchor)*fontsize*-sin(rotate),
+                          ypos*M_TO_PS + (bb_right - xanchor)*fontsize*sin(rotate) + (bb_top    - yanchor)*fontsize* cos(rotate), 0);
+
+
+  // Perform translation such that postscript text appears in the right place on the page
+  fprintf(x->epsbuffer, "gsave\n");
+  fprintf(x->epsbuffer, "%.2f %.2f translate\n", xpos * M_TO_PS, ypos * M_TO_PS);
+  fprintf(x->epsbuffer, "%.2f rotate\n", rotate * 180 / M_PI);
+  fprintf(x->epsbuffer, "%f %f scale\n", fontsize, fontsize);
+  fprintf(x->epsbuffer, "%f %f translate\n", -xanchor, -yanchor);
+  fprintf(x->epsbuffer, "%s\n", colstr);
+
+  // Copy postscript description of page out of dvi buffer
+  ListIter = ListIterateInit(dviPage->text);
+  while (ListIter!=NULL)
+   {
+    fprintf(x->epsbuffer, "%s", (char *)ListIter->data);
+    ListIter = ListIterate(ListIter, NULL);
+   }
+
+  // Undo translation and we're finished
+  fprintf(x->epsbuffer, "grestore\n");
   return;
  }
 

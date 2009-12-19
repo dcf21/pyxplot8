@@ -32,6 +32,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include <kpathsea/kpathsea.h>
+
 #include <gsl/gsl_errno.h>
 
 #include "StringTools/asciidouble.h"
@@ -87,6 +89,10 @@ int main(int argc, char **argv)
 
   // Turn off GSL's automatic error handler
   gsl_set_error_handler_off();
+
+  // Set program name within kpathsea
+  kpse_set_program_name("pyxplot", NULL);
+  // kpse_init_prog();
 
   // Initialise GNU Readline
   rl_readline_name = "PyXPlot";                          /* Allow conditional parsing of the ~/.inputrc file. */

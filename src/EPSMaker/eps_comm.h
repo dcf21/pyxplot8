@@ -48,7 +48,7 @@ typedef struct EPSComm {
   double LastLinewidth;
   int LastLinetype;
   FILE *epsbuffer;
-  int *status, termtype;
+  int *status, termtype, LaTeXpageno;
  } EPSComm;
 
 #endif
