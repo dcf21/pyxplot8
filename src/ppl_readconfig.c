@@ -221,15 +221,15 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "NUMCOMPLEX"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .ComplexNumbers= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting NumComplex."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "NUMDISPLAY"  )==0)
+        if ((i=FetchSettingByName(setvalue,SW_DISPLAY_INT, SW_DISPLAY_STR ))>0) settings_term_default.NumDisplay = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting NumDisplay."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "NUMERR"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .ExplicitErrors= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting NumErr."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "NUMSF"        )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_term_default .SignificantFigures = min(max((int)fl, 1), 30);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting NumSF."        , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "NUMDISPLAY"  )==0)
-        if ((i=FetchSettingByName(setvalue,SW_DISPLAY_INT, SW_DISPLAY_STR ))>0) settings_term_default.NumDisplay = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting NumDisplay."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "ORIGINX"      )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.OriginX.real  = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting OriginX."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

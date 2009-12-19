@@ -1,4 +1,4 @@
-% COnFIGURATIOn.TEX
+% CONFIGURATION.TEX
 %
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
@@ -24,67 +24,103 @@
 \chapter{Configuring PyXPlot}
 \label{ch:configuration}
 
-\section{Overview}
-
-As is the case in \gnuplot, PyXPlot can be configured using the \indcmdt{set}
--- for example:
-
-\begin{verbatim}set output 'foo.eps'\end{verbatim}
-
-\noindent would cause plotted output to be written the file {\tt foo.eps}.
-Typing {\tt set} on its own returns a list of all recognised configuration
-parameters of the \indcmdt{set}. The \indcmdt{unset} may be used to return
-settings to their default values; it recognises a similar set of parameter
-names, and once again, typing {\tt unset} on its own gives a list of them. The
-\indcmdt{show} can be used to display the values of settings.
+In previous chapters, we have encountered numerous configuration options within
+PyXPlot which can controlled using the \indcmdt{set}. There are times, however,
+when many plots are wanted in a homogeneous style, or when a single plot is
+repeatedly generated, when it is desirable to change the default set of
+configuration options with which PyXPlot starts up, in order to avoid having to
+repeated enter a large number of {\tt set} commands. In this chapter, we
+describe the use of configuration files to program PyXPlot's default state.
 
 \section{Configuration Files}
 
-PyXPlot can also be configured by means of a configuration file, with filename
-{\tt .pyxplotrc}, which is scanned once upon startup. This file may be
-placed either in the user's current working directory, or in his home
-directory. In the event of both files existing, settings in the former override
-those in the latter; in the event of neither file existing, PyXPlot uses its
-own default settings.
+Configuration files for PyXPlot have the filename {\tt .pyxplotrc}, and may be
+placed either in a user's home directory, in which case they globally affect
+all of that user's PyXPlot sessions, or in particular directories, in which
+case they only affect PyXPlot sessions which are instantiated with that
+particular directory as the current working directory.  When configuration
+files are present in both locations, both are read; settings found in the {\tt
+.pyxplotrc} file in the current working directory take precedence over those
+found in the user's home directory. Configuration files are read only once,
+upon startup, and subsequent changes to the configuration files do not affect
+copies of PyXPlot which are already running.
 
-The configuration file should take the form of a series of sections, each
-headed by a section heading enclosed in square brackets, and followed by
-variables declared using the format:
-
-\begin{verbatim} 
-OUTPUT=foo.eps
+When settings are specified in configuration files, the specified values become
+the default configuration within subsequent PyXPlot sessions. This not only
+means that the settings have the particular values specified upon startup; it
+also means, for example, that these are the values to which the \indcmdt{unset}
+returns settings. Thus, whilst the command
+\begin{verbatim}
+unset multiplot
 \end{verbatim}
+ordinarily turns off multiplot mode, it may turn it on if a configuration file
+contains the line
+\begin{verbatim}
+MultiPlot=On
+\end{verbatim}
+When coloured terminal output is enabled, the colour-coding of the
+\indcmdt{show} also reflects the current default configuration: settings which
+match their default values are shown in green\footnote{This colour can be
+changed using the {\tt Colour\_Rep} setting in a configuration file.} whilst
+those settings which have been changed from their default values are shown in
+amber\footnote{This colour can be changed using the {\tt Colour\_Wrn} setting
+in a configuration file.}.
+
+Configuration files should take the form of a series of sections, each headed
+by a section heading enclosed in square brackets. Each section heading should
+be followed by a series of settings, which often take the form of
+\begin{verbatim}
+Setting_Name = Value
+\end{verbatim}
+In {\it most} cases, neither the setting name nor the value are case sensitive.
 
 The following sections are used, although they do not all need to be present in
-any given file:
+any given file, and they may appear in any order:
 
 \begin{itemize}
-\item {\tt settings} -- contains parameters similar to those which can be set
-with the {\tt set} command. A complete list is given in
-Section~\ref{sec:configfile_settings} below.
-\item {\tt terminal} -- contains parameters for altering the behaviour and
-appearance of PyXPlot's interactive terminal. A complete list is given in
-Section~\ref{sec:configfile_terminal}.
-\item {\tt variables} -- contains variable definitions. Any variables defined
-in this section will be predefined in the PyXPlot mathematical environment upon
-startup.
-\item {\tt functions} -- contains function definitions.
-\item {\tt colours} -- contains a variable `{\tt palette}', which should be set
-to a comma-separated list of the sequence of colours in the palette used to
+\item {\tt colours} -- contains a single setting {\tt palette}, which should be
+set to a comma-separated list of the sequence of colours in the palette used to
 plot datasets. The first will be called colour 1 in PyXPlot, the second colour
 2, etc. A list of recognised colour names is given in
 Section~\ref{sec:colour_names}.
-\item {\tt latex} -- contains a variable `{\tt preamble}', which is prefixed to
-the beginning of all \LaTeX\ text items, before the {\tt \textbackslash
-begin\{document\}} statement. It can be used to define custom \LaTeX\ macros,
-or to include packages using the {\tt \textbackslash includepackage\{\}}
-command.  The preamble can be changed using the \indcmdt{set preamble}.
+\item {\tt filters} --
+\item {\tt functions} -- contains user-defined function definitions which
+become predefined in PyXPlot's mathematical environment, for example
+\begin{verbatim}
+sinc(x) = sin(pi*x)/(pi*x)
+\end{verbatim}
+\item {\tt latex} -- contains a single setting {\tt preamble}, which is
+prefixed to the beginning of all \LaTeX\ text items, before the {\tt
+\textbackslash begin\{document\}} statement. It can be used to define custom
+\LaTeX\ macros, or to include packages using the {\tt \textbackslash
+includepackage\{\}} command.  The preamble can be changed using the
+\indcmdt{set preamble}.
+\item {\tt script} -- 
+\item {\tt settings} -- contains settings similar to those which can be set
+with the \indcmdt{set}. A complete list is given in
+Section~\ref{sec:configfile_settings} below.
+\item {\tt styling} --
+\item {\tt terminal} -- contains settings for altering the behaviour and
+appearance of PyXPlot's interactive terminal. These cannot be changed with the
+\indcmdt{set}, and can only be controlled via configuration files. A complete
+list of the available settings is given in
+Section~\ref{sec:configfile_terminal}.
+\item {\tt units} --
+\item {\tt variables} -- contains variable definitions, in the format
+\begin{verbatim}
+variable = value
+\end{verbatim}
+Any variables defined in this section will be predefined in PyXPlot's
+mathematical environment upon startup.
+
 \end{itemize}
 
 \section{An Example Configuration File}
 \index{configuration files}
-\noindent As an example, the following is a configuration file
-which would represent PyXPlot's default configuration:
+\noindent The following configuration file represents PyXPlot's default
+configuration, and provides a useful index to all of the settings which are
+available. In subsequent sections, we describe the effect of each setting in
+detail.
 
 \begin{verbatim}
 [settings]
@@ -141,15 +177,15 @@ TermType = X11_SingleWindow
 TextColour = Black
 TextHAlign = Left
 TextVAlign = Bottom
+Title =
+Title_XOff = 0.0
+Title_YOff = 0.0
 TRange_Log = Off
 TRange_Max = 1.0
 TRange_Min = 0.0
 UnitAbbrev = On
 UnitPrefix = On
 UnitScheme = SI
-Title =
-Title_XOff = 0.0
-Title_YOff = 0.0
 Width = 8.0
 
 [terminal]
@@ -177,12 +213,16 @@ Orange, CarnationPink, Plum
 Preamble =
 \end{verbatim}
 
-\section{Configuration Options: {\tt settings} section}
-\label{sec:configfile_settings}
+\section{Setting definitions}
 
-The following table provides a brief description of the function of each of the
-parameters in the {\tt settings} section of the above configuration file,
-with a list of possible values for each:
+We now provide a more detailed description of the effect of each of the
+settings which can be found in configuration files, including where appropriate
+a list of possible values for each. Settings are arranged by section.
+
+\subsection{The {\tt filters} section}
+
+\subsection{The {\tt settings} section}
+\label{sec:configfile_settings}
 
 \begin{longtable}{p{3.4cm}p{9cm}}
 {\tt Aspect} & {\bf Possible values:} Any floating-point number.
@@ -191,7 +231,7 @@ with a list of possible values for each:
 
                Sets the aspect ratio of plots.
                \\
-{\tt AutoAspect} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt AutoAspect} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} {\tt set size ratio}
 
@@ -203,11 +243,11 @@ with a list of possible values for each:
 
                Sets the colour of axis lines and ticks.
                \\
-{\tt Backup} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Backup} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set backup}
 
-               When this switch is set to `{\tt On}', and plot output is being directed to file, attempts to write output over existing files cause a copy of the existing file to be preserved, with a tilde after its old filename (see Section~\ref{sec:file_backup}).
+               When this switch is set to {\tt On}, and plot output is being directed to file, attempts to write output over existing files cause a copy of the existing file to be preserved, with a tilde after its old filename (see Section~\ref{sec:file_backup}).
                \\
 {\tt Bar}     & {\bf Possible values:}  Any floating-point number.
 
@@ -215,13 +255,13 @@ with a list of possible values for each:
 
                Sets the horizontal length of the lines drawn at the end of errorbars, in units of their default length.
                \\
-{\tt BinOrigin} & {\bf Possible values:} Any floating-point number
+{\tt BinOrigin} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set binorigin}
 
                Sets the point along the $x$ axis from which the bins used by the \indcmdt{histogram} originate.
                \\
-{\tt BinWidth} & {\bf Possible values:} Any floating-point number
+{\tt BinWidth} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set binwidth}
 
@@ -239,7 +279,19 @@ with a list of possible values for each:
 
                Sets the default width of boxes on barcharts. If negative, then the boxes have automatically selected widths, so that the interfaces between bars occur at the horizontal midpoints between the specified datapoints.
                \\
-{\tt Colour} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt CalendarIn} & {\bf Possible values:} {\tt British}, {\tt Catholic}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt Islamic}, {\tt Julian}, {\tt Russian}.
+
+               {\bf Analogous set command:} \indcmdts{set calendar}
+
+               Sets the default calendar for the input of dates from day, month and year representation into Julian Date representation. See Section~\ref{sec:time_series} for more details.
+               \\
+{\tt CalendarOut} & {\bf Possible values:} {\tt British}, {\tt Catholic}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt Islamic}, {\tt Julian}, {\tt Russian}.
+
+               {\bf Analogous set command:} \indcmdts{set calendar}
+
+               Sets the default calendar for the output of dates from Julian Date representation to day, month and year representation. See Section~\ref{sec:time_series} for more details.
+               \\
+{\tt Colour} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
@@ -251,23 +303,23 @@ with a list of possible values for each:
                    
                Sets the plot style used by default when plotting \datafile s.
                \\
-{\tt Display} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Display} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set display}
 
-               When set to `{\tt On}', no output is produced until the \indcmdt{set display} is issued. This is useful for speeding up scripts which produce large multiplots; see Section~\ref{sec:set_display} for more details.
+               When set to {\tt On}, no output is produced until the \indcmdt{set display} is issued. This is useful for speeding up scripts which produce large multiplots; see Section~\ref{sec:set_display} for more details.
                \\
 {\tt DPI} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set dpi}
 
-               Sets the sampling quality used, in dots per inch, when output is sent to a bitmapped terminal (the jpeg/gif/png terminals).
+               Sets the sampling quality used, in dots per inch, when output is sent to a bitmapped terminal (the bmp, jpeg, gif, png and tif terminals).
                \\
-{\tt FontSize} & {\bf Possible values:} Integers in the range $-4 \to 5$.
+{\tt FontSize} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set fontsize}
 
-               Sets the fontsize of text, varying between \LaTeX's {\tt tiny} ($-4$) and {\tt Huge} (5).
+               Sets the fontsize of text, where $1.0$ represents 10-point text, and other values differ multiplicatively.
                \\
 {\tt FuncStyle} & {\bf Possible values:} Any plot style.
 
@@ -275,7 +327,7 @@ with a list of possible values for each:
 
                Sets the plot style used by default when plotting functions.
                \\
-{\tt Grid} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Grid} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set grid}
 
@@ -311,7 +363,7 @@ with a list of possible values for each:
 
                Sets the colour of minor grid lines.
                \\
-{\tt Key} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Key} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set key}
 
@@ -323,7 +375,7 @@ with a list of possible values for each:
 
                Sets the number of columns into which the legends of plots should be divided.
                \\
-{\tt KeyPos} & {\bf Possible values:} `Top Right', `Top XCentre', `Top Left', `YCentre Right', `YCentre XCentre', `YCentre Left', `Bottom Right', `Bottom XCentre', `Bottom Left', `Above', `Below', `Outside'.
+{\tt KeyPos} & {\bf Possible values:} {\tt Top Right}, {\tt Top XCentre}, {\tt Top Left}, {\tt YCentre Right}, {\tt YCentre XCentre}, {\tt YCentre Left}, {\tt Bottom Right}, {\tt Bottom XCentre}, {\tt Bottom Left}, {\tt Above}, {\tt Below}, {\tt Outside}.
 
                {\bf Analogous set command:} \indcmdts{set key}
 
@@ -341,7 +393,7 @@ with a list of possible values for each:
 
                Sets the vertical offset, in approximate graph-heights, that should be applied to the legend, relative to its default position, as set by {\tt KEYPOS}.
                \\
-{\tt Landscape} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Landscape} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
@@ -353,11 +405,35 @@ with a list of possible values for each:
 
                Sets the width of lines on plots, as a  multiple of the default.
                \\
-{\tt MultiPlot} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt MultiPlot} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set multiplot}
 
                Sets whether multiplot mode is on or off.
+               \\
+{\tt NumComplex} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} \indcmdts{set numerics}
+
+               Sets whether complex arithmetic is enabled, or whether all non-real results to calculations should raise numerical exceptions.
+               \\
+{\tt NumDisplay} & {\bf Possible values:} {\tt LaTeX}, {\tt Natural}, {\tt Typeable}.
+
+               {\bf Analogous set command:} \indcmdts{set numerics}
+
+               Sets whether numerical results are displayed in a natural human-readable way, e.g.\ $2\,\mathrm{m}$, in LaTeX, e.g.\ {\tt \$$2\backslash$,$\backslash$mathrm\{m\}\$}, or in a way which may be pasted back into PyXPlot, e.g.\ {\tt 2*unit(m)}.
+               \\
+{\tt NumErr} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} \indcmdts{set numerics}
+
+               Sets whether explicit error messages are thrown when calculations yield undefined results, as in the cases of division by zero or the evaluation of functions in regions where they are undefined or infinite. If explicit error messages are disabled, such calculations quietly return {\tt nan}.
+               \\
+{\tt NumSF} & {\bf Possible values:} Any integer between 0 and 30.
+
+               {\bf Analogous set command:} \indcmdts{set numerics}
+
+               Sets the number of significant figures to which numerical quantities are displayed by default.
                \\
 {\tt OriginX} & {\bf Possible values:} Any floating point number.
 
@@ -371,11 +447,11 @@ with a list of possible values for each:
 
                Sets the vertical position, in centimetres, of the default origin of plots on the page. Most useful when multiplotting many plots.
                \\
-{\tt Output} & {\bf Possible values:} Any string.
+{\tt Output} & {\bf Possible values:} Any string (case sensitive).
 
                {\bf Analogous set command:} \indcmdts{set output}
 
-               Sets the output filename for plots. If blank, the default filename of pyxplot.foo is used, where `foo' is an extension appropriate for the file format.
+               Sets the output filename for plots. If blank, the default filename of {\tt pyxplot.foo} is used, where {\tt foo} is an extension appropriate for the file format.
                \\
 {\tt PaperHeight} & {\bf Possible values:} Any floating-point number.
 
@@ -407,44 +483,47 @@ with a list of possible values for each:
 
                Sets the sizes of points on plots, as a multiple of their normal sizes.
                \\
+{\tt Projection} & {\bf Possible values:} {\tt gnomonic}, {\tt flat}.
+
+               {\bf Analogous set command:} \indcmdts{set projection}
+
+               Sets the projection used on graphs. Flat projection is useful for most purposes, but gnomonic projection is useful for representing curved spaces on flat pieces of paper, when drawing world maps, for example.
+               \\
 {\tt Samples} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
                Sets the number of samples (datapoints) to be evaluated along the $x$-axis when plotting a function.
                \\
-{\tt TermAntiAlias} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt TermAntiAlias} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               Sets whether jpeg/gif/png output is antialiased, i.e.\ whether colour boundaries are smoothed to disguise the effects of pixelisation.
+               Sets whether output sent to the bitmapped graphics output terminals -- i.e.\ the bmp, jpeg, gif, png and tif terminals -- is antialiased. Antialiasing smooths the colour boundaries to disguise the effects of pixelisation and is almost invariably desirable.
                \\
-{\tt TermEnlarge} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt TermEnlarge} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               When set to `{\tt On}' output is enlarged or shrunk to fit the current paper size.
+               When set to {\tt On} output is enlarged or shrunk to fit the current paper size.
                \\
-
-{\tt TermInvert} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt TermInvert} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
                Sets whether jpeg/gif/png output has normal colours ({\tt Off}), or inverted colours ({\tt On}).
                \\
-{\tt TermTransparent} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt TermTransparent} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
                Sets whether jpeg/gif/png output has transparent background ({\tt On}), or solid background ({\tt Off}).
                \\
-{\tt TermType} & {\bf Possible values:} {\tt X11\_singlewindow},
-
-               {\tt X11\_multiwindow}, {\tt X11\_persist}, {\tt PS}, {\tt EPS}, {\tt PDF}, {\tt PNG}, {\tt JPG}, {\tt GIF}
+{\tt TermType} & {\bf Possible values:} {\tt bmp}, {\tt eps}, {\tt gif}, {\tt jpg}, {\tt pdf}, {\tt png}, {\tt ps}, {\tt svg}, {\tt tif}, {\tt X11\_multiwindow}, {\tt X11\_persist}, {\tt X11\_singlewindow}.
 
                {\bf Analogous set command:} \indcmdts{set terminal}
 
-               Sets whether output is sent to the screen or to disk, and, in the latter case, the format of the output. The {\tt ps} option should be used for both encapsulated and normal postscript output; these are distinguished using the {\tt ENHANCED} option, above.
+               Sets whether output is sent to the screen, using one of the {\tt X11\_}... terminals, or to disk. In the latter case, output may be produced in a wide variety of graphical formats.
                \\
 {\tt TextColour} & {\bf Possible values:} Any recognised colour.
 
@@ -452,19 +531,19 @@ with a list of possible values for each:
 
                Sets the colour of all text output.
                \\
-{\tt TextHAlign} & {\bf Possible values:} {\tt Left}, {\tt Centre}, {\tt Right}
+{\tt TextHAlign} & {\bf Possible values:} {\tt Left}, {\tt Centre}, {\tt Right}.
 
                {\bf Analogous set command:} \indcmdts{set texthalign}
 
                Sets the horizontal alignment of text labels to their given reference positions.
                \\
-{\tt TextVAlign} & {\bf Possible values:} {\tt Top}, {\tt Centre}, {\tt Bottom}
+{\tt TextVAlign} & {\bf Possible values:} {\tt Top}, {\tt Centre}, {\tt Bottom}.
 
                {\bf Analogous set command:} \indcmdts{set textvalign}
 
                Sets the vertical alignment of text labels to their given reference positions.
                \\
-{\tt Title} & {\bf Possible values:} Any string.
+{\tt Title} & {\bf Possible values:} Any string (case sensitive).
 
                {\bf Analogous set command:} \indcmdts{set title}
 
@@ -482,25 +561,59 @@ with a list of possible values for each:
 
                Sets the vertical offset of the title of the plot from its default location at the top of the plot.
                \\
+{\tt TRange\_Log} & {\bf Possible values:} {\tt On}, {\tt Off}.
+ 
+               {\bf Analogous set command:} \indcmdts{set logscale t}
+               
+               Sets whether the $t$-axis -- used for parametric plotting -- is linear or logarithmic.
+               \\
+{\tt TRange\_Max} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set trange}
+               
+               Sets upper limit of the $t$-axis, used for parametric plotting.
+               \\
+{\tt TRange\_Min} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set trange}
+               
+               Sets lower limit of the $t$-axis, used for parametric plotting.
+               \\
+{\tt UnitAbbrev} & {\bf Possible values:} {\tt On}, {\tt Off}.
+ 
+               {\bf Analogous set command:} \indcmdts{set unit}
+
+               Sets whether physical units are displayed in abbreviated form, e.g.\ {\tt mm}, or in full, e.g.\ {\tt millimetres}.
+               \\
+{\tt UnitPrefix} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} \indcmdts{set unit}
+
+               Sets whether SI prefixes, such as {\tt milli-} and {\tt mega-} are prepended to SI units where appropriate.
+               \\
+{\tt UnitScheme} & {\bf Possible values:} {\tt Ancient}, {\tt CGS}, {\tt Imperial}, {\tt Planck}, {\tt SI}, {\tt USCustomary}.
+
+               {\bf Analogous set command:} \indcmdts{set unit}
+
+               Sets the scheme of physical units in which quantities are displayed.
+               \\
 {\tt Width} & {\bf Possible values:} Any floating-point number.
 
-               {\bf Analogous set command:} \indcmdts{set width} / \indcmdts{set size}
+               {\bf Analogous set commands:} \indcmdts{set width}, \indcmdts{set size}
 
                Sets the width of plots in centimetres.
                \\
 \end{longtable}
 
-\section{Configuration Options: {\tt terminal} section}
+\subsection{The {\tt styling} section}
+
+\subsection{The {\tt terminal} section}
 \label{sec:configfile_terminal}
 
-The following table provides a brief description of the function of each of the
-parameters in the {\tt terminal} section of the above configuration file,
-with a list of possible values for each:
-
 \begin{longtable}{p{3.4cm}p{9cm}}
-{\tt Colour} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Colour} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
-               {\bf Analogous command-line switches:} {\tt -c}, {\tt --colour}, {\tt -m}, {\tt --monochrome}
+               {\bf Analogous command-line switches:} {\tt -c}, {\tt --colour}, {\tt -m}, {\tt --monochrome}.
 
                Sets whether colour highlighting should be used in the interactive terminal. If turned on, output is displayed in green, warning messages in amber, and error messages in red; these colours are configurable, as described below. Note that not all UNIX terminals support the use of colour.
                \\
@@ -522,7 +635,7 @@ with a list of possible values for each:
 
                As above, but sets the colour in which PyXPlot displays its warning messages.
                \\
-{\tt Splash} & {\bf Possible values:} {\tt On} / {\tt Off}
+{\tt Splash} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous command-line switches:} {\tt -q}, {\tt --quiet}, {\tt -V}, {\tt --verbose}
 
@@ -533,35 +646,34 @@ with a list of possible values for each:
 The colours recognised by the {\tt COLOUR\_XXX} configuration options above
 are: {\tt Red}, {\tt Green}, {\tt Brown}, {\tt Blue}, {\tt Purple}, {\tt
 Magenta}, {\tt Cyan}, {\tt White}, {\tt Normal}. The final option produces the
-default foreground colour of your terminal.
+default foreground colour of the terminal.
+
+\subsection{The {\tt units} section}
+\label{sec:configfile_units}
+
 
 \section{Recognised Colour Names}
 \label{sec:colour_names}
 
 The following is a complete list of the colour names which PyXPlot recognises
 in the {\tt set textcolour}, {\tt set axescolour} commands, and in the {\tt
-colours} section of its configuration file. It should be noted that they are
-case-insensitive.
+colours} section of its configuration file.  A colour chart of these can be
+found in Appendix~\ref{ch:colour_charts}.  All colour names are case
+insensitive.
 
 \vspace{5mm}\noindent
 \index{configuration file!colours}\index{colours!configuration file}
 {\tt
-GreenYellow, Yellow, Goldenrod, Dandelion, Apricot, Peach, Melon, YellowOrange, Orange, BurntOrange, Bittersweet, RedOrange, Mahogany, Maroon, BrickRed, Red, OrangeRed, RubineRed, WildStrawberry, Salmon, CarnationPink, Magenta, VioletRed, Rhodamine, Mulberry, RedViolet, Fuchsia, Lavender, Thistle, Orchid, DarkOrchid, Purple, Plum, Violet, RoyalPurple, BlueViolet, Periwinkle, CadetBlue, CornflowerBlue, MidnightBlue, NavyBlue, RoyalBlue, Blue, Cerulean, Cyan, ProcessBlue, SkyBlue, Turquoise, TealBlue, Aquamarine, BlueGreen, Emerald, JungleGreen, SeaGreen, Green, ForestGreen, PineGreen, LimeGreen, YellowGreen, SpringGreen, OliveGreen, RawSienna, Sepia, Brown, Tan, Gray, Grey, Black, White, white, black.
+GreenYellow, Yellow, Goldenrod, Dandelion, Apricot, Peach, Melon, YellowOrange, Orange, BurntOrange, Bittersweet, RedOrange, Mahogany, Maroon, BrickRed, Red, OrangeRed, RubineRed, WildStrawberry, Salmon, CarnationPink, Magenta, VioletRed, Rhodamine, Mulberry, RedViolet, Fuchsia, Lavender, Thistle, Orchid, DarkOrchid, Purple, Plum, Violet, RoyalPurple, BlueViolet, Periwinkle, CadetBlue, CornflowerBlue, MidnightBlue, NavyBlue, RoyalBlue, Blue, Cerulean, Cyan, ProcessBlue, SkyBlue, Turquoise, TealBlue, Aquamarine, BlueGreen, Emerald, JungleGreen, SeaGreen, Green, ForestGreen, PineGreen, LimeGreen, YellowGreen, SpringGreen, OliveGreen, RawSienna, Sepia, Brown, Tan, Gray, Grey, Black, White.
 }
 
 \vspace{5mm}
-The following further colours provide a scale of shades of grey from dark to light, also case-insensitive.
+In addition, a scale of 100~shades of grey is available, ranging from {\tt
+grey00}, which is black, to {\tt grey99}, which is very nearly white.  The US
+spelling, {\tt gray}, is also accepted.
 
-\vspace{5mm}\noindent
-\index{colours!shades of grey}
-{\tt
-grey05, grey10, grey15, grey20, grey25, grey30, grey35, grey40, grey45, grey50, grey55, grey60, grey65, grey70, grey75, grey80, grey85, grey90, grey95.
-}
-
-\vspace{5mm}\noindent
-The US spelling of grey, ``gray'', is also accepted.
-
-For a colour chart, the reader is referred to Appendix~\ref{ch:colour_charts},
-or to Appendix~B of the {\it PyX Reference
-Manual}.\footnote{\url{http://pyx.sourceforge.net/manual/colorname.html}}
+Arbitrary colours can be specified in the form {\tt rgb0:0:0}, where the
+colon-separated zeros should be replaced by integers in the range of 0 to 255
+to represent the red, green and blue components of the desired colour
+respectively.
 
