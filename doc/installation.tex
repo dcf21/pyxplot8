@@ -37,7 +37,7 @@ software packages (not included) be installed:\index{system requirements}
 
 \vspace{0.5cm}
 \begin{itemize}
-\item fftw (version 3+) \index{fftw}
+\item fftw (version 2 or, preferably, 3+) \index{fftw}
 \item Ghostscript \index{Ghostscript}
 \item The Gnu Scientific Library (version 1.10+) \index{gsl}
 \item ImageMagick \index{ImageMagick}
@@ -50,15 +50,17 @@ software packages (not included) be installed:\index{system requirements}
 \end{itemize}
 \vspace{0.5cm}
 
-\noindent It is very strongly recommended that the following software packages
-also be installed. In each case, PyXPlot tests for the available of these
-packages upon installation, and issues a warning if the package is not found.
-Installation can proceed, but some of PyXPlot's features will be disabled.
+\noindent It is also very strongly recommended that the following software
+packages be installed. In each case, PyXPlot tests for the availability of
+these packages upon installation, and issues a warning if the package is not
+found. Installation can proceed, but some of PyXPlot's features will be
+disabled. Once they have been added to the system, PyXPlot should be
+reinstalled to take advantage of their presence.
 
 \vspace{0.5cm}
 \begin{itemize}
 \item cfitsio -- required in order to plot \datafile s in FITS format.
-\item Ghostview (or {\tt ggv}) \index{Ghostview} -- required in order for PyXPlot to display plots live on the screen; PyXPlot remains able to generate image files on disk without Ghostview.
+\item Ghostview (or {\tt ggv}) \index{Ghostview} -- required in order for PyXPlot to display plots live on the screen; PyXPlot remains able to generate image files on disk without it.
 \item gunzip \index{gunzip} -- required in order to plot compressed data files in {\tt .gz} format.
 \item The Gnu Readline Library (version 5+) \index{readline} -- required in order to provide tab completion and command histories in PyXPlot's interactive command-line interface.
 \item wget \index{wget} -- required in order to plot data files directly from the internet.
@@ -82,8 +84,8 @@ distributions. At the time of writing, Gentoo\index{Gentoo
 Linux}\index{installation!under Gentoo}\footnote{See
 \url{http://gentoo-portage.com/sci-visualization/pyxplot}}, Ubuntu\index{Ubuntu
 Linux}\index{installation!under Ubuntu} and Debian provide packages containing
-PyXPlot~0.7.0. It should be noted that this manual describes PyXPlot~0.8.0,
-which is a very substantial upgrade to version~0.7.0. Many of the features
+PyXPlot~0.7.x. It should be noted that this manual describes PyXPlot~0.8.0,
+which is a very substantial upgrade to version~0.7.x. Many of the features
 described in this manual are not available in previous versions.
 
 Under Debian and Ubuntu Linux, version~0.8.0 may be manually installed by
