@@ -246,9 +246,9 @@ void InvJulianDateHebrew(double JD, int *year, int *month, int *day, int *hour, 
   i = (JD<JDs[1]) ? 0 : 1;
   JD -= JDs[i];
   for (j=0;j<13;j++) if (JD>=HebrewMonthLengths[ YearTypes[i] ][ j ]) JD -= HebrewMonthLengths[ YearTypes[i] ][ j ]; else break;
-  *year  = YearNumbers[i];
-  *month = j+1;
-  *day   = ((int)JD+1);
+  if (year != NULL) *year  = YearNumbers[i];
+  if (month!= NULL) *month = j+1;
+  if (day  != NULL) *day   = ((int)JD+1);
   return;
  }
 
@@ -347,9 +347,9 @@ void InvJulianDateIslamic(double JD, int *year, int *month, int *day, int *hour,
 
   if (JJ==355) { m=12; d=30; }
 
-  *year  = (int)H;
-  *month = (int)m;
-  *day   = (int)d;
+  if (year !=NULL) *year  = (int)H;
+  if (month!=NULL) *month = (int)m;
+  if (day  !=NULL) *day   = (int)d;
   return;
  }
 
