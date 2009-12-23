@@ -615,15 +615,15 @@ int directive_ellipse(Dict *command, int interactive)
 
   // Check that we have been supplied an appropriate set of inputs
   if ( (x1==NULL) && (((p==2)&&((e!=1)||(r!=0))) || ((p<2)&&(e!=2))) )
-   { printf("%d %d %d\n",p,e,r); ppl_error(ERR_GENERAL, "Ellipse command has received an inappropriate set of inputs. Must specify either the position of both the centre and focus of the ellipse, and one further piece of information out of the major axis length, the minor axis length, the eccentricity or the semi-latus rectum, or the position of one of these two points, the rotation angle of the major axis of the ellipse, and two further pieces of information."); return 1; }
+   { ppl_error(ERR_GENERAL, "Ellipse command has received an inappropriate set of inputs. Must specify either the position of both the centre and focus of the ellipse, and one further piece of information out of the major axis length, the minor axis length, the eccentricity or the semi-latus rectum, or the position of one of these two points, the rotation angle of the major axis of the ellipse, and two further pieces of information."); return 1; }
 
   // Convert inputs such that we have the position of the centre of the ellipse and major/minor axes
   if (x1 != NULL) // User has specified two corners of the ellipse
    {
-    xc_dbl = (x2->real + x1->real) / 2.0;
-    yc_dbl = (y2->real + y1->real) / 2.0;
-    a_dbl  = (x2->real - x1->real) / 2.0;
-    b_dbl  = (y2->real - y1->real) / 2.0;
+    xc_dbl =     (x2->real + x1->real) / 2.0;
+    yc_dbl =     (y2->real + y1->real) / 2.0;
+    a_dbl  = fabs(x2->real - x1->real) / 2.0;
+    b_dbl  = fabs(y2->real - y1->real) / 2.0;
    }
   else if (p==2) // User has specified both centre and focus of the ellipse, and one further piece of information
    {
@@ -711,7 +711,14 @@ int directive_ellipse(Dict *command, int interactive)
      {
       xc_dbl = xc->real;
       yc_dbl = yc->real;
-     } else { // User has specified the focus of the ellipse... convert to the centre by translating distance a * eccentricity
+     }
+    else if (xf == NULL) // User has specified neither the centre nor a focus of the ellipse; use origin as centre
+     {
+      xc_dbl = settings_graph_current.OriginX.real;
+      yc_dbl = settings_graph_current.OriginY.real;
+     }
+    else // User has specified the focus of the ellipse... convert to the centre by translating distance a * eccentricity
+     {
       xc_dbl = xf->real + a_dbl * ecc_dbl * cos( ang_dbl);
       yc_dbl = yf->real + a_dbl * ecc_dbl * sin( ang_dbl);
      }
@@ -724,8 +731,8 @@ int directive_ellipse(Dict *command, int interactive)
   // Add the exact parameterisation which we have been given to canvas item, so that "list" command prints it out in the form originally supplied
   ptr->x1set = ptr->xcset = ptr->xfset = ptr->aset = ptr->bset = ptr->eccset = ptr->slrset = 0;
   ptr->x1 = ptr->y1 = ptr->x2 = ptr->y2 = ptr->xc = ptr->yc = ptr->xf = ptr->yf = ptr->ecc = ptr->slr = 0.0;
-  if (x1 != NULL) { ptr->x1set = 1; ptr->x1 = x1->real; ptr->y1 = y1->real; ptr->x2 = x2->real; ptr->y2 = y2->real; }
-  if (xc != NULL) { ptr->xcset = 1; ptr->xc = xc->real; ptr->yc = yc->real; }
+  if       (x1 != NULL)                  { ptr->x1set = 1; ptr->x1 = x1->real; ptr->y1 = y1->real; ptr->x2 = x2->real; ptr->y2 = y2->real; }
+  else if ((xc != NULL) || (xf == NULL)) { ptr->xcset = 1; ptr->xc = xc_dbl; ptr->yc = yc_dbl; }
   if (xf != NULL) { ptr->xfset = 1; ptr->xf = xf->real; ptr->yf = yf->real; }
   if (a  != NULL) { ptr-> aset = 1; ptr->a  = a ->real; }
   if (b  != NULL) { ptr-> bset = 1; ptr->b  = b ->real; }
