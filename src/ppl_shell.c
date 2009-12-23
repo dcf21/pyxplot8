@@ -316,6 +316,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_delete(command);
   else if (strcmp(directive, "do")==0)
    return directive_do(command, IterLevel+1);
+  else if (strcmp(directive, "ellipse")==0)
+   directive_ellipse(command, interactive);
   else if (strcmp(directive, "eps")==0)
    return directive_eps(command, interactive);
   else if (strcmp(directive, "else")==0)

@@ -37,6 +37,7 @@
 #include "EPSMaker/eps_arrow.h"
 #include "EPSMaker/eps_box.h"
 #include "EPSMaker/eps_circle.h"
+#include "EPSMaker/eps_ellipse.h"
 #include "EPSMaker/eps_eps.h"
 #include "EPSMaker/eps_image.h"
 #include "EPSMaker/eps_plot.h"
@@ -119,6 +120,7 @@ static char *GHOSTSCRIPT_STANDARD_FLAGS = "-dQUIET -dSAFER -dBATCH -dNOPAUSE -dE
 static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
 static void(*BoxHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_box_RenderEPS  , NULL};
 static void(*CircHandlers[] )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_circ_RenderEPS , NULL};
+static void(*EllpsHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_ellps_RenderEPS, NULL};
 static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
 static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_image_RenderEPS, NULL};
 static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
@@ -138,6 +140,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   void(*ArrowHandler)(EPSComm *);
   void(*BoxHandler  )(EPSComm *);
   void(*CircHandler )(EPSComm *);
+  void(*EllpsHandler)(EPSComm *);
   void(*EPSHandler  )(EPSComm *);
   void(*ImageHandler)(EPSComm *);
   void(*PlotHandler )(EPSComm *);
@@ -212,12 +215,13 @@ void canvas_draw(unsigned char *unsuccessful_ops)
     ArrowHandler = ArrowHandlers[j]; // Each object type has a handler for each phase of postscript generation
     BoxHandler   = BoxHandlers  [j];
     CircHandler  = CircHandlers [j];
+    EllpsHandler = EllpsHandlers[j];
     EPSHandler   = EPSHandlers  [j];
     ImageHandler = ImageHandlers[j];
     PlotHandler  = PlotHandlers [j];
     TextHandler  = TextHandlers [j];
     AfterHandler = AfterHandlers[j];
-    if ((ArrowHandler==NULL)&&(EPSHandler==NULL)&&(ImageHandler==NULL)&&(PlotHandler==NULL)&&(TextHandler==NULL)&&(AfterHandler==NULL)) break;
+    if ((ArrowHandler==NULL)&&(CircHandler==NULL)&&(EllpsHandler==NULL)&&(EPSHandler==NULL)&&(ImageHandler==NULL)&&(PlotHandler==NULL)&&(TextHandler==NULL)&&(AfterHandler==NULL)) break;
 
     // Loop over all of the items on the canvas
     for (item=comm.itemlist->first; item!=NULL; item=item->next)
@@ -228,6 +232,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
       if      ((item->type == CANVAS_ARROW) && (ArrowHandler != NULL)) (*ArrowHandler)(&comm); // Call the relevant handler for each one
       else if ((item->type == CANVAS_BOX  ) && (BoxHandler   != NULL)) (*BoxHandler  )(&comm);
       else if ((item->type == CANVAS_CIRC ) && (CircHandler  != NULL)) (*CircHandler )(&comm);
+      else if ((item->type == CANVAS_ELLPS) && (EllpsHandler != NULL)) (*EllpsHandler)(&comm);
       else if ((item->type == CANVAS_EPS  ) && (EPSHandler   != NULL)) (*EPSHandler  )(&comm);
       else if ((item->type == CANVAS_IMAGE) && (ImageHandler != NULL)) (*ImageHandler)(&comm);
       else if ((item->type == CANVAS_PLOT ) && (PlotHandler  != NULL)) (*PlotHandler )(&comm);

@@ -29,10 +29,11 @@
 #define CANVAS_ARROW 22001
 #define CANVAS_BOX   22002
 #define CANVAS_CIRC  22003
-#define CANVAS_EPS   22004
-#define CANVAS_IMAGE 22005
-#define CANVAS_PLOT  22006
-#define CANVAS_TEXT  22007
+#define CANVAS_ELLPS 22004
+#define CANVAS_EPS   22005
+#define CANVAS_IMAGE 22006
+#define CANVAS_PLOT  22007
+#define CANVAS_TEXT  22008
 
 typedef struct plot_descriptor {
  unsigned char           function;
@@ -44,6 +45,8 @@ typedef struct plot_descriptor {
 typedef struct canvas_item {
  int                 id, type, ArrowType, TransColR, TransColG, TransColB;
  double              xpos, ypos, xpos2, ypos2, rotation;
+ double              x1,y1,x2,y2,xc,yc,xf,yf,a,b,ecc,slr; // Parameters which can be used to define ellipses
+ unsigned char       x1set, xcset, xfset, aset, bset, eccset, slrset;
  char               *text;
  unsigned char       deleted, xpos2set, ypos2set, clip, calcbbox, smooth, NoTransparency, CustomTransparency;
  with_words          with_data;
@@ -71,6 +74,7 @@ int directive_move    (Dict *command);
 int directive_arrow   (Dict *command, int interactive);
 int directive_box     (Dict *command, int interactive);
 int directive_circle  (Dict *command, int interactive);
+int directive_ellipse (Dict *command, int interactive);
 int directive_eps     (Dict *command, int interactive);
 int directive_text    (Dict *command, int interactive);
 int directive_image   (Dict *command, int interactive);
