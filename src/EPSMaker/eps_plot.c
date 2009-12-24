@@ -24,17 +24,101 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "ListTools/lt_memory.h"
+#include "ListTools/lt_list.h"
+
+#include "ppl_datafile.h"
+#include "ppl_units.h"
+#include "ppl_units_fns.h"
+
 #include "eps_comm.h"
 #include "eps_plot.h"
+#include "eps_plot_ticking.h"
 #include "eps_settings.h"
 
 void eps_plot_ReadAccessibleData(EPSComm *x)
  {
+  int i, j, Ndatasets;
+  canvas_plotdesc *pd;
+  settings_axis *axes;
+
+  // First clear all range information from all axes
+  for (j=0; j<3; j++)
+   {
+    if      (j==0) axes = x->current->XAxes;
+    else if (j==0) axes = x->current->YAxes;
+    else if (j==0) axes = x->current->ZAxes;
+    for (i=0; i<MAX_AXES; i++)
+     {
+      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].FinalActive = 0;
+      axes[i].MinUsed    = axes[i].MaxUsed    = axes[i].MinFinal = axes[i].MaxFinal = 0.0;
+      axes[i].OrdinateRasterLen = 0;
+      axes[i].OrdinateRaster = NULL;
+      axes[i].TickListFinal  = NULL;
+      ppl_units_zero(&axes[i].DataUnit);
+     }
+   }
+
+  // Count number of datasets which we are plotting
+  pd = x->current->plotitems;
+  Ndatasets = 0;
+  while (pd != NULL) { pd=pd->next; Ndatasets++; }
+
+  // Malloc pointers to data tables where data to be plotted will be stored
+  if (Ndatasets>0)
+   {
+    x->current->plotdata = (DataTable **)lt_malloc(Ndatasets * sizeof(DataTable *));
+    if (x->current->plotdata == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
+   } else {
+    x->current->plotdata = NULL;
+   }
+
+  // Loop through all datasets and see whether we can evaluate data now, without needing prior knowledge of axis range
+  pd = x->current->plotitems;
+  while (pd != NULL)
+   {
+    pd=pd->next;
+   }
+
   return;
  }
 
 void eps_plot_DecideAxisRanges(EPSComm *x)
  {
+  int i, j, k, l;
+  settings_axis *axes;
+  canvas_plotrange *pr;
+  double *HardMin, *HardMax;
+  unsigned char HardAutoMin, HardAutoMax; // Set for "plot [:*]", where * says we must autoscale, even if there's a preexisting maximum set for the axis
+
+  // Decide the range of each axis in turn
+  for (j=0; j<3; j++)
+   {
+    if      (j==0) axes = x->current->XAxes;
+    else if (j==0) axes = x->current->YAxes;
+    else if (j==0) axes = x->current->ZAxes;
+    for (i=0; i<MAX_AXES; i++)
+     {
+      k = 3*(i-1) + j; // See if user has specified a range for this axis in the plot command itself
+      if (k<0) { HardMin = HardMax = NULL; } // Ignore axis zero...
+      else
+       {
+        pr = x->current->plotranges;
+        for (l=0; ((pr!=NULL)&&(l<k)); l++) pr=pr->next;
+        if (pr == NULL) { HardMin=HardMax=NULL; HardAutoMin=HardAutoMax=0; }
+        else
+         {
+          if ((pr->MinSet || pr->MaxSet) && (axes[i].DataUnitSet) && (!ppl_units_DimEqual(&axes[i].DataUnit, &pr->unit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[j], i, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axes[i].DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+          // Check if we have partial range which conflicts with units of range of axis
+          if (pr->AutoMinSet) { HardAutoMin = 1; }
+          if (pr->AutoMaxSet) { HardAutoMax = 1; }
+          if (pr->MinSet)     { HardMin = &pr->min; } else { HardMin = NULL; }
+          if (pr->MaxSet)     { HardMax = &pr->max; } else { HardMax = NULL; }
+         }
+       }
+      eps_plot_ticking(axes+i, HardMin, HardMax, HardAutoMin, HardAutoMax);
+     }
+   }
   return;
  }
 

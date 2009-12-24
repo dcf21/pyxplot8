@@ -40,6 +40,7 @@ typedef struct canvas_plotrange {
  double                   min, max;
  value                    unit;
  unsigned char            MinSet, MaxSet;
+ unsigned char            AutoMinSet, AutoMaxSet;
  struct canvas_plotrange *next;
 } canvas_plotrange;
 
@@ -74,6 +75,7 @@ typedef struct canvas_item {
  unsigned char     ThreeDim;
  canvas_plotrange *plotranges;
  canvas_plotdesc  *plotitems;
+ DataTable       **plotdata; // used at plot time
 } canvas_item;
 
 typedef struct canvas_itemlist {

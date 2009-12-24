@@ -101,6 +101,14 @@ typedef struct settings_axis {
  double *MTickList, *TickList;
  char  **MTickStrs,**TickStrs;
  value   unit;
+
+ // Temporary data fields which are used when rendering an axis to postscript
+ unsigned char MinUsedSet, MaxUsedSet, DataUnitSet, RangeFinalised, FinalActive;
+ double        MinUsed, MaxUsed, MinFinal, MaxFinal, *OrdinateRaster;
+ int           OrdinateRasterLen;
+ value         DataUnit;
+ List         *TickListFinal;
+
  } settings_axis;
 
 typedef struct arrow_object {

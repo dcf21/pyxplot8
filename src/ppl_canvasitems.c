@@ -326,8 +326,10 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
      {
       if (pr_first) { output[i++]=' '; pr_first=0; }
       output[i++]='[';
+      if (pr->AutoMinSet) output[i++]='*';
       if (pr->MinSet) { v=pr->unit; v.real=pr->min; sprintf(output+i, "%s", ppl_units_NumericDisplay(&v,0,0,0)); i+=strlen(output+i); }
-      if (pr->MinSet || pr->MaxSet) { strcpy(output+i,":"); i+=strlen(output+i); }
+      if (pr->MinSet || pr->MaxSet || pr->AutoMinSet || pr->AutoMaxSet) { strcpy(output+i,":"); i+=strlen(output+i); }
+      if (pr->AutoMaxSet) output[i++]='*';
       if (pr->MaxSet) { v=pr->unit; v.real=pr->max; sprintf(output+i, "%s", ppl_units_NumericDisplay(&v,0,0,0)); i+=strlen(output+i); }
       strcpy(output+i,"]"); i+=strlen(output+i);
       pr = pr->next;
@@ -1045,10 +1047,40 @@ int directive_plot(Dict *command, int interactive, int replot)
    }
   else // We are not replotting... create a new plot item
    {
-    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id,1)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } // Do not copy axes and settings here, as we do it below
    }
 
   ReplotFocus = id; // This graph is the one which we replot next time by default
+
+  // Copy graph settings and axes to this plot structure. Do this every time that the replot command is called
+  with_words_destroy(&(ptr->settings.DataStyle)); // First free the old set of settings which we'd stored
+  with_words_destroy(&(ptr->settings.FuncStyle));
+  if (ptr->XAxes != NULL) { for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->XAxes[i]) ); free(ptr->XAxes); }
+  if (ptr->YAxes != NULL) { for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->YAxes[i]) ); free(ptr->YAxes); }
+  if (ptr->ZAxes != NULL) { for (i=0; i<MAX_AXES; i++) DestroyAxis( &(ptr->ZAxes[i]) ); free(ptr->ZAxes); }
+  arrow_list_destroy(&(ptr->arrow_list));
+  label_list_destroy(&(ptr->label_list));
+  ptr->settings = settings_graph_current; // Now copy graph settings
+  with_words_copy(&ptr->settings.DataStyle , &settings_graph_current.DataStyle);
+  with_words_copy(&ptr->settings.FuncStyle , &settings_graph_current.FuncStyle);
+  ptr->XAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis)); // ... and axes
+  ptr->YAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
+  ptr->ZAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
+  if ((ptr->XAxes==NULL)||(ptr->YAxes==NULL)||(ptr->ZAxes==NULL))
+   {
+    ppl_error(ERR_MEMORY,"Out of memory");
+    if (ptr->XAxes!=NULL) { free(ptr->XAxes); ptr->XAxes = NULL; }
+    if (ptr->YAxes!=NULL) { free(ptr->YAxes); ptr->YAxes = NULL; }
+    if (ptr->ZAxes!=NULL) { free(ptr->ZAxes); ptr->ZAxes = NULL; } 
+   }
+  else
+   {
+    for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->XAxes[i]), &(XAxes[i]));
+    for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->YAxes[i]), &(YAxes[i]));
+    for (i=0; i<MAX_AXES; i++) CopyAxis(&(ptr->ZAxes[i]), &(ZAxes[i]));
+   }
+  arrow_list_copy(&ptr->arrow_list , &arrow_list);
+  label_list_copy(&ptr->label_list , &label_list);
 
   DictLookup(command, "threedim", NULL, (void **)&cptr); // Set 3d flag
   ptr->ThreeDim = (cptr!=NULL);
@@ -1061,7 +1093,7 @@ int directive_plot(Dict *command, int interactive, int replot)
   i=0;
   while (ListIter != NULL)
    {
-    if (*RangePtr == NULL) { *RangePtr=(canvas_plotrange *)malloc(sizeof(canvas_plotrange)); if (*RangePtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } ppl_units_zero(&(*RangePtr)->unit); (*RangePtr)->min=(*RangePtr)->max=0.0; (*RangePtr)->MinSet=(*RangePtr)->MaxSet=0; (*RangePtr)->next=NULL; }
+    if (*RangePtr == NULL) { *RangePtr=(canvas_plotrange *)malloc(sizeof(canvas_plotrange)); if (*RangePtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } ppl_units_zero(&(*RangePtr)->unit); (*RangePtr)->min=(*RangePtr)->max=0.0; (*RangePtr)->MinSet=(*RangePtr)->MaxSet=(*RangePtr)->AutoMinSet=(*RangePtr)->AutoMaxSet=0; (*RangePtr)->next=NULL; }
     TempDict = (Dict *)ListIter->data;
     DictLookup(TempDict,"min"    ,NULL,(void **)&min);
     DictLookup(TempDict,"max"    ,NULL,(void **)&max);
@@ -1070,10 +1102,10 @@ int directive_plot(Dict *command, int interactive, int replot)
     if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,0), ppl_units_GetUnitStr(max,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if (MinAuto!=NULL) { (*RangePtr)->MinSet=0; (*RangePtr)->min=0.0; }
-    if (MaxAuto!=NULL) { (*RangePtr)->MaxSet=0; (*RangePtr)->max=0.0; }
-    if (min    !=NULL) { (*RangePtr)->MinSet=1; (*RangePtr)->min=min->real; (*RangePtr)->unit=*min; (*RangePtr)->unit.real=1.0; }
-    if (max    !=NULL) { (*RangePtr)->MaxSet=1; (*RangePtr)->max=max->real; (*RangePtr)->unit=*max; (*RangePtr)->unit.real=1.0; }
+    if (MinAuto!=NULL) { (*RangePtr)->AutoMinSet=1; (*RangePtr)->MinSet=0; (*RangePtr)->min=0.0; }
+    if (MaxAuto!=NULL) { (*RangePtr)->AutoMaxSet=1; (*RangePtr)->MaxSet=0; (*RangePtr)->max=0.0; }
+    if (min    !=NULL) { (*RangePtr)->AutoMinSet=0; (*RangePtr)->MinSet=1; (*RangePtr)->min=min->real; (*RangePtr)->unit=*min; (*RangePtr)->unit.real=1.0; }
+    if (max    !=NULL) { (*RangePtr)->AutoMaxSet=0; (*RangePtr)->MaxSet=1; (*RangePtr)->max=max->real; (*RangePtr)->unit=*max; (*RangePtr)->unit.real=1.0; }
     ListIter = ListIterate(ListIter, NULL);
     RangePtr = &(*RangePtr)->next;
     i++;
