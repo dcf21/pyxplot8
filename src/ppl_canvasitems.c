@@ -342,9 +342,14 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
        for (j=0; j<pd->NFunctions; j++) // Print out the list of functions which we are plotting
         {
          output[i++]=(j!=0)?':':' ';
-         strcpy(output+i, pd->functions[j]);
+         StrStrip(pd->functions[j] , output+i);
          i+=strlen(output+i);
         }
+      if (pd->ContinuitySet) // Print continuous / discontinuous flag
+       {
+        if (pd->continuity == DATAFILE_DISCONTINUOUS) { sprintf(output+i, " discontinuous"); i+=strlen(output+i); }
+        else                                          { sprintf(output+i,    " continuous"); i+=strlen(output+i); }
+       }
       if (pd->axisXset || pd->axisYset || pd->axisZset) // Print axes to use
        {
         strcpy(output+i, " axes "); i+=strlen(output+i);
@@ -363,15 +368,12 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       if (pd->SelectCriterion!=NULL) { sprintf(output+i, " select %s", pd->SelectCriterion); i+=strlen(output+i); } // Print select criterion
       if      (pd->NoTitleSet) { strcpy(output+i, " notitle"); i+=strlen(output+i); } // notitle is set
       else if (pd->TitleSet  ) { strcpy(output+i, " title"); i+=strlen(output+i); StrEscapify(pd->title, output+i); i+=strlen(output+i); }
-      if (pd->NUsing > 0)
+      sprintf(output+i, " using %s", (pd->UsingRowCols==DATAFILE_COL)?"columns":"rows"); i+=strlen(output+i); // Print using list
+      for (j=0; j<pd->NUsing; j++)
        {
-        strcpy(output+i, " using "); i+=strlen(output+i); // Print using list
-        for (j=0; j<pd->NUsing; j++)
-         {
-          if (j!=0) output[i++]=':';
-          strcpy(output+i, pd->UsingList[j]);
-          i+=strlen(output+i);
-         }
+        output[i++]=(j!=0)?':':' ';
+        strcpy(output+i, pd->UsingList[j]);
+        i+=strlen(output+i);
        }
       with_words_print(&pd->ww, output+i+6);
       if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; i+=strlen(output+i); }
@@ -1012,8 +1014,8 @@ int directive_plot(Dict *command, int interactive, int replot)
   int            id, *EditNo, *indexptr, *tempint;
   long           i, j;
   static int     ReplotFocus = -1;
-  char          *cptr, *cptr2, *tempstr, *MinAuto, *MaxAuto, *SelectCrit;
-  List          *RangeList, *PlotList, *UsingList, *EveryList;
+  char          *cptr, *cptr2, *tempstr, *tempstr2, *tempstr3, *MinAuto, *MaxAuto, *SelectCrit;
+  List          *RangeList, *PlotList, *ExpressionList, *UsingList, *EveryList;
   ListIterator  *ListIter, *ListIter2;
   Dict          *TempDict, *TempDict2;
   value         *min, *max;
@@ -1084,9 +1086,24 @@ int directive_plot(Dict *command, int interactive, int replot)
   while (*PlotItemPtr != NULL) PlotItemPtr=&(*PlotItemPtr)->next; // Find end of list of plot items
   while (ListIter != NULL)
    {
-    if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
     TempDict = (Dict *)ListIter->data;
 
+    // Check that axes are specified in the correct format before we malloc anything
+    DictLookup(TempDict, "axis_x", NULL, (void **)&tempstr );
+    DictLookup(TempDict, "axis_y", NULL, (void **)&tempstr2);
+    DictLookup(TempDict, "axis_z", NULL, (void **)&tempstr3);
+    if (  ((tempstr!=NULL)&&(tempstr[0]!='x')) || ((tempstr2!=NULL)&&(tempstr2[0]!='y')) || ((tempstr3!=NULL)&&(tempstr3[0]!='z'))  )
+     {
+      sprintf(temp_err_string, "The axes clause must take the form x<axis_number>y<axis_number> [z<axis_number>]. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
+      ppl_error(ERR_NUMERIC, temp_err_string);
+      ListIter = ListIterate(ListIter, NULL);
+      continue;
+     }
+
+    // Malloc a structure to hold this plot item
+    if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
+
+    // Store either filename of datafile, or the list of functions which we are plotting
     DictLookup(TempDict, "filename", NULL, (void **)&tempstr);
     if (tempstr != NULL) // We are plotting a datafile
      {
@@ -1099,6 +1116,63 @@ int directive_plot(Dict *command, int interactive, int replot)
      {
       (*PlotItemPtr)->function = 1;
       (*PlotItemPtr)->filename = NULL;
+      DictLookup(TempDict, "parametric", NULL, (void **)&tempstr);
+      (*PlotItemPtr)->parametric = (tempstr!=NULL);
+      DictLookup(TempDict, "expression_list:", NULL, (void **)&ExpressionList);
+      j = (*PlotItemPtr)->NFunctions = ListLen(ExpressionList);
+      (*PlotItemPtr)->functions = (char **)malloc(j * sizeof(char *));
+      if ((*PlotItemPtr)->functions == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      ListIter2 = ListIterateInit(ExpressionList);
+      for (i=0; i<j; i++)
+       { 
+        TempDict2 = (Dict *)ListIter2->data;
+        DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
+        (*PlotItemPtr)->functions[i] = (char *)malloc(strlen(tempstr)+1);
+        if ((*PlotItemPtr)->functions[i] == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        strcpy((*PlotItemPtr)->functions[i], tempstr);
+        ListIter2 = ListIterate(ListIter2, NULL);
+       }
+     }
+
+    // Look up axes to use
+    (*PlotItemPtr)->axisXset = (*PlotItemPtr)->axisYset = (*PlotItemPtr)->axisZset = 0;
+    (*PlotItemPtr)->axisX    = (*PlotItemPtr)->axisY    = (*PlotItemPtr)->axisZ    = 1;
+    DictLookup(TempDict, "axis_x", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->axisXset = 1; (*PlotItemPtr)->axisX = GetFloat(tempstr+1,NULL); }
+    DictLookup(TempDict, "axis_y", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->axisYset = 1; (*PlotItemPtr)->axisY = GetFloat(tempstr+1,NULL); }
+    DictLookup(TempDict, "axis_z", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->axisZset = 1; (*PlotItemPtr)->axisZ = GetFloat(tempstr+1,NULL); }
+
+    // Look up label to apply to datapoints
+    DictLookup(TempDict, "label", NULL, (void **)&tempstr);
+    if (tempstr==NULL) { (*PlotItemPtr)->label = NULL; }
+    else
+     {
+      (*PlotItemPtr)->label = (char *)malloc(strlen(tempstr)+1);
+      if ((*PlotItemPtr)->label == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      strcpy((*PlotItemPtr)->label, tempstr);
+     }
+
+    // Look up continuous / discontinuous flags
+    (*PlotItemPtr)->ContinuitySet = 0;
+    (*PlotItemPtr)->continuity    = DATAFILE_CONTINUOUS;
+    DictLookup(TempDict, "continuous", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_CONTINUOUS; }
+    DictLookup(TempDict, "discontinuous", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_DISCONTINUOUS; }
+
+    // Look up title and notitle modifiers
+    (*PlotItemPtr)->NoTitleSet = (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL;
+    DictLookup(TempDict, "notitle", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->NoTitleSet = 1; (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL; }
+    DictLookup(TempDict, "title", NULL, (void **)&tempstr);
+    if (tempstr!=NULL)
+     {
+      (*PlotItemPtr)->NoTitleSet = 0; (*PlotItemPtr)->TitleSet = 1;
+      (*PlotItemPtr)->title = (char *)malloc(strlen(tempstr)+1);
+      if ((*PlotItemPtr)->title == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      strcpy((*PlotItemPtr)->title, tempstr);
      }
 
     // Look up index , every, select, using modifiers
@@ -1124,6 +1198,7 @@ int directive_plot(Dict *command, int interactive, int replot)
        }
      }
 
+    // Look up select modifier
     DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
     if (SelectCrit==NULL) { (*PlotItemPtr)->SelectCriterion = NULL; }
     else
@@ -1133,6 +1208,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       strcpy((*PlotItemPtr)->SelectCriterion, SelectCrit);
      }
 
+    // Look up using modifiers
     DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
     if (UsingList==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; }
     else

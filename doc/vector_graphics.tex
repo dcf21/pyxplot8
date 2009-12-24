@@ -24,25 +24,37 @@
 \chapter{Producing Vector Graphics}
 \label{ch:vector_graphics}
 
-In this chapter, we discuss how to label graphs that have been plotted with
-PyXPlot and how to place simple vector graphics around them.
+In previous chapters, we have seen how the \indcmdt{plot} may be used to
+produce graphs of functions and \datafile s. We have also seen how the
+\indcmdt{set terminal} can be used to produce a wide range of different
+graphical formats (see Section~\ref{sec:set_terminal}) and the \indcmdt{set
+papersize} can be used to produce postscript output to fit on different sizes
+of paper (see Section~\ref{sec:set_papersize}).
 
-\section{Multi-plotting}
+In this chapter, we discuss how to produce more sophisticated vector graphics,
+beginning with the placement of many graphs side-by-side on a single page of
+output, and then moving on to survey the other vector graphics objects which
+PyXPlot can produce.
+
+\section{Producing Galleries of Plots}
 \label{sec:multiplot}
 \index{multiplot}
 
-Gnuplot has a plotting mode called {\it multiplot} which allows many graphs to
-be plotted together and displayed side-by-side. The basic syntax of this mode
-is reproduced in PyXPlot, but it is hugely extended.
+PyXPlot has two modes in which it can produce vector graphics. In {\it
+singleplot} mode, the default, each time the {\tt plot} command is issued, the
+canvas is wiped clean and the new plot is placed alone on a blank page. In {\it
+multiplot} mode, vector graphics objects accumulate on the canvas. Each time
+the {\tt plot} command is issued, the new graph is placed on top of any other
+objects which were already on the canvas.
 
-The mode is entered by the command \indcmdts{set multiplot}.  This can be
-compared to taking a blank sheet of paper on which to place plots.  Plots are
-then placed on that sheet of paper, as usual, with the {\tt plot} command. The
-position of each plot is set using the \indcmdt{set origin}, which takes a
-comma-separated $(x,y)$ co-ordinate pair, measured in centimetres. The
-following, for example, would plot a graph of $\sin(x)$ to the left of a plot
-of $\cos(x)$:
-
+The user can switch between these two modes by entering the commands
+\indcmdts{set multiplot} and \indcmdts{set nomultiplot}.  In order for
+multiplot mode to become truly useful, one further command is needed at this
+point: the \indcmdt{set origin}.  This sets the position on the page of the
+lower-left corner of plot produced by the \indcmdt{plot}; it takes a
+comma-separated $(x,y)$ co-ordinate pair, which may have units of length, or,
+if dimensionless, are assumed to be measured in centimetres. The following
+example plots a graph of $\sin(x)$ to the left of a plot of $\cos(x)$:
 \begin{verbatim} 
 set multiplot
 plot sin(x)
@@ -50,35 +62,56 @@ set origin 10,0
 plot cos(x)
 \end{verbatim}
 
-The multiplot page may subsequently be cleared with the \indcmdt{clear}, and
-multiplot mode may be left using the \indcmdt{set nomultiplot}.
+\section{Commands for Manipulating Multiplot Canvases}
 
-\subsection{Deleting, Moving and Changing Plots}
-
-Each time a plot is placed on the multiplot page in PyXPlot, it is allocated a
-reference number, which is output to the terminal. Reference numbers count up
-from zero each time the multiplot page is cleared. A number of commands exist
-for modifying plots after they have been placed on the page, selecting them by
-making reference to their reference numbers.
-
-Plots may be removed from the page with the \indcmdt{delete}, and restored with
-the \indcmdt{undelete}:
-
+All objects on a multiplot canvas have their own unique identification number.
+By default, these count up from one, such that the first item placed on the
+canvas is number one, the next is number two, and so forth. Alternatively, the
+user may specify a particular number for a particular object:
 \begin{verbatim} 
-delete <number>
-undelete <number>
+set multiplot
+plot item 6 sin(x)
+\end{verbatim}
+If there were already an object on the canvas with identification number~6,
+this object would be deleted and replaced with the new object.
+
+A list of all of the objects on the current multiplot canvas can be obtained
+using the \indcmdt{list}. For example, after entering the example in the
+previous section, the \indcmdt{list} would output:
+\begin{verbatim}
+# ID   Command
+    1  plot item 1 sin(x)
+    2  plot item 2 cos(x)
 \end{verbatim}
 
-The reference numbers of deleted plots are not reused until the page is
-cleared, as they may always be restored with the \indcmdt{undelete}; plots
-which have been deleted simply do not appear.
-
-Plots may be moved with the \indcmdt{move}. For example, the following
-would move plot 23 to position $(8,8)$ measured in centimetres:
-
-\begin{verbatim} 
-move 23 to 8,8
+A multiplot canvas can be wiped clean by issuing the \indcmdt{clear}, which
+removes all items currently on the canvas. Alternatively, individual items may
+be removed using the \indcmdt{delete}, which should be followed by a
+comma-separated list of the identification numbers of the objects to be
+deleted. For example, entering {\tt delete 2} after the example above, followed
+by the \indcmdt{list} would output:
+\begin{verbatim}
+# ID   Command
+    1  plot item 1 sin(x)
+    2  [deleted] plot item 2 cos(x)
 \end{verbatim}
+Deleted items may be restored using the \indcmdt{undelete}, which likewise
+takes a comma-separated list of the identification numbers of the objects to be
+restored, e.g.:
+\begin{verbatim}
+undelete 2
+\end{verbatim}
+Once a canvas has been cleared using the \indcmdt{clear}, there is no way to
+restore it.
+
+Objects may be moved around on the canvas using the \indcmdt{move}. For
+example, the following would move item 23 to position $(8,8)$ measured in
+inches:
+\begin{verbatim} 
+move 23 to 8*unit(in), 8*unit(in)
+\end{verbatim}
+
+\section{The {\tt replot} Command Revisited}
 
 In multiplot mode, the \indcmdt{replot} can be used to modify the last plot
 added to the page. For example, the following would change the title of the
@@ -111,28 +144,7 @@ any plot on the multiplot page -- after executing {\tt edit~0}, the
 When a new plot is added to the page, the \indcmdt{replot} always switches to
 act upon this most recent plot.
 
-\subsection{Listing Items on a Multiplot}
-
-A listing of all of the items on a multiplot, giving their reference numbers
-and the commands used to produce them, can be obtained using the
-\indcmdt{list}. For example:
-
-\begin{verbatim}
-pyxplot> list
-#  ID | Command 
-    0   plot f(x) 
-d   1   text 'Figure 1: A plot of f(x)' 
-    2   text 'Figure 1: A plot of $f(x)$' 
-
-# Items marked 'd' are deleted 
-\end{verbatim}
-
-In this example, the user has plotted a graph of $f(x)$, and added a caption to
-it. The {\tt ID} column lists the reference numbers of each multiplot item.
-Item {\tt 1} has been deleted, and this is indicated by the {\tt d} to the left
-of its reference number.
-
-\subsection{Linked Axes}
+\section{Linked Axes}
 
 The axes of plots can be linked together, in such a way that they always share
 a common scale. This can be useful when placing plots next to one another,
@@ -152,9 +164,25 @@ the second, $m$, indicates whether to borrow the scale of axis $x1$, $x2$,
 $x3$, etc. By default, $m=1$. The linking will fail, and a warning result, if
 an attempt is made to link to an axis which doesn't exist.
 
-\subsection{Text Labels, Arrows and Images}
+\section{Adding Other Vector Graphics Objects}
 
-In addition to placing plots on the multiplot page, text labels may also be
+In addition to graphs, a range of other objects can be placed on multiplot
+canvases:
+\begin{itemize}
+\item Rectangular boxes (the \indcmdt{box}).
+\item Circles (the \indcmdt{circle}).
+\item Ellipses (the \indcmdt{ellipse}).
+\item Encapsulated postscript images (the \indcmdt{eps}).
+\item Bitmap images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} formats (the \indcmdt{image}).
+\item Text labels (the \indcmdt{text}).
+\end{itemize}
+Put together, these commands can be used to produce a wide range of vector
+graphics. In the remainder of this chapter, we describe these commands in turn,
+providing a variety of examples of their use.
+
+\subsection{The {\tt text} Command}
+
+Text labels may also be
 inserted independently of any plots, using the \indcmdt{text}. This has the
 following syntax:
 
@@ -178,14 +206,12 @@ the {\tt set label} command, can also be used to set the colour and alignment
 of text produced with the \indcmdt{text}.  A useful application of this is to
 produce centred headings at the top of multiplots.
 
-As with plots, each text item has a unique identification number, and can be
-moved around, deleted or undeleted with the \indcmdts{move},
-\indcmdts{delete} and \indcmdts{undelete} commands.
-
 It should be noted that the \indcmdt{text} can also be used outside of the
 multiplot environment, to render a single piece of short text instead of a
 graph. One obvious application is to produce equations rendered as graphical
 files for inclusion in talks.\index{presentations}
+
+\subsection{The {\tt arrow} Command}
 
 Arrows may also be placed on multiplot pages, independently of any plots, using
 the \indcmdt{arrow}, which has syntax:
@@ -193,9 +219,6 @@ the \indcmdt{arrow}, which has syntax:
 \begin{verbatim} 
 arrow from x,y to x,y
 \end{verbatim}
-
-As above, arrows receive unique identification numbers, and can be deleted and
-undeleted.
 
 The \indcmdt{arrow} may be followed by the \indmodt{with} keyword to specify to
 style of the arrow. The style keywords which are accepted are identical to
@@ -207,11 +230,15 @@ arrow from x1,y1 to x2,y2 \
 with twohead colour red
 \end{verbatim}
 
-Bitmap images in jpeg format may be placed on the multiplot using the
-\indcmdt{jpeg}.  This has syntax:
+\subsection{The {\tt image} Command}
 
+Bitmap images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} format may be
+placed on the multiplot using the \indcmdt{image}\footnote{To maintain
+compatibility with historic versions of PyXPlot, the {\tt image} command may
+also be spelt {\tt jpeg}, with the identical syntax thereafter.}. This has
+syntax:
 \begin{verbatim}
-jpeg 'filename' at x,y width w
+image 'filename' at x,y width w
 \end{verbatim}
 
 As an alternative to the \indkeyt{width} keyword the height of the image can be
@@ -219,6 +246,8 @@ specified, using the analogous \indkeyt{height} keyword.  An optional angle can
 also be specified using the \indkeyt{rotate} keyword; this causes the included
 image to be rotated counter-clockwise by a specified angle, measured in
 degrees.
+
+\subsection{The {\tt eps} Command}
 
 Vector graphic images in eps format may be placed on to a multiplot using the
 \indcmdt{eps}, which has a syntax analogous to the {\tt jpeg} command.  However
@@ -232,7 +261,7 @@ eps 'filename' at 3,2 rotate 5
 \noindent will place the eps file with its bottom-left corner at position
 $(3,2)$\,cm from the origin, rotated counter-clockwise through 5 degrees.
 
-\subsection{Speed Issues}
+\subsection{The Construction of Large Multiplots}
 \label{sec:set_display}
 
 By default, whenever an item is added to a multiplot, or an existing item moved
