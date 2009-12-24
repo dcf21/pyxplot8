@@ -44,6 +44,9 @@ canvas_itemlist *canvas_items = NULL;
 static void canvas_item_delete(canvas_item *ptr)
  {
   int i;
+  canvas_plotrange *pr, *pr2;
+  canvas_plotdesc  *pd, *pd2;
+
   if (ptr->text        != NULL) free(ptr->text);
   with_words_destroy(&(ptr->settings.DataStyle));
   with_words_destroy(&(ptr->settings.FuncStyle));
@@ -53,7 +56,33 @@ static void canvas_item_delete(canvas_item *ptr)
   arrow_list_destroy(&(ptr->arrow_list));
   label_list_destroy(&(ptr->label_list));
   with_words_destroy(&(ptr->with_data));
-  // !!! Delete plot data structure !!!
+
+  // Delete range structures
+  pr = ptr->plotranges;
+  while (pr != NULL)
+   {
+    pr2 = pr->next;
+    free(pr);
+    pr = pr2;
+   }
+
+  // Delete plot item descriptors
+  pd = ptr->plotitems;
+  while (pd != NULL)
+   {
+    pd2 = pd->next;
+    for (i=0; i<pd->NFunctions; i++) free(pd->functions[i]);
+    for (i=0; i<pd->NUsing    ; i++) free(pd->UsingList);
+    if (pd->filename        != NULL) free(pd->filename);
+    if (pd->functions       != NULL) free(pd->functions);
+    if (pd->label           != NULL) free(pd->label);
+    if (pd->SelectCriterion != NULL) free(pd->SelectCriterion);
+    if (pd->title           != NULL) free(pd->title);
+    if (pd->UsingList       != NULL) free(pd->UsingList);
+    free(pd);
+    pd = pd2;
+   }
+
   free(ptr);
   return;
  }
@@ -90,7 +119,8 @@ static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, in
   if (ptr==NULL) return 1;
   ptr->next    = next; // Link singly-linked list
   ptr->text    = NULL;
-  ptr->plot_items = NULL;
+  ptr->plotitems  = NULL;
+  ptr->plotranges = NULL;
   ptr->id      = (EditNo == NULL) ? (PrevId+1) : (*EditNo);
   ptr->type    = type;
   ptr->deleted = 0;
@@ -152,7 +182,7 @@ int directive_clear()
 // Produce a textual representation of the command which would need to be typed to produce any given canvas item
 char *canvas_item_textify(canvas_item *ptr, char *output)
  {
-  int i;
+  int i,j;
   if      (ptr->type == CANVAS_ARROW) // Produce textual representations of arrow commands
    {
     sprintf(output, "arrow item %d from %s,%s to %s,%s", ptr->id,
@@ -282,7 +312,72 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
    }
   else if (ptr->type == CANVAS_PLOT ) // Produce textual representations of plot commands
    {
-    sprintf(output, "[plot]");
+    canvas_plotrange *pr;
+    canvas_plotdesc  *pd;
+    value             v;
+    unsigned char     pr_first=1, pd_first=1;
+
+    sprintf(output, "plot item %d", ptr->id);
+    i = strlen(output);
+    if (ptr->ThreeDim) strcpy(output+i, " 3d");
+    i += strlen(output+i);
+    pr = ptr->plotranges; // Print out plot ranges
+    while (pr != NULL)
+     {
+      if (pr_first) { output[i++]=' '; pr_first=0; }
+      output[i++]='[';
+      if (pr->MinSet) { v=pr->unit; v.real=pr->min; sprintf(output+i, "%s", ppl_units_NumericDisplay(&v,0,0,0)); i+=strlen(output+i); }
+      if (pr->MinSet || pr->MaxSet) { strcpy(output+i,":"); i+=strlen(output+i); }
+      if (pr->MaxSet) { v=pr->unit; v.real=pr->max; sprintf(output+i, "%s", ppl_units_NumericDisplay(&v,0,0,0)); i+=strlen(output+i); }
+      strcpy(output+i,"]"); i+=strlen(output+i);
+      pr = pr->next;
+     }
+    pd = ptr->plotitems; // Print out plotted items one by one
+    while (pd != NULL)
+     {
+      if (pd_first) { pd_first=0; } else { output[i++]=','; }
+      if (pd->parametric) { sprintf(output+i, " parametric"); i+=strlen(output+i); }
+      if (!pd->function) { output[i++]=' '; StrEscapify(pd->filename, output+i); i+=strlen(output+i); } // Filename of datafile we are plotting
+      else
+       for (j=0; j<pd->NFunctions; j++) // Print out the list of functions which we are plotting
+        {
+         output[i++]=(j!=0)?':':' ';
+         strcpy(output+i, pd->functions[j]);
+         i+=strlen(output+i);
+        }
+      if (pd->axisXset || pd->axisYset || pd->axisZset) // Print axes to use
+       {
+        strcpy(output+i, " axes "); i+=strlen(output+i);
+        if (pd->axisXset) { sprintf(output+i, "x%d", pd->axisX); i+=strlen(output+i); }
+        if (pd->axisYset) { sprintf(output+i, "y%d", pd->axisY); i+=strlen(output+i); }
+        if (pd->axisZset) { sprintf(output+i, "z%d", pd->axisZ); i+=strlen(output+i); }
+       }
+      if (pd->EverySet>0) { sprintf(output+i, " every %d", pd->EveryList[0]); i+=strlen(output+i); } // Print out 'every' clause of plot command
+      if (pd->EverySet>1) { sprintf(output+i, ":%d", pd->EveryList[1]); i+=strlen(output+i); }
+      if (pd->EverySet>2) { sprintf(output+i, ":%d", pd->EveryList[2]); i+=strlen(output+i); }
+      if (pd->EverySet>3) { sprintf(output+i, ":%d", pd->EveryList[3]); i+=strlen(output+i); }
+      if (pd->EverySet>4) { sprintf(output+i, ":%d", pd->EveryList[4]); i+=strlen(output+i); }
+      if (pd->EverySet>5) { sprintf(output+i, ":%d", pd->EveryList[5]); i+=strlen(output+i); }
+      if (pd->IndexSet) { sprintf(output+i, " index %d", pd->index); i+=strlen(output+i); } // Print index to use
+      if (pd->label!=NULL) { sprintf(output+i, " label %s", pd->label); i+=strlen(output+i); } // Print label string
+      if (pd->SelectCriterion!=NULL) { sprintf(output+i, " select %s", pd->SelectCriterion); i+=strlen(output+i); } // Print select criterion
+      if      (pd->NoTitleSet) { strcpy(output+i, " notitle"); i+=strlen(output+i); } // notitle is set
+      else if (pd->TitleSet  ) { strcpy(output+i, " title"); i+=strlen(output+i); StrEscapify(pd->title, output+i); i+=strlen(output+i); }
+      if (pd->NUsing > 0)
+       {
+        strcpy(output+i, " using "); i+=strlen(output+i); // Print using list
+        for (j=0; j<pd->NUsing; j++)
+         {
+          if (j!=0) output[i++]=':';
+          strcpy(output+i, pd->UsingList[j]);
+          i+=strlen(output+i);
+         }
+       }
+      with_words_print(&pd->ww, output+i+6);
+      if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; i+=strlen(output+i); }
+      else                      { output[i]='\0'; }
+      pd = pd->next;
+     }
    }
   else if (ptr->type == CANVAS_TEXT ) // Produce textual representations of text commands
    {
@@ -722,7 +817,6 @@ int directive_ellipse(Dict *command, int interactive)
       xc_dbl = xf->real + a_dbl * ecc_dbl * cos( ang_dbl);
       yc_dbl = yf->real + a_dbl * ecc_dbl * sin( ang_dbl);
      }
-
    }
 
   // Add this ellipse to the linked list which decribes the canvas
@@ -915,12 +1009,154 @@ int directive_image(Dict *command, int interactive)
 int directive_plot(Dict *command, int interactive, int replot)
  {
   canvas_item   *ptr;
-  int            id;
+  int            id, *EditNo, *indexptr, *tempint;
+  long           i, j;
+  static int     ReplotFocus = -1;
+  char          *cptr, *cptr2, *tempstr, *MinAuto, *MaxAuto, *SelectCrit;
+  List          *RangeList, *PlotList, *UsingList, *EveryList;
+  ListIterator  *ListIter, *ListIter2;
+  Dict          *TempDict, *TempDict2;
+  value         *min, *max;
+  canvas_plotrange **RangePtr;
+  canvas_plotdesc  **PlotItemPtr;
+
   unsigned char *unsuccessful_ops;
 
-  if (!replot)
+  if (replot) // If replotting, find canvas item to append plot items onto
+   {
+    DictLookup(command, "editno", NULL, (void **)&EditNo);
+    if (EditNo == NULL) EditNo=&ReplotFocus;
+    ptr = NULL;
+    if (canvas_items != NULL)
+     {
+      ptr = canvas_items->first;
+      while (ptr != NULL)
+       {
+        if (ptr->id == *EditNo) break;
+        ptr = ptr->next;
+       }
+     }
+    if (ptr==NULL) { ppl_error(ERR_GENERAL, "No plot found to replot."); return 1; }
+    DictLookup(command, "threedim", NULL, (void **)&cptr);
+    if (ptr->ThreeDim != (cptr!=NULL)) { ppl_error(ERR_GENERAL, "It is not possible to replot a 3d plot in 2d mode, or a 2d plot in 3d mode."); return 1; }
+    id = *EditNo;
+   }
+  else // We are not replotting... create a new plot item
    {
     if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id,1)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+   }
+
+  ReplotFocus = id; // This graph is the one which we replot next time by default
+
+  DictLookup(command, "threedim", NULL, (void **)&cptr); // Set 3d flag
+  ptr->ThreeDim = (cptr!=NULL);
+
+  // Read list of ranges
+  DictLookup(command, "directive", NULL, (void **)&cptr);
+  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  ListIter = ListIterateInit(RangeList);
+  RangePtr = &ptr->plotranges;
+  i=0;
+  while (ListIter != NULL)
+   {
+    if (*RangePtr == NULL) { *RangePtr=(canvas_plotrange *)malloc(sizeof(canvas_plotrange)); if (*RangePtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } ppl_units_zero(&(*RangePtr)->unit); (*RangePtr)->min=(*RangePtr)->max=0.0; (*RangePtr)->MinSet=(*RangePtr)->MaxSet=0; (*RangePtr)->next=NULL; }
+    TempDict = (Dict *)ListIter->data;
+    DictLookup(TempDict,"min"    ,NULL,(void **)&min);
+    DictLookup(TempDict,"max"    ,NULL,(void **)&max);
+    DictLookup(TempDict,"minauto",NULL,(void **)&MinAuto);
+    DictLookup(TempDict,"maxauto",NULL,(void **)&MaxAuto);
+    if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,0), ppl_units_GetUnitStr(max,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (MinAuto!=NULL) { (*RangePtr)->MinSet=0; (*RangePtr)->min=0.0; }
+    if (MaxAuto!=NULL) { (*RangePtr)->MaxSet=0; (*RangePtr)->max=0.0; }
+    if (min    !=NULL) { (*RangePtr)->MinSet=1; (*RangePtr)->min=min->real; (*RangePtr)->unit=*min; (*RangePtr)->unit.real=1.0; }
+    if (max    !=NULL) { (*RangePtr)->MaxSet=1; (*RangePtr)->max=max->real; (*RangePtr)->unit=*max; (*RangePtr)->unit.real=1.0; }
+    ListIter = ListIterate(ListIter, NULL);
+    RangePtr = &(*RangePtr)->next;
+    i++;
+   }
+
+  // Read plot items
+  DictLookup(command, "plot_list,", NULL, (void **)&PlotList);
+  ListIter = ListIterateInit(PlotList);
+  PlotItemPtr = &ptr->plotitems;
+  while (*PlotItemPtr != NULL) PlotItemPtr=&(*PlotItemPtr)->next; // Find end of list of plot items
+  while (ListIter != NULL)
+   {
+    if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
+    TempDict = (Dict *)ListIter->data;
+
+    DictLookup(TempDict, "filename", NULL, (void **)&tempstr);
+    if (tempstr != NULL) // We are plotting a datafile
+     {
+      (*PlotItemPtr)->function = 0;
+      (*PlotItemPtr)->filename = (char *)malloc(strlen(tempstr)+1);
+      if ((*PlotItemPtr)->filename == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      strcpy((*PlotItemPtr)->filename , tempstr);
+     }
+    else // We are plotting function(s)
+     {
+      (*PlotItemPtr)->function = 1;
+      (*PlotItemPtr)->filename = NULL;
+     }
+
+    // Look up index , every, select, using modifiers
+    (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
+    (*PlotItemPtr)->index = -1;
+    DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
+    DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_ROW;
+    DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
+
+    DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
+    if (EveryList==NULL) { (*PlotItemPtr)->EverySet = 0; }
+    else
+     {
+      j = (*PlotItemPtr)->EverySet = ListLen(EveryList);
+      if (j>6) { ppl_error(ERR_SYNTAX, "More than six items specified in every modifier -- final items are not valid syntax."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      ListIter2 = ListIterateInit(EveryList);
+      for (i=0; i<j; i++)
+       {        
+        TempDict2 = (Dict *)ListIter2->data;
+        DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
+        (*PlotItemPtr)->EveryList[i] = *tempint;
+        ListIter2 = ListIterate(ListIter2, NULL);
+       }
+     }
+
+    DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
+    if (SelectCrit==NULL) { (*PlotItemPtr)->SelectCriterion = NULL; }
+    else
+     {  
+      (*PlotItemPtr)->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
+      if ((*PlotItemPtr)->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      strcpy((*PlotItemPtr)->SelectCriterion, SelectCrit);
+     }
+
+    DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
+    if (UsingList==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; }
+    else
+     {
+      j = (*PlotItemPtr)->NUsing = ListLen(UsingList);
+      (*PlotItemPtr)->UsingList = (char **)malloc(j * sizeof(char *));
+      if ((*PlotItemPtr)->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+      ListIter2 = ListIterateInit(UsingList);
+      for (i=0; i<j; i++)
+       {
+        TempDict2 = (Dict *)ListIter2->data;
+        DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+        if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
+        (*PlotItemPtr)->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
+        if ((*PlotItemPtr)->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        strcpy((*PlotItemPtr)->UsingList[i], cptr2);
+        ListIter2 = ListIterate(ListIter2, NULL);
+       }
+     }
+
+    // Read in style information from with clause
+    with_words_fromdict(TempDict, &(*PlotItemPtr)->ww, 1);
+
+    ListIter = ListIterate(ListIter, NULL);
    }
 
   // Redisplay the canvas as required

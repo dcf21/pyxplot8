@@ -24,6 +24,7 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_datafile.h"
 #include "ppl_settings.h"
 
 #define CANVAS_ARROW 22001
@@ -35,27 +36,44 @@
 #define CANVAS_PLOT  22007
 #define CANVAS_TEXT  22008
 
-typedef struct plot_descriptor {
- unsigned char           function;
- with_words              with_data;
- char                   *text;
- struct plot_descriptor *next;
-} plot_descriptor;
+typedef struct canvas_plotrange {
+ double                   min, max;
+ value                    unit;
+ unsigned char            MinSet, MaxSet;
+ struct canvas_plotrange *next;
+} canvas_plotrange;
+
+typedef struct canvas_plotdesc {
+ unsigned char           function, parametric, axisXset, axisYset, axisZset, ContinuitySet, IndexSet, EverySet, TitleSet, NoTitleSet;
+ int                     NFunctions, axisX, axisY, axisZ, EveryList[6], index, continuity, UsingRowCols, NUsing;
+ with_words              ww;
+ char                   *filename, **functions, *label, *SelectCriterion, *title, **UsingList;
+ struct canvas_plotdesc *next;
+
+ // Structure members which are used at plot time
+ DataTable              *data;
+} canvas_plotdesc;
 
 typedef struct canvas_item {
  int                 id, type, ArrowType, TransColR, TransColG, TransColB;
  double              xpos, ypos, xpos2, ypos2, rotation;
- double              x1,y1,x2,y2,xc,yc,xf,yf,a,b,ecc,slr; // Parameters which can be used to define ellipses
- unsigned char       x1set, xcset, xfset, aset, bset, eccset, slrset;
  char               *text;
  unsigned char       deleted, xpos2set, ypos2set, clip, calcbbox, smooth, NoTransparency, CustomTransparency;
  with_words          with_data;
- plot_descriptor    *plot_items;
  settings_graph      settings;
  settings_axis      *XAxes, *YAxes, *ZAxes;
  arrow_object       *arrow_list;
  label_object       *label_list;
  struct canvas_item *next;
+
+ // Parameters which can be used to define ellipses
+ double              x1,y1,x2,y2,xc,yc,xf,yf,a,b,ecc,slr; // Parameters which can be used to define ellipses
+ unsigned char       x1set, xcset, xfset, aset, bset, eccset, slrset;
+
+ // Parameters which can be used to define plots
+ unsigned char     ThreeDim;
+ canvas_plotrange *plotranges;
+ canvas_plotdesc  *plotitems;
 } canvas_item;
 
 typedef struct canvas_itemlist {
