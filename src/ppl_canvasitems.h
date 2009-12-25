@@ -53,6 +53,7 @@ typedef struct canvas_plotdesc {
 
  // Structure members which are used at plot time
  DataTable              *data;
+ with_words              ww_final;
 } canvas_plotdesc;
 
 typedef struct canvas_item {

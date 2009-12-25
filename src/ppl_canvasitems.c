@@ -72,7 +72,7 @@ static void canvas_item_delete(canvas_item *ptr)
    {
     pd2 = pd->next;
     for (i=0; i<pd->NFunctions; i++) free(pd->functions[i]);
-    for (i=0; i<pd->NUsing    ; i++) free(pd->UsingList);
+    for (i=0; i<pd->NUsing    ; i++) free(pd->UsingList[i]);
     if (pd->filename        != NULL) free(pd->filename);
     if (pd->functions       != NULL) free(pd->functions);
     if (pd->label           != NULL) free(pd->label);

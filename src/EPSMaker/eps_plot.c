@@ -33,14 +33,19 @@
 
 #include "eps_comm.h"
 #include "eps_plot.h"
+#include "eps_plot_styles.h"
 #include "eps_plot_ticking.h"
 #include "eps_settings.h"
 
 void eps_plot_ReadAccessibleData(EPSComm *x)
  {
-  int i, j, Ndatasets;
+  int              i, j, Ndatasets, Fcounter=0, Dcounter=0, status, ErrCount, NExpect;
   canvas_plotdesc *pd;
-  settings_axis *axes;
+  settings_axis   *axes;
+  List            *UsingList, *EveryList;
+  Dict            *tempdict;
+  char             tempbuff[100];
+  with_words       ww_default;
 
   // First clear all range information from all axes
   for (j=0; j<3; j++)
@@ -73,13 +78,37 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     x->current->plotdata = NULL;
    }
 
-  // Loop through all datasets and see whether we can evaluate data now, without needing prior knowledge of axis range
+  // Loop through all datasets
   pd = x->current->plotitems;
+  i  = 0;
   while (pd != NULL)
    {
-    pd=pd->next;
-   }
+    // Merge together with words to form a final set
+    eps_withwords_default(&ww_default, pd->function, Fcounter, Dcounter, settings_term_current.colour==SW_ONOFF_ON);
+    if (pd->functions == 0) { Fcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
+    else                    { Dcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.DataStyle, &ww_default, NULL, NULL, 1); }
 
+    // If plotting a datafile, can read in data now, so do so
+    if (pd->functions == 0)
+     {
+      UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", tempbuff+j*10, 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, tempdict, 0, 0, DATATYPE_VOID); }
+      status   = 0;
+      ErrCount = DATAFILE_NERRS;
+      NExpect  = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
+
+      // Read data from file
+      DataFile_read(x->current->plotdata+i, &status, temp_err_string, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, NULL, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+      if (status) { ppl_error(ERR_GENERAL, temp_err_string); x->current->plotdata[i]=NULL; }
+      else
+       {
+        // Update axes to reflect usage
+        status=eps_plot_styles_UpdateUsage(x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, &x->current->XAxes[pd->axisX], &x->current->YAxes[pd->axisY], &x->current->ZAxes[pd->axisZ], pd);
+        if (status) { *(x->status) = 1; return; }
+       }
+     }
+    pd=pd->next; i++;
+   }
   return;
  }
 
