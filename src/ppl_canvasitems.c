@@ -727,7 +727,7 @@ int directive_ellipse(Dict *command, int interactive)
   else if (p==2) // User has specified both centre and focus of the ellipse, and one further piece of information
    {
     if (ppl_units_DblEqual(xc->real, xf->real) && ppl_units_DblEqual(yc->real, yf->real)) { ang_dbl = 0.0; }
-    else                                                                                  { ang_dbl = atan2(xc->real - xf->real , yc->real - yf->real); }
+    else                                                                                  { ang_dbl = atan2(yc->real - yf->real , xc->real - xf->real); }
     xc_dbl = xc->real;
     yc_dbl = yc->real;
 
