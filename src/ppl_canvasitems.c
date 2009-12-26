@@ -1264,6 +1264,7 @@ int directive_plot(Dict *command, int interactive, int replot)
     // Read in style information from with clause
     with_words_fromdict(TempDict, &(*PlotItemPtr)->ww, 1);
 
+    PlotItemPtr=&(*PlotItemPtr)->next; // Next plot item...
     ListIter = ListIterate(ListIter, NULL);
    }
 

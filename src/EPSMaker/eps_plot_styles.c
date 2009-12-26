@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <gsl/gsl_math.h>
+
 #include "ppl_canvasitems.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
@@ -32,7 +34,10 @@
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
 
+#include "eps_comm.h"
+#include "eps_core.h"
 #include "eps_colours.h"
+#include "eps_plot_canvas.h"
 #include "eps_plot_styles.h"
 
 // Work out the default set of with words for a plot item
@@ -60,6 +65,7 @@ void eps_withwords_default(with_words *output, unsigned char functions, int Fcou
   return;
  }
 
+// Return the number of columns of data which are required to plot in any given plot style
 int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
  {
   if      (style == SW_STYLE_POINTS         ) return 2 + (ThreeDim!=0);
@@ -109,11 +115,14 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
    X->DataUnit = Y; \
   }
 
+// Update the usage of axes to include data from a particular data table, plotted in a particular style
 int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, int xn, int yn, int zn, int id)
  {
   int i, j, Ncolumns;
   double z;
   DataBlock *blk;
+
+  if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
 
   // Cycle through data table acting upon the physical units of all of the columns
   if      (style == SW_STYLE_POINTS         ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
@@ -170,6 +179,133 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
       i++;
      }
     blk=blk->next;
+   }
+
+  return 0;
+ }
+
+// Render a dataset to postscript
+int eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
+ {
+  int        j, Ncolumns, lt, pt;
+  double     xpos, ypos, lw, ps;
+  DataBlock *blk;
+
+  if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
+
+  // Set colour of dataset
+  eps_core_SetColour(x, &pd->ww_final);
+
+  if ((style == SW_STYLE_LINES) || (style == SW_STYLE_LINESPOINTS)) // LINES
+   {
+    Ncolumns = data->Ncolumns;
+    blk = data->first;
+    while (blk != NULL)
+     {
+      for (j=0; j<blk->BlockPosition; j++)
+       {
+       }
+      blk=blk->next;
+     }
+   }
+
+  if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS)) // POINTS
+   {
+    IF_NOT_INVISIBLE
+     {
+      lw = pd->ww_final.pointlinewidth;
+      lt = 0; // linetype is always zero when drawing points
+      ps = pd->ww_final.pointsize;
+      pt = pd->ww_final.pointtype % N_POINTTYPES;
+      eps_core_SetLinewidth(x, lw, lt);
+      x->PointTypesUsed[pt] = 1;
+      fprintf(x->epsbuffer, "/ps { %f } def\n", ps*3); // Scale up all pointsizes by 3
+
+      Ncolumns = data->Ncolumns;
+      blk = data->first;
+      while (blk != NULL)
+       {
+        for (j=0; j<blk->BlockPosition; j++)
+         {
+          eps_plot_GetPosition(&xpos, &ypos, ThreeDim, UUR(0), UUR(1), ThreeDim ? UUR(2) : 0.0, xa, ya, za, sg, origin_x, origin_y, width, height);
+          if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+          fprintf(x->epsbuffer, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
+         }
+        blk=blk->next;
+       }
+     }
+   }
+
+  if      (style == SW_STYLE_XERRORBARS     ) // XERRORBARS
+   {
+   }
+
+  else if (style == SW_STYLE_YERRORBARS     ) // YERRORBARS
+   {
+   }
+
+  else if (style == SW_STYLE_XYERRORBARS    ) // XYERRORBARS
+   {
+   }
+
+  else if (style == SW_STYLE_XERRORRANGE    ) // XERRORRANGE
+   {
+   }
+
+  else if (style == SW_STYLE_YERRORRANGE    ) // YERRORRANGE
+   {
+   }
+
+  else if (style == SW_STYLE_XYERRORRANGE   ) // XYERRORRANGE
+   {
+   }
+
+  else if (style == SW_STYLE_DOTS           ) // DOTS
+   {
+   }
+
+  else if (style == SW_STYLE_IMPULSES       ) // IMPULSES
+   {
+   }
+
+  else if (style == SW_STYLE_BOXES          ) // BOXES
+   {
+   }
+
+  else if (style == SW_STYLE_WBOXES         ) // WBOXES
+   {
+   }
+
+  else if (style == SW_STYLE_STEPS          ) // STEPS
+   {
+   }
+
+  else if (style == SW_STYLE_FSTEPS         ) // FSTEPS
+   {
+   }
+
+  else if (style == SW_STYLE_HISTEPS        ) // HISTEPS
+   {
+   }
+
+  else if (style == SW_STYLE_ARROWS_HEAD    ) // ARROWS_HEAD
+   {
+   }
+
+  else if (style == SW_STYLE_ARROWS_NOHEAD  ) // ARROWS_NOHEAD
+   {
+   }
+
+  else if (style == SW_STYLE_ARROWS_TWOHEAD ) // ARROWS_TWOHEAD
+   {
+   }
+
+  else if (style == SW_STYLE_CSPLINES       ) // CSPLINES
+   {
+   }
+
+  else if (style == SW_STYLE_ACSPLINES      ) // ACSPLINES
+   {
    }
 
   return 0;

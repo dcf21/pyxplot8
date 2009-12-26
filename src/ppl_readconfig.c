@@ -551,6 +551,18 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "ARROW_HEADBACKINDENT")==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_ARROW_CONSTRICT   = fl;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Arrow_HeadBackIndent." , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AXES_SEPARATION"     )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_SEPARATION   = fl * EPS_BASE_AXES_SEPARATION;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_Separation."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AXES_TEXTGAP"        )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_TEXTGAP      = fl * EPS_BASE_AXES_TEXTGAP;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_TextGap."         , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AXES_MAJTICKLEN"     )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_MAJTICKLEN   = fl * EPS_BASE_AXES_MAJTICKLEN;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_MajTickLen."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AXES_MINTICKLEN"     )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_MINTICKLEN   = fl * EPS_BASE_AXES_MINTICKLEN;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_MinTickLen."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else
        { sprintf(temp_err_string, "Error in line %d of configuration file %s: Unrecognised setting name '%s'.", linecounter, ConfigFname, setkey); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
      }

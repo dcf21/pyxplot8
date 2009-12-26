@@ -33,8 +33,19 @@
 
 void eps_plot_ticking(settings_axis *axis, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
  {
-  axis->FinalActive = axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
+  axis->FinalActive = axis->FinalActive || axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
   if (!axis->FinalActive) { axis->RangeFinalised = 0; return; } // Axis is not in use
+
+  // Temporary fudge to work out axis range
+  if       (HardMin != NULL)                               axis->MinFinal = *HardMin;
+  else if ((axis->MinSet==SW_BOOL_TRUE) && (!HardAutoMin)) axis->MinFinal = axis->min;
+  else if  (axis->MinUsedSet)                              axis->MinFinal = axis->MinUsed;
+  else                                                     axis->MinFinal = (axis->log == SW_ONOFF_ON) ? 1.0 : -10.0;
+
+  if       (HardMax != NULL)                               axis->MaxFinal = *HardMax;
+  else if ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax)) axis->MaxFinal = axis->max;
+  else if  (axis->MaxUsedSet)                              axis->MaxFinal = axis->MaxUsed;
+  else                                                     axis->MaxFinal = (axis->log == SW_ONOFF_ON) ? 10.0 : 10.0;
 
   // Set flag to show that we have finalised the range of this axis
   axis->RangeFinalised = 1;

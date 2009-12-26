@@ -1,4 +1,4 @@
-// eps_plot_styles.h
+// eps_plot_canvas.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,19 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_PLOT_STYLES_H
-#define _PPL_EPS_PLOT_STYLES_H 1
+// Provides routines for mapping between coordinate positions on axes and
+// positions on a postscript page. Outputs xpos and ypos are measured in
+// postscript points.
+
+#ifndef _PPL_EPS_PLOT_CANVAS_H
+#define _PPL_EPS_PLOT_CANVAS_H 1
+
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "ppl_settings.h"
 
-void eps_withwords_default(with_words *output, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour);
-int  eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim);
-int  eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, int xn, int yn, int zn, int id);
-int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height);
+void eps_plot_GetPosition(double *xpos, double *ypos, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, double origin_x, double origin_y, double width, double height);
 
 #endif
 

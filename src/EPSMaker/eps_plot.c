@@ -55,8 +55,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   for (j=0; j<3; j++)
    {
     if      (j==0) axes = x->current->XAxes;
-    else if (j==0) axes = x->current->YAxes;
-    else if (j==0) axes = x->current->ZAxes;
+    else if (j==1) axes = x->current->YAxes;
+    else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      {
       axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].FinalActive = 0;
@@ -94,7 +94,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
    {
     // Merge together with words to form a final set
     eps_withwords_default(&ww_default, pd->function, Fcounter, Dcounter, settings_term_current.colour==SW_ONOFF_ON);
-    if (pd->function == 0) { Fcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
+    if (pd->function != 0) { Fcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
     else                   { Dcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.DataStyle, &ww_default, NULL, NULL, 1); }
 
     // Mark up axes which are going to be used for any dataset, from datafile or functions
@@ -140,8 +140,8 @@ void eps_plot_LinkedAxesBackPropagate(EPSComm *x)
   for (j=0; j<3; j++)
    {
     if      (j==0) axes = x->current->XAxes;
-    else if (j==0) axes = x->current->YAxes;
-    else if (j==0) axes = x->current->ZAxes;
+    else if (j==1) axes = x->current->YAxes;
+    else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      {
       IterDepth = 0;
@@ -187,8 +187,8 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
   for (j=0; j<3; j++)
    {
     if      (j==0) axes = x->current->XAxes;
-    else if (j==0) axes = x->current->YAxes;
-    else if (j==0) axes = x->current->ZAxes;
+    else if (j==1) axes = x->current->YAxes;
+    else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      {
       k = 3*(i-1) + j; // See if user has specified a range for this axis in the plot command itself
@@ -227,8 +227,8 @@ void eps_plot_LinkedAxesForwardPropagate(EPSComm *x)
   for (j=0; j<3; j++)
    {
     if      (j==0) axes = x->current->XAxes;
-    else if (j==0) axes = x->current->YAxes;
-    else if (j==0) axes = x->current->ZAxes;
+    else if (j==1) axes = x->current->YAxes;
+    else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      if (!axes[i].linked) // proceed only if axis is linked
       {
@@ -300,6 +300,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
         if (Xaxis->OrdinateRaster == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
         if (Xaxis->log == SW_BOOL_TRUE) LogarithmicRaster(Xaxis->OrdinateRaster, Xaxis->MinFinal, Xaxis->MaxFinal, x->current->settings.samples);
         else                            LinearRaster     (Xaxis->OrdinateRaster, Xaxis->MinFinal, Xaxis->MaxFinal, x->current->settings.samples);
+        Xaxis->OrdinateRasterLen = x->current->settings.samples;
        }
 
       DataFile_FromFunctions(Xaxis->OrdinateRaster, 0, Xaxis->OrdinateRasterLen, &Xaxis->DataUnit, x->current->plotdata+i, &status, temp_err_string, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
@@ -317,9 +318,10 @@ void eps_plot_YieldUpText(EPSComm *x)
 
 void eps_plot_RenderEPS(EPSComm *x)
  {
-  int i;
-  double origin_x, origin_y, width, height;
+  int              i, status;
+  double           origin_x, origin_y, width, height;
   canvas_plotdesc *pd;
+  settings_axis   *xa, *ya, *za;
 
   // Write header at top of postscript
   fprintf(x->epsbuffer, "%% Canvas item %d [plot]\n", x->current->id);
@@ -337,15 +339,22 @@ void eps_plot_RenderEPS(EPSComm *x)
 
   // Render gridlines
 
-  // Render axes
-
   // Render each dataset in turn
   pd = x->current->plotitems;
   i  = 0;
   while (pd != NULL) // loop over all datasets
    {
+    xa = &x->current->XAxes[pd->axisX];
+    ya = &x->current->YAxes[pd->axisY];
+    za = &x->current->ZAxes[pd->axisZ];
+
+    status = eps_plot_dataset(x, x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, xa, ya, za, &x->current->settings, pd, origin_x, origin_y, width, height);
+    if (status) { *(x->status) = 1; return; }
+
     pd=pd->next; i++;
    }
+
+  // Render axes
 
   // Render legend
 
