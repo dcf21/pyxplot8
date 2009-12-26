@@ -48,8 +48,8 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int           aspect, AutoAspect, AxesColour, AxesColourR, AxesColourG, AxesColourB, grid, GridMajColour, GridMajColourR, GridMajColourG, GridMajColourB, GridMinColour, GridMinColourR, GridMinColourG, GridMinColourB, key, KeyColumns, KeyPos, samples, TextColour, TextColourR, TextColourG, TextColourB, TextHAlign, TextVAlign, Tlog;
- double        bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
+ int           AutoAspect, AxesColour, AxesColourR, AxesColourG, AxesColourB, grid, GridMajColour, GridMajColourR, GridMajColourG, GridMajColourB, GridMinColour, GridMinColourR, GridMinColourG, GridMinColourB, key, KeyColumns, KeyPos, samples, TextColour, TextColourR, TextColourG, TextColourB, TextHAlign, TextVAlign, Tlog;
+ double        aspect, bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
  value         BoxFrom, BoxWidth, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width;

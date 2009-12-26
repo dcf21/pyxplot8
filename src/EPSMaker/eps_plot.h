@@ -25,8 +25,9 @@
 #include "eps_comm.h"
 
 void eps_plot_ReadAccessibleData(EPSComm *x);
+void eps_plot_LinkedAxesBackPropagate(EPSComm *x);
 void eps_plot_DecideAxisRanges(EPSComm *x);
-void eps_plot_LinkedAxesPropagate(EPSComm *x);
+void eps_plot_LinkedAxesForwardPropagate(EPSComm *x);
 void eps_plot_SampleFunctions(EPSComm *x);
 void eps_plot_YieldUpText(EPSComm *x);
 void eps_plot_RenderEPS(EPSComm *x);

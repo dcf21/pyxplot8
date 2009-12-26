@@ -26,7 +26,7 @@
 
 void eps_withwords_default(with_words *output, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour);
 int  eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim);
-int  eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, canvas_plotdesc *pd);
+int  eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, int xn, int yn, int zn, int id);
 
 #endif
 

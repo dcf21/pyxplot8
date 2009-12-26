@@ -117,15 +117,15 @@ static char *PS_PROLOG_TEXT = "\
 static char *GHOSTSCRIPT_STANDARD_FLAGS = "-dQUIET -dSAFER -dBATCH -dNOPAUSE -dEPSCrop";
 
 // Table of the functions we call for each phase of the canvas drawing process for different object types
-static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
-static void(*BoxHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_box_RenderEPS  , NULL};
-static void(*CircHandlers[] )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_circ_RenderEPS , NULL};
-static void(*EllpsHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_ellps_RenderEPS, NULL};
-static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
-static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , NULL                , NULL                , eps_image_RenderEPS, NULL};
-static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
-static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , eps_text_YieldUpText, NULL                , eps_text_RenderEPS , NULL};
-static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                     , NULL                        , NULL                    , canvas_CallLaTeX    , canvas_MakeEPSBuffer, canvas_EPSWrite    , NULL};
+static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
+static void(*BoxHandlers[]  )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_box_RenderEPS  , NULL};
+static void(*CircHandlers[] )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_circ_RenderEPS , NULL};
+static void(*EllpsHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_ellps_RenderEPS, NULL};
+static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
+static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_image_RenderEPS, NULL};
+static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_LinkedAxesBackPropagate, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesForwardPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
+static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , eps_text_YieldUpText, NULL                , eps_text_RenderEPS , NULL};
+static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , canvas_CallLaTeX    , canvas_MakeEPSBuffer, canvas_EPSWrite    , NULL};
 
 // Main entry point for rendering a canvas to graphical output
 void canvas_draw(unsigned char *unsuccessful_ops)
