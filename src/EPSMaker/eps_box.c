@@ -35,7 +35,7 @@
 void eps_box_RenderEPS(EPSComm *x)
  {
   int    lt;
-  double lw, lw_scale, x1, x2, y1, y2;
+  double lw, lw_scale, x1, x2, y1, y2, xo, yo, r;
   with_words ww;
 
   // Print label at top of postscript description of box
@@ -47,6 +47,7 @@ void eps_box_RenderEPS(EPSComm *x)
   y1 =  x->current->ypos                      * M_TO_PS;
   x2 = (x->current->xpos2 + x->current->xpos) * M_TO_PS; // Second corner
   y2 = (x->current->ypos2 + x->current->ypos) * M_TO_PS;
+  r  = x->current->rotation;
 
   // Expand any numbered styles which may appear in the with words we are passed
   with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
@@ -55,8 +56,17 @@ void eps_box_RenderEPS(EPSComm *x)
   eps_core_SetFillColour(x, &ww);
   eps_core_SwitchTo_FillColour(x);
 
+  // Work out the origin that we're rotating about
+  if (!x->current->xpos2set) { xo=(x1+x2)/2.0; yo=(y1+y2)/2.0; } // Rotate about centre of box if specified as 'from .... to ....'
+  else                       { xo=x1;          yo=y1;          } // Rotate about pinned corner of box is specified as 'at .... width .... height ....'
+
+  // Apply rotation
+  fprintf(x->epsbuffer, "gsave\n");
+  fprintf(x->epsbuffer, "%.2f %.2f translate\n", xo, yo);
+  fprintf(x->epsbuffer, "%.2f rotate\n", r*180/M_PI);
+
   // Fill box
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x1,y1,x1,y2,x2,y2,x2,y1);
+  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
 
   // Set colour of outline of box
   eps_core_SetColour(x, &ww);
@@ -72,13 +82,16 @@ void eps_box_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt);
 
   // Stroke outline of box
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nstroke\n", x1,y1,x1,y2,x2,y2,x2,y1);
+  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nstroke\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
+
+  // Undo scaling of postscript axes
+  fprintf(x->epsbuffer, "grestore\n");
 
   // Factor four corners of box into EPS file's bounding box
-  eps_core_BoundingBox(x, x1, y1, lw);
-  eps_core_BoundingBox(x, x1, y2, lw);
-  eps_core_BoundingBox(x, x2, y2, lw);
-  eps_core_BoundingBox(x, x2, y1, lw);
+  eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
+  eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y2-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y2-yo)*cos(r) + yo, lw);
+  eps_core_BoundingBox(x, (x2-xo)*cos(r) - (y2-yo)*sin(r) + xo, (x2-xo)*sin(r) + (y2-yo)*cos(r) + yo, lw);
+  eps_core_BoundingBox(x, (x2-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x2-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

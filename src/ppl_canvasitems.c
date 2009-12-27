@@ -198,13 +198,19 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
    }
   else if (ptr->type == CANVAS_BOX  ) // Produce textual representations of box commands
    {
-    sprintf(output, "box item %d from %s,%s to %s,%s", ptr->id,
-             NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
-             NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
-             NumericDisplay((ptr->xpos+ptr->xpos2)*100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
-             NumericDisplay((ptr->ypos+ptr->ypos2)*100, 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
-           );
+    sprintf(output, "box item %d ", ptr->id);
     i = strlen(output);
+    sprintf(output+i, ptr->xpos2set ? "at %s,%s width %s height %s" : "from %s,%s to %s,%s",
+             NumericDisplay( ptr->xpos                             *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->ypos                             *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay((ptr->xpos*(!ptr->xpos2set)+ptr->xpos2)*100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay((ptr->ypos*(!ptr->xpos2set)+ptr->ypos2)*100, 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i += strlen(output+i);
+    sprintf(output+i, " rotate %s",
+             NumericDisplay(ptr->rotation * 180/M_PI , 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i += strlen(output+i);
     with_words_print(&ptr->with_data, output+i+6);
     if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
     else                      { output[i]='\0'; }
@@ -242,11 +248,11 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
              NumericDisplay( ptr->yf  *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i += strlen(output+i);
-    if (ptr->aset  ) sprintf(output+i, " MajorAxis %s",
+    if (ptr->aset  ) sprintf(output+i, " SemiMajorAxis %s",
              NumericDisplay( ptr->a   *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i += strlen(output+i);
-    if (ptr->bset  ) sprintf(output+i, " MinorAxis %s",
+    if (ptr->bset  ) sprintf(output+i, " SemiMinorAxis %s",
              NumericDisplay( ptr->b   *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i += strlen(output+i);
@@ -544,11 +550,21 @@ int directive_move(Dict *command)
   ptr = canvas_items->first;
   while ((ptr!=NULL)&&(ptr->id!=*moveno)) ptr=ptr->next;
   if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *moveno); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_BOX)&&(ptr->type!=CANVAS_CIRC));
+  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_CIRC)&&(ptr->type!=CANVAS_PLOT));
   if ((ang != NULL) && (!rotatable)) { sprintf(temp_err_string, "It is not possible to rotate the specified multiplot item."); ppl_warning(ERR_GENERAL, temp_err_string); }
-  ptr->xpos = x->real;
-  ptr->ypos = y->real;
-  if ((ang != NULL) && (rotatable)) ptr->rotation = ang->real;
+
+  // Most canvas items are moved using the xpos and ypos fields
+  if (ptr->type!=CANVAS_PLOT)
+   {
+    ptr->xpos = x->real;
+    ptr->ypos = y->real;
+    if ((ang != NULL) && (rotatable)) ptr->rotation = ang->real;
+   }
+  else // Plots are moved using the origin fields in settings_graph
+   {
+    ptr->settings.OriginX.real = x->real;
+    ptr->settings.OriginY.real = y->real;
+   }
 
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
@@ -605,22 +621,48 @@ int directive_box(Dict *command, int interactive)
  {
   canvas_item   *ptr;
   int            i, id;
-  value         *x1, *x2, *y1, *y2;
+  value         *x1, *x2, *y1, *y2, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
 
   // Look up the positions of the two corners of the box, and ensure that they are either dimensionless or in units of length
-  DictLookup(command, "x1", NULL, (void *)&x1); DictLookup(command, "y1", NULL, (void *)&y1);
-  DictLookup(command, "x2", NULL, (void *)&x2); DictLookup(command, "y2", NULL, (void *)&y2);
+  DictLookup(command, "x1"      , NULL, (void *)&x1);
+  DictLookup(command, "y1"      , NULL, (void *)&y1);
+  DictLookup(command, "x2"      , NULL, (void *)&x2);
+  DictLookup(command, "y2"      , NULL, (void *)&y2);
+  DictLookup(command, "rotation", NULL, (void *)&ang   );
+  DictLookup(command, "width"   , NULL, (void *)&width );
+  DictLookup(command, "height"  , NULL, (void *)&height);
 
   ASSERT_LENGTH(x1,"box","x1"); ASSERT_LENGTH(y1,"box","y1");
-  ASSERT_LENGTH(x2,"box","x2"); ASSERT_LENGTH(y2,"box","y2");
+  if (x2    !=NULL) { ASSERT_LENGTH(x2    ,"box","x2"    ); }
+  if (y2    !=NULL) { ASSERT_LENGTH(y2    ,"box","y2"    ); }
+  if (ang   !=NULL) { ASSERT_ANGLE (ang   ,"box"         ); }
+  if (width !=NULL) { ASSERT_LENGTH(width ,"box","width" ); }
+  if (height!=NULL) { ASSERT_LENGTH(height,"box","height"); }
+
+  if ((x2 == NULL) && ((width==NULL)||(height==NULL))) // If box is specified in width/height format, both must be specified
+   {
+    ppl_error(ERR_SYNTAX, "When a box is specified with given width and height, both width and height must be specified."); return 1;
+   }
 
   // Add this box to the linked list which decribes the canvas
   if (canvas_itemlist_add(command,CANVAS_BOX,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
-  ptr->xpos2 = x2->real - x1->real;
-  ptr->ypos2 = y2->real - y1->real;
+  if (x2 != NULL) // Box is specified by two corners
+   {
+    ptr->xpos2 = x2->real - x1->real;
+    ptr->ypos2 = y2->real - y1->real;
+    ptr->xpos2set = 0; // Rotation should be about CENTRE of box
+   }
+  else // Box is specified with width and height
+   {
+    ptr->xpos2 = width->real;
+    ptr->ypos2 = height->real;
+    ptr->xpos2set = 1; // Rotation should be about fixed corner of box
+   }
+  if (ang !=NULL) { ptr->rotation = ang->real; } // Rotation angle is zero if not specified
+  else            { ptr->rotation = 0.0;       }
 
   // Read in colour and linewidth information, if available
   with_words_fromdict(command, &ptr->with_data, 1);
@@ -677,25 +719,28 @@ int directive_ellipse(Dict *command, int interactive)
   canvas_item   *ptr;
   int            i, e=0, r=0, p=0, id;
   value         *x1, *y1, *x2, *y2, *xc, *yc, *xf, *yf;
-  value         *a, *b, *slr, *ang;
+  value         *a, *b, *a2, *b2, *slr, *lr, *ang;
   double        *ecc;
   double         xc_dbl, yc_dbl, a_dbl, b_dbl, ecc_dbl, ang_dbl, ratio;
   unsigned char *unsuccessful_ops;
 
   // Look up the input parameters which define the ellipse
-  DictLookup(command, "rotation"    , NULL, (void *)&ang);
-  DictLookup(command, "x1"          , NULL, (void *)&x1);
-  DictLookup(command, "y1"          , NULL, (void *)&y1);
-  DictLookup(command, "x2"          , NULL, (void *)&x2);
-  DictLookup(command, "y2"          , NULL, (void *)&y2);
-  DictLookup(command, "xcentre"     , NULL, (void *)&xc);
-  DictLookup(command, "ycentre"     , NULL, (void *)&yc);
-  DictLookup(command, "xfocus"      , NULL, (void *)&xf);
-  DictLookup(command, "yfocus"      , NULL, (void *)&yf);
-  DictLookup(command, "majoraxis"   , NULL, (void *)&a);
-  DictLookup(command, "minoraxis"   , NULL, (void *)&b);
-  DictLookup(command, "slr"         , NULL, (void *)&slr);
-  DictLookup(command, "eccentricity", NULL, (void *)&ecc);
+  DictLookup(command, "rotation"     , NULL, (void *)&ang);
+  DictLookup(command, "x1"           , NULL, (void *)&x1);
+  DictLookup(command, "y1"           , NULL, (void *)&y1);
+  DictLookup(command, "x2"           , NULL, (void *)&x2);
+  DictLookup(command, "y2"           , NULL, (void *)&y2);
+  DictLookup(command, "xcentre"      , NULL, (void *)&xc);
+  DictLookup(command, "ycentre"      , NULL, (void *)&yc);
+  DictLookup(command, "xfocus"       , NULL, (void *)&xf);
+  DictLookup(command, "yfocus"       , NULL, (void *)&yf);
+  DictLookup(command, "majoraxis"    , NULL, (void *)&a2);
+  DictLookup(command, "minoraxis"    , NULL, (void *)&b2);
+  DictLookup(command, "semimajoraxis", NULL, (void *)&a);
+  DictLookup(command, "semiminoraxis", NULL, (void *)&b);
+  DictLookup(command, "slr"          , NULL, (void *)&slr);
+  DictLookup(command, "lr"           , NULL, (void *)&lr);
+  DictLookup(command, "eccentricity" , NULL, (void *)&ecc);
 
   // Check that input parameters have the right units, and convert dimensionless lengths into cm
   if (ang!= NULL) { ASSERT_ANGLE (ang,"ellipse"); ang_dbl = ang->real; r++; } else { ang_dbl=0.0; }
@@ -707,10 +752,18 @@ int directive_ellipse(Dict *command, int interactive)
   if (yc != NULL) { ASSERT_LENGTH(yc ,"ellipse","ycentre"); }
   if (xf != NULL) { ASSERT_LENGTH(xf ,"ellipse","xfocus");  p++; }
   if (yf != NULL) { ASSERT_LENGTH(yf ,"ellipse","yfocus"); }
-  if (a  != NULL) { ASSERT_LENGTH(a  ,"ellipse","majoraxis");       e++; }
-  if (b  != NULL) { ASSERT_LENGTH(b  ,"ellipse","minoraxis");       e++; }
+  if (a2 != NULL) { ASSERT_LENGTH(a2 ,"ellipse","majoraxis");       e++; }
+  if (b2 != NULL) { ASSERT_LENGTH(b2 ,"ellipse","minoraxis");       e++; }
+  if (a  != NULL) { ASSERT_LENGTH(a  ,"ellipse","semimajoraxis");   e++; }
+  if (b  != NULL) { ASSERT_LENGTH(b  ,"ellipse","semiminoraxis");   e++; }
   if (ecc!= NULL) {                                                 e++; if ((*ecc<0.0) || (*ecc>=1.0)) { ppl_error(ERR_NUMERIC, "Supplied eccentricity is not in the range 0 <= e < 1."); return 1; } }
   if (slr!= NULL) { ASSERT_LENGTH(slr,"ellipse","semilatusrectum"); e++; }
+  if (lr != NULL) { ASSERT_LENGTH(lr, "ellipse","latusrectum");     e++; }
+
+  // Major axis length is a drop-in replacement for the semi-major axis length
+  if (a2 != NULL) { a  =a2; a  ->real /= 2; }
+  if (b2 != NULL) { b  =b2; b  ->real /= 2; }
+  if (lr != NULL) { slr=lr; slr->real /= 2; }
 
   // Check that we have been supplied an appropriate set of inputs
   if ( (x1==NULL) && (((p==2)&&((e!=1)||(r!=0))) || ((p<2)&&(e!=2))) )

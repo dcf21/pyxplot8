@@ -204,6 +204,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   comm.LastLinewidth        = -1.0;
   comm.LastLinetype         = 0;
   comm.LaTeXpageno          = 0; // Used to count items off as we render them to postscript
+  comm.dvi                  = NULL;
   for (i=0; i<N_POINTTYPES; i++) comm.PointTypesUsed[i] = 0; // Record which point and star macros we've used and need to include in postscript prolog
   for (i=0; i<N_STARTYPES ; i++) comm.StarTypesUsed [i] = 0;
 
@@ -359,6 +360,8 @@ void canvas_CallLaTeX(EPSComm *x)
   fd_set          readable;
   sigset_t        sigs;
 
+  if (ListLen(x->TextItems) < 1) return; // We have no text to give to latex, and so don't need to fork
+
   sigemptyset(&sigs);
   sigaddset(&sigs,SIGCHLD);
 
@@ -404,7 +407,7 @@ void canvas_CallLaTeX(EPSComm *x)
   LatexStatus = 0;
   while (1)
    {
-    waitperiod.tv_sec  = FirstIter ? 10 : 0; waitperiod.tv_nsec = 250000000; // Wait 10 seconds first time around; otherwise wait 0.25 seconds
+    waitperiod.tv_sec  = FirstIter ? 10 : 0; waitperiod.tv_nsec = 750000000; // Wait 10 seconds first time around; otherwise wait 0.75 seconds
     FirstIter = 0;
     FD_ZERO(&readable); FD_SET(LatexOut, &readable);
     if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1) { LatexStatus=1; ppl_log("pselect returned -1"); break; }
@@ -488,7 +491,8 @@ void canvas_EPSWrite(EPSComm *x)
   if (settings_term_current.TermType == SW_TERMTYPE_PS)
     fprintf(epsout, "%%%%DocumentMedia: %s %d %d white { }\n", PaperName, (int)(settings_term_current.PaperWidth.real * M_TO_PS), (int)(settings_term_current.PaperHeight.real * M_TO_PS));
   fprintf(epsout, "%%%%DocumentFonts:"); // %%DocumentFonts has a list of all of the fonts that we use
-  ListIter = ListIterateInit(x->dvi->fonts);
+  if (x->dvi != NULL) ListIter = ListIterateInit(x->dvi->fonts);
+  else                ListIter = NULL;
   while (ListIter != NULL)
    {
     fprintf(epsout, " %s", ((dviFontDetails *)ListIter->data)->psName);
@@ -510,7 +514,8 @@ void canvas_EPSWrite(EPSComm *x)
 
   // Output all of the fonts which we're going to use
   if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
-  ListIter = ListIterateInit(x->dvi->fonts);
+  if (x->dvi != NULL) ListIter = ListIterateInit(x->dvi->fonts);
+  else                ListIter = NULL;
   while (ListIter != NULL)
    {
     fprintf(epsout, "%%%%BeginFont: %s\n", ((dviFontDetails *)ListIter->data)->psName);
@@ -588,6 +593,8 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
 
   // If colstr is blank, we are painting with null ink
   if (colstr[0]=='\0') return;
+
+  if (x->dvi == NULL) { ppl_error(ERR_INTERNAL, "Attempting to display a text item before latex has generated it"); return; }
 
   // Fetch requested page of postscript
   dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, pageno+1);
