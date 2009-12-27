@@ -392,11 +392,11 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   if (DEBUG) { sprintf(temp_err_string, "Postscript page: bounding box %f %f %f %f", bb[0], bb[1], bb[2], bb[3]); ppl_log(temp_err_string); }
 
   // Now repeat for text size box
-  bb = interp->textSizeBox;
+  bb     = interp->textSizeBox;
   bb[0] *= interp->scale;
-  bb[1] = 765 - bb[1] * interp->scale;
+  bb[1]  = 765 - bb[1] * interp->scale;
   bb[2] *= interp->scale;
-  bb[3] = 765 - bb[3] * interp->scale;
+  bb[3]  = 765 - bb[3] * interp->scale;
   
   // Move pointer to postscript
   interp->output->currentPage->textSizeBox = bb;
@@ -853,7 +853,7 @@ postscriptPage *dviNewPostscriptPage()
   return page;
  }
 
-// Delete a page of postscript output
+// Delete a page of postscript output. If we didn't have lt_memory, we'd need to free things at this point.
 int dviDeletePostscriptPage(postscriptPage *page)
  {
   if (page->boundingBox != NULL)

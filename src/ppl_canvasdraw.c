@@ -117,15 +117,15 @@ static char *PS_PROLOG_TEXT = "\
 static char *GHOSTSCRIPT_STANDARD_FLAGS = "-dQUIET -dSAFER -dBATCH -dNOPAUSE -dEPSCrop";
 
 // Table of the functions we call for each phase of the canvas drawing process for different object types
-static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
-static void(*BoxHandlers[]  )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_box_RenderEPS  , NULL};
-static void(*CircHandlers[] )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_circ_RenderEPS , NULL};
-static void(*EllpsHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_ellps_RenderEPS, NULL};
-static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
-static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , NULL                , NULL                , eps_image_RenderEPS, NULL};
-static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_LinkedAxesBackPropagate, eps_plot_DecideAxisRanges, eps_plot_LinkedAxesForwardPropagate, eps_plot_SampleFunctions, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
-static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , eps_text_YieldUpText, NULL                , eps_text_RenderEPS , NULL};
-static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                            , NULL                     , NULL                               , NULL                    , canvas_CallLaTeX    , canvas_MakeEPSBuffer, canvas_EPSWrite    , NULL};
+static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_arrow_RenderEPS, NULL};
+static void(*BoxHandlers[]  )(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_box_RenderEPS  , NULL};
+static void(*CircHandlers[] )(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_circ_RenderEPS , NULL};
+static void(*EllpsHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_ellps_RenderEPS, NULL};
+static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
+static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_image_RenderEPS, NULL};
+static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_SampleFunctions, eps_plot_DecideAxisRanges, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
+static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                    , NULL                     , eps_text_YieldUpText, NULL                , eps_text_RenderEPS , NULL};
+static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , canvas_CallLaTeX    , canvas_MakeEPSBuffer, canvas_EPSWrite    , NULL};
 
 // Main entry point for rendering a canvas to graphical output
 void canvas_draw(unsigned char *unsuccessful_ops)
@@ -584,6 +584,7 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   ListIterator *ListIter;
   char *cptr;
   double bb_left, bb_right, bb_top, bb_bottom, xanchor, yanchor;
+  double ab_left, ab_right, ab_top, ab_bottom; // The align box is different from the bounding box in that it allows space for descenders which may/may not be present, such that the text labels "elephant" and "camel" have centres at the same vertical position.
 
   // If colstr is blank, we are painting with null ink
   if (colstr[0]=='\0') return;
@@ -595,18 +596,22 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   bb_bottom = dviPage->boundingBox[1];
   bb_right  = dviPage->boundingBox[2];
   bb_top    = dviPage->boundingBox[3];
+  ab_left   = dviPage->textSizeBox[0];
+  ab_bottom = dviPage->textSizeBox[1];
+  ab_right  = dviPage->textSizeBox[2];
+  ab_top    = dviPage->textSizeBox[3];
 
   // Work out where our anchor point is on postscript
-  if      (halign == SW_HALIGN_LEFT ) xanchor = bb_left;
-  else if (halign == SW_HALIGN_CENT ) xanchor = (bb_left + bb_right)/2.0;
-  else if (halign == SW_HALIGN_RIGHT) xanchor = bb_right;
+  if      (halign == SW_HALIGN_LEFT ) xanchor = ab_left;
+  else if (halign == SW_HALIGN_CENT ) xanchor = (ab_left + ab_right)/2.0;
+  else if (halign == SW_HALIGN_RIGHT) xanchor = ab_right;
   else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
-  if      (valign == SW_VALIGN_TOP  ) yanchor = bb_top;
-  else if (valign == SW_VALIGN_CENT ) yanchor = (bb_top + bb_bottom)/2.0;
-  else if (valign == SW_VALIGN_BOT  ) yanchor = bb_bottom;
+  if      (valign == SW_VALIGN_TOP  ) yanchor = ab_top;
+  else if (valign == SW_VALIGN_CENT ) yanchor = (ab_top + ab_bottom)/2.0;
+  else if (valign == SW_VALIGN_BOT  ) yanchor = ab_bottom;
   else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
 
-  // Update bounding box of canvas
+  // Update bounding box of canvas. For this, use BOUNDING box, not ALIGNMENT box.
   eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),
                           ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0);
   eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_right - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),

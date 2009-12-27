@@ -352,12 +352,12 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
         if (pd->continuity == DATAFILE_DISCONTINUOUS) { sprintf(output+i, " discontinuous"); i+=strlen(output+i); }
         else                                          { sprintf(output+i,    " continuous"); i+=strlen(output+i); }
        }
-      if (pd->axisXset || pd->axisYset || pd->axisZset) // Print axes to use
+      if (pd->axis1set || pd->axis2set || pd->axis3set) // Print axes to use
        {
         strcpy(output+i, " axes "); i+=strlen(output+i);
-        if (pd->axisXset) { sprintf(output+i, "x%d", pd->axisX); i+=strlen(output+i); }
-        if (pd->axisYset) { sprintf(output+i, "y%d", pd->axisY); i+=strlen(output+i); }
-        if (pd->axisZset) { sprintf(output+i, "z%d", pd->axisZ); i+=strlen(output+i); }
+        if (pd->axis1set) { sprintf(output+i, "%c%d", "xyz"[pd->axis1xyz], pd->axis1); i+=strlen(output+i); }
+        if (pd->axis2set) { sprintf(output+i, "%c%d", "xyz"[pd->axis2xyz], pd->axis2); i+=strlen(output+i); }
+        if (pd->axis3set) { sprintf(output+i, "%c%d", "xyz"[pd->axis3xyz], pd->axis3); i+=strlen(output+i); }
        }
       if (pd->EverySet>0) { sprintf(output+i, " every %d", pd->EveryList[0]); i+=strlen(output+i); } // Print out 'every' clause of plot command
       if (pd->EverySet>1) { sprintf(output+i, ":%d", pd->EveryList[1]); i+=strlen(output+i); }
@@ -1121,15 +1121,26 @@ int directive_plot(Dict *command, int interactive, int replot)
     TempDict = (Dict *)ListIter->data;
 
     // Check that axes are specified in the correct format before we malloc anything
-    DictLookup(TempDict, "axis_x", NULL, (void **)&tempstr );
-    DictLookup(TempDict, "axis_y", NULL, (void **)&tempstr2);
-    DictLookup(TempDict, "axis_z", NULL, (void **)&tempstr3);
-    if (  ((tempstr!=NULL)&&(tempstr[0]!='x')) || ((tempstr2!=NULL)&&(tempstr2[0]!='y')) || ((tempstr3!=NULL)&&(tempstr3[0]!='z'))  )
+    DictLookup(TempDict, "axis_1", NULL, (void **)&tempstr );
+    DictLookup(TempDict, "axis_2", NULL, (void **)&tempstr2);
+    DictLookup(TempDict, "axis_3", NULL, (void **)&tempstr3);
+    if (!((tempstr==NULL)&&(tempstr2==NULL)&&(tempstr3==NULL)))
      {
-      sprintf(temp_err_string, "The axes clause must take the form x<axis_number>y<axis_number> [z<axis_number>]. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
-      ppl_error(ERR_NUMERIC, temp_err_string);
-      ListIter = ListIterate(ListIter, NULL);
-      continue;
+      temp_err_string[0]='\0';
+      if ((!ptr->ThreeDim) && (!( (tempstr!=NULL) && (tempstr2!=NULL) && (tempstr3==NULL))))
+        sprintf(temp_err_string, "The axes clause in the plot command must contain two perpendicular axes to produce a two-dimensional plot. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
+      if (( ptr->ThreeDim) && (!( (tempstr!=NULL) && (tempstr2!=NULL) && (tempstr3!=NULL))))
+        sprintf(temp_err_string, "The axes clause in the plot command must contain three perpendicular axes to produce a three-dimensional plot. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
+      if ( ((!ptr->ThreeDim) && (!( ((tempstr[0]=='x')&&(tempstr2[0]=='y')) || ((tempstr[0]=='y')&&(tempstr2[0]=='x')) ))) ||
+           (( ptr->ThreeDim) && ((tempstr[0]==tempstr2[0])||(tempstr[0]==tempstr3[0])))
+         )
+        sprintf(temp_err_string, "The axes clause in the plot command is not allowed to contain any parallel axes. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
+      if (temp_err_string[0]!='\0')
+       {
+        ppl_error(ERR_NUMERIC, temp_err_string);
+        ListIter = ListIterate(ListIter, NULL);
+        continue;
+       }
      }
 
     // Malloc a structure to hold this plot item
@@ -1167,14 +1178,17 @@ int directive_plot(Dict *command, int interactive, int replot)
      }
 
     // Look up axes to use
-    (*PlotItemPtr)->axisXset = (*PlotItemPtr)->axisYset = (*PlotItemPtr)->axisZset = 0;
-    (*PlotItemPtr)->axisX    = (*PlotItemPtr)->axisY    = (*PlotItemPtr)->axisZ    = 1;
-    DictLookup(TempDict, "axis_x", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->axisXset = 1; (*PlotItemPtr)->axisX = GetFloat(tempstr+1,NULL); }
-    DictLookup(TempDict, "axis_y", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->axisYset = 1; (*PlotItemPtr)->axisY = GetFloat(tempstr+1,NULL); }
-    DictLookup(TempDict, "axis_z", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->axisZset = 1; (*PlotItemPtr)->axisZ = GetFloat(tempstr+1,NULL); }
+    (*PlotItemPtr)->axis1set = (*PlotItemPtr)->axis2set = (*PlotItemPtr)->axis3set = 0;
+    (*PlotItemPtr)->axis1    = (*PlotItemPtr)->axis2    = (*PlotItemPtr)->axis3    = 1;
+    (*PlotItemPtr)->axis1xyz = 0;
+    (*PlotItemPtr)->axis2xyz = 1;
+    (*PlotItemPtr)->axis3xyz = 2;
+    DictLookup(TempDict, "axis_1", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->axis1set = 1; (*PlotItemPtr)->axis1 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis1xyz = tempstr[0]-'x'; }
+    DictLookup(TempDict, "axis_2", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->axis2set = 1; (*PlotItemPtr)->axis2 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis2xyz = tempstr[0]-'x'; }
+    DictLookup(TempDict, "axis_3", NULL, (void **)&tempstr);
+    if (tempstr!=NULL) { (*PlotItemPtr)->axis3set = 1; (*PlotItemPtr)->axis3 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis3xyz = tempstr[0]-'x'; }
 
     // Look up label to apply to datapoints
     DictLookup(TempDict, "label", NULL, (void **)&tempstr);

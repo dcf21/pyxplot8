@@ -45,8 +45,8 @@ typedef struct canvas_plotrange {
 } canvas_plotrange;
 
 typedef struct canvas_plotdesc {
- unsigned char           function, parametric, axisXset, axisYset, axisZset, ContinuitySet, IndexSet, EverySet, TitleSet, NoTitleSet;
- int                     NFunctions, axisX, axisY, axisZ, EveryList[6], index, continuity, UsingRowCols, NUsing;
+ unsigned char           function, parametric, axis1set, axis2set, axis3set, ContinuitySet, IndexSet, EverySet, TitleSet, NoTitleSet;
+ int                     NFunctions, axis1xyz, axis2xyz, axis3xyz, axis1, axis2, axis3, EveryList[6], index, continuity, UsingRowCols, NUsing;
  with_words              ww;
  char                   *filename, **functions, *label, *SelectCriterion, *title, **UsingList;
  struct canvas_plotdesc *next;

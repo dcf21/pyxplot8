@@ -108,7 +108,7 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
 
 // UpdateUsage... assert that axis X should be dimensionally compatible with unit Y
 #define UUAU(XYZ,XYZN,X,Y) \
- if ((X->DataUnitSet) && (!ppl_units_DimEqual(&X->DataUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> and <%s>.", XYZ, XYZN, id,  ppl_units_GetUnitStr(&X->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&(Y),NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; } \
+ if ((X->DataUnitSet) && (!ppl_units_DimEqual(&X->DataUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> and <%s>.", "xyz"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&X->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&(Y),NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; } \
  if (!X->DataUnitSet) \
   { \
    X->DataUnitSet = 1; \
@@ -116,7 +116,7 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
   }
 
 // Update the usage of axes to include data from a particular data table, plotted in a particular style
-int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, int xn, int yn, int zn, int id)
+int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xyz1, int xyz2, int xyz3, int n1, int n2, int n3, int id)
  {
   int i, j, Ncolumns;
   double z;
@@ -125,27 +125,27 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
 
   // Cycle through data table acting upon the physical units of all of the columns
-  if      (style == SW_STYLE_POINTS         ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_LINES          ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_LINESPOINTS    ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_XERRORBARS     ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_YERRORBARS     ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('y',yn,ya,UURU(2+ThreeDim)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_XYERRORBARS    ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); UUAU('y',yn,ya,UURU(3+ThreeDim)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_XERRORRANGE    ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); UUAU('x',xn,xa,UURU(3+ThreeDim)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_YERRORRANGE    ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('y',yn,ya,UURU(2+ThreeDim)); UUAU('y',yn,ya,UURU(3+ThreeDim)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_XYERRORRANGE   ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); UUAU('x',xn,xa,UURU(3+ThreeDim)); UUAU('y',yn,ya,UURU(4+ThreeDim)); UUAU('y',yn,ya,UURU(5+ThreeDim)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_DOTS           ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_IMPULSES       ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_BOXES          ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); }
-  else if (style == SW_STYLE_WBOXES         ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2)); }
-  else if (style == SW_STYLE_STEPS          ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); }
-  else if (style == SW_STYLE_FSTEPS         ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); }
-  else if (style == SW_STYLE_HISTEPS        ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); }
-  else if (style == SW_STYLE_ARROWS_HEAD    ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); UUAU('y',yn,ya,UURU(3+ThreeDim)); if (ThreeDim) { UUAU('z',zn,za,UURU(2)); UUAU('z',zn,za,UURU(5)); } }
-  else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); UUAU('y',yn,ya,UURU(3+ThreeDim)); if (ThreeDim) { UUAU('z',zn,za,UURU(2)); UUAU('z',zn,za,UURU(5)); } }
-  else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); UUAU('x',xn,xa,UURU(2+ThreeDim)); UUAU('y',yn,ya,UURU(3+ThreeDim)); if (ThreeDim) { UUAU('z',zn,za,UURU(2)); UUAU('z',zn,za,UURU(5)); } }
-  else if (style == SW_STYLE_CSPLINES       ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
-  else if (style == SW_STYLE_ACSPLINES      ) { UUAU('x',xn,xa,UURU(0)); UUAU('y',yn,ya,UURU(1)); if (ThreeDim) UUAU('z',zn,za,UURU(2)); }
+  if      (style == SW_STYLE_POINTS         ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_LINES          ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_LINESPOINTS    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_XERRORBARS     ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_YERRORBARS     ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz2,n2,a2,UURU(2+ThreeDim)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_XYERRORBARS    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_XERRORRANGE    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz1,n1,a1,UURU(3+ThreeDim)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_YERRORRANGE    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz2,n2,a2,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_XYERRORRANGE   ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz1,n1,a1,UURU(3+ThreeDim)); UUAU(xyz2,n2,a2,UURU(4+ThreeDim)); UUAU(xyz2,n2,a2,UURU(5+ThreeDim)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_DOTS           ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_IMPULSES       ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_BOXES          ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
+  else if (style == SW_STYLE_WBOXES         ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2)); }
+  else if (style == SW_STYLE_STEPS          ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
+  else if (style == SW_STYLE_FSTEPS         ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
+  else if (style == SW_STYLE_HISTEPS        ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
+  else if (style == SW_STYLE_ARROWS_HEAD    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
+  else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
+  else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
+  else if (style == SW_STYLE_CSPLINES       ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
+  else if (style == SW_STYLE_ACSPLINES      ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
 
   // Cycle through data table, ensuring that axis ranges are sufficient to include all data
   Ncolumns = data->Ncolumns;
@@ -155,27 +155,27 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
    {
     for (j=0; j<blk->BlockPosition; j++)
      {
-      if      (style == SW_STYLE_POINTS         ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_LINES          ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_LINESPOINTS    ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_XERRORBARS     ) { UUU(xa, UUR(0)); UUU(xa, UUR(0)-UUR(2+ThreeDim)); UUU(xa, UUR(0)+UUR(2+ThreeDim)); UUU(ya, UUR(1)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_YERRORBARS     ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(ya, UUR(1)-UUR(2+ThreeDim)); UUU(ya, UUR(1)+UUR(2+ThreeDim)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_XYERRORBARS    ) { UUU(xa, UUR(0)); UUU(xa, UUR(0)-UUR(2+ThreeDim)); UUU(xa, UUR(0)+UUR(2+ThreeDim)); UUU(ya, UUR(1)); UUU(ya, UUR(1)-UUR(3+ThreeDim)); UUU(ya, UUR(1)+UUR(3+ThreeDim)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_XERRORRANGE    ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(xa, UUR(2+ThreeDim)); UUU(xa, UUR(3+ThreeDim)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_YERRORRANGE    ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(ya, UUR(2+ThreeDim)); UUU(ya, UUR(3+ThreeDim)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_XYERRORRANGE   ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(xa, UUR(2+ThreeDim)); UUU(xa, UUR(3+ThreeDim)); UUU(ya, UUR(4+ThreeDim)); UUU(ya, UUR(5+ThreeDim)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_DOTS           ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_IMPULSES       ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); if (ThreeDim) UUU(za, UUR(2)); }
-      else if (style == SW_STYLE_BOXES          ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); }
-      else if (style == SW_STYLE_WBOXES         ) { UUU(xa, UUR(0)); UUU(xa, UUR(0)-UUR(2)); UUU(xa, UUR(0)+UUR(2)); UUU(ya, UUR(1)); }
-      else if (style == SW_STYLE_STEPS          ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); }
-      else if (style == SW_STYLE_FSTEPS         ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); }
-      else if (style == SW_STYLE_HISTEPS        ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); }
-      else if (style == SW_STYLE_ARROWS_HEAD    ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(xa, UUR(2+ThreeDim)); UUU(ya, UUR(3+ThreeDim)); if (ThreeDim) { UUU(za, UUR(2)); UUU(za, UUR(5)); } }
-      else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(xa, UUR(2+ThreeDim)); UUU(ya, UUR(3+ThreeDim)); if (ThreeDim) { UUU(za, UUR(2)); UUU(za, UUR(5)); } }
-      else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); UUU(xa, UUR(2+ThreeDim)); UUU(ya, UUR(3+ThreeDim)); if (ThreeDim) { UUU(za, UUR(2)); UUU(za, UUR(5)); } }
-      else if (style == SW_STYLE_CSPLINES       ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); }
-      else if (style == SW_STYLE_ACSPLINES      ) { UUU(xa, UUR(0)); UUU(ya, UUR(1)); }
+      if      (style == SW_STYLE_POINTS         ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_LINES          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_LINESPOINTS    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_XERRORBARS     ) { UUU(a1, UUR(0)); UUU(a1, UUR(0)-UUR(2+ThreeDim)); UUU(a1, UUR(0)+UUR(2+ThreeDim)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_YERRORBARS     ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a2, UUR(1)-UUR(2+ThreeDim)); UUU(a2, UUR(1)+UUR(2+ThreeDim)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_XYERRORBARS    ) { UUU(a1, UUR(0)); UUU(a1, UUR(0)-UUR(2+ThreeDim)); UUU(a1, UUR(0)+UUR(2+ThreeDim)); UUU(a2, UUR(1)); UUU(a2, UUR(1)-UUR(3+ThreeDim)); UUU(a2, UUR(1)+UUR(3+ThreeDim)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_XERRORRANGE    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a1, UUR(3+ThreeDim)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_YERRORRANGE    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a2, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_XYERRORRANGE   ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a1, UUR(3+ThreeDim)); UUU(a2, UUR(4+ThreeDim)); UUU(a2, UUR(5+ThreeDim)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_DOTS           ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_IMPULSES       ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if (style == SW_STYLE_BOXES          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_WBOXES         ) { UUU(a1, UUR(0)); UUU(a1, UUR(0)-UUR(2)); UUU(a1, UUR(0)+UUR(2)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_STEPS          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_FSTEPS         ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_HISTEPS        ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_ARROWS_HEAD    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
+      else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
+      else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
+      else if (style == SW_STYLE_CSPLINES       ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_ACSPLINES      ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
       i++;
      }
     blk=blk->next;

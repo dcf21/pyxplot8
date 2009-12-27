@@ -380,42 +380,48 @@ double ReadFixWord(FILE *fp, int *err)
 // Find the maximum (unscaled) height and depth of (standard) glyphs within a font
 int dviFindMaxSize(dviFontDetails *font)
  {
-  dviTFM *tfm;               // Details of this font
-  int hi, di;                // Indices
-  int chnum;                 // Character number in this font
-  TFMcharInfo *chin;         // Character info for this character
+  dviTFM *tfm;         // Details of this font
+  int hi, di;          // Indices
+  int chnum;           // Character number in this font
+  TFMcharInfo *chin;   // Character info for this character
   int i, loopMax;
   double height, depth;
-  if (!font) { ppl_error(ERR_INTERNAL,"Internal fount failure!"); return DVIE_INTERNAL;}
+
+  if (!font) { ppl_error(ERR_INTERNAL,"Internal font failure!"); return DVIE_INTERNAL; }
   tfm = font->tfm;
-  font->maxHeight = 0.;
-  font->maxDepth = 0.;
+  font->maxHeight = 0.0;
+  font->maxDepth = 0.0;
+
   // Loop over upper-case characters
   loopMax = tfm->ec > ASCII_CHAR_Z_UP ? ASCII_CHAR_Z_UP : tfm->ec;
-  for (i=ASCII_CHAR_A_UP; i<=loopMax; i++) {
-     chnum = i - tfm->bc;
-     chin  = tfm->charInfo+chnum;
-     hi = (int)chin->hi;
-     di = (int)chin->di;
-     height = tfm->height[hi];
-     depth  = tfm->depth[di];
-     font->maxHeight = font->maxHeight > height ? font->maxHeight : height;
-     font->maxDepth  = font->maxDepth  > depth  ? font->maxDepth  : depth;
-  }
+  for (i=ASCII_CHAR_A_UP; i<=loopMax; i++)
+   {
+    chnum = i - tfm->bc;
+    chin  = tfm->charInfo+chnum;
+    hi = (int)chin->hi;
+    di = (int)chin->di;
+    height = tfm->height[hi];
+    depth  = tfm->depth[di];
+    font->maxHeight = font->maxHeight > height ? font->maxHeight : height;
+    font->maxDepth  = font->maxDepth  > depth  ? font->maxDepth  : depth;
+   }
+
   // Loop over lower-case characters
   loopMax = tfm->ec > ASCII_CHAR_Z_DN ? ASCII_CHAR_Z_DN : tfm->ec;
-  for (i=ASCII_CHAR_A_DN; i<=loopMax; i++) {
-     chnum = i - tfm->bc;
-     chin  = tfm->charInfo+chnum;
-     hi = (int)chin->hi;
-     di = (int)chin->di;
-     height = tfm->height[hi];
-     depth  = tfm->depth[di];
-     font->maxHeight = font->maxHeight > height ? font->maxHeight : height;
-     font->maxDepth  = font->maxDepth  > depth  ? font->maxDepth  : depth;
-  }
+  for (i=ASCII_CHAR_A_DN; i<=loopMax; i++)
+   {
+    chnum = i - tfm->bc;
+    chin  = tfm->charInfo+chnum;
+    hi = (int)chin->hi;
+    di = (int)chin->di;
+    height = tfm->height[hi];
+    depth  = tfm->depth[di];
+    font->maxHeight = font->maxHeight > height ? font->maxHeight : height;
+    font->maxDepth  = font->maxDepth  > depth  ? font->maxDepth  : depth;
+   }
   font->maxHeight *= font->useSize;
   font->maxDepth  *= font->useSize;
-  if (DEBUG) {sprintf(temp_err_string, "Maximum height %f depth %f", font->maxHeight, font->maxDepth); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "Maximum height %f depth %f", font->maxHeight, font->maxDepth); ppl_log(temp_err_string); }
   return 0;
  }
+
