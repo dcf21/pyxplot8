@@ -24,6 +24,11 @@
 #ifndef _PPL_DVI_FONT_H
 #define _PPL_DVI_FONT_H 1
 
+#define ASCII_CHAR_A_UP 65
+#define ASCII_CHAR_Z_UP 90
+#define ASCII_CHAR_A_DN 97
+#define ASCII_CHAR_Z_DN 122
+
 typedef struct TFMcharInfo
  {
   char wi;      // Width index
@@ -86,11 +91,14 @@ typedef struct dviFontDetails
   int useSize, desSize;     // Use and design sizes
   dviTFM *tfm;              // Data from tfm file
   char *pfaPath;            // PFA file location
+  // Maximum dimensions of glyphs
+  double maxHeight, maxDepth;
  } dviFontDetails;
 
 // Call the first of these functions, passing it a font structure. It will find and read the corresponding TFM file.
 int     dviGetTFM    (dviFontDetails *font);
 dviTFM *dviReadTFM   (FILE *fp, int *err);
+int     dviFindMaxSize(dviFontDetails *font);
 int     pfb2pfa      (FILE *in, FILE *out);
 char   *psNameFromPFA(char *PFApath);
 

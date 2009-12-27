@@ -388,6 +388,22 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   // Move pointer to postscript
   interp->output->currentPage->boundingBox = bb;
   interp->boundingBox = NULL;
+
+  if (DEBUG) { sprintf(temp_err_string, "Postscript page: bounding box %f %f %f %f", bb[0], bb[1], bb[2], bb[3]); ppl_log(temp_err_string); }
+
+  // Now repeat for text size box
+  bb = interp->textSizeBox;
+  bb[0] *= interp->scale;
+  bb[1] = 765 - bb[1] * interp->scale;
+  bb[2] *= interp->scale;
+  bb[3] = 765 - bb[3] * interp->scale;
+  
+  // Move pointer to postscript
+  interp->output->currentPage->textSizeBox = bb;
+  interp->textSizeBox = NULL;
+
+  if (DEBUG) { sprintf(temp_err_string, "Postscript page: text size box %f %f %f %f", bb[0], bb[1], bb[2], bb[3]); ppl_log(temp_err_string); }
+
   return 0;
  }
 
@@ -763,6 +779,7 @@ dviInterpreterState *dviNewInterpreter()
   interp->f=0;
   interp->curFnt = NULL;
   interp->boundingBox = NULL;
+  interp->textSizeBox = NULL;
   interp->scale=0.0;
 
   // No string currently being assembled
@@ -827,6 +844,7 @@ postscriptPage *dviNewPostscriptPage()
   page = (postscriptPage *)lt_malloc(sizeof(postscriptPage));
   if (page==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
   page->boundingBox = NULL;
+  page->textSizeBox = NULL;
   //page->position[0] = 0;
   //page->position[1] = 0;
   page->text = ListInit();
@@ -842,6 +860,10 @@ int dviDeletePostscriptPage(postscriptPage *page)
    {
     //free(page->boundingBox);
     page->boundingBox = NULL;
+   }
+  if (page->textSizeBox != NULL)
+   {
+    page->textSizeBox = NULL;
    }
 
   // free page->text
@@ -1125,6 +1147,32 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
     bb[2] = bb[2] > bbObj[2] ? bb[2] : bbObj[2];
     bb[3] = bb[3] < bbObj[3] ? bb[3] : bbObj[3];
    }
+
+  // Now repeat the process for the text size box
+  bbObj[1] = interp->state->v + interp->curFnt->maxDepth;
+  bbObj[3] = interp->state->v - interp->curFnt->maxHeight;
+
+  // Check to see if we already have a text size box
+  if (interp->textSizeBox == NULL)
+   {
+    bb = (double *)lt_malloc(4*sizeof(double));
+    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    bb[0] = bbObj[0];
+    bb[1] = bbObj[1];
+    bb[2] = bbObj[2];
+    bb[3] = bbObj[3];
+    interp->textSizeBox = bb;
+   }    
+  else
+   {
+    // Check against current bounding box
+    bb = interp->textSizeBox;
+    bb[0] = bb[0] < bbObj[0] ? bb[0] : bbObj[0];
+    bb[1] = bb[1] > bbObj[1] ? bb[1] : bbObj[1];
+    bb[2] = bb[2] > bbObj[2] ? bb[2] : bbObj[2];
+    bb[3] = bb[3] < bbObj[3] ? bb[3] : bbObj[3];
+   }
+
   return 0;
  }
 

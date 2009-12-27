@@ -50,6 +50,7 @@ typedef struct dviStackState
 typedef struct postscriptPage
  {
   double *boundingBox;  // The current bounding box 
+  double *textSizeBox;  // The current text size box (b.box plus oversize text)
   List *text;           // The big list of strings of postscript
  } postscriptPage;
 
@@ -78,6 +79,7 @@ typedef struct dviInterpreterState
   char *spString;            // String to store special information
   List *colStack;            // Stack of colour items
   double *boundingBox;       // Current bounding box
+  double *textSizeBox;       // Current text size box
  } dviInterpreterState;
 
 // Functions allowing dvi interpreters to be manipulated
