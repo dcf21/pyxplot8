@@ -100,8 +100,8 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
 // UpdateUsage... update axis X with ordinate value Y
 #define UUU(X,Y) \
  z = Y; \
- if ( ((!X->MinUsedSet) || (X->MinUsed > z)) && ((X->log != SW_ONOFF_ON) || (z>0.0)) ) { X->MinUsedSet=1; X->MinUsed=z; } \
- if ( ((!X->MaxUsedSet) || (X->MaxUsed < z)) && ((X->log != SW_ONOFF_ON) || (z>0.0)) ) { X->MaxUsedSet=1; X->MaxUsed=z; }
+ if ( ((!X->MinUsedSet) || (X->MinUsed > z)) && ((X->log != SW_BOOL_TRUE) || (z>0.0)) ) { X->MinUsedSet=1; X->MinUsed=z; } \
+ if ( ((!X->MaxUsedSet) || (X->MaxUsed < z)) && ((X->log != SW_BOOL_TRUE) || (z>0.0)) ) { X->MaxUsedSet=1; X->MaxUsed=z; }
 
 // UpdateUsage... get physical unit of row X from data table
 #define UURU(X) data->FirstEntries[X]
@@ -188,7 +188,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
 int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
  {
   int        j, Ncolumns, lt, pt;
-  double     xpos, ypos, lw, ps;
+  double     xpos, ypos, depth, lw, ps;
   settings_axis *a[3] = {a1,a2,a3};
   DataBlock *blk;
 
@@ -228,7 +228,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
        {
         for (j=0; j<blk->BlockPosition; j++)
          {
-          eps_plot_GetPosition(&xpos, &ypos, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
+          eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
           if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
           fprintf(x->epsbuffer, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
          }

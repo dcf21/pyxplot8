@@ -32,18 +32,44 @@
 #include <gsl/gsl_math.h>
 
 #include "ppl_settings.h"
+#include "ppl_setting_types.h"
 
-void eps_plot_GetPosition(double *xpos, double *ypos, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, double origin_x, double origin_y, double width, double height)
+void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, double origin_x, double origin_y, double width, double height)
  {
-  // Assumes 2D flat linear projection
+  if (ThreeDim)
+   {
+    if ((xin < xa->MinFinal) && (xin < xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
+    if ((xin > xa->MinFinal) && (xin > xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
+    if ((yin < ya->MinFinal) && (yin < ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
+    if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
+    if ((zin < za->MinFinal) && (zin < za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
+    if ((zin > za->MinFinal) && (zin > za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
+
+    *xpos  = origin_x;
+    *ypos  = origin_y;
+    *depth = 0.0;
+    return;
+   }
+
+  if (sg->projection == SW_PROJ_GNOM)
+   {
+    *xpos  = origin_x;
+    *ypos  = origin_y;
+    *depth = 0.0;
+    return;
+   }
+
+  // We assume 2D flat projection
   if ((xin < xa->MinFinal) && (xin < xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
   if ((xin > xa->MinFinal) && (xin > xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
   if ((yin < ya->MinFinal) && (yin < ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
   if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
 
-  *xpos = origin_x + width  * (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal);
-  *ypos = origin_y + height * (yin - ya->MinFinal) / (ya->MaxFinal - ya->MinFinal);
-
+  if (xa->log!=SW_BOOL_TRUE) *xpos = origin_x + width  * (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
+  else                       *xpos = origin_x + width  * (xin / xa->MinFinal) / (xa->MaxFinal / xa->MinFinal); // ... or logarithmic
+  if (ya->log!=SW_BOOL_TRUE) *ypos = origin_y + height * (yin - ya->MinFinal) / (ya->MaxFinal - ya->MinFinal);
+  else                       *ypos = origin_y + height * (yin / ya->MinFinal) / (ya->MaxFinal / ya->MinFinal);
+  *depth = 0.0;
   return;
  }
 

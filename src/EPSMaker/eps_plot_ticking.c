@@ -41,12 +41,12 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
   if       (HardMin != NULL)                               axis->MinFinal = *HardMin;
   else if ((axis->MinSet==SW_BOOL_TRUE) && (!HardAutoMin)) axis->MinFinal = axis->min;
   else if  (axis->MinUsedSet)                              axis->MinFinal = axis->MinUsed;
-  else                                                     axis->MinFinal = (axis->log == SW_ONOFF_ON) ? 1.0 : -10.0;
+  else                                                     axis->MinFinal = (axis->log == SW_BOOL_TRUE) ? 1.0 : -10.0;
 
   if       (HardMax != NULL)                               axis->MaxFinal = *HardMax;
   else if ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax)) axis->MaxFinal = axis->max;
   else if  (axis->MaxUsedSet)                              axis->MaxFinal = axis->MaxUsed;
-  else                                                     axis->MaxFinal = (axis->log == SW_ONOFF_ON) ? 10.0 : 10.0;
+  else                                                     axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? 10.0 : 10.0;
 
   // Print out debugging report
   if (DEBUG)
