@@ -185,10 +185,11 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
  }
 
 // Render a dataset to postscript
-int eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
+int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
  {
   int        j, Ncolumns, lt, pt;
   double     xpos, ypos, lw, ps;
+  settings_axis *a[3] = {a1,a2,a3};
   DataBlock *blk;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
@@ -227,7 +228,7 @@ int eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Three
        {
         for (j=0; j<blk->BlockPosition; j++)
          {
-          eps_plot_GetPosition(&xpos, &ypos, ThreeDim, UUR(0), UUR(1), ThreeDim ? UUR(2) : 0.0, xa, ya, za, sg, origin_x, origin_y, width, height);
+          eps_plot_GetPosition(&xpos, &ypos, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
           if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
           fprintf(x->epsbuffer, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
          }

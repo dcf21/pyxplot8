@@ -117,8 +117,10 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
 
       if (pd->function == 0) // Read data from file
        {
+        if (DEBUG) { sprintf(temp_err_string, "Reading data from file '%s' for dataset %d in plot item %d", pd->filename, i+1, x->current->id); ppl_log(temp_err_string); }
         DataFile_read(x->current->plotdata+i, &status, temp_err_string, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        } else {
+        if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
         DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, temp_err_string, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, temp_err_string); x->current->plotdata[i]=NULL; }
@@ -142,6 +144,8 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
   int            IterDepth;
   settings_axis *target;
   canvas_item   *item;
+
+  if (DEBUG) { sprintf(temp_err_string, "Back-propagating axis usage for axis %c%d on plot %d", "xyz"[xyz], axis_n, x->current->id); }
 
   // Propagating MinUsed and MaxUsed variables along links between axes
   IterDepth = 0;
@@ -216,7 +220,7 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
       if (pr->MaxSet)     { HardMax = &pr->max; } else { HardMax = NULL; }
      }
    }
-  eps_plot_ticking(axis, HardMin, HardMax, HardAutoMin, HardAutoMax);
+  eps_plot_ticking(axis, xyz, axis_n, x->current->id, HardMin, HardMax, HardAutoMin, HardAutoMax);
   return;
  }
 
@@ -312,6 +316,8 @@ void eps_plot_SampleFunctions(EPSComm *x)
         OrdinateAxis->OrdinateRasterLen = x->current->settings.samples;
        }
 
+      if (DEBUG) { sprintf(temp_err_string, "Reading data from functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
+
       // Get data from functions
       DataFile_FromFunctions(OrdinateAxis->OrdinateRaster, 0, OrdinateAxis->OrdinateRasterLen, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, temp_err_string, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
       if (status) { *(x->status) = 1; return; }
@@ -335,10 +341,14 @@ void eps_plot_YieldUpText(EPSComm *x)
 
 void eps_plot_RenderEPS(EPSComm *x)
  {
-  int              i, status;
+  int              i, status, xyzaxis[3];
   double           origin_x, origin_y, width, height;
   canvas_plotdesc *pd;
-  settings_axis   *xa, *ya, *za;
+  settings_axis   *a1, *a2, *a3, *axissets[3];
+
+  axissets[0] = x->current->XAxes;
+  axissets[1] = x->current->YAxes;
+  axissets[2] = x->current->ZAxes;
 
   // Write header at top of postscript
   fprintf(x->epsbuffer, "%% Canvas item %d [plot]\n", x->current->id);
@@ -361,11 +371,14 @@ void eps_plot_RenderEPS(EPSComm *x)
   i  = 0;
   while (pd != NULL) // loop over all datasets
    {
-//    xa = &x->current->XAxes[pd->axisX];
-//    ya = &x->current->YAxes[pd->axisY];
-//    za = &x->current->ZAxes[pd->axisZ];
+    a1 = &axissets[pd->axis1xyz][pd->axis1];
+    a2 = &axissets[pd->axis2xyz][pd->axis2];
+    a3 = &axissets[pd->axis3xyz][pd->axis3];
+    xyzaxis[pd->axis1xyz] = 0;
+    xyzaxis[pd->axis2xyz] = 1;
+    xyzaxis[pd->axis3xyz] = 2;
 
-    status = eps_plot_dataset(x, x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, xa, ya, za, &x->current->settings, pd, origin_x, origin_y, width, height);
+    status = eps_plot_dataset(x, x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height);
     if (status) { *(x->status) = 1; return; }
 
     pd=pd->next; i++;

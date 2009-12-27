@@ -788,7 +788,7 @@ int directive_ellipse(Dict *command, int interactive)
      {
       a_dbl   = fabs(a->real);
       ecc_dbl = hypot(xc->real - xf->real , yc->real - yf->real) / a_dbl;
-      if ((ecc_dbl < 0.0) || (ecc_dbl >= 1.0)) { ppl_error(ERR_NUMERIC, "Supplied major axis length is longer than the distance between the supplied focus and centre of the ellipse. No ellipse may have such parameters."); return 1; }
+      if ((ecc_dbl < 0.0) || (ecc_dbl >= 1.0)) { ppl_error(ERR_NUMERIC, "Supplied semi-major axis length is shorter than the distance between the supplied focus and centre of the ellipse. No ellipse may have such parameters."); return 1; }
       if (ppl_units_DblEqual(ecc_dbl,0.0)) { b_dbl = a_dbl; }
       else                                 { b_dbl = a_dbl * sqrt(1.0-pow(ecc_dbl,2)); }
      }
@@ -834,7 +834,7 @@ int directive_ellipse(Dict *command, int interactive)
     else if ((a   != NULL) && (slr != NULL)) // major axis and SLR...
      {
       a_dbl   = fabs(a->real);
-      if (fabs(slr->real) > a_dbl) { ppl_error(ERR_NUMERIC, "Supplied semi-latus rectum is longer than the supplied major axis length of the ellipse."); return 1; }
+      if (fabs(slr->real) > a_dbl) { ppl_error(ERR_NUMERIC, "Supplied semi-latus rectum is longer than the supplied semi-major axis length of the ellipse. No ellipse may have such parameters."); return 1; }
       ecc_dbl = sqrt(1.0 - fabs(slr->real) / a_dbl);
       b_dbl   = a_dbl * sqrt(1.0 - pow(ecc_dbl,2.0));
      }
@@ -847,7 +847,7 @@ int directive_ellipse(Dict *command, int interactive)
     else if ((b   != NULL) && (slr != NULL)) // minor axis and SLR...
      {
       b_dbl   = b->real;
-      if (fabs(slr->real) > b_dbl) { ppl_error(ERR_NUMERIC, "Supplied semi-latus rectum is longer than the supplied minor axis length of the ellipse."); return 1; }
+      if (fabs(slr->real) > b_dbl) { ppl_error(ERR_NUMERIC, "Supplied semi-latus rectum is longer than the supplied semi-minor axis length of the ellipse. No ellipse may have such parameters."); return 1; }
       ecc_dbl = sqrt(1.0 - pow(fabs(slr->real) / b_dbl,2.0));
       a_dbl   = b_dbl / sqrt(1.0 - pow(ecc_dbl,2.0));
      }

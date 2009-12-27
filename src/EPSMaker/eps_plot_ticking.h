@@ -24,7 +24,7 @@
 
 #include "ppl_settings.h"
 
-void eps_plot_ticking(settings_axis *axis, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax);
+void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax);
 
 #endif
 

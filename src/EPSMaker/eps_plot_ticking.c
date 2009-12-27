@@ -28,10 +28,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
-void eps_plot_ticking(settings_axis *axis, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
+void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
  {
   axis->FinalActive = axis->FinalActive || axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
   if (!axis->FinalActive) { axis->RangeFinalised = 0; return; } // Axis is not in use
@@ -46,6 +47,21 @@ void eps_plot_ticking(settings_axis *axis, const double *HardMin, const double *
   else if ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax)) axis->MaxFinal = axis->max;
   else if  (axis->MaxUsedSet)                              axis->MaxFinal = axis->MaxUsed;
   else                                                     axis->MaxFinal = (axis->log == SW_ONOFF_ON) ? 10.0 : 10.0;
+
+  // Print out debugging report
+  if (DEBUG)
+   {
+    int i;
+    sprintf(temp_err_string,"Determined range for axis %c%d of plot %d. Usage was [", "xyz"[xyz], axis_n, canvas_id);
+    i = strlen(temp_err_string);
+    if (axis->MinUsedSet) { sprintf(temp_err_string+i, "%f", axis->MinUsed); i+=strlen(temp_err_string+i); }
+    else                  temp_err_string[i++] = '*';
+    temp_err_string[i++] = ':';
+    if (axis->MaxUsedSet) { sprintf(temp_err_string+i, "%f", axis->MaxUsed); i+=strlen(temp_err_string+i); }
+    else                  temp_err_string[i++] = '*';
+    sprintf(temp_err_string+i,"]. Final range was [%f:%f].",axis->MinFinal,axis->MaxFinal);
+    ppl_log(temp_err_string);
+   }
 
   // Set flag to show that we have finalised the range of this axis
   axis->RangeFinalised = 1;
