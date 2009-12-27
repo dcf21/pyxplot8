@@ -36,6 +36,7 @@
 
 void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, double origin_x, double origin_y, double width, double height)
  {
+  // 3D plots
   if (ThreeDim)
    {
     if ((xin < xa->MinFinal) && (xin < xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
@@ -51,6 +52,7 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
     return;
    }
 
+  // 2D gnomonic projections
   if (sg->projection == SW_PROJ_GNOM)
    {
     *xpos  = origin_x;
@@ -66,9 +68,9 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
   if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
 
   if (xa->log!=SW_BOOL_TRUE) *xpos = origin_x + width  * (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
-  else                       *xpos = origin_x + width  * (xin / xa->MinFinal) / (xa->MaxFinal / xa->MinFinal); // ... or logarithmic
+  else                       *xpos = origin_x + width  *  log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
   if (ya->log!=SW_BOOL_TRUE) *ypos = origin_y + height * (yin - ya->MinFinal) / (ya->MaxFinal - ya->MinFinal);
-  else                       *ypos = origin_y + height * (yin / ya->MinFinal) / (ya->MaxFinal / ya->MinFinal);
+  else                       *ypos = origin_y + height *  log(yin / ya->MinFinal) / log(ya->MaxFinal / ya->MinFinal);
   *depth = 0.0;
   return;
  }

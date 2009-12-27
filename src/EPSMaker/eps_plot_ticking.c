@@ -34,6 +34,8 @@
 
 void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
  {
+  const double logmin = 1e-10;
+
   axis->FinalActive = axis->FinalActive || axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
   if (!axis->FinalActive) { axis->RangeFinalised = 0; return; } // Axis is not in use
 
@@ -47,6 +49,10 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
   else if ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax)) axis->MaxFinal = axis->max;
   else if  (axis->MaxUsedSet)                              axis->MaxFinal = axis->MaxUsed;
   else                                                     axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? 10.0 : 10.0;
+
+  // Check that log axes do not venture too close to zero
+  if ((axis->log == SW_BOOL_TRUE) && (axis->MinFinal <= 1e-200)) { axis->MinFinal = logmin; ppl_warning(ERR_NUMERIC,"Range for logarithmic axis set below zero; defaulting to 1e-10."); }
+  if ((axis->log == SW_BOOL_TRUE) && (axis->MaxFinal <= 1e-200)) { axis->MaxFinal = logmin; ppl_warning(ERR_NUMERIC,"Range for logarithmic axis set below zero; defaulting to 1e-10."); }
 
   // Print out debugging report
   if (DEBUG)
