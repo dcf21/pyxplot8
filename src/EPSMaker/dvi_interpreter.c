@@ -379,6 +379,15 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   // Set appropriate postscript bounding box from dvi bb
   // left bottom right top
   bb = interp->boundingBox;
+  // If we have not typeset anything then the bounding box will be empty.
+  if (bb == NULL) {
+    bb = (double *)lt_malloc(4*sizeof(double));
+    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    bb[0] = interp->state->h;
+    bb[1] = interp->state->v;
+    bb[2] = interp->state->h;
+    bb[3] = interp->state->v;
+  }
   // Convert bounding box from DVI to PS units
   bb[0] *= interp->scale;
   bb[1] = 765 - bb[1] * interp->scale;
@@ -393,6 +402,16 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
 
   // Now repeat for text size box
   bb     = interp->textSizeBox;
+  // If we have not typeset anything then the box will be empty.
+  if (bb == NULL) {
+    bb = (double *)lt_malloc(4*sizeof(double));
+    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    bb[0] = interp->state->h;
+    bb[1] = interp->state->v;
+    bb[2] = interp->state->h;
+    bb[3] = interp->state->v;
+  }
+
   bb[0] *= interp->scale;
   bb[1]  = 765 - bb[1] * interp->scale;
   bb[2] *= interp->scale;
