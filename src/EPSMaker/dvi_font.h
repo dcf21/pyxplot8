@@ -29,6 +29,11 @@
 #define ASCII_CHAR_A_DN 97
 #define ASCII_CHAR_Z_DN 122
 
+#define FONT_UNKNOWN  0
+#define FONT_TEX_TEXT 1
+#define FONT_TEX_MATH 2
+#define FONT_TEX_MEXT 3
+
 typedef struct TFMcharInfo
  {
   char wi;      // Width index
@@ -93,6 +98,8 @@ typedef struct dviFontDetails
   char *pfaPath;            // PFA file location
   // Maximum dimensions of glyphs
   double maxHeight, maxDepth;
+  // Type of font
+  int fontType;
  } dviFontDetails;
 
 // Call the first of these functions, passing it a font structure. It will find and read the corresponding TFM file.

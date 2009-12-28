@@ -60,6 +60,19 @@ int dviGetTFM(dviFontDetails *font)
   // Find the maximum height and depth of the font
   err = dviFindMaxSize(font);
   if (err) return err;
+
+  // Work out what type of font this is
+  if (strncmp(font->tfm->coding, "TeX text", 8)==0) {
+     font->fontType = FONT_TEX_TEXT;
+  } else if (strncmp(font->tfm->coding, "TeX math italic", 15)==0) {
+     font->fontType = FONT_TEX_MATH;
+  } else if (strncmp(font->tfm->coding, "TeX math extension", 18)==0) {
+     font->fontType = FONT_TEX_MEXT;
+  } else {
+     font->fontType = FONT_UNKNOWN;
+  }
+  if (DEBUG) {sprintf(temp_err_string, "TFM: font type %d", font->fontType);  ppl_log(temp_err_string);}
+
    
   // Additionally obtain the pfa file
   s = (char *)lt_malloc((strlen(font->name)+5)*sizeof(char));
@@ -384,7 +397,7 @@ int dviFindMaxSize(dviFontDetails *font)
   int hi, di;          // Indices
   int chnum;           // Character number in this font
   TFMcharInfo *chin;   // Character info for this character
-  int i, loopMax;
+  int i, loopMax, hmax, dmax;
   double height, depth;
 
   if (!font) { ppl_error(ERR_INTERNAL,"Internal font failure!"); return DVIE_INTERNAL; }
@@ -394,6 +407,7 @@ int dviFindMaxSize(dviFontDetails *font)
 
   // Loop over upper-case characters
   loopMax = tfm->ec > ASCII_CHAR_Z_UP ? ASCII_CHAR_Z_UP : tfm->ec;
+  hmax=0; dmax=0;
   for (i=ASCII_CHAR_A_UP; i<=loopMax; i++)
    {
     chnum = i - tfm->bc;
@@ -402,8 +416,14 @@ int dviFindMaxSize(dviFontDetails *font)
     di = (int)chin->di;
     height = tfm->height[hi];
     depth  = tfm->depth[di];
-    font->maxHeight = font->maxHeight > height ? font->maxHeight : height;
-    font->maxDepth  = font->maxDepth  > depth  ? font->maxDepth  : depth;
+    if (font->maxHeight < height) {
+      font->maxHeight = height;
+      hmax=i;
+    }
+    if (font->maxDepth < depth) {
+       font->maxDepth = depth;
+       dmax=i;
+    }
    }
 
   // Loop over lower-case characters
@@ -416,12 +436,18 @@ int dviFindMaxSize(dviFontDetails *font)
     di = (int)chin->di;
     height = tfm->height[hi];
     depth  = tfm->depth[di];
-    font->maxHeight = font->maxHeight > height ? font->maxHeight : height;
-    font->maxDepth  = font->maxDepth  > depth  ? font->maxDepth  : depth;
+    if (font->maxHeight < height) {
+      font->maxHeight = height;
+      hmax=i;
+    }
+    if (font->maxDepth < depth) {
+       font->maxDepth = depth;
+       dmax=i;
+    }
    }
   font->maxHeight *= font->useSize;
   font->maxDepth  *= font->useSize;
-  if (DEBUG) { sprintf(temp_err_string, "Maximum height %f depth %f", font->maxHeight, font->maxDepth); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "Maximum height %f depth %f from characters %d %d %s %s", font->maxHeight, font->maxDepth, hmax, dmax, (char *)(&hmax), (char *)(&dmax)); ppl_log(temp_err_string); }
   return 0;
  }
 
