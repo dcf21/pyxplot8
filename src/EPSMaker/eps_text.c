@@ -68,7 +68,7 @@ void eps_text_RenderEPS(EPSComm *x)
   colstr = x->LastEPSColour;
 
   // Render text item to eps
-  canvas_EPSRenderTextItem(x, pageno, x->current->xpos, x->current->ypos, x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation);
+  canvas_EPSRenderTextItem(x, pageno, x->current->xpos, x->current->ypos, x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation, NULL, NULL);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

@@ -107,8 +107,9 @@ typedef struct settings_axis {
  double        MinUsed, MaxUsed, MinFinal, MaxFinal, *OrdinateRaster;
  int           OrdinateRasterLen;
  value         DataUnit;
- List         *TickListFinal;
-
+ unsigned char TickListFinalised;
+ double       *TickListPositions,  *MTickListPositions;
+ char        **TickListStrings  , **MTickListStrings;
  } settings_axis;
 
 typedef struct arrow_object {

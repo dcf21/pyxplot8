@@ -583,7 +583,7 @@ void canvas_EPSWrite(EPSComm *x)
  }
 
 // Write a text item out from dvi buffer
-void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, int halign, int valign, char *colstr, double fontsize, double rotate)
+void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, int halign, int valign, char *colstr, double fontsize, double rotate, double *width, double *height)
  {
   postscriptPage *dviPage;
   ListIterator *ListIter;
@@ -607,6 +607,10 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   ab_bottom = dviPage->textSizeBox[1];
   ab_right  = dviPage->textSizeBox[2];
   ab_top    = dviPage->textSizeBox[3];
+
+  // Return dimensions of text item
+  if (width  != NULL) *width  = (bb_right - bb_left)*fontsize;
+  if (height != NULL) *height = (bb_top - bb_bottom)*fontsize;
 
   // Work out where our anchor point is on postscript
   if      (halign == SW_HALIGN_LEFT ) xanchor = ab_left;

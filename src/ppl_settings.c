@@ -1170,14 +1170,14 @@ void DestroyAxis(settings_axis *in)
   if (in->MTickList != NULL) { free(in->MTickList); in->MTickList = NULL; }
   if (in->MTickStrs != NULL)
    {
-    for (i=0; in->MTickStrs[i]!=NULL; i++) free(in->MTickStrs);
+    for (i=0; in->MTickStrs[i]!=NULL; i++) free(in->MTickStrs[i]);
     free(in->MTickStrs);
     in->MTickStrs = NULL;
    }
   if (in->TickList  != NULL) { free(in->TickList ); in->TickList  = NULL; }
   if (in->TickStrs  != NULL)
    {
-    for (i=0; in->TickStrs[i]!=NULL; i++) free(in->TickStrs);
+    for (i=0; in->TickStrs[i]!=NULL; i++) free(in->TickStrs[i]);
     free(in->TickStrs );
     in->TickStrs  = NULL;
    }

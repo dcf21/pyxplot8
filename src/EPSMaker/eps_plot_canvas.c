@@ -34,6 +34,12 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
+double eps_plot_axis_GetPosition(double xin, settings_axis *xa)
+ {
+  if (xa->log!=SW_BOOL_TRUE) return (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
+  else                       return log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
+ }
+
 void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, double origin_x, double origin_y, double width, double height)
  {
   // 3D plots
@@ -67,10 +73,8 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
   if ((yin < ya->MinFinal) && (yin < ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
   if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
 
-  if (xa->log!=SW_BOOL_TRUE) *xpos = origin_x + width  * (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
-  else                       *xpos = origin_x + width  *  log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
-  if (ya->log!=SW_BOOL_TRUE) *ypos = origin_y + height * (yin - ya->MinFinal) / (ya->MaxFinal - ya->MinFinal);
-  else                       *ypos = origin_y + height *  log(yin / ya->MinFinal) / log(ya->MaxFinal / ya->MinFinal);
+  *xpos = origin_x + width  * eps_plot_axis_GetPosition(xin, xa);
+  *ypos = origin_y + height * eps_plot_axis_GetPosition(yin, ya);
   *depth = 0.0;
   return;
  }

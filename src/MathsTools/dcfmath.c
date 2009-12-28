@@ -476,7 +476,7 @@ void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int 
   CHECK_NEEDINT(in1 , "function's first parameter must be");
   CHECK_NEEDINT(in3 , "function's 3rd  parameter must be");
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = 0; } //gsl_cdf_binomial_P((unsigned int)in1->real, in2->real, (unsigned int)in3->real); }
+  ELSE_REAL   { output->real = gsl_cdf_binomial_P((unsigned int)in1->real, in2->real, (unsigned int)in3->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -699,7 +699,7 @@ void dcfmath_ellP(value *in1, value *in2, value *output, int *status, char *errt
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = 0; } //gsl_sf_ellint_Pcomp(in1->real , in2->real , GSL_PREC_DOUBLE); }
+  ELSE_REAL   { output->real = gsl_sf_ellint_Pcomp(in1->real , in2->real , GSL_PREC_DOUBLE); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -758,7 +758,7 @@ void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *er
   CHECK_2INPUT_DIMLESS;
   CHECK_NEEDSINT(in1, "function's first argument must be");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = 0;} //gsl_sf_expint_En((int)in1->real, in2->real); }
+  ELSE_REAL   { output->real = gsl_sf_expint_En((int)in1->real, in2->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -1027,7 +1027,7 @@ void dcfmath_poissonCDF(value *in1, value *in2, value *output, int *status, char
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = 0; } //gsl_cdf_poisson_P(in1->real , in2->real); }
+  ELSE_REAL   { output->real = gsl_cdf_poisson_P(in1->real , in2->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }

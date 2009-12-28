@@ -51,19 +51,63 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
       eps_core_BoundingBox(x, *ypos, right, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
      }
 
+    // Paint major axis ticks
+    if (PrintLabels && (a->TickListPositions != NULL))
+     {
+      int l;
+      double TickMaxHeight = 0.0, height, width;
+
+      for (l=0; a->TickListStrings[l]!=NULL; l++)
+       {
+        double lrpos  = left + (right-left)*a->TickListPositions[l];
+        double udpos1 = *ypos + (TOPbottom ? 1.0 : -1.0) * (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * EPS_AXES_MAJTICKLEN * M_TO_PS;
+        double udpos2 = *ypos + (TOPbottom ? 1.0 : -1.0) * (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * EPS_AXES_MAJTICKLEN * M_TO_PS;
+        if (!Yx)
+         {
+          fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", lrpos, udpos1, lrpos, udpos2);
+          eps_core_BoundingBox(x, lrpos, udpos1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+          eps_core_BoundingBox(x, lrpos, udpos2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+         }
+        else
+         {
+          fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", udpos1, lrpos, udpos2, lrpos);
+          eps_core_BoundingBox(x, udpos1, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+          eps_core_BoundingBox(x, udpos2, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+         }
+
+        if (a->TickListStrings[l][0] != '\0')
+         {
+          int pageno = x->LaTeXpageno++;
+          double xlab, ylab;
+
+          if (!Yx) { xlab = lrpos/M_TO_PS; ylab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
+          else     { ylab = lrpos/M_TO_PS; xlab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
+
+          IF_NOT_INVISIBLE
+           {
+            printf("%s\n",a->TickListStrings[l]);
+            canvas_EPSRenderTextItem(x, pageno, xlab, ylab, SW_HALIGN_CENT, ( TOPbottom ^ Yx) ? SW_VALIGN_BOT : SW_VALIGN_TOP, x->LastEPSColour, x->current->settings.FontSize, M_PI/2*Yx, &width, &height);
+            if (height > TickMaxHeight) TickMaxHeight = height;
+           }
+         }
+       }
+      *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + TickMaxHeight); // Allow a gap after axis labels
+     }
+
     // Write axis label
     if (PrintLabels && (a->label != NULL) && (a->label[0]!='\0'))
      {
       int pageno = x->LaTeXpageno++;
       double xlab, ylab;
+      double width, height;
 
       if (!Yx) { xlab = (left+right)/2/M_TO_PS; ylab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
       else     { ylab = (left+right)/2/M_TO_PS; xlab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
 
       IF_NOT_INVISIBLE
        {
-        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, SW_HALIGN_CENT, ( TOPbottom ^ Yx) ? SW_VALIGN_BOT : SW_VALIGN_TOP, x->LastEPSColour, x->current->settings.FontSize, M_PI/2*Yx);
-        *ypos += (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP * M_TO_PS; // Allow gap after label
+        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, SW_HALIGN_CENT, ( TOPbottom ^ Yx) ? SW_VALIGN_BOT : SW_VALIGN_TOP, x->LastEPSColour, x->current->settings.FontSize, M_PI/2*Yx, &width, &height);
+        *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + height); // Allow gap after label
        }
      }
 
@@ -157,7 +201,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
     else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
     eps_core_SetColour(x, &ww);
-    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, title_x, title_y, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0);
+    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, title_x, title_y, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
    }
 
   return;

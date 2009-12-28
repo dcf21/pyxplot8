@@ -41,6 +41,13 @@
 #include "eps_plot_ticking.h"
 #include "eps_settings.h"
 
+// Loop through all of the datasets plotted in a single plot command.
+// Initialise the datastructures for the plot command which we will fill in the
+// process of deciding how to render the graph. Then read in data from
+// datafiles and parametric functions. Do not read in data from non-parametric
+// functions as we need to finalise axis ranges first, before we know what
+// raster we will sample them on.
+
 void eps_plot_ReadAccessibleData(EPSComm *x)
  {
   int              i, j, Ndatasets, Fcounter=0, Dcounter=0, status, ErrCount, NExpect;
@@ -68,7 +75,9 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       axes[i].MinUsed    = axes[i].MaxUsed    = axes[i].MinFinal = axes[i].MaxFinal = 0.0;
       axes[i].OrdinateRasterLen = 0;
       axes[i].OrdinateRaster = NULL;
-      axes[i].TickListFinal  = NULL;
+      axes[i].TickListFinalised = 0;
+      axes[i].TickListPositions = axes[i].MTickListPositions = NULL;
+      axes[i].TickListStrings   = axes[i].MTickListStrings   = NULL;
       ppl_units_zero(&axes[i].DataUnit);
      }
    }
@@ -140,6 +149,15 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   return;
  }
 
+// Whenever we update the usage variables MinUsed and MaxUsed for an axis, this
+// procedure is called. It checks whether the axis is linked, and if so,
+// updates the usage variables for the axis which it is linked to. This process
+// may then iteration down a hierarchy of linked axes. As a rule, it is the
+// axis at the bottom of the linkage hierarchy (i.e. at the end of the linked
+// list) that has the canonical usage variables. Axes further up may not have
+// complete information about the usage of the set of linked axes, since usage
+// does not propagate UP the hierarchy.
+
 void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz, int axis_n)
  {
   int            IterDepth;
@@ -177,6 +195,11 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
   return;
  }
 
+// Loop through all of the axes on a single plot item, and decide its range. If
+// the axis is a linked axis, must first decide the range of the axis at the
+// bottom of the linkage hierarchy. The function
+// eps_plot_LinkedAxisForwardPropagate deals with this.
+
 void eps_plot_DecideAxisRanges(EPSComm *x)
  {
   int i, j;
@@ -188,10 +211,18 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
     if      (j==0) axes = x->current->XAxes;
     else if (j==1) axes = x->current->YAxes;
     else if (j==2) axes = x->current->ZAxes;
-    for (i=0; i<MAX_AXES; i++) { if (!axes[i].RangeFinalised) eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i); if (*x->status) return; }
+    for (i=0; i<MAX_AXES; i++)
+     {
+      if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i); if (*x->status) return; }
+      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, NULL, NULL, 0, 0); if (*x->status) return; }
+     }
    }
   return;
  }
+
+// Finalises the range of a particular axis, bringing together usage
+// information, ranges specified in the plot command, and ranges set for the
+// axis with the set xrange command.
 
 void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis_n)
  {
@@ -224,6 +255,12 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
   eps_plot_ticking(axis, xyz, axis_n, x->current->id, HardMin, HardMax, HardAutoMin, HardAutoMax);
   return;
  }
+
+// As part of the process of determining the range of axis xyz[axis_n], check
+// whether the axis is linking, and if so fetch usage information from the
+// bottom of the linkage hierarchy. Propagate this information up through all
+// intermediate levels of the hierarchy before calling
+// eps_plot_DecideAxisRange().
 
 void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xyz, int axis_n)
  {
@@ -261,7 +298,6 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     if (source->RangeFinalised) { break; }
     source->MinFinal       = target->MinFinal;
     source->MaxFinal       = target->MaxFinal;
-    source->TickListFinal  = target->TickListFinal;
     source->RangeFinalised = 1;
     if (!source->linked) { break; } // proceed only if axis is linked
     item = x->itemlist->first;
@@ -275,6 +311,14 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
    }
   return;
  }
+
+// Loop through all of the datasets plotting within a single plot command, and
+// pick out those which are plotting functions which need to be rasterised
+// along an ordinate axis (i.e. those which are not parametric). At this stage,
+// we need to finalise the range of the ordinate axis, create a raster of
+// values along it, and sample the function. After calling this function, all
+// datasets plotted by the plot command will then have been sampled and be
+// ready for plotting.
 
 void eps_plot_SampleFunctions(EPSComm *x)
  {
@@ -335,6 +379,10 @@ void eps_plot_SampleFunctions(EPSComm *x)
   return;
  }
 
+// Adds all of the text items which will be needed to render this plot to the
+// list x->TextItems. It is vital that they be added in the exact order in
+// which they will be rendered.
+
 #define YIELD_TEXTITEM(X) \
   if ((X != NULL) && (X[0]!='\0')) \
    { \
@@ -347,11 +395,11 @@ void eps_plot_SampleFunctions(EPSComm *x)
 
 void eps_plot_YieldUpText(EPSComm *x)
  {
-  int             j, k;
+  int             j, k, l, m;
   settings_axis  *axes;
   CanvasTextItem *i;
 
-  // Axis titles
+  // Axis labels and titles
   for (j=0; j<2+(x->current->ThreeDim); j++)
    {
     if      (j==0) axes = x->current->XAxes;
@@ -361,8 +409,12 @@ void eps_plot_YieldUpText(EPSComm *x)
     for (k=0; k<MAX_AXES; k++)
      if ((axes[k].FinalActive) && (!axes[k].invisible))
       {
-       YIELD_TEXTITEM(axes[k].label);
-       if (axes[k].MirrorType == SW_AXISMIRROR_FULLMIRROR) YIELD_TEXTITEM(axes[k].label); // Second copy for mirrored axis
+       for (m=0; m<1+(axes[k].MirrorType == SW_AXISMIRROR_FULLMIRROR); m++) // Create second copy for mirrored axis if required
+        {
+         if (axes[k]. TickListPositions != NULL) for (l=0; axes[k]. TickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k]. TickListStrings[l]); } // Major tick labels
+         if (axes[k].MTickListPositions != NULL) for (l=0; axes[k].MTickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k].MTickListStrings[l]); } // Minor tick labels
+         YIELD_TEXTITEM(axes[k].label);
+        }
       }
    }
 
@@ -371,6 +423,8 @@ void eps_plot_YieldUpText(EPSComm *x)
 
   return;
  }
+
+// Finally, produce a postscript plot
 
 void eps_plot_RenderEPS(EPSComm *x)
  {

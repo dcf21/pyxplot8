@@ -62,15 +62,11 @@ int dviGetTFM(dviFontDetails *font)
   if (err) return err;
 
   // Work out what type of font this is
-  if (strncmp(font->tfm->coding, "TeX text", 8)==0) {
-     font->fontType = FONT_TEX_TEXT;
-  } else if (strncmp(font->tfm->coding, "TeX math italic", 15)==0) {
-     font->fontType = FONT_TEX_MATH;
-  } else if (strncmp(font->tfm->coding, "TeX math extension", 18)==0) {
-     font->fontType = FONT_TEX_MEXT;
-  } else {
-     font->fontType = FONT_UNKNOWN;
-  }
+  if      (strncmp(font->tfm->coding, "TeX text"          ,  8)==0) font->fontType = FONT_TEX_TEXT;
+  else if (strncmp(font->tfm->coding, "TeX math italic"   , 15)==0) font->fontType = FONT_TEX_MATH;
+  else if (strncmp(font->tfm->coding, "TeX math extension", 18)==0) font->fontType = FONT_TEX_MEXT;
+  else                                                              font->fontType = FONT_UNKNOWN;
+
   if (DEBUG) {sprintf(temp_err_string, "TFM: font type %d", font->fontType);  ppl_log(temp_err_string);}
 
    
@@ -416,14 +412,8 @@ int dviFindMaxSize(dviFontDetails *font)
     di = (int)chin->di;
     height = tfm->height[hi];
     depth  = tfm->depth[di];
-    if (font->maxHeight < height) {
-      font->maxHeight = height;
-      hmax=i;
-    }
-    if (font->maxDepth < depth) {
-       font->maxDepth = depth;
-       dmax=i;
-    }
+    if (font->maxHeight < height) { font->maxHeight = height; hmax=i; }
+    if (font->maxDepth  < depth ) { font->maxDepth  = depth ; dmax=i; }
    }
 
   // Loop over lower-case characters
@@ -436,14 +426,8 @@ int dviFindMaxSize(dviFontDetails *font)
     di = (int)chin->di;
     height = tfm->height[hi];
     depth  = tfm->depth[di];
-    if (font->maxHeight < height) {
-      font->maxHeight = height;
-      hmax=i;
-    }
-    if (font->maxDepth < depth) {
-       font->maxDepth = depth;
-       dmax=i;
-    }
+    if (font->maxHeight < height) { font->maxHeight = height; hmax=i; }
+    if (font->maxDepth  < depth ) { font->maxDepth  = depth ; dmax=i; }
    }
   font->maxHeight *= font->useSize;
   font->maxDepth  *= font->useSize;

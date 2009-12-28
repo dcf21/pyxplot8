@@ -985,10 +985,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
    }
   else
    {
-    char err[2048];
-    snprintf(err,2048,"Hit an unexpected node type %d.", node->type);
-    //ppl_fatal(__FILE__,__LINE__,"Hit an unexpected node type.");
-    ppl_fatal(__FILE__,__LINE__,err);
+    ppl_fatal(__FILE__,__LINE__,"Hit an unexpected node type.");
    }
   return;
  }

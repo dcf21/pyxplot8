@@ -380,14 +380,16 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   // left bottom right top
   bb = interp->boundingBox;
   // If we have not typeset anything then the bounding box will be empty.
-  if (bb == NULL) {
+  if (bb == NULL)
+   {
     bb = (double *)lt_malloc(4*sizeof(double));
     if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
     bb[0] = interp->state->h;
     bb[1] = interp->state->v;
     bb[2] = interp->state->h;
     bb[3] = interp->state->v;
-  }
+   }
+
   // Convert bounding box from DVI to PS units
   bb[0] *= interp->scale;
   bb[1] = 765 - bb[1] * interp->scale;
@@ -1169,10 +1171,11 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
 
   // Now repeat the process for the text size box
   // Note that if we're using an extensible math font we use the size of the object being typeset
-  if (interp->curFnt->fontType != FONT_TEX_MEXT) {
+  if (interp->curFnt->fontType != FONT_TEX_MEXT)
+   {
     bbObj[1] = interp->state->v + interp->curFnt->maxDepth;
     bbObj[3] = interp->state->v - interp->curFnt->maxHeight;
-  }
+   }
 
   // Check to see if we already have a text size box
   if (interp->textSizeBox == NULL)
