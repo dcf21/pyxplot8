@@ -39,6 +39,7 @@
 #include "eps_colours.h"
 #include "eps_plot_canvas.h"
 #include "eps_plot_styles.h"
+#include "eps_settings.h"
 
 // Work out the default set of with words for a plot item
 void eps_withwords_default(with_words *output, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour)
@@ -214,7 +215,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    {
     IF_NOT_INVISIBLE
      {
-      lw = pd->ww_final.pointlinewidth;
+      lw = pd->ww_final.pointlinewidth * EPS_DEFAULT_LINEWIDTH;
       lt = 0; // linetype is always zero when drawing points
       ps = pd->ww_final.pointsize;
       pt = pd->ww_final.pointtype % N_POINTTYPES;

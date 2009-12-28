@@ -27,6 +27,7 @@
 #define EPS_BASE_ARROW_ANGLE       ( 45.0 *M_PI/180 )
 #define EPS_BASE_ARROW_CONSTRICT   ( 0.2            )
 #define EPS_BASE_ARROW_HEADSIZE    ( 6.0            )
+#define EPS_BASE_AXES_LINEWIDTH    ( 1.0            )
 #define EPS_BASE_AXES_MAJTICKLEN   ( 0.0012         )
 #define EPS_BASE_AXES_MINTICKLEN   ( 0.000848528137 ) /* 0.0012 divided by sqrt(2) */
 #define EPS_BASE_AXES_SEPARATION   ( 0.008          )
@@ -39,6 +40,7 @@ extern double EPS_DEFAULT_LINEWIDTH;
 extern double EPS_ARROW_ANGLE;
 extern double EPS_ARROW_CONSTRICT;
 extern double EPS_ARROW_HEADSIZE;
+extern double EPS_AXES_LINEWIDTH;
 extern double EPS_AXES_MAJTICKLEN;
 extern double EPS_AXES_MINTICKLEN;
 extern double EPS_AXES_SEPARATION;   

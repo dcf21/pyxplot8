@@ -557,6 +557,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "AXES_TEXTGAP"        )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_TEXTGAP      = fl * EPS_BASE_AXES_TEXTGAP;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_TextGap."         , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AXES_LINEWIDTH"     )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_LINEWIDTH    = fl * EPS_BASE_AXES_LINEWIDTH;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_LineWidth."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "AXES_MAJTICKLEN"     )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_AXES_MAJTICKLEN   = fl * EPS_BASE_AXES_MAJTICKLEN;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_MajTickLen."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

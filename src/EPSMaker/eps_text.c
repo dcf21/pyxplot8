@@ -37,6 +37,9 @@
 void eps_text_YieldUpText(EPSComm *x)
  {
   CanvasTextItem *i;
+
+  if (x->current->text[0]=='\0') return;
+
   i = (CanvasTextItem *)lt_malloc(sizeof(CanvasTextItem));
   if (i==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *(x->status) = 1; return; }
   i->text              = x->current->text;
@@ -50,6 +53,8 @@ void eps_text_RenderEPS(EPSComm *x)
   with_words def, merged;
   char *colstr;
   int pageno = x->LaTeXpageno++;
+
+  if (x->current->text[0]=='\0') return;
 
   // Write header at top of postscript
   fprintf(x->epsbuffer, "%% Canvas item %d [text label]\n", x->current->id);

@@ -36,6 +36,7 @@
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_plot.h"
+#include "eps_plot_axespaint.h"
 #include "eps_plot_styles.h"
 #include "eps_plot_ticking.h"
 #include "eps_settings.h"
@@ -334,8 +335,40 @@ void eps_plot_SampleFunctions(EPSComm *x)
   return;
  }
 
+#define YIELD_TEXTITEM(X) \
+  if ((X != NULL) && (X[0]!='\0')) \
+   { \
+    i = (CanvasTextItem *)lt_malloc(sizeof(CanvasTextItem)); \
+    if (i==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *(x->status) = 1; return; } \
+    i->text              = X; \
+    i->CanvasMultiplotID = x->current->id; \
+    ListAppendPtr(x->TextItems, i, sizeof(CanvasTextItem), 0, DATATYPE_VOID); \
+   }
+
 void eps_plot_YieldUpText(EPSComm *x)
  {
+  int             j, k;
+  settings_axis  *axes;
+  CanvasTextItem *i;
+
+  // Axis titles
+  for (j=0; j<2+(x->current->ThreeDim); j++)
+   {
+    if      (j==0) axes = x->current->XAxes;
+    else if (j==1) axes = x->current->YAxes;
+    else           axes = x->current->ZAxes;
+
+    for (k=0; k<MAX_AXES; k++)
+     if ((axes[k].FinalActive) && (!axes[k].invisible))
+      {
+       YIELD_TEXTITEM(axes[k].label);
+       if (axes[k].MirrorType == SW_AXISMIRROR_FULLMIRROR) YIELD_TEXTITEM(axes[k].label); // Second copy for mirrored axis
+      }
+   }
+
+  // Title of plot
+  YIELD_TEXTITEM(x->current->settings.title);
+
   return;
  }
 
@@ -385,6 +418,7 @@ void eps_plot_RenderEPS(EPSComm *x)
    }
 
   // Render axes
+  eps_plot_axespaint(x, origin_x, origin_y, width, height);
 
   // Render legend
 
