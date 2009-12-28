@@ -98,7 +98,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
         axis->TickListStrings[j]   = axis->TickStrs[i];
         j++;
        }
-      axis->TickStrs[i] = NULL; // null terminate list
+      axis->TickListStrings[j] = NULL; // null terminate list
      }
 
     // Set flag to show that we have finalised the ticking of this axis

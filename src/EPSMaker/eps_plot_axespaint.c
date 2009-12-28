@@ -28,13 +28,34 @@
 #include "ppl_canvasdraw.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_units_fns.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_settings.h"
 
+void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
+ {
+  while (theta_pinpoint < 0.0) theta_pinpoint += 2*M_PI;
+  theta_pinpoint = fmod(theta_pinpoint, 2*M_PI);
+  if      (ppl_units_DblEqual(theta_pinpoint,   0.0   )) { *HALIGN = SW_HALIGN_CENT ; *VALIGN = SW_VALIGN_TOP ; }
+  else if (ppl_units_DblEqual(theta_pinpoint,   M_PI/2)) { *HALIGN = SW_HALIGN_LEFT ; *VALIGN = SW_VALIGN_CENT; }
+  else if (ppl_units_DblEqual(theta_pinpoint,   M_PI  )) { *HALIGN = SW_HALIGN_CENT ; *VALIGN = SW_VALIGN_BOT ; }
+  else if (ppl_units_DblEqual(theta_pinpoint, 3*M_PI/2)) { *HALIGN = SW_HALIGN_RIGHT; *VALIGN = SW_VALIGN_CENT; }
+  else if (theta_pinpoint <   M_PI/2)                    { *HALIGN = SW_HALIGN_LEFT ; *VALIGN = SW_VALIGN_TOP ; }
+  else if (theta_pinpoint <   M_PI  )                    { *HALIGN = SW_HALIGN_LEFT ; *VALIGN = SW_VALIGN_BOT ; }
+  else if (theta_pinpoint < 3*M_PI/2)                    { *HALIGN = SW_HALIGN_RIGHT; *VALIGN = SW_VALIGN_BOT ; }
+  else                                                   { *HALIGN = SW_HALIGN_RIGHT; *VALIGN = SW_VALIGN_TOP ; }
+  return;
+ }
+
 void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx, const unsigned char TOPbottom, double *ypos, const double left, const double right, const unsigned char PrintLabels)
  {
+  int    i, l;
+  double TickMaxHeight = 0.0, height, width;
+  int    HALIGN, VALIGN;
+  double theta, theta_pinpoint, theta_widthcalc; // clockwise rotation
+
   // Draw line of axis
   IF_NOT_INVISIBLE
    {
@@ -51,48 +72,66 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
       eps_core_BoundingBox(x, *ypos, right, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
      }
 
-    // Paint major axis ticks
-    if (PrintLabels && (a->TickListPositions != NULL))
+    // Paint axis ticks
+    for (i=0; i<2; i++)
      {
-      int l;
-      double TickMaxHeight = 0.0, height, width;
+      int      TR;
+      double  *TLP, TRA, TLEN;
+      char   **TLS;
 
-      for (l=0; a->TickListStrings[l]!=NULL; l++)
+      if (i==0) { TLP=a-> TickListPositions; TLS=a-> TickListStrings; TRA=a->TickLabelRotate; TR=a->TickLabelRotation; TLEN = EPS_AXES_MAJTICKLEN; } // Major ticks
+      else      { TLP=a->MTickListPositions; TLS=a->MTickListStrings; TRA=a->TickLabelRotate; TR=a->TickLabelRotation; TLEN = EPS_AXES_MINTICKLEN; } // Minor ticks
+
+      // Work out the rotation of the tick label
+      if      (TR == SW_TICLABDIR_HORI) theta = 0.0;
+      else if (TR == SW_TICLABDIR_VERT) theta = M_PI/2; // the clockwise rotation of the label relative to upright
+      else                              theta = TRA;
+      theta_pinpoint = theta - M_PI/2*Yx + M_PI*TOPbottom; // Angle around textbox where it is anchored
+      eps_plot_LabelAlignment(theta_pinpoint, &HALIGN, &VALIGN);
+      theta_widthcalc = theta + M_PI/2*Yx; // Angle used in calculating the height (or width) of the label
+
+      if (TLP != NULL)
        {
-        double lrpos  = left + (right-left)*a->TickListPositions[l];
-        double udpos1 = *ypos + (TOPbottom ? 1.0 : -1.0) * (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * EPS_AXES_MAJTICKLEN * M_TO_PS;
-        double udpos2 = *ypos + (TOPbottom ? 1.0 : -1.0) * (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * EPS_AXES_MAJTICKLEN * M_TO_PS;
-        if (!Yx)
+        for (l=0; TLS[l]!=NULL; l++)
          {
-          fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", lrpos, udpos1, lrpos, udpos2);
-          eps_core_BoundingBox(x, lrpos, udpos1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-          eps_core_BoundingBox(x, lrpos, udpos2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-         }
-        else
-         {
-          fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", udpos1, lrpos, udpos2, lrpos);
-          eps_core_BoundingBox(x, udpos1, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-          eps_core_BoundingBox(x, udpos2, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-         }
+          double lrpos  = left + (right-left) * TLP[l]; // left--right position of tick
+          double udpos1 = *ypos + (TOPbottom ? 1.0 : -1.0) * (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * TLEN * M_TO_PS; // top of tick
+          double udpos2 = *ypos + (TOPbottom ? 1.0 : -1.0) * (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * TLEN * M_TO_PS; // bottom of tick
 
-        if (a->TickListStrings[l][0] != '\0')
-         {
-          int pageno = x->LaTeXpageno++;
-          double xlab, ylab;
-
-          if (!Yx) { xlab = lrpos/M_TO_PS; ylab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
-          else     { ylab = lrpos/M_TO_PS; xlab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
-
-          IF_NOT_INVISIBLE
+          // Stroke the ticks
+          if (!Yx)
            {
-            printf("%s\n",a->TickListStrings[l]);
-            canvas_EPSRenderTextItem(x, pageno, xlab, ylab, SW_HALIGN_CENT, ( TOPbottom ^ Yx) ? SW_VALIGN_BOT : SW_VALIGN_TOP, x->LastEPSColour, x->current->settings.FontSize, M_PI/2*Yx, &width, &height);
-            if (height > TickMaxHeight) TickMaxHeight = height;
+            fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", lrpos, udpos1, lrpos, udpos2);
+            eps_core_BoundingBox(x, lrpos, udpos1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_BoundingBox(x, lrpos, udpos2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+           }
+          else
+           {
+            fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", udpos1, lrpos, udpos2, lrpos);
+            eps_core_BoundingBox(x, udpos1, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_BoundingBox(x, udpos2, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+           }
+
+          // Paint the axis labels
+          if (PrintLabels && (TLS[l][0] != '\0'))
+           {
+            int pageno = x->LaTeXpageno++;
+            double xlab, ylab;
+
+            if (!Yx) { xlab = lrpos/M_TO_PS; ylab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
+            else     { ylab = lrpos/M_TO_PS; xlab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
+
+            IF_NOT_INVISIBLE
+             {
+              canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN, VALIGN, x->LastEPSColour, x->current->settings.FontSize, -theta, &width, &height);
+              height = height*fabs(cos(theta_widthcalc)) + width*fabs(sin(theta_widthcalc));
+              if (height > TickMaxHeight) TickMaxHeight = height;
+             }
            }
          }
        }
-      *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + TickMaxHeight); // Allow a gap after axis labels
      }
+    if (TickMaxHeight>0.0) *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + TickMaxHeight); // Allow a gap after axis labels
 
     // Write axis label
     if (PrintLabels && (a->label != NULL) && (a->label[0]!='\0'))
@@ -101,13 +140,19 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
       double xlab, ylab;
       double width, height;
 
+      // Work out the rotation of the tick label
+      theta = a->LabelRotate;
+      theta_pinpoint = theta + M_PI*(TOPbottom ^ Yx); // Angle around textbox where it is anchored
+      eps_plot_LabelAlignment(theta_pinpoint, &HALIGN, &VALIGN);
+      theta_widthcalc = theta; // Angle used in calculating the height (or width) of the label
+
       if (!Yx) { xlab = (left+right)/2/M_TO_PS; ylab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
       else     { ylab = (left+right)/2/M_TO_PS; xlab = *ypos/M_TO_PS + (TOPbottom ? 1.0 : -1.0) * EPS_AXES_TEXTGAP; }
 
       IF_NOT_INVISIBLE
        {
-        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, SW_HALIGN_CENT, ( TOPbottom ^ Yx) ? SW_VALIGN_BOT : SW_VALIGN_TOP, x->LastEPSColour, x->current->settings.FontSize, M_PI/2*Yx, &width, &height);
-        *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + height); // Allow gap after label
+        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN, VALIGN, x->LastEPSColour, x->current->settings.FontSize, -theta + M_PI/2*Yx, &width, &height);
+        *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + height*fabs(cos(theta_widthcalc)) + width*fabs(sin(theta_widthcalc)) ); // Allow gap after label
        }
      }
 

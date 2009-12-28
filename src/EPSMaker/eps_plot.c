@@ -71,7 +71,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      {
-      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].FinalActive = 0;
+      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].TickListFinalised = axes[i].FinalActive = 0;
       axes[i].MinUsed    = axes[i].MaxUsed    = axes[i].MinFinal = axes[i].MaxFinal = 0.0;
       axes[i].OrdinateRasterLen = 0;
       axes[i].OrdinateRaster = NULL;

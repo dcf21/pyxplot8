@@ -620,7 +620,7 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   if      (valign == SW_VALIGN_TOP  ) yanchor = ab_top;
   else if (valign == SW_VALIGN_CENT ) yanchor = (ab_top + ab_bottom)/2.0;
   else if (valign == SW_VALIGN_BOT  ) yanchor = ab_bottom;
-  else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
+  else                                 { ppl_error(ERR_INTERNAL, "Illegal valign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
 
   // Update bounding box of canvas. For this, use BOUNDING box, not ALIGNMENT box.
   eps_core_BoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),
@@ -638,7 +638,7 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   fprintf(x->epsbuffer, "%.2f %.2f translate\n", xpos * M_TO_PS, ypos * M_TO_PS);
   fprintf(x->epsbuffer, "%.2f rotate\n", rotate * 180 / M_PI);
   fprintf(x->epsbuffer, "%f %f scale\n", fontsize, fontsize);
-  fprintf(x->epsbuffer, "%f %f translate\n", -xanchor, -yanchor);
+  fprintf(x->epsbuffer, "%.2f %.2f translate\n", -xanchor, -yanchor);
 
   // Copy postscript description of page out of dvi buffer
   ListIter = ListIterateInit(dviPage->text);
