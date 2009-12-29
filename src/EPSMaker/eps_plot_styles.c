@@ -37,6 +37,7 @@
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_colours.h"
+#include "eps_plot.h"
 #include "eps_plot_canvas.h"
 #include "eps_plot_styles.h"
 #include "eps_settings.h"
@@ -195,9 +196,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
 
-  // Set colour of dataset
-  eps_core_SetColour(x, &pd->ww_final);
-
   if ((style == SW_STYLE_LINES) || (style == SW_STYLE_LINESPOINTS)) // LINES
    {
     Ncolumns = data->Ncolumns;
@@ -213,28 +211,33 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS)) // POINTS
    {
-    IF_NOT_INVISIBLE
+    Ncolumns = data->Ncolumns;
+    blk = data->first;
+    while (blk != NULL)
      {
-      lw = pd->ww_final.pointlinewidth * EPS_DEFAULT_LINEWIDTH;
-      lt = 0; // linetype is always zero when drawing points
-      ps = pd->ww_final.pointsize;
-      pt = pd->ww_final.pointtype % N_POINTTYPES;
-      eps_core_SetLinewidth(x, lw, lt);
-      x->PointTypesUsed[pt] = 1;
-      fprintf(x->epsbuffer, "/ps { %f } def\n", ps*3); // Scale up all pointsizes by 3
-
-      Ncolumns = data->Ncolumns;
-      blk = data->first;
-      while (blk != NULL)
+      for (j=0; j<blk->BlockPosition; j++)
        {
-        for (j=0; j<blk->BlockPosition; j++)
+        double ps_old = 0.0;
+
+        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
+        if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+
+        // Work out style information for next point
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
+        eps_core_SetColour(x, &pd->ww_final);
+        IF_NOT_INVISIBLE
          {
-          eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
-          if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+          lw = pd->ww_final.pointlinewidth * EPS_DEFAULT_LINEWIDTH;
+          lt = 0; // linetype is always zero when drawing points
+          ps = pd->ww_final.pointsize;
+          pt = pd->ww_final.pointtype % N_POINTTYPES;
+          eps_core_SetLinewidth(x, lw, lt);
+          x->PointTypesUsed[pt] = 1;
+          if (ps != ps_old) { ps_old = ps; fprintf(x->epsbuffer, "/ps { %f } def\n", ps*3); } // Scale up all pointsizes by 3
           fprintf(x->epsbuffer, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
          }
-        blk=blk->next;
        }
+      blk=blk->next;
      }
    }
 

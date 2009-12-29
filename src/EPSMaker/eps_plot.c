@@ -41,6 +41,99 @@
 #include "eps_plot_ticking.h"
 #include "eps_settings.h"
 
+// If a plot dataset has any with_words of the form "with linewidth $4", these
+// need to be evaluated for every datapoint. We do this by adding additional
+// items to the UsingList for these datasets. First, we need to check that the
+// UsingList supplied by the user is of an acceptable form. If it is of the
+// wrong length, we do nothing; it will fail in due course in ppl_datafile
+// anyway. If the list is empty, we auto-generate a default list.
+
+int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *UsingList)
+ {
+  int i, UsingLen;
+  char *AutoItem, *temp;
+  Dict *tempdict;
+
+  UsingLen = ListLen(UsingList);
+
+  // If using list was empty, generate an automatic list before we start
+  if (UsingLen==0)
+   {
+    for (i=0; i<*NExpect; i++)
+     {
+      AutoItem = (char *)lt_malloc(10);
+      if (AutoItem == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return 1; }
+      sprintf(AutoItem, "%d", i+1);
+      tempdict = DictInit();
+      DictAppendPtr(tempdict, "using_item", (void *)AutoItem, 0, 0, DATATYPE_VOID);
+      ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID);
+     }
+    UsingLen = *NExpect;
+   }
+  else if ((UsingLen==1) && (*NExpect==2)) // Prepend data point number if only one number specified in using statement
+   {
+    temp = (char *)ListPop(UsingList);
+    tempdict = DictInit();
+    DictAppendPtr(tempdict, "using_item", "0", 0, 0, DATATYPE_VOID);
+    ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID);
+    ListAppendPtr(UsingList, (void *)temp, 0, 0, DATATYPE_VOID);
+    UsingLen++;
+   }
+
+  // If using list is wrong length, give up and let ppl_datafile return an error
+  if (UsingLen != *NExpect) return 0;
+
+  // Now cycle through all with_words which can be item-specific
+  if (ww->STRlinetype       != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRlinetype      , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRlinewidth      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRlinewidth     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRpointlinewidth != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointlinewidth, 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRpointsize      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointsize     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRpointtype      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointtype     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolourR        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolourR       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolourG        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolourG       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolourB        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolourB       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolourR    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolourR   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolourG    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolourG   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolourB    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolourB   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+
+  return 0;
+ }
+
+#define PROJ_DBL(X) \
+ dbl = DataRow[i--]; \
+ if (i<0) i=0; \
+ if (!gsl_finite(dbl)) dbl=0.0;
+
+#define PROJ0_255(X) \
+ PROJ_DBL(X); \
+ if (dbl <   0.0) dbl=  0.0; \
+ if (dbl > 255.0) dbl=255.0;
+
+#define PROJ_INT(X) \
+ PROJ_DBL(X); \
+ if (dbl < INT_MIN) dbl=INT_MIN+1; \
+ if (dbl > INT_MAX) dbl=INT_MAX-1;
+
+void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolumns)
+ {
+  int i = Ncolumns-1;
+  double dbl;
+
+  if (ww->STRfillcolourB    != NULL) { PROJ0_255(i); ww->USEfillcolourRGB  = 1; ww->fillcolourB    = (int)dbl; }
+  if (ww->STRfillcolourG    != NULL) { PROJ0_255(i); ww->USEfillcolourRGB  = 1; ww->fillcolourG    = (int)dbl; }
+  if (ww->STRfillcolourR    != NULL) { PROJ0_255(i); ww->USEfillcolourRGB  = 1; ww->fillcolourR    = (int)dbl; }
+  if (ww->STRcolourB        != NULL) { PROJ0_255(i); ww->USEcolourRGB      = 1; ww->colourB        = (int)dbl; }
+  if (ww->STRcolourG        != NULL) { PROJ0_255(i); ww->USEcolourRGB      = 1; ww->colourG        = (int)dbl; }
+  if (ww->STRcolourR        != NULL) { PROJ0_255(i); ww->USEcolourRGB      = 1; ww->colourR        = (int)dbl; }
+  if (ww->STRpointtype      != NULL) { PROJ_INT (i); ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; }
+  if (ww->STRpointsize      != NULL) { PROJ_DBL (i); ww->USEpointsize      = 1; ww->pointsize      =      dbl; }
+  if (ww->STRpointlinewidth != NULL) { PROJ_DBL (i); ww->USEpointlinewidth = 1; ww->pointlinewidth =      dbl; }
+  if (ww->STRlinewidth      != NULL) { PROJ_DBL (i); ww->USElinewidth      = 1; ww->linewidth      =      dbl; }
+  if (ww->STRlinetype       != NULL) { PROJ_INT (i); ww->USElinetype       = 1; ww->linetype       = (int)dbl; }
+
+  return;
+ }
+
 // Loop through all of the datasets plotted in a single plot command.
 // Initialise the datastructures for the plot command which we will fill in the
 // process of deciding how to render the graph. Then read in data from
@@ -119,11 +212,13 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     // If plotting a datafile, can read in data now, so do so
     if ((pd->function == 0) || (pd->parametric == 1))
      {
-      UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, tempdict, 0, 0, DATATYPE_VOID); }
-      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", tempbuff+j*10, 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, tempdict, 0, 0, DATATYPE_VOID); }
+      UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", (void *)(tempbuff+j*10), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
       status   = 0;
       ErrCount = DATAFILE_NERRS;
       NExpect  = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
+
+      if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       if (pd->function == 0) // Read data from file
        {
@@ -340,12 +435,14 @@ void eps_plot_SampleFunctions(EPSComm *x)
    {
     if ((pd->function == 1) && (pd->parametric == 0))
      {
-      UsingList    = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, tempdict, 0, 0, DATATYPE_VOID); }
-      EveryList    = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", tempbuff+j*10, 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, tempdict, 0, 0, DATATYPE_VOID); }
+      UsingList    = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList    = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", (void *)(tempbuff+j*10), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
       status       = 0;
       ErrCount     = DATAFILE_NERRS;
       NExpect      = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
       OrdinateAxis = &axissets[pd->axis1xyz][pd->axis1];
+
+      if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       // Fix range of ordinate axis
       eps_plot_LinkedAxisForwardPropagate(x, OrdinateAxis, pd->axis1xyz, pd->axis1);
