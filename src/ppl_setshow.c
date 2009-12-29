@@ -1477,6 +1477,42 @@ void directive_set(Dict *command)
    {
     sg->width.real = settings_graph_default.width.real;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"view")==0)) /* set view */
+   {
+    DictLookup(command,"xy_angle",NULL,(void **)&tempval);
+    DictLookup(command,"yz_angle",NULL,(void **)&tempval2);
+    if (!(tempval->dimensionless))
+     {
+      for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+       if (tempval->exponent[i] != (i==UNIT_ANGLE))
+        {
+         sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+         ppl_error(ERR_NUMERIC, temp_err_string);
+         return;
+        }
+     }
+    else { tempval->real /= 180.0 * M_PI; } // By default, dimensionless angles are in degrees
+    if (!(tempval2->dimensionless))
+     {
+      for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+       if (tempval2->exponent[i] != (i==UNIT_ANGLE))
+        {
+         sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+         ppl_error(ERR_NUMERIC, temp_err_string);
+         return;
+        }
+     }
+    else { tempval2->real /= 180.0 * M_PI; } // By default, dimensionless angles are in degrees
+    sg->XYview.real = fmod(tempval ->real , 2*M_PI);
+    sg->YZview.real = fmod(tempval2->real , 2*M_PI);
+    while (sg->XYview.real < 0.0) sg->XYview.real += 2*M_PI;
+    while (sg->YZview.real < 0.0) sg->YZview.real += 2*M_PI;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"view")==0)) /* unset view */
+   {
+    sg->XYview.real = settings_graph_default.XYview.real;
+    sg->YZview.real = settings_graph_default.YZview.real;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
@@ -2161,6 +2197,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "view", 1)>=0))
+   {       
+    sprintf(buf, "%s,%s", ppl_units_NumericDisplay(&(sg->XYview), 0, 0, 0), ppl_units_NumericDisplay(&(sg->YZview), 1, 0, 0));
+    directive_show3(out+i, ItemSet, 1, interactive, "view", buf, (settings_graph_default.XYview.real==sg->XYview.real)&&(settings_graph_default.YZview.real==sg->YZview.real), "The rotation angle of 3d graphs");
+    i += strlen(out+i) ; p=1;
+   }
+
 
   // Show axes
   l=0;

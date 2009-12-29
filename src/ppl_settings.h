@@ -52,7 +52,7 @@ typedef struct settings_graph {
  double        aspect, bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
- value         BoxFrom, BoxWidth, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width;
+ value         BoxFrom, BoxWidth, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width, XYview, YZview;
  char          title[FNAME_LENGTH];
  with_words    DataStyle, FuncStyle;
  } settings_graph;

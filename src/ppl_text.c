@@ -37,7 +37,6 @@ char txt_help               [LSTR_LENGTH];
 char txt_init               [LSTR_LENGTH];
 char txt_invalid            [LSTR_LENGTH];
 char txt_valid_set_options  [LSTR_LENGTH];
-char txt_valid_show_options [LSTR_LENGTH];
 char txt_set_noword         [LSTR_LENGTH];
 char txt_unset_noword       [LSTR_LENGTH]; 
 char txt_set                [LSTR_LENGTH];
@@ -91,53 +90,39 @@ Error: Unrecognised command.\n\
 ");
 
 sprintf(txt_valid_set_options, "\n\
-'arrow', 'autoscale', 'axescolour', 'axis', 'backup', 'bar', 'boxfrom',\n\
-'boxwidth', 'data style', 'display', 'dpi', 'fontsize', 'function style',\n\
-'grid', 'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label',\n\
-'linestyle', 'linewidth', 'logscale', 'multiplot', 'noarrow', 'noaxis',\n\
-'nobackup', 'nodisplay', 'nogrid', 'nokey', 'nolabel', 'nolinestyle',\n\
-'nologscale', 'nomultiplot', 'no<m>[xyz]<n>tics', 'notitle', 'origin',\n\
+'arrow', 'autoscale', 'axescolour', 'axis', 'backup', 'bar', 'binorigin',\n\
+'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style', 'display',\n\
+'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
+'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale', 'linewidth',\n\
+'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
+'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot', 'nostyle',\n\
+'notitle', 'no<m>[xyz]<n>format', 'no<m>[xyz]<n>tics', 'numerics', 'origin',\n\
 'output', 'palette', 'papersize', 'pointlinewidth', 'pointsize', 'preamble',\n\
-'samples', 'size', 'size noratio', 'size ratio', 'size square', 'terminal',\n\
-'textcolour', 'texthalign', 'textvalign', 'title', 'width', '[xyz]<n>label',\n\
-'[xyz]<n>range', '[xyz]<n>ticdir', '<m>[xyz]<n>tics'\n\
-");
-
-sprintf(txt_valid_show_options, "\n\
-'autoscale', 'axescolour', 'backup', 'bar', 'boxfrom', 'boxwidth', 'colour,\n\
-'data style', 'display', 'dpi', 'fontsize', 'function style', 'grid',\n\
-'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linestyle',\n\
-'linewidth', 'logscale', 'multiplot', 'origin', 'output', 'palette',\n\
-'papersize', 'pointlinewidth', 'pointsize', 'preamble', 'samples', 'size',\n\
-'terminal', 'textcolour', 'texthalign', 'textvalign', 'title', 'unit',\n\
-'width', '[xyz]<n>label', '[xyz]<n>range', '[xyz]<n>ticdir', '[xyz]<n>tics'\n\
+'projection', 'samples', 'seed', 'size', 'size noratio', 'size ratio', 'size\n\
+square', 'style', 'terminal', 'textcolour', 'texthalign', 'textvalign',\n\
+'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set_noword, "\n\
 Set options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 %s\n\
-Set options from gnuplot which PyXPlot DOES NOT recognise:\n\
-\n\
-'angles', 'border', 'clabel', 'clip', 'cntrparam', 'colorbox', 'contour',\n\
-'decimalsign', 'dgrid3d', 'dummy', 'encoding', 'format', 'hidden3d',\n\
-'historysize', 'isosamples', 'locale', '[blrt]margin', 'mapping', 'mouse',\n\
-'offsets', 'parametric', 'pm3d', 'polar', 'print', '[rtuv]range', 'style',\n\
-'surface', 'ticscale', 'ticslevel', 'timestamp', 'timefmt', 'view',\n\
-'[xyz]{2}data', '{[xyz]{2}}zeroaxis', 'zero'\n\
 ", txt_valid_set_options);
 
 sprintf(txt_unset_noword, "\n\
 Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 \n\
-'arrow', 'autoscale', 'axescolour', 'axis', 'backup', 'bar', 'boxfrom',\n\
-'boxwidth', 'display', 'dpi', 'fontsize', 'grid', 'gridmajcolour',\n\
-'gridmincolour', 'key', 'keycolumns', 'label', 'linestyle', 'linewidth',\n\
-'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
-'nogrid', 'nokey', 'nolabel', 'nolinestyle', 'nolinewidth', 'nologscale',\n\
-'nomultiplot', 'no<m>[xyz]<n>tics', 'origin', 'output', 'palette', 'papersize',\n\
-'pointlinewidth', 'pointsize', 'preamble', 'samples', 'size', 'terminal',\n\
-'textcolour', 'texthalign', 'textvalign', 'title', 'unit', 'width',\n\
-'[xyz]<n>label', '[xyz]<n>range', '[xyz]<n>ticdir', '<m>[xyz]<n>tics'\n\
+'arrow', 'autoscale', 'axescolour', 'axis', 'backup', 'bar', 'binorigin',\n\
+'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style', 'display',\n\
+'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
+'gridmincolour', 'key', 'keycolumns', 'label', 'linewidth', 'logscale',\n\
+'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay', 'nogrid', 'nokey',\n\
+'nolabel', 'nolinewidth', 'nologscale', 'nomultiplot', 'notitle',\n\
+'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette', 'papersize',\n\
+'pointlinewidth', 'pointsize', 'preamble', 'projection', 'samples', 'size',\n\
+'style', 'terminal', 'textcolour', 'texthalign', 'textvalign', 'title',\n\
+'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set, "\n\
@@ -157,6 +142,6 @@ Valid 'show' options are:\n\
 'units', 'userfunctions', 'variables'\n\
 \n\
 or any of the following set options:\n\
-%s", txt_valid_show_options);
+%s", txt_valid_set_options);
 }
 

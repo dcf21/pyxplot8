@@ -54,7 +54,6 @@ extern char txt_help[];
 extern char txt_init[];
 extern char txt_invalid[];
 extern char txt_valid_set_options[];
-extern char txt_valid_show_options[];
 extern char txt_set_noword[];
 extern char txt_unset_noword[];
 extern char txt_set[];

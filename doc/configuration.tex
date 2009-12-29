@@ -197,6 +197,8 @@ UnitAbbrev = On
 UnitPrefix = On
 UnitScheme = SI
 Width = 8.0
+View_XY = 60
+View_YZ = 30
 
 [terminal]
 Colour = Off
@@ -209,6 +211,11 @@ Splash = On
 Arrow_HeadAngle = 45
 Arrow_HeadSize = 1.0
 Arrow_HeadBackIndent = 0.2
+Axes_LineWidth = 1.0
+Axes_MajTickLen = 1.0
+Axes_MinTickLen = 1.0
+Axes_Separation = 1.0
+Axes_TextGap = 1.0
 Baseline_LineWidth = 1.0
 
 [variables]
@@ -625,6 +632,18 @@ filters, see Section~\ref{sec:filters}.
                {\bf Analogous set commands:} \indcmdts{set width}, \indcmdts{set size}
 
                Sets the width of plots in centimetres.
+               \\
+{\tt View\_XY} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set commands:} \indcmdts{set view}
+
+               Sets the viewing angle of three-dimensional plots in the $x$-$y$ plane in degrees.
+               \\
+{\tt View\_YZ} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set commands:} \indcmdts{set view}
+
+               Sets the viewing angle of three-dimensional plots in the $y$-$z$ plane in degrees.
                \\
 \end{longtable}
 

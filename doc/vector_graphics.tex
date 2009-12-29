@@ -250,9 +250,9 @@ degrees.
 \subsection{The {\tt eps} Command}
 
 Vector graphic images in eps format may be placed on to a multiplot using the
-\indcmdt{eps}, which has a syntax analogous to the {\tt jpeg} command.  However
-neither height nor width need be specified; in this case the image will be
-included at its native size.  For example:
+\indcmdt{eps}, which has a syntax analogous to the {\tt image} command.
+However neither height nor width need be specified; in this case the image will
+be included at its native size.  For example:
 
 \begin{verbatim}
 eps 'filename' at 3,2 rotate 5
@@ -260,6 +260,10 @@ eps 'filename' at 3,2 rotate 5
 
 \noindent will place the eps file with its bottom-left corner at position
 $(3,2)$\,cm from the origin, rotated counter-clockwise through 5 degrees.
+
+\subsection{The {\tt box} and {\tt circle} Commands}
+
+\subsection{The {\tt ellipse} Command}
 
 \subsection{The Construction of Large Multiplots}
 \label{sec:set_display}

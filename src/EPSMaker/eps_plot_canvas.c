@@ -45,6 +45,8 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
   // 3D plots
   if (ThreeDim)
    {
+    double x,y,z,x2,y2,z2,x3,y3,z3;
+
     if ((xin < xa->MinFinal) && (xin < xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
     if ((xin > xa->MinFinal) && (xin > xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
     if ((yin < ya->MinFinal) && (yin < ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
@@ -52,9 +54,21 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
     if ((zin < za->MinFinal) && (zin < za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
     if ((zin > za->MinFinal) && (zin > za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
 
-    *xpos  = origin_x;
-    *ypos  = origin_y;
-    *depth = 0.0;
+    x = width  * eps_plot_axis_GetPosition(xin, xa);
+    y = height * eps_plot_axis_GetPosition(yin, ya);
+    z = width  * eps_plot_axis_GetPosition(zin, za);
+
+    x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
+    y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
+    z2 = z;
+
+    x3 = x2;
+    y3 = y2*cos(sg->XYview.real) + z2*sin(sg->XYview.real);
+    y2 =-y2*sin(sg->XYview.real) + z2*cos(sg->XYview.real);
+
+    *xpos  = origin_x + x3;
+    *ypos  = origin_y + y3;
+    *depth = z3;
     return;
    }
 

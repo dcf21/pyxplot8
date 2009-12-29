@@ -84,6 +84,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
   // Secondly, decide what ticks to place on this axis
   if (!axis->TickListFinalised)
    {
+
+    // MAJOR TICKS
     if (axis->TickList != NULL) // Ticks have been specified as an explicit list
      {
       int i,j,N;
@@ -99,6 +101,40 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
         j++;
        }
       axis->TickListStrings[j] = NULL; // null terminate list
+     }
+    else
+     {
+      int i,N;
+      N=4;
+      axis->TickListPositions = (double  *)lt_malloc((N+1) * sizeof(double));
+      axis->TickListStrings   = (char   **)lt_malloc((N+1) * sizeof(char *));
+      if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
+      for (i=0; i<N; i++)
+       {
+        axis->TickListPositions[i] = eps_plot_axis_GetPosition( axis->MinFinal + (axis->MaxFinal-axis->MinFinal)*i/(N-1) , axis);
+        axis->TickListStrings[i]   = (char *)lt_malloc(64);
+        if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
+        sprintf(axis->TickListStrings[i],"%f",axis->MinFinal + (axis->MaxFinal-axis->MinFinal)*i/(N-1));
+       }
+      axis->TickListStrings[i] = NULL; // null terminate list
+     }
+
+    // MINOR TICKS
+    if (axis->TickList != NULL) // Ticks have been specified as an explicit list
+     {
+      int i,j,N;
+      for (N=0; axis->MTickStrs[N]!=NULL; N++); // Find length of list of ticks
+      axis->MTickListPositions = (double  *)lt_malloc((N+1) * sizeof(double));
+      axis->MTickListStrings   = (char   **)lt_malloc((N+1) * sizeof(char *));
+      if ((axis->MTickListPositions==NULL) || (axis->MTickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->MTickListPositions = NULL; axis->MTickListStrings = NULL; return; }
+      for (i=j=0; i<N; i++)
+       {
+        axis->MTickListPositions[j] = eps_plot_axis_GetPosition( axis->MTickList[i] , axis);
+        if ( (axis->MTickListPositions[j]<0.0) || (axis->MTickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
+        axis->MTickListStrings[j]   = axis->MTickStrs[i];
+        j++;
+       }
+      axis->MTickListStrings[j] = NULL; // null terminate list
      }
 
     // Set flag to show that we have finalised the ticking of this axis

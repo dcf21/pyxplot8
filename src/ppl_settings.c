@@ -194,6 +194,12 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_graph_default.width));
   settings_graph_default.width.real    = 0.08; // 8cm
   settings_graph_default.width.dimensionless = 0; settings_graph_default.width.exponent[UNIT_LENGTH] = 1;
+  ppl_units_zero(&(settings_graph_default.XYview));
+  settings_graph_default.XYview.real   = 60.0 * M_PI / 180; // 60 degrees
+  settings_graph_default.XYview.dimensionless = 0; settings_graph_default.XYview.exponent[UNIT_ANGLE] = 1;
+  ppl_units_zero(&(settings_graph_default.YZview));
+  settings_graph_default.YZview.real   = 30.0 * M_PI / 180; // 30 degrees
+  settings_graph_default.YZview.dimensionless = 0; settings_graph_default.YZview.exponent[UNIT_ANGLE] = 1;
 
   // Default Axis Settings, used whenever a new axis is created
   settings_axis_default.atzero      = 0;

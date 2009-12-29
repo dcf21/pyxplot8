@@ -328,6 +328,12 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "WIDTH"        )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.width.real      = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Width."        , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "VIEW_XY"      )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.XYview.real     = fl/180*M_PI;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting View_XY."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "VIEW_YZ"      )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.YZview.real     = fl/180*M_PI;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting View_YZ."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else
        { sprintf(temp_err_string, "Error in line %d of configuration file %s: Unrecognised setting name '%s'.", linecounter, ConfigFname, setkey); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
      }
