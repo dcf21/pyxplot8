@@ -120,7 +120,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
      }
 
     // MINOR TICKS
-    if (axis->TickList != NULL) // Ticks have been specified as an explicit list
+    if (axis->MTickList != NULL) // Ticks have been specified as an explicit list
      {
       int i,j,N;
       for (N=0; axis->MTickStrs[N]!=NULL; N++); // Find length of list of ticks
