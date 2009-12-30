@@ -198,6 +198,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   comm.bb_set               = 0;
   comm.epsbuffer            = NULL;
   comm.status               = &status;
+  comm.NTextItems           = 0; // Used to count items as we add them to text buffer
   comm.TextItems            = ListInit(); // Empty list of pieces of text we are going to put on canvas
   comm.LastEPSColour[0]     = '\0';
   comm.LastEPSFillColour[0] = '\0';

@@ -27,6 +27,7 @@
 
 #include <gsl/gsl_math.h>
 
+#include "ppl_canvasdraw.h"
 #include "ppl_canvasitems.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
@@ -196,10 +197,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
 
+  Ncolumns = data->Ncolumns;
+  blk = data->first;
+  if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncolumns)) return 1;
+
   if ((style == SW_STYLE_LINES) || (style == SW_STYLE_LINESPOINTS)) // LINES
    {
-    Ncolumns = data->Ncolumns;
-    blk = data->first;
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
@@ -211,8 +214,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS)) // POINTS
    {
-    Ncolumns = data->Ncolumns;
-    blk = data->first;
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
@@ -235,6 +236,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           x->PointTypesUsed[pt] = 1;
           if (ps != ps_old) { ps_old = ps; fprintf(x->epsbuffer, "/ps { %f } def\n", ps*3); } // Scale up all pointsizes by 3
           fprintf(x->epsbuffer, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
+         }
+
+        // label point if instructed to do so
+        if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
+         {
+          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
          }
        }
       blk=blk->next;

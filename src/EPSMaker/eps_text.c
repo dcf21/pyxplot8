@@ -38,6 +38,7 @@ void eps_text_YieldUpText(EPSComm *x)
  {
   CanvasTextItem *i;
 
+  x->current->FirstTextID = x->NTextItems;
   if (x->current->text[0]=='\0') return;
 
   i = (CanvasTextItem *)lt_malloc(sizeof(CanvasTextItem));
@@ -45,6 +46,7 @@ void eps_text_YieldUpText(EPSComm *x)
   i->text              = x->current->text;
   i->CanvasMultiplotID = x->current->id;
   ListAppendPtr(x->TextItems, i, sizeof(CanvasTextItem), 0, DATATYPE_VOID);
+  x->NTextItems++;
   return;
  }
 
@@ -52,7 +54,10 @@ void eps_text_RenderEPS(EPSComm *x)
  {
   with_words def, merged;
   char *colstr;
-  int pageno = x->LaTeXpageno++;
+  int pageno;
+
+  pageno = x->LaTeXpageno = x->current->FirstTextID;
+  x->LaTeXpageno++;
 
   if (x->current->text[0]=='\0') return;
 

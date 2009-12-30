@@ -134,6 +134,30 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
   return;
  }
 
+#define WWCUID(X) \
+ if (!FirstValues[i].dimensionless) { sprintf(temp_err_string, "The expression specified for the %s should have been dimensionless, but instead had units of <%s>. Cannot plot this dataset.", X, ppl_units_GetUnitStr(FirstValues+i, NULL, NULL, 0, 0)); ppl_error(ERR_NUMERIC,temp_err_string); return 1; } \
+ i--; \
+ if (i<0) i=0;
+
+int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns)
+ {
+  int i = Ncolumns-1;
+
+  if (ww->STRfillcolourB    != NULL) { WWCUID("blue component of the fillcolour"); }
+  if (ww->STRfillcolourG    != NULL) { WWCUID("green component of the fillcolour"); }
+  if (ww->STRfillcolourR    != NULL) { WWCUID("red component of the fillcolour"); }
+  if (ww->STRcolourB        != NULL) { WWCUID("blue component of the colour"); }
+  if (ww->STRcolourG        != NULL) { WWCUID("green component of the colour"); }
+  if (ww->STRcolourR        != NULL) { WWCUID("red component of the colour"); }
+  if (ww->STRpointtype      != NULL) { WWCUID("point type"); }
+  if (ww->STRpointsize      != NULL) { WWCUID("point size"); }
+  if (ww->STRpointlinewidth != NULL) { WWCUID("point line width"); }
+  if (ww->STRlinewidth      != NULL) { WWCUID("line width"); }
+  if (ww->STRlinetype       != NULL) { WWCUID("line type"); }
+  return 0;
+ }
+
+
 // Loop through all of the datasets plotted in a single plot command.
 // Initialise the datastructures for the plot command which we will fill in the
 // process of deciding how to render the graph. Then read in data from
@@ -148,7 +172,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   settings_axis   *axes, *axissets[3];
   List            *UsingList, *EveryList;
   Dict            *tempdict;
-  char             tempbuff[100];
+  char             tempbuff[100], errbuffer[LSTR_LENGTH];
   with_words       ww_default;
   double          *ordinate_raster;
 
@@ -183,7 +207,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   // Malloc pointers to data tables where data to be plotted will be stored
   if (Ndatasets>0)
    {
-    x->current->plotdata = (DataTable **)lt_malloc(Ndatasets * sizeof(DataTable *));
+    x->current->plotdata      = (DataTable **)lt_malloc(Ndatasets * sizeof(DataTable *));
+    x->current->DatasetTextID = (int *)lt_malloc(Ndatasets * sizeof(int));
     if (x->current->plotdata == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
    } else {
     x->current->plotdata = NULL;
@@ -226,7 +251,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         DataFile_read(x->current->plotdata+i, &status, temp_err_string, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        } else {
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, temp_err_string, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+        DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, temp_err_string); x->current->plotdata[i]=NULL; }
       else
@@ -422,7 +447,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
   settings_axis   *OrdinateAxis, *axissets[3];
   List            *UsingList, *EveryList;
   Dict            *tempdict;
-  char             tempbuff[100];
+  char             tempbuff[100], errbuffer[LSTR_LENGTH];
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
@@ -461,7 +486,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       if (DEBUG) { sprintf(temp_err_string, "Reading data from functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
 
       // Get data from functions
-      DataFile_FromFunctions(OrdinateAxis->OrdinateRaster, 0, OrdinateAxis->OrdinateRasterLen, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, temp_err_string, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+      DataFile_FromFunctions(OrdinateAxis->OrdinateRaster, 0, OrdinateAxis->OrdinateRasterLen, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
       if (status) { *(x->status) = 1; return; }
 
       // Update axes to reflect usage
@@ -488,15 +513,36 @@ void eps_plot_SampleFunctions(EPSComm *x)
     i->text              = X; \
     i->CanvasMultiplotID = x->current->id; \
     ListAppendPtr(x->TextItems, i, sizeof(CanvasTextItem), 0, DATATYPE_VOID); \
+    x->NTextItems++; \
    }
 
 void eps_plot_YieldUpText(EPSComm *x)
  {
-  int             j, k, l, m;
-  settings_axis  *axes;
-  CanvasTextItem *i;
+  int              j, k, l, m;
+  canvas_plotdesc *pd;
+  DataBlock *blk;
+  settings_axis   *axes;
+  CanvasTextItem  *i;
+
+  x->current->FirstTextID = x->NTextItems;
+
+  // Labels attached to data points
+  pd = x->current->plotitems;
+  k  = 0;
+  while (pd != NULL) // loop over all datasets
+   {
+    x->current->DatasetTextID[k] = x->NTextItems;
+    blk = x->current->plotdata[k]->first;
+    while (blk != NULL)
+     {
+      if (blk->text != NULL) for (j=0; j<blk->BlockPosition; j++) { YIELD_TEXTITEM(blk->text[j]); }
+      blk=blk->next;
+     }
+    pd=pd->next; k++;
+   }
 
   // Axis labels and titles
+  x->current->AxesTextID = x->NTextItems;
   for (j=0; j<2+(x->current->ThreeDim); j++)
    {
     if      (j==0) axes = x->current->XAxes;
@@ -516,6 +562,7 @@ void eps_plot_YieldUpText(EPSComm *x)
    }
 
   // Title of plot
+  x->current->TitleTextID = x->NTextItems;
   YIELD_TEXTITEM(x->current->settings.title);
 
   return;
@@ -529,6 +576,8 @@ void eps_plot_RenderEPS(EPSComm *x)
   double           origin_x, origin_y, width, height;
   canvas_plotdesc *pd;
   settings_axis   *a1, *a2, *a3, *axissets[3];
+
+  x->LaTeXpageno = x->current->FirstTextID;
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
@@ -555,6 +604,7 @@ void eps_plot_RenderEPS(EPSComm *x)
   i  = 0;
   while (pd != NULL) // loop over all datasets
    {
+    x->LaTeXpageno = x->current->DatasetTextID[i];
     a1 = &axissets[pd->axis1xyz][pd->axis1];
     a2 = &axissets[pd->axis2xyz][pd->axis2];
     a3 = &axissets[pd->axis3xyz][pd->axis3];

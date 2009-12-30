@@ -168,6 +168,8 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   settings_axis *axes;
   with_words     ww;
 
+  x->LaTeXpageno = x->current->AxesTextID;
+
   // Set colour for painting axes
   with_words_zero(&ww,0);
   if (x->current->settings.AxesColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.AxesColour; }
@@ -239,6 +241,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
    }
 
   // Put the title on the top of the graph
+  x->LaTeXpageno = x->current->TitleTextID;
   if ((x->current->settings.title != NULL) && (x->current->settings.title[0] != '\0'))
    {
     int pageno = x->LaTeXpageno++;

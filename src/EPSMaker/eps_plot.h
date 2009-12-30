@@ -31,6 +31,7 @@ void eps_plot_YieldUpText(EPSComm *x);
 void eps_plot_RenderEPS(EPSComm *x);
 
 void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolumns);
+int  eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns);
 void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz, int axis_n);
 void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis_n);
 void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xyz, int axis_n);

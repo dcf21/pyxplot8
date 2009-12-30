@@ -233,7 +233,7 @@ RETURN_STRING:
   ppl_units_zero(output); 
   if (MallocOut)
    {
-    output->string = (char *)lt_malloc_incontext(strlen(outstr),UCFC_OutputContext);
+    output->string = (char *)lt_malloc_incontext(strlen(outstr)+1,UCFC_OutputContext);
     if (output->string == NULL) { sprintf(errtext, "Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
     strcpy(output->string,outstr);
    }
@@ -299,11 +299,12 @@ void __inline__ DataFile_UsingConvert(char *input, value *output, const int Outp
     if (NumericOut) ppl_EvaluateAlgebra(input, output, 0, &l, 1, status, errtext, 1); // Supplied expression is not a column name or number; it is an expression we need to evaluate
     else
      {
+      l--;
       ppl_GetQuotedString(input, temp_err_string, 0, &l, 1, status, errtext, 1); // We are trying to return a string, so expect to be evaluating a quoted string
       if (*status<0)
        {
         ppl_units_zero(output);
-        output->string = (char *)lt_malloc_incontext(strlen(temp_err_string),UCFC_OutputContext);
+        output->string = (char *)lt_malloc_incontext(strlen(temp_err_string)+1, UCFC_OutputContext);
         if (output->string == NULL) { sprintf(errtext, "Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
         strcpy(output->string, temp_err_string);
        }

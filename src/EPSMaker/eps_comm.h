@@ -42,6 +42,7 @@ typedef struct EPSComm {
   unsigned char bb_set;
   unsigned char PointTypesUsed[N_POINTTYPES], StarTypesUsed[N_STARTYPES];
   List *TextItems;
+  int NTextItems;
   dviInterpreterState *dvi;
   char *EPSFilename, *FinalFilename, *title;
   char  LastEPSColour[256], LastEPSFillColour[256];
