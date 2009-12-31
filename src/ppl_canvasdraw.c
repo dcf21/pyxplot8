@@ -41,6 +41,7 @@
 #include "EPSMaker/eps_eps.h"
 #include "EPSMaker/eps_image.h"
 #include "EPSMaker/eps_plot.h"
+#include "EPSMaker/eps_plot_threedimbuff.h"
 #include "EPSMaker/eps_settings.h"
 #include "EPSMaker/eps_text.h"
 
@@ -146,6 +147,9 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   void(*PlotHandler )(EPSComm *);
   void(*TextHandler )(EPSComm *);
   void(*AfterHandler)(EPSComm *);
+
+  // Reset 3D rendering buffer
+  ThreeDimBuffer_Reset();
 
   // By default, we record all operations as having been successful
   for (i=0;i<MULTIPLOT_MAXINDEX; i++) unsuccessful_ops[i]=0;

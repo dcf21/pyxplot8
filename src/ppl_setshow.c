@@ -249,6 +249,15 @@ void directive_set(Dict *command)
       listiter = ListIterate(listiter, NULL);
      }
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"axisunitstyle")==0)) /* set axisunitstyle */
+   {
+    DictLookup(command,"unitstyle",NULL,(void **)&tempstr);
+    sg->AxisUnitStyle = FetchSettingByName(tempstr, SW_AXISUNITSTY_INT, SW_AXISUNITSTY_STR);
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"axisunitstyle")==0)) /* unset axisunitstyle */
+   {
+    sg->AxisUnitStyle = settings_graph_default.AxisUnitStyle;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"backup")==0)) /* set backup */
    {
     settings_term_current.backup = SW_ONOFF_ON;
@@ -1113,6 +1122,7 @@ void directive_set(Dict *command)
       if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+      tempaxis->enabled=1; // Activate axis
       DictLookup(command,"minor"     ,NULL,(void **)&tempstr2);
       DictLookup(command,"dir"       ,NULL,(void **)&tempstr3);
       DictLookup(command,"autofreq"  ,NULL,(void **)&tempstr4);
@@ -1590,6 +1600,7 @@ void directive_set(Dict *command)
        }
       else
        {
+        tempaxis->enabled=1;
         DictLookup(command,"label_text",NULL,(void **)&tempstr2);
         if ((tempstr2!=NULL)&&(strlen(tempstr2)>0))
          {
@@ -1624,6 +1635,7 @@ void directive_set(Dict *command)
       if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+      tempaxis->enabled=1; // Activate axis
       DictLookup(command,"minauto",NULL,(void **)&tempstr2);
       if (tempstr2!=NULL) { tempaxis->MinSet = SW_BOOL_FALSE; tempaxis->min = tempaxis2->min; } // Remove range information if user has specified a *
       DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
@@ -1774,6 +1786,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     if (sg->AxesColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                  sprintf(buf, "rgb%d:%d:%d", sg->AxesColourR, sg->AxesColourG, sg->AxesColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "AxesColour", buf, (settings_graph_default.AxesColour == sg->AxesColour), "The colour used to draw graph axes");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axisunitstyle", 1)>=0))
+   {
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->AxisUnitStyle, SW_AXISUNITSTY_INT, (void *)SW_AXISUNITSTY_STR, sizeof(char *)));
+    directive_show3(out+i, ItemSet, 0, interactive, "AxisUnitStyle", buf, (settings_graph_default.AxisUnitStyle == sg->AxisUnitStyle), "Select how the physical units associated with axes are appended to axis labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "backup", 1)>=0))

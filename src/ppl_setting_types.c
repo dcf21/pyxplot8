@@ -54,6 +54,10 @@ char *SW_BITMAP_STR[] = {"bmp"        , "gif"        , "jpeg"       , "png"     
 int   SW_BITMAP_ACL[] = {1            , 1            , 1            , 1            };
 int   SW_BITMAP_INT[] = {SW_BITMAP_BMP, SW_BITMAP_GIF, SW_BITMAP_JPG, SW_BITMAP_PNG, -1};
 
+char *SW_AXISUNITSTY_STR[] = {"bracketed"           , "ratio"             , "squarebracketed"    };
+int   SW_AXISUNITSTY_ACL[] = {1                     , 1                   , 1                    };
+int   SW_AXISUNITSTY_INT[] = {SW_AXISUNITSTY_BRACKET, SW_AXISUNITSTY_RATIO, SW_AXISUNITSTY_SQUARE, -1};
+
 char *SW_TERMTYPE_STR[] = {"X11_SingleWindow", "X11_MultiWindow" , "X11_Persist"    , "ps"           , "eps"           , "pdf"           , "png"           , "jpg"           , "gif"           , "bmp"           , "tif"          , "svg"           };
 int   SW_TERMTYPE_ACL[] = {1                 , 5                 , 5                , 1              , 1               , 2               , 2               , 1               , 1               , 1               , 1              , 1               };
 int   SW_TERMTYPE_INT[] = {SW_TERMTYPE_X11S  , SW_TERMTYPE_X11M  , SW_TERMTYPE_X11P , SW_TERMTYPE_PS , SW_TERMTYPE_EPS , SW_TERMTYPE_PDF , SW_TERMTYPE_PNG , SW_TERMTYPE_JPG , SW_TERMTYPE_GIF , SW_TERMTYPE_BMP, SW_TERMTYPE_TIF , SW_TERMTYPE_SVG , -1};

@@ -90,9 +90,9 @@ Error: Unrecognised command.\n\
 ");
 
 sprintf(txt_valid_set_options, "\n\
-'arrow', 'autoscale', 'axescolour', 'axis', 'backup', 'bar', 'binorigin',\n\
-'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style', 'display',\n\
-'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
+'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style',\n\
+'display', 'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
 'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale', 'linewidth',\n\
 'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
 'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot', 'nostyle',\n\
@@ -112,9 +112,9 @@ Set options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 sprintf(txt_unset_noword, "\n\
 Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 \n\
-'arrow', 'autoscale', 'axescolour', 'axis', 'backup', 'bar', 'binorigin',\n\
-'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style', 'display',\n\
-'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
+'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style',\n\
+'display', 'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
 'gridmincolour', 'key', 'keycolumns', 'label', 'linewidth', 'logscale',\n\
 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay', 'nogrid', 'nokey',\n\
 'nolabel', 'nolinewidth', 'nologscale', 'nomultiplot', 'notitle',\n\

@@ -118,6 +118,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "AXESCOLOUR"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_COLOUR_INT,SW_COLOUR_STR))>0) settings_graph_default.AxesColour    = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Colour."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AXISUNITSTYLE")==0)
+        if ((i=FetchSettingByName(setvalue,SW_AXISUNITSTY_INT,SW_AXISUNITSTY_STR))>0) settings_graph_default.AxisUnitStyle = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting AxisUnitStyle.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "BACKUP"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .backup        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Backup."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

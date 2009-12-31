@@ -113,6 +113,18 @@ extern int   SW_BITMAP_ACL[];
 extern int   SW_BITMAP_INT[];
 #endif
 
+// Axis unit styles
+
+#define SW_AXISUNITSTY_BRACKET 10501
+#define SW_AXISUNITSTY_RATIO   10502
+#define SW_AXISUNITSTY_SQUARE  10503
+
+#ifndef _PPL_SETTING_TYPES_C
+extern char *SW_AXISUNITSTY_STR[];
+extern int   SW_AXISUNITSTY_ACL[];
+extern int   SW_AXISUNITSTY_INT[];
+#endif
+
 // Terminal Type Switches
 
 #define SW_TERMTYPE_X11S 13001

@@ -134,7 +134,7 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
     if (TickMaxHeight>0.0) *ypos += (TOPbottom ? 1.0 : -1.0) * (EPS_AXES_TEXTGAP * M_TO_PS + TickMaxHeight); // Allow a gap after axis labels
 
     // Write axis label
-    if (PrintLabels && (a->label != NULL) && (a->label[0]!='\0'))
+    if (PrintLabels && (a->FinalAxisLabel != NULL) && (a->FinalAxisLabel[0]!='\0'))
      {
       int pageno = x->LaTeXpageno++;
       double xlab, ylab;

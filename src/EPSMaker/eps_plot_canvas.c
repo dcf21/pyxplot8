@@ -64,7 +64,7 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
 
     x3 = x2;
     y3 = y2*cos(sg->XYview.real) + z2*sin(sg->XYview.real);
-    y2 =-y2*sin(sg->XYview.real) + z2*cos(sg->XYview.real);
+    z3 =-y2*sin(sg->XYview.real) + z2*cos(sg->XYview.real);
 
     *xpos  = origin_x + x3;
     *ypos  = origin_y + y3;

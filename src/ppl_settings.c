@@ -128,6 +128,7 @@ void ppl_settings_makedefault()
   settings_graph_default.AxesColourR           = 0;
   settings_graph_default.AxesColourG           = 0;
   settings_graph_default.AxesColourB           = 0;
+  settings_graph_default.AxisUnitStyle         = SW_AXISUNITSTY_RATIO;
   settings_graph_default.bar                   = 1.0;
   ppl_units_zero(&(settings_graph_default.BoxFrom));
   settings_graph_default.BoxFromAuto           = 1;

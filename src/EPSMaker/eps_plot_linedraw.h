@@ -1,4 +1,4 @@
-// eps_plot_ticking.h
+// eps_plot_linedraw.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,12 +19,22 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_PLOT_TICKING_H
-#define _PPL_EPS_PLOT_TICKING_H 1
+#ifndef _PPL_EPS_PLOT_LINEDRAW_H
+#define _PPL_EPS_PLOT_LINEDRAW_H 1
 
-#include "ppl_settings.h"
+#include "eps_comm.h"
 
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, int AxisUnitStyle, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax);
+typedef struct LineDrawHandle {
+ EPSComm *x;
+ unsigned char x1set, x2set;
+ double lastx1, lasty1;
+ double lastx2, lasty2;
+ double clip_top, clip_bottom, clip_left, clip_right;
+ } LineDrawHandle;
+
+LineDrawHandle *LineDraw_Init (EPSComm *x, double clip_left, double clip_bottom, double clip_right, double clip_top);
+void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, int linetype, double linewidth, char *colstr);
+void LineDraw_PenUp(LineDrawHandle *ld);
 
 #endif
 

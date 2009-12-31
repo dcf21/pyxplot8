@@ -214,12 +214,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS)) // POINTS
    {
+    double ps_old = 0.0;
+
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
-        double ps_old = 0.0;
-
         eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
         if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 

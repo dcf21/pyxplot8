@@ -33,12 +33,14 @@
 #include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_units_fns.h"
 
 #include "eps_plot_canvas.h"
 #include "eps_plot_ticking.h"
 
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
+void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, int AxisUnitStyle, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
  {
+  int i,j,N;
   const double logmin = 1e-10;
 
   axis->FinalActive = axis->FinalActive || axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
@@ -65,7 +67,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
     // Print out debugging report
     if (DEBUG)
      {
-      int i;
       sprintf(temp_err_string,"Determined range for axis %c%d of plot %d. Usage was [", "xyz"[xyz], axis_n, canvas_id);
       i = strlen(temp_err_string);
       if (axis->MinUsedSet) { sprintf(temp_err_string+i, "%f", axis->MinUsed); i+=strlen(temp_err_string+i); }
@@ -88,7 +89,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
     // MAJOR TICKS
     if (axis->TickList != NULL) // Ticks have been specified as an explicit list
      {
-      int i,j,N;
       for (N=0; axis->TickStrs[N]!=NULL; N++); // Find length of list of ticks
       axis->TickListPositions = (double  *)lt_malloc((N+1) * sizeof(double));
       axis->TickListStrings   = (char   **)lt_malloc((N+1) * sizeof(char *));
@@ -104,7 +104,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
      }
     else
      {
-      int i,N;
       N=4;
       axis->TickListPositions = (double  *)lt_malloc((N+1) * sizeof(double));
       axis->TickListStrings   = (char   **)lt_malloc((N+1) * sizeof(char *));
@@ -122,7 +121,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
     // MINOR TICKS
     if (axis->MTickList != NULL) // Ticks have been specified as an explicit list
      {
-      int i,j,N;
       for (N=0; axis->MTickStrs[N]!=NULL; N++); // Find length of list of ticks
       axis->MTickListPositions = (double  *)lt_malloc((N+1) * sizeof(double));
       axis->MTickListStrings   = (char   **)lt_malloc((N+1) * sizeof(char *));
@@ -141,6 +139,20 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, c
     axis->TickListFinalised = 1;
    }
 
+  // Finalise the label to be placed on the axis, appending a physical unit as necessary
+  if (axis->DataUnit.dimensionless)
+   { axis->FinalAxisLabel = axis->label; } // No units to append
+  else
+   {
+    i = 0;
+    if (axis->label != NULL) i+=strlen(axis->label);
+    if (!(axis->DataUnit.dimensionless)) i+= 1024;
+    axis->FinalAxisLabel = (char *)lt_malloc(i);
+    if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s (%s)", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,0,0));
+    else if (AxisUnitStyle == SW_AXISUNITSTY_RATIO)   sprintf(axis->FinalAxisLabel, "%s / %s", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,0,0));
+    else                                              sprintf(axis->FinalAxisLabel, "%s [%s]", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,0,0));
+   }
   return;
  }
 

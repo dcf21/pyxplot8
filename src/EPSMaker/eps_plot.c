@@ -38,6 +38,7 @@
 #include "eps_plot.h"
 #include "eps_plot_axespaint.h"
 #include "eps_plot_styles.h"
+#include "eps_plot_threedimbuff.h"
 #include "eps_plot_ticking.h"
 #include "eps_settings.h"
 
@@ -188,10 +189,11 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      {
-      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].TickListFinalised = axes[i].FinalActive = 0;
+      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].FinalActive = 0;
       axes[i].MinUsed    = axes[i].MaxUsed    = axes[i].MinFinal = axes[i].MaxFinal = 0.0;
       axes[i].OrdinateRasterLen = 0;
       axes[i].OrdinateRaster = NULL;
+      axes[i].FinalAxisLabel = NULL;
       axes[i].TickListFinalised = 0;
       axes[i].TickListPositions = axes[i].MTickListPositions = NULL;
       axes[i].TickListStrings   = axes[i].MTickListStrings   = NULL;
@@ -292,9 +294,14 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
    {
     if (IterDepth++ > 100) return;
     if (!(source->linked && (source->MinUsedSet || source->MaxUsedSet))) { break; } // proceed only if axis is linked and has usage information
-    item = x->itemlist->first;
-    while ((item != NULL) && ((item->id)<source->LinkedAxisCanvasID)) item=item->next;
-    if ((item == NULL) || (item->id != source->LinkedAxisCanvasID)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyz"[xyz],axis_n,x->current->id,"xyz"[source->LinkedAxisToXYZ],source->LinkedAxisToNum,source->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); break; }
+    if (source->LinkedAxisCanvasID <= 0)
+     { item = x->current; } // Linked to an axis on the same graph
+    else // Linked to an axis on a different canvas item
+     {
+      item = x->itemlist->first;
+      while ((item != NULL) && ((item->id)<source->LinkedAxisCanvasID)) item=item->next;
+      if ((item == NULL) || (item->id != source->LinkedAxisCanvasID)) { break; }
+     }
     if      (source->LinkedAxisToXYZ == 0) target = item->XAxes + source->LinkedAxisToNum;
     else if (source->LinkedAxisToXYZ == 1) target = item->YAxes + source->LinkedAxisToNum;
     else                                   target = item->ZAxes + source->LinkedAxisToNum;
@@ -334,7 +341,7 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
     for (i=0; i<MAX_AXES; i++)
      {
       if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i); if (*x->status) return; }
-      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, NULL, NULL, 0, 0); if (*x->status) return; }
+      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, x->current->settings.AxisUnitStyle, NULL, NULL, 0, 0); if (*x->status) return; }
      }
    }
   return;
@@ -353,7 +360,7 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
 
   // Decide the range of each axis in turn
   k = 3*(axis_n-1) + xyz; // See if user has specified a range for this axis in the plot command itself
-  if (k<0) { HardMin = HardMax = NULL; } // Ignore axis zero...
+  if (k<0) { HardMin = HardMax = NULL; HardAutoMin = HardAutoMax = 0; } // Ignore axis zero...
   else
    {
     pr = x->current->plotranges;
@@ -361,18 +368,27 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
     if (pr == NULL) { HardMin=HardMax=NULL; HardAutoMin=HardAutoMax=0; }
     else
      {
+      // Check if we have partial range which conflicts with units of range of axis
       if ((pr->MinSet || pr->MaxSet) && (axis->DataUnitSet) && (!ppl_units_DimEqual(&axis->DataUnit, &pr->unit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
       if ((pr->MinSet && (!pr->MaxSet)) && (axis->MaxSet) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
       if (((!pr->MinSet) && pr->MaxSet) && (axis->MinSet) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
       if ((axis->MinSet || axis->MaxSet) && (axis->DataUnitSet) && (!ppl_units_DimEqual(&axis->unit, &axis->DataUnit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-      // Check if we have partial range which conflicts with units of range of axis
+
+      // Read information about axis range out of list of ranges supplied to the plot command, ready to pass to eps_plot_ticking
       if (pr->AutoMinSet) { HardAutoMin = 1; }
       if (pr->AutoMaxSet) { HardAutoMax = 1; }
       if (pr->MinSet)     { HardMin = &pr->min; } else { HardMin = NULL; }
       if (pr->MaxSet)     { HardMax = &pr->max; } else { HardMax = NULL; }
      }
+
+    // Update axis->DataUnit to be the canonical reference for the units of the axis
+    if (!axis->DataUnitSet)
+     {
+      if      ((HardMin!=NULL) || (HardMax!=NULL)) { axis->DataUnitSet=1; axis->DataUnit=pr  ->unit; }
+      else if ( axis->MinSet   ||  axis->MaxSet  ) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
+     }
    }
-  eps_plot_ticking(axis, xyz, axis_n, x->current->id, HardMin, HardMax, HardAutoMin, HardAutoMax);
+  eps_plot_ticking(axis, xyz, axis_n, x->current->id, x->current->settings.AxisUnitStyle, HardMin, HardMax, HardAutoMin, HardAutoMax);
   return;
  }
 
@@ -397,9 +413,14 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
    {
     if (IterDepth++ > 100) return;
     if ((!target->linked) || target->RangeFinalised) { break; } // proceed only if axis is linked
-    item = x->itemlist->first;
-    while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
-    if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { break; }
+    if (target->LinkedAxisCanvasID <= 0)
+     { item = x->current; } // Linked to an axis on the same graph
+    else // Linked to an axis on a different canvas item
+     {
+      item = x->itemlist->first;
+      while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
+      if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { if (IterDepth==1) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyz"[xyz],axis_n,x->current->id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
+     }
     if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
     else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
     else                                   target2 = item->ZAxes + target->LinkedAxisToNum;
@@ -420,12 +441,17 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     source->MaxFinal       = target->MaxFinal;
     source->RangeFinalised = 1;
     if (!source->linked) { break; } // proceed only if axis is linked
-    item = x->itemlist->first;
-    while ((item != NULL) && (item->id)<source->LinkedAxisCanvasID) item=item->next;
-    if ((item == NULL) || (item->id != source->LinkedAxisCanvasID)) { break; }
-    if      (source->LinkedAxisToXYZ == 0) source = item->XAxes + source->LinkedAxisToNum;
-    else if (source->LinkedAxisToXYZ == 1) source = item->YAxes + source->LinkedAxisToNum;
-    else                                   source = item->ZAxes + source->LinkedAxisToNum;
+    if (source->LinkedAxisCanvasID <= 0)
+     { item = x->current; } // Linked to an axis on the same graph
+    else // Linked to an axis on a different canvas item
+     {
+      item = x->itemlist->first;
+      while ((item != NULL) && (item->id)<source->LinkedAxisCanvasID) item=item->next;
+      if ((item == NULL) || (item->id != source->LinkedAxisCanvasID)) { break; }
+     }
+    if      (source->LinkedAxisToXYZ == 0) source2 = item->XAxes + source->LinkedAxisToNum;
+    else if (source->LinkedAxisToXYZ == 1) source2 = item->YAxes + source->LinkedAxisToNum;
+    else                                   source2 = item->ZAxes + source->LinkedAxisToNum;
     if (!ppl_units_DimEqual(&source->DataUnit , &source2->DataUnit)) break; // If axes are dimensionally incompatible, stop
     source = source2;
    }
@@ -520,7 +546,7 @@ void eps_plot_YieldUpText(EPSComm *x)
  {
   int              j, k, l, m;
   canvas_plotdesc *pd;
-  DataBlock *blk;
+  DataBlock       *blk;
   settings_axis   *axes;
   CanvasTextItem  *i;
 
@@ -556,7 +582,7 @@ void eps_plot_YieldUpText(EPSComm *x)
         {
          if (axes[k]. TickListPositions != NULL) for (l=0; axes[k]. TickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k]. TickListStrings[l]); } // Major tick labels
          if (axes[k].MTickListPositions != NULL) for (l=0; axes[k].MTickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k].MTickListStrings[l]); } // Minor tick labels
-         YIELD_TEXTITEM(axes[k].label);
+         YIELD_TEXTITEM(axes[k].FinalAxisLabel);
         }
       }
    }
@@ -586,18 +612,17 @@ void eps_plot_RenderEPS(EPSComm *x)
   // Write header at top of postscript
   fprintf(x->epsbuffer, "%% Canvas item %d [plot]\n", x->current->id);
 
-  // Add four corners of graph to postscript bounding box, even if there are no axes
+  // Calculate positions of the four corners of graph
   origin_x = x->current->settings.OriginX.real * M_TO_PS;
   origin_y = x->current->settings.OriginY.real * M_TO_PS;
   width    = x->current->settings.width  .real * M_TO_PS;
   if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
   else                                                height = width * x->current->settings.aspect;
-  eps_core_BoundingBox(x, origin_x      , origin_y       , 0.0);
-  eps_core_BoundingBox(x, origin_x+width, origin_y       , 0.0);
-  eps_core_BoundingBox(x, origin_x      , origin_y+height, 0.0);
-  eps_core_BoundingBox(x, origin_x+width, origin_y+height, 0.0);
 
   // Render gridlines
+
+  // Activate three-dimensional buffer if graph is 3D
+  if (x->current->ThreeDim) ThreeDimBuffer_Activate();
 
   // Render each dataset in turn
   pd = x->current->plotitems;
@@ -620,6 +645,9 @@ void eps_plot_RenderEPS(EPSComm *x)
 
   // Render axes
   eps_plot_axespaint(x, origin_x, origin_y, width, height);
+
+  // Deactivate three-dimensional buffer
+  ThreeDimBuffer_Deactivate();
 
   // Render legend
 
