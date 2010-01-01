@@ -255,7 +255,8 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
           pt = pd->ww_final.pointtype % N_POINTTYPES;
           x->PointTypesUsed[pt] = 1;
-          sprintf(epsbuff, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
+          sprintf(epsbuff, "%.2f %.2f pt%d", xpos, ypos, pt+1);
+          eps_core_BoundingBox(x, xpos, ypos, pd->ww_final.pointsize*3);
           ThreeDimBuffer_writeps(x, depth, 0, pd->ww_final.pointlinewidth, pd->ww_final.pointsize, last_colstr, epsbuff);
          }
 

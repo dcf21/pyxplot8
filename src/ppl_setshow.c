@@ -1501,7 +1501,7 @@ void directive_set(Dict *command)
          return;
         }
      }
-    else { tempval->real /= 180.0 * M_PI; } // By default, dimensionless angles are in degrees
+    else { tempval->real *= M_PI / 180.0; } // By default, dimensionless angles are in degrees
     if (!(tempval2->dimensionless))
      {
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -1512,7 +1512,7 @@ void directive_set(Dict *command)
          return;
         }
      }
-    else { tempval2->real /= 180.0 * M_PI; } // By default, dimensionless angles are in degrees
+    else { tempval2->real *= M_PI / 180.0; } // By default, dimensionless angles are in degrees
     sg->XYview.real = fmod(tempval ->real , 2*M_PI);
     sg->YZview.real = fmod(tempval2->real , 2*M_PI);
     while (sg->XYview.real < 0.0) sg->XYview.real += 2*M_PI;

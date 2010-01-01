@@ -104,28 +104,28 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, int linety
   if      ((!Inside1) && (!Inside2)) // Neither point on line segment is inside clip-region
    {
     if (NCrossings>=2) // Check that we haven't crossed clip region during the course of line segment
-      ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1);
+      ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1, 0, 0.0);
     ld->x0set=0;
     ld->x1=x; ld->y1=y;
    }
   else if ((!Inside1) && ( Inside2)) // We have just entered clip region; previous point was outside
    {
-    ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1);
+    ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1, 0, 0.0);
     if ((!ld->x0set)||(ld->x1!=x)||(ld->y1!=y)) ld->x0=ld->x1; ld->y0=ld->y1;
     ld->x0set=1;
     ld->x1=x; ld->y1=y;
    }
   else if (( Inside1) && (!Inside2)) // We have just left clip region; previous point was inside
    {
-    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, ld->x0, ld->y0, cx1, cy1, cx2, cy2, 0);
-    else           ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1   , cy1   , cx1, cy1, cx2, cy2, 1);
+    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, ld->x0, ld->y0, cx1, cy1, cx2, cy2, 0, 0, 0.0);
+    else           ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1   , cy1   , cx1, cy1, cx2, cy2, 1, 0, 0.0);
     ld->x0set=0;
     ld->x1=x; ld->y1=y;
    }
   else // if (( Inside1) && ( Inside2)) // We are within the clip region
    {
-    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, ld->x0, ld->y0, cx1, cy1, cx2, cy2, 0);
-    else           ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1   , cy1   , cx1, cy1, cx2, cy2, 1);
+    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, ld->x0, ld->y0, cx1, cy1, cx2, cy2, 0, 0, 0.0);
+    else           ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1   , cy1   , cx1, cy1, cx2, cy2, 1, 0, 0.0);
     if ((!ld->x0set)||(ld->x1!=x)||(ld->y1!=y)) ld->x0=ld->x1; ld->y0=ld->y1;
     ld->x0set=1;
     ld->x1=x; ld->y1=y;

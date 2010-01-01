@@ -110,11 +110,11 @@ void eps_core_SwitchFrom_FillColour(EPSComm *x)
  }
 
 // Set the linewidth of the EPS we are painting
-void eps_core_SetLinewidth(EPSComm *x, double lw, int lt)
+void eps_core_SetLinewidth(EPSComm *x, double lw, int lt, double offset)
  {
-  if ((lw == x->LastLinewidth) && (lt == x->LastLinetype)) return;
+  if ((lw == x->LastLinewidth) && (lt == x->LastLinetype) && (offset==0.0)) return;
   if (lw != x->LastLinewidth) fprintf(x->epsbuffer, "%f setlinewidth\n", lw);
-  fprintf(x->epsbuffer, "%s\n", eps_LineType(lt, lw));
+  fprintf(x->epsbuffer, "%s\n", eps_LineType(lt, lw, offset));
   x->LastLinewidth = lw;
   x->LastLinetype  = lt;
   return;

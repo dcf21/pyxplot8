@@ -76,7 +76,7 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
   if (with_data->USElinetype)  lt = with_data->linetype;
   else                         lt = 0;
 
-  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt);
+  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 
   // Factor two ends of arrow into EPS file's bounding box
   eps_core_BoundingBox(x, x1, y1, lw);

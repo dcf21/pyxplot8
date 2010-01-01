@@ -37,6 +37,7 @@
 // Internal state variables
 unsigned char  ThreeDimBuffer_ACTIVE        = 0;
 static long    ThreeDimBuffer_LineSegmentID = 0;
+static double  ThreeDimBuffer_LineLength    = 0.0;
 static List   *ThreeDimBuffer_buffer        = NULL;
 
 static int     linetype_old  ; static int linetype_old_SET  ;
@@ -48,6 +49,7 @@ void ThreeDimBuffer_Reset()
  {
   ThreeDimBuffer_ACTIVE        = 0;
   ThreeDimBuffer_LineSegmentID = 0;
+  ThreeDimBuffer_LineLength    = 0.0;
   ThreeDimBuffer_buffer        = NULL;
   linetype_old_SET = linewidth_old_SET = pointsize_old_SET = 0;
   colstr_old = NULL;
@@ -59,6 +61,7 @@ int ThreeDimBuffer_Activate(EPSComm *x)
   ThreeDimBuffer_Deactivate(x);
   ThreeDimBuffer_ACTIVE        = 1;
   ThreeDimBuffer_LineSegmentID = 0;
+  ThreeDimBuffer_LineLength    = 0.0;
   ThreeDimBuffer_buffer        = ListInit();
   linetype_old_SET = linewidth_old_SET = pointsize_old_SET = 0;
   colstr_old = NULL;
@@ -81,6 +84,7 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
  {
   int   Nitems, i, j;
   struct DepthArrayEntry *DepthArray;
+  ThreeDimBufferItem *item;
   ListIterator *ListIter;
 
   if (!ThreeDimBuffer_ACTIVE) return 0;
@@ -100,8 +104,20 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
       ListIter = ListIterate(ListIter, NULL);
      }
     qsort((void *)DepthArray, i, sizeof(struct DepthArrayEntry), ThreeDimBuffer_qsort_slave);
+    ThreeDimBuffer_LineSegmentID = -5;
     for (j=0; j<i; j++)
      {
+      item = (ThreeDimBufferItem *)DepthArray[j].item;
+      if (item->FlagLineSegment)
+       {
+        ThreeDimBuffer_linesegment(x, item->depth, item->linetype, item->linewidth, item->colstr, item->x0, item->y0, item->x1, item->y1, item->x2, item->y2, item->FirstLineSegment, (ThreeDimBuffer_LineSegmentID!=(item->LineSegmentID-1)), item->LineLength);
+        ThreeDimBuffer_LineSegmentID = item->LineSegmentID;
+       }
+      else
+       {
+        ThreeDimBuffer_writeps(x, item->depth, item->linetype, item->linewidth, item->pointsize, item->colstr, item->psfrag);
+        ThreeDimBuffer_LineSegmentID = -5;
+       }
      }
    }
   ThreeDimBuffer_Reset();
@@ -111,78 +127,102 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
 int ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth, double pointsize, char *colstr, char *psfrag)
  {
   ThreeDimBufferItem *item;
+  char               *tempstr;
 
   if (!ThreeDimBuffer_ACTIVE)
    {
     if ((!pointsize_old_SET) || (pointsize_old != pointsize)) { pointsize_old_SET=1; pointsize_old=pointsize; fprintf(x->epsbuffer, "/ps { %f } def\n", pointsize*3); } // Scale up all pointsizes by 3
     if ((colstr_old == NULL) || (strcmp(colstr_old, colstr)!=0)) { colstr_old = colstr; fprintf(x->epsbuffer, "%s\n", colstr); }
-    eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype);
+    eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype, 0.0);
     fprintf(x->epsbuffer, "%s\n", psfrag);
    }
   else
    {
     item = (ThreeDimBufferItem *)lt_malloc(sizeof(ThreeDimBufferItem));
-    if (item == NULL) return 1;
+    tempstr = (char *)lt_malloc(strlen(psfrag)+1);
+    if ((item == NULL) || (tempstr == NULL)) return 1;
+    strcpy(tempstr, psfrag);
     item->FlagLineSegment = item->FirstLineSegment = 0;
     item->linetype        = linetype;
     item->linewidth       = linewidth;
     item->pointsize       = pointsize;
     item->colstr          = colstr;
-    item->psfrag          = psfrag;
+    item->psfrag          = tempstr;
     item->depth           = z;
     ListAppendPtr(ThreeDimBuffer_buffer, (void *)item, 0, 0, DATATYPE_VOID);
    }
   return 0;
  }
 
-int ThreeDimBuffer_linesegment(EPSComm *x, double z, int linetype, double linewidth, char *colstr, double x0, double y0, double x1, double y1, double x2, double y2, unsigned char FirstSegment)
+int ThreeDimBuffer_linesegment(EPSComm *x, double z, int linetype, double linewidth, char *colstr, double x0, double y0, double x1, double y1, double x2, double y2, unsigned char FirstSegment, unsigned char broken, double LengthOffset)
  {
   ThreeDimBufferItem *item;
 
   if (!ThreeDimBuffer_ACTIVE)
    {
     if (FirstSegment && (ThreeDimBuffer_LineSegmentID > 0)) ThreeDimBuffer_linepenup(x); // If first segment of new line, finish old line
-    if ((!linetype_old_SET) || (linetype_old != linetype) || (!linewidth_old_SET) || (linewidth_old != linewidth) || (colstr_old == NULL) || (strcmp(colstr_old, colstr)!=0))
+    if (broken || (!linetype_old_SET) || (linetype_old != linetype) || (!linewidth_old_SET) || (linewidth_old != linewidth) || (colstr_old == NULL) || (strcmp(colstr_old, colstr)!=0))
      {
+      // Start line 0.1 linewidths along in the direction of x0 to get correct linecap
+      if ((!FirstSegment) && ((x0!=x1) || (y0!=y1)))
+       {
+        double theta = atan2(x0-x1,y0-y1);
+        x0 = x1 + 0.1 * sin(theta) * linewidth * EPS_DEFAULT_LINEWIDTH;
+        y0 = y1 + 0.1 * cos(theta) * linewidth * EPS_DEFAULT_LINEWIDTH;
+       } else {
+        x0 = x1;
+        y0 = y1;
+       }
+
       ThreeDimBuffer_linepenup(x);
       linetype_old_SET = linewidth_old_SET = 1;
       linetype_old     = linetype;
       linewidth_old    = linewidth;
-      eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype);
+      eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype, broken ? (LengthOffset-hypot(x1-x0,y1-y0)) : 0.0);
       if ((colstr_old == NULL) || (strcmp(colstr_old, colstr)!=0)) { colstr_old = colstr; fprintf(x->epsbuffer, "%s\n", colstr); }
-      if ((!FirstSegment) && ((x0!=x1) || (y0!=y1)))
-       {
-        double theta = atan2(x0-x1,y0-y1);
-        x0 = x1 + 2 * sin(theta) * linewidth * EPS_DEFAULT_LINEWIDTH; // Start line 2 linewidths along in the direction of x0 to get correct linecap
-        y0 = y1 + 2 * cos(theta) * linewidth * EPS_DEFAULT_LINEWIDTH;
-       }
+
+
       if (FirstSegment) fprintf(x->epsbuffer, "%.2f %.2f moveto\n%.2f %.2f lineto\n", x1, y1, x2, y2);
       else              fprintf(x->epsbuffer, "%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n", x0, y0, x1, y1, x2, y2);
+      eps_core_BoundingBox(x, x1, y1, linewidth * EPS_DEFAULT_LINEWIDTH);
+      eps_core_BoundingBox(x, x2, y2, linewidth * EPS_DEFAULT_LINEWIDTH);
      }
     else
      {
       if (FirstSegment) fprintf(x->epsbuffer, "%.2f %.2f moveto\n%.2f %.2f lineto\n", x1, y1, x2, y2);
       else              fprintf(x->epsbuffer, "%.2f %.2f lineto\n", x2, y2);
+      eps_core_BoundingBox(x, x1, y1, linewidth * EPS_DEFAULT_LINEWIDTH);
+      eps_core_BoundingBox(x, x2, y2, linewidth * EPS_DEFAULT_LINEWIDTH);
      }
     ThreeDimBuffer_LineSegmentID = 1;
    }
   else
    {
+    if (FirstSegment) ThreeDimBuffer_LineLength = 0.0;
+    if ((!linetype_old_SET) || (linetype_old != linetype))
+     {
+      ThreeDimBuffer_LineLength = 0.0;
+      linetype_old_SET = 1;
+      linetype_old     = linetype;
+     }
     item = (ThreeDimBufferItem *)lt_malloc(sizeof(ThreeDimBufferItem));
     if (item == NULL) return 1;
     item->FlagLineSegment  = 1;
+    item->LineSegmentID    = ThreeDimBuffer_LineSegmentID++;
+    item->LineLength       = ThreeDimBuffer_LineLength;
     item->FirstLineSegment = FirstSegment;
-    item->linetype        = linetype;
-    item->linewidth       = linewidth;
-    item->colstr          = colstr;
-    item->depth           = z;
-    item->x0              = x0;
-    item->y0              = y0;
-    item->x1              = x1;
-    item->y1              = y1;
-    item->x2              = x2;
-    item->y2              = y2;
+    item->linetype         = linetype;
+    item->linewidth        = linewidth;
+    item->colstr           = colstr;
+    item->depth            = z;
+    item->x0               = x0;
+    item->y0               = y0;
+    item->x1               = x1;
+    item->y1               = y1;
+    item->x2               = x2;
+    item->y2               = y2;
     ListAppendPtr(ThreeDimBuffer_buffer, (void *)item, 0, 0, DATATYPE_VOID);
+    ThreeDimBuffer_LineLength += hypot(x2-x1,y2-y1);
    }
   return 0;
  }

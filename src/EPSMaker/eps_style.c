@@ -28,19 +28,19 @@
 #include "eps_style.h"
 
 // Line types
-char *eps_LineType(int lt, double lw)
+char *eps_LineType(int lt, double lw, double offset)
  {
   static char output[256];
   lt = lt % 9;
-  if      (lt==0) sprintf(output, "0 setlinecap [] 0 setdash");                                   // solid
-  else if (lt==1) sprintf(output, "0 setlinecap [%.2f] 0 setdash", 2*lw);                         // dashed
-  else if (lt==2) sprintf(output, "1 setlinecap [0 %.2f] 0 setdash", 2*lw);                       // dotted
-  else if (lt==3) sprintf(output, "1 setlinecap [0 %.2f %.2f %.2f] 0 setdash", 2*lw, 2*lw, 2*lw); // dash-dotted
-  else if (lt==4) sprintf(output, "0 setlinecap [%.2f %.2f] 0 setdash", 7*lw, 2*lw);              // long dash
-  else if (lt==5) sprintf(output, "1 setlinecap [%.2f %.2f 0 %.2f] 0 setdash", 7*lw, 2*lw, 2*lw); // long dash - dot
-  else if (lt==6) sprintf(output, "1 setlinecap [%.2f %.2f 0 %.2f 0 %.2f] 0 setdash", 7*lw, 2*lw, 2*lw, 2*lw); // long dash - dot dot
-  else if (lt==7) sprintf(output, "1 setlinecap [%.2f %.2f 0 %.2f 0 %.2f 0 %.2f] 0 setdash", 7*lw, 2*lw, 2*lw, 2*lw, 2*lw); // long dash - dot dot dot
-  else if (lt==8) sprintf(output, "0 setlinecap [%.2f %.2f %.2f %.2f] 0 setdash", 7*lw, 2*lw, 2*lw, 2*lw); // long dash - dash
+  if      (lt==0) sprintf(output, "0 setlinecap [] %.2f setdash", offset);                                   // solid
+  else if (lt==1) sprintf(output, "0 setlinecap [%.2f] %.2f setdash", 2*lw, offset);                         // dashed
+  else if (lt==2) sprintf(output, "1 setlinecap [0 %.2f] %.2f setdash", 2*lw, offset);                       // dotted
+  else if (lt==3) sprintf(output, "1 setlinecap [0 %.2f %.2f %.2f] %.2f setdash", 2*lw, 2*lw, 2*lw, offset); // dash-dotted
+  else if (lt==4) sprintf(output, "0 setlinecap [%.2f %.2f] %.2f setdash", 7*lw, 2*lw, offset);              // long dash
+  else if (lt==5) sprintf(output, "1 setlinecap [%.2f %.2f 0 %.2f] %.2f setdash", 7*lw, 2*lw, 2*lw, offset); // long dash - dot
+  else if (lt==6) sprintf(output, "1 setlinecap [%.2f %.2f 0 %.2f 0 %.2f] %.2f setdash", 7*lw, 2*lw, 2*lw, 2*lw, offset); // long dash - dot dot
+  else if (lt==7) sprintf(output, "1 setlinecap [%.2f %.2f 0 %.2f 0 %.2f 0 %.2f] %.2f setdash", 7*lw, 2*lw, 2*lw, 2*lw, 2*lw, offset); // long dash - dot dot dot
+  else if (lt==8) sprintf(output, "0 setlinecap [%.2f %.2f %.2f %.2f] %.2f setdash", 7*lw, 2*lw, 2*lw, 2*lw, offset); // long dash - dash
   return output;
  }
 

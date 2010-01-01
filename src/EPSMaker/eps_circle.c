@@ -68,7 +68,7 @@ void eps_circ_RenderEPS(EPSComm *x)
   if (ww.USElinetype)  lt = ww.linetype;
   else                 lt = 0;
 
-  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt);
+  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 
   // Stroke outline of circle
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "%.2f %.2f %.2f 0 360 arc\nclosepath\nstroke\n", xpos,ypos,r);

@@ -25,7 +25,7 @@
 #define N_POINTTYPES 30
 #define N_STARTYPES   1
 
-char *eps_LineType(int lt, double lw);
+char *eps_LineType(int lt, double lw, double offset);
 
 #ifndef _PPL_EPS_STYLE_C
 extern char *eps_PointTypes[];

@@ -79,7 +79,7 @@ void eps_box_RenderEPS(EPSComm *x)
   if (ww.USElinetype)  lt = ww.linetype;
   else                 lt = 0;
 
-  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt);
+  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 
   // Stroke outline of box
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nstroke\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);

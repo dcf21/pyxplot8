@@ -57,20 +57,20 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
       if ((zin > za->MinFinal) && (zin > za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
      }
 
-    x = width  * eps_plot_axis_GetPosition(xin, xa);
-    y = height * eps_plot_axis_GetPosition(yin, ya);
-    z = width  * eps_plot_axis_GetPosition(zin, za);
+    x = width  * (eps_plot_axis_GetPosition(xin, xa) - 0.5);
+    y = height * (eps_plot_axis_GetPosition(yin, ya) - 0.5);
+    z = width  * (eps_plot_axis_GetPosition(zin, za) - 0.5);
 
     x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
     y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
     z2 = z;
 
     x3 = x2;
-    y3 = y2*cos(sg->XYview.real) + z2*sin(sg->XYview.real);
-    z3 =-y2*sin(sg->XYview.real) + z2*cos(sg->XYview.real);
+    y3 = y2*cos(sg->YZview.real) + z2*sin(sg->YZview.real);
+    z3 =-y2*sin(sg->YZview.real) + z2*cos(sg->YZview.real);
 
-    *xpos  = origin_x + x3;
-    *ypos  = origin_y + y3;
+    *xpos  = origin_x + x3 + width/2.0;
+    *ypos  = origin_y + y3 + height/2.0;
     *depth = z3;
     return;
    }

@@ -63,7 +63,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
   if (ww.USElinetype)  lt = ww.linetype;
   else                 lt = 0;
 
-  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt);
+  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 
   // Set up postscript axes so that a unit circle produces the desired ellipse
   fprintf(x->epsbuffer, "gsave\n");
