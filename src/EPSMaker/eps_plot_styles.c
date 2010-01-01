@@ -27,6 +27,8 @@
 
 #include <gsl/gsl_math.h>
 
+#include "ListTools/lt_memory.h"
+
 #include "ppl_canvasdraw.h"
 #include "ppl_canvasitems.h"
 #include "ppl_error.h"
@@ -40,7 +42,9 @@
 #include "eps_colours.h"
 #include "eps_plot.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_linedraw.h"
 #include "eps_plot_styles.h"
+#include "eps_plot_threedimbuff.h"
 #include "eps_settings.h"
 
 // Work out the default set of with words for a plot item
@@ -190,10 +194,12 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
 // Render a dataset to postscript
 int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
  {
-  int        j, Ncolumns, lt, pt;
-  double     xpos, ypos, depth, lw, ps;
-  settings_axis *a[3] = {a1,a2,a3};
-  DataBlock *blk;
+  int             j, Ncolumns, pt;
+  double          xpos, ypos, depth;
+  char            epsbuff[FNAME_LENGTH], *last_colstr=NULL;
+  LineDrawHandle *ld;
+  settings_axis  *a[3] = {a1,a2,a3};
+  DataBlock      *blk;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
 
@@ -203,24 +209,40 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((style == SW_STYLE_LINES) || (style == SW_STYLE_LINESPOINTS)) // LINES
    {
+    ld = LineDraw_Init(x, origin_x, origin_y, origin_x+width, origin_y+height);
+    last_colstr=NULL;
+
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
+        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height, 1);
+        if ((!gsl_finite(xpos)) || (!gsl_finite(ypos))) continue; // Position of point is off side of graph... e.g. negative number on log axis
+
+        // Work out style information for next point
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
+        eps_core_SetColour(x, &pd->ww_final);
+        IF_NOT_INVISIBLE
+         {
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          LineDraw_Point(ld, xpos, ypos, depth, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
+         } else { LineDraw_PenUp(ld); }
        }
       blk=blk->next;
      }
+    LineDraw_PenUp(ld);
+    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS)) // POINTS
    {
-    double ps_old = 0.0;
+    last_colstr=NULL;
 
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
-        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height);
+        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height, 0);
         if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 
         // Work out style information for next point
@@ -228,14 +250,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         eps_core_SetColour(x, &pd->ww_final);
         IF_NOT_INVISIBLE
          {
-          lw = pd->ww_final.pointlinewidth * EPS_DEFAULT_LINEWIDTH;
-          lt = 0; // linetype is always zero when drawing points
-          ps = pd->ww_final.pointsize;
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
           pt = pd->ww_final.pointtype % N_POINTTYPES;
-          eps_core_SetLinewidth(x, lw, lt);
           x->PointTypesUsed[pt] = 1;
-          if (ps != ps_old) { ps_old = ps; fprintf(x->epsbuffer, "/ps { %f } def\n", ps*3); } // Scale up all pointsizes by 3
-          fprintf(x->epsbuffer, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
+          sprintf(epsbuff, "%.2f %.2f pt%d\n", xpos, ypos, pt+1);
+          ThreeDimBuffer_writeps(x, depth, 0, pd->ww_final.pointlinewidth, pd->ww_final.pointsize, last_colstr, epsbuff);
          }
 
         // label point if instructed to do so

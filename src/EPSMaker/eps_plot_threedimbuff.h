@@ -22,6 +22,8 @@
 #ifndef _PPL_EPS_PLOT_THREEDIMBUFF_H
 #define _PPL_EPS_PLOT_THREEDIMBUFF_H 1
 
+#include "eps_comm.h"
+
 typedef struct ThreeDimBufferItem {
  unsigned char FlagLineSegment, FirstLineSegment;
  int           linetype;
@@ -36,10 +38,11 @@ extern unsigned char ThreeDimBuffer_ACTIVE;
 #endif
 
 void ThreeDimBuffer_Reset();
-int  ThreeDimBuffer_Activate();
-int  ThreeDimBuffer_Deactivate();
-int  ThreeDimBuffer_writeps(double z, int linetype, double linewidth, double pointsize, char *colstr, char *psfrag);
-int  ThreeDimBuffer_linesegment(double z, int linetype, double linewidth, char *colstr, double x0, double y0, double x1, double y1, double x2, double y2);
+int  ThreeDimBuffer_Activate(EPSComm *x);
+int  ThreeDimBuffer_Deactivate(EPSComm *x);
+int  ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth, double pointsize, char *colstr, char *psfrag);
+int  ThreeDimBuffer_linesegment(EPSComm *x, double z, int linetype, double linewidth, char *colstr, double x0, double y0, double x1, double y1, double x2, double y2, unsigned char FirstSegment);
+int  ThreeDimBuffer_linepenup(EPSComm *x);
 
 #endif
 

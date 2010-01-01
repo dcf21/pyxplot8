@@ -622,7 +622,7 @@ void eps_plot_RenderEPS(EPSComm *x)
   // Render gridlines
 
   // Activate three-dimensional buffer if graph is 3D
-  if (x->current->ThreeDim) ThreeDimBuffer_Activate();
+  if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);
 
   // Render each dataset in turn
   pd = x->current->plotitems;
@@ -647,7 +647,7 @@ void eps_plot_RenderEPS(EPSComm *x)
   eps_plot_axespaint(x, origin_x, origin_y, width, height);
 
   // Deactivate three-dimensional buffer
-  ThreeDimBuffer_Deactivate();
+  ThreeDimBuffer_Deactivate(x);
 
   // Render legend
 

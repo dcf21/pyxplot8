@@ -26,9 +26,8 @@
 
 typedef struct LineDrawHandle {
  EPSComm *x;
- unsigned char x1set, x2set;
- double lastx1, lasty1;
- double lastx2, lasty2;
+ unsigned char x0set, x1set;
+ double x0,y0,x1,y1;
  double clip_top, clip_bottom, clip_left, clip_right;
  } LineDrawHandle;
 
