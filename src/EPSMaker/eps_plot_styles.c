@@ -48,7 +48,7 @@
 #include "eps_settings.h"
 
 // Work out the default set of with words for a plot item
-void eps_withwords_default(with_words *output, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour)
+void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour)
  {
   int i;
 
@@ -65,10 +65,12 @@ void eps_withwords_default(with_words *output, unsigned char functions, int Fcou
   output->USElinespoints = 1;
   output->fillcolour     = COLOUR_NULL;
   output->USEfillcolour  = 1;
-  output->linetype = output->pointtype = (functions ? Fcounter : Dcounter);
-  output->USElinetype = output->USEpointtype = 1;
-  output->linewidth = output->pointlinewidth = output->pointsize = 1.0;
-  output->USElinewidth = output->USEpointlinewidth = output->USEpointsize = 1;
+  output->linetype       = output->pointtype = (functions ? Fcounter : Dcounter);
+  output->USElinetype    = output->USEpointtype = 1;
+  output->linewidth      = sg->LineWidth;
+  output->pointlinewidth = sg->PointLineWidth;
+  output->pointsize      = sg->PointSize;
+  output->USElinewidth   = output->USEpointlinewidth = output->USEpointsize = 1;
   return;
  }
 
@@ -221,7 +223,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
-        eps_core_SetColour(x, &pd->ww_final);
+        eps_core_SetColour(x, &pd->ww_final, 0);
         IF_NOT_INVISIBLE
          {
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
@@ -247,7 +249,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
-        eps_core_SetColour(x, &pd->ww_final);
+        eps_core_SetColour(x, &pd->ww_final, 0);
         IF_NOT_INVISIBLE
          {
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }

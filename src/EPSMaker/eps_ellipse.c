@@ -53,7 +53,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
   with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
 
   // Set colour of outline of ellipse
-  eps_core_SetColour(x, &ww);
+  eps_core_SetColour(x, &ww, 1);
 
   // Set linewidth and linetype of outline
   if (ww.USElinewidth) lw_scale = ww.linewidth;
@@ -79,7 +79,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\nfill\n");
 
   // Set colour of outline of ellipse
-  eps_core_SetColour(x, &ww);
+  eps_core_SetColour(x, &ww, 1);
 
   // Make path representing the outline of ellipse
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\n"); // NB: Leave this path unstroked until we've done a grestore

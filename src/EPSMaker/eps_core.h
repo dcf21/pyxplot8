@@ -25,7 +25,7 @@
 #define IF_NOT_INVISIBLE if (x->LastEPSColour[0]!='\0')
 
 void eps_core_clear                (EPSComm *x);
-void eps_core_SetColour            (EPSComm *x, with_words *ww);
+void eps_core_SetColour            (EPSComm *x, with_words *ww, unsigned char WritePS);
 void eps_core_SetFillColour        (EPSComm *x, with_words *ww);
 void eps_core_SwitchTo_FillColour  (EPSComm *x);
 void eps_core_SwitchFrom_FillColour(EPSComm *x);

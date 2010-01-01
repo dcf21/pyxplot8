@@ -174,7 +174,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   with_words_zero(&ww,0);
   if (x->current->settings.AxesColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.AxesColour; }
   else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.AxesColourR; ww.colourG = x->current->settings.AxesColourG; ww.colourB = x->current->settings.AxesColourB; }
-  eps_core_SetColour(x, &ww);
+  eps_core_SetColour(x, &ww, 1);
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 0);
 
   // Three-dimensional axes
@@ -248,7 +248,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     with_words_zero(&ww,0);
     if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
     else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
-    eps_core_SetColour(x, &ww);
+    eps_core_SetColour(x, &ww, 1);
     IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, title_x, title_y, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
    }
 

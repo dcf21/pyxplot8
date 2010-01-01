@@ -66,7 +66,7 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
   double lw, lw_scale, x3, y3, x4, y4, x5, y5, xstart, ystart, xend, yend, direction;
 
   // Set colour of arrow
-  eps_core_SetColour(x, with_data);
+  eps_core_SetColour(x, with_data, 1);
 
   // Set linewidth and linetype
   if (with_data->USElinewidth) lw_scale = with_data->linewidth;

@@ -227,7 +227,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   while (pd != NULL)
    {
     // Merge together with words to form a final set
-    eps_withwords_default(&ww_default, pd->function, Fcounter, Dcounter, settings_term_current.colour==SW_ONOFF_ON);
+    eps_withwords_default(&ww_default, &x->current->settings, pd->function, Fcounter, Dcounter, settings_term_current.colour==SW_ONOFF_ON);
     if (pd->function != 0) { Fcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
     else                   { Dcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.DataStyle, &ww_default, NULL, NULL, 1); }
 

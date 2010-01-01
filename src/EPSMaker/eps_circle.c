@@ -58,7 +58,7 @@ void eps_circ_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "%.2f %.2f %.2f 0 360 arc\nclosepath\nfill\n", xpos,ypos,r);
 
   // Set colour of outline of circle
-  eps_core_SetColour(x, &ww);
+  eps_core_SetColour(x, &ww, 1);
 
   // Set linewidth and linetype of outline
   if (ww.USElinewidth) lw_scale = ww.linewidth;

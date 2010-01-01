@@ -46,7 +46,7 @@ void eps_core_clear(EPSComm *x)
  }
 
 // Set the colour of the EPS we are painting
-void eps_core_SetColour(EPSComm *x, with_words *ww)
+void eps_core_SetColour(EPSComm *x, with_words *ww, unsigned char WritePS)
  {
   char NewColour[256];
 
@@ -66,7 +66,7 @@ void eps_core_SetColour(EPSComm *x, with_words *ww)
   // Only change postscript colour if the colour we want isn't the one we are already using
   if (strcmp(NewColour, x->LastEPSColour) != 0)
    {
-    if (NewColour[0]!='\0') fprintf(x->epsbuffer, "%s\n", NewColour); // Write colour to postscript, providing we're not going invisible
+    if (WritePS && (NewColour[0]!='\0')) fprintf(x->epsbuffer, "%s\n", NewColour); // Write colour to postscript, providing we're not going invisible
     strcpy(x->LastEPSColour, NewColour);
    }
   return;

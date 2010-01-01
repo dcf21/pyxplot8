@@ -69,7 +69,7 @@ void eps_box_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
 
   // Set colour of outline of box
-  eps_core_SetColour(x, &ww);
+  eps_core_SetColour(x, &ww, 1);
 
   // Set linewidth and linetype of outline
   if (ww.USElinewidth) lw_scale = ww.linewidth;

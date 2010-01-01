@@ -69,7 +69,7 @@ void eps_text_RenderEPS(EPSComm *x)
   def.colour    = x->current->settings.TextColour;
   def.USEcolour = 1;
   with_words_merge(&merged, &x->current->with_data, &def, NULL, NULL, NULL, 1);
-  eps_core_SetColour(x, &merged);
+  eps_core_SetColour(x, &merged, 1);
   colstr = x->LastEPSColour;
 
   // Render text item to eps
