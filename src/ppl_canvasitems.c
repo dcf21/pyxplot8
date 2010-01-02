@@ -1293,7 +1293,8 @@ int directive_plot(Dict *command, int interactive, int replot)
        {        
         TempDict2 = (Dict *)ListIter2->data;
         DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
-        (*PlotItemPtr)->EveryList[i] = *tempint;
+        if (tempint != NULL) (*PlotItemPtr)->EveryList[i] = *tempint;
+        else                 (*PlotItemPtr)->EveryList[i] = -1;
         ListIter2 = ListIterate(ListIter2, NULL);
        }
      }

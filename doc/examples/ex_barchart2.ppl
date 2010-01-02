@@ -40,24 +40,26 @@ set xrange [0.1:10.4]
 set yrange [0:1.1]
 set nokey
 
-# Plot 0 (bottom left)
+# Plot 1 (bottom left)
 set origin 0*width, 0*width*gold_ratio
 set xlabel 'x'
 set ylabel 'y'
 set label 1 '(c)' 8.2,0.9
 plot 'examples/ex_barchart2.dat' with wboxes
 
-# Plot 1 (top left)
+# Plot 2 (top left)
 set origin 0*width, 1*width*gold_ratio
-set xlabel 'linkaxis 0'
+set axis x linked item 1 x
+set xformat ""
 set ylabel 'y'
 set label 1 '(a)' 8.2,0.9
 plot 'examples/ex_barchart2.dat' with boxes
 
-# Plot 2 (bottom right)
+# Plot 3 (bottom right)
 set origin 1*width, 0*width*gold_ratio
 set xlabel 'x'
-set ylabel 'linkaxis 0'
+set axis y linked item 1 y
+set yformat ""
 set boxwidth 0.0
 set boxfrom 0.5
 set samples 40
@@ -65,10 +67,12 @@ set label 1 '(d)' 8.2,0.9
 plot sin(x)*sin(x) with boxes fc 3 c 1, \
      cos(x)*cos(x) with boxes fc 2 c 1 
 
-# Plot 1 (top right)
+# Plot 4 (top right)
 set origin 1*width, 1*width*gold_ratio
-set xlabel 'linkaxis 1'
-set ylabel 'linkaxis 2'
+set axis x linked item 2 x
+set xformat ""
+set axis y linked item 3 y
+set yformat ""
 set boxwidth 0.4
 unset boxfrom
 set label 1 '(b)' 8.2,0.9

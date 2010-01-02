@@ -74,7 +74,7 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
   lw = EPS_DEFAULT_LINEWIDTH * lw_scale;
 
   if (with_data->USElinetype)  lt = with_data->linetype;
-  else                         lt = 0;
+  else                         lt = 1;
 
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 

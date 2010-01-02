@@ -132,8 +132,8 @@ static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL   
 void canvas_draw(unsigned char *unsuccessful_ops)
  {
   int i, j, termtype, status=0, CSPCommand;
-  static long TempFile_counter=0;
-  char EPSFilenameTemp[FNAME_LENGTH], TitleTemp[FNAME_LENGTH], FinalFilenameTemp[FNAME_LENGTH], GSOutputTemp[FNAME_LENGTH];
+  static long TempFile_counter=0, TeXFile_counter=0;
+  char EPSFilenameTemp[FNAME_LENGTH], TeXFilenameTemp[FNAME_LENGTH], TitleTemp[FNAME_LENGTH], FinalFilenameTemp[FNAME_LENGTH], GSOutputTemp[FNAME_LENGTH];
   wordexp_t WordExp;
   char *EnvDisplay;
   EPSComm comm;
@@ -170,13 +170,18 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   wordfree(&WordExp);
   comm.FinalFilename = FinalFilenameTemp;
 
+  // Create filename for temporary LaTeX document
+  comm.TeXFilename = TeXFilenameTemp;
+  TeXFile_counter++;
+  sprintf(TeXFilenameTemp, "%s%spyxplot_%d_%ld", settings_session_default.tempdir, PATHLINK, getpid(), TempFile_counter);
+
   // Case 1: EPS and PS terminals. Postscript output will be saved immediately in situ.
   if ((termtype == SW_TERMTYPE_EPS) || (termtype == SW_TERMTYPE_PS))
    {
     comm.EPSFilename = comm.FinalFilename; // eps or ps is actually what we're aiming to make, so save straight to user's chosen target
     DataFile_CreateBackupIfRequired(comm.EPSFilename);
     comm.title    = comm.EPSFilename; // Filename 'foo/bar/myplot.eps' --> title 'myplot.eps'
-    for (i=0; comm.title[i]!='\0'; i++) if ((comm.title[i]==PATHLINK[0])&&((i==0)||(comm.title[i-1]!='\\'))) { comm.title += i; i=0; }
+    for (i=0; comm.title[i]!='\0'; i++) if ((comm.title[i]==PATHLINK[0])&&((i==0)||(comm.title[i-1]!='\\'))) { comm.title += i+1; i=-1; }
    }
   else // Case 2: All other terminals. Create a temporary eps file for subsequent processing.
    {
@@ -380,7 +385,7 @@ void canvas_CallLaTeX(EPSComm *x)
   if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
 
   // Start writing LaTeX document
-  sprintf(filename, "%s.tex", x->EPSFilename);
+  sprintf(filename, "%s.tex", x->TeXFilename);
   output = fopen(filename, "w");
   if (output == NULL) { ppl_error(ERR_INTERNAL, "Could not create temporary LaTeX document"); *(x->status)=1; return; }
   FPRINTF_LINECOUNT(TextHeader1);
@@ -442,7 +447,7 @@ void canvas_CallLaTeX(EPSComm *x)
    }
 
   // Convert dvi into postscript fragments
-  sprintf(filename, "%s.dvi", x->EPSFilename);
+  sprintf(filename, "%s.dvi", x->TeXFilename);
   x->dvi = ReadDviFile(filename, x->status);
   if (*(x->status)) return; // DVI interpreter failed
 
@@ -484,7 +489,7 @@ void canvas_EPSWrite(EPSComm *x)
 
   // Write EPS header
   fprintf(epsout, "%s%s\n", "%!PS-Adobe-3.0", (settings_term_current.TermType == SW_TERMTYPE_PS)?"":" EPSF-3.0");
-  fprintf(epsout, "%%%%BoundingBox %d %d %d %d\n", (int)floor(x->bb_left), (int)floor(x->bb_bottom), (int)ceil(x->bb_right), (int)ceil(x->bb_top));
+  fprintf(epsout, "%%%%BoundingBox: %d %d %d %d\n", (int)floor(x->bb_left), (int)floor(x->bb_bottom), (int)ceil(x->bb_right), (int)ceil(x->bb_top));
   fprintf(epsout, "%%%%HiResBoundingBox: %f %f %f %f\n", x->bb_left, x->bb_bottom, x->bb_right, x->bb_top);
   fprintf(epsout, "%%%%Creator: (PyXPlot %s)\n", VERSION);
   fprintf(epsout, "%%%%Title: (%s)\n", x->title);

@@ -150,7 +150,7 @@ Colour = On
 DataStyle = Points
 Display = On
 DPI = 300
-FontSize = 0
+FontSize = 1
 FuncStyle = Lines
 Grid = Off
 GridAxisX = 1
@@ -191,7 +191,7 @@ TextVAlign = Bottom
 Title =
 Title_XOff = 0.0
 Title_YOff = 0.0
-TRange_Log = Off
+TRange_Log = False
 TRange_Max = 1.0
 TRange_Min = 0.0
 UnitAbbrev = On
@@ -202,10 +202,10 @@ View_XY = 60
 View_YZ = 30
 
 [terminal]
-Colour = Off
+Colour = On
 Colour_Err = Red
 Colour_Rep = Green
-Colour_Wrn = Brown
+Colour_Wrn = Amber
 Splash = On
 
 [styling]
@@ -598,7 +598,7 @@ filters, see Section~\ref{sec:filters}.
 
                Sets the vertical offset of the title of the plot from its default location at the top of the plot.
                \\
-{\tt TRange\_Log} & {\bf Possible values:} {\tt On}, {\tt Off}.
+{\tt TRange\_Log} & {\bf Possible values:} {\tt True}, {\tt False}.
 
                {\bf Analogous set command:} \indcmdts{set logscale t}
 
@@ -732,7 +732,7 @@ filters, see Section~\ref{sec:filters}.
 \end{longtable}
 
 The colours recognised by the {\tt COLOUR\_XXX} configuration options above
-are: {\tt Red}, {\tt Green}, {\tt Brown}, {\tt Blue}, {\tt Purple}, {\tt
+are: {\tt Red}, {\tt Green}, {\tt Amber}, {\tt Blue}, {\tt Purple}, {\tt
 Magenta}, {\tt Cyan}, {\tt White}, {\tt Normal}. The final option produces the
 default foreground colour of the terminal.
 

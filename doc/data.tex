@@ -30,6 +30,27 @@ and outline the facilities provided for data processing within PyXPlot.
 \section{Input filters}
 \label{sec:filters}
 
+By default, PyXPlot expects \datafile s to be in a simple plaintext format
+which is described in Section~\ref{sec:plot_datafiles}. Input filters provide a
+mechanism by which \datafile s in arbitrary formats can be read into PyXPlot.
+For each filter, a filename wildcard is supplied, and the filter is then applied to
+all \datafile s whose filenames match this wildcard. For example, by default
+PyXPlot has five input filters installed, as the {\tt show filters} command
+reveals:
+
+\begin{verbatim}
+set filter "*.fits"   "/usr/local/bin/pyxplot_fitshelper"
+set filter "*.gz"     "/bin/gunzip -c"
+set filter "*.log"    "/usr/local/bin/pyxplot_timehelper"
+set filter "ftp://*"  "/usr/bin/wget -O -"
+set filter "http://*" "/usr/bin/wget -O -"
+\end{verbatim}
+
+Each filter takes the form of a program which is launched by PyXPlot, passed
+the content the datafile on {\tt stdin}, and expected to output data to PyXPlot
+in plaintext format using {\tt stdout}. Any errors returned to {\tt stderr} are
+passed to the user.
+
 \section{Reading data from a pipe}
 
 PyXPlot usually reads data from a file, but it possible to read data via a pipe

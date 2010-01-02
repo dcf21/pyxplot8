@@ -109,11 +109,15 @@ static double FitResidual(FitComm *p)
    {
     i=0;
     sprintf(p->ScratchPad+i, "%s(", p->FunctionName); i+=strlen(p->ScratchPad+i);
-    x = p->FirstVals[k];
-    x.real = p->DataTable[j*p->NExpect+k];
-    x.imag = 0.0;
-    x.FlagComplex = 0;
-    for (k=0; k<p->NArgs; k++) { sprintf(p->ScratchPad+i, "%s,", ppl_units_NumericDisplay(&x, 0, 1, 20)); i+=strlen(p->ScratchPad+i); }
+    for (k=0; k<p->NArgs; k++)
+     {
+      x = p->FirstVals[k];
+      x.real = p->DataTable[j*p->NExpect+k];
+      x.imag = 0.0;
+      x.FlagComplex = 0;
+      sprintf(p->ScratchPad+i, "%s,", ppl_units_NumericDisplay(&x, 0, 1, 20));
+      i+=strlen(p->ScratchPad+i);
+     }
     if (p->NArgs>0) i--; // Remove final comma from list of arguments
     sprintf(p->ScratchPad+i, ")");
     ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);

@@ -31,7 +31,8 @@
 char *eps_LineType(int lt, double lw, double offset)
  {
   static char output[256];
-  lt = lt % 9;
+  lt = (lt-1) % 9;
+  while (lt<0) lt+=9;
   if      (lt==0) sprintf(output, "0 setlinecap [] %.2f setdash", offset);                                   // solid
   else if (lt==1) sprintf(output, "0 setlinecap [%.2f] %.2f setdash", 2*lw, offset);                         // dashed
   else if (lt==2) sprintf(output, "1 setlinecap [0 %.2f] %.2f setdash", 2*lw, offset);                       // dotted

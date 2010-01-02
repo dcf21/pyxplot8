@@ -44,7 +44,7 @@ typedef struct EPSComm {
   List *TextItems;
   int NTextItems;
   dviInterpreterState *dvi;
-  char *EPSFilename, *FinalFilename, *title;
+  char *EPSFilename, *TeXFilename, *FinalFilename, *title;
   char  LastEPSColour[256], LastEPSFillColour[256];
   double LastLinewidth;
   int LastLinetype;

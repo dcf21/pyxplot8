@@ -29,6 +29,7 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_funcsplice1.eps"
 
 # Main body of figure script
+set numerics errors quiet
 set xrange [-5:10]
 set yrange [-0.5:1]
 set xlabel "$x$"

@@ -66,7 +66,7 @@ void eps_circ_RenderEPS(EPSComm *x)
   lw = EPS_DEFAULT_LINEWIDTH * lw_scale;
 
   if (ww.USElinetype)  lt = ww.linetype;
-  else                 lt = 0;
+  else                 lt = 1;
 
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 

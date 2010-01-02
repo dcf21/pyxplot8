@@ -34,10 +34,8 @@ se width 20
 
 # We want a plot without axes, key or grid
 set nokey
-set xlabel 'invisible'
-set ylabel 'invisible'
-set x2label 'invisible'
-set y2label 'invisible'
+set axis x invisible
+set axis y invisible
 set nogrid
 
 # Labels for the states

@@ -50,14 +50,15 @@
 // Work out the default set of with words for a plot item
 void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour)
  {
-  int i;
+  int i,j;
 
   with_words_zero(output, 0);
   if (!colour) { output->colour = COLOUR_BLACK; output->USEcolour = 1; }
   else
    {
-    for (i=0; i<PALETTE_LENGTH; i++) if (settings_palette_current[i]==-1) break; // i now contains length of palette
-    i = (functions ? Fcounter : Dcounter) % i; // i is now the palette colour number to use
+    for (j=0; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break; // j now contains length of palette
+    i = (functions ? Fcounter : Dcounter) % j; // i is now the palette colour number to use
+    while (i<0) i+=j;
     if (settings_palette_current[i] > 0) { output->colour  = settings_palette_current[i]; output->USEcolour = 1; }
     else                                 { output->colourR = settings_paletteR_current[i]; output->colourG = settings_paletteG_current[i]; output->colourB = settings_paletteB_current[i]; output->USEcolourRGB = 1; }
    }
@@ -65,7 +66,7 @@ void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char
   output->USElinespoints = 1;
   output->fillcolour     = COLOUR_NULL;
   output->USEfillcolour  = 1;
-  output->linetype       = output->pointtype = (functions ? Fcounter : Dcounter);
+  output->linetype       = output->pointtype = (functions ? Fcounter+1 : Dcounter+1);
   output->USElinetype    = output->USEpointtype = 1;
   output->linewidth      = sg->LineWidth;
   output->pointlinewidth = sg->PointLineWidth;
@@ -253,11 +254,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         IF_NOT_INVISIBLE
          {
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
-          pt = pd->ww_final.pointtype % N_POINTTYPES;
+          pt = (pd->ww_final.pointtype-1) % N_POINTTYPES;
+          while (pt<0) pt+=N_POINTTYPES;
           x->PointTypesUsed[pt] = 1;
           sprintf(epsbuff, "%.2f %.2f pt%d", xpos, ypos, pt+1);
           eps_core_BoundingBox(x, xpos, ypos, pd->ww_final.pointsize*3);
-          ThreeDimBuffer_writeps(x, depth, 0, pd->ww_final.pointlinewidth, pd->ww_final.pointsize, last_colstr, epsbuff);
+          ThreeDimBuffer_writeps(x, depth, 1, pd->ww_final.pointlinewidth, pd->ww_final.pointsize, last_colstr, epsbuff);
          }
 
         // label point if instructed to do so

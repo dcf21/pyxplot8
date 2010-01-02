@@ -31,7 +31,7 @@ set output "examples/eps/ex_axistics.eps"
 # Main body of figure script
 set log x1x2
 set xrange [0.05:0.5]
-set x2range [0.05:0.5]
+set axis x2 top linked x
 set xtics 0.05, 2, 0.4
 set x2tics border \
      ("$\frac{1}{\pi}$" 1/pi,      "$\frac{1}{2\pi}$" 1/(2*pi), \

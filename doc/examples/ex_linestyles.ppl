@@ -31,10 +31,8 @@ set output "examples/eps/ex_linestyles.eps"
 # Main body of figure script
 set width 11.0
 set size ratio 1.0
-set xlabel 'invisible'
-set ylabel 'invisible'
-set x2label 'invisible'
-set y2label 'invisible'
+set axis x invisible
+set axis y invisible
 set nokey
 set texthalign left
 set textvalign centre
@@ -67,6 +65,7 @@ set label 205 'Line type \phantom{0}5' at gap+sepx*1 , sepy*4
 set label 206 'Line type \phantom{0}6' at gap+sepx*1 , sepy*5
 set label 207 'Line type \phantom{0}7' at gap+sepx*1 , sepy*6
 set label 208 'Line type \phantom{0}8' at gap+sepx*1 , sepy*7
+set label 209 'Line type \phantom{0}9' at gap+sepx*1 , sepy*7
 
 plot [-1:5][-6.5:0.5] 'examples/ex_linestyles.dat' i 0 u ($1+0*sepx):($2+ 0*sepy) w p pt  1, \
    '' i 0 u ($1+0*sepx):($2+ 1*sepy) w p pt  2, \

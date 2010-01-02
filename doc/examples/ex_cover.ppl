@@ -33,10 +33,8 @@ set multiplot
 set nodisplay
 set width 8
 
-set xlabel 'invisible'
-set ylabel 'invisible'
-set x2label 'invisible'
-set y2label 'invisible'
+set axis x invisible
+set axis y invisible
 set nokey
 logo_x = 0.0
 logo_y = 0.0

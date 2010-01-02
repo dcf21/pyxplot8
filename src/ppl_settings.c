@@ -411,7 +411,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
                     unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced)
  {
   char *tempstr, *tempstr2, DictName[32];
-  int  *tempint, cindex, i, j;
+  int  *tempint, cindex, i, j, palette_index;
   void *tmp;
   value valobj;
 
@@ -437,12 +437,14 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
       ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, errpos, temp_err_string, 0);
       if (*errpos>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
       if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-      if ((valobj.real <= INT_MIN) || (valobj.real >= INT_MAX)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+      if ((valobj.real <= INT_MIN+5) || (valobj.real >= INT_MAX-5)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
       for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
-      cindex   = settings_palette_current [((int)valobj.real)%j];
-      *outcolR = settings_paletteR_current[((int)valobj.real)%j];
-      *outcolG = settings_paletteG_current[((int)valobj.real)%j];
-      *outcolB = settings_paletteB_current[((int)valobj.real)%j];
+      palette_index = ((int)valobj.real-1)%j;
+      while (palette_index < 0) palette_index+=j;
+      cindex   = settings_palette_current [palette_index];
+      *outcolR = settings_paletteR_current[palette_index];
+      *outcolG = settings_paletteG_current[palette_index];
+      *outcolB = settings_paletteB_current[palette_index];
      }
     *outcol  = cindex;
     if (outcolRS !=NULL)

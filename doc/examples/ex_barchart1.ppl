@@ -41,51 +41,58 @@ set xrange [-10.9:10.9]
 set yrange [-1.2:1.2]
 set nokey
 
-# Plot 0 (bottom left)
+# Plot 1 (bottom left)
 set xlabel 'x'
 set ylabel 'y'
 set label 1 '(e)' at -9,0.8
 set label 2 'fsteps' -3.7,0.8
 plot 'examples/ex_barchart1.dat' with fsteps, '' with points
 
-# Plot 1 (bottom right)
+# Plot 2 (bottom right)
 set origin 1*width, 0*width*gold_ratio
 set xlabel 'x'
-set ylabel 'linkaxis 0'
+set axis y linked item 1 y
+set yformat ""
 set label 1 '(f)' at -9,0.8
 set label 2 'histeps' -3.7,0.8
 plot 'examples/ex_barchart1.dat' with histeps, '' with points
 
-# Plot 2 (middle left)
+# Plot 3 (middle left)
 set origin 0*width, 1*width*gold_ratio
-set xlabel 'linkaxis 0'
+set axis x linked item 1 x
+set xformat ""
 set ylabel 'y'
 set label 1 '(c)' at -9,0.8
 set label 2 'impulses' -3.7,0.8
 plot 'examples/ex_barchart1.dat' with impulses, '' with points
 
-# Plot 3 (middle right)
+# Plot 4 (middle right)
 set origin 1*width, 1*width*gold_ratio
-set xlabel 'linkaxis 1'
-set ylabel 'linkaxis 2'
+set axis x linked item 2 x
+set xformat ""
+set axis y linked item 3 y
+set yformat ""
 set label 1 '(d)' at -9,0.8
 set label 2 'steps' -3.7,0.8
 plot 'examples/ex_barchart1.dat' with steps, '' with points
 
-# Plot 4 (top left)
+# Plot 5 (top left)
 set origin 0*width, 2*width*gold_ratio
 set boxfrom -0.5
-set xlabel 'linkaxis 0'
+set axis x linked item 1 x
+set xformat ""
 set ylabel 'y'
 set label 1 '(a)' at -9,0.8
 set label 2 'boxes' -3.7,0.8
 plot 'examples/ex_barchart1.dat' with boxes, '' with points
 
-# Plot 5 (top right)
+# Plot 6 (top right)
 set origin 1*width, 2*width*gold_ratio
 unset boxfrom
-set xlabel 'linkaxis 1'
-set ylabel 'linkaxis 4'
+set axis x linked item 2 x
+set xformat ""
+set axis y linked item 5 y
+set yformat ""
 set label 1 '(b)' at -9,0.8
 set label 2 'boxes' -3.7,0.8
 plot 'examples/ex_barchart1.dat' with boxes, '' with points
