@@ -46,23 +46,23 @@ flooded with plot windows.
 
 If this is not desired, however -- for example if you want to compare two plots
 -- old graphs can be kept visible when plotting further graphs by using the the
-{\tt X11\_multiwindow} terminal:\index{X11 terminal}\index{multiple windows}
+{\tt X11\_MultiWindow} terminal:\index{X11 terminal}\index{multiple windows}
 
-\begin{verbatim} 
-set terminal X11_singlewindow
+\begin{verbatim}
+set terminal X11_SingleWindow
 plot sin(x)
 plot cos(x)  <-- first plot window disappears
 \end{verbatim}
 
 \noindent c.f.:
 
-\begin{verbatim} 
-set terminal X11_multiwindow
+\begin{verbatim}
+set terminal X11_MultiWindow
 plot sin(x)
 plot cos(x)  <-- first plot window remains
 \end{verbatim}
 
-As an additional option, the {\tt X11\_persist} terminal keeps plot windows
+As an additional option, the {\tt X11\_Persist} terminal keeps plot windows
 open after PyXPlot exits; the above two terminals close all plot windows upon
 exit.
 
@@ -74,10 +74,12 @@ to send directly to a printer.
 
 The {\tt set terminal} command takes many options. Its complete syntax is:
 
-\begin{verbatim} 
-set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
-               postscript | eps | pdf | gif | png | jpg }
+\begin{verbatim}
+set terminal { X11_SingleWindow | X11_MultiWindow | X11_Persist |
+               bmp | eps | gif | jpeg | pdf | png | postscript |
+               svg | tiff }
              { colour | color | monochrome }
+             { dpi <value> }
              { portrait | landscape }
              { invert | noinvert }
              { transparent | solid }
@@ -88,59 +90,59 @@ set terminal { X11_singlewindow | X11_multiwindow | X11_persist |
 The following table lists the effects which each of these settings has:
 
 \begin{longtable}{p{3cm}p{9cm}}
-{\tt x11\_singlewindow} & Displays plots on the screen (in X11 windows, using \ghostview). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
-{\tt x11\_multiwindow} & As above, but each new plot appears in a new window, and the old plots remain visible. As many plots as may be desired can be left on the desktop simultaneously.\\
-{\tt x11\_persist} & As above, but plot windows remain open after PyXPlot closes.\\
-{\tt postscript} & Sends output to a postscript file. The filename for this file should be set using {\tt set output}. {\bf [default when running non-interactively; see below]}\index{postscript output}\\
+{\tt X11\_SingleWindow} & Displays plots on the screen (in X11 windows, using \ghostview). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
+{\tt X11\_MultiWindow} & As above, but each new plot appears in a new window, and the old plots remain visible. As many plots as may be desired can be left on the desktop simultaneously.\\
+{\tt X11\_Persist} & As above, but plot windows remain open after PyXPlot closes.\\
+{\tt bmp} & Sends output to a Windows bitmap ({\tt .bmp}) file. The filename for this file should be set using {\tt set output}. This is a bitmap graphics terminal. \index{bmp output}\\
 {\tt eps} & As above, but produces encapsulated postscript.\index{encapsulated postscript}\index{postscript!encapsulated}\\
+{\tt gif} & As above, but produces a gif image. This is a bitmap graphics terminal.\index{gif output}\\
+{\tt jpeg} & As above, but produces a jpeg image. This is a bitmap graphics terminal.\index{jpeg output}\\
 {\tt pdf} & As above, but produces pdf output.\index{pdf output}\\
-{\tt gif} & Sends output to a gif image file; as above, the filename should be set using {\tt set output}.\index{gif output}\\
-{\tt png} & As above, but produces a png image.\index{png output}\\
-{\tt jpg} & As above, but produces a jpeg image.\index{jpeg output}\\
+{\tt png} & As above, but produces a png image. This is a bitmap graphics terminal.\index{png output}\\
+{\tt postscript} & As above, but sends output to a postscript file. {\bf [default when running non-interactively; see below]}\index{postscript output}\\
+{\tt svg} & As above, but produces an svg image.\footnote{The {\tt svg} output terminal is experimental and may be unstable. It relies upon the use of the {\tt svg} output device in Ghostscript, which may not be present on all systems.}\index{svg output}\\
+{\tt tiff} & As above, but produces a tiff image. This is a bitmap graphics terminal.\index{tiff output}\\
 {\tt colour} & Allows datasets to be plotted in colour. Automatically they will be displayed in a series of different colours, or alternatively colours may be specified using the {\tt with colour} plot modifier (see below). {\bf [default]}\index{colour output}\\
 {\tt color} & Equivalent US spelling of the above. \\
-{\tt monochrome} & Opposite to the above; all datasets will be plotted in black.\index{monochrome output}\\
+{\tt monochrome} & Opposite to the above; all datasets will be plotted in black by default.\index{monochrome output}\\
 {\tt portrait} & Sets plots to be displayed in upright (normal) orientation. {\bf [default]}\index{portrait orientation}\\
 {\tt landscape} & Opposite of the above; produces side-ways plots. Not very useful when displayed on the screen, but you fit more on a sheet of paper that way around.\index{landscape orientation}\\
-{\tt invert} & Modifier for the gif, png and jpg terminals; produces output with inverted colours.\footnote{This terminal setting is useful for producing plots to embed in talk slideshows, which often contain bright text on a dark background. It only works when producing bitmapped output, though a similar effect can be achieved in postscript using the {\tt set textcolour} and {\tt set axescolour} commands (see Section~\ref{sec:set_colours}).}\index{colours!inverting}\\
-{\tt noinvert} & Modifier for the gif, png and jpg terminals; opposite to the above. {\bf [default]}\\
-{\tt transparent} & Modifier for the gif and png terminals; produces output with a transparent background.\index{transparent terminal}\index{gif output!transparency}\index{png output!transparency}\\
-{\tt solid} & Modifier for the gif and png terminals; opposite to the above. {\bf [default]}\\
-{\tt antialias} & Modifier for the gif, jpg and png terminals; produces antialiased output, with colour boundaries smoothed to disguise the effects of pixelisation {\bf [default]}\\
-{\tt noantialias} & Modifier for the gif, jpg and png terminals; opposite to the
-above\\
-{\tt enlarge} & Enlarge or shrink contents to fit the current paper
-size.\index{enlarging output}\\
+{\tt invert} & Modifier for the bitmap output terminals identified above -- i.e.\ the {\tt bmp}, {\tt gif}, {\tt jpeg}, {\tt png} and {\tt tiff} terminals -- which produces output with inverted colours.\footnote{This terminal setting is useful for producing plots to embed in talk slideshows, which often contain bright text on a dark background. It only works when producing bitmapped output, though a similar effect can be achieved in postscript using the {\tt set textcolour} and {\tt set axescolour} commands (see Section~\ref{sec:set_colours}).}\index{colours!inverting}\\
+{\tt noinvert} & Modifier for the bitmap output terminals identified above; opposite to the above. {\bf [default]}\\
+{\tt transparent} & Modifier for the {\tt gif} and {\tt png} terminals; produces output with a transparent background.\index{transparent terminal}\index{gif output!transparency}\index{png output!transparency}\\
+{\tt solid} & Modifier for the {\tt gif} and {\tt png} terminals; opposite to the above. {\bf [default]}\\
+{\tt antialias} & Modifier for the bitmap output terminals identified above; produces antialiased output, with colour boundaries smoothed to disguise the effects of pixelisation {\bf [default]}\\
+{\tt noantialias} & Modifier for the bitmap output terminals identified above; opposite to the above\\
+{\tt enlarge} & Enlarge or shrink contents to fit the current paper size.\index{enlarging output}\\
 {\tt noenlarge} & Do not enlarge output; opposite to the above. {\bf [default]}\\
 \end{longtable}
 
-The default terminal is normally {\tt x11\_singlewindow}, matching
-approximately the behaviour of \gnuplot. However, there is an exception to this.
-When PyXPlot is used non-interactively -- i.e.\ one or more command scripts are
-specified on the command line, and PyXPlot exits as soon as it finishes
-executing them -- the {\tt x11\_singlewindow} is not a very sensible
-terminal to use: any plot window would close as soon as PyXPlot exited. The
-default terminal in this case changes to {\tt postscript}.
+The default terminal is normally {\tt X11\_SingleWindow}, except when PyXPlot
+is used non-interactively -- i.e.\ one or more command scripts are specified on
+the command line, and PyXPlot exits as soon as it finishes executing them. In
+this case, the {\tt X11\_SingleWindow} would not be a very sensible terminal to
+use as any plot window would close as soon as PyXPlot exited. The default
+terminal in this case changes to {\tt postscript}.
 
 This rule does not apply when the special `--' filename is specified in a list
-of command scripts on the command line, to produce an interactive terminal
-between running a series of scripts. In this case, PyXPlot detects that the
-session will be interactive, and defaults to the usual
-{\tt x11\_singlewindow} terminal.
-
-An additional exception is on machines where the {\tt DISPLAY} environment
-variable\index{display environment variable@{\tt DISPLAY} environment
-variable} is not set. In this case, PyXPlot detects that it has access to no
+of command scripts on the command line, where an interactive terminal will
+operate between running a series of scripts. In this case, PyXPlot detects that
+the session will be interactive, and defaults to the usual {\tt
+X11\_SingleWindow} terminal. Conversely, on machines where the {\tt DISPLAY}
+environment variable\index{display environment variable@{\tt DISPLAY}
+environment variable} is not set, PyXPlot detects that it has access to no
 X-terminal on which to display plots, and defaults to the {\tt postscript}
 terminal.
 
-The {\tt gif}, {\tt png} and {\tt jpg} terminals result in some loss of image
-quality, since the plot has to be sampled into a bitmapped graphic format.  By
-default, this sampling is performed at $300\,\mathrm{dpi}$, though this may be
-changed using the command {\tt set dpi <value>}. Alternatively, it may be
-changed using the {\tt DPI} option in the {\tt settings} section of a
-configuration file (see Chapter~\ref{ch:configuration}).\indcmd{set dpi}
-\index{bitmap output!resolution}\index{image resolution}
+Use of the bitmap output terminals identified in the table above -- i.e.\ the
+{\tt bmp}, {\tt gif}, {\tt jpeg}, {\tt png} and {\tt tiff} terminals --
+inevitably results in some loss of image quality, since the plot has to be
+rasterised into a bitmapped graphic image.  By default, this rasterisation is
+performed at $300\,\mathrm{dpi}$, though this may be changed using the command
+{\tt set terminal dpi <value>}. Alternatively, it may be changed using the {\tt
+DPI} option in the {\tt settings} section of a configuration file (see
+Chapter~\ref{ch:configuration}).\index{set terminal command!dpi modifier@{\tt
+dpi} modifier}\index{bitmap output!resolution}\index{image resolution}
 
 \section{Backing Up Over-Written Files}
 
@@ -227,19 +229,17 @@ set pointlinewidth 2
 \end{verbatim}
 
 \noindent would set the default line width used when drawing \datapoint s. Both
-here, and in the {\tt plot} command, the abbreviation {\tt plw} is valid. 
+here, and in the {\tt plot} command, the abbreviation {\tt plw} is valid.
 
-\subsection{Upper and Lower Limit Data Points}
+\subsection{Upper- and Lower-Limit Data Points}
 
-PyXPlot can plot \datapoint s using the standard upper- and lower-limit
-symbols.\index{lower-limit datapoints}\index{upper-limit datapoints} No special
-syntax is required for this; these symbols are pointtypes\footnote{The {\tt
-pointtype} modifier was introduced in Section~\ref{sec:pointtype}.} 12 and 13
-respectively, obtained as follows:
+The plot styles {\tt upperlimits} and {\tt lowerlimits} may be used to plot
+\datapoint s using the standard upper- and lower-limit
+symbols.\index{lower-limit datapoints}\index{upper-limit datapoints}:
 
 \begin{verbatim}
-plot 'upperlimits.dat' with points pointtype 12
-plot 'lowerlimits.dat' with points pointtype 13
+plot 'upperlimits.dat' with upperlimits
+plot 'lowerlimits.dat' with lowerlimits
 \end{verbatim}
 
 \subsection{Drawing Arrows}
@@ -258,91 +258,102 @@ plot 'data.dat' with arrows_nohead
 plot 'data.dat' with arrows_twohead
 \end{verbatim}
 
-The syntax {\tt with arrows} is a shorthand for {\tt with
-arrows\_head}.\footnote{This plot style is analogous to the \indpst{vectors}
-plot style in Version~4 of \gnuplot.}
+The syntax {\tt with arrows} is a shorthand for {\tt with arrows\_head}.
 
 \subsection{Error Bars}
-
 \index{errorbars}\label{sec:errorbars}
-In \gnuplot, when one uses errorbars, one can specify either the size of the
-errorbar, or the minimum to maximum range of the errorbar. Both of these usages
-share a common syntax, and \gnuplot's behaviour depends upon the number of
-columns of data provided:
+
+Points may be drawn with error bars either by specifying the size of the error
+bar together with its centre point, in the fashion $5\pm2$, or by specifying a
+minimum to maximum range for the error bar, in the fashion $5^{+2}_{-3}$. The
+former is achieved using the syntax:
 
 \begin{verbatim}
 plot 'data.dat' with yerrorbars
 \end{verbatim}
 
-\noindent Given a \datafile\ with three columns, this takes the third column to
-indicate the size of the $y$-errorbar. Given a four-column \datafile, it takes
-the third and fourth columns to indicate the minimum to maximum range to be
-marked out by the errorbar.
-
-To avoid confusion, a different syntax is adopted in PyXPlot. The syntax:
-
-\begin{verbatim}
-plot 'data.dat' with yerrorbars
-\end{verbatim}
-
-\noindent always assumes that the third column of the \datafile\ indicates the
-size of the errorbar, regardless of whether a fourth is present. The syntax:
+\noindent which takes three columns of data: these are the $x$- and
+$y$-coordinates of the centre point about which the error bar is to be placed,
+and the magnitude of the error bar along the $y$-axis. The latter is achieved
+using the syntax:
 
 \begin{verbatim}
 plot 'data.dat' with yerrorrange
 \end{verbatim}
 
-\noindent always assumes that the third and fourth columns indicate the minimum
-to maximum range of the errorbar.
+\noindent which takes four columns of data: these are the $x$- and
+$y$-coordinates of the centre point about which the error bar is to be placed,
+the position of the bottom of the error bar along the $y$-axis, and the
+position of the top of the error bar along the $y$-axis.
 
-\vspace{0.5cm}
-For clarity, a complete list of the errorbar plot styles available in PyXPlot
-is given below:
+Similar plot styles exist with the letter {\tt y} replaced with the letter {\tt
+x} to produce error bars along the $x$-axis. The plot styles {\tt xyerrorbars}
+and {\tt xyerrorrange} simultaneously produce horizontal and vertical error
+bars -- the former takes four columns of data and draws the sizes of the
+horizontal and vertical error bars from the third and fourth data columns
+respectively, meanwhile the latter takes six columns of data and draws the
+horizontal minimum, horizontal maximum, vertical minimum and vertical maximum
+from columns $4$--$6$ respectively.
 
-\begin{tabular}{p{2.5cm}p{7.5cm}}
+The plot styles {\tt errorbars} and {\tt errorrange} are shorthands for {\tt
+yerrorbars} and {\tt yerrorrange} respectively. For clarity, a complete list of
+the errorbar plot styles available in the $xy$-plane in PyXPlot is given below:
+
+\begin{longtable}{p{2.5cm}p{7.5cm}}
 \indpst{yerrorbars} & Vertical errorbars; size drawn from the third data column. \\
 \indpst{xerrorbars} & Horizontal errorbars; size drawn from the third data column. \\
 \indpst{xyerrorbars} & Horizontal and vertical errorbars; sizes drawn from the third and fourth data columns respectively.\\
 \indpst{errorbars} & Shorthand for {\tt yerrorbars}. \\
-\end{tabular}
-
-\begin{tabular}{p{2.5cm}p{7.5cm}}
 \indpst{yerrorrange} & Vertical errorbars; minimum drawn from the third data column, maximum from the fourth.\\
 \indpst{xerrorrange} & Horizontal errorbars; minimum drawn from the third data column, maximum from the fourth.\\
 \indpst{xyerrorrange} & Horizontal and vertical errorbars; horizontal minimum drawn from the third data column and maximum from the fourth; vertical minimum drawn from the fifth and maximum from the sixth.\\
 \indpst{errorrange} & Shorthand for {\tt yerrorrange}. \\
-\end{tabular}
+\end{longtable}
+
+Corresponding plot styles exist for producing error bars on any combination of
+the $x$-, $y$- and $z$-axes of three-dimensional plots.
 
 \subsection{Plotting Functions with Errorbars, Arrows, or More}
 
-In \gnuplot, when a function (as opposed to a \datafile) is plotted, only those
-plot styles which accept two columns of data can be used -- for example,
-{\tt lines} or {\tt points}. This means that it is not possible to plot a
-function with errorbars. In PyXPlot, this is possible using the following
-syntax:
+The use of plot styles such as {\tt errorbars} when plotting functions, as
+opposed to \datafile s, often requires more than one function to be supplied.
+For example, whilst the syntax
+
+\begin{verbatim}
+plot sin(x) with lines
+\end{verbatim}
+
+\noindent is sufficient for the {\tt lines} plot style, which only takes two
+columns of data -- in this case, $x$ and $\sin(x)$ -- it is not sufficient for
+the {\tt yerrorbars} plot style which takes three columns of data. In such
+cases, the syntax
 
 \begin{verbatim}
 plot f(x):g(x) with yerrorbars
 \end{verbatim}
 
-\noindent Two functions are supplied, separated by a colon; plotting proceeds
-as if a \datafile\ had been supplied, containing values of $x$ in column 1,
-values of $f(x)$ in column 2, and values of $g(x)$ in column 3. This may be
-useful, for example, if $g(x)$ measures the intrinsic uncertainty in $f(x)$.
-The {\tt using} modifier may also be used:
+\noindent is used. In this case, two functions are supplied, separated by a
+colon; plotting proceeds as if a \datafile\ had been supplied, containing
+values of $x$ in column~1, values of $f(x)$ in column~2, and values of $g(x)$
+in column~3. In this example, $g(x)$ provides the uncertainty in the value of
+$f(x)$.  The {\tt using} modifier may also be used in combination with such
+syntax, as in
 
 \begin{verbatim}
 plot f(x):g(x) using 2:3
 \end{verbatim}
 
-Here, $g(x)$ would be plotted on the $y$-axis, against $f(x)$ on the $x$-axis.
-It should be noted, however, that the range of values of $x$ used would still
-correspond to the range of the plot's horizontal axis. If the above were to be
-attempted with an autoscaling horizontal axis, the result might be rather
-unexpected -- PyXPlot would find itself autoscaling the $x$-axis range to the
-spread of values of $f(x)$, but find that this itself changed depending upon
-the range of the $x$-axis.\footnote{We're aware that this is not good. Expect
-it to change in a future release.}
+\noindent though this example is not sensible. $g(x)$ would be plotted on the
+$y$-axis, against $f(x)$ on the $x$-axis. However, this is unlikely to be
+sensible because the range of values of $x$ substituting into these expressions
+would correspond to the range of the plot's horizontal axis. The result might
+be particularly unexpected if the above were attempted with an autoscaling
+horizontal axis -- PyXPlot would find itself autoscaling the $x$-axis range to
+the spread of values of $f(x)$, but find that this itself changed depending
+upon the range of the $x$-axis. In this case, the user should have used the
+{\tt parametric} plot option.
+
+\subsection{Plotting parametric functions}
 
 \section{Barcharts and Histograms}
 \label{sec:barcharts}\index{bar charts}
@@ -355,7 +366,7 @@ it to change in a future release.}
 
 Bar charts and histograms can be produced using the \indpst{boxes} plot style:
 
-\begin{verbatim} 
+\begin{verbatim}
 plot 'data.dat' with boxes
 \end{verbatim}
 
@@ -388,7 +399,7 @@ As a third alternative, it is also possible to specify different widths for
 each bar manually, in an additional column of the input \datafile. To achieve
 this behaviour, the \indpst{wboxes} plot style should be used:
 
-\begin{verbatim} 
+\begin{verbatim}
 plot 'data.dat' using 1:2:3 with wboxes
 \end{verbatim}
 
@@ -402,7 +413,7 @@ histogram. However, should it be desired for the bars to start from a different
 vertical point, this may be achieved by using the \indcmdt{set boxfrom},
 for example:
 
-\begin{verbatim} 
+\begin{verbatim}
 set boxfrom 5
 \end{verbatim}
 
@@ -427,7 +438,7 @@ produce this image are available on the PyXPlot website at
 The bars may be filled using the {\tt with} \indmodt{fillcolour} modifier,
 followed by the name of a colour:
 
-\begin{verbatim} 
+\begin{verbatim}
 plot 'data.dat' with boxes fillcolour blue
 plot 'data.dat' with boxes fc 4
 \end{verbatim}
@@ -444,7 +455,7 @@ If several \datapoint s are supplied to the \indpst{boxes} or \indpst{wboxes}
 plot styles at a common $x$-co-ordinate, then the bars are stacked one above
 another into a stacked barchart. Consider the following \datafile:
 
-\begin{verbatim} 
+\begin{verbatim}
 1 1
 2 2
 2 3
@@ -465,8 +476,8 @@ Figures~\ref{fig:ex_barchart1}(d), (e) and (f).  As is illustrated in these
 panels, three flavours of steps are available:
 
 \begin{verbatim}
-plot 'data.dat' with steps 
-plot 'data.dat' with fsteps 
+plot 'data.dat' with steps
+plot 'data.dat' with fsteps
 plot 'data.dat' with histeps
 \end{verbatim}
 
@@ -702,23 +713,22 @@ website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.\\
 \centerline{\includegraphics{examples/eps/ex_legends.eps}}
 }
 
-\section{The {\tt linestyle} Keyword}
+\section{The {\tt style} Keyword}
 
-At times, the string of style keywords placed after the {\tt with} modifier
-in {\tt plot} commands can grow rather unwieldy in its length. For clarity,
-frequently used plot styles can be stored as {\it linestyles}; despite the name,
-this is true of styles involving points as well as lines. The syntax for
-setting a linestyle is:
+At times, the string of style keywords placed after the {\tt with} modifier in
+{\tt plot} commands can grow rather unwieldy in its length. For clarity,
+frequently used plot styles can be stored as numbered plot {\it styles}.  The
+syntax for setting a numbered plot style is:
 
 \begin{verbatim}
-set linestyle 2 points pointtype 3
+set style 2 points pointtype 3
 \end{verbatim}
 
-\noindent where the {\tt 2} is the identification number of the linestyle. In a
-subsequent {\tt plot} statement, this linestyle can be recalled as follows:
+\noindent where the {\tt 2} is the identification number of the style. In a
+subsequent {\tt plot} statement, this style can be recalled as follows:
 
 \begin{verbatim}
-plot sin(x) with linestyle 2
+plot sin(x) with style 2
 \end{verbatim}
 
 \section{Colour Plotting}

@@ -334,10 +334,10 @@ filters, see Section~\ref{sec:filters}.
 
                Sets whether output should be colour ({\tt On}) or monochrome ({\tt Off}).
                \\
-{\tt DataStyle} & {\bf Possible values:} Any plot style. 
+{\tt DataStyle} & {\bf Possible values:} Any plot style.
 
                {\bf Analogous set command:} \indcmdts{set data style}
-                   
+
                Sets the plot style used by default when plotting \datafile s.
                \\
 {\tt Display} & {\bf Possible values:} {\tt On}, {\tt Off}.
@@ -599,25 +599,25 @@ filters, see Section~\ref{sec:filters}.
                Sets the vertical offset of the title of the plot from its default location at the top of the plot.
                \\
 {\tt TRange\_Log} & {\bf Possible values:} {\tt On}, {\tt Off}.
- 
+
                {\bf Analogous set command:} \indcmdts{set logscale t}
-               
+
                Sets whether the $t$-axis -- used for parametric plotting -- is linear or logarithmic.
                \\
 {\tt TRange\_Max} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set trange}
-               
+
                Sets upper limit of the $t$-axis, used for parametric plotting.
                \\
 {\tt TRange\_Min} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set trange}
-               
+
                Sets lower limit of the $t$-axis, used for parametric plotting.
                \\
 {\tt UnitAbbrev} & {\bf Possible values:} {\tt On}, {\tt Off}.
- 
+
                {\bf Analogous set command:} \indcmdts{set unit}
 
                Sets whether physical units are displayed in abbreviated form, e.g.\ {\tt mm}, or in full, e.g.\ {\tt millimetres}.
@@ -658,7 +658,7 @@ filters, see Section~\ref{sec:filters}.
 
 \begin{longtable}{p{3.4cm}p{9cm}}
 {\tt Arrow\_HeadAngle} & {\bf Possible values:} Any floating-point number.
-               
+
                Sets the angle, in degrees, at which the two sides of arrow heads meet at its point.
                \\
 {\tt Arrow\_HeadSize} & {\bf Possible values:} Any floating-point number.
@@ -742,7 +742,7 @@ default foreground colour of the terminal.
 The {\tt units} section can be used to define new physical units for use within
 PyXPlot's mathematical environment. Each line should take the format of
 \begin{verbatim}
-<l_sing> \[ / <s_sing> \] \[ / <lt_sing> \] 
+<l_sing> \[ / <s_sing> \] \[ / <lt_sing> \]
    \[ / <l_plur> \] \[ / <s_plur> \] \[ / <lt_plur> \]
    : <quantity_name> = \[ <definition> \]
 \end{verbatim}

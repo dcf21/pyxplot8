@@ -134,6 +134,7 @@ void ppl_settings_makedefault()
   settings_graph_default.BoxFromAuto           = 1;
   ppl_units_zero(&(settings_graph_default.BoxWidth));
   settings_graph_default.BoxWidthAuto          = 1;
+  settings_graph_default.clip                  = SW_ONOFF_OFF;
   with_words_zero(&(settings_graph_default.DataStyle),1);
   settings_graph_default.DataStyle.linespoints = SW_STYLE_POINTS;
   settings_graph_default.FontSize              = 1.0;

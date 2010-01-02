@@ -359,6 +359,14 @@ void directive_set(Dict *command)
     settings_term_current.CalendarIn  = settings_term_default.CalendarIn;
     settings_term_current.CalendarOut = settings_term_default.CalendarOut;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"clip")==0)) /* set clip */
+   {
+    sg->clip = SW_ONOFF_ON;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"clip")==0)) /* unset clip */
+   {
+    sg->clip = settings_graph_default.clip;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"display")==0)) /* set display */
    {
     settings_term_current.display = SW_ONOFF_ON;
@@ -634,6 +642,10 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nobackup")==0)) /* set nobackup */
    {
     settings_term_current.backup = SW_ONOFF_OFF;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"noclip")==0)) /* set noclip */
+   {
+    sg->clip = SW_ONOFF_OFF;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nodisplay")==0)) /* set nodisplay */
    {
@@ -1884,6 +1896,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.CalendarOut, SW_CALENDAR_INT, (void *)SW_CALENDAR_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "calendarout", buf, (settings_term_current.CalendarOut == settings_term_default.CalendarOut), "Selects the historical year in which the transition is made between Julian and Gregorian calendars when displaying dates");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "clip",1)>=0))
+   {
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->clip, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
+    directive_show3(out+i, ItemSet, 0, interactive, "clip", buf, (sg->clip == settings_graph_default.clip), "Selects whether point symbols which extend over the axes of graphs are allowed to do so, or are clipped at the edges");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))

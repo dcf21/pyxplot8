@@ -61,13 +61,13 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
    {
     if (!Yx)
      {
-      fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", left, *ypos, right, *ypos);
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", left, *ypos, right, *ypos);
       eps_core_BoundingBox(x, left , *ypos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
       eps_core_BoundingBox(x, right, *ypos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
      }
     else
      {
-      fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", *ypos, left, *ypos, right);
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", *ypos, left, *ypos, right);
       eps_core_BoundingBox(x, *ypos, left , EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
       eps_core_BoundingBox(x, *ypos, right, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
      }
@@ -101,13 +101,13 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
           // Stroke the ticks
           if (!Yx)
            {
-            fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", lrpos, udpos1, lrpos, udpos2);
+            fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", lrpos, udpos1, lrpos, udpos2);
             eps_core_BoundingBox(x, lrpos, udpos1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
             eps_core_BoundingBox(x, lrpos, udpos2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
            }
           else
            {
-            fprintf(x->epsbuffer, "%.2f %.2f moveto %.2f %.2f lineto stroke\n", udpos1, lrpos, udpos2, lrpos);
+            fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", udpos1, lrpos, udpos2, lrpos);
             eps_core_BoundingBox(x, udpos1, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
             eps_core_BoundingBox(x, udpos2, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
            }

@@ -619,6 +619,10 @@ void eps_plot_RenderEPS(EPSComm *x)
   if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
   else                                                height = width * x->current->settings.aspect;
 
+  // Turn on clipping if 'set clip' is set
+  if (x->current->settings.clip == SW_ONOFF_ON)
+   fprintf(x->epsbuffer, "gsave\nnewpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nclip newpath\n",origin_x,origin_y,origin_x+width,origin_y,origin_x+width,origin_y+height,origin_x,origin_y+height);
+
   // Render gridlines
 
   // Activate three-dimensional buffer if graph is 3D
@@ -642,6 +646,10 @@ void eps_plot_RenderEPS(EPSComm *x)
 
     pd=pd->next; i++;
    }
+
+  // Turn off clipping if 'set clip' is set
+  if (x->current->settings.clip == SW_ONOFF_ON)
+   { fprintf(x->epsbuffer, "grestore\n"); x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0'; }
 
   // Render axes
   eps_plot_axespaint(x, origin_x, origin_y, width, height);

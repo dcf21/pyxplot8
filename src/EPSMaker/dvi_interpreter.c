@@ -929,7 +929,7 @@ int dviPostscriptMoveto(dviInterpreterState *interp)
   double x, y;
   x = interp->state->h * interp->scale;
   y = 765 - interp->state->v * interp->scale;
-  snprintf(s, SSTR_LENGTH, "%f %f moveto\n", x, y);
+  snprintf(s, SSTR_LENGTH, "newpath\n%f %f moveto\n", x, y);
   if ((err=dviPostscriptAppend(interp, s))!=0) return err;
 
   // If we don't have a current position make one, else set the current ps position to the dvi one

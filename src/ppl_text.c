@@ -91,17 +91,17 @@ Error: Unrecognised command.\n\
 
 sprintf(txt_valid_set_options, "\n\
 'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
-'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style',\n\
-'display', 'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
-'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale', 'linewidth',\n\
-'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
-'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot', 'nostyle',\n\
-'notitle', 'no<m>[xyz]<n>format', 'no<m>[xyz]<n>tics', 'numerics', 'origin',\n\
-'output', 'palette', 'papersize', 'pointlinewidth', 'pointsize', 'preamble',\n\
-'projection', 'samples', 'seed', 'size', 'size noratio', 'size ratio', 'size\n\
-square', 'style', 'terminal', 'textcolour', 'texthalign', 'textvalign',\n\
-'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
-'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'data\n\
+style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
+'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale',\n\
+'linewidth', 'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup',\n\
+'nodisplay', 'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot',\n\
+'nostyle', 'notitle', 'no<m>[xyz]<n>format', 'no<m>[xyz]<n>tics', 'numerics',\n\
+'origin', 'output', 'palette', 'papersize', 'pointlinewidth', 'pointsize',\n\
+'preamble', 'projection', 'samples', 'seed', 'size', 'size noratio', 'size\n\
+ratio', 'size square', 'style', 'terminal', 'textcolour', 'texthalign',\n\
+'textvalign', 'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format',\n\
+'[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set_noword, "\n\
@@ -113,16 +113,16 @@ sprintf(txt_unset_noword, "\n\
 Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 \n\
 'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
-'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'data style',\n\
-'display', 'filter', 'fontsize', 'function style', 'grid', 'gridmajcolour',\n\
-'gridmincolour', 'key', 'keycolumns', 'label', 'linewidth', 'logscale',\n\
-'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay', 'nogrid', 'nokey',\n\
-'nolabel', 'nolinewidth', 'nologscale', 'nomultiplot', 'notitle',\n\
-'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette', 'papersize',\n\
-'pointlinewidth', 'pointsize', 'preamble', 'projection', 'samples', 'size',\n\
-'style', 'terminal', 'textcolour', 'texthalign', 'textvalign', 'title',\n\
-'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
-'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'data\n\
+style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
+'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linewidth',\n\
+'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
+'nogrid', 'nokey', 'nolabel', 'nolinewidth', 'nologscale', 'nomultiplot',\n\
+'notitle', 'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette',\n\
+'papersize', 'pointlinewidth', 'pointsize', 'preamble', 'projection',\n\
+'samples', 'size', 'style', 'terminal', 'textcolour', 'texthalign',\n\
+'textvalign', 'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format',\n\
+'[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set, "\n\

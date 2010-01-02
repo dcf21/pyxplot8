@@ -1094,8 +1094,6 @@ int directive_plot(Dict *command, int interactive, int replot)
        }
      }
     if (ptr==NULL) { ppl_error(ERR_GENERAL, "No plot found to replot."); return 1; }
-    DictLookup(command, "threedim", NULL, (void **)&cptr);
-    if (ptr->ThreeDim != (cptr!=NULL)) { ppl_error(ERR_GENERAL, "It is not possible to replot a 3d plot in 2d mode, or a 2d plot in 3d mode."); return 1; }
     id = *EditNo;
    }
   else // We are not replotting... create a new plot item
@@ -1135,8 +1133,11 @@ int directive_plot(Dict *command, int interactive, int replot)
   arrow_list_copy(&ptr->arrow_list , &arrow_list);
   label_list_copy(&ptr->label_list , &label_list);
 
-  DictLookup(command, "threedim", NULL, (void **)&cptr); // Set 3d flag
-  ptr->ThreeDim = (cptr!=NULL);
+  if (!replot)
+   {
+    DictLookup(command, "threedim", NULL, (void **)&cptr); // Set 3d flag
+    ptr->ThreeDim = (cptr!=NULL);
+   }
 
   // Read list of ranges
   DictLookup(command, "directive", NULL, (void **)&cptr);

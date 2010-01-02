@@ -1400,7 +1400,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "bit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bits";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
@@ -1915,7 +1915,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "byte";
   ppl_unit_database[ppl_unit_pos].nameFp     = "bytes";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 8.0;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
   ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
@@ -1928,7 +1928,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kibibit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kibibits";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1024.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -1939,7 +1939,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "kibibyte";
   ppl_unit_database[ppl_unit_pos].nameFp     = "kibibytes";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 8.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -1950,7 +1950,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mebibit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "mebibits";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -1961,7 +1961,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "mebibyte";
   ppl_unit_database[ppl_unit_pos].nameFp     = "mebibytes";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0 * 8.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -1972,7 +1972,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gibibit";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gibibits";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0 * 1024.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;
@@ -1983,7 +1983,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameLp     = ppl_unit_database[ppl_unit_pos].nameAp;
   ppl_unit_database[ppl_unit_pos].nameFs     = "gibibyte";
   ppl_unit_database[ppl_unit_pos].nameFp     = "gibibytes";
-  ppl_unit_database[ppl_unit_pos].quantity   = "bits";
+  ppl_unit_database[ppl_unit_pos].quantity   = "information_content";
   ppl_unit_database[ppl_unit_pos].multiplier = 1024.0 * 1024.0 * 1024.0 * 8.0;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_BIT]=1;
   ppl_unit_pos++;

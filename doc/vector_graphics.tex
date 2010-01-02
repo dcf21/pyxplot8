@@ -55,7 +55,7 @@ lower-left corner of plot produced by the \indcmdt{plot}; it takes a
 comma-separated $(x,y)$ co-ordinate pair, which may have units of length, or,
 if dimensionless, are assumed to be measured in centimetres. The following
 example plots a graph of $\sin(x)$ to the left of a plot of $\cos(x)$:
-\begin{verbatim} 
+\begin{verbatim}
 set multiplot
 plot sin(x)
 set origin 10,0
@@ -68,7 +68,7 @@ All objects on a multiplot canvas have their own unique identification number.
 By default, these count up from one, such that the first item placed on the
 canvas is number one, the next is number two, and so forth. Alternatively, the
 user may specify a particular number for a particular object:
-\begin{verbatim} 
+\begin{verbatim}
 set multiplot
 plot item 6 sin(x)
 \end{verbatim}
@@ -107,7 +107,7 @@ restore it.
 Objects may be moved around on the canvas using the \indcmdt{move}. For
 example, the following would move item 23 to position $(8,8)$ measured in
 inches:
-\begin{verbatim} 
+\begin{verbatim}
 move 23 to 8*unit(in), 8*unit(in)
 \end{verbatim}
 
@@ -117,7 +117,7 @@ In multiplot mode, the \indcmdt{replot} can be used to modify the last plot
 added to the page. For example, the following would change the title of the
 latest plot to `foo', and add a plot of $\cos(x)$ to it:
 
-\begin{verbatim} 
+\begin{verbatim}
 set title 'foo'
 replot cos(x)
 \end{verbatim}
@@ -127,7 +127,7 @@ it with the \indcmdt{edit}. Subsequently, the \indcmdt{replot} will act upon
 the selected plot. The following example would produce two plots, and then
 change the colour of the text on the first:
 
-\begin{verbatim} 
+\begin{verbatim}
 set multiplot
 plot sin(x)
 set origin 10,0
@@ -173,7 +173,7 @@ canvases:
 \item Circles (the \indcmdt{circle}).
 \item Ellipses (the \indcmdt{ellipse}).
 \item Encapsulated postscript images (the \indcmdt{eps}).
-\item Bitmap images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} formats (the \indcmdt{image}).
+\item Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} formats (the \indcmdt{image}).
 \item Text labels (the \indcmdt{text}).
 \end{itemize}
 Put together, these commands can be used to produce a wide range of vector
@@ -182,11 +182,10 @@ providing a variety of examples of their use.
 
 \subsection{The {\tt text} Command}
 
-Text labels may also be
-inserted independently of any plots, using the \indcmdt{text}. This has the
-following syntax:
+Text labels may be added to multiplot canvases using the \indcmdt{text}. This
+has the following syntax:
 
-\begin{verbatim} 
+\begin{verbatim}
 text 'This is some text' at x,y
 \end{verbatim}
 
@@ -196,7 +195,7 @@ optionally be specified with the {\tt with colour} modifier, as well as a
 rotation angle to rotate text labels through any given angle, measured in
 degrees counter-clockwise. For example:\indkey{rotate}
 
-\begin{verbatim} 
+\begin{verbatim}
 text 'This is some text' at x,y rotate r with colour red
 \end{verbatim}
 
@@ -213,27 +212,26 @@ files for inclusion in talks.\index{presentations}
 
 \subsection{The {\tt arrow} Command}
 
-Arrows may also be placed on multiplot pages, independently of any plots, using
-the \indcmdt{arrow}, which has syntax:
+Arrows may also be added to multiplot canvases using the \indcmdt{arrow}, which
+has syntax:
 
-\begin{verbatim} 
+\begin{verbatim}
 arrow from x,y to x,y
 \end{verbatim}
 
 The \indcmdt{arrow} may be followed by the \indmodt{with} keyword to specify to
-style of the arrow. The style keywords which are accepted are identical to
-those accepted by the {\tt set arrow} command (see
-Section~\ref{sec:set_arrow}).  For example:
+style of the arrow. The line type, line width and colour of the arrow may be
+specified, for example:
 
-\begin{verbatim} 
-arrow from x1,y1 to x2,y2 \
-with twohead colour red
+\begin{verbatim}
+arrow from 0,0 to 10,10 \
+with twohead linetype 2 linewidth 5 colour red
 \end{verbatim}
 
 \subsection{The {\tt image} Command}
 
-Bitmap images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} format may be
-placed on the multiplot using the \indcmdt{image}\footnote{To maintain
+Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} format may be
+placed on multiplot canvases using the \indcmdt{image}\footnote{To maintain
 compatibility with historic versions of PyXPlot, the {\tt image} command may
 also be spelt {\tt jpeg}, with the identical syntax thereafter.}. This has
 syntax:
@@ -249,10 +247,10 @@ degrees.
 
 \subsection{The {\tt eps} Command}
 
-Vector graphic images in eps format may be placed on to a multiplot using the
-\indcmdt{eps}, which has a syntax analogous to the {\tt image} command.
-However neither height nor width need be specified; in this case the image will
-be included at its native size.  For example:
+Vector graphic images in eps format may be placed on multiplot canvases
+using the \indcmdt{eps}, which has a syntax analogous to the {\tt image}
+command.  However neither height nor width need be specified; in this case the
+image will be included at its native size.  For example:
 
 \begin{verbatim}
 eps 'filename' at 3,2 rotate 5
@@ -263,7 +261,98 @@ $(3,2)$\,cm from the origin, rotated counter-clockwise through 5 degrees.
 
 \subsection{The {\tt box} and {\tt circle} Commands}
 
+Rectangular boxes and circles may be placed on multiplot canvases
+using the {\tt box} and {\tt circle} commands\indcmd{box}\indcmd{circle}, as
+in:
+
+\begin{verbatim}
+box from 0*unit(mm),0*unit(mm) to 25*unit(mm),70*unit(mm)
+circle at 0*unit(mm),0*unit(mm) radius 70*unit(mm)
+\end{verbatim}
+
+\noindent In the former case, two corners of the rectangle are specified,
+meanwhile in the latter case the centre of the circle and its radius are
+specified. The \indcmdt{box} may also be invoked by the synonym {\tt
+rectangle}\indcmd{rectangle}. Boxes may be rotated using an optional {\tt
+rotate} modifier, which may be followed by a counter-clockwise rotational angle
+which may either have dimensions of angle, or is assumed to be in degrees if
+dimensionless. The rotation is performed about the centre of the rectangle:
+
+\begin{verbatim}
+box from 0,0 to 10,3 rotate 45
+\end{verbatim}
+
+The positions and dimensions of boxes may also be specified by giving the
+position of one of the corners of the box, together with its width and height.
+The specified corner is assumed to be the bottom-left corner if both the
+specified width and height are positive; other corners may be specified if the
+supplied width and/or height are negative. If such boxes are rotated, the
+rotation is about the specified corner:
+
+\begin{verbatim}
+box at 0,0 width 10 height 3 rotate 45
+\end{verbatim}
+
+The line type, line width, and colour of line with which the outlines of boxes
+and circles are drawn may be specified as in the {\tt arrow} command, for
+example:
+
+\begin{verbatim}
+circle at 0,0 radius 5 with linetype 1 linewidth 2 colour red
+\end{verbatim}
+
+\noindent The shapes may be filled by specifying a {\tt fillcolour}:
+
+\begin{verbatim}
+circle at 0,0 radius 5 with lw 10 colour red fillcolour yellow
+\end{verbatim}
+
 \subsection{The {\tt ellipse} Command}
+
+Ellipses may be placed on multiplot canvases using \indcmdt{ellipse}. The shape
+of the ellipse may be specified in many different ways, by specifying
+
+\begin{enumerate}[(i)]
+\item the position of two corners of the smallest rectangle which can enclose
+the ellipse when its major axis is horizontal, together with an optional
+counter-clockwise rotation angle, applied about the centre of the ellipse.
+For example:
+
+\begin{verbatim}
+ellipse from 0,0 to 4,1 rot 70
+\end{verbatim}
+
+\item the position of both the centre and one of the foci of the ellipse,
+together with any one of the following pieces of information: the major axis
+length, the semi-major axis length, the minor axis length, the semi-minor axis
+length, the eccentricity, the latus rectum, or the semi-latus rectum.  For
+example:
+
+\begin{verbatim}
+ellipse focus 0,0 centre 2,2 majoraxis 4
+ellipse focus 0,0 centre 2,2 minoraxis 4
+ellipse focus 0,0 centre 2,2 ecc 0.5
+ellipse focus 0,0 centre 2,2 LatusRectum 6
+ellipse focus 0,0 centre 2,2 slr 3
+\end{verbatim}
+
+\item the position of either the centre or one of the foci of the ellipse,
+together with any two of the following pieces of information: the major axis
+length, the semi-major axis length, the minor axis length, the semi-minor axis
+length, the eccentricity, the latus rectum, or the semi-latus rectum. An
+optional counter-clockwise rotation angle may also be specified, applied about
+either the centre or one of the foci of the ellipse, whichever is specified. If
+no rotation angle is given, then the major axis of the ellipse is horizontal.
+For example:
+
+\begin{verbatim}
+ellipse centre 0,0 majoraxis 4 minoraxis 4
+\end{verbatim}
+\end{enumerate}
+
+The line type, line width, and colour of line with which the outlines of
+ellipses are drawn may be specified as in the {\tt box} and {\tt circle}
+commands above. Likewise, ellipses may be filled in the same manner.
 
 \subsection{The Construction of Large Multiplots}
 \label{sec:set_display}
@@ -280,7 +369,7 @@ is no point in producing output at each step in the construction of a large
 multiplot, and a great speed increase can be achieved by wrapping the script
 with:
 
-\begin{verbatim} 
+\begin{verbatim}
 set nodisplay
 [...prepare large multiplot...]
 set display
@@ -306,7 +395,7 @@ use the \LaTeX\ {\tt parbox} or {\tt minipage} environments\footnote{Remember,
 any valid \LaTeX\ string can be passed to the \indcmdt{text} and \indcmdt{set
 label}.} For example:
 
-\begin{verbatim} 
+\begin{verbatim}
 text '\parbox[t]{6cm}{\setlength{\parindent}{1cm} \
 \noindent There once was a lady from Hyde, \\ \
 Who ate a green apple and died, \\ \
@@ -319,7 +408,7 @@ If unusual mathematical symbols are required, for example those in the {\tt
 amsmath} package\index{amsmath package@{\tt amsmath} package}, such a package
 can be loaded using the \indcmdt{set preamble}. For example:
 
-\begin{verbatim} 
+\begin{verbatim}
 set preamble \usepackage{marvosym}
 text "{\Huge\Dontwash\ \NoIroning\ \NoTumbler}$\;$ Do not \
 wash, iron or tumble-dry this plot."

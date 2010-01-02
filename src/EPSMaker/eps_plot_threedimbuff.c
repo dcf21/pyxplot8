@@ -182,14 +182,14 @@ int ThreeDimBuffer_linesegment(EPSComm *x, double z, int linetype, double linewi
       if ((colstr_old == NULL) || (strcmp(colstr_old, colstr)!=0)) { colstr_old = colstr; fprintf(x->epsbuffer, "%s\n", colstr); }
 
 
-      if (FirstSegment) fprintf(x->epsbuffer, "%.2f %.2f moveto\n%.2f %.2f lineto\n", x1, y1, x2, y2);
-      else              fprintf(x->epsbuffer, "%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n", x0, y0, x1, y1, x2, y2);
+      if (FirstSegment) fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n", x1, y1, x2, y2);
+      else              fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n", x0, y0, x1, y1, x2, y2);
       eps_core_BoundingBox(x, x1, y1, linewidth * EPS_DEFAULT_LINEWIDTH);
       eps_core_BoundingBox(x, x2, y2, linewidth * EPS_DEFAULT_LINEWIDTH);
      }
     else
      {
-      if (FirstSegment) fprintf(x->epsbuffer, "%.2f %.2f moveto\n%.2f %.2f lineto\n", x1, y1, x2, y2);
+      if (FirstSegment) fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n", x1, y1, x2, y2);
       else              fprintf(x->epsbuffer, "%.2f %.2f lineto\n", x2, y2);
       eps_core_BoundingBox(x, x1, y1, linewidth * EPS_DEFAULT_LINEWIDTH);
       eps_core_BoundingBox(x, x2, y2, linewidth * EPS_DEFAULT_LINEWIDTH);

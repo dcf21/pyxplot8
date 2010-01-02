@@ -119,8 +119,7 @@ void eps_eps_RenderEPS(EPSComm *x)
   // Clip EPS to bounding box if requested
   if ((x->current->clip) && (GotBBox))
    {
-    fprintf(x->epsbuffer, "newpath\n");
-    fprintf(x->epsbuffer, "%f %f moveto %f %f lineto %f %f lineto %f %f lineto closepath\n", bb_left, bb_bottom, bb_right, bb_bottom, bb_right, bb_top, bb_left, bb_top);
+    fprintf(x->epsbuffer, "newpath\n%f %f moveto %f %f lineto %f %f lineto %f %f lineto closepath\n", bb_left, bb_bottom, bb_right, bb_bottom, bb_right, bb_top, bb_left, bb_top);
     fprintf(x->epsbuffer, "clip newpath %% Set clipping path around bounding box\n");
    }
 
