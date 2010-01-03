@@ -87,7 +87,7 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
   ThreeDimBufferItem *item;
   ListIterator *ListIter;
 
-  if (!ThreeDimBuffer_ACTIVE) return 0;
+  if (!ThreeDimBuffer_ACTIVE) { ThreeDimBuffer_Reset(); return 0; }
   Nitems = ListLen(ThreeDimBuffer_buffer);
   ThreeDimBuffer_ACTIVE = 0;
   if (Nitems > 0)
@@ -232,6 +232,7 @@ int ThreeDimBuffer_linepenup(EPSComm *x)
   if (!ThreeDimBuffer_ACTIVE)
    {
     if (ThreeDimBuffer_LineSegmentID > 0) fprintf(x->epsbuffer, "stroke\n");
+    ThreeDimBuffer_LineSegmentID = 0;
    }
   return 0;
  }

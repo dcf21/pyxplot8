@@ -181,6 +181,10 @@ void ppl_UserSpaceInit()
   DictAppendValue(_ppl_UserSpace_Vars , "e"             , v); // e
   v.real = M_EULER;
   DictAppendValue(_ppl_UserSpace_Vars , "euler"         , v); // Euler constant
+  v.real = 1.0;
+  DictAppendValue(_ppl_UserSpace_Vars , "True"          , v); // True
+  v.real = 0.0;
+  DictAppendValue(_ppl_UserSpace_Vars , "False"         , v); // False
   v.real = (1.0+sqrt(5))/2.0;
   DictAppendValue(_ppl_UserSpace_Vars , "GoldenRatio"   , v); // Golden Ratio
   v.real = 0.0;

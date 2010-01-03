@@ -95,6 +95,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
 
   // Undo scaling of postscript axes
   fprintf(x->epsbuffer, "grestore\n");
+  x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0';
 
   // Factor ellipse into EPS file's bounding box
   eps_core_BoundingBox(x , xc-a*cos(r)-b*sin(r) , yc-a*sin(-r)-b*cos(r) , lw);

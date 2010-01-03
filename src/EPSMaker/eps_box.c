@@ -86,6 +86,7 @@ void eps_box_RenderEPS(EPSComm *x)
 
   // Undo scaling of postscript axes
   fprintf(x->epsbuffer, "grestore\n");
+  x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0';
 
   // Factor four corners of box into EPS file's bounding box
   eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
