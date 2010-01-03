@@ -173,7 +173,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   settings_axis   *axes, *axissets[3];
   List            *UsingList, *EveryList;
   Dict            *tempdict;
-  char             tempbuff[100], errbuffer[LSTR_LENGTH];
+  char             errbuffer[LSTR_LENGTH];
   with_words       ww_default;
   double          *ordinate_raster;
 
@@ -240,7 +240,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     if ((pd->function == 0) || (pd->parametric == 1))
      {
       UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
-      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", (void *)(tempbuff+j*10), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
       status   = 0;
       ErrCount = DATAFILE_NERRS;
       NExpect  = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
@@ -473,7 +473,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
   settings_axis   *OrdinateAxis, *axissets[3];
   List            *UsingList, *EveryList;
   Dict            *tempdict;
-  char             tempbuff[100], errbuffer[LSTR_LENGTH];
+  char             errbuffer[LSTR_LENGTH];
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
@@ -487,7 +487,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
     if ((pd->function == 1) && (pd->parametric == 0))
      {
       UsingList    = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
-      EveryList    = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); sprintf(tempbuff+j*10,"%d",pd->EveryList[j]); DictAppendPtr(tempdict, "every_item", (void *)(tempbuff+j*10), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
       status       = 0;
       ErrCount     = DATAFILE_NERRS;
       NExpect      = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);

@@ -226,6 +226,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
         eps_core_SetColour(x, &pd->ww_final, 0);
+        if (blk->split[j]) { LineDraw_PenUp(ld); }
         IF_NOT_INVISIBLE
          {
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
