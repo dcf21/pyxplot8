@@ -36,6 +36,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
  {
   int    lt;
   double lw, lw_scale, xc, yc, a, b, r;
+  double a_inv, b_inv;
   with_words ww;
 
   // Print label at top of postscript description of ellipse
@@ -85,7 +86,9 @@ void eps_ellps_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\n"); // NB: Leave this path unstroked until we've done a grestore
 
   // Undo scaling of axes so that linewidths come out right
-  fprintf(x->epsbuffer, "%f %f scale\n", 1.0/a, 1.0/b);
+  if (a < 1e-8) { a_inv=1e8; } else { a_inv=1.0/a; }
+  if (b < 1e-8) { b_inv=1e8; } else { b_inv=1.0/a; }
+  fprintf(x->epsbuffer, "%f %f scale\n", a_inv, b_inv);
 
   // Now we can stroke the path of the ellipse
   IF_NOT_INVISIBLE fprintf(x->epsbuffer, "stroke\n"); // Stroke outline AFTER grestore, so that linewidth is not scaled.
