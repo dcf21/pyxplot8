@@ -51,10 +51,17 @@ the content the datafile on {\tt stdin}, and expected to output data to PyXPlot
 in plaintext format using {\tt stdout}. Any errors returned to {\tt stderr} are
 passed to the user.
 
+The above set of filters allow PyXPlot to read in data from gzipped plaintext
+data files, data tables in FITS format, and from data files available over the
+web. Finally, a filter is provided for converting textual dates in log files
+into numbers representing days, months and years. To add to this list of
+filters, it is necessary to write a short program or shell script, and the
+filters provided for {\tt .log} and {.fits} files may provide a useful model.
+
 \section{Reading data from a pipe}
 
 PyXPlot usually reads data from a file, but it possible to read data via a pipe
-from standard input.  To do this one uses the magic filename `{\tt -}':
+from standard input.  To do this, one uses the magic filename {\tt -}:
 
 \begin{verbatim}
 plot '-' with lines
@@ -73,6 +80,22 @@ if the person struggling to do so is not you! But a simple \datafile\ is quite
 straightforward to plot time and again.
 
 \section{Including data within PyXPlot command scripts}
+
+It is also possible to embed data directly within PyXPlot scripts, which may be
+useful when a small number of markers are wanted at particular pre-defined
+positions on a graph, or when it is desirable to roll a PyXPlot script and data
+into a single file for easy storage or transmission. To do this, one uses the
+magic filename {\tt --} and terminates the data with the string {\tt END}:
+
+\begin{verbatim}
+plot '--' with lines
+0 0
+1 1
+2 0
+3 1
+END
+print "More PyXPlot commands can be placed after END"
+\end{verbatim}
 
 \section{Tabulating Functions and Slicing Data Files}
 
@@ -320,6 +343,93 @@ interpolate spline f() 'data1.dat'
 \end{verbatim}
 
 \section{Fourier Transforms}
+
+The {\tt fft} and {\tt ifft} commands\indcmd{fft}\indcmd{ifft} take Fourier
+transforms and inverse Fourier transforms respectively of data supplied either
+from a file or from a function. In each case, a regular grid of ordinate values
+must be specified on which to take the discrete Fourier transform, which can
+extend over an arbitrary number of dimensions. The following example
+demonstrates the syntax of these commands as applied to a function:
+
+\begin{verbatim}
+step(x,y) = tophat(x,0.2) * tophat(y,0.4)
+fft  [  0: 1:0.01][  0: 1:0.01] f() of step()
+ifft [-50:49:1   ][-50:49:1   ] g() of f()
+\end{verbatim}
+
+\noindent In the {\tt fft} command, $N_x=100$~equally-spaced samples of the
+function {\tt step}$(x,y)$ are taken between limits of $x_\mathrm{min}=0$ and
+$x_\mathrm{max}=1$ for each of $N_y=100$~equally-spaced values of $y$ on an
+identical raster, giving a total of $10^4$ samples. These are converted into a
+rectangular grid of $10^4$~samples of the Fourier transform {\tt
+f}$(\omega_x,\omega_y)$ at
+
+\begin{eqnarray}
+\omega_x = \frac{j}{\Delta x} & \textrm{for} & -\frac{N_x}{2}\leq j <\frac{N_x}{2} , \nonumber \\
+\omega_y = \frac{k}{\Delta y} & \textrm{for} & -\frac{N_y}{2}\leq k <\frac{N_y}{2} . \nonumber
+\end{eqnarray}
+
+\noindent where $\Delta x=x_\mathrm{max}-x_\mathrm{min}$ and $\Delta y$ is
+analogously defined. These samples are interpolated stepwise, such that an
+evaluation of the function {\tt f}$(\omega_x,\omega_y)$ for general inputs
+yields the nearest sample, or zero outside the rectangular grid where samples
+are available. The Fourier transforms of even real functions are, in general,
+complex, and their evaluation when complex arithmetic is not enabled (see
+Section~\ref{sec:complex_numbers}) is likely to fail. For this reason, a
+warning is issued if complex arithmetic is disabled when a Fourier transform
+function is evaluated.
+
+In the example above, we go on to convert this set of samples back into the
+function we started with by instructing the \indcmdt{ifft} to take
+$N_x=100$~equally-spaced samples along the $\omega_x$-axis between
+$\omega_{x,\mathrm{min}}=-{N_x}/{2\Delta x}$ and
+$\omega_{x,\mathrm{max}}=(N_x-1)/{2\Delta x}$, with similar sampling along the
+$\omega_y$-axis.
+
+Taking the simpler example of a one-dimensional Fourier transform for clarity,
+as might be calculated by the instructions
+\begin{verbatim}
+step(x) = tophat(x,0.2)
+fft  [  0: 1:0.01] f() of step()
+\end{verbatim}
+the {\tt fft} and {\tt ifft} commands\indcmd{fft}\indcmd{ifft} compute,
+respectively, discrete sets of samples $F_m$ and $I_n$ of the functions
+$F(\omega_x)$ and $I(x)$, which are given by
+\begin{displaymath}
+F_j = \sum_{m=0}^{N-1} I_m e^{-2\pi ijm/N} \,\delta x,\;\textrm{for}\; -\frac{N}{2}\leq m <\frac{N}{2} ,
+\end{displaymath}
+\noindent and
+\begin{displaymath}
+I_j = \sum_{m=0}^{N-1} F_m e^{ 2\pi ijm/N} \,\delta \omega_x,\;\textrm{for}\; -\frac{N}{2}\leq m <\frac{N}{2} ,
+\end{displaymath}
+\noindent where:
+\begin{tabular}{rcp{9cm}}
+$I(x)$        & = & Function being Fourier transformed. \\
+$F(\omega_x)$ & = & Fourier transform of $I()$. \\
+$N$           & = & The number of ordinate values sampled along the $x$ axis. \\
+$\delta x$    & = & Spacing of ordinate values sampled along the $x$ axis. \\
+$\delta \omega_x$ & = & Spacing of ordinate values sampled along the $\omega_x$ axis. \\
+$i$           & = & $\sqrt{-1}$. \\
+\end{tabular}
+\vspace{2mm}
+
+It may be shown in the limit that $\delta x$ becomes small -- i.e.\ when the
+number of samples taken becomes very large -- that these sums approximate the
+integrals
+\begin{equation}
+F(\omega_x) = \int I(x) e^{-2\pi ix\omega_x} \,\mathrm{d}x ,
+\end{equation}
+\noindent and
+\begin{equation}
+I(x) = \int F(\omega_x) e^{ 2\pi ix\omega_x} \,\mathrm{d}\omega_x .
+\end{equation}
+
+Fourier transforms may also be taken of data stored in \datafile s using the
+syntax
+\begin{verbatim}
+fft [-10:10:0.1] f() of 'datafile.dat'
+\end{verbatim}
+
 
 \section{Histograms}
 
