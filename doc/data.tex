@@ -424,12 +424,58 @@ F(\omega_x) = \int I(x) e^{-2\pi ix\omega_x} \,\mathrm{d}x ,
 I(x) = \int F(\omega_x) e^{ 2\pi ix\omega_x} \,\mathrm{d}\omega_x .
 \end{equation}
 
-Fourier transforms may also be taken of data stored in \datafile s using the
-syntax
+Fourier transforms may also be taken of data stored in \datafile s using syntax
+of the form
 \begin{verbatim}
 fft [-10:10:0.1] f() of 'datafile.dat'
 \end{verbatim}
 
+\noindent In such cases, the data read from the \datafile for an
+$N$-dimensional FFT must be arranged in $N+1$ columns\footnote{The {\tt using},
+{\tt every}, {\tt index} and {\tt select} modifiers can be used to arrange it
+into this form.}, with the first $N$ containing the ordinate values for each of
+the $N$ dimensions, and the final column containing the data to be Fourier
+transformed. The ordinate values must strictly match those in the raster
+specified in the {\tt fft} or {\tt ifft} command, and must be arranged strictly
+in row-major order.
+
+\subsection{Window Functions}
+\index{window functions}
+
+A range of commonly-used window functions may automatically be applied to data
+as it is read into the {\tt fft} and {\tt ifft} commands; these are listed
+together with their algebraic forms in Table~\ref{tab:windowfuncs}. In each case, the
+window functions are given for sample number $n$, which ranges between $0$ and
+$N_x$. The window functions may be invoked using the following syntax:
+
+\begin{verbatim}
+fft [...] out() of in() window <window_name>
+\end{verbatim}
+
+\noindent Where multi-dimensional FFTs are performed, window functions are
+applied to each dimension in turn.  Other arbitrary window functions may be
+implemented by pre-multiplying data before entry to the {\tt fft} and {\tt
+ifft} commands.
+
+\begin{table}
+\newlength{\wfgap}
+\setlength{\wfgap}{3mm}
+\begin{tabular}{ll}
+{\bf Window Name} & {\bf Algebraic Definition} \vspace{\wfgap}\\
+Bartlett     & $\displaystyle w(n) = \left( \frac{2}{N_x-1} \right) \left( \frac{N_x-1}{2} - \left| n - \frac{N_x-1}{2} \right| \right)$ \vspace{\wfgap}\\
+BartlettHann & $\displaystyle w(n) = a_0 - a_1\left|\frac{n}{N_x-1}-\frac{1}{2}\right| - a_2\cos\left(\frac{2\pi n}{N_x-1}\right),\;\textrm{for}$ \vspace{2mm}\\
+             & $a_0=0.62,\; a_1=0.48,\; a_2=0.38.$ \vspace{\wfgap}\\
+Cosine       & $\displaystyle w(n) = \cos\left(\frac{\pi n}{N_x-1} - \frac{\pi}{2} \right)$ \vspace{\wfgap}\\
+Gauss        & $\displaystyle w(n) = \exp \left\{ -\frac{1}{2}\left[ \frac{n-(N_x-1)/2}{\sigma(N_x-1)/2} \right]^2 \right\},\;\textrm{for}\;\sigma=0.5$ \vspace{\wfgap}\\
+Hamming      & $\displaystyle w(n) = 0.54 + 0.46\cos\left(\frac{2\pi n}{N_x-1}\right)$ \vspace{\wfgap}\\
+Hann         & $\displaystyle w(n) = 0.5 \left[ 1 - \cos\left(\frac{2\pi n}{N_x-1}\right) \right]$ \vspace{\wfgap}\\
+Lanczos      & $\displaystyle w(n) = \mathrm{sinc}\left( \frac{2n}{N_x-1} - 1 \right)$ \vspace{\wfgap}\\
+Rectangular  & $\displaystyle w(n) = 1$ \vspace{\wfgap}\\
+Triangular   & $\displaystyle w(n) = \left( \frac{2}{N_x} \right) \left( \frac{N_x}{2} - \left| n - \frac{N_x-1}{2} \right| \right)$ \vspace{\wfgap}\\
+\end{tabular}
+\caption{Window functions available in the {\tt fft} and {\tt ifft} commands.}
+\label{tab:windowfuncs}
+\end{table}
 
 \section{Histograms}
 
@@ -483,4 +529,24 @@ If the function produced by the histogram command is plotted using the
 bins into which the data were sorted.
 
 \section{Random Data Generation}
+
+PyXPlot has a range of mathematical functions which draw random samples for a
+variety of probability distibutions. These are:
+
+\vspace{2mm}
+\noindent
+\begin{tabular}{lp{7.5cm}}
+{\tt random()} & returns a random real number between 0 and~1. \\
+{\tt random\_binomial($p,n$)} & returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$. \\
+{\tt random\_chisq($\mu$)} & returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom. \\
+{\tt random\_gaussian($\sigma$)} & returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero. \\
+{\tt random\_lognormal($\zeta,\sigma$)} & returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$. \\
+{\tt random\_poisson($n$)} & returns a random integer from a Poisson distribution with mean $n$. \\
+\end{tabular}
+\vspace{2mm}
+
+\noindent The functions all rely upon a common underlying random-number
+generator, whose seed may be set using the \indcmdt{set seed}, followed by any
+integer.
+
 
