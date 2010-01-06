@@ -587,16 +587,8 @@ f(x)[-2:7] = sin(x)/x
 plot f(x)
 \end{verbatim}
 
-\example{ex:funcsplice1}{A simple example of the use of function splicing to truncate a function}{
-A simple example of the use of function splicing to truncate the function $\sinc(x)$ at $x=-2$ and $x=7$. See details in the text.\\
-\begin{center}
-\includegraphics{examples/eps/ex_funcsplice1.eps}
-\end{center}
-}
-
-\noindent The output of this particular example can be seen in
-Example~\ref{ex:funcsplice1}. A similar effect could also have been achieved
-with the {\tt select} keyword; see Section~\ref{sec:select_modifier}.
+\noindent A similar effect could also have been achieved with the {\tt select}
+keyword; see Section~\ref{sec:select_modifier}.
 
 It is possible to make multiple declarations of the same function, over
 different regions of argument space; if there is an overlap in the valid
@@ -626,14 +618,14 @@ fib(x)[2:] = fib(x-1) + fib(x-2)
 plot [0:8] fib(x)
 \end{verbatim}
 
-\example{ex:funcsplice2}{An example of the use of function splicing to define a function which does not have an analytic form}{
+\example{ex:funcsplice}{An example of the use of function splicing to define a function which does not have an analytic form}{
 An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.\\
 \begin{center}
-\includegraphics{examples/eps/ex_funcsplice2.eps}
+\includegraphics{examples/eps/ex_funcsplice.eps}
 \end{center}
 }
 
-\noindent The output of this example can be seen in Example~\ref{ex:funcsplice2}
+\noindent The output of this example can be seen in Example~\ref{ex:funcsplice}
 
 \section{Numerical Integration and Differentiation}
 

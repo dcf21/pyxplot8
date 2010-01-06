@@ -1,4 +1,4 @@
-# EX_AXISLAB.PPL
+# EX_TRAJECTORIES.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,7 +26,7 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_axislab.eps"
+set output "examples/eps/ex_trajectories.eps"
 
 # Main body of figure script
 g   = 9.81    # Acceleration due to gravity

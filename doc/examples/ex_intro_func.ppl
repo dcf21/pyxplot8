@@ -1,4 +1,4 @@
-# EX_FUNCSPLICE2.PPL
+# EX_INTRO_FUNC.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,15 +26,12 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_funcsplice2.eps"
+set output "examples/eps/ex_intro_func.eps"
 
 # Main body of figure script
-set samples 100
-set xrange [1:6.5]
-set yrange [0:15]
-set xlabel "$x$"
-set ylabel "$y$"
-f(x)     = 1.0
-f(x)[2:] = f(x-1) + f(x-2)
-set key bottom right
+a = 2
+b = 1
+c = 1.5
+f(x) = a*(x**2) + b*x + c
 plot f(x)
+

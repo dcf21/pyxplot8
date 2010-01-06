@@ -511,6 +511,14 @@ int directive_fit(Dict *command)
     ppl_report(temp_err_string);
    }
 
+  // If 'withouterrors' is specified, stop now
+  DictLookup(command,"withouterrors", NULL, (void **)&cptr);
+  if (cptr != NULL)
+   {
+    lt_AscendOutOfContext(ContextLocalVec);
+    return 0;
+   }
+
   // Store best-fit position
   BestFitParamVals = gsl_vector_alloc(DataComm.NParams);
   for (i=0; i<DataComm.NFitVars; i++)

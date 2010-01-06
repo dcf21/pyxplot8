@@ -1,4 +1,4 @@
-# EX_FUNCSPLICE1.PPL
+# EX_INTRO_SINE.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,13 +26,7 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_funcsplice1.eps"
+set output "examples/eps/ex_intro_sine.eps"
 
 # Main body of figure script
-set numerics errors quiet
-set xrange [-5:10]
-set yrange [-0.5:1]
-set xlabel "$x$"
-set ylabel "$y$"
-f(x)[-2:7] = sin(x)/x
-plot f(x)
+plot sin(x) with lines
