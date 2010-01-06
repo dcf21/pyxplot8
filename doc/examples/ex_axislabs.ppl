@@ -1,4 +1,4 @@
-# EX_TRAJECTORIES.PPL
+# EX_AXISLABS.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,25 +26,11 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_trajectories.eps"
+set output "examples/eps/ex_axislabs.eps"
 
 # Main body of figure script
-
-# Some numerical constants
-g   = 9.81    # Acceleration due to gravity
-d2r = pi/180  # Convert degrees to radians
-
-# The mathematical equation of a trajectory
-h(x,theta,v) = x*tan(theta*d2r) - 0.5*g*x**2/(v**2*cos(theta*d2r)**2)
-
-# Plot configuration
-set xlabel "$x/{\rm m}$"
-set ylabel "$h/{\rm m}$"
-set xrange [0:20]
-set yrange [0:]
-set key below
-set title 'Trajectories of projectiles fired with speed $v$ and angle $\theta$'
-plot h(x,30,10) title "$\theta=30^\circ;\qquad v=10\,{\rm m\,s^{-1}}$", \
-     h(x,60,10) title "$\theta=60^\circ;\qquad v=10\,{\rm m\,s^{-1}}$", \
-     h(x,60,15) title "$\theta=60^\circ;\qquad v=15\,{\rm m\,s^{-1}}$"
+set xlabel "Horizontal axis"
+set ylabel "Vertical axis"
+set title 'A plot with labelled axes'
+plot
 

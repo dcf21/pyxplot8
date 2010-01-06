@@ -153,17 +153,14 @@ function $\sin(x)$:
 plot sin(x)
 \end{verbatim}
 
-\noindent The output of this simple example can be seen in
-Figure~\ref{fig:ex_intro_sine}. The function $\sin(x)$ is one of a large number
-of standard mathematical functions, as well as some more specialised functions,
-which are built into PyXPlot. We will meet more of these functions in due
-course, but a complete list can be found in Appendix~\ref{ch:function_list}.
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_intro_sine.eps}
+\end{center}
 
-\begin{figure}
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_intro_sine.eps}}
-\caption{A first plot of the trigonometric function $\sin(x)$.}
-\label{fig:ex_intro_sine}
-\end{figure}
+\noindent The function $\sin(x)$ is one of a large number of standard
+mathematical functions, as well as some more specialised functions, which are
+built into PyXPlot. We will meet more of these functions in due course, but a
+complete list can be found in Appendix~\ref{ch:function_list}.
 
 As well as plotting functions, it is also possible to plot data stored in files
 on disk. The following would plot data from a file {\tt data.dat}, taking the
@@ -198,14 +195,9 @@ f(x) = a*(x**3) + b*x + c
 plot f(x)
 \end{verbatim}
 
-\noindent The output of this latter example is shown in
-Figure~\ref{fig:ex_intro_func}.
-
-\begin{figure}
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_intro_func.eps}}
-\caption{A plot of a user-defined cubic function $f(x)$.}
-\label{fig:ex_intro_func}
-\end{figure}
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_intro_func.eps}
+\end{center}
 
 These examples show some of the mathematical operators which are available in
 PyXPlot, a complete list of which can be found in
@@ -347,21 +339,17 @@ Labels should be placed between either single (') or double (") quotes.  For
 example:
 
 \begin{verbatim}
-set xlabel "$x/{\rm m}$"
-set ylabel "$h/{\rm m}$"
-set title 'Trajectories of rockets fired with speed $v$ and \
-angle $\theta$'
+set xlabel "Horizontal axis"
+set ylabel "Vertical axis"
+set title 'A plot with labelled axes'
+plot
 \end{verbatim}
 
-\example{ex:axislab}{A plot of the trajectories of rockets fired with different initial velocities}{
-A plot of the trajectories of rockets fired with different initial velocities.  The key demonstrates the use of \LaTeX\ to render mathematical symbols attractively.\\
 \begin{center}
-\includegraphics[width=\textwidth]{examples/eps/ex_trajectories.eps}
+\includegraphics[width=8cm]{examples/eps/ex_axislabs.eps}
 \end{center}
-}
 
-\noindent The output produced by these commands is shown in
-Example~\ref{ex:axislab}.  Note that the labels and title, and indeed all text
+\noindent Note that the labels and title, and indeed all text
 labels in PyXPlot, are rendered using \LaTeX, and so any \LaTeX\ commands can
 be used.  As a caveat, however, this does mean that care needs to be taken to
 escape any of \LaTeX's reserved characters -- i.e.:
@@ -861,6 +849,7 @@ Here, we have an example of the errorbars plot style.
 }
 
 \section{Setting Axis Ranges}
+\label{sec:plot_ranges}
 
 In Section~\ref{sec:first_plots}, the {\tt set xlabel} configuration command
 was previously introduced for placing text labels on axes. In this section, the
@@ -869,12 +858,15 @@ configuration of axes is extended to setting their ranges.
 By default, PyXPlot automatically scales axes to some sensible range which
 contains all of the plotted data. However, it is possible for the user to
 override this and set his own range.\index{axes!setting ranges} This can be
-done directly from the plot command, for example:
+done directly from the plot command, as in the following plot of the first
+three cylindrical Bessel functions:
 
 \begin{verbatim}
-plot [-1:1][-2:2] sin(x)
+plot [0:10][-0.5:1] besselJ(0,x), besselJ(1,x), besselJ(2,x)
 \end{verbatim}
-\label{sec:plot_ranges}
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_intro_bessel.eps}
+\end{center}
 
 \noindent The ranges are specified immediately after the \indcmdt{plot}, with
 the syntax {\tt [minimum:maximum]}.\footnote{An alternative valid syntax is to
@@ -882,11 +874,15 @@ replace the colon with the word {\tt to}: {\tt [minimum to maximum]}.} The
 first specified range applies to the $x$-axis, and the second to the
 $y$-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
 further ranges are specified, they apply to the $x2$-axis, then the $y2$-axis,
-and so forth.} Any of the values can be omitted, for example:
+and so forth.} Any of the values can be omitted, as in the following plot of
+three Legendre polynomials:
 
 \begin{verbatim}
-plot [:][-2:2] sin(x)
+plot [-1:1][:] legendreP(2,x), legendreP(4,x), legendreP(6,x)
 \end{verbatim}
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_intro_legendre.eps}
+\end{center}
 
 \noindent would only set a range on the $y$-axis.
 
@@ -927,6 +923,38 @@ set nologscale y x x2
 
 Further discussion of the configuration of axes can be found in
 Section~\ref{sec:multiple_axes}.
+
+\example{ex:axislab}{A diagram of the trajectories of projectiles fired with different initial velocities}{
+In this example we produce a diagram of the trajectories of projectiles fired
+by a cannon from the origin with different initial velocities and at different
+angles of inclination.  We first define a function {\tt h}$()$ which gives the
+height of a projectile when it is at a horizontal distance $x$ from the cannon,
+if it is fired at angle $\theta$ to the horizontal and with initial velocity
+$v$. We then plot this function for three different sets of inputs.\\
+
+\vspace{3mm}
+{\footnotesize
+\noindent {\tt g~~~= 9.81~~~~\# Acceleration due to gravity}\newline
+\noindent {\tt d2r~= pi/180~~\# Convert degrees to radians}\newline
+\noindent {\tt }\newline
+\noindent {\tt \# The mathematical equation of a trajectory}\newline
+\noindent {\tt h(x,theta,v) = x*tan(theta*d2r) - 0.5*g*x**2/(v**2*cos(theta*d2r)**2)}\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Plot configuration}\newline
+\noindent {\tt set xlabel "\$x/{$\backslash$rm m}\$"}\newline
+\noindent {\tt set ylabel "\$h/{$\backslash$rm m}\$"}\newline
+\noindent {\tt set xrange [0:20]}\newline
+\noindent {\tt set yrange [0:]}\newline
+\noindent {\tt set key below}\newline
+\noindent {\tt set title 'Trajectories of projectiles fired with speed \$v\$ and angle \$$\backslash$theta\$'}\newline
+\noindent {\tt plot h(x,30,10) title "\$$\backslash$theta=30\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$",}\newline
+\noindent {\tt \phantom{xxxxx}h(x,60,10) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$",}\newline
+\noindent {\tt \phantom{xxxxx}h(x,60,15) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=15$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$",}\newline
+}
+\begin{center}
+\includegraphics[width=\textwidth]{examples/eps/ex_trajectories.eps}
+\end{center}
+}
 
 \section{Interactive Help}
 
