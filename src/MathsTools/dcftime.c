@@ -152,7 +152,7 @@ char *GetWeekDayName(int i)
   return "???";
  }
 
-// Routines for converting between Julian Dates and the Hebrew Calendar
+// Routines for converting between Julian Day numbers and the Hebrew Calendar
 
 const int HebrewMonthLengths[6][13] = { {30,29,29,29,30,29, 0,30,29,30,29,30,29},    // Deficient Common Year
                                         {30,29,30,29,30,29, 0,30,29,30,29,30,29},    // Regular   Common Year
@@ -167,7 +167,7 @@ void GetHebrewNewYears(int GregYear, int *YearNumbers, double *JDs, int *YearTyp
   long X,C,S,A,a,b,j,D,MONTH=3;
   double Q, JD, r;
 
-  for (i=0; i<3; i++) // Return THREE new year numbers and Julian Dates, and YearTypes for the first two.
+  for (i=0; i<3; i++) // Return THREE new year numbers and Julian Day numbers, and YearTypes for the first two.
    {
     X = GregYear-1+i;
     C = X/100;
@@ -206,7 +206,7 @@ void GetHebrewNewYears(int GregYear, int *YearNumbers, double *JDs, int *YearTyp
   return;
  }
 
-double JulianDateHebrew(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
+double JulianDayHebrew(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
  {
   int    i;
   int    YearNumbers[3], YearTypes[3];
@@ -224,7 +224,7 @@ double JulianDateHebrew(int year, int month, int day, int hour, int min, int sec
   return JD + DayFraction;
  }
 
-void InvJulianDateHebrew(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
+void InvJulianDayHebrew(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
  {
   long   a,b,c,d,e,f;
   int    i,j;
@@ -233,7 +233,7 @@ void InvJulianDateHebrew(double JD, int *year, int *month, int *day, int *hour, 
   double JDs[3];
 
   // First work out date in Julian calendar
-  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Day number as if century leap years happened.
   b=0; c=a+1524;
   d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
   e = 365*d + d/4; // Number of days accounted for by these
@@ -252,9 +252,9 @@ void InvJulianDateHebrew(double JD, int *year, int *month, int *day, int *hour, 
   return;
  }
 
-// Routines for converting between Julian Dates and the Islamic Calendar
+// Routines for converting between Julian Day numbers and the Islamic Calendar
 
-double JulianDateIslamic(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
+double JulianDayIslamic(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
  {
   long   N,Q,R,A,W,Q1,Q2,G,K,E,J,X,JD;
   double DayFraction;
@@ -285,7 +285,7 @@ double JulianDateIslamic(int year, int month, int day, int hour, int min, int se
   return JD + DayFraction - 0.5;
  }
 
-void InvJulianDateIslamic(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
+void InvJulianDayIslamic(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
  {
   long a,b,c,d,e,f;
   int  JulDay, JulMon, JulYr;
@@ -295,7 +295,7 @@ void InvJulianDateIslamic(double JD, int *year, int *month, int *day, int *hour,
   if (JD<1948439.5) { *status=1; sprintf(errtext, "Supplied year number must be positive for the Islamic calendar; the calendar is undefined prior to AD 622 Jul 18, corresponding to AH 1 Muh 1."); return; }
 
   // First work out date in Julian calendar
-  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Day number as if century leap years happened.
   b=0; c=a+1524;
   d = (c-122.1)/365.25;   // Number of 365.25 periods, starting the year at the end of February
   e = 365*d + d/4; // Number of days accounted for by these
@@ -353,9 +353,9 @@ void InvJulianDateIslamic(double JD, int *year, int *month, int *day, int *hour,
   return;
  }
 
-// Routines for converting between Julian Dates and Calendar Dates in Gregorian and Julian calendars
+// Routines for converting between Julian Day numbers and Calendar Dates in Gregorian and Julian calendars
 
-double JulianDate(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
+double JulianDay(int year, int month, int day, int hour, int min, int sec, int *status, char *errtext)
  {
   double JD, DayFraction, LastJulian, FirstGregorian, ReqDate;
   int b;
@@ -366,8 +366,8 @@ double JulianDate(int year, int month, int day, int hour, int min, int sec, int 
   if ((min  <0)||(min  >59)) { *status=1; sprintf(errtext, "Supplied minute number should be in the range 0-59."); return 0.0; }
   if ((sec  <0)||(sec  >59)) { *status=1; sprintf(errtext, "Supplied second number should be in the range 0-59."); return 0.0; }
 
-  if      (settings_term_current.CalendarIn == SW_CALENDAR_HEBREW ) return JulianDateHebrew (year, month, day, hour, min, sec, status, errtext);
-  else if (settings_term_current.CalendarIn == SW_CALENDAR_ISLAMIC) return JulianDateIslamic(year, month, day, hour, min, sec, status, errtext);
+  if      (settings_term_current.CalendarIn == SW_CALENDAR_HEBREW ) return JulianDayHebrew (year, month, day, hour, min, sec, status, errtext);
+  else if (settings_term_current.CalendarIn == SW_CALENDAR_ISLAMIC) return JulianDayIslamic(year, month, day, hour, min, sec, status, errtext);
 
   if ((month<1)||(month>12)) { *status=1; sprintf(errtext, "Supplied month number should be in the range 1-12."); return 0.0; }
 
@@ -390,14 +390,14 @@ double JulianDate(int year, int month, int day, int hour, int min, int sec, int 
   return JD + DayFraction;
  }
 
-void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
+void InvJulianDay(double JD, int *year, int *month, int *day, int *hour, int *min, double *sec, int *status, char *errtext)
  {
   long a,b,c,d,e,f;
   double DayFraction;
   int temp;
   if (month == NULL) month = &temp; // Dummy placeholder, since we need month later in the calculation
 
-  if ((JD<-1e8)||(JD>1e8)||(!gsl_finite(JD))) { *status=1; sprintf(errtext, "Supplied Julian Date is too big."); return; }
+  if ((JD<-1e8)||(JD>1e8)||(!gsl_finite(JD))) { *status=1; sprintf(errtext, "Supplied Julian Day number is too big."); return; }
 
   // Work out hours, minutes and seconds
   DayFraction = (JD+0.5) - floor(JD+0.5);
@@ -406,10 +406,10 @@ void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *m
   if (sec  != NULL) *sec  =            fmod(86400*DayFraction , 60) ;
 
   // Now work out calendar date
-  if      (settings_term_current.CalendarOut == SW_CALENDAR_HEBREW ) return InvJulianDateHebrew (JD, year, month, day, hour, min, sec, status, errtext);
-  else if (settings_term_current.CalendarOut == SW_CALENDAR_ISLAMIC) return InvJulianDateIslamic(JD, year, month, day, hour, min, sec, status, errtext);
+  if      (settings_term_current.CalendarOut == SW_CALENDAR_HEBREW ) return InvJulianDayHebrew (JD, year, month, day, hour, min, sec, status, errtext);
+  else if (settings_term_current.CalendarOut == SW_CALENDAR_ISLAMIC) return InvJulianDayIslamic(JD, year, month, day, hour, min, sec, status, errtext);
 
-  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Date as if century leap years happened.
+  a = JD + 0.5; // Number of whole Julian days. b = Number of centuries since the Council of Nicaea. c = Julian Day number as if century leap years happened.
   if (a < SwitchOverJD())
    { b=0; c=a+1524; } // Julian calendar
   else
@@ -426,9 +426,9 @@ void InvJulianDate(double JD, int *year, int *month, int *day, int *hour, int *m
 
 // Wrappers for importing into PyXPlot's function table
 
-void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *in5, value *in6, value *output, int *status, char *errtext)
+void dcftime_julianday(value *in1, value *in2, value *in3, value *in4, value *in5, value *in6, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "time_juliandate(year,month,day,hour,min,sec)";
+  char *FunctionDescription = "time_julianday(year,month,day,hour,min,sec)";
   CHECK_6NOTNAN;
   CHECK_6INPUT_DIMLESS;
   CHECK_NEEDINT(in1, "function's first input (year) must be an integer");
@@ -438,7 +438,7 @@ void dcftime_juliandate(value *in1, value *in2, value *in3, value *in4, value *i
   CHECK_NEEDINT(in5, "function's fifth input (minutes) must be an integer");
   CHECK_NEEDINT(in6, "function's sixth input (seconds) must be an integer");
   IF_6COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { output->real = JulianDate((int)in1->real, (int)in2->real, (int)in3->real, (int)in4->real, (int)in5->real, (int)in6->real, status, errtext); }
+  ELSE_REAL   { output->real = JulianDay((int)in1->real, (int)in2->real, (int)in3->real, (int)in4->real, (int)in5->real, (int)in6->real, status, errtext); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -460,7 +460,7 @@ void dcftime_year(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, &i, NULL, NULL, NULL, NULL, NULL, status, errtext); }
+  ELSE_REAL   { InvJulianDay(in->real, &i, NULL, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -473,7 +473,7 @@ void dcftime_monthnum(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
+  ELSE_REAL   { InvJulianDay(in->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -487,7 +487,7 @@ void dcftime_monthname(value *in1, value *in2, value *output, int *status, char 
   CHECK_2INPUT_DIMLESS;
   CHECK_NEEDINT(in2, "function's second input (length) must be an integer");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in1->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
+  ELSE_REAL   { InvJulianDay(in1->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->string = lt_malloc(16);
   output->string[0] = '\0';
@@ -502,7 +502,7 @@ void dcftime_daymonth(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, &i, NULL, NULL, NULL, status, errtext); }
+  ELSE_REAL   { InvJulianDay(in->real, NULL, NULL, &i, NULL, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -541,7 +541,7 @@ void dcftime_hour(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, &i, NULL, NULL, status, errtext); }
+  ELSE_REAL   { InvJulianDay(in->real, NULL, NULL, NULL, &i, NULL, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -554,7 +554,7 @@ void dcftime_min(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, &i, NULL, status, errtext); }
+  ELSE_REAL   { InvJulianDay(in->real, NULL, NULL, NULL, NULL, &i, NULL, status, errtext); }
   ENDIF
   output->real = (double)i;
   CHECK_OUTPUT_OKAY;
@@ -566,7 +566,7 @@ void dcftime_sec(value *in, value *output, int *status, char *errtext)
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL   { InvJulianDate(in->real, NULL, NULL, NULL, NULL, NULL, &(output->real), status, errtext); }
+  ELSE_REAL   { InvJulianDay(in->real, NULL, NULL, NULL, NULL, NULL, &(output->real), status, errtext); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -584,7 +584,7 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
   inlen--; // Make inlen point to last character
   while ((in[i]!='\0')&&(in[i]<=' ')) i++; // Strip spaces off front
 
-  // Fetch input Julian Date
+  // Fetch input Julian Day number
   j=-1;
   ppl_EvaluateAlgebra(in+i, &JD1, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
   if (*status >= 0) { (*status) += i; return; }
@@ -615,11 +615,11 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
    }
 
   // Check that input is real
-  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_string() function can only act upon real times. The supplied Julian Date is complex."); return; }
-  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_string() function can only act upon dimensionless times. The supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_string() function can only act upon real times. The supplied Julian Day number is complex."); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_string() function can only act upon dimensionless times. The supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
 
   *status=0;
-  InvJulianDate(JD1.real, &year, &month, &day, &hour, &min, &sec, status, errtext);
+  InvJulianDay(JD1.real, &year, &month, &day, &hour, &min, &sec, status, errtext);
   if (*status) { *status=0; return; }
   *status=-1;
 
@@ -667,14 +667,14 @@ void dcftime_diff_string(char *in, int inlen, value *output, unsigned char Dolla
   inlen--; // Make inlen point to last character
   while ((in[i]!='\0')&&(in[i]<=' ')) i++; // Strip spaces off front
 
-  // Fetch first input Julian Date
+  // Fetch first input Julian Day number
   j=-1;
   ppl_EvaluateAlgebra(in+i, &JD1, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
   if (*status >= 0) { (*status) += i; return; }
   i+=j;
   while ((in[i]>'\0')&&(in[i]<=' ')) i++;
 
-  // Fetch second input Julian Date
+  // Fetch second input Julian Day number
   if (in[i] != ',')
    {
     if (in[i] ==')') { *status = i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
@@ -710,10 +710,10 @@ void dcftime_diff_string(char *in, int inlen, value *output, unsigned char Dolla
    }
 
   // Check that inputs are real
-  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The first supplied Julian Date is complex."); return; }
-  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
-  if (JD2.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The second supplied Julian Date is complex."); return; }
-  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Date has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The first supplied Julian Day number is complex."); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (JD2.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The second supplied Julian Day number is complex."); return; }
+  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
 
   GapYears   = (JD2.real - JD1.real) / 365;
   GapDays    = (JD2.real - JD1.real);
