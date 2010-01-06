@@ -29,9 +29,9 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_intro_func.eps"
 
 # Main body of figure script
-a = 2
-b = 1
-c = 1.5
-f(x) = a*(x**2) + b*x + c
+a = 0.02
+b = -1
+c = 5
+f(x) = a*(x**3) + b*x + c
 plot f(x)
 

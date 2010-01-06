@@ -472,6 +472,12 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
   ListIterator *ListIter;
   Dict         *TempDict;
 
+  if (DEBUG) ppl_log("Beginning to read data in for 'foreach datum' command");
+
+  // Initialise DummyTemp
+  ppl_units_zero(&DummyTemp);
+  DummyTemp.real    = 1.0;
+
   DictLookup(command, "variables," , NULL, (void **)&VarList);
   i = ListLen(VarList);
   if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The 'foreach ... in datafile' construct must be supplied a list of between %d and %d variables to read.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, temp_err_string); *status=1; return; }

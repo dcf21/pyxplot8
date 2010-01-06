@@ -357,6 +357,10 @@ x^\circ\mathrm{C}$, but would have different values in $\mathrm{K}^2$.
 The moral of this story is: pick what unit of temperature you want to work in,
 convert all of your temperatures to that scale, and then stick to it.
 
+\example{ex:temperature}{Creating a simple temperature conversion scale}{
+In this example, we use PyXPlot's automatic conversion of physical units to create a temperature conversion scale.
+}
+
 \section{Configuring how Numbers are Displayed}
 \label{sec:unitdisp}
 
@@ -621,7 +625,7 @@ plot [0:8] fib(x)
 \example{ex:funcsplice}{An example of the use of function splicing to define a function which does not have an analytic form}{
 An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.\\
 \begin{center}
-\includegraphics{examples/eps/ex_funcsplice.eps}
+\includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
 \end{center}
 }
 
@@ -679,6 +683,10 @@ Scientific Library\index{GSL}, and the \indfunt{diff\_dx()} function is
 implemented using the {\tt gsl\_deriv\_central()} function of the same library.
 Any caveats which apply to the use of these routines also apply to PyXPlot's
 numerical calculus routines.
+
+\example{ex:calculus}{An example}{
+In this example,.
+}
 
 \section{Equation Solving and Searching for Minima and Maxima}
 
@@ -746,6 +754,10 @@ overshoot and produce unexpected results.
 Wherever possible, it is strongly advised that the results returned by these
 numerical solvers should be sanity checked.
 
+\example{ex:eqnsolve}{An example}{
+In this example,.
+}
+
 \section{Working with Time-Series Data}
 \label{sec:time_series}
 
@@ -773,3 +785,8 @@ print time_string(time_now())
 set calendar hebrew
 print time_string(time_now())
 \end{verbatim}
+
+\example{ex:timeseries}{An example}{
+In this example,.
+}
+

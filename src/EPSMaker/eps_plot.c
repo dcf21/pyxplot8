@@ -521,6 +521,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1], pd->axis1xyz, pd->axis1);
       eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2], pd->axis2xyz, pd->axis2);
       eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3], pd->axis3xyz, pd->axis3);
+      axissets[pd->axis1xyz][pd->axis1].RangeFinalised = axissets[pd->axis1xyz][pd->axis1].TickListFinalised = 0;
      }
     pd=pd->next; i++;
    }

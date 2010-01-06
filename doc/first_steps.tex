@@ -103,7 +103,7 @@ From the shell command line, PyXPlot accepts the following switches which
 modify its behaviour:\index{command line syntax}
 \vspace{0.5cm}
 
-\begin{tabular}{p{3.5cm}p{8.5cm}}
+\begin{tabular}{p{3.0cm}p{8.3cm}}
 {\tt -h --help} & Display a short help message listing the available command-line switches.\\
 {\tt -v --version} & Display the current version number of PyXPlot.\\
 {\tt -q --quiet} & Turn off the display of the welcome message on startup. \\
@@ -153,10 +153,17 @@ function $\sin(x)$:
 plot sin(x)
 \end{verbatim}
 
-\noindent The function $\sin(x)$ is one of a large number of standard
-mathematical functions, as well as some more specialised functions, which are
-built into PyXPlot. We will meet more of these functions in due course, but a
-complete list can be found in Appendix~\ref{ch:function_list}.
+\noindent The output of this simple example can be seen in
+Figure~\ref{fig:ex_intro_sine}. The function $\sin(x)$ is one of a large number
+of standard mathematical functions, as well as some more specialised functions,
+which are built into PyXPlot. We will meet more of these functions in due
+course, but a complete list can be found in Appendix~\ref{ch:function_list}.
+
+\begin{figure}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_intro_sine.eps}}
+\caption{A first plot of the trigonometric function $\sin(x)$.}
+\label{fig:ex_intro_sine}
+\end{figure}
 
 As well as plotting functions, it is also possible to plot data stored in files
 on disk. The following would plot data from a file {\tt data.dat}, taking the
@@ -173,22 +180,32 @@ importing data from}\index{Microsoft Excel}\index{gzip}:
 plot 'data.dat'
 \end{verbatim}
 
-Several items can be plotted on the same graph by separating them by commas:
+Several items can be plotted on the same graph by separating them by commas, as
+in
 
 \begin{verbatim}
 plot 'data.dat', sin(x), cos(x)
 \end{verbatim}
 
-\noindent It is possible to define one's own variables and functions, and then
-plot them:
+\noindent and it is also possible to define one's own variables and functions,
+and then plot them, as in
 
 \begin{verbatim}
-a = 2
-b = 1
-c = 1.5
-f(x) = a*(x**2) + b*x + c
+a = 0.02
+b = -1
+c = 5
+f(x) = a*(x**3) + b*x + c
 plot f(x)
 \end{verbatim}
+
+\noindent The output of this latter example is shown in
+Figure~\ref{fig:ex_intro_func}.
+
+\begin{figure}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_intro_func.eps}}
+\caption{A plot of a user-defined cubic function $f(x)$.}
+\label{fig:ex_intro_func}
+\end{figure}
 
 These examples show some of the mathematical operators which are available in
 PyXPlot, a complete list of which can be found in
@@ -238,6 +255,10 @@ descending precedence.}
 \label{tab:operators_table}
 \end{table}
 
+\example{ex:introduction}{An example}{
+Here, we have an example.
+}
+
 \noindent To unset a variable or function once it has been set, the following
 syntax should be
 used:\index{variables!unsetting}\index{functions!unsetting}\index{unsetting
@@ -273,18 +294,23 @@ be appended to it.
 \label{sec:string_subs_op}
 
 PyXPlot's \indcmdt{print} can be used to display strings and the results of
-calculations on the terminal, as in the following examples:
+calculations on the terminal. In the following examples, we show both the
+commands typed by the user, which are preceded by PyXPlot prompts {\tt
+pyxplot>}, and the text returned by PyXPlot:
 
 \begin{verbatim}
-a=2
-print "Hello World!"
-print a
+pyxplot> a=2
+pyxplot> print "Hello World!"
+Hello World!
+pyxplot> print a
+2
 \end{verbatim}
 
 \begin{verbatim}
-f(x) = x**2
-a=3
-print "The value of",a,"squared is",f(a)
+pyxplot> f(x) = x**2
+pyxplot> a=3
+pyxplot> print "The value of ",a," squared is ",f(a),"."
+The value of 3 squared is 9.
 \end{verbatim}
 
 \noindent Values may also be substituted into strings using the {\tt \%}
@@ -296,8 +322,10 @@ are obligatory; {\tt '\%d'\%2} is {\it not} valid in PyXPlot, and should be
 written as {\tt '\%d'\%(2)}.}:
 
 \begin{verbatim}
-print "The value of %d squared is %d."%(a,f(a))
-print "The %s of f(%f) is %d."%("value",sqrt(2),f(sqrt(2)))
+pyxplot> print "The value of %d squared is %d."%(a,f(a))
+The value of 3 squared is 9.
+pyxplot> print "The %s of f(%f) is %d."%("value",sqrt(2),f(sqrt(2)))
+The value of f(1.414214) is 2.
 \end{verbatim}
 
 As in C, {\tt \%d} means that in integer should be printed, {\tt \%f} means
@@ -564,7 +592,9 @@ plot 'data.dat' index 1 every ::3
 \noindent The first would plot only every other \datapoint\ from every third
 data block; the second from the third line onwards within each data block.
 
-\newpage % One day when I understand LaTeX better I might understand why I need this line...
+\example{ex:datafile}{An example}{
+Here, we have an example of plotting a datafile.
+}
 
 \subsection{Horizontally arranged \Datafile s}
 
@@ -637,6 +667,10 @@ plot sin(x) select ($1>0) discontinuous
 \end{verbatim}
 
 \noindent plots a set of disconnected peaks from the sine function.
+
+\example{ex:select}{An example}{
+Here, we have an example of the use of the {\tt select} modifier.
+}
 
 \section{Directing Where Output Goes}
 
@@ -821,6 +855,10 @@ set style data lines
 \noindent would change the default style used for plotting data from files to
 lines. Similarly, the \indcmdt{set style function} changes the default style
 used when functions are plotted.
+
+\example{ex:errorbars}{An example}{
+Here, we have an example of the errorbars plot style.
+}
 
 \section{Setting Axis Ranges}
 

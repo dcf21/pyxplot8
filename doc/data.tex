@@ -214,7 +214,7 @@ The output from a script that fits a truncated Fourier series to a
 sampled square wave.  Even with only three terms the Gibbs pheonomenon is
 becoming apparent (see \url{http://en.wikipedia.org/wiki/Gibbs_phenomenon} for
 an explanation).\\
-\centerline{\includegraphics{examples/eps/ex_fitting.eps}}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_fitting.eps}}
 }
 
 This is useful for producing best-fit lines\index{best fit
@@ -342,6 +342,10 @@ spline f() 'data1.dat'
 interpolate spline f() 'data1.dat'
 \end{verbatim}
 
+\example{ex:interpolation}{An example}{
+In this example,.
+}
+
 \section{Fourier Transforms}
 
 The {\tt fft} and {\tt ifft} commands\indcmd{fft}\indcmd{ifft} take Fourier
@@ -438,6 +442,10 @@ the $N$ dimensions, and the final column containing the data to be Fourier
 transformed. The ordinate values must strictly match those in the raster
 specified in the {\tt fft} or {\tt ifft} command, and must be arranged strictly
 in row-major order.
+
+\example{ex:fourier}{An example}{
+In this example,.
+}
 
 \subsection{Window Functions}
 \index{window functions}
@@ -549,4 +557,30 @@ variety of probability distibutions. These are:
 generator, whose seed may be set using the \indcmdt{set seed}, followed by any
 integer.
 
+\example{ex:random}{Using random numbers to estimate the value of $\pi$.}{
+PyXPlot's random number generator has a range of applications in adding noise
+to artificially-generated data. In this example, however, we use it to produce
+an estimate of the value of $\pi$. We generate random samples in the square
+$\left\{ -1<x<1;\; -1<y<1\right\}$ and count how many lie within the circle of
+unit radius about the origin. Since the square has an area of
+$4\,\mathrm{unit}^2$ and the circle has an area of $\pi\,\mathrm{unit}^2$, the
+fraction of points which lie within the unit circle should be $\pi/4$.
+
+\vspace{3mm}
+\noindent {\tt Nsamples = 5000 }\newline
+\noindent {\tt }\newline
+\noindent {\tt set samp Nsamples }\newline
+\noindent {\tt set output "random.dat" }\newline
+\noindent {\tt tabulate 1-2*random():1-2*random() using 0:2:3 }\newline
+\noindent {\tt }\newline
+\noindent {\tt n=0 }\newline
+\noindent {\tt foreach datum i,j in 'random.dat' using 2:3 \{ }\newline
+\noindent {\tt \phantom{xx}n = n + (hypot(i,j)<1) }\newline
+\noindent {\tt \} }\newline
+\noindent {\tt }\newline
+\noindent {\tt print n / Nsamples * 4 }\newline
+\vspace{3mm}
+
+Result: 3.1352.
+}
 
