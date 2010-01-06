@@ -228,6 +228,40 @@ arrow from 0,0 to 10,10 \
 with twohead linetype 2 linewidth 5 colour red
 \end{verbatim}
 
+\example{ex:notice}{Producing a notice to advertise that a lecture has moved.}{
+In this example script, we use PyXPlot's {\tt arrow} and {\tt text} commands to
+produce a simple notice advertising that a lecture has moved to a different
+seminar room:
+
+\vspace{3mm}
+\noindent {\tt \# Turn on multiplot mode }\newline
+\noindent {\tt set multiplot ; set nodisplay }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Set the dimensions of the notice }\newline
+\noindent {\tt w = 20~~~~~~~~\# Width of notice / cm }\newline
+\noindent {\tt h = w/sqrt(2)~\# Height of notice / cm }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Put a rectangular box around the notice }\newline
+\noindent {\tt arrow from 0,0 to w,0 with nohead linewidth 5 }\newline
+\noindent {\tt arrow from w,0 to w,h with nohead linewidth 5 }\newline
+\noindent {\tt arrow from w,h to 0,h with nohead linewidth 5 }\newline
+\noindent {\tt arrow from 0,h to 0,0 with nohead linewidth 5 }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Write the text of the notice in big letters }\newline
+\noindent {\tt set texthalign centre ; set fontsize 3 }\newline
+\noindent {\tt text "$\backslash$bf Astrophysical Fluids Lecture" at w/2,3/4*h }\newline
+\noindent {\tt text "$\backslash$bf MOVED to Seminar Room 3" at w/2, h/2 }\newline
+\noindent {\tt arrow from w/4, h/4 to 3/4*w, h/4 with linewidth 8 }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Display the notice }\newline
+\noindent {\tt set display ; refresh }\newline
+\vspace{2mm}
+
+The resulting notice is shown below:
+
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_notice.eps}}
+}
+
 \subsection{The {\tt image} Command}
 
 Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} format may be
@@ -307,7 +341,37 @@ circle at 0,0 radius 5 with linetype 1 linewidth 2 colour red
 circle at 0,0 radius 5 with lw 10 colour red fillcolour yellow
 \end{verbatim}
 
+\example{ex:noentry}{Producing a no-entry sign.}{
+In this example script, we use PyXPlot's {\tt box} and {\tt circle} commands to
+produce a no-entry sign warning passers by that code monkeys can turn nasty
+when interrupted from their work.
+
+\vspace{3mm}
+\noindent {\tt set multiplot ; set nodisplay }\newline
+\noindent {\tt }\newline
+\noindent {\tt w = 10 \# Width of sign / cm }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Make no-entry sign }\newline
+\noindent {\tt circle at 0,0 radius w with col null fillcol red         }\newline
+\noindent {\tt box from -(0.8*w),-(0.2*w) to (0.8*w),(0.2*w) \ }\newline
+\noindent {\tt \phantom{xxxx}with col null fillcol white }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Put a warning beneath the sign }\newline
+\noindent {\tt set fontsize 3 }\newline
+\noindent {\tt set texthalign centre ; set textvalign centre }\newline
+\noindent {\tt text "$\backslash$bf Keep Out! Code Monkey at work!" }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Display sign }\newline
+\noindent {\tt set display ; refresh }\newline
+\vspace{2mm}
+
+The resulting sign is shown below:
+
+\centerline{\includegraphics[width=5cm]{examples/eps/ex_noentry.eps}}
+}
+
 \subsection{The {\tt ellipse} Command}
+\label{sec:ellipse}
 
 Ellipses may be placed on multiplot canvases using \indcmdt{ellipse}. The shape
 of the ellipse may be specified in many different ways, by specifying
@@ -354,6 +418,59 @@ The line type, line width, and colour of line with which the outlines of
 ellipses are drawn may be specified as in the {\tt box} and {\tt circle}
 commands above. Likewise, ellipses may be filled in the same manner.
 
+\example{ex:noentry}{A labelled diagram of an ellipse.}{
+In this example script, we illustrate the text of Section~\ref{sec:ellipse} by
+using PyXPlot's {\tt ellipse} command, together with arrows and text labels, to
+produce a labelled diagram of an ellipse. We label the semi-major axis $a$, the
+semi-minor axis $b$, the semi-latus rectum $L$, and the distance between the
+centre of the ellipse and one of its foci with the length $ae$, where $e$ is
+the eccentricity of the ellipse.
+
+\vspace{3mm}
+{\footnotesize
+\noindent {\tt set multiplot ; set nodisplay }\newline
+\noindent {\tt }\newline
+\noindent {\tt a = 6.0 \# Semi-major axis }\newline
+\noindent {\tt b = 4.0 \# Semi-minor axis }\newline
+\noindent {\tt }\newline
+\noindent {\tt e~~~= sqrt(1-(b/a)**2) \# Eccentricity }\newline
+\noindent {\tt slr~= a*(1-e**2) \# Length of semi-latus rectum }\newline
+\noindent {\tt fd~~= a*e \# Distance of focus from centre }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Draw ellipse }\newline
+\noindent {\tt ellipse centre 0,0 SemiMajor a SemiMinor b with lw 3 }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Draw arrows and dotted lines on ellipse }\newline
+\noindent {\tt arrow from 0,0 to 0,b with twohead lw 2 lt 3~~~~~~~~~\# Semi-minor axis }\newline
+\noindent {\tt arrow from 0,0 to a,0 with twohead lw 2 lt 3~~~~~~~~~\# Semi-major axis }\newline
+\noindent {\tt arrow from -fd,0 to -fd,slr with tw lw 2 lt 3~~~~~~~~\# SLR }\newline
+\noindent {\tt arrow from -fd,0 to -fd,-1.5 with nohead lw 2 lt 3 }\newline
+\noindent {\tt arrow from 0,0 to 0,-1.5 with nohead lw 2 lt 3 }\newline
+\noindent {\tt arrow from 0,-1.3 to -fd,-1.3 with twohead lw 2 lt 3 \# Focus $<$-$>$ Centre }\newline
+\noindent {\tt  }\newline
+\noindent {\tt \# Label ellipse }\newline
+\noindent {\tt set fontsize 1.5 }\newline
+\noindent {\tt set texthalign left ; set textvalign top }\newline
+\noindent {\tt text 'Centre' at 0.2,-0.2 }\newline
+\noindent {\tt text 'Focus' at -fd+0.2,-0.2 }\newline
+\noindent {\tt set texthalign centre ; set textvalign top }\newline
+\noindent {\tt text '\$ae\$' at -fd/2,-1.5 }\newline
+\noindent {\tt set texthalign centre ; set textvalign centre }\newline
+\noindent {\tt text '\$a\$' at a/2,+0.5 }\newline
+\noindent {\tt text '\$b\$' at 0.5,b/2 }\newline
+\noindent {\tt set texthalign left ; set textvalign centre }\newline
+\noindent {\tt text '$L=a(1-e^2)$' at  0.2-fd,slr/2 }\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Display diagram }\newline
+\noindent {\tt set display ; refresh }\newline
+}
+\vspace{2mm}
+
+The resulting diagram is shown below:
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_ellipse.eps}}
+}
+
 \subsection{The Construction of Large Multiplots}
 \label{sec:set_display}
 
@@ -393,7 +510,7 @@ The \indcmdt{text} can straightforwardly be used to render simple one-line
 substantial blocks of text onto a plot. For this purpose, it can be useful to
 use the \LaTeX\ {\tt parbox} or {\tt minipage} environments\footnote{Remember,
 any valid \LaTeX\ string can be passed to the \indcmdt{text} and \indcmdt{set
-label}.} For example:
+label}.}. For example:
 
 \begin{verbatim}
 text '\parbox[t]{6cm}{\setlength{\parindent}{1cm} \
@@ -404,6 +521,10 @@ Who ate a green apple and died, \\ \
 and made cider inside her inside.}'
 \end{verbatim}
 
+\begin{center}
+\fbox{\includegraphics{examples/eps/ex_text1.eps}}
+\end{center}
+
 If unusual mathematical symbols are required, for example those in the {\tt
 amsmath} package\index{amsmath package@{\tt amsmath} package}, such a package
 can be loaded using the \indcmdt{set preamble}. For example:
@@ -413,4 +534,8 @@ set preamble \usepackage{marvosym}
 text "{\Huge\Dontwash\ \NoIroning\ \NoTumbler}$\;$ Do not \
 wash, iron or tumble-dry this plot."
 \end{verbatim}
+
+%\begin{center}
+%\fbox{\includegraphics{examples/eps/ex_text2.eps}}
+%\end{center}
 

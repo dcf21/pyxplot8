@@ -121,6 +121,7 @@ void lt_FreeAll(int context)
   static int latch=0;
 
   if (latch==1) return; // Prevent recursive calls
+  if (lt_mem_context<0) return; // Memory management not initialised
   latch=1;
 
   if ((context<0) || (context>=PPL_MAX_CONTEXTS)) 
