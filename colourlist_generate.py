@@ -95,8 +95,8 @@ colour_list={
 }
 
 for greylevel in range(0,101):
- colour_list["Grey%02d"%greylevel] = [0, 0, 0, float(greylevel)/100]
- colour_list["Gray%02d"%greylevel] = [0, 0, 0, float(greylevel)/100]
+ colour_list["Grey%02d"%greylevel] = [0, 0, 0, float(100-greylevel)/100]
+ colour_list["Gray%02d"%greylevel] = [0, 0, 0, float(100-greylevel)/100]
 
 colour_names = colour_list.keys()
 colour_names.sort()

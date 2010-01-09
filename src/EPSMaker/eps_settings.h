@@ -24,6 +24,7 @@
 
 // Baseline values of settings used by the eps generation routines
 #define EPS_BASE_DEFAULT_LINEWIDTH ( 0.566929       ) /* 0.2mm in TeX points */
+#define EPS_BASE_DEFAULT_PS        ( 3.0            )
 #define EPS_BASE_ARROW_ANGLE       ( 45.0 *M_PI/180 )
 #define EPS_BASE_ARROW_CONSTRICT   ( 0.2            )
 #define EPS_BASE_ARROW_HEADSIZE    ( 6.0            )
@@ -37,6 +38,7 @@
 #ifndef _PPL_EPS_SETTINGS_C
 extern double M_TO_PS;
 extern double EPS_DEFAULT_LINEWIDTH;
+extern double EPS_DEFAULT_PS;
 extern double EPS_ARROW_ANGLE;
 extern double EPS_ARROW_CONSTRICT;
 extern double EPS_ARROW_HEADSIZE;

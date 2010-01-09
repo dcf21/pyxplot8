@@ -131,7 +131,7 @@ int ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth,
 
   if (!ThreeDimBuffer_ACTIVE)
    {
-    if ((!pointsize_old_SET) || (pointsize_old != pointsize)) { pointsize_old_SET=1; pointsize_old=pointsize; fprintf(x->epsbuffer, "/ps { %f } def\n", pointsize*3); } // Scale up all pointsizes by 3
+    if ((!pointsize_old_SET) || (pointsize_old != pointsize)) { pointsize_old_SET=1; pointsize_old=pointsize; fprintf(x->epsbuffer, "/ps { %f } def\n", pointsize * EPS_DEFAULT_PS); }
     if ((colstr_old == NULL) || (strcmp(colstr_old, colstr)!=0)) { colstr_old = colstr; fprintf(x->epsbuffer, "%s\n", colstr); }
     eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype, 0.0);
     fprintf(x->epsbuffer, "%s\n", psfrag);

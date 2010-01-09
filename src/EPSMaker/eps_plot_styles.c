@@ -19,7 +19,7 @@
 
 // ----------------------------------------------------------------------------
 
-#define _PPL_EPS_STYLE_C 1
+#define _PPL_EPS_PLOT_STYLES_C 1
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,6 +46,7 @@
 #include "eps_plot_styles.h"
 #include "eps_plot_threedimbuff.h"
 #include "eps_settings.h"
+#include "eps_style.h"
 
 // Work out the default set of with words for a plot item
 void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour)
@@ -260,14 +261,17 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           while (pt<0) pt+=N_POINTTYPES;
           x->PointTypesUsed[pt] = 1;
           sprintf(epsbuff, "%.2f %.2f pt%d", xpos, ypos, pt+1);
-          eps_core_BoundingBox(x, xpos, ypos, pd->ww_final.pointsize*3);
+          eps_core_BoundingBox(x, xpos, ypos, 2 * pd->ww_final.pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS);
           ThreeDimBuffer_writeps(x, depth, 1, pd->ww_final.pointlinewidth, pd->ww_final.pointsize, last_colstr, epsbuff);
          }
 
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          canvas_EPSRenderTextItem(x, x->LaTeXpageno++,
+             xpos/M_TO_PS - (x->current->settings.TextHAlign - SW_HALIGN_CENT) * pd->ww_final.pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
+             ypos/M_TO_PS + (x->current->settings.TextVAlign - SW_VALIGN_CENT) * pd->ww_final.pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
+             x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
          }
        }
       blk=blk->next;

@@ -298,7 +298,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
-  else if (strcmp(directive, "arrow")==0)
+  else if ( (strcmp(directive, "arrow")==0) || (strcmp(directive, "line")==0) )
    directive_arrow(command, interactive);
   else if (strcmp(directive, "box")==0)
    directive_box(command, interactive);
@@ -306,7 +306,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_break(command, IterLevel);
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
-  else if (strcmp(directive, "circle")==0)
+  else if ((strcmp(directive, "circle")==0) || (strcmp(directive, "arc")==0))
    directive_circle(command, interactive);
   else if (strcmp(directive, "clear")==0)
    { directive_clear(); SendCommandToCSP("A"); }
@@ -372,6 +372,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_interpolate(command,INTERP_POLYN);
   else if (strcmp(directive, "plot")==0)
    directive_plot(command, interactive, 0);
+  else if (strcmp(directive, "point")==0)
+   directive_point(command, interactive);
   else if (strcmp(directive, "print")==0)
    directive_print(command);
   else if (strcmp(directive, "pwd")==0)

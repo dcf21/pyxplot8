@@ -35,17 +35,29 @@
 void eps_circ_RenderEPS(EPSComm *x)
  {
   int    lt;
-  double lw, lw_scale, xpos, ypos, r;
+  unsigned char filled=0, stroked=0;
+  double lw, lw_scale, xpos, ypos, r, start=0, end=360, theta;
   with_words ww;
 
   // Print label at top of postscript description of circle
-  fprintf(x->epsbuffer, "%% Canvas item %d [circle]\n", x->current->id);
+  fprintf(x->epsbuffer, "%% Canvas item %d [%s]\n", x->current->id, x->current->xfset ? "arc" : "circle");
   eps_core_clear(x);
 
   // Calculate position of centre of circle and its radius in TeX points
   xpos = x->current->xpos  * M_TO_PS;
   ypos = x->current->ypos  * M_TO_PS;
   r    = x->current->xpos2 * M_TO_PS;
+
+  // If this is an arc, set start and end points
+  if (x->current->xfset)
+   {
+    start = fmod(M_PI/2 - x->current->yf, 2*M_PI);
+    end   = fmod(M_PI/2 - x->current->xf, 2*M_PI);
+    while (start < 0.0) start += 2*M_PI;
+    while (end   < 0.0) end   += 2*M_PI;
+    if      ((x->current->yf < x->current->xf) && (start <= end)) start += 2*M_PI; // Make sure that arc is stroked clockwise from start to end
+    else if ((x->current->yf > x->current->xf) && (start >= end)) end   += 2*M_PI;
+   }
 
   // Expand any numbered styles which may appear in the with words we are passed
   with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
@@ -55,7 +67,13 @@ void eps_circ_RenderEPS(EPSComm *x)
   eps_core_SwitchTo_FillColour(x);
 
   // Fill circle
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "%.2f %.2f %.2f 0 360 arc\nclosepath\nfill\n", xpos,ypos,r);
+  IF_NOT_INVISIBLE
+   {
+    if (!x->current->xfset) fprintf(x->epsbuffer, "newpath\n%.2f %.2f %.2f 0 360 arc\nclosepath\nfill\n", xpos,ypos,r);
+    else                    fprintf(x->epsbuffer, "newpath\n%.2f %.2f %.2f %.2f %.2f arc\n%.2f %.2f lineto\nclosepath\nfill\n", xpos,ypos,r,start*180/M_PI,end*180/M_PI,xpos,ypos);
+    eps_core_BoundingBox(x, xpos, ypos, 0); // Filled arcs extend to the centre of the circle
+    filled=1;
+   }
 
   // Set colour of outline of circle
   eps_core_SetColour(x, &ww, 1);
@@ -71,13 +89,27 @@ void eps_circ_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 
   // Stroke outline of circle
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "%.2f %.2f %.2f 0 360 arc\nclosepath\nstroke\n", xpos,ypos,r);
+  IF_NOT_INVISIBLE
+   {
+    if (!x->current->xfset) fprintf(x->epsbuffer, "newpath\n%.2f %.2f %.2f 0 360 arc\nclosepath\nstroke\n", xpos,ypos,r);
+    else                    fprintf(x->epsbuffer, "newpath\n%.2f %.2f %.2f %.2f %.2f arc\nstroke\n", xpos,ypos,r,start*180/M_PI,end*180/M_PI);
+    stroked=1;
+   }
 
   // Factor circle into EPS file's bounding box
-  eps_core_BoundingBox(x, xpos-r, ypos  , lw);
-  eps_core_BoundingBox(x, xpos+r, ypos  , lw);
-  eps_core_BoundingBox(x, xpos  , ypos-r, lw);
-  eps_core_BoundingBox(x, xpos  , ypos+r, lw);
+  if (filled || stroked)
+   {
+    if (!x->current->xfset)
+     {
+      eps_core_BoundingBox(x, xpos-r, ypos  , lw);
+      eps_core_BoundingBox(x, xpos+r, ypos  , lw);
+      eps_core_BoundingBox(x, xpos  , ypos-r, lw);
+      eps_core_BoundingBox(x, xpos  , ypos+r, lw);
+     } else {
+      if (end<start) end+=2*M_PI;
+      for (theta=0.0; theta<=1.0; theta+=0.01) eps_core_BoundingBox(x, xpos+r*cos(start+(end-start)*theta), ypos+r*sin(start+(end-start)*theta), lw);
+     }
+   }
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

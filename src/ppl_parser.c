@@ -487,8 +487,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
   if      (node->type == PN_TYPE_ITEM)
    {
     // IF WE ARE RUNNING IN TAB-COMPLETION MODE, SEE IF WE OUGHT TO MAKE TAB COMPLETION SUGGESTIONS BASED ON THIS ITEM
-    if ((start != NULL) && ((*start) <  (*linepos))) {(*success)=0; return;} // We have overshot...
-    if ((start != NULL) && ( ((*start) == (*linepos)) || ((*start) == (*linepos)+1) ) )
+    if ((start != NULL) && ((*start) <= (*linepos)))
      {
       if (node->MatchString[0]=='%')
        {
@@ -497,9 +496,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           if ((*number)!=0) {(*success)=0; (*number)--; return;}
           (*success)=2; strcpy(expecting, "\n"); (*number)--; return;
          }
-        (*success)=0; return; // Expecting a float or string, which we don't tab complete... move along and look for something else
+        goto NO_TAB_COMPLETION; // Expecting a float or string, which we don't tab complete... move along and look for something else
        }
-      if ((*start) == (*linepos))
+      if ((*start) <= (*linepos))
        {
         if ((node->MatchString[0]=='=') && (node->MatchString[1]=='\0'))
          {
@@ -513,11 +512,13 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           }
         if ((*number)!=0) {(*success)=0; (*number)--; return;}
         (*success)=2;
-        strcpy(expecting, node->MatchString); // Matchstring should match itself
+        for (i=0; i<((*linepos)-(*start)); i++) expecting[i] = line[*start+i];
+        strcpy(expecting+i, node->MatchString); // Matchstring should match itself
         (*number)--;
         return;
        }
      }
+NO_TAB_COMPLETION:
 
     if (node->ACLevel == -2)
      {
@@ -685,9 +686,16 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
              }
-            else if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX)||(MatchVal._dbl>=MAX_AXES)||(!gsl_finite(MatchVal._dbl)))
+            else if ((MatchVal._dbl>=INT_MAX)||(MatchVal._dbl>=MAX_AXES)||(!gsl_finite(MatchVal._dbl)))
              {
-              sprintf(AlgebraError, "This integer value is too large.");
+              sprintf(AlgebraError, "A maximum of %d parallel axes are allowed; axis numbers greater than %d are not permitted.",MAX_AXES-1,MAX_AXES-1);
+              *AlgebraLinepos = *linepos;
+              *match          = 1; // Fudge to make sure error is displayed
+              *success        = 0;
+             }
+            else if ((MatchVal._dbl<1)||(!gsl_finite(MatchVal._dbl)))
+             {
+              sprintf(AlgebraError, "Axis numbers must be greater than or equal to one.");
               *AlgebraLinepos = *linepos;
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
@@ -900,9 +908,10 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
        {
         *success = 1; repeating = 0; // We didn't get a repeat separator
        }
-      if ((repeating!=0) && (output != NULL)) { ListAppendDict(DictBabyList, DictBaby); first = 0; }
+      if  (repeating!=0)                      { first = 0; }
+      if ((repeating!=0) && (output != NULL)) { ListAppendDict(DictBabyList, DictBaby); }
      }
-    if ((first==0) && (output != NULL)) DictAppendList(output , node->VarName , DictBabyList); // Only append list if we matched at least once
+    if (first==0) { if (output != NULL) DictAppendList(output , node->VarName , DictBabyList); } // Only append list if we matched at least once
     else if (node->type == PN_TYPE_REP) *success=0; // We needed at least one item, but got none
    }
   else if (node->type == PN_TYPE_OPT)

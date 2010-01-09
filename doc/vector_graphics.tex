@@ -169,11 +169,15 @@ an attempt is made to link to an axis which doesn't exist.
 In addition to graphs, a range of other objects can be placed on multiplot
 canvases:
 \begin{itemize}
+\item Arcs of circles (the \indcmdt{arc}).
+\item Arrows (the \indcmdt{arrow}).
 \item Rectangular boxes (the \indcmdt{box}).
 \item Circles (the \indcmdt{circle}).
 \item Ellipses (the \indcmdt{ellipse}).
 \item Encapsulated postscript images (the \indcmdt{eps}).
 \item Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} formats (the \indcmdt{image}).
+\item Lines (the \indcmdt{line}).
+\item Points labelled by crosses and other symbols (the \indcmdt{point}).
 \item Text labels (the \indcmdt{text}).
 \end{itemize}
 Put together, these commands can be used to produce a wide range of vector
@@ -228,39 +232,111 @@ arrow from 0,0 to 10,10 \
 with twohead linetype 2 linewidth 5 colour red
 \end{verbatim}
 
-\example{ex:notice}{Producing a notice to advertise that a lecture has moved.}{
+\example{ex:notice}{A notice to advertise that a lecture has moved}{
 In this example script, we use PyXPlot's {\tt arrow} and {\tt text} commands to
 produce a simple notice advertising that a lecture has moved to a different
-seminar room:
+seminar room:\\
 
 \vspace{3mm}
 \noindent {\tt \# Turn on multiplot mode }\newline
 \noindent {\tt set multiplot ; set nodisplay }\newline
-\noindent {\tt }\newline
+\\
 \noindent {\tt \# Set the dimensions of the notice }\newline
 \noindent {\tt w = 20~~~~~~~~\# Width of notice / cm }\newline
 \noindent {\tt h = w/sqrt(2)~\# Height of notice / cm }\newline
-\noindent {\tt }\newline
+\\
 \noindent {\tt \# Put a rectangular box around the notice }\newline
-\noindent {\tt arrow from 0,0 to w,0 with nohead linewidth 5 }\newline
-\noindent {\tt arrow from w,0 to w,h with nohead linewidth 5 }\newline
-\noindent {\tt arrow from w,h to 0,h with nohead linewidth 5 }\newline
-\noindent {\tt arrow from 0,h to 0,0 with nohead linewidth 5 }\newline
-\noindent {\tt }\newline
+\noindent {\tt line from 0,0 to w,0 with linewidth 5 }\newline
+\noindent {\tt line from w,0 to w,h with linewidth 5 }\newline
+\noindent {\tt line from w,h to 0,h with linewidth 5 }\newline
+\noindent {\tt line from 0,h to 0,0 with linewidth 5 }\newline
+\\
 \noindent {\tt \# Write the text of the notice in big letters }\newline
 \noindent {\tt set texthalign centre ; set fontsize 3 }\newline
 \noindent {\tt text "$\backslash$bf Astrophysical Fluids Lecture" at w/2,3/4*h }\newline
 \noindent {\tt text "$\backslash$bf MOVED to Seminar Room 3" at w/2, h/2 }\newline
 \noindent {\tt arrow from w/4, h/4 to 3/4*w, h/4 with linewidth 8 }\newline
-\noindent {\tt }\newline
+\\
 \noindent {\tt \# Display the notice }\newline
 \noindent {\tt set display ; refresh }\newline
-\vspace{2mm}
+\vspace{2mm}\\
 
 The resulting notice is shown below:
 
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_notice.eps}}
 }
+
+\example{ex:euclid}{A diagram from Euclid's {\it Elements}}{
+In this more extended example script, we use PyXPlot's {\tt arrow} and {\tt
+text} commands to produce a diagram illustrating the 47th Proposition from
+Euclid's First Book of {\it Elements}, better known as Pythagoras' Theorem. A
+full text of the proof which accompanies this diagram can be found at
+\url{http://www.gutenberg.org/etext/21076}.
+
+\vspace{3mm}
+{\footnotesize
+\noindent {\tt set multiplot ; set nodisplay}\newline
+}\\{\footnotesize
+\noindent {\tt \# Lengths of three sides of triangle}\newline
+\noindent {\tt AB = 2*unit(cm)}\newline
+\noindent {\tt AC = 4*unit(cm)}\newline
+\noindent {\tt BC = hypot(AC, AB) \# Hypotenuse}\newline
+\noindent {\tt CBA = atan2(AC, AB) \# Angle CBA}\newline
+}\\{\footnotesize
+\noindent {\tt \# Positions of three corners of triangle}\newline
+\noindent {\tt Bx = 0*unit(cm)~~~~~~~; By = 0*unit(cm) \# The origin}\newline
+\noindent {\tt Cx = Bx + BC~~~~~~~~~~; Cy = By}\newline
+\noindent {\tt Ax = Bx + AB*cos(CBA) ; Ay = By + AB*sin(CBA)}\newline
+}\\{\footnotesize
+\noindent {\tt \# Positions of constructed points}\newline
+\noindent {\tt Dx = Bx~~~~~~~~~~~~~~~; Dy = -BC}\newline
+\noindent {\tt Lx = Ax~~~~~~~~~~~~~~~; Ly = Dy}\newline
+\noindent {\tt Ex = Cx~~~~~~~~~~~~~~~; Ey = Dy}\newline
+}\\{\footnotesize
+\noindent {\tt Hx = Bx + (AB + AC) * cos(CBA)}\newline
+\noindent {\tt Hy = By + (AB + AC) * sin(CBA)}\newline
+\noindent {\tt Kx = Cx + (~~~~~AC) * cos(CBA)}\newline
+\noindent {\tt Ky = Cy + (~~~~~AC) * sin(CBA)}\newline
+}\\{\footnotesize
+\noindent {\tt Fx = Bx + AB*cos(CBA+90*unit(deg))}\newline
+\noindent {\tt Fy = By + AB*sin(CBA+90*unit(deg))}\newline
+\noindent {\tt Gx = Ax + AB*cos(CBA+90*unit(deg))}\newline
+\noindent {\tt Gy = Ay + AB*sin(CBA+90*unit(deg))}\newline
+}\\{\footnotesize
+\noindent {\tt \# Construct diagram}\newline
+\noindent {\tt box from Dx,Dy to Cx,Cy with fillcol grey80}\newline
+\noindent {\tt box at Ax,Ay width AC height AC rot CBA-90*unit(deg) with fillcol grey80}\newline
+\noindent {\tt box at Bx,By width AB height AB rot CBA with fillcol grey80}\newline
+\noindent {\tt line from Bx,By to Kx,Ky}\newline
+\noindent {\tt line from Fx,Fy to Cx,Cy}\newline
+\noindent {\tt line from Ax,Ay to Dx,Dy}\newline
+\noindent {\tt line from Ax,Ay to Lx,Ly}\newline
+\noindent {\tt line from Ax,Ay to Ex,Ey}\newline
+}\\{\footnotesize
+\noindent {\tt \# Label diagram}\newline
+\noindent {\tt set fontsize 1.3}\newline
+\noindent {\tt TG = 0.5*unit(mm) \# Gap left between labels and figure}\newline
+\noindent {\tt text "A" at Ax,Ay gap TG*5 hal c val b}\newline
+\noindent {\tt text "B" at Bx,By gap TG~~~hal r val t}\newline
+\noindent {\tt text "C" at Cx,Cy gap TG~~~hal l val t}\newline
+\noindent {\tt text "D" at Dx,Dy gap TG~~~hal c val t}\newline
+\noindent {\tt text "E" at Ex,Ey gap TG~~~hal c val t}\newline
+\noindent {\tt text "F" at Fx,Fy gap TG~~~hal r val c}\newline
+\noindent {\tt text "G" at Gx,Gy gap TG~~~hal c val b}\newline
+\noindent {\tt text "H" at Hx,Hy gap TG~~~hal c val b}\newline
+\noindent {\tt text "K" at Kx,Ky gap TG~~~hal l val c}\newline
+\noindent {\tt text "L" at Lx,Ly gap TG~~~hal c val t}\newline
+}\\{\footnotesize
+\noindent {\tt \# Display diagram}\newline
+\noindent {\tt set display ; refresh}\newline
+}
+\vspace{2mm}\\
+
+The resulting diagram is shown below:
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_euclid_I_47.eps}}
+}
+
 
 \subsection{The {\tt image} Command}
 
@@ -341,33 +417,119 @@ circle at 0,0 radius 5 with linetype 1 linewidth 2 colour red
 circle at 0,0 radius 5 with lw 10 colour red fillcolour yellow
 \end{verbatim}
 
-\example{ex:noentry}{Producing a no-entry sign.}{
+\example{ex:noentry}{A no-entry sign}{
 In this example script, we use PyXPlot's {\tt box} and {\tt circle} commands to
 produce a no-entry sign warning passers by that code monkeys can turn nasty
-when interrupted from their work.
+when interrupted from their work.\\
 
 \vspace{3mm}
 \noindent {\tt set multiplot ; set nodisplay }\newline
 \noindent {\tt }\newline
 \noindent {\tt w = 10 \# Width of sign / cm }\newline
-\noindent {\tt }\newline
+\\
 \noindent {\tt \# Make no-entry sign }\newline
 \noindent {\tt circle at 0,0 radius w with col null fillcol red         }\newline
 \noindent {\tt box from -(0.8*w),-(0.2*w) to (0.8*w),(0.2*w) \ }\newline
 \noindent {\tt \phantom{xxxx}with col null fillcol white }\newline
-\noindent {\tt }\newline
+\\
 \noindent {\tt \# Put a warning beneath the sign }\newline
 \noindent {\tt set fontsize 3 }\newline
 \noindent {\tt set texthalign centre ; set textvalign centre }\newline
 \noindent {\tt text "$\backslash$bf Keep Out! Code Monkey at work!" }\newline
-\noindent {\tt }\newline
+\\
 \noindent {\tt \# Display sign }\newline
 \noindent {\tt set display ; refresh }\newline
-\vspace{2mm}
+\vspace{2mm}\\
 
 The resulting sign is shown below:
 
 \centerline{\includegraphics[width=5cm]{examples/eps/ex_noentry.eps}}
+}
+
+\subsection{The {\tt arc} Command}
+\label{sec:arc}
+
+Partial arcs of circles may be drawn using \indcmdt{arc}. This has similar
+syntax to \indcmdt{circle}, but takes two additional angle, measured clockwise
+from the upward vertical direction, which specify the extent of the arc to be
+drawn. The arc is drawn clockwise from start to end, and hence the following
+two instructions draw two complementary arcs which together form a complete
+circle:
+
+\begin{verbatim}
+set multiplot
+arc at 0,0 radius 5 from -90 to   0 with lw 3 col red
+arc at 0,0 radius 5 from   0 to -90 with lw 3 col green
+\end{verbatim}
+
+\noindent If a {\tt fillcolour} is specified, then a pie-wedge is drawn:
+
+\begin{verbatim}
+arc at 0,0 radius 5 from 0 to 30 with lw 3 fillcolour red
+\end{verbatim}
+
+\example{ex:triangle}{A labelled diagram of a triangle}{
+In this example, we draw a labelled diagram of the interior angles of a triangle, taking the lengths of the three sides of the triangle as inputs. We calculate the positions of the three vertices of the triangle and then label them. We use PyXPlot's automatic handling of physical units to generate the \LaTeX\ strings required to label the side lengths in centimetres and the angles in degrees. We use PyXPlot's {\tt arc} command to draw angle symbols in the three corners of a triangle.\\
+
+\vspace{3mm}
+{\footnotesize
+\noindent {\tt set multiplot ; set nodisplay}\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Lengths of three sides of triangle}\newline
+\noindent {\tt AB = 4*unit(cm)}\newline
+\noindent {\tt AC = 5*unit(cm)}\newline
+\noindent {\tt BC = 6*unit(cm)}\newline
+}\\{\footnotesize
+\noindent {\tt \# Use cosine rule to find interior angles}\newline
+\noindent {\tt ABC = acos((AB**2 + BC**2 - AC**2) / (2*AB*BC))}\newline
+\noindent {\tt BCA = acos((BC**2 + AC**2 - AB**2) / (2*BC*AC))}\newline
+\noindent {\tt CAB = acos((AC**2 + AB**2 - BC**2) / (2*AC*AB))}\newline
+}\\{\footnotesize
+\noindent {\tt \# Positions of three corners of triangle}\newline
+\noindent {\tt Bx = 0*unit(cm)~~~~~~~; By = 0*unit(cm) \# The origin}\newline
+\noindent {\tt Cx = Bx + BC~~~~~~~~~~; Cy = By}\newline
+\noindent {\tt Ax = Bx + AB*cos(ABC)~; Ay = By + AB*sin(ABC)}\newline
+}\\{\footnotesize
+\noindent {\tt \# Draw triangle}\newline
+\noindent {\tt line from Ax,Ay to Bx,By}\newline
+\noindent {\tt line from Ax,Ay to Cx,Cy}\newline
+\noindent {\tt line from Bx,By to Cx,Cy}\newline
+}\\{\footnotesize
+\noindent {\tt \# Draw angle symbols}\newline
+\noindent {\tt ArcRad = 4*unit(mm) \# Radius of angle arcs}\newline
+\noindent {\tt arc at Bx,By radius ArcRad from~~90*unit(deg)-ABC to~~90*unit(deg)}\newline
+\noindent {\tt arc at Cx,Cy radius ArcRad from -90*unit(deg)~~~~~to -90*unit(deg)+BCA}\newline
+\noindent {\tt arc at Ax,Ay radius ArcRad from~~90*unit(deg)+BCA to 270*unit(deg)-ABC}\newline
+}\\{\footnotesize
+\noindent {\tt \# Label lengths of sides}\newline
+\noindent {\tt set unit of length cm \# Display lengths in cm}\newline
+\noindent {\tt set numeric sigfig 3 display latex \# Correct to 3 significant figure}\newline
+\noindent {\tt set fontsize 1.2 \# And in slightly bigger text than normal}\newline
+\noindent {\tt TextGap = 1*unit(mm)}\newline
+\noindent {\tt text "\%s"\%(BC) at (Bx+Cx)/2,(By+Cy)/2 gap TextGap hal c val t}\newline
+\noindent {\tt text "\%s"\%(AB) at (Ax+Bx)/2,(Ay+By)/2 gap TextGap rot~~ABC hal c val b}\newline
+\noindent {\tt text "\%s"\%(AC) at (Ax+Cx)/2,(Ay+Cy)/2 gap TextGap rot -BCA hal c val b}\newline
+}\\{\footnotesize
+\noindent {\tt \# Label angles}\newline
+\noindent {\tt set unit of angle degree \# Display angles in degrees}\newline
+\noindent {\tt ArcRad2 = 1.4 * ArcRad \# Distance of text from apex of angles}\newline
+\noindent {\tt text "\%s"\%(CAB) at Ax+ArcRad2*sin(ABC-BCA),Ay-ArcRad2*cos(ABC-BCA) hal c val t}\newline
+\noindent {\tt text "\%s"\%(ABC) at Bx+ArcRad2*cos(ABC/2),By+ArcRad2*sin(ABC/2) hal l val c}\newline
+\noindent {\tt text "\%s"\%(BCA) at Cx-ArcRad2*cos(BCA/2),Cy+ArcRad2*sin(BCA/2) hal r val c}\newline
+}\\{\footnotesize
+\noindent {\tt \# Label points ABC}\newline
+\noindent {\tt text "A" at Ax,Ay gap TextGap hal c val b}\newline
+\noindent {\tt text "B" at Bx,By gap TextGap hal r val c}\newline
+\noindent {\tt text "C" at Cx,Cy gap TextGap hal l val c}\newline
+}\\{\footnotesize
+\noindent {\tt \# Display diagram}\newline
+\noindent {\tt set display ; refresh}\newline
+}
+\vspace{2mm}\\
+
+The resulting diagram is shown below:
+
+\centerline{\includegraphics[width=5cm]{examples/eps/ex_triangle.eps}}
 }
 
 \subsection{The {\tt ellipse} Command}
@@ -418,53 +580,51 @@ The line type, line width, and colour of line with which the outlines of
 ellipses are drawn may be specified as in the {\tt box} and {\tt circle}
 commands above. Likewise, ellipses may be filled in the same manner.
 
-\example{ex:noentry}{A labelled diagram of an ellipse.}{
+\example{ex:ellipse}{A labelled diagram of an ellipse}{
 In this example script, we illustrate the text of Section~\ref{sec:ellipse} by
 using PyXPlot's {\tt ellipse} command, together with arrows and text labels, to
 produce a labelled diagram of an ellipse. We label the semi-major axis $a$, the
 semi-minor axis $b$, the semi-latus rectum $L$, and the distance between the
 centre of the ellipse and one of its foci with the length $ae$, where $e$ is
-the eccentricity of the ellipse.
+the eccentricity of the ellipse.\\
 
 \vspace{3mm}
 {\footnotesize
 \noindent {\tt set multiplot ; set nodisplay }\newline
 \noindent {\tt }\newline
-\noindent {\tt a = 6.0 \# Semi-major axis }\newline
-\noindent {\tt b = 4.0 \# Semi-minor axis }\newline
-\noindent {\tt }\newline
-\noindent {\tt e~~~= sqrt(1-(b/a)**2) \# Eccentricity }\newline
-\noindent {\tt slr~= a*(1-e**2) \# Length of semi-latus rectum }\newline
-\noindent {\tt fd~~= a*e \# Distance of focus from centre }\newline
-\noindent {\tt }\newline
+\noindent {\tt a~~~= 6.0~~~~~~~~~~~~~~\# Semi-major axis }\newline
+\noindent {\tt b~~~= 4.0~~~~~~~~~~~~~~\# Semi-minor axis }\newline
+\noindent {\tt e~~~= sqrt(1-(b/a)**2)~\# Eccentricity }\newline
+\noindent {\tt slr~= a*(1-e**2)~~~~~~~\# Length of semi-latus rectum }\newline
+\noindent {\tt fd~~= a*e~~~~~~~~~~~~~~\# Distance of focus from centre }\newline
+}\\{\footnotesize
 \noindent {\tt \# Draw ellipse }\newline
 \noindent {\tt ellipse centre 0,0 SemiMajor a SemiMinor b with lw 3 }\newline
 \noindent {\tt }\newline
+\noindent {\tt \# Draw points at centre and focus}\newline
+\noindent {\tt set texthalign centre ; set textvalign top}\newline
+\noindent {\tt set fontsize 1.5}\newline
+\noindent {\tt point at 0,0 label "Centre" with pointsize 2 plw 2}\newline
+\noindent {\tt point at -fd,0 label "Focus" with pointsize 2 plw 2}\newline
+}\\{\footnotesize
 \noindent {\tt \# Draw arrows and dotted lines on ellipse }\newline
-\noindent {\tt arrow from 0,0 to 0,b with twohead lw 2 lt 3~~~~~~~~~\# Semi-minor axis }\newline
-\noindent {\tt arrow from 0,0 to a,0 with twohead lw 2 lt 3~~~~~~~~~\# Semi-major axis }\newline
-\noindent {\tt arrow from -fd,0 to -fd,slr with tw lw 2 lt 3~~~~~~~~\# SLR }\newline
-\noindent {\tt arrow from -fd,0 to -fd,-1.5 with nohead lw 2 lt 3 }\newline
-\noindent {\tt arrow from 0,0 to 0,-1.5 with nohead lw 2 lt 3 }\newline
-\noindent {\tt arrow from 0,-1.3 to -fd,-1.3 with twohead lw 2 lt 3 \# Focus $<$-$>$ Centre }\newline
-\noindent {\tt  }\newline
+\noindent {\tt arrow from 0,0 to 0,b with twohead lw 2 lt 3~~~\# Semi-minor axis}\newline
+\noindent {\tt arrow from 0,0 to a,0 with twohead lw 2 lt 3~~~\# Semi-major axis}\newline
+\noindent {\tt arrow from -fd,0 to -fd,slr with tw lw 2 lt 3~~\# SLR}\newline
+\noindent {\tt arrow from 0,0 to -fd,0 with twohead lw 2 lt 3 \# Focus $<$-$>$ Centre}\newline
+}\\{\footnotesize
 \noindent {\tt \# Label ellipse }\newline
-\noindent {\tt set fontsize 1.5 }\newline
-\noindent {\tt set texthalign left ; set textvalign top }\newline
-\noindent {\tt text 'Centre' at 0.2,-0.2 }\newline
-\noindent {\tt text 'Focus' at -fd+0.2,-0.2 }\newline
-\noindent {\tt set texthalign centre ; set textvalign top }\newline
-\noindent {\tt text '\$ae\$' at -fd/2,-1.5 }\newline
-\noindent {\tt set texthalign centre ; set textvalign centre }\newline
-\noindent {\tt text '\$a\$' at a/2,+0.5 }\newline
-\noindent {\tt text '\$b\$' at 0.5,b/2 }\newline
-\noindent {\tt set texthalign left ; set textvalign centre }\newline
-\noindent {\tt text '$L=a(1-e^2)$' at  0.2-fd,slr/2 }\newline
-\noindent {\tt }\newline
+\noindent {\tt set texthalign centre ; set textvalign centre}\newline
+\noindent {\tt text '\$ae\$' at -fd/2,-0.3}\newline
+\noindent {\tt text '\$a\$' at a/2,+0.3}\newline
+\noindent {\tt text '\$b\$' at 0.3,b/2}\newline
+\noindent {\tt set texthalign left ; set textvalign centre}\newline
+\noindent {\tt text '\$L=a(1-e\^{}2)\$' at  0.2-fd,slr/2}\newline
+}\\{\footnotesize
 \noindent {\tt \# Display diagram }\newline
 \noindent {\tt set display ; refresh }\newline
 }
-\vspace{2mm}
+\vspace{2mm}\\
 
 The resulting diagram is shown below:
 

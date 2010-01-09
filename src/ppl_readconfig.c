@@ -551,6 +551,9 @@ void ReadConfigFile(char *ConfigFname)
       if      (strcmp(setkey, "BASELINE_LINEWIDTH"  )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_DEFAULT_LINEWIDTH = fl * EPS_BASE_DEFAULT_LINEWIDTH;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Baseline_LineWidth."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "BASELINE_POINTSIZE"  )==0)
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_DEFAULT_PS        = fl * EPS_BASE_DEFAULT_PS;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Baseline_PointSize."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "ARROW_HEADANGLE"     )==0)
         if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue))) EPS_ARROW_ANGLE       = fl * M_PI / 180;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Arrow_HeadAngle."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

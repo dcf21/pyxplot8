@@ -35,10 +35,10 @@ w = 20         # Width of notice / cm
 h = w/sqrt(2) # Height of notice / cm
 
 # Put a rectangular box around notice
-arrow from 0,0 to w,0 with nohead linewidth 5
-arrow from w,0 to w,h with nohead linewidth 5
-arrow from w,h to 0,h with nohead linewidth 5
-arrow from 0,h to 0,0 with nohead linewidth 5
+line from 0,0 to w,0 with linewidth 5
+line from w,0 to w,h with linewidth 5
+line from w,h to 0,h with linewidth 5
+line from 0,h to 0,0 with linewidth 5
 
 # Write text of notice
 set texthalign centre ; set fontsize 3

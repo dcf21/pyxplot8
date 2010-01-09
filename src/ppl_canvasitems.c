@@ -185,15 +185,16 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
   int i,j;
   if      (ptr->type == CANVAS_ARROW) // Produce textual representations of arrow commands
    {
-    sprintf(output, "arrow item %d from %s,%s to %s,%s", ptr->id,
+    sprintf(output, "%s item %d from %s,%s to %s,%s with %s", (ptr->ArrowType==SW_ARROWTYPE_NOHEAD) ? "line" : "arrow", ptr->id,
              NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
              NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
              NumericDisplay((ptr->xpos+ptr->xpos2)*100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
-             NumericDisplay((ptr->ypos+ptr->ypos2)*100, 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+             NumericDisplay((ptr->ypos+ptr->ypos2)*100, 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             *(char **)FetchSettingName(ptr->ArrowType, SW_ARROWTYPE_INT, (void *)SW_ARROWTYPE_STR, sizeof(char *))
            );
     i = strlen(output);
-    with_words_print(&ptr->with_data, output+i+6);
-    if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+    with_words_print(&ptr->with_data, output+i+1);
+    if (strlen(output+i+1)>0) { output[i]=' ';  }
     else                      { output[i]='\0'; }
    }
   else if (ptr->type == CANVAS_BOX  ) // Produce textual representations of box commands
@@ -217,12 +218,20 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
    }
   else if (ptr->type == CANVAS_CIRC ) // Produce textual representations of circle commands
    {
-    sprintf(output, "circle item %d at %s,%s radius %s", ptr->id,
+    sprintf(output, "%s item %d at %s,%s radius %s", ptr->xfset ? "arc" : "circle", ptr->id,
              NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
              NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
              NumericDisplay( ptr->xpos2           *100, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i = strlen(output);
+    if (ptr->xfset)
+     {
+      sprintf(output+i," from %s to %s",
+               NumericDisplay( ptr->xf         *180/M_PI, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+               NumericDisplay( ptr->yf         *180/M_PI, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+             );
+      i += strlen(output+i);
+     }
     with_words_print(&ptr->with_data, output+i+6);
     if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
     else                      { output[i]='\0'; }
@@ -389,16 +398,34 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       pd = pd->next;
      }
    }
+  else if (ptr->type == CANVAS_POINT ) // Produce textual representations of point commands
+   {
+    sprintf(output, "point item %d at %s,%s", ptr->id,
+             NumericDisplay( ptr->xpos            *100, 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->ypos            *100, 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           );
+    i = strlen(output);
+    if (ptr->text != NULL)
+     {
+      sprintf(output+i, "label "); i+=strlen(output+i);
+      StrEscapify(ptr->text, output+i);
+      i+=strlen(output+i);
+     }
+    with_words_print(&ptr->with_data, output+i+6);
+    if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+    else                      { output[i]='\0'; }
+   }
   else if (ptr->type == CANVAS_TEXT ) // Produce textual representations of text commands
    {
     sprintf(output, "text item %d ", ptr->id);
     i = strlen(output);
     StrEscapify(ptr->text, output+i);
     i += strlen(output+i);
-    sprintf(output+i, " at %s,%s rotate %s",
+    sprintf(output+i, " at %s,%s rotate %s gap %s",
              NumericDisplay( ptr->xpos     * 100     , 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
              NumericDisplay( ptr->ypos     * 100     , 1, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
-             NumericDisplay( ptr->rotation * 180/M_PI, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+             NumericDisplay( ptr->rotation * 180/M_PI, 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L)),
+             NumericDisplay( ptr->xpos2    * 100     , 3, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
     i += strlen(output+i);
     with_words_print(&ptr->with_data, output+i+6);
@@ -550,7 +577,7 @@ int directive_move(Dict *command)
   ptr = canvas_items->first;
   while ((ptr!=NULL)&&(ptr->id!=*moveno)) ptr=ptr->next;
   if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *moveno); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_CIRC)&&(ptr->type!=CANVAS_PLOT));
+  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_CIRC)&&(ptr->type!=CANVAS_PLOT)&&(ptr->type!=CANVAS_POINT));
   if ((ang != NULL) && (!rotatable)) { sprintf(temp_err_string, "It is not possible to rotate the specified multiplot item."); ppl_warning(ERR_GENERAL, temp_err_string); }
 
   // Most canvas items are moved using the xpos and ypos fields
@@ -581,15 +608,16 @@ int directive_arrow(Dict *command, int interactive)
   canvas_item   *ptr;
   int            i, id;
   value         *x1, *x2, *y1, *y2;
-  char          *tempstr;
+  char          *tempstr, *tempstr2, *cmd;
   unsigned char *unsuccessful_ops;
 
   // Look up the start and end point of the arrow, and ensure that they are either dimensionless or in units of length
+  DictLookup(command, "directive", NULL, (void *)&cmd);
   DictLookup(command, "x1", NULL, (void *)&x1); DictLookup(command, "y1", NULL, (void *)&y1);
   DictLookup(command, "x2", NULL, (void *)&x2); DictLookup(command, "y2", NULL, (void *)&y2);
 
-  ASSERT_LENGTH(x1,"arrow","x1"); ASSERT_LENGTH(y1,"arrow","y1");
-  ASSERT_LENGTH(x2,"arrow","x2"); ASSERT_LENGTH(y2,"arrow","y2");
+  ASSERT_LENGTH(x1,cmd,"x1"); ASSERT_LENGTH(y1,cmd,"y1");
+  ASSERT_LENGTH(x2,cmd,"x2"); ASSERT_LENGTH(y2,cmd,"y2");
 
   // Add this arrow to the linked list which decribes the canvas
   if (canvas_itemlist_add(command,CANVAS_ARROW,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
@@ -602,9 +630,10 @@ int directive_arrow(Dict *command, int interactive)
   with_words_fromdict(command, &ptr->with_data, 1);
 
   // Work out whether this arrow is in the 'head', 'nohead' or 'twoway' style
-  DictLookup(command, "arrow_style", NULL, (void *)&tempstr);
+  DictLookup(command, "arrow_style", NULL, (void *)&tempstr );
+  DictLookup(command, "directive"  , NULL, (void *)&tempstr2);
   if (tempstr != NULL) ptr->ArrowType = FetchSettingByName(tempstr, SW_ARROWTYPE_INT, SW_ARROWTYPE_STR);
-  else                 ptr->ArrowType = SW_ARROWTYPE_HEAD;
+  else                 ptr->ArrowType = (strcmp(tempstr2,"arrow")==0) ? SW_ARROWTYPE_HEAD : SW_ARROWTYPE_NOHEAD;
 
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
@@ -682,23 +711,31 @@ int directive_circle(Dict *command, int interactive)
  {
   canvas_item   *ptr;
   int            i, id;
-  value         *x1, *x2, *y1;
+  char          *cmd;
+  value         *x1, *x2, *y1, *a1, *a2;
   unsigned char *unsuccessful_ops;
 
   // Look up the position of the centre of the circle and its radius
-  DictLookup(command, "x", NULL, (void *)&x1);
-  DictLookup(command, "y", NULL, (void *)&y1);
-  DictLookup(command, "r", NULL, (void *)&x2);
+  DictLookup(command, "directive", NULL, (void *)&cmd);
+  DictLookup(command, "x"        , NULL, (void *)&x1);
+  DictLookup(command, "y"        , NULL, (void *)&y1);
+  DictLookup(command, "r"        , NULL, (void *)&x2);
+  DictLookup(command, "angle1"   , NULL, (void *)&a1);
+  DictLookup(command, "angle2"   , NULL, (void *)&a2);
 
-  ASSERT_LENGTH(x1,"circle","x");
-  ASSERT_LENGTH(y1,"circle","y");
-  ASSERT_LENGTH(x2,"circle","r");
+  ASSERT_LENGTH(x1,cmd,"x");
+  ASSERT_LENGTH(y1,cmd,"y");
+  ASSERT_LENGTH(x2,cmd,"r");
+  if (a1 != NULL) { ASSERT_ANGLE(a1,cmd); }
+  if (a2 != NULL) { ASSERT_ANGLE(a2,cmd); }
 
   // Add this circle to the linked list which decribes the canvas
   if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real;
+  if (a1 != NULL) { ptr->xfset = 1; ptr->xf = a1->real; ptr->yf = a2->real; } // arc command
+  else            { ptr->xfset = 0; } // circle command
 
   // Read in colour and linewidth information, if available
   with_words_fromdict(command, &ptr->with_data, 1);
@@ -960,23 +997,72 @@ int directive_eps(Dict *command, int interactive)
   return 0;
  }
 
+// Implementation of the point command.
+int directive_point(Dict *command, int interactive)
+ {
+  canvas_item   *ptr;
+  int            i, id;
+  value         *x1, *y1;
+  char          *tempstr, *text, *cmd;
+  unsigned char *unsuccessful_ops;
+
+  // Look up the position of the point, and ensure that it is either dimensionless or in units of length
+  DictLookup(command, "directive", NULL, (void *)&cmd);
+  DictLookup(command, "x", NULL, (void *)&x1);
+  DictLookup(command, "y", NULL, (void *)&y1);
+
+  ASSERT_LENGTH(x1,cmd,"x");
+  ASSERT_LENGTH(y1,cmd,"y");
+
+  // Add this point to the linked list which decribes the canvas
+  if (canvas_itemlist_add(command,CANVAS_POINT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  ptr->xpos  = x1->real;
+  ptr->ypos  = y1->real;
+
+  // Read in colour and linewidth information, if available
+  with_words_fromdict(command, &ptr->with_data, 1);
+
+  // See whether this point is labelled
+  DictLookup(command, "label", NULL, (void *)&tempstr);
+  if (tempstr != NULL)
+   {
+    text = (char *)malloc(strlen(tempstr)+1);
+    if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+    strcpy(text, tempstr);
+    ptr->text = text;
+   }
+  else { ptr->text = NULL; }
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Point has been removed from multiplot, because it generated an error.")); return 1; }
+   }
+  return 0;
+ }
+
 // Implementation of the text command.
 int directive_text(Dict *command, int interactive)
  {
   canvas_item   *ptr;
   int            i, id;
-  value         *x, *y, *ang;
+  value         *x, *y, *ang, *gap;
   unsigned char *unsuccessful_ops;
-  char          *text, *fname;
+  char          *text, *fname, *tempstr;
 
   DictLookup(command, "x"       , NULL, (void *)&x  );
   DictLookup(command, "y"       , NULL, (void *)&y  );
+  DictLookup(command, "gap"     , NULL, (void *)&gap);
   DictLookup(command, "rotation", NULL, (void *)&ang);
 
-  if (x  !=NULL) { ASSERT_LENGTH(x  ,"eps","x"); }
-  if (y  !=NULL) { ASSERT_LENGTH(y  ,"eps","y"); }
-  if (ang!=NULL) { ASSERT_ANGLE (ang,"eps"    ); }
+  if (x  !=NULL) { ASSERT_LENGTH(x  ,"text","x"  ); }
+  if (y  !=NULL) { ASSERT_LENGTH(y  ,"text","y"  ); }
+  if (gap!=NULL) { ASSERT_LENGTH(gap,"text","gap"); }
+  if (ang!=NULL) { ASSERT_ANGLE (ang,"text"      ); }
 
+  // Read the string which we are to render
   DictLookup(command, "string", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
@@ -984,8 +1070,15 @@ int directive_text(Dict *command, int interactive)
 
   if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
 
+  // Check for halign or valign modifiers
+  DictLookup(command,"halign",NULL,(void **)&tempstr);
+  if (tempstr != NULL) ptr->settings.TextHAlign = FetchSettingByName(tempstr, SW_HALIGN_INT, SW_HALIGN_STR);
+  DictLookup(command,"valign",NULL,(void **)&tempstr);
+  if (tempstr != NULL) ptr->settings.TextVAlign = FetchSettingByName(tempstr, SW_VALIGN_INT, SW_VALIGN_STR);
+
   if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
   if (y  !=NULL) { ptr->ypos     = y  ->real; } else { ptr->ypos      = settings_graph_current.OriginY.real; }
+  if (gap!=NULL) { ptr->xpos2    = gap->real; } else { ptr->xpos2     = 0.0;                                 }
   if (ang!=NULL) { ptr->rotation = ang->real; } else { ptr->rotation  = 0.0;                                 }
   ptr->text = text;
 

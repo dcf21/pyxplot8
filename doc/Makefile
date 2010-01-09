@@ -23,7 +23,7 @@
 PYXPLOT = ../bin/pyxplot
 EXAMPLEDIR = examples
 EPSDIR = $(EXAMPLEDIR)/eps
-EPSFILES = $(EPSDIR)/ex_cover.eps $(EPSDIR)/ex_intro_sine.eps $(EPSDIR)/ex_intro_func.eps $(EPSDIR)/ex_axislabs.eps $(EPSDIR)/ex_trajectories.eps $(EPSDIR)/ex_intro_bessel.eps $(EPSDIR)/ex_intro_legendre.eps $(EPSDIR)/ex_fitting.eps $(EPSDIR)/ex_multiaxes.eps $(EPSDIR)/ex_axistics.eps $(EPSDIR)/ex_legends.eps $(EPSDIR)/ex_seminar.eps $(EPSDIR)/ex_barchart1.eps $(EPSDIR)/ex_barchart2.eps $(EPSDIR)/ex_funcsplice.eps $(EPSDIR)/ex_map.eps $(EPSDIR)/ex_notice.eps $(EPSDIR)/ex_noentry.eps $(EPSDIR)/ex_ellipse.eps $(EPSDIR)/ex_text1.eps $(EPSDIR)/ex_text2.eps $(EPSDIR)/ex_linestyles.eps
+EPSFILES = $(EPSDIR)/ex_cover.eps $(EPSDIR)/ex_intro_sine.eps $(EPSDIR)/ex_intro_func.eps $(EPSDIR)/ex_axislabs.eps $(EPSDIR)/ex_trajectories.eps $(EPSDIR)/ex_intro_bessel.eps $(EPSDIR)/ex_intro_legendre.eps $(EPSDIR)/ex_fitting.eps $(EPSDIR)/ex_multiaxes.eps $(EPSDIR)/ex_axistics.eps $(EPSDIR)/ex_legends.eps $(EPSDIR)/ex_seminar.eps $(EPSDIR)/ex_barchart1.eps $(EPSDIR)/ex_barchart2.eps $(EPSDIR)/ex_funcsplice.eps $(EPSDIR)/ex_map.eps $(EPSDIR)/ex_notice.eps $(EPSDIR)/ex_euclid_I_47.eps $(EPSDIR)/ex_noentry.eps $(EPSDIR)/ex_triangle.eps $(EPSDIR)/ex_ellipse.eps $(EPSDIR)/ex_text1.eps $(EPSDIR)/ex_text2.eps $(EPSDIR)/ex_linestyles.eps
 
 all: $(EPSFILES) pyxplot.pdf
 
@@ -32,7 +32,7 @@ clean:
 	rm -f pyxplot.pdf pyxplot.ps pyxplot.dvi *.aux *.idx *.ilg *.ind *.log *.toc
 	rm -Rf html
 
-$(EPSDIR)/%.eps: $(EXAMPLEDIR)/%.ppl
+$(EPSDIR)/%.eps: $(EXAMPLEDIR)/%.ppl $(PYXPLOT)
 	echo "Producing example plot $*..."
 	mkdir -p $(EPSDIR)
 	$(PYXPLOT) $< > /dev/null
@@ -45,7 +45,7 @@ $(EPSDIR)/%.eps: $(EXAMPLEDIR)/%.ppl
 	echo "Making postscript documentation..."
 	dvips -Pcmz -Pamz $< -o $@ > /dev/null 2> /dev/null
 
-pyxplot.dvi: calculations.tex changelog.tex colours.tex configuration.tex constants.tex data.tex definitions.tex first_steps.tex fit_maths.tex functions.tex gnuplot_diffs.tex installation.tex introduction.tex linestyles.tex other_apps.tex papersizes.tex plotting.tex programming.tex pyxplot.tex reference.tex units.tex vector_graphics.tex
+pyxplot.dvi: calculations.tex changelog.tex colours.tex configuration.tex constants.tex data.tex definitions.tex first_steps.tex fit_maths.tex functions.tex gnuplot_diffs.tex installation.tex introduction.tex linestyles.tex other_apps.tex papersizes.tex plotting.tex programming.tex pyxplot.tex reference.tex units.tex vector_graphics.tex $(EPSFILES)
 	echo "Compiling documentation..."
 	latex pyxplot.tex > /dev/null 2> /dev/null
 	latex pyxplot.tex > /dev/null 2> /dev/null

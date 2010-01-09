@@ -42,6 +42,7 @@
 #include "EPSMaker/eps_image.h"
 #include "EPSMaker/eps_plot.h"
 #include "EPSMaker/eps_plot_threedimbuff.h"
+#include "EPSMaker/eps_point.h"
 #include "EPSMaker/eps_settings.h"
 #include "EPSMaker/eps_text.h"
 
@@ -125,6 +126,7 @@ static void(*EllpsHandlers[])(EPSComm *) = {NULL                       , NULL   
 static void(*EPSHandlers[]  )(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_eps_RenderEPS  , NULL};
 static void(*ImageHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_image_RenderEPS, NULL};
 static void(*PlotHandlers[] )(EPSComm *) = {eps_plot_ReadAccessibleData, eps_plot_SampleFunctions, eps_plot_DecideAxisRanges, eps_plot_YieldUpText, NULL                , eps_plot_RenderEPS , NULL};
+static void(*PointHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , eps_point_YieldUpText,NULL                , eps_point_RenderEPS, NULL};
 static void(*TextHandlers[] )(EPSComm *) = {NULL                       , NULL                    , NULL                     , eps_text_YieldUpText, NULL                , eps_text_RenderEPS , NULL};
 static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , canvas_CallLaTeX    , canvas_MakeEPSBuffer, canvas_EPSWrite    , NULL};
 
@@ -145,6 +147,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   void(*EPSHandler  )(EPSComm *);
   void(*ImageHandler)(EPSComm *);
   void(*PlotHandler )(EPSComm *);
+  void(*PointHandler)(EPSComm *);
   void(*TextHandler )(EPSComm *);
   void(*AfterHandler)(EPSComm *);
 
@@ -230,11 +233,13 @@ void canvas_draw(unsigned char *unsuccessful_ops)
     EPSHandler   = EPSHandlers  [j];
     ImageHandler = ImageHandlers[j];
     PlotHandler  = PlotHandlers [j];
+    PointHandler = PointHandlers[j];
     TextHandler  = TextHandlers [j];
     AfterHandler = AfterHandlers[j];
-    if ((ArrowHandler==NULL)&&(CircHandler==NULL)&&(EllpsHandler==NULL)&&(EPSHandler==NULL)&&(ImageHandler==NULL)&&(PlotHandler==NULL)&&(TextHandler==NULL)&&(AfterHandler==NULL)) break;
+    if ((ArrowHandler==NULL)&&(CircHandler==NULL)&&(EllpsHandler==NULL)&&(EPSHandler==NULL)&&(ImageHandler==NULL)&&(PlotHandler==NULL)&&(PointHandler==NULL)&&(TextHandler==NULL)&&(AfterHandler==NULL)) break;
 
     // Loop over all of the items on the canvas
+    if (comm.itemlist != NULL)
     for (item=comm.itemlist->first; item!=NULL; item=item->next)
      {
       if (item->deleted)              continue; // ... except those which have been deleted
@@ -247,6 +252,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
       else if ((item->type == CANVAS_EPS  ) && (EPSHandler   != NULL)) (*EPSHandler  )(&comm);
       else if ((item->type == CANVAS_IMAGE) && (ImageHandler != NULL)) (*ImageHandler)(&comm);
       else if ((item->type == CANVAS_PLOT ) && (PlotHandler  != NULL)) (*PlotHandler )(&comm);
+      else if ((item->type == CANVAS_POINT) && (PointHandler != NULL)) (*PointHandler)(&comm);
       else if ((item->type == CANVAS_TEXT ) && (TextHandler  != NULL)) (*TextHandler )(&comm);
       if (status) { unsuccessful_ops[item->id] = 1; } // If something went wrong... flag it up and give up on this object
       status = 0;

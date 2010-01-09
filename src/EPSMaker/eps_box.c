@@ -35,6 +35,7 @@
 void eps_box_RenderEPS(EPSComm *x)
  {
   int    lt;
+  unsigned char filled=0, stroked=0;
   double lw, lw_scale, x1, x2, y1, y2, xo, yo, r;
   with_words ww;
 
@@ -66,7 +67,11 @@ void eps_box_RenderEPS(EPSComm *x)
   fprintf(x->epsbuffer, "%.2f rotate\n", r*180/M_PI);
 
   // Fill box
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
+  IF_NOT_INVISIBLE
+   {
+    fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
+    filled=1;
+   }
 
   // Set colour of outline of box
   eps_core_SetColour(x, &ww, 1);
@@ -82,17 +87,24 @@ void eps_box_RenderEPS(EPSComm *x)
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
 
   // Stroke outline of box
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nstroke\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
+  IF_NOT_INVISIBLE
+   {
+    fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nstroke\n", x1-xo,y1-yo,x1-xo,y2-yo,x2-xo,y2-yo,x2-xo,y1-yo);
+    stroked=1;
+   }
 
   // Undo scaling of postscript axes
   fprintf(x->epsbuffer, "grestore\n");
   x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0';
 
   // Factor four corners of box into EPS file's bounding box
-  eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
-  eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y2-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y2-yo)*cos(r) + yo, lw);
-  eps_core_BoundingBox(x, (x2-xo)*cos(r) - (y2-yo)*sin(r) + xo, (x2-xo)*sin(r) + (y2-yo)*cos(r) + yo, lw);
-  eps_core_BoundingBox(x, (x2-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x2-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
+  if (filled || stroked)
+   {
+    eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
+    eps_core_BoundingBox(x, (x1-xo)*cos(r) - (y2-yo)*sin(r) + xo, (x1-xo)*sin(r) + (y2-yo)*cos(r) + yo, lw);
+    eps_core_BoundingBox(x, (x2-xo)*cos(r) - (y2-yo)*sin(r) + xo, (x2-xo)*sin(r) + (y2-yo)*cos(r) + yo, lw);
+    eps_core_BoundingBox(x, (x2-xo)*cos(r) - (y1-yo)*sin(r) + xo, (x2-xo)*sin(r) + (y1-yo)*cos(r) + yo, lw);
+   }
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

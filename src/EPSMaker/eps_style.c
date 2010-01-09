@@ -80,6 +80,8 @@ char *eps_PointTypes[N_POINTTYPES] = {
        "/pt30 {newpath 11 {2 copy} repeat /theta 90 def 6 { exch ps theta cos mul add exch ps theta sin mul add moveto lineto stroke /theta theta 60 add def} repeat } bind def",
       };
 
+double eps_PointSize[N_POINTTYPES] = {0.75 , 1.0 , 1.0 , 0.75 , 1.183 , 0.75 , 1.3 , 0.75 , 1.183 , 0.75 , 1.3 , 1.0 , 1.0 , 1.183 , 1.183 , 1.183 , 1.2 , 1.0 , 1.0 , 1.0 , 1.0 ,  1.0 , 1.0 , 1.183 , 1.183 , 1.183 , 1.2 , 1.0 , 1.0};
+
 // Star types
 char *eps_StarTypes [N_STARTYPES] = {
        ""

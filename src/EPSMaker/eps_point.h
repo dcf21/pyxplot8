@@ -1,4 +1,4 @@
-// eps_style.h
+// eps_point.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,19 +19,13 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_STYLE_H
-#define _PPL_EPS_STYLE_H 1
+#ifndef _PPL_EPS_POINT_H
+#define _PPL_EPS_POINT_H 1
 
-#define N_POINTTYPES 30
-#define N_STARTYPES   1
+#include "eps_comm.h"
 
-char *eps_LineType(int lt, double lw, double offset);
-
-#ifndef _PPL_EPS_STYLE_C
-extern char   *eps_PointTypes[];
-extern double  eps_PointSize [];
-extern char   *eps_StarTypes [];
-#endif
+void eps_point_YieldUpText(EPSComm *x);
+void eps_point_RenderEPS(EPSComm *x);
 
 #endif
 

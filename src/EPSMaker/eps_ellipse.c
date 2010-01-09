@@ -35,6 +35,7 @@
 void eps_ellps_RenderEPS(EPSComm *x)
  {
   int    lt;
+  unsigned char filled=0, stroked=0;
   double lw, lw_scale, xc, yc, a, b, r;
   double a_inv, b_inv;
   with_words ww;
@@ -77,13 +78,21 @@ void eps_ellps_RenderEPS(EPSComm *x)
   eps_core_SwitchTo_FillColour(x);
 
   // Fill ellipse
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\nfill\n");
+  IF_NOT_INVISIBLE
+   {
+    fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\nfill\n");
+    filled = 1;
+   }
 
   // Set colour of outline of ellipse
   eps_core_SetColour(x, &ww, 1);
 
   // Make path representing the outline of ellipse
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\n"); // NB: Leave this path unstroked until we've done a grestore
+  IF_NOT_INVISIBLE
+   {
+    fprintf(x->epsbuffer, "0 0 1 0 360 arc\nclosepath\n"); // NB: Leave this path unstroked until we've done a grestore
+    stroked = 1;
+   }
 
   // Undo scaling of axes so that linewidths come out right
   if (a < 1e-8) { a_inv=1e8; } else { a_inv=1.0/a; }
@@ -98,10 +107,13 @@ void eps_ellps_RenderEPS(EPSComm *x)
   x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0';
 
   // Factor ellipse into EPS file's bounding box
-  eps_core_BoundingBox(x , xc-a*cos(r)-b*sin(r) , yc-a*sin(-r)-b*cos(r) , lw);
-  eps_core_BoundingBox(x , xc-a*cos(r)+b*sin(r) , yc-a*sin(-r)+b*cos(r) , lw);
-  eps_core_BoundingBox(x , xc+a*cos(r)-b*sin(r) , yc+a*sin(-r)-b*cos(r) , lw);
-  eps_core_BoundingBox(x , xc+a*cos(r)+b*sin(r) , yc+a*sin(-r)+b*cos(r) , lw);
+  if (filled || stroked)
+   {
+    eps_core_BoundingBox(x , xc-a*cos(r)-b*sin(r) , yc-a*sin(-r)-b*cos(r) , lw);
+    eps_core_BoundingBox(x , xc-a*cos(r)+b*sin(r) , yc-a*sin(-r)+b*cos(r) , lw);
+    eps_core_BoundingBox(x , xc+a*cos(r)-b*sin(r) , yc+a*sin(-r)-b*cos(r) , lw);
+    eps_core_BoundingBox(x , xc+a*cos(r)+b*sin(r) , yc+a*sin(-r)+b*cos(r) , lw);
+   }
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

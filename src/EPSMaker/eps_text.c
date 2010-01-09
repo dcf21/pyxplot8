@@ -23,11 +23,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ListTools/lt_memory.h"
 
 #include "ppl_error.h"
 #include "ppl_canvasdraw.h"
+#include "ppl_setting_types.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
@@ -54,6 +56,7 @@ void eps_text_RenderEPS(EPSComm *x)
  {
   with_words def, merged;
   char *colstr;
+  double xgap, ygap, xgap2, ygap2;
   int pageno;
 
   pageno = x->LaTeXpageno = x->current->FirstTextID;
@@ -73,7 +76,14 @@ void eps_text_RenderEPS(EPSComm *x)
   colstr = x->LastEPSColour;
 
   // Render text item to eps
-  canvas_EPSRenderTextItem(x, pageno, x->current->xpos, x->current->ypos, x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation, NULL, NULL);
+  xgap  = -(x->current->settings.TextHAlign - SW_HALIGN_CENT) * x->current->xpos2;
+  ygap  =  (x->current->settings.TextVAlign - SW_VALIGN_CENT) * x->current->xpos2;
+
+  xgap2 = xgap*cos(x->current->rotation) - ygap*sin(x->current->rotation);
+  ygap2 = xgap*sin(x->current->rotation) + ygap*cos(x->current->rotation);
+
+  canvas_EPSRenderTextItem(x, pageno, x->current->xpos + xgap2, x->current->ypos + ygap2,
+      x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation, NULL, NULL);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");
