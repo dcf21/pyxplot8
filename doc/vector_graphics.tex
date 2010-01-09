@@ -204,17 +204,34 @@ text 'This is some text' at x,y rotate r with colour red
 \end{verbatim}
 
 The commands \indcmdts{set textcolour}, \indcmdts{set texthalign} and
-\indcmdts{set textvalign}, which have already been described in the context in
-the {\tt set label} command, can also be used to set the colour and alignment
-of text produced with the \indcmdt{text}.  A useful application of this is to
-produce centred headings at the top of multiplots.
+\indcmdts{set textvalign} can be used to set the colour and alignment of the
+text produced with the \indcmdt{text}. Alternatively, the \indcmdt{text} takes
+three modifiers to control the alignment of the text which override these {\tt
+set} commands. The {\tt halign} and {\tt valign} modifiers may be followed by
+any of the settings which may follow the {\tt set texthalign} and {\tt set
+textvalign} commands respectively, as in the following examples:
+
+\begin{verbatim}
+text 'This is some text' at 0,0 halign left valign top
+text 'This is some text' at 0,0 halign right valign centre
+\end{verbatim}
+
+\noindent The {\tt gap} modifier allows a gap to be inserted in the alignment
+of the text. For example, the string {\tt halign left gap 3*unit(mm)} would
+cause text to be rendered with its left side $3\,\mathrm{mm}$ to the right of
+the position specified for the text. This is useful for labelling points on
+diagrams, where the labels should be slightly offset from the points that they
+are associated with. If the {\tt gap} modifier is followed by a dimensionless
+number, rather than one with dimensions of lengths, then it is assumed to be
+measured in centimetres.
 
 It should be noted that the \indcmdt{text} can also be used outside of the
 multiplot environment, to render a single piece of short text instead of a
 graph. One obvious application is to produce equations rendered as graphical
-files for inclusion in talks.\index{presentations}
+files which can subsequently be imported into documents, slideshows or
+webpages.\index{presentations}
 
-\subsection{The {\tt arrow} Command}
+\subsection{The {\tt arrow} and {\tt line} Commands}
 
 Arrows may also be added to multiplot canvases using the \indcmdt{arrow}, which
 has syntax:
@@ -224,13 +241,23 @@ arrow from x,y to x,y
 \end{verbatim}
 
 The \indcmdt{arrow} may be followed by the \indmodt{with} keyword to specify to
-style of the arrow. The line type, line width and colour of the arrow may be
-specified, for example:
+style of the arrow. The line type, line width and colour of the arrow, may be
+specified using the same syntax as used in the plot command, using the {\tt
+linetype}, {\tt linewidth} and {\tt colour} modifiers after the word {\tt
+with}, as in the example:
 
 \begin{verbatim}
 arrow from 0,0 to 10,10 \
-with twohead linetype 2 linewidth 5 colour red
+with linetype 2 linewidth 5 colour red
 \end{verbatim}
+
+\noindent The style of the arrow may also be specified after the word {\tt
+with}, and three options are available: {\tt head} (the default), {\tt nohead},
+which produces line segments with no arrowheads on them, and {\tt twoway},
+which produced arrows with heads on both ends.
+
+The \indcmdt{arrow} has a twin, the \indcmdt{line}, which has the same syntax
+but with a different style setting of {\tt nohead}.
 
 \example{ex:notice}{A notice to advertise that a lecture has moved}{
 In this example script, we use PyXPlot's {\tt arrow} and {\tt text} commands to
@@ -531,6 +558,9 @@ The resulting diagram is shown below:
 
 \centerline{\includegraphics[width=5cm]{examples/eps/ex_triangle.eps}}
 }
+
+\subsection{The {\tt point} Command}
+\label{sec:point}
 
 \subsection{The {\tt ellipse} Command}
 \label{sec:ellipse}

@@ -167,23 +167,29 @@ supplied format is used for both columns.
 \section{Function Fitting}
 \label{sec:fit_command}
 
-It is possible to fit functional forms to \datapoint s read from files by using
-the \indcmdt{fit}. A simple example might be:\footnote{In \gnuplot, this
-example would have been written {\tt fit f(x) ...}, rather than {\tt fit f()
-...}. This syntax is supported in PyXPlot, but is deprecated.}
+The \indcmdt{fit} allows the user to fit arbitrary functional forms to
+\datapoint s read from files.  This may be used to produce best-fit
+lines\index{best fit lines}\footnote{Another way of producing best-fit lines is
+to use a cubic spline; more details are given in
+Section~\ref{sec:spline_command}}, or may be used to determine the gradient and
+other mathematical properties of datasets, by looking at the parameters used to
+make the functional form fit the data.
+
+The following simple example fits a straight line to data in
+a file called {\tt data.dat}:
 
 \begin{verbatim}
 f(x) = a*x+b
 fit f() 'data.dat' index 1 using 2:3 via a,b
 \end{verbatim}
 
-The first line specifies the functional form which is to be used.  The
-coefficients within this function which are to be varied during the fitting
+\noindent The first line specifies the functional form which is to be used.
+The coefficients within this function which are to be varied during the fitting
 process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
 The modifiers \indmodt{index}, \indmodt{every}, \indmodt{select} and
-\indmodt{using} have the same meanings here as in the plot command.  For
-example, given the following data file which contains a sampled square wave,
-entitled {\tt square.dat}:
+\indmodt{using} have the same meanings as in the {\tt plot} command.  For example,
+given the following \datafile\ which contains a sampled square wave, entitled
+{\tt square.dat}:
 
 \begin{verbatim}
     0.314159          1
@@ -198,8 +204,7 @@ entitled {\tt square.dat}:
     5.969026         -1
 \end{verbatim}
 
-\noindent the following script fits a truncated Fourier series to it.  The
-output can be found in Example~\ref{ex:fitting}.
+\noindent the following script fits a truncated Fourier series to it:
 
 \begin{verbatim}
 f(x) = a1*sin(x) + a3*sin(3*x) + a5*sin(5*x)
@@ -209,20 +214,21 @@ plot 'square.dat' title 'data' with points pointsize 2, \
      f(x) title 'Fitted function' with lines
 \end{verbatim}
 
-\example{ex:fitting}{The output from a script that fits a truncated Fourier series to a sampled square wave}{
-The output from a script that fits a truncated Fourier series to a
-sampled square wave.  Even with only three terms the Gibbs pheonomenon is
-becoming apparent (see \url{http://en.wikipedia.org/wiki/Gibbs_phenomenon} for
-an explanation).\\
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_fitting.eps}}
-}
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_fitting.eps}
+\end{center}
 
-This is useful for producing best-fit lines\index{best fit
-lines}\footnote{Another way of producing best-fit lines is to use a cubic
-spline; more details are given in Section~\ref{sec:spline_command}}, and also has
-applications for estimating the gradients of datasets.  The syntax is
-essentially identical to that used by \gnuplot, though a few points are worth
-noting:
+As the \indcmdt{fit} works, it displays statistics including the best-fit
+values of each of the fitting parameters, the uncertainties in each of them,
+and the covariance matrix. These can be useful for analysing the security of
+the fit achieved, but calculating the uncertainties in the best-fit parameters
+and the covariance matrix can be time consuming, especially when many
+parameters are being fitted simultaneously. The optional word {\tt
+withouterrors} can be included immediately before the filename of the \datafile
+to be fitted to substantially speed up cases where this information is not
+required.
+
+A few points are worth noting:
 
 \begin{itemize}
 \item When fitting a function of $n$ variables, at least $n+1$ columns (or
@@ -266,18 +272,15 @@ fit f() 'data.dat' via a
 the same syntax as in the {\tt plot} command, as described in
 Section~\ref{sec:plot_ranges}. If ranges are specified then only \datapoint s
 falling within these ranges are used in the fitting process; the ranges refer
-to each of the $n$ variables of the fitted function in order.
+to each of the $n$ variables of the fitted function in order:
+\begin{verbatim}
+fit [0:10] f() 'data.dat' via a
+\end{verbatim}
 
 \item For those interested in the mathematical details, the workings of the
 {\tt fit} command is discussed in more detail in Appendix~\ref{ch:fit_maths}.
 
 \end{itemize}
-
-At the end of the fitting process, the best-fitting values of each parameter
-are output to the terminal, along with an estimate of the uncertainty in each.
-Additionally, the Hessian, covariance and correlation matrices are output in
-both human-readable and machine-readable formats, allowing a more complete
-assessment of the probability distribution of the parameters.
 
 \section{Datafile Interpolation}
 \label{sec:spline_command}

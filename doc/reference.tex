@@ -66,6 +66,9 @@ set xlabel '`ls`'
 \end{verbatim}
 
 
+\section{arc}\indcmd{arc}
+
+
 \section{arrow}\indcmd{arrow}
 
 \begin{verbatim}
@@ -89,6 +92,10 @@ would be:
 \begin{verbatim}
 arrow from x1,y1 to x2,y2 with twohead linetype 2 colour blue
 \end{verbatim}
+
+The {\tt arrow} command has a twin, the {\tt line} command, which has the same
+syntax, but uses the default arrow style of \indkeyt{nohead}, producing a short
+line segment.
 
 Arrows receive unique multiplot identification numbers which count sequentially
 from one, and which are output to the terminal after the {\tt arrow} command is
@@ -299,27 +306,41 @@ When running a script, CTRL-C terminates execution of it.
 \section{fit}\indcmd{fit}
 
 \begin{verbatim}
-fit [<range specifier> ...] <function> '<datafile>'
+fit [<range specifier> ...] <function> [withouterrors] '<datafile>'
     [index <index specifier>] [using <using specifier>]
     via <variable>[, <variable>, ...]
 \end{verbatim}
 
-The {\tt fit} command may be used to fit functional forms to data in
-files. A simple example might be:
+The {\tt fit} command allows the user to fit arbitrary functional forms to
+\datapoint s read from files.  This may be used to produce best-fit lines, or
+may be used to determine the gradient and other mathematical properties of
+datasets, by looking at the parameters used to make the functional form fit the
+data.
+
+The following simple example fits a straight line to data in
+a file called {\tt data.dat}:
 
 \begin{verbatim}
 f(x) = a*x+b
-fit f(x) 'data.dat' index 1 using 2:3 via a,b
+fit f() 'data.dat' index 1 using 2:3 via a,b
 \end{verbatim}
 
-\noindent The coefficients to be varied are listed after the
-\indkeyt{via} keyword; the modifiers \indmodt{index}, \indmodt{every} and
+\noindent The first line specifies the functional form which is to be used.
+The coefficients within this function which are to be varied during the fitting
+process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
+The modifiers \indmodt{index}, \indmodt{every}, \indmodt{select} and
 \indmodt{using} have the same meanings as in the {\tt plot} command.
 
-This is useful for producing best-fit lines and also has applications in
-estimating the gradients of datasets.  The syntax is essentially identical to
-that used by \gnuplot, though a few points, outlined in
-Section~\ref{sec:fit_command}, are worth noting.
+As the {\tt fit} works, it displays statistics including the best-fit values of
+each of the fitting parameters, the uncertainties in each of them, and the
+covariance matrix. These can be useful for analysing the security of the fit
+achieved, but calculating the uncertainties in the best-fit parameters and the
+covariance matrix can be time consuming, especially when many parameters are
+being fitted simultaneously. The optional word {\tt withouterrors} can be
+included immediately before the filename of the \datafile to be fitted to
+substantially speed up cases where this information is not required.
+
+More details can be found in Section~\ref{sec:fit_command}.
 
 
 \section{for}\indcmd{for}
@@ -809,6 +830,7 @@ details.
 
 \section{rectangle}\indcmd{rectangle}
 
+See {\tt box}.
 
 \section{refresh}\indcmd{refresh}
 
@@ -824,6 +846,9 @@ the previous {\tt plot} command has no effect on the output. The {\tt refresh}
 command is also especially useful in the multiplot environment: it can be used
 to produce second copies of multiplot pages where there need not necessarily
 even be any plots; there might perhaps only be textual items and arrows.
+
+
+\section{point}\indcmd{point}
 
 
 \section{replot}\indcmd{replot}
@@ -2607,12 +2632,13 @@ points at which the functions are evaluated are spaced logarithmically.
 \section{text}\indcmd{text}
 
 \begin{verbatim}
-text '<text string>' [at <x>, <y>] [rotate <angle>]
+text '<text string>' [at <x>, <y>] [rotate <angle>] [gap <gap>]
+     [halign <alignment>] [valign <alignment>]
      [with colour <colour>]
 \end{verbatim}
 
-The {\tt text} command is used to add blocks of text to a multiplot. An example
-would be:
+The {\tt text} command is used to add strings of text to a multiplot. An
+example would be:
 
 \begin{verbatim}
 text 'Hello World!' at 0,2
@@ -2621,7 +2647,13 @@ text 'Hello World!' at 0,2
 \noindent which would render the text `Hello World!' at position $(0,2)$,
 measured in centimetres. The alignment of the text item with respect to this
 position can be set using the {\tt set texthalign} and {\tt set textvalign}
-commands.
+commands, or via the {\tt halign} and {\tt valign} modifiers supplied to the
+{\tt text} command itself.
+
+A gap may be specified, which should either have dimensions of length, or be
+dimensionless, in which case it is interpreted as being measured in
+centimetres. If a gap is specified, then the text string is slightly displaced
+from the specified position, in the direction in which it is being aligned.
 
 A rotation angle may optionally be specified after the keyword {\tt rotate}
 to produce text rotated to any arbitrary angle, measured in degrees

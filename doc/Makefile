@@ -32,7 +32,7 @@ clean:
 	rm -f pyxplot.pdf pyxplot.ps pyxplot.dvi *.aux *.idx *.ilg *.ind *.log *.toc
 	rm -Rf html
 
-$(EPSDIR)/%.eps: $(EXAMPLEDIR)/%.ppl $(PYXPLOT)
+$(EPSDIR)/%.eps: $(EXAMPLEDIR)/%.ppl $(PYXPLOT) .pyxplotrc
 	echo "Producing example plot $*..."
 	mkdir -p $(EPSDIR)
 	$(PYXPLOT) $< > /dev/null

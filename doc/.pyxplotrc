@@ -82,6 +82,7 @@ Axes_MinTickLen = 1.0
 Axes_Separation = 1.0
 Axes_TextGap = 1.0
 Baseline_LineWidth = 1.0
+Baseline_PointSize = 1.0
 
 [variables]
 pi = 3.14159265358979
