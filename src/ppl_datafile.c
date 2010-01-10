@@ -481,7 +481,7 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
     DataFile_UsingConvert(SelectCriterion, &tempval, ContextOutput, ColumnData_str, ColumnData_val, ItemsOnLine, filename, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
     if (LocalStatus) { COUNTEDERR1; ppl_warning(ERR_STACKED, errout); COUNTEDERR2; ppl_units_zero(&tempval); }
     if (!tempval.dimensionless) { COUNTEDERR1; sprintf(errout, "%s:%ld: Select criteria should return dimensionless quantities. The supplied select criterion <%s> returns a value with units of <%s>.", filename, file_linenumber, SelectCriterion, ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0)); ppl_warning(ERR_STACKED, errout); COUNTEDERR2; ppl_units_zero(&tempval); }
-    if (ppl_units_DblEqual(tempval.real,0)&&ppl_units_DblEqual(tempval.imag,0)) LocalStatus=1; // Do not proceed
+    if (ppl_units_DblEqual(tempval.real,0)&&ppl_units_DblEqual(tempval.imag,0)) { LocalStatus=1; *discontinuity=(continuity == DATAFILE_DISCONTINUOUS); } // Do not proceed
    }
 
   // Only proceed if select criterion was TRUE or not present
@@ -528,7 +528,7 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
     if (LocalStatus)
      {
       COUNTEDERR1; ppl_warning(ERR_STACKED, errout); COUNTEDERR2;
-      *discontinuity=(continuity == DATAFILE_DISCONTINUOUS);
+      *discontinuity=1;
      }
     else // If we have evaluated all USING expressions successfully, commit this row to the DataTable
      {
@@ -601,7 +601,7 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
 
 void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
  {
-  unsigned char AutoUsingList=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma, OneColumnInput=1;
+  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma, OneColumnInput=1;
   int           UsingLen, logi, logj, ContextOutput, ContextRough, ContextRaw;
   char         *UsingItems[USING_ITEMS_MAX], LineNumberStr[32];
   ListIterator *listiter;
@@ -641,10 +641,15 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
      {
       if ((UsingItems[UsingLen] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
       sprintf(UsingItems[UsingLen], "%d", UsingLen+1);
+     } else {
+      HadNonNullUsingItem=1;
      }
     UsingLen++;
     listiter = ListIterate(listiter, NULL);
    }
+
+  // If have only one using item, and it is NULL, pretend we have an empty list
+  if ((UsingLen==1) && (!HadNonNullUsingItem)) UsingLen=0;
 
   // If using list was empty, generate an automatic list
   if (UsingLen==0)
@@ -974,7 +979,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
  {
-  unsigned char AutoUsingList=0, xpreviouslydefined, discontinuity=0;
+  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, xpreviouslydefined, discontinuity=0;
   int           UsingLen, logi, logj, i, j, k, ContextOutput;
   char         *UsingItems[USING_ITEMS_MAX], buffer[FNAME_LENGTH];
   value         ColumnData_val[USING_ITEMS_MAX+2];
@@ -996,10 +1001,15 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
      {
       if ((UsingItems[UsingLen] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
       sprintf(UsingItems[UsingLen], "%d", UsingLen+1);
+     } else {
+      HadNonNullUsingItem = 1;
      }
     UsingLen++;
     listiter = ListIterate(listiter, NULL);
    }
+    
+  // If have only one using item, and it is NULL, pretend we have an empty list
+  if ((UsingLen==1) && (!HadNonNullUsingItem)) UsingLen=0;
 
   // If using list was empty, generate an automatic list
   if (UsingLen==0)
@@ -1080,7 +1090,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
      {
       DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric), UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      } else {
-      discontinuity = (continuity == DATAFILE_DISCONTINUOUS);
+      discontinuity = 1;
      }
     *status=0;
    }

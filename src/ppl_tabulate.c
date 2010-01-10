@@ -199,7 +199,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
 int directive_tabulate(Dict *command, char *line)
  {
   FILE         *output;
-  char         *cptr, *filename, *format, FilenameTemp[FNAME_LENGTH];
+  char         *cptr, *cptr2, *filename, *format, FilenameTemp[FNAME_LENGTH];
   wordexp_t     WordExp;
   glob_t        GlobData;
   int           i, k, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
@@ -212,7 +212,7 @@ int directive_tabulate(Dict *command, char *line)
   DataTable    *data;
   List         *RangeList, *TabList, *ExprList;
   ListIterator *ListIter, *ExprListIter;
-  Dict         *TempDict, *TempExprDict;
+  Dict         *TempDict, *TempDict2, *TempExprDict;
   char          errtext[LSTR_LENGTH], *tempstr=NULL, *SelectCrit=NULL, *fnlist[USING_ITEMS_MAX];
   List         *UsingList=NULL, *EveryList=NULL;
 
@@ -274,7 +274,17 @@ int directive_tabulate(Dict *command, char *line)
     if (cptr!=NULL)
      {
       NUsingItems = ListLen(UsingList);
-      if (NUsingItems<1) NUsingItems = 2;
+      if      (NUsingItems<1) NUsingItems = 2;
+      else if (NUsingItems==1)
+       {
+        TempDict2 = (Dict *)(UsingList->first->data);
+        if (TempDict2==NULL) { NUsingItems = 2; }
+        else
+         {
+          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          if (cptr2==NULL) {  NUsingItems = 2; }
+         }
+       }
 
       // Expand filename if it contains wildcards
       status=0;
@@ -314,7 +324,17 @@ int directive_tabulate(Dict *command, char *line)
       // Read list of expressions supplied instead of filename
       DictLookup(TempDict, "expression_list:", NULL, (void **)&ExprList);
       NUsingItems = ListLen(UsingList);
-      if (NUsingItems<1) NUsingItems = ListLen(ExprList)+(!FlagParametric); // Only have x in column 1 for non-parametric function plotting
+      if      (NUsingItems<1) NUsingItems = ListLen(ExprList)+(!FlagParametric); // Only have x in column 1 for non-parametric function plotting
+      else if (NUsingItems==1)
+       {
+        TempDict2 = (Dict *)(UsingList->first->data);
+        if (TempDict2==NULL) { NUsingItems = ListLen(ExprList)+(!FlagParametric); }
+        else
+         {
+          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          if (cptr2==NULL) {  NUsingItems = ListLen(ExprList)+(!FlagParametric); }
+         }
+       }
 
       k=0;
       ExprListIter = ListIterateInit(ExprList);

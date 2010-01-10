@@ -1407,7 +1407,15 @@ int directive_plot(Dict *command, int interactive, int replot)
     if (UsingList==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; }
     else
      {
-      j = (*PlotItemPtr)->NUsing = ListLen(UsingList);
+      j = ListLen(UsingList);
+      if (j==1) // 'using columns' produces a NULL (optional) first using item. Consider this as a blank list
+       {
+        TempDict2 = (Dict *)(UsingList->first->data);
+        if (TempDict2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
+        DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+        if (cptr2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
+       }
+      (*PlotItemPtr)->NUsing = j;
       (*PlotItemPtr)->UsingList = (char **)malloc(j * sizeof(char *));
       if ((*PlotItemPtr)->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
       ListIter2 = ListIterateInit(UsingList);
@@ -1422,6 +1430,7 @@ int directive_plot(Dict *command, int interactive, int replot)
         ListIter2 = ListIterate(ListIter2, NULL);
        }
      }
+FinishedUsing:
 
     // Read in style information from with clause
     with_words_fromdict(TempDict, &(*PlotItemPtr)->ww, 1);

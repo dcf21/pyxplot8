@@ -125,6 +125,7 @@ void dcfmath_root(value *in1, value *in2, value *output, int *status, char *errt
 void dcfmath_sec(value *in, value *output, int *status, char *errtext);
 void dcfmath_sech(value *in, value *output, int *status, char *errtext);
 void dcfmath_sin(value *in, value *output, int *status, char *errtext);
+void dcfmath_sinc(value *in, value *output, int *status, char *errtext);
 void dcfmath_sinh(value *in, value *output, int *status, char *errtext);
 void dcfmath_sqrt(value *in, value *output, int *status, char *errtext);
 void dcfmath_tan(value *in, value *output, int *status, char *errtext);

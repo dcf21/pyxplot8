@@ -52,7 +52,7 @@
 int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *UsingList)
  {
   int i, UsingLen;
-  char *AutoItem, *temp;
+  char *AutoItem, *temp, *temp2;
   Dict *tempdict;
 
   UsingLen = ListLen(UsingList);
@@ -75,7 +75,10 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
    {
     temp = (char *)ListPop(UsingList);
     tempdict = DictInit();
-    DictAppendPtr(tempdict, "using_item", "0", 0, 0, DATATYPE_VOID);
+    temp2 = (char *)lt_malloc(2);
+    if (temp2==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return 1; }
+    strcpy(temp2, "0");
+    DictAppendPtr(tempdict, "using_item", temp2, 0, 0, DATATYPE_VOID);
     ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID);
     ListAppendPtr(UsingList, (void *)temp, 0, 0, DATATYPE_VOID);
     UsingLen++;
