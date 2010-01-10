@@ -510,6 +510,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
           {
            (*success)=0; return; // We don't match the beginning of this string
           }
+        if ((node->ACLevel == -2) && (node->MatchString[i]<=' ')) goto NO_TAB_COMPLETION; // We've matched an @n string right to the end... move on
         if ((*number)!=0) {(*success)=0; (*number)--; return;}
         (*success)=2;
         for (i=0; i<((*linepos)-(*start)); i++) expecting[i] = line[*start+i];
