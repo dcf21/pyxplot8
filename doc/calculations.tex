@@ -558,8 +558,8 @@ set yrange[y0 - xspan/2/GoldenRatio:y0 + xspan/2/GoldenRatio ]
 \index{function splicing}
 \index{splicing functions}
 
-In PyXPlot, as in \gnuplot, user-defined functions may be declared on the
-command line:
+User-defined functions may be declared on the command line using the following
+syntax:
 
 \begin{verbatim}
 f(x) = x*sin(x)
@@ -622,8 +622,21 @@ fib(x)[2:] = fib(x-1) + fib(x-2)
 plot [0:8] fib(x)
 \end{verbatim}
 
-\example{ex:funcsplice}{An example of the use of function splicing to define a function which does not have an analytic form}{
-An example of the use of function splicing to define a function which does not have an analytic form -- in this case, the Fibonacci sequence. See the text for details.\\
+\example{ex:funcsplice}{The use of function splicing to calculate the Fibonacci numbers}{
+In this example, we use of function splicing to calculate the Fibonacci numbers in an iterative and highly inefficient way, using the knowledge that the zeroth and first Fibonacci numbers are both one, and that all subsequent numbers are the sums of their two immediate predecessors:
+
+\noindent {\tt fib(x) = 1}\newline
+\noindent {\tt fib(x)[2:] = fib(x-1) + fib(x-2)}\newline
+\noindent {\tt plot [0:8] fib(x)}\newline
+
+We compare the result against Binet's formula, that
+
+\begin{displaymath}
+f(x) = {/psi^x - (1-\psi)^x}{\sqrt{5}}
+\end{displaymath}
+
+\noindent where $\psi=1+\sqrt{5}/2$ is the golden ratio.
+
 \begin{center}
 \includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
 \end{center}

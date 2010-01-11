@@ -2755,7 +2755,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         k=0;
         SHOW_HIGHLIGHT((ppl_unit_database[m].modified==0));
 
-        #define SHOW_ALL_UNIT_NAMES 1
+        #define SHOW_ALL_UNIT_NAMES 0
 
         sprintf(out+i, "# The '%s', also known as", ppl_unit_database[m].nameFs); i+=strlen(out+i);
         if ((SHOW_ALL_UNIT_NAMES) || (strcmp(ppl_unit_database[m].nameFp, ppl_unit_database[m].nameFs) != 0)) { sprintf(out+i, " '%s' or", ppl_unit_database[m].nameFp); i+=strlen(out+i); k=1; }

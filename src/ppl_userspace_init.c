@@ -960,8 +960,8 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameAp     = "short_tons";
   ppl_unit_database[ppl_unit_pos].nameLs     = "short\\_ton";
   ppl_unit_database[ppl_unit_pos].nameLp     = "short\\_tons";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "ton";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "short_ton";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "short_tons";
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_TON;
@@ -969,12 +969,12 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_MASS]=1;
   ppl_unit_pos++;
 
-  ppl_unit_database[ppl_unit_pos].nameAs     = "long_ton"; // UK Ton
-  ppl_unit_database[ppl_unit_pos].nameAp     = "long_tons";
+  ppl_unit_database[ppl_unit_pos].nameAs     = "ton"; // UK Ton
+  ppl_unit_database[ppl_unit_pos].nameAp     = "tons";
   ppl_unit_database[ppl_unit_pos].nameLs     = "long\\_ton";
   ppl_unit_database[ppl_unit_pos].nameLp     = "long\\_tons";
-  ppl_unit_database[ppl_unit_pos].nameFs     = "ton";
-  ppl_unit_database[ppl_unit_pos].nameFp     = "tons";
+  ppl_unit_database[ppl_unit_pos].nameFs     = "long_ton";
+  ppl_unit_database[ppl_unit_pos].nameFp     = "long_tons";
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "mass";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_UK_TON;

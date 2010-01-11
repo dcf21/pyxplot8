@@ -29,12 +29,18 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_funcsplice.eps"
 
 # Main body of figure script
+
+# Binet's Formula for the Fibonacci numbers
+set numerics complex
+binet(x) = Re((GoldenRatio**x - (1-GoldenRatio)**x) / sqrt(5))
+
 set samples 100
-set xrange [1:6.5]
-set yrange [0:15]
+set xrange [0:9.5]
+set yrange [0:35]
 set xlabel "$x$"
 set ylabel "$y$"
 f(x)     = 1.0
-f(x)[2:] = f(x-1) + f(x-2)
+f(x)[:1] = 0.0
+f(x)[3:] = f(x-1) + f(x-2)
 set key bottom right
-plot f(x)
+plot f(x) , binet(x)
