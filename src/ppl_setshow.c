@@ -38,6 +38,7 @@
 #include "ppl_canvasitems.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
+#include "ppl_flowctrl.h"
 #include "ppl_papersize.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
@@ -1776,6 +1777,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   unsigned char unchanged;
   DictIterator *DictIter;
   FunctionDescriptor *FDiter;
+  SubroutineDescriptor *SDiter;
   value *tempval, valobj;
   settings_axis *AxisPtr, *AxisPtrDef;
   arrow_object *ai, *ai_default, *ai_default_prev;
@@ -2702,6 +2704,34 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      }
    }
 
+  // Show list of defined subroutines
+  if (StrAutocomplete(word, "subroutines", 1)>=0)
+   {
+    SHOW_HIGHLIGHT(1);
+    sprintf(out+i, "\n# Defined subroutines:\n\n"); i += strlen(out+i); p=1;
+    SHOW_DEHIGHLIGHT;
+
+    DictIter = DictIterateInit(PPL_SUBROUTINES);
+    while (DictIter != NULL)
+     {
+      SDiter = (SubroutineDescriptor *)DictIter->data;
+
+      SHOW_HIGHLIGHT(1);
+      sprintf(out+i,"%s(", DictIter->key); i+=strlen(out+i);
+      for (l=0, m=0; l<SDiter->NumberArguments; l++, m++)
+       {
+        for ( ; SDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = SDiter->ArgList[m];
+        *(out+(i++)) = ',';
+       }
+      if (SDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
+      *(out+(i++)) = ')';
+      *(out+(i++)) = '\n';
+      SHOW_DEHIGHLIGHT;
+
+      DictIter = DictIterate(DictIter, NULL, NULL);
+     }
+   }
+
   // Show list of recognised units
   if (StrAutocomplete(word, "units", 1)>=0)
    {
@@ -2823,14 +2853,15 @@ void directive_show(Dict *command, int interactive)
       DictLookup(ShowWordDict,"setting",NULL,(void **)&ShowWord);
       if (StrAutocomplete(ShowWord,"all",1)>=0)
        {
-        directive_show2("settings"  ,ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("axes_"     ,ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("arrows"    ,ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("labels"    ,ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("linestyles",ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("variables" ,ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("functions" ,ItemSet, interactive, sg, al, ll, xa, ya, za);
-        directive_show2("units"     ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("settings"   ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("axes_"      ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("arrows"     ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("labels"     ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("linestyles" ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("variables"  ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("functions"  ,ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("subroutines",ItemSet, interactive, sg, al, ll, xa, ya, za);
+        directive_show2("units"      ,ItemSet, interactive, sg, al, ll, xa, ya, za);
         p=1;
        }
       else

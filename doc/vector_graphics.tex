@@ -450,22 +450,22 @@ produce a no-entry sign warning passers by that code monkeys can turn nasty
 when interrupted from their work.\\
 
 \vspace{3mm}
-\noindent {\tt set multiplot ; set nodisplay }\newline
+\noindent {\tt set multiplot ; set nodisplay}\newline
 \noindent {\tt }\newline
-\noindent {\tt w = 10 \# Width of sign / cm }\newline
+\noindent {\tt w = 10 \# Width of sign / cm}\newline
 \\
-\noindent {\tt \# Make no-entry sign }\newline
-\noindent {\tt circle at 0,0 radius w with col null fillcol red         }\newline
-\noindent {\tt box from -(0.8*w),-(0.2*w) to (0.8*w),(0.2*w) \ }\newline
-\noindent {\tt \phantom{xxxx}with col null fillcol white }\newline
+\noindent {\tt \# Make no-entry sign}\newline
+\noindent {\tt circle at 0,0 radius w with col null fillcol red}\newline
+\noindent {\tt box from -(0.8*w),-(0.2*w) to (0.8*w),(0.2*w) $\backslash$}\newline
+\noindent {\tt \phantom{xxxx}with col null fillcol white}\newline
 \\
-\noindent {\tt \# Put a warning beneath the sign }\newline
-\noindent {\tt set fontsize 3 }\newline
-\noindent {\tt set texthalign centre ; set textvalign centre }\newline
-\noindent {\tt text "$\backslash$bf Keep Out! Code Monkey at work!" }\newline
+\noindent {\tt \# Put a warning beneath the sign}\newline
+\noindent {\tt set fontsize 3}\newline
+\noindent {\tt set texthalign centre ; set textvalign centre}\newline
+\noindent {\tt text "$\backslash$bf Keep Out! Code Monkey at work!"}\newline
 \\
-\noindent {\tt \# Display sign }\newline
-\noindent {\tt set display ; refresh }\newline
+\noindent {\tt \# Display sign}\newline
+\noindent {\tt set display ; refresh}\newline
 \vspace{2mm}\\
 
 The resulting sign is shown below:
@@ -496,67 +496,124 @@ arc at 0,0 radius 5 from 0 to 30 with lw 3 fillcolour red
 \end{verbatim}
 
 \example{ex:triangle}{A labelled diagram of a triangle}{
-In this example, we draw a labelled diagram of the interior angles of a triangle, taking the lengths of the three sides of the triangle as inputs. We calculate the positions of the three vertices of the triangle and then label them. We use PyXPlot's automatic handling of physical units to generate the \LaTeX\ strings required to label the side lengths in centimetres and the angles in degrees. We use PyXPlot's {\tt arc} command to draw angle symbols in the three corners of a triangle.\\
+In this example, we make a subroutine to draw labelled diagrams of the interior angles of triangles, taking as its inputs the lengths of the three sides of the triangle to be drawn and the position of its lower-left corner. The subroutine calculates the positions of the three vertices of the triangle and then labels them. We use PyXPlot's automatic handling of physical units to generate the \LaTeX\ strings required to label the side lengths in centimetres and the angles in degrees. We use PyXPlot's {\tt arc} command to draw angle symbols in the three corners of a triangle.\\
 
 \vspace{3mm}
 {\footnotesize
+\noindent {\tt \# Define subroutine for drawing triangles}\newline
+\noindent {\tt subroutine TriangleDraw(Bx,By,AB,AC,BC)}\newline
+\noindent {\tt \phantom{x}\{}\newline
+\noindent {\tt \phantom{xx}\# Use cosine rule to find interior angles}\newline
+\noindent {\tt \phantom{xx}ABC = acos((AB**2 + BC**2 - AC**2) / (2*AB*BC))}\newline
+\noindent {\tt \phantom{xx}BCA = acos((BC**2 + AC**2 - AB**2) / (2*BC*AC))}\newline
+\noindent {\tt \phantom{xx}CAB = acos((AC**2 + AB**2 - BC**2) / (2*AC*AB))}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Positions of three corners of triangle}\newline
+\noindent {\tt \phantom{xx}Cx = Bx + BC~~~~~~~~~~; Cy = By}\newline
+\noindent {\tt \phantom{xx}Ax = Bx + AB*cos(ABC) ; Ay = By + AB*sin(ABC)}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Draw triangle}\newline
+\noindent {\tt \phantom{xx}line from Ax,Ay to Bx,By}\newline
+\noindent {\tt \phantom{xx}line from Ax,Ay to Cx,Cy}\newline
+\noindent {\tt \phantom{xx}line from Bx,By to Cx,Cy}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Draw angle symbols}\newline
+\noindent {\tt \phantom{xx}ArcRad = 4*unit(mm) \# Radius of angle arcs}\newline
+\noindent {\tt \phantom{xx}arc at Bx,By radius ArcRad from~~90*unit(deg)-ABC to~~90*unit(deg)}\newline
+\noindent {\tt \phantom{xx}arc at Cx,Cy radius ArcRad from -90*unit(deg)~~~~~to -90*unit(deg)+BCA}\newline
+\noindent {\tt \phantom{xx}arc at Ax,Ay radius ArcRad from~~90*unit(deg)+BCA to 270*unit(deg)-ABC}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Label lengths of sides}\newline
+\noindent {\tt \phantom{xx}set unit of length cm \# Display lengths in cm}\newline
+\noindent {\tt \phantom{xx}set numeric sigfig 3 display latex \# Correct to 3 significant figure}\newline
+\noindent {\tt \phantom{xx}set fontsize 1.2 \# And in slightly bigger text than normal}\newline
+\noindent {\tt \phantom{xx}TextGap = 1*unit(mm)}\newline
+\noindent {\tt \phantom{xx}text "\%s"\%(BC) at (Bx+Cx)/2,(By+Cy)/2 gap TextGap hal c val t}\newline
+\noindent {\tt \phantom{xx}text "\%s"\%(AB) at (Ax+Bx)/2,(Ay+By)/2 gap TextGap rot  ABC hal c val b}\newline
+\noindent {\tt \phantom{xx}text "\%s"\%(AC) at (Ax+Cx)/2,(Ay+Cy)/2 gap TextGap rot -BCA hal c val b}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Label angles}\newline
+\noindent {\tt \phantom{xx}set unit of angle degree \# Display angles in degrees}\newline
+\noindent {\tt \phantom{xx}ArcRad2 = 1.4 * ArcRad \# Distance of text from apex of angles}\newline
+\noindent {\tt \phantom{xx}text "\%s"\%(CAB) at Ax+ArcRad2*sin(ABC-BCA),Ay-ArcRad2*cos(ABC-BCA) hal c val t}\newline
+\noindent {\tt \phantom{xx}text "\%s"\%(ABC) at Bx+ArcRad2*cos(ABC/2),By+ArcRad2*sin(ABC/2) hal l val c}\newline
+\noindent {\tt \phantom{xx}text "\%s"\%(BCA) at Cx-ArcRad2*cos(BCA/2),Cy+ArcRad2*sin(BCA/2) hal r val c}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Label points ABC}\newline
+\noindent {\tt \phantom{xx}text "A" at Ax,Ay gap TextGap hal c val b}\newline
+\noindent {\tt \phantom{xx}text "B" at Bx,By gap TextGap hal r val c}\newline
+\noindent {\tt \phantom{xx}text "C" at Cx,Cy gap TextGap hal l val c}\newline
+\noindent {\tt \phantom{x}\}}\newline
+}\\{\footnotesize
+\noindent {\tt \# Display diagram with three triangles}\newline
 \noindent {\tt set multiplot ; set nodisplay}\newline
-\noindent {\tt }\newline
-\noindent {\tt \# Lengths of three sides of triangle}\newline
-\noindent {\tt AB = 4*unit(cm)}\newline
-\noindent {\tt AC = 5*unit(cm)}\newline
-\noindent {\tt BC = 6*unit(cm)}\newline
-}\\{\footnotesize
-\noindent {\tt \# Use cosine rule to find interior angles}\newline
-\noindent {\tt ABC = acos((AB**2 + BC**2 - AC**2) / (2*AB*BC))}\newline
-\noindent {\tt BCA = acos((BC**2 + AC**2 - AB**2) / (2*BC*AC))}\newline
-\noindent {\tt CAB = acos((AC**2 + AB**2 - BC**2) / (2*AC*AB))}\newline
-}\\{\footnotesize
-\noindent {\tt \# Positions of three corners of triangle}\newline
-\noindent {\tt Bx = 0*unit(cm)~~~~~~~; By = 0*unit(cm) \# The origin}\newline
-\noindent {\tt Cx = Bx + BC~~~~~~~~~~; Cy = By}\newline
-\noindent {\tt Ax = Bx + AB*cos(ABC)~; Ay = By + AB*sin(ABC)}\newline
-}\\{\footnotesize
-\noindent {\tt \# Draw triangle}\newline
-\noindent {\tt line from Ax,Ay to Bx,By}\newline
-\noindent {\tt line from Ax,Ay to Cx,Cy}\newline
-\noindent {\tt line from Bx,By to Cx,Cy}\newline
-}\\{\footnotesize
-\noindent {\tt \# Draw angle symbols}\newline
-\noindent {\tt ArcRad = 4*unit(mm) \# Radius of angle arcs}\newline
-\noindent {\tt arc at Bx,By radius ArcRad from~~90*unit(deg)-ABC to~~90*unit(deg)}\newline
-\noindent {\tt arc at Cx,Cy radius ArcRad from -90*unit(deg)~~~~~to -90*unit(deg)+BCA}\newline
-\noindent {\tt arc at Ax,Ay radius ArcRad from~~90*unit(deg)+BCA to 270*unit(deg)-ABC}\newline
-}\\{\footnotesize
-\noindent {\tt \# Label lengths of sides}\newline
-\noindent {\tt set unit of length cm \# Display lengths in cm}\newline
-\noindent {\tt set numeric sigfig 3 display latex \# Correct to 3 significant figure}\newline
-\noindent {\tt set fontsize 1.2 \# And in slightly bigger text than normal}\newline
-\noindent {\tt TextGap = 1*unit(mm)}\newline
-\noindent {\tt text "\%s"\%(BC) at (Bx+Cx)/2,(By+Cy)/2 gap TextGap hal c val t}\newline
-\noindent {\tt text "\%s"\%(AB) at (Ax+Bx)/2,(Ay+By)/2 gap TextGap rot~~ABC hal c val b}\newline
-\noindent {\tt text "\%s"\%(AC) at (Ax+Cx)/2,(Ay+Cy)/2 gap TextGap rot -BCA hal c val b}\newline
-}\\{\footnotesize
-\noindent {\tt \# Label angles}\newline
-\noindent {\tt set unit of angle degree \# Display angles in degrees}\newline
-\noindent {\tt ArcRad2 = 1.4 * ArcRad \# Distance of text from apex of angles}\newline
-\noindent {\tt text "\%s"\%(CAB) at Ax+ArcRad2*sin(ABC-BCA),Ay-ArcRad2*cos(ABC-BCA) hal c val t}\newline
-\noindent {\tt text "\%s"\%(ABC) at Bx+ArcRad2*cos(ABC/2),By+ArcRad2*sin(ABC/2) hal l val c}\newline
-\noindent {\tt text "\%s"\%(BCA) at Cx-ArcRad2*cos(BCA/2),Cy+ArcRad2*sin(BCA/2) hal r val c}\newline
-}\\{\footnotesize
-\noindent {\tt \# Label points ABC}\newline
-\noindent {\tt text "A" at Ax,Ay gap TextGap hal c val b}\newline
-\noindent {\tt text "B" at Bx,By gap TextGap hal r val c}\newline
-\noindent {\tt text "C" at Cx,Cy gap TextGap hal l val c}\newline
-}\\{\footnotesize
-\noindent {\tt \# Display diagram}\newline
+\noindent {\tt call TriangleDraw(2.8*unit(cm),3.4*unit(cm), 3*unit(cm),4*unit(cm),4*unit(cm))}\newline
+\noindent {\tt call TriangleDraw(0.0*unit(cm),0.0*unit(cm), 3*unit(cm),4*unit(cm),5*unit(cm))}\newline
+\noindent {\tt call TriangleDraw(6.5*unit(cm),0.0*unit(cm), 3*unit(cm),3*unit(cm),3*unit(cm))}\newline
 \noindent {\tt set display ; refresh}\newline
 }
 \vspace{2mm}\\
 
 The resulting diagram is shown below:
 
-\centerline{\includegraphics[width=5cm]{examples/eps/ex_triangle.eps}}
+\centerline{\includegraphics{examples/eps/ex_triangle.eps}}
+}
+
+\example{ex:lens}{A labelled diagram of a converging lens forming a real image}{
+In this example, we make a subroutine to draw labelled diagrams of converging lenses forming real images.\\
+
+\vspace{3mm}
+{\footnotesize
+\noindent {\tt subroutine LensDraw(x0,y0,u,h,f)}\newline
+\noindent {\tt \phantom{x}\{}\newline
+\noindent {\tt \phantom{xx}\# Use the thin-lens equation to find v and H}\newline
+\noindent {\tt \phantom{xx}v = 1/(1/f - 1/u)}\newline
+\noindent {\tt \phantom{xx}H = h * v / u}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Draw lens}\newline
+\noindent {\tt \phantom{xx}lc = 5.5*unit(cm) \# Radius of curvature of lens}\newline
+\noindent {\tt \phantom{xx}lt = 0.5*unit(cm) \# Thickness of lens}\newline
+\noindent {\tt \phantom{xx}la = acos((lc-lt/2)/lc) \# Angular size of lens from centre of curvature}\newline
+\noindent {\tt \phantom{xx}lh = lc*sin(la) \# Physical height of lens on paper}\newline
+\noindent {\tt \phantom{xx}arc at x0-(lc-lt/2),y0 radius lc from~~90*unit(deg)-la to~~90*unit(deg)+la}\newline
+\noindent {\tt \phantom{xx}arc at x0+(lc-lt/2),y0 radius lc from 270*unit(deg)-la to 270*unit(deg)+la}\newline
+\noindent {\tt \phantom{xx}set texthalign right ; set textvalign top}\newline
+\noindent {\tt \phantom{xx}point at x0-f,y0 label "\$f\$"}\newline
+\noindent {\tt \phantom{xx}set texthalign left~~; set textvalign bottom}\newline
+\noindent {\tt \phantom{xx}point at x0+f,y0 label "\$f\$"}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Draw object and image}\newline
+\noindent {\tt \phantom{xx}arrow from x0-u,y0 to x0-u,y0+h with lw 2}\newline
+\noindent {\tt \phantom{xx}arrow from x0+v,y0 to x0+v,y0-H with lw 2}\newline
+\noindent {\tt \phantom{xx}text "\$h\$" at x0-u,y0+h/2 hal l val c gap unit(mm)}\newline
+\noindent {\tt \phantom{xx}text "\$H\$" at x0+v,y0-H/2 hal l val c gap unit(mm)}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Draw construction lines}\newline
+\noindent {\tt \phantom{xx}line from x0-u,y0 to x0+v,y0 with lt 2 \# Optic axis}\newline
+\noindent {\tt \phantom{xx}line from x0-u,y0+h to x0+v,y0-H \# Undeflected ray through origin}\newline
+\noindent {\tt \phantom{xx}line from x0-u,y0+h to x0,y0+h}\newline
+\noindent {\tt \phantom{xx}line from x0,y0+h to x0+v,y0-H}\newline
+\noindent {\tt \phantom{xx}line from x0+v,y0-H to x0,y0-H}\newline
+\noindent {\tt \phantom{xx}line from x0,y0-H to x0-u,y0+h}\newline
+}\\{\footnotesize
+\noindent {\tt \phantom{xx}\# Label distances u and v}\newline
+\noindent {\tt \phantom{xx}ylabel = y0-lh-2*unit(mm)}\newline
+\noindent {\tt \phantom{xx}arrow from x0-u,ylabel to x0,ylabel with twoway lt 2}\newline
+\noindent {\tt \phantom{xx}arrow from x0+v,ylabel to x0,ylabel with twoway lt 2}\newline
+\noindent {\tt \phantom{xx}text "\$u\$" at x0-u/2,ylabel hal c val t gap unit(mm)}\newline
+\noindent {\tt \phantom{xx}text "\$v\$" at x0+v/2,ylabel hal c val t gap unit(mm)}\newline
+\noindent {\tt \phantom{x}\}}\newline
+}\\{\footnotesize
+\noindent {\tt \# Display diagram of lens}\newline
+\noindent {\tt set multiplot ; set nodisplay}\newline
+\noindent {\tt call LensDraw(0*unit(cm),0*unit(cm), 5*unit(cm),1.5*unit(cm),2*unit(cm))}\newline
+\noindent {\tt set display ; refresh}\newline
+}
+\vspace{2mm}\\
+
+The resulting diagram is shown below:
+
+\centerline{\includegraphics{examples/eps/ex_lenses.eps}}
 }
 
 \subsection{The {\tt point} Command}

@@ -304,6 +304,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_box(command, interactive);
   else if (strcmp(directive, "break")==0)
    return directive_break(command, IterLevel);
+  else if (strcmp(directive, "call")==0)
+   return directive_call(command, IterLevel);
   else if (strcmp(directive, "cd")==0)
    directive_cd(command);
   else if ((strcmp(directive, "circle")==0) || (strcmp(directive, "arc")==0))
@@ -426,6 +428,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_solve(command);
   else if (strcmp(directive, "spline")==0)
    return directive_interpolate(command,INTERP_SPLINE);
+  else if (strcmp(directive, "subroutine")==0)
+   return directive_subroutine(command, IterLevel);
   else if (strcmp(directive, "tabulate")==0)
    return directive_tabulate(command, in);
   else if (strcmp(directive, "text")==0)

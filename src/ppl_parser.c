@@ -481,6 +481,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
   List *DictBabyList=NULL;
   ParserNode *NodeIter=NULL;
 
+  static int AtNLastPos=-1;
+  if (*linepos<AtNLastPos) AtNLastPos=-1;
+
   while ((line[*linepos]!='\0') && (line[*linepos]<=' ')) (*linepos)++; // FFW over spaces
   *success = 1; // We are successful until proven otherwise
 
@@ -504,7 +507,9 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
          {
           (*success)=1; return; // Ignore match character
          }
-      
+
+        if ((*linepos>0) && (isalnum(line[(*linepos)-1])) && (AtNLastPos!=*linepos)) goto NO_TAB_COMPLETION; // 'plot a' cannot tab complete 'using' without space
+
         for (i=0; ((line[*linepos+i]>' ') && (node->MatchString[i]>' ')); i++)
          if (toupper(line[*linepos+i])!=toupper(node->MatchString[i]))
           {
@@ -531,6 +536,7 @@ NO_TAB_COMPLETION:
       if (*success!=0)
        {
         *linepos += i; // We do match this string: advance by i spaces
+        AtNLastPos = *linepos;
         MatchType = DATATYPE_STRING;
         MatchVal._str = node->MatchString;
        }
@@ -711,6 +717,7 @@ NO_TAB_COMPLETION:
            {
             MatchVal._str = TempMatchStr;
             MatchType = DATATYPE_STRING;
+            AtNLastPos = *linepos;
            }
          }
        }

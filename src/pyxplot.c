@@ -40,6 +40,7 @@
 #include "StringTools/str_constants.h"
 
 #include "ListTools/lt_list.h"
+#include "ListTools/lt_dict.h"
 #include "ListTools/lt_memory.h"
 
 #include "pyxplot.h"
@@ -82,6 +83,7 @@ int main(int argc, char **argv)
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot.");
   lt_MemoryInit(&ppl_error, &ppl_log);
+  PPL_SUBROUTINES = DictInit();
   ClearInputSource(NULL,NULL,NULL,NULL,NULL,NULL);
   ppl_units_init();
   ppl_PaperSizeInit();

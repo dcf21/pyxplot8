@@ -42,12 +42,13 @@ arc@3:directive = { item@1 %d:editno } { at@1 } %fu:x ,@n %fu:y radius@1 %fu:r f
 < line@2:directive | arrow@2:directive > = { item@1 %d:editno } { from@1 } %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style:twoway | twoway@2:arrow_style > ) }\n\
 < box@2:directive | rectangle@2:directive > = { item@1 %d:editno } < from@1 %fu:x1 ,@n %fu:y1 to@1 %fu:x2 ,@n %fu:y2 { rotate@1 %fu:rotation } | at@1 %fu:x1 ,@n %fu:y1 ( width@1 %fu:width ~ height@1 %fu:height ~ rotate@1 %fu:rotation ) > { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < fillcolour@1 | fillcolor@1 > < rgb@n %d:fillcolourR \\:@n %d:fillcolourG \\:@n %d:fillcolourB | %e:fillcolour > ) }\n\
 break@2:directive = { %s:loopname }\n\
+call@2:directive = %v:subroutine_name \\(@n [ < %fi:argument | %q:string_argument > ]:@argument_list, \\)@n\n\
 cd@2:directive = [ < %q:directory | %S:directory > ]:path\n\
 circle@2:directive = { item@1 %d:editno } { at@1 } %fu:x ,@n %fu:y radius@1 %fu:r { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < fillcolour@1 | fillcolor@1 > < rgb@n %d:fillcolourR \\:@n %d:fillcolourG \\:@n %d:fillcolourB | %e:fillcolour > ) }\n\
 clear@3:directive =\n\
 continue@2:directive = { %s:loopname }\n\
 delete@3:directive = { item@1 } [ %d:number ]:deleteno,\n\
-do@2:directive = { loopname@1 %s:loopname } ( \\{@n:brace ( %r:command ) )\n\
+do@2:directive = { loopname@1 %s:loopname } { \\{@n:brace { %r:command } }\n\
 ellipse@2:directive = < from@1 %fu:x1 ,@n %fu:y1 { to@1 } %fu:x2 ,@n %fu:y2 { rotate@1 %fu:rotation } | ( < centre@1 | center@1> %fu:xcentre ,@n %fu:ycentre ~ focus@1 %fu:xfocus ,@n %fu:yfocus ~ < majoraxis@2 %fu:majoraxis | semimajoraxis@6 %fu:semimajoraxis > ~ < minoraxis@2 %fu:minoraxis | semiminoraxis@6 %fu:semiminoraxis > ~ eccentricity@1 %f:eccentricity ~ < < semilatusrectum@5 | slr@2 > %fu:slr | < latusrectum@2 | lr@2 > %fu:lr > ~ rotate@1 %fu:rotation ) > { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > ~ < fillcolour@1 | fillcolor@1 > < rgb@n %d:fillcolourR \\:@n %d:fillcolourG \\:@n %d:fillcolourB | %e:fillcolour > ) }\n\
 \\}@n else@4:directive = ( if@2:if %f:criterion ) ( \\{@n:brace ( %r:command ) )\n\
 eps@2:directive = { item@1 %d:editno } < %q:filename | %S:filename > ( at@2 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ width@1 %fu:width ~ height@1 %fu:height ~ clip@2:clip ~ calcbbox@2:calcbbox )\n\
@@ -55,9 +56,9 @@ exec@3:directive: = %q:command\n\
 exit@2:directive:quit =\n\
 fit@3:directive = [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:fit_function \\(@n [ %v:inputvar ]:@operands, \\)@n { withouterrors@1:withouterrors } < %q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) via@1 [ %v:fit_variable ]:fit_variables,\n\
 < fft@2:directive | ifft@3:directive > = [ \\[@n %fu:min < :@n | to@n > %fu:max < :@n | step@n > %fu:step \\]@n ]:range_list %v:fft_function \\(@n [ %v:inputvar ]:@in_operands, \\)@n { of@1 } < %q:filename ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) | %v:input_function \\(@n [ %v:inputvar ]:@out_operands, \\)@n { window@1 < rectangular@1:window | hamming@3:window | hann@3:window | cosine@1:window | lanczos@1:window | bartlett@2:window | triangular@1:window | gauss@1:window | bartletthann@9:window | blackman@2:window > } >\n\
-for@2:directive = %v:var_name \\=@n %fu:start_value to@n %fu:final_value ( step@2:step %fu:step_size ) { loopname@1 %s:loopname } ( \\{@n:brace ( %r:command ) )\n\
-foreach@4:directive datum@5:df = [ %v:variable ]:variables, in@n:in [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list [ %q:filename ]:filename_list ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion  ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) { loopname@1 %s:loopname } ( \\{@n:brace ( %r:command ) )\n\
-foreach@4:directive = < %v:var_name in@n:in < \\(@n [ < %fi:value | %q:string | %S:string > ]:item_list, \\)@n | [ %q:filename ]:filename_list > { loopname@1 %s:loopname } ( \\{@n:brace ( %r:command ) )\n\
+for@2:directive = %v:var_name \\=@n %fu:start_value to@n %fu:final_value ( step@2:step %fu:step_size ) { loopname@1 %s:loopname } { \\{@n:brace { %r:command } }\n\
+foreach@4:directive datum@5:df = [ %v:variable ]:variables, in@n:in [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list [ %q:filename ]:filename_list ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion  ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) { loopname@1 %s:loopname } { \\{@n:brace { %r:command } }\n\
+foreach@4:directive = < %v:var_name in@n:in < \\(@n [ < %fi:value | %q:string | %S:string > ]:item_list, \\)@n | [ %q:filename ]:filename_list > { loopname@1 %s:loopname } { \\{@n:brace { %r:command } }\n\
 help@2:directive = %r:topic\n\
 history@2:directive = { %d:number_lines }\n\
 histogram@5:directive = { \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n } %v:hist_function \\()@2 < %q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ~ binwidth@4 %fu:binwidth ~ binorigin@4 %fu:binorigin ~ bins@n \\(@n [ %fu:x ]:bin_list, \\)@n )\n\
@@ -148,6 +149,7 @@ set@2:directive:set_error = { item@1 %d:editno } { %s:set_option } %r:restofline
 show@2:directive = { item@1 %d:editno } [ %S:setting ]:@setting_list\n\
 solve@2:directive = [ %e:left_expression \\=@n %e:right_expression ]:expressions, via@1 [ %v:fit_variable ]:fit_variables,\n\
 < spline@3:directive | interpolate@4 < linear@3:directive | loglinear@3:directive | polynomial@3:directive | spline@3:directive > > = [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list %v:fit_function \\()@2 < %q:filename | %S:filename > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: )\n\
+subroutine@2:directive = %v:subroutine_name \\(@n [ %v:argument_name ]:@argument_list, \\)@n { \\{@n:brace { %r:command } }\n\
 tabulate@2:directive = [ \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n ]:@range_list [ < %q:filename | { parametric@1:parametric } [ %e:expression ]:expression_list: > ( every@1 [ { %d:every_item } ]:every_list: ~ index@1 %d:index ~ select@1 %E:select_criterion ~ using@1 { < rows@1:use_rows | columns@1:use_columns > } [ { %E:using_item } ]:using_list: ) { with@1 ( format@1 %q:format ~ spacing@1 %fu:spacing ) } ]:@tabulate_list,\n\
 text@3:directive = { item@1 %d:editno } < %q:string | %s:string > ( at@1 %fu:x ,@n %fu:y ~ rotate@1 %fu:rotation ~ gap@1 %fu:gap ~ halign@2 < left@1:halign | centre@1:halign | center@1:halign:centre | right@1:halign > ~ valign@2 < top@1:valign | centre@1:valign | center@1:valign:centre | bottom@1:valign > ) { with@1 < colour@1 | color@1 > < rgb@n %d:colourR \\:@n %d:colourG \\:@n %d:colourB | %e:colour > }\n\
 undelete@3:directive = { item@1 } [ %d:number ]:undeleteno,\n\
@@ -218,7 +220,7 @@ unset@3:directive                      unit@1:set_option = { < display@1:set_opt
 unset@3:directive { item@1 %d:editno } view@1:set_option =\n\
 unset@3:directive { item@1 %d:editno } width@1:set_option =\n\
 unset@3:directive:unset_error = { item@1 %d:editno } { %s:set_option } %r:restofline\n\
-while@5:directive = %e:criterion { loopname@1 %s:loopname } ( \\{@n:brace ( %r:command ) )\n\
-\\}:n:close_brace while@5:directive = %e:criterion ( \\{@n:brace ( %r:command ) )\n\
+while@5:directive = %e:criterion { loopname@1 %s:loopname } { \\{@n:brace { %r:command } }\n\
+\\}:n:close_brace while@5:directive = %e:criterion { \\{@n:brace { %r:command } }\n\
 ";
 

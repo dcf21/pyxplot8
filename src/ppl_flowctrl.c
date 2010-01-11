@@ -34,6 +34,7 @@
 
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
+#include "ListTools/lt_list.h"
 
 #include "pyxplot.h"
 #include "ppl_datafile.h"
@@ -46,6 +47,7 @@
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
+Dict *PPL_SUBROUTINES = NULL;
 
 char *PPL_FLOWCTRL_LOOPNAME[MAX_ITERLEVEL_DEPTH+1];
 int   PPL_FLOWCTRL_BREAKABLE  = 0;
@@ -645,6 +647,151 @@ int directive_if(Dict *command, int IterLevel)
   DictLookup(command,"criterion",NULL,(void **)(&criterion));
   if (ppl_units_DblEqual(*criterion, 0.0)) status = directive_ifelse(command, 0, IterLevel);
   else                                     status = directive_ifelse(command, 1, IterLevel);
+  return status;
+ }
+
+// -----------------------------------------------
+// PROCEDURES FOR DEFINING AND CALLING SUBROUTINES
+// -----------------------------------------------
+
+int directive_subroutine(Dict *command, int IterLevel)
+ {
+  int                   bracegot=0; // becomes one after we parse opening {
+  int                   bracelevel=0;
+  int                   status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  int                   i, j, NArgs, MemContext;
+  char                 *cptr, *name;
+  List                 *ArgList;
+  ListIterator         *ListIter;
+  Dict                 *TempDict;
+  SubroutineDescriptor *NewSub;
+  cmd_chain             chain     = NULL;
+  cmd_chain            *cmd_put   = NULL;
+  cmd_put = &chain;
+
+  // Define subroutine command loop in memory context 0
+  MemContext = lt_GetMemContext();
+  _lt_SetMemContext(0);
+
+  // Read arguments of subroutine
+  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
+  NArgs = ListLen(ArgList);
+  ListIter = ListIterateInit(ArgList);
+  for (i=0,j=0; i<NArgs; i++)
+   {
+    TempDict = (Dict *)ListIter->data;
+    DictLookup(TempDict,"argument_name" ,NULL,(void **)(&cptr));
+    strcpy(temp_err_string+j,cptr);
+    j += strlen(temp_err_string+j)+1;
+    ListIter = ListIterate(ListIter, NULL);
+   }
+
+  // Malloc subroutine descriptor
+  NewSub = (SubroutineDescriptor *)lt_malloc(sizeof(SubroutineDescriptor));
+  if (NewSub==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); _lt_SetMemContext(MemContext); return 1; }
+  NewSub->ArgList = (char *)lt_malloc(j);
+  if (NewSub->ArgList==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); _lt_SetMemContext(MemContext); return 1; }
+  memcpy(NewSub->ArgList,temp_err_string,j);
+  NewSub->NumberArguments = NArgs;
+  NewSub->commands = chain;
+
+  // Check whether subroutine statement had { and/or first command on same line
+  DictLookup(command,"subroutine_name",NULL,(void **)(&name));
+  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  if (cptr!=NULL) bracegot = 1;
+  DictLookup(command,"command",NULL,(void **)(&cptr));
+  if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
+
+  // Fetch lines and add them into loop chain until we get a }
+  while (status==0)
+   {
+    cptr = FetchInputStatement("subrtne> ",".......> ");
+    if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
+    else            { ppl_error(ERR_SYNTAX, "Unterminated subroutine definition."); _lt_SetMemContext(MemContext); return 1; }
+   }
+
+  // Check whether we found a statement before we found a {
+  if      (status ==  1) { ppl_error(ERR_SYNTAX, "subroutine statement should be followed by { ... }."); _lt_SetMemContext(MemContext); return 1; }
+  else if (status == -1) { ppl_error(ERR_SYNTAX, "subroutine clause should be terminated with a }."); _lt_SetMemContext(MemContext); return 1; }
+
+  // Add subroutine to subroutine dictionary
+  NewSub->commands = chain;
+  DictAppendPtr(PPL_SUBROUTINES, name, (void *)NewSub, sizeof(SubroutineDescriptor), 0, DATATYPE_VOID);
+  _lt_SetMemContext(MemContext);
+  return 0;
+ }
+
+int directive_call(Dict *command, int IterLevel)
+ {
+  int           j, k, NArgs, status=0;
+  char         *name, *cptr;
+  SubroutineDescriptor *sd;
+  List         *ArgList;
+  ListIterator *ListIter;
+  Dict         *TempDict;
+  value     *VarData, *InputValue, *ValueBuffer, TempValue;
+  cmd_chain  chainiter = NULL;
+
+  ppl_units_zero(&TempValue);
+
+  // Look up subroutine name
+  DictLookup(command,"subroutine_name",NULL,(void **)(&name));
+  DictLookup(PPL_SUBROUTINES,name,NULL,(void **)(&sd));
+  if (sd==NULL) { sprintf(temp_err_string,"No subroutine defined with name '%s'.",name); ppl_error(ERR_GENERAL,temp_err_string); return 1; }
+
+  // Check that we have the right number of arguments
+  NArgs = sd->NumberArguments;
+  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
+  if (ListLen(ArgList)!=NArgs) { sprintf(temp_err_string,"Subroutine '%s' takes %d arguments, but %d have been supplied.",name,sd->NumberArguments,ListLen(ArgList)); ppl_error(ERR_GENERAL,temp_err_string); return 1; }
+
+  // Malloc temporary buffer for holding the values of the variables which we overwrite
+  ValueBuffer = (value *)lt_malloc(NArgs * sizeof(value));
+  if (ValueBuffer==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return 1; }
+
+  // Substitute arguments into user's variable dictionary
+  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
+  ListIter = ListIterateInit(ArgList);
+  for (j=k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
+   {
+    TempDict = (Dict *)ListIter->data;
+    DictLookup(TempDict,"argument",NULL,(void **)(&InputValue));
+    if (InputValue==NULL)
+     {
+      DictLookup(TempDict,"string_argument",NULL,(void **)(&cptr));
+      InputValue = &TempValue;
+      TempValue.string = cptr;
+     }
+
+    DictLookup(_ppl_UserSpace_Vars, sd->ArgList+j, NULL, (void **)&VarData);
+    if (VarData!=NULL)
+     {
+      memcpy(ValueBuffer+k, VarData, sizeof(value));
+      memcpy(VarData, InputValue, sizeof(value));
+     }
+    else
+     {
+      ppl_units_zero(ValueBuffer+k);
+      ValueBuffer[k].modified=2;
+      DictAppendValue(_ppl_UserSpace_Vars, sd->ArgList+j, *InputValue);
+     }
+    j += strlen(sd->ArgList+j)+1;
+    ListIter = ListIterate(ListIter, NULL);
+   }
+
+  // Loop through command loop
+  PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
+  chainiter = sd->commands;
+  status = loop_execute(&chainiter, 1, IterLevel);
+  if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; }
+
+  // Return arguments to their original values
+  for (j=k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
+   {
+    DictLookup(_ppl_UserSpace_Vars, sd->ArgList+j, NULL, (void **)&VarData);
+    memcpy(VarData, ValueBuffer+k, sizeof(value));
+    j += strlen(sd->ArgList+j)+1;
+   }
+
   return status;
  }
 
