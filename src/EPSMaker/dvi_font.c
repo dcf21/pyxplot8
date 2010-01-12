@@ -68,6 +68,9 @@ int dviGetTFM(dviFontDetails *font)
   else if (strncmp(font->tfm->coding, "TeX math extension", 18)==0) font->fontType = FONT_TEX_MEXT;
   else                                                              font->fontType = FONT_UNKNOWN;
 
+  // This is a list of bonkers fonts
+  if (strncmp(font->tfm->family, "WASY", 4)==0) font->fontType = FONT_SYMBOL;
+
   if (DEBUG) {sprintf(temp_err_string, "TFM: font type %d", font->fontType);  ppl_log(temp_err_string);}
 
   // Additionally obtain the pfa file

@@ -29,10 +29,11 @@
 #define ASCII_CHAR_A_DN 97
 #define ASCII_CHAR_Z_DN 122
 
-#define FONT_UNKNOWN  0
-#define FONT_TEX_TEXT 1
-#define FONT_TEX_MATH 2
-#define FONT_TEX_MEXT 3
+#define FONT_UNKNOWN   0
+#define FONT_TEX_TEXT  1
+#define FONT_TEX_MATH  2
+#define FONT_TEX_MEXT  3
+#define FONT_SYMBOL   10
 
 typedef struct TFMcharInfo
  {
