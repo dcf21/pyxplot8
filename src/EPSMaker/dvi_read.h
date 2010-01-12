@@ -98,7 +98,7 @@ int dviDeletePostscriptState(postscriptState *state);
 int dviPostscriptMoveto(dviInterpreterState *interp);
 int dviPostscriptAppend(dviInterpreterState *interp, char *s);
 
-int dviGetCharSize(dviInterpreterState *interp, char s, double *size);
+int dviGetCharSize(dviInterpreterState *interp, unsigned char s, double *size);
 
 // Routines for reading from files
 int ReadUChar(FILE *fp, int *uc);

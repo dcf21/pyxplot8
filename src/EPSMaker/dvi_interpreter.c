@@ -1019,13 +1019,13 @@ int dviTypeset(dviInterpreterState *interp)
     if ((err=dviPostscriptMoveto(interp))!=0) return err;
    }
 
-  s = interp->currentString;
+  s =  interp->currentString;
   width  = 0.0;
   height = 0.0;
   depth  = 0.0;
   while (*s != '\0')
    {
-    if ((err=dviGetCharSize(interp, *s, size))!=0) return err;
+    if ((err=dviGetCharSize(interp, (unsigned char) *s, size))!=0) return err;
     width += size[0];
     height = size[1]>height ? size[1] : height;
     depth  = size[2]>depth  ? size[2] : depth;
@@ -1107,7 +1107,7 @@ int dviChngFnt(dviInterpreterState *interp, int fn)
  }
 
 // Get the size (width, height, depth) of a glyph
-int dviGetCharSize(dviInterpreterState *interp, char s, double *size)
+int dviGetCharSize(dviInterpreterState *interp, unsigned char s, double *size)
  {
   dviTFM *tfm;               // Details of this font
   int chnum;                 // Character number in this font

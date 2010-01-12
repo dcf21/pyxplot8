@@ -36,14 +36,15 @@
 #include "dvi_read.h"
 #include "dvi_font.h"
 
+int dviGetPfa(dviFontDetails *font, char *filename);
+
 int dviGetTFM(dviFontDetails *font)
  {
-  char *TFMpath, *PFApath, *PFBpath;
+  char *TFMpath;
   char *s;
   char errStr[SSTR_LENGTH];
   int err=0;
   FILE *TFMfp;
-  FILE *fpin, *fpout;
 
   // Get the TFM file
   s = (char *)lt_malloc((strlen(font->name)+5)*sizeof(char));
@@ -69,11 +70,38 @@ int dviGetTFM(dviFontDetails *font)
 
   if (DEBUG) {sprintf(temp_err_string, "TFM: font type %d", font->fontType);  ppl_log(temp_err_string);}
 
-   
   // Additionally obtain the pfa file
-  s = (char *)lt_malloc((strlen(font->name)+5)*sizeof(char));
+  err = dviGetPfa(font, font->name);
+  if (err == DVIE_NOFONT) {
+     err = dviGetPfa(font, font->tfm->family);
+     if (err == DVIE_NOFONT) {
+      snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s", font->name);
+      ppl_error(ERR_GENERAL,errStr);
+     }
+  }
+  if (err != 0) return err;
+
+  // Obtain the font name from the PFA file
+  font->psName = psNameFromPFA(font->pfaPath);
+  if (font->psName==NULL) return 1;
+  return 0;
+ }
+
+
+// Locate and obtain pfa file 
+int dviGetPfa(dviFontDetails *font, char *filename) {
+  FILE *fpin, *fpout;
+  char errStr[SSTR_LENGTH];
+  char *s, *PFApath, *PFBpath;
+  int err, i;
+
+  s = (char *)lt_malloc((strlen(filename)+5)*sizeof(char));
   if (s==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
-  sprintf(s, "%s.pfa", font->name);
+  sprintf(s, "%s.pfa", filename);
+  // Crude lower-casing
+  for (i=0; i<strlen(filename); i++) {
+     if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
+  }
   PFApath = (char *)kpse_find_file(s, kpse_type1_format, true);
   if (PFApath != NULL)
    {
@@ -82,12 +110,16 @@ int dviGetTFM(dviFontDetails *font)
   else
    {
     // Make a PFA file from the PFB file (assuming that one exists)
-    sprintf(s, "%s.pfb", font->name);
+    sprintf(s, "%s.pfb", filename);
+    // Crude lower-casing
+    for (i=0; i<strlen(filename); i++) {
+     if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
+    }
     PFBpath = (char *)kpse_find_file(s, kpse_type1_format, true);
     if (PFBpath == NULL)
      {
-      snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s", font->name);
-      ppl_error(ERR_GENERAL,errStr);
+      snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s using name %s", font->name, filename);
+      ppl_log(errStr);
       return DVIE_NOFONT;
      }
     fpin = fopen(PFBpath, "r");
@@ -110,17 +142,16 @@ int dviGetTFM(dviFontDetails *font)
       ppl_error(ERR_GENERAL,errStr);
       return DVIE_ACCESS;
      }
-    if ((err=pfb2pfa(fpin, fpout))!=0) return err;
+    if ((err=pfb2pfa(fpin, fpout))!=0) {
+       if (DEBUG) { snprintf(errStr, SSTR_LENGTH, "Fail in pfb2pfa: %d", err); ppl_log(errStr); }
+       return err;
+    }
     fclose(fpin);
     fclose(fpout);
     font->pfaPath = PFApath;
    }
-
-  // Obtain the font name from the PFA file
-  font->psName = psNameFromPFA(PFApath);
-  if (font->psName==NULL) return 1;
   return 0;
- }
+}
 
 // Extract the font name from a PFA file
 // XXX This is an entirely empirical algorithm and may not be general!
@@ -258,7 +289,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
   tfm->ds = ReadFixWord(fp, err); if (*err) return NULL;
   lh--;
   if (DEBUG) { sprintf(temp_err_string, "TFM: lh now %d", lh); ppl_log(temp_err_string); }
-  if (lh>10)
+  if (lh>=10)
    {
     int len;
     if ((*err=ReadUChar(fp, &len))!=0) return NULL;
@@ -277,7 +308,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
     tfm->coding[len] = '\0';
     lh-=10;
    }
-  if (lh>5)
+  if (lh>=5)
    {
     int len;
     if ((*err=ReadUChar(fp, &len))!=0) return NULL;
@@ -286,6 +317,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
       ppl_error(ERR_INTERNAL,"Malformed DVI header. coding len>19");
       len=19;
      }
+    if (DEBUG) { sprintf(temp_err_string, "TFM: Family length: %d", len); ppl_log(temp_err_string); }
     for (i=0; i<19; i++)
      {
       int t;
@@ -305,6 +337,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
     if ((*err=ReadUChar(fp, &temp))!=0) return NULL;
     if ((*err=ReadUChar(fp, &temp))!=0) return NULL;
     lh--;
+    if (DEBUG) { sprintf(temp_err_string, "TFM: face:%d", tfm->face); ppl_log(temp_err_string); }
    }
   while (lh>0)
    {
