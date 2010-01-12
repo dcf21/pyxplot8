@@ -72,13 +72,15 @@ int dviGetTFM(dviFontDetails *font)
 
   // Additionally obtain the pfa file
   err = dviGetPfa(font, font->name);
-  if (err == DVIE_NOFONT) {
-     err = dviGetPfa(font, font->tfm->family);
-     if (err == DVIE_NOFONT) {
+  if (err == DVIE_NOFONT)
+   {
+    err = dviGetPfa(font, font->tfm->family);
+    if (err == DVIE_NOFONT)
+     {
       snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s", font->name);
       ppl_error(ERR_GENERAL,errStr);
      }
-  }
+   }
   if (err != 0) return err;
 
   // Obtain the font name from the PFA file
@@ -89,7 +91,8 @@ int dviGetTFM(dviFontDetails *font)
 
 
 // Locate and obtain pfa file 
-int dviGetPfa(dviFontDetails *font, char *filename) {
+int dviGetPfa(dviFontDetails *font, char *filename)
+ {
   FILE *fpin, *fpout;
   char errStr[SSTR_LENGTH];
   char *s, *PFApath, *PFBpath;
@@ -99,9 +102,7 @@ int dviGetPfa(dviFontDetails *font, char *filename) {
   if (s==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
   sprintf(s, "%s.pfa", filename);
   // Crude lower-casing
-  for (i=0; i<strlen(filename); i++) {
-     if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
-  }
+  for (i=0; i<strlen(filename); i++) if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
   PFApath = (char *)kpse_find_file(s, kpse_type1_format, true);
   if (PFApath != NULL)
    {
@@ -112,9 +113,7 @@ int dviGetPfa(dviFontDetails *font, char *filename) {
     // Make a PFA file from the PFB file (assuming that one exists)
     sprintf(s, "%s.pfb", filename);
     // Crude lower-casing
-    for (i=0; i<strlen(filename); i++) {
-     if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
-    }
+    for (i=0; i<strlen(filename); i++) if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
     PFBpath = (char *)kpse_find_file(s, kpse_type1_format, true);
     if (PFBpath == NULL)
      {
@@ -142,10 +141,11 @@ int dviGetPfa(dviFontDetails *font, char *filename) {
       ppl_error(ERR_GENERAL,errStr);
       return DVIE_ACCESS;
      }
-    if ((err=pfb2pfa(fpin, fpout))!=0) {
-       if (DEBUG) { snprintf(errStr, SSTR_LENGTH, "Fail in pfb2pfa: %d", err); ppl_log(errStr); }
-       return err;
-    }
+    if ((err=pfb2pfa(fpin, fpout))!=0)
+     {
+      if (DEBUG) { snprintf(errStr, SSTR_LENGTH, "Fail in pfb2pfa: %d", err); ppl_log(errStr); }
+      return err;
+     }
     fclose(fpin);
     fclose(fpout);
     font->pfaPath = PFApath;
