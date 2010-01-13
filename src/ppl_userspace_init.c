@@ -516,7 +516,6 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "decimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";
   ppl_unit_database[ppl_unit_pos].multiplier = 0.1;
-  ppl_unit_database[ppl_unit_pos].cgs        = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
 
