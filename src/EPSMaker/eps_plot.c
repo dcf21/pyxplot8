@@ -253,12 +253,12 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       if (pd->function == 0) // Read data from file
        {
         if (DEBUG) { sprintf(temp_err_string, "Reading data from file '%s' for dataset %d in plot item %d", pd->filename, i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_read(x->current->plotdata+i, &status, temp_err_string, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+        DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        } else {
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
         DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        }
-      if (status) { ppl_error(ERR_GENERAL, temp_err_string); x->current->plotdata[i]=NULL; }
+      if (status) { ppl_error(ERR_GENERAL, errbuffer); x->current->plotdata[i]=NULL; }
       else
        {
         // Update axes to reflect usage
@@ -516,7 +516,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
 
       // Get data from functions
       DataFile_FromFunctions(OrdinateAxis->OrdinateRaster, 0, OrdinateAxis->OrdinateRasterLen, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
-      if (status) { *(x->status) = 1; return; }
+      if (status) { ppl_error(ERR_GENERAL, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage
       status=eps_plot_styles_UpdateUsage(x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2], &axissets[pd->axis3xyz][pd->axis3], pd->axis1xyz, pd->axis2xyz, pd->axis3xyz, pd->axis1, pd->axis2, pd->axis3, x->current->id);
@@ -561,12 +561,15 @@ void eps_plot_YieldUpText(EPSComm *x)
   k  = 0;
   while (pd != NULL) // loop over all datasets
    {
-    x->current->DatasetTextID[k] = x->NTextItems;
-    blk = x->current->plotdata[k]->first;
-    while (blk != NULL)
+    if (x->current->plotdata[k] != NULL)
      {
-      if (blk->text != NULL) for (j=0; j<blk->BlockPosition; j++) { YIELD_TEXTITEM(blk->text[j]); }
-      blk=blk->next;
+      x->current->DatasetTextID[k] = x->NTextItems;
+      blk = x->current->plotdata[k]->first;
+      while (blk != NULL)
+       {
+        if (blk->text != NULL) for (j=0; j<blk->BlockPosition; j++) { YIELD_TEXTITEM(blk->text[j]); }
+        blk=blk->next;
+       }
      }
     pd=pd->next; k++;
    }
