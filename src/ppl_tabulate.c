@@ -102,13 +102,13 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
       InRange=1;
       for (k=0; k<Ncolumns; k++)
        {
-        val = blk->data_real[k + Ncolumns*i];
+        val = blk->data_real[k + Ncolumns*i].d;
         if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
        }
       if (InRange)
        for (k=0; k<Ncolumns; k++)
         {
-         val = blk->data_real[k + Ncolumns*i] * multiplier[k];
+         val = blk->data_real[k + Ncolumns*i].d * multiplier[k];
          if ((fabs(val)>1000) || (!ppl_units_DblEqual(val,floor(val+0.5)))) AllInts [k]=0;
          if ((fabs(val)>1000) || (fabs(val)<0.0999999999999)              ) AllSmall[k]=0; // Columns containing only numbers in this range are fprintfed using %f, rather than %e
         }
@@ -127,7 +127,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
       if (blk->split[i]) split=1;
       for (k=0; k<Ncolumns; k++)
        {
-        val = blk->data_real[k + Ncolumns*i];
+        val = blk->data_real[k + Ncolumns*i].d;
         if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
        }
       if (InRange)
@@ -137,7 +137,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
          {
           for (k=0; k<Ncolumns; k++)
            {
-            val = blk->data_real[k + Ncolumns*i] * multiplier[k];
+            val = blk->data_real[k + Ncolumns*i].d * multiplier[k];
             if      (AllInts [k]) fprintf(output, "%10d ", (int)val);
             else if (AllSmall[k]) fprintf(output, "%11f ",      val);
             else                  fprintf(output, "%15e ",      val);
@@ -157,7 +157,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
               }
              // We do not allow user to specify optional length flag, which could potentially be <hlL>
              if (l>=Ncolumns) val = GSL_NAN;
-             else             val = blk->data_real[l + Ncolumns*i] * multiplier[l]; // Set val to equal data from data table that we're about to print.
+             else             val = blk->data_real[l + Ncolumns*i].d * multiplier[l]; // Set val to equal data from data table that we're about to print.
              l++;
              if (format[k]!='\0') { tmpchr = format[k+1]; format[k+1] = '\0'; } // NULL terminate format token before passing it to fprintf
              if      (format[k]=='d') // %d -- print quantity as an integer, but take care to avoid overflows

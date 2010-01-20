@@ -233,9 +233,11 @@ RETURN_STRING:
   ppl_units_zero(output); 
   if (MallocOut)
    {
-    output->string = (char *)lt_malloc_incontext(strlen(outstr)+1,UCFC_OutputContext);
+    for (i=0; (outstr[i]>' '); i++);
+    output->string = (char *)lt_malloc_incontext(i+1,UCFC_OutputContext);
     if (output->string == NULL) { sprintf(errtext, "Out of memory."); *status=1; if (DEBUG) ppl_log(errtext); return; }
-    strcpy(output->string,outstr);
+    strncpy(output->string,outstr,i);
+    output->string[i]='\0';
    }
   else
    {
@@ -330,7 +332,7 @@ DataBlock *DataFile_NewDataBlock(const int Ncolumns, const int MemoryContext, co
 
   output = (DataBlock *)lt_malloc_incontext(sizeof(DataBlock), MemoryContext);
   if (output==NULL) return NULL;
-  output->data_real  = (double *)       lt_malloc_incontext(BlockLength * Ncolumns * sizeof(double       ), MemoryContext);
+  output->data_real  = (UnionDblStr *)  lt_malloc_incontext(BlockLength * Ncolumns * sizeof(UnionDblStr  ), MemoryContext);
   output->text       = (char **)        lt_malloc_incontext(BlockLength *            sizeof(char *       ), MemoryContext);
   output->FileLine   = (long int *)     lt_malloc_incontext(BlockLength * Ncolumns * sizeof(long int     ), MemoryContext);
   output->split      = (unsigned char *)lt_malloc_incontext(BlockLength *            sizeof(unsigned char), MemoryContext);
@@ -449,7 +451,7 @@ void DataFile_DataTable_List(DataTable *i)
       for (k=0; k<Ncolumns; k++)
        {
         v             = i->FirstEntries[k];
-        v.real        = blk->data_real[j*Ncolumns + k];
+        v.real        = blk->data_real[j*Ncolumns + k].d;
         v.imag        = 0.0;
         v.FlagComplex = 0;
         printf("%15s [line %6ld]  ",ppl_units_NumericDisplay(&v, 0, 0, 0), blk->FileLine[j*Ncolumns + k] );
@@ -512,15 +514,29 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
     // Evaluate using expression on data in columns
     for (i=0; i<Ncolumns; i++)
      {
-      DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData_str, ColumnData_val, ItemsOnLine, filename, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, 1, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
+      int NumericOut=1;
+      if ((UsingItems[i]!=NULL)&&((UsingItems[i][0]=='\'')||(UsingItems[i][0]=='\"'))) NumericOut=0;
+      DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData_str, ColumnData_val, ItemsOnLine, filename, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, NumericOut, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
       if (LocalStatus) break;
       if (tempval.FlagComplex) { COUNTEDERR1; sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is complex.", filename, file_linenumber, UsingItems[i]); COUNTEDERR2; LocalStatus=1; break; }
-      if (out->Nrows==0)
-       out->FirstEntries[i] = tempval;
-      else
-       if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { COUNTEDERR1; sprintf(errout, "%s:%ld: The expression <%s> produces data with inconsistent units. On this line, a datum with units of <%s> is produced, but previous data have had units of <%s>.", filename, file_linenumber, UsingItems[i], ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 0)); COUNTEDERR2; LocalStatus=1; break; }
-      out->current->data_real[i + out->current->BlockPosition * Ncolumns] = tempval.real;
       out->current->FileLine [i + out->current->BlockPosition * Ncolumns] = file_linenumber;
+      if (NumericOut)
+       {
+        if (out->Nrows==0)
+         out->FirstEntries[i] = tempval;
+        else
+         if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { COUNTEDERR1; sprintf(errout, "%s:%ld: The expression <%s> produces data with inconsistent units. On this line, a datum with units of <%s> is produced, but previous data have had units of <%s>.", filename, file_linenumber, UsingItems[i], ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 0)); COUNTEDERR2; LocalStatus=1; break; }
+        out->current->data_real[i + out->current->BlockPosition * Ncolumns].d = tempval.real;
+       }
+      else
+       {
+        out->FirstEntries[i].string = (char *)lt_malloc_incontext(strlen(tempval.string)+1, ContextOutput);
+        if (out->FirstEntries[i].string == NULL)
+         { sprintf(errout, "%s:%ld: Out of memory whilst generating text using item.",filename,file_linenumber); (out->FirstEntries[i].string)++; *status=1; if (DEBUG) ppl_log(errout); return; }
+        else
+         strcpy(out->FirstEntries[i].string, tempval.string);
+        out->current->data_real[i + out->current->BlockPosition * Ncolumns].s = out->FirstEntries[i].string;
+       }
      }
 
     out->current->split[out->current->BlockPosition] = *discontinuity;

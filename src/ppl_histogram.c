@@ -133,7 +133,7 @@ int directive_histogram(Dict *command)
   blk = data->first; i=0;
   while (blk != NULL)
    {
-    for (j=0; j<blk->BlockPosition; j++) xdata[i++] = blk->data_real[j];
+    for (j=0; j<blk->BlockPosition; j++) xdata[i++] = blk->data_real[j].d;
     blk=blk->next;
    }
 

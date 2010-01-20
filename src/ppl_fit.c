@@ -446,7 +446,7 @@ int directive_fit(Dict *command)
       InRange=1;
       for (k=0; k<NExpect; k++)
        {
-        val = blk->data_real[k + NExpect*j];
+        val = blk->data_real[k + NExpect*j].d;
         if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
        }
       if (InRange) NDataPoints++;
@@ -466,7 +466,7 @@ int directive_fit(Dict *command)
       InRange=1;
       for (k=0; k<NExpect; k++)
        {
-        val = blk->data_real[k + NExpect*j];
+        val = blk->data_real[k + NExpect*j].d;
         if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
         LocalDataTable[i * NExpect + k] = val;
        }

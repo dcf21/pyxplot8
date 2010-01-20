@@ -107,7 +107,7 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
  }
 
 // UpdateUsage... get content of row X from data table
-#define UUR(X) blk->data_real[X + Ncolumns*j]
+#define UUR(X) blk->data_real[X + Ncolumns*j].d
 
 // UpdateUsage... update axis X with ordinate value Y
 #define UUU(X,Y) \
@@ -225,7 +225,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         if ((!gsl_finite(xpos)) || (!gsl_finite(ypos))) { LineDraw_PenUp(ld); continue; } // Position of point is off side of graph... e.g. negative number on log axis
 
         // Work out style information for next point
-        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
         eps_core_SetColour(x, &pd->ww_final, 0);
         if (blk->split[j]) { LineDraw_PenUp(ld); }
         IF_NOT_INVISIBLE
@@ -252,7 +252,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 
         // Work out style information for next point
-        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j], Ncolumns);
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
         eps_core_SetColour(x, &pd->ww_final, 0);
         IF_NOT_INVISIBLE
          {

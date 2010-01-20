@@ -532,11 +532,11 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
 
   // Check that the FirstEntries above have the same units as any supplied ranges
   for (j=0; j<i; j++)
-   if (min[j] != NULL)
+   if ((min[j] != NULL) && (data->FirstEntries[j].string==NULL))
     {
      if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
     }
-   else if (max[j] != NULL)
+   else if ((max[j] != NULL) && (data->FirstEntries[j].string==NULL))
     {
      if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
     }
@@ -550,13 +550,22 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
       InRange=1;
       for (k=0; k<i; k++)
        {
-        val = blk->data_real[k + i*j];
-        if ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) ) { InRange=0; break; } // Check that value is within range
+        int NumericOut = (data->FirstEntries[k].string==NULL);
+        val = blk->data_real[k + i*j].d;
+
+        // Check that value is within range
+        if (NumericOut && ( ((min[k]!=NULL)&&(val<min[k]->real)) || ((max[k]!=NULL)&&(val>max[k]->real)) )) { InRange=0; break; }
+
         ppl_units_zero(outval[k]);
-        ppl_units_DimCpy(outval[k] , data->FirstEntries+k); // Copy physical dimensions from data file to output variables
-        outval[k]->real = val;
-        outval[k]->imag = 0.0;
-        outval[k]->FlagComplex = 0;
+        if (NumericOut)
+         {
+          ppl_units_DimCpy(outval[k] , data->FirstEntries+k); // Copy physical dimensions from data file to output variables
+          outval[k]->real = val;
+          outval[k]->imag = 0.0;
+          outval[k]->FlagComplex = 0;
+         } else {
+          outval[k]->string = blk->data_real[k + i*j].s;
+         }
        }
       if (InRange) // Only run looped script if this data point is within supplied range
        {

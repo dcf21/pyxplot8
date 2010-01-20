@@ -155,8 +155,8 @@ RANGES_DONE:
   blk = data->first; i=0;
   while (blk != NULL)
    {
-    k=i; for (j=0; j<blk->BlockPosition; j++) xdata[i++] = blk->data_real[0 + 2*j];
-    i=k; for (j=0; j<blk->BlockPosition; j++) ydata[i++] = blk->data_real[1 + 2*j];
+    k=i; for (j=0; j<blk->BlockPosition; j++) xdata[i++] = blk->data_real[0 + 2*j].d;
+    i=k; for (j=0; j<blk->BlockPosition; j++) ydata[i++] = blk->data_real[1 + 2*j].d;
     blk=blk->next;
    }
   FirstEntries[0] = data->FirstEntries[0];

@@ -396,7 +396,9 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         *errpos=0;
         DataFile_UsingConvert_FetchColumnByNumber(argf.d, &(argf.v), 0, 0, errpos, errtext);
         if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
-        strcpy(out, argf.v.string);
+        for (i=0; argf.v.string[i]>' '; i++);
+        strncpy(out, argf.v.string,i);
+        out[i]='\0';
         return;
        }
       else if (in[pos+1]=='(') // We have $(a+b)
@@ -408,7 +410,9 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         *errpos=0;
         DataFile_UsingConvert_FetchColumnByNumber(argf.v.real, &(argf.v), 0, 0, errpos, errtext);
         if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
-        strcpy(out, argf.v.string);
+        for (i=0; argf.v.string[i]>' '; i++);
+        strncpy(out, argf.v.string,i);
+        out[i]='\0';
         return;
        }
       else // We have $ColumnName
@@ -420,7 +424,9 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
           *errpos=0;
           DataFile_UsingConvert_FetchColumnByName(FormatString, &(argf.v), 0, 0, errpos, errtext);
           if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
-          strcpy(out, argf.v.string);
+          for (i=0; argf.v.string[i]>' '; i++);
+          strncpy(out, argf.v.string,i);
+          out[i]='\0';
           return;
          }
        }

@@ -61,8 +61,13 @@ typedef struct RawDataTable {
 
 // DataTable structure, used for returning tables of VALUEs from ppl_datafile.c
 
+typedef union UnionDblStr {
+  double d;
+  char  *s;
+ } UnionDblStr;
+
 typedef struct DataBlock {
-  double           *data_real; // Array of Ncolumns x array of length BlockLength
+  UnionDblStr      *data_real; // Array of Ncolumns x array of length BlockLength
   char            **text;      // Array of BlockLength x string labels for datapoints
   long int         *FileLine;  // For each double above... store the line number in the data file that it came from
   unsigned char    *split;     // Array of length BlockLength; TRUE if we should break data before this next datapoint

@@ -210,14 +210,14 @@ int directive_fft(Dict *command)
 
       // Check that first Ndims columns indeed represent this point
       for (k=0; k<Ndims; k++)
-       if (!ppl_units_DblEqual(blk->data_real[k + (Ndims+2)*j] , pos[k]))
+       if (!ppl_units_DblEqual(blk->data_real[k + (Ndims+2)*j].d , pos[k]))
         {
          sprintf(temp_err_string, "Data supplied to fft command must be on a regular rectangular grid and in row-major ordering. Row %d should represent a data point at position (", i+1);
          m=strlen(temp_err_string);
          for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); }
          m-=(Ndims>0);
          sprintf(temp_err_string+m, "). In fact, it contained a data point at position ("); m+=strlen(temp_err_string+m);
-         for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=blk->data_real[l + (Ndims+2)*j]; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); } 
+         for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=blk->data_real[l + (Ndims+2)*j].d; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); } 
          m-=(Ndims>0);
          sprintf(temp_err_string+m, ")."); j=strlen(temp_err_string);
          ppl_error(ERR_NUMERIC, temp_err_string);
@@ -225,8 +225,8 @@ int directive_fft(Dict *command)
         }
 
       ppl_units_zero(&x);
-      x.real = blk->data_real[(Ndims+0) + (Ndims+2)*j];
-      x.imag = blk->data_real[(Ndims+1) + (Ndims+2)*j];
+      x.real = blk->data_real[(Ndims+0) + (Ndims+2)*j].d;
+      x.imag = blk->data_real[(Ndims+1) + (Ndims+2)*j].d;
       if (x.imag==0) { x.FlagComplex=0; x.imag=0.0; } else { x.FlagComplex=1; }
       (*WindowType)(&x, Ndims, Npos, Nsteps); // Apply window function to data
       #ifdef HAVE_FFTW3
