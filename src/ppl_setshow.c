@@ -580,50 +580,70 @@ void directive_set(Dict *command)
        }
      }
     DictLookup(command,"axes",NULL,(void **)&templist);
-    listiter = ListIterateInit(templist);
-    while (listiter != NULL)
+    if (templist != NULL)
      {
-      tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
-      if (tempstr != NULL)
+      listiter = ListIterateInit(templist);
+      while (listiter != NULL)
        {
-        i = (int)GetFloat(tempstr+1,NULL);
-        if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        if (tempstr != NULL)
          {
-          if      (tempstr[0]=='y') { tempaxis = &ya[i]; }
-          else if (tempstr[0]=='z') { tempaxis = &za[i]; }
-          else                      { tempaxis = &xa[i]; }
-          tempaxis->enabled = 1;
-          tempaxis->log     = SW_BOOL_TRUE;
-          if (tempint!=NULL) tempaxis->LogBase = (double)(*tempint);
+          i = (int)GetFloat(tempstr+1,NULL);
+          if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+           {
+            if      (tempstr[0]=='y') { tempaxis = &ya[i]; }
+            else if (tempstr[0]=='z') { tempaxis = &za[i]; }
+            else                      { tempaxis = &xa[i]; }
+            tempaxis->enabled = 1;
+            tempaxis->log     = SW_BOOL_TRUE;
+            if (tempint!=NULL) tempaxis->LogBase = (double)(*tempint);
+           }
+         } else {
+          sg->Tlog = SW_BOOL_TRUE; // No concept of log base on T axis as it's never drawn as an axis with ticks
          }
-       } else {
-        sg->Tlog = SW_BOOL_TRUE; // No concept of log base on T axis as it's never drawn as an axis with ticks
-       }
-      listiter = ListIterate(listiter, NULL);
-     } 
+        listiter = ListIterate(listiter, NULL);
+       } 
+     }
+    else
+     {
+      sg->Tlog = SW_BOOL_TRUE;
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"logscale")==0)) /* unset logscale */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
-    listiter = ListIterateInit(templist);
-    while (listiter != NULL)
+    if (templist != NULL)
      {
-      tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
-      if (tempstr != NULL)
+      listiter = ListIterateInit(templist);
+      while (listiter != NULL)
        {
-        i = (int)GetFloat(tempstr+1,NULL);
-        if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        if (tempstr != NULL)
          {
-          if      (tempstr[0]=='y') { ya[i].log = YAxesDefault[i].log; ya[i].LogBase = YAxesDefault[i].LogBase; }
-          else if (tempstr[0]=='z') { za[i].log = ZAxesDefault[i].log; za[i].LogBase = ZAxesDefault[i].LogBase; }
-          else                      { xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
+          i = (int)GetFloat(tempstr+1,NULL);
+          if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+           {
+            if      (tempstr[0]=='y') { ya[i].log = YAxesDefault[i].log; ya[i].LogBase = YAxesDefault[i].LogBase; }
+            else if (tempstr[0]=='z') { za[i].log = ZAxesDefault[i].log; za[i].LogBase = ZAxesDefault[i].LogBase; }
+            else                      { xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
+           }
+         } else {
+          sg->Tlog = settings_graph_default.Tlog;
          }
-       } else {
-        sg->Tlog = settings_graph_default.Tlog;
+        listiter = ListIterate(listiter, NULL);
        }
-      listiter = ListIterate(listiter, NULL);
+     } 
+    else 
+     {
+      sg->Tlog = settings_graph_default.Tlog;
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
      } 
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
@@ -683,25 +703,35 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
-    listiter = ListIterateInit(templist);
-    while (listiter != NULL)
+    if (templist != NULL)
      {
-      tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
-      if (tempstr != NULL)
+      listiter = ListIterateInit(templist);
+      while (listiter != NULL)
        {
-        i = (int)GetFloat(tempstr+1,NULL);
-        if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        if (tempstr != NULL)
          {
-          if      (tempstr[0]=='y') { ya[i].enabled=1; ya[i].log = SW_BOOL_FALSE; }
-          else if (tempstr[0]=='z') { za[i].enabled=1; za[i].log = SW_BOOL_FALSE; }
-          else                      { xa[i].enabled=1; xa[i].log = SW_BOOL_FALSE; }
+          i = (int)GetFloat(tempstr+1,NULL);
+          if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+           {
+            if      (tempstr[0]=='y') { ya[i].enabled=1; ya[i].log = SW_BOOL_FALSE; }
+            else if (tempstr[0]=='z') { za[i].enabled=1; za[i].log = SW_BOOL_FALSE; }
+            else                      { xa[i].enabled=1; xa[i].log = SW_BOOL_FALSE; }
+           }
+         } else {
+          sg->Tlog = SW_BOOL_FALSE;
          }
-       } else {
-        sg->Tlog = SW_BOOL_FALSE;
+        listiter = ListIterate(listiter, NULL);
        }
-      listiter = ListIterate(listiter, NULL);
-     } 
+     }
+    else
+     {
+      sg->Tlog = SW_BOOL_FALSE;
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_FALSE; } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_FALSE; } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_FALSE; } }
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
    {
