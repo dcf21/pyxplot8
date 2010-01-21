@@ -740,49 +740,62 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notics")==0)) /* set notics */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
-    i = (int)GetFloat(tempstr+1,NULL);
+
+#define SET_NOTICS \
+      DictLookup(command,"minor",NULL,(void **)&tempstr2); \
+      if (tempstr2==NULL) \
+       { \
+        tempaxis->TickMin      = tempaxis2->TickMin; \
+        tempaxis->TickMax      = tempaxis2->TickMax; \
+        tempaxis->TickStep     = tempaxis2->TickStep; \
+        tempaxis->TickMinSet   = 0; \
+        tempaxis->TickMaxSet   = 0; \
+        tempaxis->TickStepSet  = 0; \
+        if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } /* Delete old explicit tick lists */ \
+        if (tempaxis-> TickStrs != NULL) \
+         { \
+          for (i=0; tempaxis->TickStrs[i]!=NULL; i++) free(tempaxis->TickStrs[i]); \
+          free(tempaxis->TickStrs ); \
+          tempaxis->TickStrs  = NULL; \
+         } \
+        tempaxis->TickList = malloc(sizeof(double)); \
+        tempaxis->TickStrs = malloc(sizeof(char *)); \
+        if (tempaxis->TickStrs!=NULL) *(tempaxis->TickStrs) = NULL; \
+       } else { \
+        tempaxis->MTickMin     = tempaxis2->MTickMin; \
+        tempaxis->MTickMax     = tempaxis2->MTickMax; \
+        tempaxis->MTickStep    = tempaxis2->MTickStep; \
+        tempaxis->MTickMinSet  = 0; \
+        tempaxis->MTickMaxSet  = 0; \
+        tempaxis->MTickStepSet = 0; \
+        if (tempaxis->MTickList != NULL) { free(tempaxis->MTickList); tempaxis->MTickList = NULL; } \
+        if (tempaxis->MTickStrs != NULL) \
+         { \
+          for (i=0; tempaxis->MTickStrs[i]!=NULL; i++) free(tempaxis->MTickStrs[i]); \
+          free(tempaxis->MTickStrs ); \
+          tempaxis->MTickStrs  = NULL; \
+         } \
+        tempaxis->MTickList = malloc(sizeof(double)); \
+        tempaxis->MTickStrs = malloc(sizeof(char *)); \
+        if (tempaxis->MTickStrs!=NULL) *(tempaxis->MTickStrs) = NULL; \
+       } \
+
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
-      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
-      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-      DictLookup(command,"minor",NULL,(void **)&tempstr2);
-      if (tempstr2==NULL)
+      DictLookup(command,"axis",NULL,(void **)&tempstr);
+      if (tempstr != NULL)
        {
-        tempaxis->TickMin      = tempaxis2->TickMin;
-        tempaxis->TickMax      = tempaxis2->TickMax;
-        tempaxis->TickStep     = tempaxis2->TickStep;
-        tempaxis->TickMinSet   = 0;
-        tempaxis->TickMaxSet   = 0;
-        tempaxis->TickStepSet  = 0;
-        if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } // Delete old explicit tick lists
-        if (tempaxis-> TickStrs != NULL)
-         {
-          for (i=0; tempaxis->TickStrs[i]!=NULL; i++) free(tempaxis->TickStrs[i]);
-          free(tempaxis->TickStrs ); 
-          tempaxis->TickStrs  = NULL;
-         }
-        tempaxis->TickList = malloc(sizeof(double));
-        tempaxis->TickStrs = malloc(sizeof(char *));
-        if (tempaxis->TickStrs!=NULL) *(tempaxis->TickStrs) = NULL;
-       } else {
-        tempaxis->MTickMin     = tempaxis2->MTickMin;
-        tempaxis->MTickMax     = tempaxis2->MTickMax;
-        tempaxis->MTickStep    = tempaxis2->MTickStep;
-        tempaxis->MTickMinSet  = 0;
-        tempaxis->MTickMaxSet  = 0;
-        tempaxis->MTickStepSet = 0;
-        if (tempaxis->MTickList != NULL) { free(tempaxis->MTickList); tempaxis->MTickList = NULL; }
-        if (tempaxis->MTickStrs != NULL)
-         {
-          for (i=0; tempaxis->MTickStrs[i]!=NULL; i++) free(tempaxis->MTickStrs[i]);
-          free(tempaxis->MTickStrs );
-          tempaxis->MTickStrs  = NULL;
-         }
-        tempaxis->MTickList = malloc(sizeof(double));
-        tempaxis->MTickStrs = malloc(sizeof(char *));
-        if (tempaxis->MTickStrs!=NULL) *(tempaxis->MTickStrs) = NULL;
+        i = (int)GetFloat(tempstr+1,NULL);
+        if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+        else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+        else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+        SET_NOTICS;
+       }
+      else
+       {
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; if (tempaxis->enabled) SET_NOTICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; if (tempaxis->enabled) SET_NOTICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; if (tempaxis->enabled) SET_NOTICS; }
        }
      }
    }
@@ -1158,182 +1171,208 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"tics")==0)) /* set tics */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
-    i = (int)GetFloat(tempstr+1,NULL);
+
+#define SET_TICS \
+      DictLookup(command,"minor"     ,NULL,(void **)&tempstr2); \
+      DictLookup(command,"dir"       ,NULL,(void **)&tempstr3); \
+      DictLookup(command,"autofreq"  ,NULL,(void **)&tempstr4); \
+      DictLookup(command,"start"     ,NULL,(void **)&tempval); \
+      DictLookup(command,"increment" ,NULL,(void **)&tempval2); \
+      DictLookup(command,"end"       ,NULL,(void **)&tempval3); \
+      DictLookup(command,"tick_list,",NULL,(void **)&templist); \
+      if (tempstr2==NULL) /* major ticks */ \
+       { \
+        if (tempstr3 != NULL) tempaxis->TickDir = FetchSettingByName(tempstr3, SW_TICDIR_INT, SW_TICDIR_STR); \
+        if ((tempstr4 != NULL) || (tempval != NULL) || (tempval != NULL)) /* delete old tick settings */ \
+         { \
+          tempaxis->TickMin      = tempaxis2->TickMin; \
+          tempaxis->TickMax      = tempaxis2->TickMax; \
+          tempaxis->TickStep     = tempaxis2->TickStep; \
+          tempaxis->TickMinSet   = 0; \
+          tempaxis->TickMaxSet   = 0; \
+          tempaxis->TickStepSet  = 0; \
+          if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } /* Delete old explicit tick lists */ \
+          if (tempaxis-> TickStrs != NULL) \
+           { \
+            for (i=0; tempaxis->TickStrs[i]!=NULL; i++) free(tempaxis->TickStrs[i]); \
+            free(tempaxis->TickStrs ); \
+            tempaxis->TickStrs  = NULL; \
+           } \
+         } \
+        if (tempval != NULL) /* start , increment , end */ \
+         { \
+          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+ \
+          if (tempval != NULL) { tempaxis->TickMin  = tempval->real;       tempaxis->TickMinSet  = 1; } \
+          else                 { tempaxis->TickMin  = tempaxis2->TickMin;  tempaxis->TickMinSet  = 0; } \
+ \
+          if (tempval != NULL) { tempaxis->TickStep = tempval2->real;      tempaxis->TickStepSet = 1; } \
+          else                 { tempaxis->TickStep = tempaxis2->TickStep; tempaxis->TickStepSet = 0; } \
+ \
+          if (tempval != NULL) { tempaxis->TickMax  = tempval3->real;      tempaxis->TickMaxSet  = 1; } \
+          else                 { tempaxis->TickMax  = tempaxis2->TickMax;  tempaxis->TickMaxSet  = 0; } \
+ \
+         } else if (templist != NULL) { /* list of tick marks */ \
+          j = ListLen(templist); \
+          tempaxis->TickList = (double *)malloc((j+1)*sizeof(double)); \
+          if (tempaxis->TickList == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          tempaxis->TickStrs = (char  **)malloc((j+1)*sizeof(char *)); \
+          if (tempaxis->TickStrs == NULL) { free(tempaxis->TickList); tempaxis->TickList=NULL; ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          listiter = ListIterateInit(templist); \
+          k=0; \
+          while (listiter != NULL) \
+           { \
+            tempdict = (Dict *)listiter->data; \
+            listiter = ListIterate(listiter, NULL); \
+            DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
+            DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
+            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            tempaxis->TickList[k] = tempval->real; \
+            if (tempstr==NULL) tempstr="\xFF"; \
+            tempaxis->TickStrs[k] = (char *)malloc(strlen(tempstr)+1); \
+            if (tempaxis->TickStrs[k] == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+            strcpy(tempaxis->TickStrs[k], tempstr); \
+            k++; \
+           } \
+          tempaxis->TickStrs[k] = NULL; tempaxis->TickList[k] = 0.0; \
+         } \
+       } else { /* minor ticks */ \
+        if (tempstr3 != NULL) tempaxis->MTickDir = FetchSettingByName(tempstr3, SW_TICDIR_INT, SW_TICDIR_STR); \
+        if ((tempstr4 != NULL) || (tempval != NULL) || (tempval != NULL)) /* delete old tick settings */ \
+         { \
+          tempaxis->MTickMin      = tempaxis2->MTickMin; \
+          tempaxis->MTickMax      = tempaxis2->MTickMax; \
+          tempaxis->MTickStep     = tempaxis2->MTickStep; \
+          tempaxis->MTickMinSet   = 0; \
+          tempaxis->MTickMaxSet   = 0; \
+          tempaxis->MTickStepSet  = 0; \
+          if (tempaxis-> MTickList != NULL) { free(tempaxis-> MTickList); tempaxis-> MTickList = NULL; } /* Delete old explicit tick lists */ \
+          if (tempaxis-> MTickStrs != NULL) \
+           { \
+            for (i=0; tempaxis->MTickStrs[i]!=NULL; i++) free(tempaxis->MTickStrs[i]); \
+            free(tempaxis->MTickStrs ); \
+            tempaxis->MTickStrs  = NULL; \
+           } \
+         } \
+        if (tempval != NULL) /* start , increment , end */ \
+         { \
+          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+ \
+          if (tempval != NULL) { tempaxis->MTickMin  = tempval->real;       tempaxis->MTickMinSet  = 1; } \
+          else                 { tempaxis->MTickMin  = tempaxis2->MTickMin;  tempaxis->MTickMinSet  = 0; } \
+ \
+          if (tempval != NULL) { tempaxis->MTickStep = tempval2->real;      tempaxis->MTickStepSet = 1; } \
+          else                 { tempaxis->MTickStep = tempaxis2->MTickStep; tempaxis->MTickStepSet = 0; } \
+ \
+          if (tempval != NULL) { tempaxis->MTickMax  = tempval3->real;      tempaxis->MTickMaxSet  = 1; } \
+          else                 { tempaxis->MTickMax  = tempaxis2->MTickMax;  tempaxis->MTickMaxSet  = 0; } \
+ \
+         } else if (templist != NULL) { /* list of tick marks */ \
+          j = ListLen(templist); \
+          tempaxis->MTickList = (double *)malloc((j+1)*sizeof(double)); \
+          if (tempaxis->MTickList == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          tempaxis->MTickStrs = (char  **)malloc((j+1)*sizeof(char *)); \
+          if (tempaxis->MTickStrs == NULL) { free(tempaxis->MTickList); tempaxis->MTickList=NULL; ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          listiter = ListIterateInit(templist); \
+          k=0; \
+          while (listiter != NULL) \
+           { \
+            tempdict = (Dict *)listiter->data; \
+            listiter = ListIterate(listiter, NULL); \
+            DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
+            DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
+            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            tempaxis->MTickList[k] = tempval->real; \
+            if (tempstr==NULL) tempstr="\xFF"; \
+            tempaxis->MTickStrs[k] = (char *)malloc(strlen(tempstr)+1); \
+            if (tempaxis->MTickStrs[k] == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+            strcpy(tempaxis->MTickStrs[k], tempstr); \
+            k++; \
+           } \
+          tempaxis->MTickStrs[k] = NULL; tempaxis->MTickList[k] = 0.0; \
+         } \
+       } \
+
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
-      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
-      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-      tempaxis->enabled=1; // Activate axis
-      DictLookup(command,"minor"     ,NULL,(void **)&tempstr2);
-      DictLookup(command,"dir"       ,NULL,(void **)&tempstr3);
-      DictLookup(command,"autofreq"  ,NULL,(void **)&tempstr4);
-      DictLookup(command,"start"     ,NULL,(void **)&tempval);
-      DictLookup(command,"increment" ,NULL,(void **)&tempval2);
-      DictLookup(command,"end"       ,NULL,(void **)&tempval3);
-      DictLookup(command,"tick_list,",NULL,(void **)&templist);
-      if (tempstr2==NULL) // major ticks
+      DictLookup(command,"axis",NULL,(void **)&tempstr);
+      if (tempstr != NULL)
        {
-        if (tempstr3 != NULL) tempaxis->TickDir = FetchSettingByName(tempstr3, SW_TICDIR_INT, SW_TICDIR_STR);
-        if ((tempstr4 != NULL) || (tempval != NULL) || (tempval != NULL)) // delete old tick settings
-         {
-          tempaxis->TickMin      = tempaxis2->TickMin;
-          tempaxis->TickMax      = tempaxis2->TickMax;
-          tempaxis->TickStep     = tempaxis2->TickStep;
-          tempaxis->TickMinSet   = 0;
-          tempaxis->TickMaxSet   = 0;
-          tempaxis->TickStepSet  = 0;
-          if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } // Delete old explicit tick lists
-          if (tempaxis-> TickStrs != NULL)
-           {
-            for (i=0; tempaxis->TickStrs[i]!=NULL; i++) free(tempaxis->TickStrs[i]);
-            free(tempaxis->TickStrs );
-            tempaxis->TickStrs  = NULL;
-           }
-         }
-        if (tempval != NULL) // start , increment , end
-         {
-          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); }
-          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); }
-          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); }
-  
-          if (tempval != NULL) { tempaxis->TickMin  = tempval->real;       tempaxis->TickMinSet  = 1; }
-          else                 { tempaxis->TickMin  = tempaxis2->TickMin;  tempaxis->TickMinSet  = 0; }
-  
-          if (tempval != NULL) { tempaxis->TickStep = tempval2->real;      tempaxis->TickStepSet = 1; }
-          else                 { tempaxis->TickStep = tempaxis2->TickStep; tempaxis->TickStepSet = 0; }
-  
-          if (tempval != NULL) { tempaxis->TickMax  = tempval3->real;      tempaxis->TickMaxSet  = 1; }
-          else                 { tempaxis->TickMax  = tempaxis2->TickMax;  tempaxis->TickMaxSet  = 0; }
-  
-         } else if (templist != NULL) { // list of tick marks
-          j = ListLen(templist);
-          tempaxis->TickList = (double *)malloc((j+1)*sizeof(double));
-          if (tempaxis->TickList == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
-          tempaxis->TickStrs = (char  **)malloc((j+1)*sizeof(char *));
-          if (tempaxis->TickStrs == NULL) { free(tempaxis->TickList); tempaxis->TickList=NULL; ppl_error(ERR_MEMORY, "Out of memory"); return; }
-          listiter = ListIterateInit(templist);
-          k=0;
-          while (listiter != NULL)
-           {
-            tempdict = (Dict *)listiter->data;
-            listiter = ListIterate(listiter, NULL);
-            DictLookup(tempdict,"x"    ,NULL,(void **)&tempval);
-            DictLookup(tempdict,"label",NULL,(void **)&tempstr);
-            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; }
-            tempaxis->TickList[k] = tempval->real;
-            if (tempstr==NULL) tempstr="\xFF";
-            tempaxis->TickStrs[k] = (char *)malloc(strlen(tempstr)+1);
-            if (tempaxis->TickStrs[k] == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
-            strcpy(tempaxis->TickStrs[k], tempstr);
-            k++;
-           }
-          tempaxis->TickStrs[k] = NULL; tempaxis->TickList[k] = 0.0;
-         }
-       } else { // minor ticks
-        if (tempstr3 != NULL) tempaxis->MTickDir = FetchSettingByName(tempstr3, SW_TICDIR_INT, SW_TICDIR_STR);
-        if ((tempstr4 != NULL) || (tempval != NULL) || (tempval != NULL)) // delete old tick settings
-         {
-          tempaxis->MTickMin      = tempaxis2->MTickMin;
-          tempaxis->MTickMax      = tempaxis2->MTickMax;
-          tempaxis->MTickStep     = tempaxis2->MTickStep;
-          tempaxis->MTickMinSet   = 0;
-          tempaxis->MTickMaxSet   = 0;
-          tempaxis->MTickStepSet  = 0;
-          if (tempaxis-> MTickList != NULL) { free(tempaxis-> MTickList); tempaxis-> MTickList = NULL; } // Delete old explicit tick lists
-          if (tempaxis-> MTickStrs != NULL)
-           {
-            for (i=0; tempaxis->MTickStrs[i]!=NULL; i++) free(tempaxis->MTickStrs[i]);
-            free(tempaxis->MTickStrs );
-            tempaxis->MTickStrs  = NULL;
-           }
-         }
-        if (tempval != NULL) // start , increment , end
-         {
-          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); }
-          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); }
-          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); }
-  
-          if (tempval != NULL) { tempaxis->MTickMin  = tempval->real;       tempaxis->MTickMinSet  = 1; }
-          else                 { tempaxis->MTickMin  = tempaxis2->MTickMin;  tempaxis->MTickMinSet  = 0; }
-  
-          if (tempval != NULL) { tempaxis->MTickStep = tempval2->real;      tempaxis->MTickStepSet = 1; }
-          else                 { tempaxis->MTickStep = tempaxis2->MTickStep; tempaxis->MTickStepSet = 0; }
-  
-          if (tempval != NULL) { tempaxis->MTickMax  = tempval3->real;      tempaxis->MTickMaxSet  = 1; }
-          else                 { tempaxis->MTickMax  = tempaxis2->MTickMax;  tempaxis->MTickMaxSet  = 0; }
-  
-         } else if (templist != NULL) { // list of tick marks
-          j = ListLen(templist);
-          tempaxis->MTickList = (double *)malloc((j+1)*sizeof(double));
-          if (tempaxis->MTickList == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
-          tempaxis->MTickStrs = (char  **)malloc((j+1)*sizeof(char *));
-          if (tempaxis->MTickStrs == NULL) { free(tempaxis->MTickList); tempaxis->MTickList=NULL; ppl_error(ERR_MEMORY, "Out of memory"); return; }
-          listiter = ListIterateInit(templist);
-          k=0;
-          while (listiter != NULL)
-           {
-            tempdict = (Dict *)listiter->data;
-            listiter = ListIterate(listiter, NULL);
-            DictLookup(tempdict,"x"    ,NULL,(void **)&tempval);
-            DictLookup(tempdict,"label",NULL,(void **)&tempstr);
-            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; }
-            tempaxis->MTickList[k] = tempval->real;
-            if (tempstr==NULL) tempstr="\xFF";
-            tempaxis->MTickStrs[k] = (char *)malloc(strlen(tempstr)+1);
-            if (tempaxis->MTickStrs[k] == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
-            strcpy(tempaxis->MTickStrs[k], tempstr);
-            k++;
-           }
-          tempaxis->MTickStrs[k] = NULL; tempaxis->MTickList[k] = 0.0;
-         }
+        i = (int)GetFloat(tempstr+1,NULL);
+        if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+        else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+        else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+        tempaxis->enabled=1; // Activate axis
+        SET_TICS;
+       }
+      else
+       {
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; if (tempaxis->enabled) SET_TICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; if (tempaxis->enabled) SET_TICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; if (tempaxis->enabled) SET_TICS; }
        }
      }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"tics")==0)) /* unset tics */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
-    i = (int)GetFloat(tempstr+1,NULL);
+
+#define UNSET_TICS \
+      DictLookup(command,"minor",NULL,(void **)&tempstr2); \
+      if (tempstr2==NULL) \
+       { \
+        tempaxis->TickDir      = tempaxis2->TickDir; \
+        tempaxis->TickMin      = tempaxis2->TickMin; \
+        tempaxis->TickMax      = tempaxis2->TickMax; \
+        tempaxis->TickStep     = tempaxis2->TickStep; \
+        tempaxis->TickMinSet   = tempaxis2->TickMinSet; \
+        tempaxis->TickMaxSet   = tempaxis2->TickMaxSet; \
+        tempaxis->TickStepSet  = tempaxis2->TickStepSet; \
+        if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } /* Delete old explicit tick lists */ \
+        if (tempaxis-> TickStrs != NULL) \
+         { \
+          for (i=0; tempaxis->TickStrs[i]!=NULL; i++) free(tempaxis->TickStrs[i]); \
+          free(tempaxis->TickStrs ); \
+          tempaxis->TickStrs  = NULL; \
+         } \
+        CopyAxisTics(tempaxis, tempaxis2); \
+       } else { \
+        tempaxis->MTickDir     = tempaxis2->MTickDir; \
+        tempaxis->MTickMin     = tempaxis2->MTickMin; \
+        tempaxis->MTickMax     = tempaxis2->MTickMax; \
+        tempaxis->MTickStep    = tempaxis2->MTickStep; \
+        tempaxis->MTickMinSet  = tempaxis2->MTickMinSet; \
+        tempaxis->MTickMaxSet  = tempaxis2->MTickMaxSet; \
+        tempaxis->MTickStepSet = tempaxis2->MTickStepSet; \
+        if (tempaxis->MTickList != NULL) { free(tempaxis->MTickList); tempaxis->MTickList = NULL; } \
+        if (tempaxis->MTickStrs != NULL) \
+         { \
+          for (i=0; tempaxis->MTickStrs[i]!=NULL; i++) free(tempaxis->MTickStrs[i]); \
+          free(tempaxis->MTickStrs ); \
+          tempaxis->MTickStrs  = NULL; \
+         } \
+        CopyAxisMTics(tempaxis, tempaxis2); \
+       } \
+
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
-      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
-      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-      DictLookup(command,"minor",NULL,(void **)&tempstr2);
-      if (tempstr2==NULL)
+      DictLookup(command,"axis",NULL,(void **)&tempstr);
+      if (tempstr != NULL)
        {
-        tempaxis->TickDir      = tempaxis2->TickDir;
-        tempaxis->TickMin      = tempaxis2->TickMin;
-        tempaxis->TickMax      = tempaxis2->TickMax;
-        tempaxis->TickStep     = tempaxis2->TickStep;
-        tempaxis->TickMinSet   = tempaxis2->TickMinSet;
-        tempaxis->TickMaxSet   = tempaxis2->TickMaxSet;
-        tempaxis->TickStepSet  = tempaxis2->TickStepSet;
-        if (tempaxis-> TickList != NULL) { free(tempaxis-> TickList); tempaxis-> TickList = NULL; } // Delete old explicit tick lists
-        if (tempaxis-> TickStrs != NULL)
-         {
-          for (i=0; tempaxis->TickStrs[i]!=NULL; i++) free(tempaxis->TickStrs[i]);
-          free(tempaxis->TickStrs );
-          tempaxis->TickStrs  = NULL;
-         }
-        CopyAxisTics(tempaxis, tempaxis2);
-       } else {
-        tempaxis->MTickDir     = tempaxis2->MTickDir;
-        tempaxis->MTickMin     = tempaxis2->MTickMin;
-        tempaxis->MTickMax     = tempaxis2->MTickMax;
-        tempaxis->MTickStep    = tempaxis2->MTickStep;
-        tempaxis->MTickMinSet  = tempaxis2->MTickMinSet;
-        tempaxis->MTickMaxSet  = tempaxis2->MTickMaxSet;
-        tempaxis->MTickStepSet = tempaxis2->MTickStepSet;
-        if (tempaxis->MTickList != NULL) { free(tempaxis->MTickList); tempaxis->MTickList = NULL; }
-        if (tempaxis->MTickStrs != NULL)
-         { 
-          for (i=0; tempaxis->MTickStrs[i]!=NULL; i++) free(tempaxis->MTickStrs[i]);
-          free(tempaxis->MTickStrs );
-          tempaxis->MTickStrs  = NULL;
-         }
-        CopyAxisMTics(tempaxis, tempaxis2);
+        i = (int)GetFloat(tempstr+1,NULL);
+        if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+        else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+        else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+        UNSET_TICS;
+       }
+      else
+       {
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; UNSET_TICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; UNSET_TICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; UNSET_TICS; }
        }
      }
    }
