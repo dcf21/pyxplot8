@@ -19,8 +19,6 @@
 
 // ----------------------------------------------------------------------------
 
-// This file is imported from within dcfmath.c, so that is can use the macros therein defined
-
 #define _DCFAST_C 1
 
 #include <stdlib.h>

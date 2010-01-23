@@ -32,6 +32,7 @@
 
 #include "MathsTools/dcfast.h"
 #include "MathsTools/dcfmath.h"
+#include "MathsTools/dcfstr.h"
 #include "MathsTools/dcftime.h"
 
 #include "ListTools/lt_memory.h"
@@ -151,6 +152,10 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_sinc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinc        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinc}@<@1@>", "sinc(x) returns the function sin(pi*x)/(pi*x). If x is dimensionless, it is assumed to be measured in radians. The output is dimensionless."};
   FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinh}@<@1@>", "sinh(x) returns the hyperbolic sine of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "\\sqrt{@1}", "sqrt(x) returns the square root of x"};
+  FunctionDescriptor fd_strlen        = { PPL_USERSPACE_SYSTEM , 0 ,-1 , (void *)&dcfstr_strlen       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strlen}@<@0@>", "strlen(s) returns the length of the string s"};
+  FunctionDescriptor fd_strlower      = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfstr_strlower     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strlower}@<@0@>", "strlower(s) converts all letters in the string s into lowercase"};
+  FunctionDescriptor fd_strrange      = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfstr_strrange     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strrange}@<@0@>", "strrange(s,start,end) returns a slice of the string s"};
+  FunctionDescriptor fd_strupper      = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfstr_strupper     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strupper@<@0@>", "strupper(s) converts all letters in the string s into uppercase"};
   FunctionDescriptor fd_tan           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tan         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tan}@<@1@>", "tan(x) returns the tangent of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_tanh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_tanh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tanh}@<@1@>", "tanh(x) returns the hyperbolic tangent of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_texify        = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&wrapper_texify      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{texify}@<@0@>", "texify(str) converts an algebraic expression into a LaTeX command string representation"};
@@ -393,6 +398,10 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sinc"           , (void *)&fd_sinc        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sinh"           , (void *)&fd_sinh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"           , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strlen"         , (void *)&fd_strlen      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strlower"       , (void *)&fd_strlower    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strrange"       , (void *)&fd_strrange    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strupper"       , (void *)&fd_strupper    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tan"            , (void *)&fd_tan         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tanh"           , (void *)&fd_tanh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "texify"         , (void *)&fd_texify      , sizeof(FunctionDescriptor), DATATYPE_VOID);

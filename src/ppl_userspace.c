@@ -840,14 +840,25 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         strcpy(errtext,"Type Error: This function returns a string where a numeric result was expected.");
         return;
        }
-      if ((FunctionType != PPL_USERSPACE_UNIT) && (in[start+i] != ')')) // Unit function deals with arguments itself
+      else if ((FunctionType == PPL_USERSPACE_SYSTEM) && (NArgs==-1))
+       {
+        int k;
+        i--; // Should point at opening bracket
+        StrBracketMatch(in+i,NULL,NULL,&k,0);
+        if (k<=0) { *errpos=start+i; strcpy(errtext,"Syntax Error: Mismatched bracket."); return; }
+        j=-1;
+        ((void(*)(char*,int,value*,unsigned char,int,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(in+start+i+1,k-1,ResultBuffer+bufpos,DollarAllowed,RecursionDepth,&j,errtext);
+        if (j>=0) { *errpos = start+i+1+j; return; }
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+       }
+      else if ((FunctionType != PPL_USERSPACE_UNIT) && (in[start+i] != ')')) // Unit function deals with arguments itself
        {
         (*errpos) = start+i;
         if (in[start+i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
         else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter after final argument to function.");
         return;
        }
-      if (FunctionType == PPL_USERSPACE_SYSTEM)
+      else if (FunctionType == PPL_USERSPACE_SYSTEM)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
