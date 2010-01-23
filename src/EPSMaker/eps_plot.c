@@ -332,8 +332,14 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
 
 void eps_plot_DecideAxisRanges(EPSComm *x)
  {
-  int i, j;
+  int            i, j;
+  double         width, height;
   settings_axis *axes;
+
+  // Work out lengths of x and y axes
+  width    = x->current->settings.width.real;
+  if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
+  else                                                height = width * x->current->settings.aspect;
 
   // Decide the range of each axis in turn
   for (j=0; j<3; j++)
@@ -344,7 +350,7 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
     for (i=0; i<MAX_AXES; i++)
      {
       if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i); if (*x->status) return; }
-      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, x->current->settings.AxisUnitStyle, NULL, NULL, 0, 0); if (*x->status) return; }
+      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, (j==1)?height:width, x->current->settings.AxisUnitStyle, NULL, NULL, 0, 0); if (*x->status) return; }
      }
    }
   return;
@@ -358,7 +364,7 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
  {
   int k, l;
   canvas_plotrange *pr;
-  double *HardMin, *HardMax;
+  double *HardMin, *HardMax, width, height;
   unsigned char HardAutoMin, HardAutoMax; // Set for "plot [:*]", where * says we must autoscale, even if there's a preexisting maximum set for the axis
 
   // Decide the range of each axis in turn
@@ -391,7 +397,13 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
       else if ( axis->MinSet   ||  axis->MaxSet  ) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
      }
    }
-  eps_plot_ticking(axis, xyz, axis_n, x->current->id, x->current->settings.AxisUnitStyle, HardMin, HardMax, HardAutoMin, HardAutoMax);
+
+  // Work out lengths of x and y axes
+  width    = x->current->settings.width.real;
+  if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
+  else                                                height = width * x->current->settings.aspect;
+
+  eps_plot_ticking(axis, xyz, axis_n, x->current->id, (xyz==1)?height:width, x->current->settings.AxisUnitStyle, HardMin, HardMax, HardAutoMin, HardAutoMax);
   return;
  }
 

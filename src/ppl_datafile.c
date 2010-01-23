@@ -995,7 +995,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
  {
-  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, xpreviouslydefined, discontinuity=0;
+  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0;
   int           UsingLen, logi, logj, i, j, k, ContextOutput;
   char         *UsingItems[USING_ITEMS_MAX], buffer[FNAME_LENGTH];
   value         ColumnData_val[USING_ITEMS_MAX+2];
@@ -1071,11 +1071,9 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   if (OrdinateVar!=NULL)
    {
     DummyTemp = *OrdinateVar;
-    xpreviouslydefined = 1;
    }
   else // If variable is not defined, create it now
    {
-    xpreviouslydefined = 0;
     ppl_units_zero(&DummyTemp);
     DictAppendValue(_ppl_UserSpace_Vars, FlagParametric?"t":"x", DummyTemp);
     DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":"x", NULL, (void **)&OrdinateVar);

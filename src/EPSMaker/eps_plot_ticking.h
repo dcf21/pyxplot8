@@ -23,8 +23,11 @@
 #define _PPL_EPS_PLOT_TICKING_H 1
 
 #include "ppl_settings.h"
+#include "ppl_units.h"
 
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, int AxisUnitStyle, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax);
+void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax);
+void TickLabelAutoGen(char **output, double x, double log_base);
+void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit, int xyz);
 
 #endif
 
