@@ -1201,18 +1201,19 @@ void directive_set(Dict *command)
          } \
         if (tempval != NULL) /* start , increment , end */ \
          { \
+          if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
           if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
           else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
           else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
  \
-          if (tempval != NULL) { tempaxis->TickMin  = tempval->real;       tempaxis->TickMinSet  = 1; } \
-          else                 { tempaxis->TickMin  = tempaxis2->TickMin;  tempaxis->TickMinSet  = 0; } \
+          if (tempval  != NULL) { tempaxis->TickMin  = tempval->real;       tempaxis->TickMinSet  = 1; } \
+          else                  { tempaxis->TickMin  = tempaxis2->TickMin;  tempaxis->TickMinSet  = 0; } \
  \
-          if (tempval != NULL) { tempaxis->TickStep = tempval2->real;      tempaxis->TickStepSet = 1; } \
-          else                 { tempaxis->TickStep = tempaxis2->TickStep; tempaxis->TickStepSet = 0; } \
+          if (tempval2 != NULL) { tempaxis->TickStep = tempval2->real;      tempaxis->TickStepSet = 1; } \
+          else                  { tempaxis->TickStep = tempaxis2->TickStep; tempaxis->TickStepSet = 0; } \
  \
-          if (tempval != NULL) { tempaxis->TickMax  = tempval3->real;      tempaxis->TickMaxSet  = 1; } \
-          else                 { tempaxis->TickMax  = tempaxis2->TickMax;  tempaxis->TickMaxSet  = 0; } \
+          if (tempval3 != NULL) { tempaxis->TickMax  = tempval3->real;      tempaxis->TickMaxSet  = 1; } \
+          else                  { tempaxis->TickMax  = tempaxis2->TickMax;  tempaxis->TickMaxSet  = 0; } \
  \
          } else if (templist != NULL) { /* list of tick marks */ \
           j = ListLen(templist); \
@@ -1258,18 +1259,19 @@ void directive_set(Dict *command)
          } \
         if (tempval != NULL) /* start , increment , end */ \
          { \
+          if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
           if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
           else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
           else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
  \
-          if (tempval != NULL) { tempaxis->MTickMin  = tempval->real;       tempaxis->MTickMinSet  = 1; } \
-          else                 { tempaxis->MTickMin  = tempaxis2->MTickMin;  tempaxis->MTickMinSet  = 0; } \
+          if (tempval  != NULL) { tempaxis->MTickMin  = tempval->real;        tempaxis->MTickMinSet  = 1; } \
+          else                  { tempaxis->MTickMin  = tempaxis2->MTickMin;  tempaxis->MTickMinSet  = 0; } \
  \
-          if (tempval != NULL) { tempaxis->MTickStep = tempval2->real;      tempaxis->MTickStepSet = 1; } \
-          else                 { tempaxis->MTickStep = tempaxis2->MTickStep; tempaxis->MTickStepSet = 0; } \
+          if (tempval2 != NULL) { tempaxis->MTickStep = tempval2->real;       tempaxis->MTickStepSet = 1; } \
+          else                  { tempaxis->MTickStep = tempaxis2->MTickStep; tempaxis->MTickStepSet = 0; } \
  \
-          if (tempval != NULL) { tempaxis->MTickMax  = tempval3->real;      tempaxis->MTickMaxSet  = 1; } \
-          else                 { tempaxis->MTickMax  = tempaxis2->MTickMax;  tempaxis->MTickMaxSet  = 0; } \
+          if (tempval3 != NULL) { tempaxis->MTickMax  = tempval3->real;       tempaxis->MTickMaxSet  = 1; } \
+          else                  { tempaxis->MTickMax  = tempaxis2->MTickMax;  tempaxis->MTickMaxSet  = 0; } \
  \
          } else if (templist != NULL) { /* list of tick marks */ \
           j = ListLen(templist); \
@@ -2457,23 +2459,26 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         {
          sprintf(buf2, "Sets where the major ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
          sprintf(buf, "%s ", *(char **)FetchSettingName(AxisPtr->TickDir, SW_TICDIR_INT, (void *)SW_TICDIR_STR, sizeof(char *))); m = strlen(buf);
-         if      ((AxisPtr->TickMinSet == SW_BOOL_FALSE) && (AxisPtr->TickList == NULL))
+         if      ((!AxisPtr->TickStepSet) && (AxisPtr->TickList == NULL))
           {
            sprintf(buf+m, "autofreq");
           }
          else if (AxisPtr->TickList == NULL)
           {
-           AxisPtr->unit.real = AxisPtr->TickMin;
-           sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
-           if      (AxisPtr->TickStepSet != SW_BOOL_FALSE)
+           if (AxisPtr->TickMinSet)
+            {
+             AxisPtr->unit.real = AxisPtr->TickMin;
+             sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+            }
+           if (AxisPtr->TickStepSet)
             {
              AxisPtr->unit.real = AxisPtr->TickStep;
+             sprintf(buf+m, "%s%s", (AxisPtr->TickMinSet)?", ":"", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+            }
+           if (AxisPtr->TickMaxSet)
+            {
+             AxisPtr->unit.real = AxisPtr->TickMax;
              sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
-             if (AxisPtr->TickMaxSet  != SW_BOOL_FALSE)
-              {
-               AxisPtr->unit.real = AxisPtr->TickMax;
-               sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
-              }
             }
           }
          else
@@ -2508,23 +2513,26 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         {
          sprintf(buf2, "Sets where the minor ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
          sprintf(buf, "%s ", *(char **)FetchSettingName(AxisPtr->MTickDir, SW_TICDIR_INT, (void *)SW_TICDIR_STR, sizeof(char *))); m = strlen(buf);
-         if      ((AxisPtr->MTickMinSet == SW_BOOL_FALSE) && (AxisPtr->MTickList == NULL))
+         if      ((!AxisPtr->MTickStepSet) && (AxisPtr->MTickList == NULL))
           {
            sprintf(buf+m, "autofreq");
           }
          else if (AxisPtr->MTickList == NULL)
-          {                
-           AxisPtr->unit.real = AxisPtr->MTickMin;
-           sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
-           if      (AxisPtr->MTickStepSet != SW_BOOL_FALSE)
+          {
+           if (AxisPtr->MTickMinSet)
+            {
+             AxisPtr->unit.real = AxisPtr->MTickMin;
+             sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+            }
+           if (AxisPtr->MTickStepSet)
             { 
              AxisPtr->unit.real = AxisPtr->MTickStep;
+             sprintf(buf+m, "%s%s", (AxisPtr->MTickMinSet)?", ":"", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
+            }
+           if (AxisPtr->MTickMaxSet)
+            {
+             AxisPtr->unit.real = AxisPtr->MTickMax;
              sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
-             if (AxisPtr->MTickMaxSet  != SW_BOOL_FALSE)
-              {
-               AxisPtr->unit.real = AxisPtr->MTickMax;
-               sprintf(buf+m, ", %s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
-              }
             }
           }
          else

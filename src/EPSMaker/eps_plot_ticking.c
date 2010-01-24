@@ -157,6 +157,31 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
        }
       axis->TickListStrings[j] = NULL; // null terminate list
      }
+    else if (axis->TickStepSet)
+     {
+      double TMin, TStep, TMax, tmp;
+      TMin  = (axis->TickMinSet) ? axis->TickMin : axis->MinFinal;
+      TStep = axis->TickStep;
+      TMax  = (axis->TickMaxSet) ? axis->TickMax : axis->MaxFinal;
+      if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
+      if (TStep<0) TStep=-TStep;
+      if (axis->log == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
+      if (TMin < axis->MinFinal) TMin += ceil ((axis->MinFinal-TMin)/TStep) * TStep;
+      if (TMax > axis->MaxFinal) TMax -= floor((TMax-axis->MaxFinal)/TStep) * TStep;
+      axis->TickListPositions = (double  *)lt_malloc(102 * sizeof(double));
+      axis->TickListStrings   = (char   **)lt_malloc(102 * sizeof(char *));
+      if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
+      tmp = TMin;
+      for (i=0; (i<100)&&(tmp<=TMax); i++)
+       {
+        axis->TickListPositions[i] = eps_plot_axis_GetPosition( tmp , axis);
+        if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , tmp , axis->LogBase);
+        else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, tmp, &axis->DataUnit, xyz);
+        if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
+        if (axis->log == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
+       }
+      axis->TickListStrings[i] = NULL; // null terminate list
+     }
     else
      {
       N = 1 + length/tick_sep_major; // Estimate how many ticks we want
@@ -168,7 +193,9 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
       for (i=0; i<N; i++)
        {
-        double x = axis->MinFinal + (axis->MaxFinal-axis->MinFinal)*i/(N-1);
+        double x;
+        if (axis->log == SW_BOOL_TRUE) x = axis->MinFinal * pow((axis->MaxFinal/axis->MinFinal) , ((double)i)/(N-1));
+        else                           x = axis->MinFinal + (axis->MaxFinal-axis->MinFinal)*i/(N-1);
         axis->TickListPositions[i] = eps_plot_axis_GetPosition( x , axis);
         if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x , axis->LogBase);
         else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz);

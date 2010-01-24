@@ -90,12 +90,14 @@ void  with_words_copy    (with_words *out, const with_words *in);
 #include "ListTools/lt_list.h"
 #include "ListTools/lt_dict.h"
 
+#define AXISLINEARINTERPOLATION_NPOINTS 1024
+
 int   colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolR, int *outcolG, int *outcolB, char **outcolRS, char **outcolGS, char **outcolBS, unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced);
 void  with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew);
 
 typedef struct settings_axis {
- unsigned char atzero, enabled, invisible, linked, topbottom;
- int     ArrowType, LinkedAxisCanvasID, LinkedAxisToXYZ, LinkedAxisToNum, log, MaxSet, MinSet, MirrorType, MTickDir, MTickMaxSet, MTickMinSet, MTickStepSet, TickDir, TickLabelRotation, TickMaxSet, TickMinSet, TickStepSet;
+ unsigned char atzero, enabled, invisible, linked, topbottom, MTickMaxSet, MTickMinSet, MTickStepSet, TickMaxSet, TickMinSet, TickStepSet;
+ int     ArrowType, LinkedAxisCanvasID, LinkedAxisToXYZ, LinkedAxisToNum, log, MaxSet, MinSet, MirrorType, MTickDir, TickDir, TickLabelRotation;
  double  LabelRotate, LogBase, max, min, MTickMax, MTickMin, MTickStep, TickLabelRotate, TickMax, TickMin, TickStep;
  char   *format, *label, *linkusing;
  double *MTickList, *TickList;
@@ -103,6 +105,9 @@ typedef struct settings_axis {
  value   unit;
 
  // Temporary data fields which are used when rendering an axis to postscript
+ int           AxisValueTurnings;
+ double       *AxisLinearInterpolation;
+ int          *AxisTurnings;
  unsigned char MinUsedSet, MaxUsedSet, DataUnitSet, RangeFinalised, FinalActive;
  double        MinUsed, MaxUsed, MinFinal, MaxFinal, *OrdinateRaster;
  int           OrdinateRasterLen;
