@@ -255,7 +255,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
-        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height, 1);
+        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, width, height, 1);
         if ((!gsl_finite(xpos)) || (!gsl_finite(ypos))) { LineDraw_PenUp(ld); continue; } // Position of point is off side of graph... e.g. negative number on log axis
 
         // Work out style information for next point
@@ -282,7 +282,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
-        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], sg, origin_x, origin_y, width, height, 0);
+        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, width, height, 0);
         if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 
         // Work out style information for next point

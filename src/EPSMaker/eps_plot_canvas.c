@@ -34,13 +34,38 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
-double eps_plot_axis_GetPosition(double xin, settings_axis *xa)
+double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn)
  {
+  int imin, imax, i;
+  if (xa->AxisLinearInterpolation != NULL) // Axis is linearly interpolated
+   {
+    imin = xa->AxisTurnings[xrn  ];
+    imax = xa->AxisTurnings[xrn+1];
+    for (i=imin; i<imax; i++)
+     {
+      if (   ((xa->AxisLinearInterpolation[i] < xin) && (xa->AxisLinearInterpolation[i+1] >= xin))
+          || ((xa->AxisLinearInterpolation[i] > xin) && (xa->AxisLinearInterpolation[i+1] <= xin)) )
+       return (i + (xin-xa->AxisLinearInterpolation[i])/(xa->AxisLinearInterpolation[i+1]-xa->AxisLinearInterpolation[i])) / (AXISLINEARINTERPOLATION_NPOINTS-1);
+     }
+   }
   if (xa->log!=SW_BOOL_TRUE) return (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
   else                       return log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
  }
 
-void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, settings_graph *sg, double origin_x, double origin_y, double width, double height, unsigned char AllowOffBounds)
+double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
+ {
+  if (xa->AxisLinearInterpolation != NULL) // Axis is linearly interpolated
+   {
+    int    i = floor(xin * (AXISLINEARINTERPOLATION_NPOINTS-1));
+    double x = xin * (AXISLINEARINTERPOLATION_NPOINTS-1) - i;
+    if (i>=AXISLINEARINTERPOLATION_NPOINTS-1) return xa->AxisLinearInterpolation[AXISLINEARINTERPOLATION_NPOINTS-1];
+    return xa->AxisLinearInterpolation[i]*(1-x) + xa->AxisLinearInterpolation[i+1]*x;
+   }
+  if (xa->log!=SW_BOOL_TRUE) return xa->MinFinal + xin * (xa->MaxFinal - xa->MinFinal); // Either linear...
+  else                       return xa->MinFinal * pow(xa->MaxFinal / xa->MinFinal , xin); // ... or logarithmic
+ }
+
+void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, unsigned char AllowOffBounds)
  {
   // 3D plots
   if (ThreeDim)
@@ -57,9 +82,9 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
       if ((zin > za->MinFinal) && (zin > za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
      }
 
-    x = width  * (eps_plot_axis_GetPosition(xin, xa) - 0.5);
-    y = height * (eps_plot_axis_GetPosition(yin, ya) - 0.5);
-    z = width  * (eps_plot_axis_GetPosition(zin, za) - 0.5);
+    x = width  * (eps_plot_axis_GetPosition(xin, xa, xrn) - 0.5);
+    y = height * (eps_plot_axis_GetPosition(yin, ya, yrn) - 0.5);
+    z = width  * (eps_plot_axis_GetPosition(zin, za, zrn) - 0.5);
 
     x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
     y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
@@ -93,8 +118,8 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
     if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
    }
 
-  *xpos = origin_x + width  * eps_plot_axis_GetPosition(xin, xa);
-  *ypos = origin_y + height * eps_plot_axis_GetPosition(yin, ya);
+  *xpos = origin_x + width  * eps_plot_axis_GetPosition(xin, xa, xrn);
+  *ypos = origin_y + height * eps_plot_axis_GetPosition(yin, ya, yrn);
   *depth = 0.0;
   return;
  }

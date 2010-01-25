@@ -1616,10 +1616,10 @@ void directive_set(Dict *command)
       if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+      if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
       DictLookup(command,"format_string",NULL,(void **)&tempstr);
       if (tempstr != NULL)
        {
-        if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
         tempaxis->format = (char *)malloc(strlen(tempstr)+1);
         if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
         strcpy(tempaxis->format , tempstr);

@@ -32,11 +32,13 @@
 #include "ppl_datafile.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
+#include "ppl_userspace.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_plot.h"
 #include "eps_plot_axespaint.h"
+#include "eps_plot_canvas.h"
 #include "eps_plot_styles.h"
 #include "eps_plot_threedimbuff.h"
 #include "eps_plot_ticking.h"
@@ -454,10 +456,11 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
    {
     if (IterDepth++ > 100) return;
     if (source->RangeFinalised) { break; }
-    source->MinFinal       = target->MinFinal;
-    source->MaxFinal       = target->MaxFinal;
-    source->RangeFinalised = 1;
     if (!source->linked) { break; } // proceed only if axis is linked
+    source->MinFinal = target->MinFinal;
+    source->MaxFinal = target->MaxFinal;
+    if (source->linkusing != NULL) eps_plot_LinkedAxisLinkUsing(source, target, target_xyz);
+    source->RangeFinalised = 1;
     if (source->LinkedAxisCanvasID <= 0)
      { item = x->current; } // Linked to an axis on the same graph
     else // Linked to an axis on a different canvas item
@@ -472,6 +475,83 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     if (!ppl_units_DimEqual(&source->DataUnit , &source2->DataUnit)) break; // If axes are dimensionally incompatible, stop
     source = source2;
    }
+  return;
+ }
+
+void eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz)
+ {
+  int i,j=-1,k=-1,l,xrn=0;
+  int oldsgn=-10,newsgn;
+  double p,x;
+  char *VarName, err_string[LSTR_LENGTH];
+  value DummyTemp, OutVal, *VarVal;
+  if      (xyz==0) VarName = "x";
+  else if (xyz==1) VarName = "y";
+  else             VarName = "z";
+
+  // Look up variable in user space and get pointer to its value
+  DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
+  if (VarVal!=NULL)
+   {
+    DummyTemp = *VarVal;
+   }
+  else
+   {
+    ppl_units_zero(&DummyTemp);
+    DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
+    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
+    DummyTemp.modified = 2;
+   }
+
+  out->AxisLinearInterpolation = (double *)lt_malloc(AXISLINEARINTERPOLATION_NPOINTS * sizeof(double));
+  out->AxisValueTurnings       = 0;
+  out->AxisTurnings            = (int *)lt_malloc((AXISLINEARINTERPOLATION_NPOINTS+2) * sizeof(int));
+
+  if ((out->AxisLinearInterpolation==NULL)||(out->AxisTurnings==NULL)) return;
+  out->AxisTurnings[xrn++] = 0;
+
+  for (l=0; l<AXISLINEARINTERPOLATION_NPOINTS; l++) // Loop over samples we are going to take from axis linkage function
+   {
+    p = ((double)l)/(AXISLINEARINTERPOLATION_NPOINTS-1);
+    x = eps_plot_axis_InvGetPosition(p,in);
+
+    // Set value of x (or y/z)
+    *VarVal = in->DataUnit;
+    VarVal->imag        = 0.0;
+    VarVal->FlagComplex = 0;
+    VarVal->real        = x;
+
+    // Generate a sample from the axis linkage function
+    i = strlen(out->linkusing);
+    while ((i>0)&&(out->linkusing[i-1]<=' ')) i--;
+    j = -1;
+    ppl_EvaluateAlgebra(out->linkusing, &OutVal, 0, &j, 0, &k, err_string, 1);
+    if (k>=0) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, err_string); goto FAIL; }
+    if (j< i) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Unexpected trailing matter."); goto FAIL; }
+    if (OutVal.FlagComplex) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Received a complex number; axes must have strictly real values at all points."); goto FAIL; }
+    if (!gsl_finite(OutVal.real)) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Expression returned non-finite result."); goto FAIL; }
+    if (!out->DataUnitSet) { out->DataUnit = OutVal; out->DataUnitSet = 1; }
+    if (!ppl_units_DimEqual(&out->DataUnit,&OutVal))  { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); sprintf(temp_err_string, "Axis linkage function produces axis values with dimensions of <%s> whilst data plotted on this axis has dimensions of <%s>.", ppl_units_GetUnitStr(&OutVal,NULL,NULL,0,0), ppl_units_GetUnitStr(&out->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); goto FAIL; }
+    out->AxisLinearInterpolation[l] = OutVal.real;
+    if (l>0) // Check for turning points
+     {
+      newsgn = sgn(out->AxisLinearInterpolation[l] - out->AxisLinearInterpolation[l-1]);
+      if (newsgn==0) continue;
+      if ((newsgn!=oldsgn) && (oldsgn>-10)) out->AxisTurnings[xrn++] = l-1;
+      oldsgn = newsgn;
+     }
+   }
+
+  // Restore original value of x (or y/z)
+  *VarVal = DummyTemp;
+  out->AxisTurnings[xrn--] = AXISLINEARINTERPOLATION_NPOINTS-1;
+  out->AxisValueTurnings = xrn;
+  return;
+
+FAIL:
+  out->AxisLinearInterpolation = NULL;
+  out->AxisValueTurnings       = 0;
+  out->AxisTurnings            = NULL;
   return;
  }
 

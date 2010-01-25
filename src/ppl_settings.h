@@ -90,7 +90,7 @@ void  with_words_copy    (with_words *out, const with_words *in);
 #include "ListTools/lt_list.h"
 #include "ListTools/lt_dict.h"
 
-#define AXISLINEARINTERPOLATION_NPOINTS 1024
+#define AXISLINEARINTERPOLATION_NPOINTS 2045
 
 int   colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolR, int *outcolG, int *outcolB, char **outcolRS, char **outcolGS, char **outcolBS, unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced);
 void  with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew);
