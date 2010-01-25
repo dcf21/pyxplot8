@@ -221,8 +221,6 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   for (i=0; i<N_POINTTYPES; i++) comm.PointTypesUsed[i] = 0; // Record which point and star macros we've used and need to include in postscript prolog
   for (i=0; i<N_STARTYPES ; i++) comm.StarTypesUsed [i] = 0;
 
-  // Prepare a buffer into which strings to be passed to LaTeX will be put
-
   // Rendering of EPS occurs in a series of phases which we now loop over
   for (j=0 ; ; j++)
    {
@@ -322,10 +320,9 @@ void canvas_draw(unsigned char *unsuccessful_ops)
     sprintf(temp_err_string, "%s -density %d %s %s %s %s",
         CONVERT_COMMAND,
         (int)floor(settings_term_current.dpi),
-        (settings_term_current.TermTransparent==SW_ONOFF_ON)?"-transparent white":"",
+        (settings_term_current.TermTransparent==SW_ONOFF_ON)?"-alpha activate":"-alpha deactivate",
         (settings_term_current.TermAntiAlias==SW_ONOFF_ON)?"-antialias":"+antialias",
         comm.EPSFilename, GSOutputTemp);
-    printf("%s\n",temp_err_string);
     BITMAP_TERMINAL_CLEANUP("ImageMagick", "gif");
    }
   else if (termtype==SW_TERMTYPE_BMP) // BMP terminal
@@ -474,6 +471,7 @@ void canvas_MakeEPSBuffer(EPSComm *x)
 void canvas_EPSWrite(EPSComm *x)
  {
   int i;
+  double PAGEwidth, PAGEheight, margin_left, margin_top, margin_right, margin_bottom;
   FILE *epsout, *PFAfile;
   char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName, *PFAfilename;
   ListIterator *ListIter;
@@ -490,13 +488,34 @@ void canvas_EPSWrite(EPSComm *x)
   // Return to user's current working directory
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
 
+  // Work out some sensible margins for page
+  PAGEwidth = settings_term_current.PaperWidth.real;
+  PAGEheight = settings_term_current.PaperHeight.real;
+  margin_left = PAGEwidth / 10;
+  margin_top  = PAGEheight / 10;
+  if (margin_left > 15e-3) margin_left = 15e-3; // mm
+  if (margin_top  > 15e-3) margin_top  = 15e-3; // mm
+  margin_left *= M_TO_PS;
+  margin_top  *= M_TO_PS;
+  margin_right  =   margin_left;
+  margin_bottom = 2*margin_top;
+
   // Open output postscript file for writing
   if ((epsout=fopen(x->EPSFilename,"w"))==NULL) { sprintf(temp_err_string, "Could not open file '%s' for writing.", x->EPSFilename); ppl_error(ERR_FILE, temp_err_string); *(x->status)=1; return; }
 
   // Write EPS header
-  fprintf(epsout, "%s%s\n", "%!PS-Adobe-3.0", (settings_term_current.TermType == SW_TERMTYPE_PS)?"":" EPSF-3.0");
-  fprintf(epsout, "%%%%BoundingBox: %d %d %d %d\n", (int)floor(x->bb_left), (int)floor(x->bb_bottom), (int)ceil(x->bb_right), (int)ceil(x->bb_top));
-  fprintf(epsout, "%%%%HiResBoundingBox: %f %f %f %f\n", x->bb_left, x->bb_bottom, x->bb_right, x->bb_top);
+  if (settings_term_current.TermType != SW_TERMTYPE_PS)
+   {
+    fprintf(epsout, "%s%s\n", "%!PS-Adobe-3.0", " EPSF-3.0");
+    fprintf(epsout, "%%%%BoundingBox: %d %d %d %d\n", (int)floor(x->bb_left), (int)floor(x->bb_bottom), (int)ceil(x->bb_right), (int)ceil(x->bb_top));
+    fprintf(epsout, "%%%%HiResBoundingBox: %f %f %f %f\n", x->bb_left, x->bb_bottom, x->bb_right, x->bb_top);
+   }
+  else
+   {
+    fprintf(epsout, "%s%s\n", "%!PS-Adobe-3.0", "");
+    fprintf(epsout, "%%%%BoundingBox: %d %d %d %d\n", (int)floor(margin_left), (int)floor(margin_bottom), (int)ceil(x->bb_right-x->bb_left+margin_left), (int)ceil(x->bb_top-x->bb_bottom+margin_bottom));
+    fprintf(epsout, "%%%%HiResBoundingBox: %f %f %f %f\n", margin_left, margin_bottom, x->bb_right-x->bb_left+margin_left, x->bb_top-x->bb_bottom+margin_bottom);
+   }
   fprintf(epsout, "%%%%Creator: (PyXPlot %s)\n", VERSION);
   fprintf(epsout, "%%%%Title: (%s)\n", x->title);
   fprintf(epsout, "%%%%CreationDate: (%s)\n", StrStrip(FriendlyTimestring(), temp_err_string));
@@ -571,11 +590,12 @@ void canvas_EPSWrite(EPSComm *x)
    }
 
   // Now write any global transformations needed by the enlarge and landscape terminals.
+  if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "%.2f %.2f translate\n", margin_left-x->bb_left, margin_bottom-x->bb_bottom);
   if ((LandscapifyText[0]!='\0')||(EnlargementText[0]!='\0'))
    {
     fprintf(epsout, "%% Global transformations to give %soutput%s\n", (LandscapifyText[0]!='\0')?"landscape ":"", (EnlargementText[0]!='\0')?" which fills the page":"");
-    fprintf(epsout, "%s", LandscapifyText);
     fprintf(epsout, "%s", EnlargementText);
+    fprintf(epsout, "%s", LandscapifyText);
     fprintf(epsout, "\n");
    }
 
@@ -681,7 +701,7 @@ void canvas_EPSLandscapify(EPSComm *x, char *transform)
   double width, height;
   width  = x->bb_right - x->bb_left;
   height = x->bb_top   - x->bb_bottom;
-  sprintf(transform, "-90 rotate\n%f %f translate\n", -x->bb_right, -x->bb_bottom);
+  sprintf(transform, "90 rotate\n%f %f translate\n", -x->bb_left, -x->bb_top);
   x->bb_left   = 0.0;
   x->bb_bottom = 0.0;
   x->bb_right  = height;

@@ -127,7 +127,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   // Secondly, decide what ticks to place on this axis
   if (!axis->TickListFinalised)
    {
-    double tick_sep_major , tick_sep_minor;
+    double tick_sep_major , tick_sep_minor, UnitMultiplier=1.0;
+    value CentralValue;
 
     // Work out optimal tick separation
     if (xyz!=1)
@@ -141,6 +142,27 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       tick_sep_minor = 0.008;
      }
 
+    // Finalise the label to be placed on the axis, appending a physical unit as necessary
+    CentralValue = axis->DataUnit;
+    CentralValue.FlagComplex = 0;
+    CentralValue.imag = 0.0;
+    CentralValue.real = (axis->format==NULL) ? eps_plot_axis_InvGetPosition(0.5, axis) : 1.0;
+    if (axis->DataUnit.dimensionless)
+    { axis->FinalAxisLabel = axis->label; } // No units to append
+    else
+     {
+      i = 0;
+      if (axis->label != NULL) i+=strlen(axis->label);
+      if (!(axis->DataUnit.dimensionless)) i+= 1024;
+      axis->FinalAxisLabel = (char *)lt_malloc(i);
+      if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+      if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s ($%s$)", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L));
+      else if (AxisUnitStyle == SW_AXISUNITSTY_RATIO)   sprintf(axis->FinalAxisLabel, "%s / $%s$", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L));
+      else                                              sprintf(axis->FinalAxisLabel, "%s [$%s$]", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L));
+      UnitMultiplier /= CentralValue.real;
+      if (!gsl_finite(UnitMultiplier)) UnitMultiplier=1.0;
+     }
+
     // MAJOR TICKS
     if (axis->TickList != NULL) // Ticks have been specified as an explicit list
      {
@@ -151,11 +173,11 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       for (i=j=0; i<N; i++)
        for (xrn=0; xrn<=axis->AxisValueTurnings; xrn++)
         {
-         axis->TickListPositions[j] = eps_plot_axis_GetPosition(axis->TickList[i], axis, xrn);
-         if ( (axis->TickListPositions[j]<0.0) || (axis->TickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
-         if      (axis->TickStrs[i][0]!='\01') axis->TickListStrings[j] = axis->TickStrs[i];
-         else if (axis->format == NULL)        TickLabelAutoGen(&axis->TickListStrings[j] , axis->TickList[i] , axis->LogBase);
-         else                                  TickLabelFromFormat(&axis->TickListStrings[j], axis->format, axis->TickList[i], &axis->DataUnit, xyz);
+         axis->TickListPositions[j] = eps_plot_axis_GetPosition(axis->TickList[i], axis, xrn, 0);
+         if ( (!gsl_finite(axis->TickListPositions[j])) || (axis->TickListPositions[j]<0.0) || (axis->TickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
+         if      (axis->TickStrs[i][0]!='\xFF') axis->TickListStrings[j] = axis->TickStrs[i];
+         else if (axis->format == NULL)         TickLabelAutoGen(&axis->TickListStrings[j] , axis->TickList[i] * UnitMultiplier , axis->LogBase);
+         else                                   TickLabelFromFormat(&axis->TickListStrings[j], axis->format, axis->TickList[i], &axis->DataUnit, xyz);
          j++;
         }
       axis->TickListStrings[j] = NULL; // null terminate list
@@ -179,9 +201,9 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
        {
         for (xrn=0; xrn<=axis->AxisValueTurnings; xrn++)
          {
-          axis->TickListPositions[j] = eps_plot_axis_GetPosition(tmp, axis, xrn);
-          if ( (axis->TickListPositions[j]<0.0) || (axis->TickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
-          if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[j] , tmp , axis->LogBase);
+          axis->TickListPositions[j] = eps_plot_axis_GetPosition(tmp, axis, xrn, 0);
+          if ( (!gsl_finite(axis->TickListPositions[j])) || (axis->TickListPositions[j]<0.0) || (axis->TickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
+          if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[j] , tmp * UnitMultiplier , axis->LogBase);
           else                      TickLabelFromFormat(&axis->TickListStrings[j], axis->format, tmp, &axis->DataUnit, xyz);
           if (axis->TickListStrings[j]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
           j++;
@@ -205,7 +227,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
         x = ((double)i)/(N-1);
         axis->TickListPositions[i] = x;
         x = eps_plot_axis_InvGetPosition(x, axis);
-        if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x , axis->LogBase);
+        if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase);
         else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz);
         if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
        }
@@ -222,8 +244,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       for (i=j=0; i<N; i++)
        for (xrn=0; xrn<=axis->AxisValueTurnings; xrn++)
         {
-         axis->MTickListPositions[j] = eps_plot_axis_GetPosition( axis->MTickList[i] , axis, xrn);
-         if ( (axis->MTickListPositions[j]<0.0) || (axis->MTickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
+         axis->MTickListPositions[j] = eps_plot_axis_GetPosition( axis->MTickList[i] , axis, xrn, 0);
+         if ( (!gsl_finite(axis->MTickListPositions[j])) || (axis->MTickListPositions[j]<0.0) || (axis->MTickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
          if      (axis->TickStrs[i][0]!='\01') axis->TickListStrings[j] = axis->TickStrs[i];
          else                                  axis->TickListStrings[j] = "";
          j++;
@@ -235,20 +257,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     axis->TickListFinalised = 1;
    }
 
-  // Finalise the label to be placed on the axis, appending a physical unit as necessary
-  if (axis->DataUnit.dimensionless)
-   { axis->FinalAxisLabel = axis->label; } // No units to append
-  else
-   {
-    i = 0;
-    if (axis->label != NULL) i+=strlen(axis->label);
-    if (!(axis->DataUnit.dimensionless)) i+= 1024;
-    axis->FinalAxisLabel = (char *)lt_malloc(i);
-    if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
-    if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s (%s)", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,0,0));
-    else if (AxisUnitStyle == SW_AXISUNITSTY_RATIO)   sprintf(axis->FinalAxisLabel, "%s / %s", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,0,0));
-    else                                              sprintf(axis->FinalAxisLabel, "%s [%s]", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,0,0));
-   }
   return;
  }
 

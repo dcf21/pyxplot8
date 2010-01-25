@@ -34,7 +34,7 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
-double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn)
+double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn, unsigned char AllowOffBounds)
  {
   int imin, imax, i;
   if (xa->AxisLinearInterpolation != NULL) // Axis is linearly interpolated
@@ -47,7 +47,16 @@ double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn)
           || ((xa->AxisLinearInterpolation[i] > xin) && (xa->AxisLinearInterpolation[i+1] <= xin)) )
        return (i + (xin-xa->AxisLinearInterpolation[i])/(xa->AxisLinearInterpolation[i+1]-xa->AxisLinearInterpolation[i])) / (AXISLINEARINTERPOLATION_NPOINTS-1);
      }
+    return GSL_NAN;
    }
+  if (!AllowOffBounds)
+   {
+    if (xa->MaxFinal > xa->MinFinal)
+     { if ((xin<xa->MinFinal) || (xin>xa->MaxFinal)) return GSL_NAN; }
+    else
+     { if ((xin>xa->MinFinal) || (xin<xa->MaxFinal)) return GSL_NAN; }
+   }
+  if ((xa->log==SW_BOOL_TRUE) && (xin <= 0)) return GSL_NAN;
   if (xa->log!=SW_BOOL_TRUE) return (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
   else                       return log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
  }
@@ -67,24 +76,16 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
 
 void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, unsigned char AllowOffBounds)
  {
+  double x,y,z,x2,y2,z2,x3,y3,z3;
+
   // 3D plots
   if (ThreeDim)
    {
-    double x,y,z,x2,y2,z2,x3,y3,z3;
+    x = width  * (eps_plot_axis_GetPosition(xin, xa, xrn, AllowOffBounds) - 0.5);
+    y = height * (eps_plot_axis_GetPosition(yin, ya, yrn, AllowOffBounds) - 0.5);
+    z = width  * (eps_plot_axis_GetPosition(zin, za, zrn, AllowOffBounds) - 0.5);
 
-    if (!AllowOffBounds)
-     {
-      if ((xin < xa->MinFinal) && (xin < xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-      if ((xin > xa->MinFinal) && (xin > xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-      if ((yin < ya->MinFinal) && (yin < ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-      if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-      if ((zin < za->MinFinal) && (zin < za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-      if ((zin > za->MinFinal) && (zin > za->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-     }
-
-    x = width  * (eps_plot_axis_GetPosition(xin, xa, xrn) - 0.5);
-    y = height * (eps_plot_axis_GetPosition(yin, ya, yrn) - 0.5);
-    z = width  * (eps_plot_axis_GetPosition(zin, za, zrn) - 0.5);
+    if ( (!gsl_finite(x)) || (!gsl_finite(y)) || (!gsl_finite(z)) ) { *xpos = *ypos = GSL_NAN; return; }
 
     x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
     y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
@@ -110,16 +111,12 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
    }
 
   // We assume 2D flat projection
-  if (!AllowOffBounds)
-   {
-    if ((xin < xa->MinFinal) && (xin < xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-    if ((xin > xa->MinFinal) && (xin > xa->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-    if ((yin < ya->MinFinal) && (yin < ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-    if ((yin > ya->MinFinal) && (yin > ya->MaxFinal)) { *xpos = *ypos = GSL_NAN; return; }
-   }
+  x = origin_x + width  * eps_plot_axis_GetPosition(xin, xa, xrn, AllowOffBounds);
+  y = origin_y + height * eps_plot_axis_GetPosition(yin, ya, yrn, AllowOffBounds);
+  if ( (!gsl_finite(x)) || (!gsl_finite(y)) ) { *xpos = *ypos = GSL_NAN; return; }
 
-  *xpos = origin_x + width  * eps_plot_axis_GetPosition(xin, xa, xrn);
-  *ypos = origin_y + height * eps_plot_axis_GetPosition(yin, ya, yrn);
+  *xpos = x;
+  *ypos = y;
   *depth = 0.0;
   return;
  }

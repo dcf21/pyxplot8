@@ -177,6 +177,8 @@ void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
         { *best = ppl_unit_database+i; *pow = power; BestScore = score; continue; }
       if ((score == BestScore) && (ppl_units_DblEqual(fabs(power), 1.0) && (!ppl_units_DblEqual(fabs(*pow), 1.0))) )
         { *best = ppl_unit_database+i; *pow = power; continue; }
+      if ((score == BestScore) && (ppl_units_DblEqual(power, 1.0) && (!ppl_units_DblEqual(*pow, 1.0))) )
+        { *best = ppl_unit_database+i; *pow = power; continue; }
       if (score < BestScore)
         continue;
      }

@@ -237,7 +237,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
 
   Ncolumns = data->Ncolumns;
-  blk = data->first;
   if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncolumns)) return 1;
 
   // If axes have value-turning points, loop over all monotonic regions of axis space
@@ -245,6 +244,8 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   for (yrn=0; yrn<=a[yn]->AxisValueTurnings; yrn++)
   for (zrn=0; zrn<=(ThreeDim ? a[zn]->AxisValueTurnings : 0); zrn++)
     {
+
+  blk = data->first;
 
   if ((style == SW_STYLE_LINES) || (style == SW_STYLE_LINESPOINTS)) // LINES
    {

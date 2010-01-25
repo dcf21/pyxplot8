@@ -443,7 +443,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
     else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
     else                                   target2 = item->ZAxes + target->LinkedAxisToNum;
-    if (!ppl_units_DimEqual(&target->DataUnit , &target2->DataUnit)) break; // If axes are dimensionally incompatible, stop
+    if (target->DataUnitSet && target2->DataUnitSet && (!ppl_units_DimEqual(&target->DataUnit , &target2->DataUnit))) break; // If axes are dimensionally incompatible, stop
     target_xyz    = target->LinkedAxisToXYZ;
     target_axis_n = target->LinkedAxisToNum;
     target        = target2;
@@ -460,6 +460,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     source->MinFinal = target->MinFinal;
     source->MaxFinal = target->MaxFinal;
     if (source->linkusing != NULL) eps_plot_LinkedAxisLinkUsing(source, target, target_xyz);
+    else                           { source->DataUnit = target->DataUnit; source->DataUnitSet = target->DataUnitSet; }
     source->RangeFinalised = 1;
     if (source->LinkedAxisCanvasID <= 0)
      { item = x->current; } // Linked to an axis on the same graph
@@ -472,7 +473,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     if      (source->LinkedAxisToXYZ == 0) source2 = item->XAxes + source->LinkedAxisToNum;
     else if (source->LinkedAxisToXYZ == 1) source2 = item->YAxes + source->LinkedAxisToNum;
     else                                   source2 = item->ZAxes + source->LinkedAxisToNum;
-    if (!ppl_units_DimEqual(&source->DataUnit , &source2->DataUnit)) break; // If axes are dimensionally incompatible, stop
+    if (source->DataUnitSet && source2->DataUnitSet && (!ppl_units_DimEqual(&source->DataUnit , &source2->DataUnit))) break; // If axes are dimensionally incompatible, stop
     source = source2;
    }
   return;
@@ -601,8 +602,8 @@ void eps_plot_SampleFunctions(EPSComm *x)
        {
         OrdinateAxis->OrdinateRaster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
         if (OrdinateAxis->OrdinateRaster == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
-        if (OrdinateAxis->log == SW_BOOL_TRUE) LogarithmicRaster(OrdinateAxis->OrdinateRaster, OrdinateAxis->MinFinal, OrdinateAxis->MaxFinal, x->current->settings.samples);
-        else                            LinearRaster     (OrdinateAxis->OrdinateRaster, OrdinateAxis->MinFinal, OrdinateAxis->MaxFinal, x->current->settings.samples);
+        for (j=0; j<x->current->settings.samples; j++)
+          OrdinateAxis->OrdinateRaster[j] = eps_plot_axis_InvGetPosition(((double)j)/(x->current->settings.samples-1), OrdinateAxis);
         OrdinateAxis->OrdinateRasterLen = x->current->settings.samples;
        }
 
