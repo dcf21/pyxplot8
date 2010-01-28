@@ -228,7 +228,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
 int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
  {
   int             j, Ncolumns, pt, xrn, yrn, zrn;
-  double          xpos, ypos, depth;
+  double          xpos, ypos, depth, xap, yap, zap;
   char            epsbuff[FNAME_LENGTH], *last_colstr=NULL;
   LineDrawHandle *ld;
   settings_axis  *a[3] = {a1,a2,a3};
@@ -249,16 +249,13 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((style == SW_STYLE_LINES) || (style == SW_STYLE_LINESPOINTS)) // LINES
    {
-    ld = LineDraw_Init(x, origin_x, origin_y, origin_x+width, origin_y+height);
+    ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, width, height, width);
     last_colstr=NULL;
 
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
-        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, width, height, 1);
-        if ((!gsl_finite(xpos)) || (!gsl_finite(ypos))) { LineDraw_PenUp(ld); continue; } // Position of point is off side of graph... e.g. negative number on log axis
-
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
         eps_core_SetColour(x, &pd->ww_final, 0);
@@ -266,7 +263,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         IF_NOT_INVISIBLE
          {
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
-          LineDraw_Point(ld, xpos, ypos, depth, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
+          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
          } else { LineDraw_PenUp(ld); }
        }
       blk=blk->next;
@@ -283,7 +280,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
-        eps_plot_GetPosition(&xpos, &ypos, &depth, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, width, height, 0);
+        eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, width, height, width, 0);
         if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 
         // Work out style information for next point

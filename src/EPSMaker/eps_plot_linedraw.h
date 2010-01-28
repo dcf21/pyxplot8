@@ -24,15 +24,24 @@
 
 #include "eps_comm.h"
 
+#include "ppl_settings.h"
+
 typedef struct LineDrawHandle {
  EPSComm *x;
+ settings_graph *sg;
+ settings_axis *xa, *ya, *za;
+ int xrn, yrn, zrn;
+ unsigned char ThreeDim;
+ double origin_x, origin_y, width, height, zdepth;
  unsigned char x0set, x1set;
- double x0,y0,x1,y1;
- double clip_top, clip_bottom, clip_left, clip_right;
+ double x0, y0;
+ double x1  , y1  , z1  ;
+ double xpo1, ypo1, zpo1;
+ double xap1, yap1, zap1;
  } LineDrawHandle;
 
-LineDrawHandle *LineDraw_Init (EPSComm *x, double clip_left, double clip_bottom, double clip_right, double clip_top);
-void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, int linetype, double linewidth, char *colstr);
+LineDrawHandle *LineDraw_Init (EPSComm *x, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, unsigned char ThreeDim, double origin_x, double origin_y, double width, double height, double zdepth);
+void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_offset, double y_offset, double z_offset, double x_perpoffset, double y_perpoffset, double z_perpoffset, int linetype, double linewidth, char *colstr);
 void LineDraw_PenUp(LineDrawHandle *ld);
 
 #endif

@@ -33,7 +33,7 @@
 
 double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn, unsigned char AllowOffBounds);
 double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa);
-void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, unsigned char AllowOffBounds);
+void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds);
 
 #endif
 

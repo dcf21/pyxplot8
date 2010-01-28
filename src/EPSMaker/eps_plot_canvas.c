@@ -74,18 +74,32 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
   else                       return xa->MinFinal * pow(xa->MaxFinal / xa->MinFinal , xin); // ... or logarithmic
  }
 
-void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, unsigned char AllowOffBounds)
+void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds)
  {
   double x,y,z,x2,y2,z2,x3,y3,z3;
+
+  // Convert (xin,yin,zin) to axis positions on the range of 0-1
+  *xap = eps_plot_axis_GetPosition(xin, xa, xrn, 1);
+  *yap = eps_plot_axis_GetPosition(yin, ya, yrn, 1);
+  *zap = 0.5;
+  if (ThreeDim) *zap = eps_plot_axis_GetPosition(zin, za, zrn, 1);
+
+  if ( (!gsl_finite(*xap)) || (!gsl_finite(*yap)) || (!gsl_finite(*zap)) ) { *xpos = *ypos = GSL_NAN; return; }
+
+  // Apply non-flat projections to (xap,yap,zap)
+  if (sg->projection == SW_PROJ_GNOM)
+   {
+   }
+
+  // Crop axis positions to range 0-1
+  if ((!AllowOffBounds) && ((*xap<0.0)||(*xap>1.0)||(*yap<0.0)||(*yap>1.0)||(*zap<0.0)||(*zap>1.0))) { *xpos = *ypos = GSL_NAN; return; }
 
   // 3D plots
   if (ThreeDim)
    {
-    x = width  * (eps_plot_axis_GetPosition(xin, xa, xrn, AllowOffBounds) - 0.5);
-    y = height * (eps_plot_axis_GetPosition(yin, ya, yrn, AllowOffBounds) - 0.5);
-    z = width  * (eps_plot_axis_GetPosition(zin, za, zrn, AllowOffBounds) - 0.5);
-
-    if ( (!gsl_finite(x)) || (!gsl_finite(y)) || (!gsl_finite(z)) ) { *xpos = *ypos = GSL_NAN; return; }
+    x = width  * (*xap - 0.5);
+    y = height * (*yap - 0.5);
+    z = zdepth * (*zap - 0.5);
 
     x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
     y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
@@ -97,27 +111,15 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, unsigned ch
 
     *xpos  = origin_x + x3 + width/2.0;
     *ypos  = origin_y + y3 + height/2.0;
-    *depth = z3;
-    return;
+    *depth =            z3;
    }
-
-  // 2D gnomonic projections
-  if (sg->projection == SW_PROJ_GNOM)
+  else // 2D plots
    {
-    *xpos  = origin_x;
-    *ypos  = origin_y;
+    *xpos = origin_x + width  * (*xap);
+    *ypos = origin_y + height * (*yap);
     *depth = 0.0;
-    return;
    }
 
-  // We assume 2D flat projection
-  x = origin_x + width  * eps_plot_axis_GetPosition(xin, xa, xrn, AllowOffBounds);
-  y = origin_y + height * eps_plot_axis_GetPosition(yin, ya, yrn, AllowOffBounds);
-  if ( (!gsl_finite(x)) || (!gsl_finite(y)) ) { *xpos = *ypos = GSL_NAN; return; }
-
-  *xpos = x;
-  *ypos = y;
-  *depth = 0.0;
   return;
  }
 
