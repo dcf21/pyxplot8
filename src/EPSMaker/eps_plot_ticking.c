@@ -262,16 +262,22 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
 
 void TickLabelAutoGen(char **output, double x, double log_base)
  {
-  int SF = settings_term_current.SignificantFigures;
+  int    SF = settings_term_current.SignificantFigures;
+  double ApproxMargin;
 
-  if ((fabs(x)<1e-300) || ((fabs(x)>=1e-3) && (fabs(x)<1e5))) { sprintf(temp_err_string,"%s",NumericDisplay(x,0,SF,1)); }
+  ApproxMargin = pow(10,-SF+1);
+  if (ApproxMargin < 1e-15) ApproxMargin = 1e-15;
+
+  if ((fabs(x)<DBL_MIN*100) || ((fabs(x)>=1e-3) && (fabs(x)<1e5))) { sprintf(temp_err_string,"%s",NumericDisplay(x,0,SF,1)); }
   else
    {
     double e,m;
+    unsigned char sgn=0;
+    if (x<0) { sgn=1; x=-x; }
     e = floor(log(x)/log(log_base));
     m = x / pow(log_base,e);
-    if (ppl_units_DblApprox(m,1,1e-14)) sprintf(temp_err_string,"%d^{%s}",(int)log_base,NumericDisplay(e,0,SF,1));
-    else                                sprintf(temp_err_string,"%s\\times %d^{%s}",NumericDisplay(m,0,SF,1),(int)log_base,NumericDisplay(e,1,SF,1));
+    if (ppl_units_DblApprox(m,1,pow(10,-SF+1))) sprintf(temp_err_string,"%s%d^{%s}",sgn?"-":"",(int)log_base,NumericDisplay(e,0,SF,1));
+    else                                        sprintf(temp_err_string,"%s%s\\times %d^{%s}",sgn?"-":"",NumericDisplay(m,0,SF,1),(int)log_base,NumericDisplay(e,1,SF,1));
    }
   *output = (char *)lt_malloc(strlen(temp_err_string)+3);
   if ((*output)==NULL) return;

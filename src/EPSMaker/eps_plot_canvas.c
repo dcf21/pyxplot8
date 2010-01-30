@@ -74,7 +74,7 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
   else                       return xa->MinFinal * pow(xa->MaxFinal / xa->MinFinal , xin); // ... or logarithmic
  }
 
-void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds)
+void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, double *theta_x, double *theta_y, double *theta_z, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds)
  {
   double x,y,z,x2,y2,z2,x3,y3,z3;
 
@@ -110,14 +110,21 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap
     z3 =-y2*sin(sg->YZview.real) + z2*cos(sg->YZview.real);
 
     *xpos  = origin_x + x3 + width/2.0;
-    *ypos  = origin_y + y3 + height/2.0;
-    *depth =            z3;
+    *ypos  = origin_y + z3 + height/2.0;
+    *depth =            y3;
+
+    if (theta_x != NULL) *theta_x = atan2( cos(sg->XYview.real) , sin(sg->XYview.real)*sin(sg->YZview.real) );
+    if (theta_y != NULL) *theta_y = atan2( sin(sg->XYview.real) ,-cos(sg->XYview.real)*sin(sg->YZview.real) );
+    if (theta_y != NULL) *theta_y = 0.0;
    }
   else // 2D plots
    {
     *xpos = origin_x + width  * (*xap);
     *ypos = origin_y + height * (*yap);
     *depth = 0.0;
+
+    if (theta_x != NULL) *theta_x = M_PI/2;
+    if (theta_y != NULL) *theta_y = 0.0;
    }
 
   return;

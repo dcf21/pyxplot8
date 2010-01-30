@@ -67,7 +67,7 @@ int directive_fft(Dict *command)
   int           ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
   FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   FFTDescriptor      *output;
-  double        TempDbl, pos[USING_ITEMS_MAX];
+  double        TempDbl, pos[USING_ITEMS_MAX], norm;
   value        *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX], *step[USING_ITEMS_MAX], x, FirstVal;
   unsigned char inverse;
   char         *cptr, *tempstr, *filename, *outfunc, *infunc, *scratchpad, *errtext, *SelectCrit=NULL;
@@ -300,8 +300,35 @@ int directive_fft(Dict *command)
   if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
   for (i=0; i<Ndims; i++) ppl_units_DimInverse(&output->invrange[i], &output->range[i]);
   output->datagrid = datagrid;
-  output->normalisation = 1.0;
-  for (i=0; i<Ndims; i++) output->normalisation *= output->range[i].real / Nsteps[i];
+
+  // Apply normalisation to data and phase-shift it t put zero in the right place
+  norm = 1.0;
+  for (i=0; i<Ndims; i++) norm *= output->range[i].real / Nsteps[i];
+  for (i=0; i<Ndims; i++) Npos[i] = - min[i]->real * Nsteps[i] / (max[i]->real - min[i]->real); // Position of zero
+  for (i=0; i<Nsamples; i++)
+   {
+    double pos,angle,normR,normI,normR2,normI2;
+    normR = norm;
+    normI = 0.0;
+    k=i;
+    for (l=Ndims-1; l>=0; l--)
+     {
+      pos = (k % Nsteps[l]);
+      k /= Nsteps[l];
+      angle = (inverse?-1:1)*2*M_PI*pos*Npos[l]/Nsteps[l];
+      normR2 = normR * cos(angle) - normI * sin(angle);
+      normI2 = normR * sin(angle) + normI * cos(angle);
+      normR = normR2;
+      normI = normI2;
+     }
+    #ifdef HAVE_FFTW3
+    datagrid[i][0] = datagrid[i][0] * normR - datagrid[i][1] * normI;
+    datagrid[i][1] = datagrid[i][0] * normI + datagrid[i][1] * normR;
+    #else
+    datagrid[i].re = datagrid[i].re * normR - datagrid[i].im * normI;
+    datagrid[i].im = datagrid[i].re * normI + datagrid[i].im * normR
+    #endif
+   }
 
   // Make output unit
   output->OutputUnit = FirstVal; // Output of an FFT has units of fn being FFTed, multiplied by the units of all of the arguments being FFTed
@@ -383,13 +410,13 @@ void ppl_fft_evaluate(char *FuncName, FFTDescriptor *desc, value *in, value *out
 
   // Write output value to out
   #ifdef HAVE_FFTW3
-  out->real = desc->datagrid[j][0] * desc->normalisation;
+  out->real = desc->datagrid[j][0];
   if (desc->datagrid[j][1] == 0.0) { out->FlagComplex = 0; out->imag = 0.0;                  }
-  else                             { out->FlagComplex = 1; out->imag = desc->datagrid[j][1] * desc->normalisation; }
+  else                             { out->FlagComplex = 1; out->imag = desc->datagrid[j][1]; }
   #else
-  out->real = desc->datagrid[j].re * desc->normalisation;
+  out->real = desc->datagrid[j].re;
   if (desc->datagrid[j].im == 0.0) { out->FlagComplex = 0; out->imag = 0.0;                  }
-  else                             { out->FlagComplex = 1; out->imag = desc->datagrid[j].im * desc->normalisation; }
+  else                             { out->FlagComplex = 1; out->imag = desc->datagrid[j].im; }
   #endif
   return;
  }

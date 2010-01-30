@@ -589,14 +589,14 @@ void directive_save(Dict *command)
   fprintf(outfile, "# Command script saved by PyXPlot %s\n# Timestamp: %s\n", VERSION, StrStrip(FriendlyTimestring(),temp_err_string));
   fprintf(outfile, "# User: %s\n\n", UnixGetIRLName());
 
-  endpos       = where_history();
+  endpos       = history_length;
   history_data = history_list();
 
   x = endpos - history_NLinesWritten;
-  if (x < 0) x=0;
+  if (x < history_base) x=history_base;
   start = (int)x;
 
-  for (k=start; k<endpos; k++) fprintf(outfile, "%s\n", (history_data[k]->line));
+  for (k=start; k<endpos-1; k++) { fprintf(outfile, "%s\n", (history_data[k]->line)); }
   fclose(outfile);
   return;
  }

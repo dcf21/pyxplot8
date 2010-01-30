@@ -454,6 +454,7 @@ void ppl_units_init()
     ppl_unit_database[i].TempType   = 0;
     ppl_unit_database[i].offset     = 0.0;
     ppl_unit_database[i].UserSel    = 0;
+    ppl_unit_database[i].NotToBeCompounded = 0;
     ppl_unit_database[i].si         = ppl_unit_database[i].cgs       = ppl_unit_database[i].imperial  = ppl_unit_database[i].us = ppl_unit_database[i].planck =
     ppl_unit_database[i].ancient    = ppl_unit_database[i].UserSel   = ppl_unit_database[i].modified  = 0;
     ppl_unit_database[i].MaxPrefix  = ppl_unit_database[i].MinPrefix = 0;
@@ -1907,6 +1908,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].quantity   = "frequency";
   ppl_unit_database[ppl_unit_pos].multiplier = 1.0;
   ppl_unit_database[ppl_unit_pos].MaxPrefix  =  24;
+  ppl_unit_database[ppl_unit_pos].NotToBeCompounded = 1;
   ppl_unit_database[ppl_unit_pos].si = ppl_unit_database[ppl_unit_pos].cgs = ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = ppl_unit_database[ppl_unit_pos].ancient = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_TIME]=-1;
   ppl_unit_pos++;

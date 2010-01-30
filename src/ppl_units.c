@@ -143,7 +143,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs)
                           || ((X).planck   && (settings_term_current.UnitScheme == SW_UNITSCH_PLK )) \
                           || ((X).ancient  && (settings_term_current.UnitScheme == SW_UNITSCH_ANC ))  )
 
-void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
+void ppl_units_FindOptimalNextUnit(value *in, unsigned char first, unit **best, double *pow)
  {
   int i,j,k,score,found=0,BestScore;
   double power;
@@ -157,6 +157,8 @@ void ppl_units_FindOptimalNextUnit(value *in, unit **best, double *pow)
       power = in->exponent[j] / ppl_unit_database[i].exponent[j];
       score = 0;
       for (k=0; k<UNITS_MAX_BASEUNITS; k++) if (ppl_units_DblEqual(in->exponent[k] , power*ppl_unit_database[i].exponent[k])) score++;
+
+      if (ppl_unit_database[i].NotToBeCompounded && ((!first) || (score<UNITS_MAX_BASEUNITS-1))) continue;
 
       if (found == 0) // This is first possible unit we've found, and we have nothing to compare it to.
        {
@@ -299,7 +301,7 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
   while (1)
    {
     if (pos>=UNITS_MAX_BASEUNITS) { ppl_error(ERR_INTERNAL, "Overflow whilst trying to display a unit."); break; }
-    ppl_units_FindOptimalNextUnit(&residual, UnitList + pos, UnitPow + pos);
+    ppl_units_FindOptimalNextUnit(&residual, pos==0, UnitList + pos, UnitPow + pos);
     UnitDisp[pos] = 0;
     if (ppl_units_DblEqual(UnitPow[pos],0)!=0) break;
     pos++;

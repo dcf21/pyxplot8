@@ -33,6 +33,7 @@
 #include "eps_plot_canvas.h"
 #include "eps_plot_linedraw.h"
 #include "eps_plot_threedimbuff.h"
+#include "eps_settings.h"
 
 void LineDraw_FindCrossingPoints(LineDrawHandle *ld, double x1, double y1, double z1, double xap1, double yap1, double zap1, double x2, double y2, double z2, double xap2, double yap2, double zap2, int *Inside1, int *Inside2, double *cx1, double *cy1, double *cz1, double *cx2, double *cy2, double *cz2, int *NCrossings)
  {
@@ -103,15 +104,16 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
  {
   int    Inside1, Inside2, NCrossings;
   double xpos, ypos, depth, xap, yap, zap;
+  double theta_x, theta_y, theta_z;
   double cx1, cy1, cz1, cx2, cy2, cz2;
 
-  eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, ld->ThreeDim, x, y, z, ld->xa, ld->ya, ld->za, ld->xrn, ld->yrn, ld->zrn, ld->sg, ld->origin_x, ld->origin_y, ld->width, ld->height, ld->zdepth, 1);
+  eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, ld->ThreeDim, x, y, z, ld->xa, ld->ya, ld->za, ld->xrn, ld->yrn, ld->zrn, ld->sg, ld->origin_x, ld->origin_y, ld->width, ld->height, ld->zdepth, 1);
 
   if ((!gsl_finite(xpos))||(!gsl_finite(ypos))||(!gsl_finite(depth))) { LineDraw_PenUp(ld); return; }
 
-  xpos  += x_offset;
-  ypos  += y_offset;
-  depth += z_offset;
+  xpos  += x_offset * M_TO_PS;
+  ypos  += y_offset * M_TO_PS;
+  depth += z_offset * M_TO_PS;
 
   xap   += x_offset / ld->width;
   yap   += y_offset / ld->height;
@@ -120,6 +122,8 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
   if (!ld->x1set) { ld->x1set = 1; ld->x1=xpos; ld->y1=ypos; ld->z1=depth; ld->xap1=xap; ld->yap1=yap; ld->zap1=zap; ld->xpo1=x_perpoffset; ld->ypo1=y_perpoffset; ld->zpo1=z_perpoffset; return; }
 
   LineDraw_FindCrossingPoints(ld, ld->x1, ld->y1, ld->z1, ld->xap1, ld->yap1, ld->zap1, xpos, ypos, depth, xap, yap, zap, &Inside1, &Inside2, &cx1, &cy1, &cz1, &cx2, &cy2, &cz2, &NCrossings);
+
+
 
   if      ((!Inside1) && (!Inside2)) // Neither point on line segment is inside clip-region
    {
@@ -141,8 +145,16 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
    }
   else // if (( Inside1) && ( Inside2)) // We are within the clip region
    {
-    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, ld->x0, ld->y0, cx1, cy1, cx2, cy2, 0, 0, 0.0);
-    else           ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, cx1   , cy1   , cx1, cy1, cx2, cy2, 1, 0, 0.0);
+    double cx0,cy0;
+    cx0 = ld->x0 + ( ld->xpo0     * cos(theta_x) + ld->ypo0     * cos(theta_y) + ld->zpo0     * cos(theta_z) )*M_TO_PS; // Add in perpendicular offset
+    cy0 = ld->y0 + ( ld->xpo0     * sin(theta_x) + ld->ypo0     * sin(theta_y) + ld->zpo0     * sin(theta_z) )*M_TO_PS;
+    cx1 = cx1    + ( ld->xpo1     * cos(theta_x) + ld->ypo1     * cos(theta_y) + ld->zpo1     * cos(theta_z) )*M_TO_PS;
+    cy1 = cy1    + ( ld->xpo1     * sin(theta_x) + ld->ypo1     * sin(theta_y) + ld->zpo1     * sin(theta_z) )*M_TO_PS;
+    cx2 = cx2    + ( x_perpoffset * cos(theta_x) + y_perpoffset * cos(theta_y) + z_perpoffset * cos(theta_z) )*M_TO_PS;
+    cy2 = cy2    + ( x_perpoffset * sin(theta_x) + y_perpoffset * sin(theta_y) + z_perpoffset * sin(theta_z) )*M_TO_PS;
+
+    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, cx0, cy0, cx1, cy1, cx2, cy2, 0, 0, 0.0);
+    else           ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1, 0, 0.0);
     if ((!ld->x0set)||(ld->x1!=xpos)||(ld->y1!=ypos)) { ld->x0=ld->x1; ld->y0=ld->y1; }
     ld->x0set=1;
    }
