@@ -522,6 +522,27 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    IF_NOT_INVISIBLE \
     { \
      double x0=X0,y0=Y0,width=WIDTH; \
+\
+     /* Set fill colour of box */ \
+     eps_core_SetFillColour(x, &pd->ww_final); \
+     eps_core_SwitchTo_FillColour(x); \
+\
+     /* Fill box */ \
+     IF_NOT_INVISIBLE \
+      { \
+       double z,xl,xr,yb,yt,x1,y1,x2,y2,x3,y3,x4,y4,t1,t2,t3; \
+       xl = x0-width; \
+       xr = x0+width; \
+       yb = sg->BoxFrom.real; \
+       yt = y0; \
+       eps_plot_GetPosition(&x1, &y1, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xl, yb, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
+       eps_plot_GetPosition(&x2, &y2, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xl, yt, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
+       eps_plot_GetPosition(&x3, &y3, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xr, yt, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
+       eps_plot_GetPosition(&x4, &y4, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xr, yb, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
+       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath fill\n", x1,y1,x2,y2,x3,y3,x4,y4); \
+      } \
+     eps_core_SwitchFrom_FillColour(x); \
+\
      if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
      LineDraw_Point(ld, x0-width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
      LineDraw_Point(ld, x0-width, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
