@@ -108,6 +108,7 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
   else if (style == SW_STYLE_STEPS          ) return 2;
   else if (style == SW_STYLE_FSTEPS         ) return 2;
   else if (style == SW_STYLE_HISTEPS        ) return 2;
+  else if (style == SW_STYLE_STARS          ) return 2 + (ThreeDim!=0);
   else if (style == SW_STYLE_ARROWS_HEAD    ) return 4 + 2*(ThreeDim!=0);
   else if (style == SW_STYLE_ARROWS_NOHEAD  ) return 4 + 2*(ThreeDim!=0);
   else if (style == SW_STYLE_ARROWS_TWOHEAD ) return 4 + 2*(ThreeDim!=0);
@@ -174,6 +175,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
   else if (style == SW_STYLE_STEPS          ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
   else if (style == SW_STYLE_FSTEPS         ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
   else if (style == SW_STYLE_HISTEPS        ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
+  else if (style == SW_STYLE_STARS          ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
   else if (style == SW_STYLE_ARROWS_HEAD    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
   else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
   else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
@@ -213,6 +215,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
       else if (style == SW_STYLE_STEPS          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
       else if (style == SW_STYLE_FSTEPS         ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
       else if (style == SW_STYLE_HISTEPS        ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
+      else if (style == SW_STYLE_STARS          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_ARROWS_HEAD    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
       else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
       else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
@@ -275,10 +278,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
-  if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS) || (style == SW_STYLE_DOTS)) // POINTS
+  if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS) || (style == SW_STYLE_STARS) || (style == SW_STYLE_DOTS)) // POINTS, DOTS, STARS
    {
     double final_pointsize = pd->ww_final.pointsize;
-    if (style == SW_STYLE_DOTS) final_pointsize *= 0.05; // Dots are 1/20th size of points
+    if      (style == SW_STYLE_DOTS ) final_pointsize *=  0.05; // Dots are 1/20th size of points
+    else if (style == SW_STYLE_STARS) final_pointsize *= 12.0 ; // Stars are BIG
     last_colstr=NULL;
 
     while (blk != NULL)
@@ -294,11 +298,20 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         IF_NOT_INVISIBLE
          {
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
-          pt = (style == SW_STYLE_DOTS) ? 9 : ((pd->ww_final.pointtype-1) % N_POINTTYPES); // Dots are always pt 9 (circle)
-          while (pt<0) pt+=N_POINTTYPES;
-          x->PointTypesUsed[pt] = 1;
-          sprintf(epsbuff, "%.2f %.2f pt%d", xpos, ypos, pt+1);
-          eps_core_BoundingBox(x, xpos, ypos, 2 * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS);
+          if (style != SW_STYLE_STARS)
+           {
+            pt = (style == SW_STYLE_DOTS) ? 9 : ((pd->ww_final.pointtype-1) % N_POINTTYPES); // Dots are always pt 9 (circle)
+            while (pt<0) pt+=N_POINTTYPES;
+            x->PointTypesUsed[pt] = 1;
+            sprintf(epsbuff, "%.2f %.2f pt%d", xpos, ypos, pt+1);
+            eps_core_BoundingBox(x, xpos, ypos, 2 * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS);
+           } else {
+            pt = ((pd->ww_final.pointtype-1) % N_STARTYPES);
+            while (pt<0) pt+=N_STARTYPES;
+            x->StarTypesUsed[pt] = 1;
+            sprintf(epsbuff, "/angle { 40 } def %.2f %.2f st%d", xpos, ypos, pt+1);
+            eps_core_BoundingBox(x, xpos, ypos, 2 * final_pointsize * eps_StarSize[pt] * EPS_DEFAULT_PS);
+           }
           ThreeDimBuffer_writeps(x, depth, 1, pd->ww_final.pointlinewidth, final_pointsize, last_colstr, epsbuff);
          }
 
@@ -574,15 +587,77 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     LineDraw_PenUp(ld);
    }
 
-  else if (style == SW_STYLE_ARROWS_HEAD    ) // ARROWS_HEAD
+  else if ((style == SW_STYLE_ARROWS_HEAD) || (style == SW_STYLE_ARROWS_NOHEAD) || (style == SW_STYLE_ARROWS_TWOHEAD)) // ARROWS_HEAD, ARROWS_NOHEAD, ARROWS_TWOHEAD
+   {
+    double xpos2,ypos2,depth2,xap2,yap2,zap2,lw,theta;
+    lw  = pd->ww_final.linewidth;
+
+    ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
+    last_colstr=NULL;
+
+    while (blk != NULL)
+     {
+      for (j=0; j<blk->BlockPosition; j++)
+       {
+        // Work out style information for next point
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
+        eps_core_SetColour(x, &pd->ww_final, 0);
+        LineDraw_PenUp(ld);
+        IF_NOT_INVISIBLE
+         {
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          LineDraw_Point(ld, UUR(xn           ), UUR(yn           ), ThreeDim ? UUR(zn  ) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
+          LineDraw_Point(ld, UUR(xn+2+ThreeDim), UUR(yn+2+ThreeDim), ThreeDim ? UUR(zn+3) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
+          LineDraw_PenUp(ld);
+
+          eps_plot_GetPosition(&xpos , &ypos , &depth , &xap , &yap , &zap , NULL, NULL, NULL, ThreeDim, UUR(xn           ), UUR(yn           ), ThreeDim ? UUR(zn  ) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
+          eps_plot_GetPosition(&xpos2, &ypos2, &depth2, &xap2, &yap2, &zap2, NULL, NULL, NULL, ThreeDim, UUR(xn+2+ThreeDim), UUR(yn+2+ThreeDim), ThreeDim ? UUR(zn+3) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
+          theta = atan2(xpos2-xpos,ypos2-ypos);
+          if (!gsl_finite(theta)) theta=0.0;
+
+          if ((style == SW_STYLE_ARROWS_TWOHEAD) && (xap>=0.0)&&(xap<=1.0)&&(yap>=0.0)&&(yap<=1.0)&&((!ThreeDim)||((zap>=0.0)&&(zap<=1.0))))
+           {
+            double x2=xpos, y2=ypos, x3, y3, x4, y4, x5, y5, theta_y = theta + M_PI;
+            x3 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y - EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on one side
+            y3 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y - EPS_ARROW_ANGLE / 2);
+            x5 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y + EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on other side
+            y5 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y + EPS_ARROW_ANGLE / 2);
+            x4 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
+            y4 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
+            sprintf(epsbuff, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
+            ThreeDimBuffer_writeps(x, depth, 1, lw, 1.0, last_colstr, epsbuff);
+           }
+
+          if (((style == SW_STYLE_ARROWS_TWOHEAD) || (style == SW_STYLE_ARROWS_HEAD)) && (xap2>=0.0)&&(xap2<=1.0)&&(yap2>=0.0)&&(yap2<=1.0)&&((!ThreeDim)||((zap2>=0.0)&&(zap2<=1.0))))
+           {
+            double x2=xpos2, y2=ypos2, x3, y3, x4, y4, x5, y5, theta_y = theta;
+            x3 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y - EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on one side
+            y3 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y - EPS_ARROW_ANGLE / 2);
+            x5 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y + EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on other side
+            y5 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y + EPS_ARROW_ANGLE / 2);
+            x4 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
+            y4 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
+            sprintf(epsbuff, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
+            ThreeDimBuffer_writeps(x, depth2, 1, lw, 1.0, last_colstr, epsbuff);
+           }
+         }
+
+        // label point if instructed to do so
+        if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
+         {
+          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+         }
+       }
+      blk=blk->next;
+     }
+    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
+   }
+
+  else if (style == SW_STYLE_FILLEDREGION) // FILLEDREGION
    {
    }
 
-  else if (style == SW_STYLE_ARROWS_NOHEAD  ) // ARROWS_NOHEAD
-   {
-   }
-
-  else if (style == SW_STYLE_ARROWS_TWOHEAD ) // ARROWS_TWOHEAD
+  else if (style == SW_STYLE_YERRORSHADED) // YERRORSHADED
    {
    }
 

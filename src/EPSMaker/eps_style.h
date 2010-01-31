@@ -23,7 +23,7 @@
 #define _PPL_EPS_STYLE_H 1
 
 #define N_POINTTYPES 30
-#define N_STARTYPES   1
+#define N_STARTYPES   9
 
 char *eps_LineType(int lt, double lw, double offset);
 
@@ -31,6 +31,8 @@ char *eps_LineType(int lt, double lw, double offset);
 extern char   *eps_PointTypes[];
 extern double  eps_PointSize [];
 extern char   *eps_StarTypes [];
+extern double  eps_StarSize  [];
+extern char   *eps_StarCore;
 #endif
 
 #endif

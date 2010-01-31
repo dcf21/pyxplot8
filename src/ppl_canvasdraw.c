@@ -575,7 +575,9 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "%s", EPS_PROLOG_TEXT);
   fprintf(epsout, "/ps { 1 } def\n/ps75 { ps .75 mul } def\n"); // Pointsize variables
   if (x->PointTypesUsed[2]) { x->PointTypesUsed[0]=x->PointTypesUsed[1]=1; } // pt3 depends upon pt1 and pt2
+  if (x->StarTypesUsed [6]) { x->StarTypesUsed [5]=1; } // st7 depends upon st6
   for (i=0; i<N_POINTTYPES; i++) if (x->PointTypesUsed[i]) fprintf(epsout, "%s\n", eps_PointTypes[i]);
+  for (i=0; i<N_STARTYPES ; i++) if (x->StarTypesUsed [i]) { fprintf(epsout, "%s\n", eps_StarCore); break; }
   for (i=0; i<N_STARTYPES ; i++) if (x->StarTypesUsed [i]) fprintf(epsout, "%s\n", eps_StarTypes [i]);
   fprintf(epsout, "%%%%EndProlog\n\n");
 
