@@ -444,8 +444,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
     last_colstr=NULL;
 
-    if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
-
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)
@@ -457,6 +455,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         IF_NOT_INVISIBLE
          {
           eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, &theta_y, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
+          if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
           LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,-ps,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
@@ -489,24 +488,90 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
-  else if (style == SW_STYLE_BOXES          ) // BOXES
+  else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_WBOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS)) // BOXES, WBOXES, STEPS, FSTEPS, HISTEPS
    {
-   }
+    double ptAx, ptAy, ptBx, ptBy, ptCx, ptCy;
+    unsigned char ptAset=0, ptBset=0, ptCset=0;
 
-  else if (style == SW_STYLE_WBOXES         ) // WBOXES
-   {
-   }
+    ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
+    last_colstr=NULL;
 
-  else if (style == SW_STYLE_STEPS          ) // STEPS
-   {
-   }
+#define MAKE_STEP(X0,Y0,WIDTH) \
+   IF_NOT_INVISIBLE \
+    { \
+     double x0=X0,y0=Y0,width=WIDTH; \
+     if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
+     LineDraw_Point(ld, x0-width, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, x0+width, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    } \
 
-  else if (style == SW_STYLE_FSTEPS         ) // FSTEPS
-   {
-   }
+#define MAKE_BOX(X0,Y0,WIDTH) \
+   IF_NOT_INVISIBLE \
+    { \
+     double x0=X0,y0=Y0,width=WIDTH; \
+     if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
+     LineDraw_Point(ld, x0-width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, x0-width, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, x0+width, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, x0+width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, x0-width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_PenUp(ld); \
+    } \
 
-  else if (style == SW_STYLE_HISTEPS        ) // HISTEPS
-   {
+    if (a[yn]->DataUnitSet && (!ppl_units_DimEqual(&sg->BoxFrom, &a[yn]->DataUnit))) { sprintf(temp_err_string, "Data with units of <%s> plotted as boxes/steps when BoxFrom is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[yn]->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&sg->BoxFrom,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); }
+    else if (a[xn]->DataUnitSet && (sg->BoxWidth.real>DBL_MIN) && (!ppl_units_DimEqual(&sg->BoxWidth, &a[xn]->DataUnit))) { sprintf(temp_err_string, "Data with ordinate units of <%s> plotted as boxes/steps when BoxWidth is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[xn]->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&sg->BoxWidth,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); }
+    else
+     {
+      while (blk != NULL)
+       {
+        for (j=0; j<blk->BlockPosition; j++)
+         {
+          ptAx=ptBx; ptAy=ptBy; ptAset=ptBset;
+          ptBx=ptCx; ptBy=ptCy; ptBset=ptCset;
+          ptCx=UUR(0); ptCy=UUR(1); ptCset=1;
+          if (ptBset)
+           {
+            if (ptAset) // We are processing a box in the midst of many
+             {
+              if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ((ptBx+(ptAx+ptBx)/2)/2, ptBy, (ptCx-ptAx)/4      ); }
+              else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptBx                 , ptBy, sg->BoxWidth.real/2); }
+              else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptBx                 , ptBy, (ptCx-ptAx)/4      ); }
+              else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptAx+ptBx)/2, ptBy, (ptBx-ptAx)/2); }
+              else if (style == SW_STYLE_FSTEPS) { MAKE_STEP((ptBx+ptCx)/2, ptBy, (ptCx-ptBx)/2); }
+             }
+            else // The first box/step we work out the width of
+             {
+              if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ( ptBx                 , ptBy, (ptCx-ptBx)/2      ); }
+              else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptBx                 , ptBy, sg->BoxWidth.real/2); }
+              else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptBx                 , ptBy, (ptCx-ptBx)/2      ); }
+              else if (style == SW_STYLE_STEPS)  { MAKE_STEP( ptBx        , ptBy, 0.0          ); }
+              else if (style == SW_STYLE_FSTEPS) { MAKE_STEP((ptBx+ptCx)/2, ptBy, (ptCx-ptBx)/2); }
+             }
+           }
+          // Work out style information for next point
+          eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
+          eps_core_SetColour(x, &pd->ww_final, 0);
+          if (style == SW_STYLE_WBOXES) { MAKE_BOX(ptCx, ptCy, UUR(2)/2); }
+         }
+        blk=blk->next;
+       }
+      if (ptBset) // We have one final box/step to process
+       {
+              if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ( ptCx                 , ptCy, (ptCx-ptBx)/2      ); }
+              else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptCx                 , ptCy, sg->BoxWidth.real/2); }
+              else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptCx                 , ptCy, (ptCx-ptBx)/2      ); }
+              else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptBx+ptCx)/2, ptCy, (ptCx-ptBx)/2); }
+              else if (style == SW_STYLE_FSTEPS) { MAKE_STEP( ptCx        , ptCy, 0.0          ); }
+       }
+      else // We have a dataset with only a single box/step
+       {
+        if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX (ptCx, ptCy, 0.5); }
+        else if (style == SW_STYLE_BOXES)                                { MAKE_BOX (ptCx, ptCy, sg->BoxWidth.real/2); }
+        else if (sg->BoxWidth.real<1e-200)                               { MAKE_STEP(ptCx, ptCy, 0.5); }
+        else                                                             { MAKE_STEP(ptCx, ptCy, sg->BoxWidth.real/2); }
+       }
+     }
+    LineDraw_PenUp(ld);
    }
 
   else if (style == SW_STYLE_ARROWS_HEAD    ) // ARROWS_HEAD
