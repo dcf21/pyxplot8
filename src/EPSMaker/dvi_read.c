@@ -400,18 +400,18 @@ int DisplayDVIOperator(DVIOperator *op)
    {
     int i;
     i=op->op;
-    if ((i>=31) && (i<=126)) snprintf(s2, 128, "Character %d %s", i, (char *)&i);
-    else                     snprintf(s2, 128, "Character %d", i);
+    if ((i>=31) && (i<=126)) snprintf(s2, 128, "DVI: Read character %d %s", i, (char *)&i);
+    else                     snprintf(s2, 128, "DVI: Read character %d", i);
     s = s2;
    }
   else if (op->op == DVI_PRE) // Special cases
    {
-    snprintf(s2, 128, "%s %lu %lu %lu %lu", "pre", *(op->ul), *(op->ul+1), *(op->ul+2), *(op->ul+3));
+    snprintf(s2, 128, "DVI: Read %s %lu %lu %lu %lu", "pre", *(op->ul), *(op->ul+1), *(op->ul+2), *(op->ul+3));
     s=s2;
    }
   else if (op->op == DVI_FNTDEF1234)
    {
-    snprintf(s2, 128, "%s N=%lu d=%lu n=%s", "fnt def", *(op->ul), *(op->ul+4), (op->s[0]));
+    snprintf(s2, 128, "DVI: Read %s N=%lu d=%lu n=%s", "fnt def", *(op->ul), *(op->ul+4), (op->s[0]));
     s=s2;
    }
   else if (op->op < DVI_FNTNUMMIN)
@@ -419,24 +419,31 @@ int DisplayDVIOperator(DVIOperator *op)
     s = (char *)dviops[op->op-DVI_CHARMAX-1];
     if (strlen(s)==2 && (char)s[1]>'0')
      {
-      snprintf(s2, 128, "%s %lu", dviops[op->op-DVI_CHARMAX-1], *(op->ul));
+      snprintf(s2, 128, "DVI: Read %s %lu", dviops[op->op-DVI_CHARMAX-1], *(op->ul));
+      s=s2;
+     }
+    else
+     {
+      snprintf(s2, 128, "DVI: Read %s", s);
       s=s2;
      }
    }
   else if (op->op <= DVI_FNTNUMMAX)
    {
-    snprintf(s2, 128, "Font number %d", op->op-DVI_FNTNUMMIN);
+    snprintf(s2, 128, "DVI: Read font number %d", op->op-DVI_FNTNUMMIN);
     s=s2;
    }
   else if (op->op <= DVI_POSTPOST)
    {
     int i;
     i = op->op-DVI_CHARMAX-1-(DVI_FNTNUMMAX-DVI_FNTNUMMIN+1);
-    s = (char *)dviops[i];
+    snprintf(s2, 128, "DVI: Read %s", (char *)dviops[i]);
+    s=s2;
+    //s = (char *)dviops[i];
    }
   else
    {
-    snprintf(s2, 128, "dvi error");
+    snprintf(s2, 128, "DVI: dvi error");
     s=s2;
    }
   ppl_log(s);

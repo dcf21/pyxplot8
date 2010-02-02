@@ -33,6 +33,7 @@
 #define FONT_TEX_TEXT  1
 #define FONT_TEX_MATH  2
 #define FONT_TEX_MEXT  3
+#define FONT_TEX_MSYM  4
 #define FONT_SYMBOL   10
 
 typedef struct TFMcharInfo

@@ -195,7 +195,7 @@ int dviNonAsciiChar(dviInterpreterState *interp, int c, char move)
   height = size[1] / interp->scale;
   depth  = size[2] / interp->scale;
   italic = size[3] / interp->scale;
-  if (DEBUG) { sprintf(temp_err_string, "width of glyph %g height of glyph %g", width, height); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: width of glyph %g height of glyph %g", width, height); ppl_log(temp_err_string); }
   if ((err=dviUpdateBoundingBox(interp, width+italic, height, depth))!=0) return err;
 
   // Count the number of characters to write to the ps string
@@ -275,7 +275,7 @@ int dviInOpSetRule(dviInterpreterState *interp, DVIOperator *op)
   // Don't set a rule if movements are -ve
   if (op->sl[0]<0 || op->sl[1]<0)
    {
-    if (DEBUG) ppl_log("silent rule");
+    if (DEBUG) ppl_log("DVI: silent rule");
     interp->state->h += op->sl[1];
     if ((err=dviPostscriptMoveto(interp))!=0) return err;
    }
@@ -309,7 +309,7 @@ int dviInOpPutRule(dviInterpreterState *interp, DVIOperator *op)
   // Don't set a rule if movements are -ve
   if (op->sl[0]<0 || op->sl[1]<0)
    {
-    if (DEBUG) ppl_log("silent rule");
+    if (DEBUG) ppl_log("DVI: silent rule");
    }
   else
    {
@@ -555,7 +555,7 @@ int dviInOpSpecial1234(dviInterpreterState *interp, DVIOperator *op)
   interp->spString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
   if (interp->spString==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
   *(interp->spString) = '\0';
-  if (DEBUG) { sprintf(temp_err_string, "dvi special: %d %lu %d", spesh, op->ul[0], (int)strlen(interp->spString)); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: dvi special: %d %lu %d", spesh, op->ul[0], (int)strlen(interp->spString)); ppl_log(temp_err_string); }
   // NOP
   return 0;
  }
@@ -604,7 +604,7 @@ int dviInOpPre(dviInterpreterState *interp, DVIOperator *op)
    }
   // Convert mag, num and den into points (for ps)
   interp->scale = (double)mag / 1000.0 * (double)num / (double)den / 1.0e3 * 72.0 / 254;    
-  if (DEBUG) { sprintf(temp_err_string, "Scale %g V=%lu num=%lu den=%lu mag=%lu", interp->scale,i,num,den,mag); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: Scale %g V=%lu num=%lu den=%lu mag=%lu", interp->scale,i,num,den,mag); ppl_log(temp_err_string); }
   return 0;
  }
 
@@ -641,7 +641,7 @@ int dviSpecialImplement(dviInterpreterState *interp)
   int err = 0;
   char errString[SSTR_LENGTH];
 
-  if (DEBUG) { sprintf(temp_err_string, "dvi special. Final string=%s", interp->spString); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: dvi special. Final string=%s", interp->spString); ppl_log(temp_err_string); }
   // Test for a colour string
   if (strncmp(interp->spString, "color ", 6) == 0)
    {
@@ -673,7 +673,7 @@ int dviSpecialColourCommand(dviInterpreterState *interp, char *command)
   if (strncmp(command, "push ", 4)==0)
    {
     // New colour to push onto stack
-    if (DEBUG) { sprintf(temp_err_string, "%s says push", command); ppl_log(temp_err_string); }
+    if (DEBUG) { sprintf(temp_err_string, "DVI: %s says push", command); ppl_log(temp_err_string); }
     command += 5;
     while (command[0] == ' ') command++;
     if (strncmp(command, "cmyk ", 5)==0)
@@ -1038,7 +1038,7 @@ int dviTypeset(dviInterpreterState *interp)
   height /= interp->scale;
   depth  /= interp->scale;
   italic /= interp->scale;
-  if (DEBUG) { sprintf(temp_err_string, "width of glyph %g height of glyph %g", width, height); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: width of glyph %g height of glyph %g", width, height); ppl_log(temp_err_string); }
 
   // Only need to consider extra italic width for the final glyph
   if ((err=dviUpdateBoundingBox(interp, width+italic, height, depth))!=0) return err;
@@ -1099,7 +1099,7 @@ int dviChngFnt(dviInterpreterState *interp, int fn)
   s = (char *)lt_malloc(len*sizeof(char));
   if (s==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
   size = font->useSize*interp->scale;
-  if (DEBUG) { sprintf(temp_err_string, "Font useSize %d size %g changed to %d", font->useSize, size, (int)ceil(size-.5)); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: Font useSize %d size %g changed to %d", font->useSize, size, (int)ceil(size-.5)); ppl_log(temp_err_string); }
   snprintf(s, len, "/%s %d selectfont\n", font->psName, (int)ceil(size-.5));
   if ((err=dviPostscriptAppend(interp, s))!=0) return err;
   //free(s);
@@ -1131,7 +1131,7 @@ int dviGetCharSize(dviInterpreterState *interp, unsigned char s, double *size)
   size[2] = tfm->depth[di]  * scale;
   size[3] = tfm->italic[ii] * scale;
 
-  if (DEBUG) { sprintf(temp_err_string, "Character %d chnum %d has indices %d %d %d %d width %g height %g depth %g italic %g useSize %g", s, chnum, wi, di, hi, ii, size[0], size[1], size[2], size[3], font->useSize*interp->scale); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "DVI: Character %d chnum %d has indices %d %d %d %d width %g height %g depth %g italic %g useSize %g", s, chnum, wi, di, hi, ii, size[0], size[1], size[2], size[3], font->useSize*interp->scale); ppl_log(temp_err_string); }
   return 0;
  }
 
@@ -1170,8 +1170,8 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
    }
 
   // Now repeat the process for the text size box
-  // Note that if we're using an extensible math font we use the size of the object being typeset
-  if (interp->curFnt->fontType != FONT_TEX_MEXT && interp->curFnt->fontType != FONT_SYMBOL)
+  // Note that if we're using an extensible math font or a symbol font we use the size of the object being typeset
+  if (interp->curFnt->fontType != FONT_TEX_MEXT && interp->curFnt->fontType != FONT_SYMBOL && interp->curFnt->fontType != FONT_TEX_MSYM)
    {
     bbObj[1] = interp->state->v + interp->curFnt->maxDepth;
     bbObj[3] = interp->state->v - interp->curFnt->maxHeight;

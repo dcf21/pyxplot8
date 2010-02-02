@@ -66,6 +66,7 @@ int dviGetTFM(dviFontDetails *font)
   if      (strncmp(font->tfm->coding, "TeX text"          ,  8)==0) font->fontType = FONT_TEX_TEXT;
   else if (strncmp(font->tfm->coding, "TeX math italic"   , 15)==0) font->fontType = FONT_TEX_MATH;
   else if (strncmp(font->tfm->coding, "TeX math extension", 18)==0) font->fontType = FONT_TEX_MEXT;
+  else if (strncmp(font->tfm->coding, "TeX math symbols"  , 16)==0) font->fontType = FONT_TEX_MSYM;
   else                                                              font->fontType = FONT_UNKNOWN;
 
   // This is a list of bonkers fonts
@@ -467,7 +468,7 @@ int dviFindMaxSize(dviFontDetails *font)
    }
   font->maxHeight *= font->useSize;
   font->maxDepth  *= font->useSize;
-  if (DEBUG) { sprintf(temp_err_string, "Maximum height %f depth %f from characters %d %d %s %s", font->maxHeight, font->maxDepth, hmax, dmax, (char *)(&hmax), (char *)(&dmax)); ppl_log(temp_err_string); }
+  if (DEBUG) { sprintf(temp_err_string, "TFM: Maximum height %f depth %f from characters %d %d %s %s", font->maxHeight, font->maxDepth, hmax, dmax, (char *)(&hmax), (char *)(&dmax)); ppl_log(temp_err_string); }
   return 0;
  }
 
