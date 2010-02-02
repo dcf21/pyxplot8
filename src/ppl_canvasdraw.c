@@ -627,7 +627,7 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   ListIterator *ListIter;
   char *cptr;
   double bb_left, bb_right, bb_top, bb_bottom, xanchor, yanchor;
-  double ab_left, ab_right, ab_top, ab_bottom; // The align box is different from the bounding box in that it allows space for descenders which may/may not be present, such that the text labels "elephant" and "camel" have centres at the same vertical position.
+  double ab_left, ab_right, ab_top, ab_bottom; // The align box is different from the bounding box in that it gives the baseline height of the lowest line of text and the cap height of the highest line of text
 
   // If colstr is blank, we are painting with null ink
   if (colstr[0]=='\0') return;
@@ -655,7 +655,7 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   else if (halign == SW_HALIGN_CENT ) xanchor = (ab_left + ab_right)/2.0;
   else if (halign == SW_HALIGN_RIGHT) xanchor = ab_right;
   else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
-  if      (valign == SW_VALIGN_TOP  ) yanchor = ab_top;
+  if      (valign == SW_VALIGN_TOP  ) yanchor = bb_top;
   else if (valign == SW_VALIGN_CENT ) yanchor = (ab_top + ab_bottom)/2.0;
   else if (valign == SW_VALIGN_BOT  ) yanchor = ab_bottom;
   else                                 { ppl_error(ERR_INTERNAL, "Illegal valign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
