@@ -332,6 +332,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    {
     unsigned char ac[3]={0,0,0};
     double b,ps,min[3],max[3];
+    int NDirections=0;
 
     b  = 0.0005 * sg->bar;
     ps = pd->ww_final.pointsize * EPS_DEFAULT_PS / M_TO_PS;
@@ -350,20 +351,20 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         IF_NOT_INVISIBLE
          {
           for (i=0;i<3;i++) { min[i]=max[i]=UUR(i); }
-          if      (style == SW_STYLE_XERRORBARS   ) { ac[0]=1; min[0] = UUR(0) - UUR(2+ThreeDim); max[0] = UUR(0) + UUR(2+ThreeDim); }
-          else if (style == SW_STYLE_YERRORBARS   ) { ac[1]=1; min[1] = UUR(1) - UUR(2+ThreeDim); max[1] = UUR(1) + UUR(2+ThreeDim); }
-          else if (style == SW_STYLE_ZERRORBARS   ) { ac[2]=1; min[2] = UUR(2) - UUR(3         ); max[2] = UUR(2) + UUR(3         ); }
-          else if (style == SW_STYLE_XERRORRANGE  ) { ac[0]=1; min[0] = UUR(2+ThreeDim); max[0] = UUR(3+ThreeDim); }
-          else if (style == SW_STYLE_YERRORRANGE  ) { ac[1]=1; min[1] = UUR(2+ThreeDim); max[1] = UUR(3+ThreeDim); }
-          else if (style == SW_STYLE_ZERRORRANGE  ) { ac[2]=1; min[2] = UUR(3         ); max[2] = UUR(4         ); }
-          else if (style == SW_STYLE_XYERRORBARS  ) { ac[0]=ac[1]=1; min[0] = UUR(0) - UUR(2+ThreeDim); max[0] = UUR(0) + UUR(2+ThreeDim); min[1] = UUR(1) - UUR(3+ThreeDim); max[1] = UUR(1) + UUR(3+ThreeDim); }
-          else if (style == SW_STYLE_XZERRORBARS  ) { ac[0]=ac[2]=1; min[0] = UUR(0) - UUR(3         ); max[0] = UUR(0) + UUR(3         ); min[2] = UUR(2) - UUR(4         ); max[2] = UUR(2) + UUR(4         ); }
-          else if (style == SW_STYLE_YZERRORBARS  ) { ac[1]=ac[2]=1; min[1] = UUR(1) - UUR(3         ); max[1] = UUR(1) + UUR(3         ); min[2] = UUR(2) - UUR(4         ); max[2] = UUR(2) + UUR(4         ); }
-          else if (style == SW_STYLE_XYERRORRANGE ) { ac[0]=ac[1]=1; min[0] = UUR(2+ThreeDim); max[0] = UUR(3+ThreeDim); min[1] = UUR(4+ThreeDim); max[1] = UUR(5+ThreeDim); }
-          else if (style == SW_STYLE_YZERRORRANGE ) { ac[1]=ac[2]=1; min[1] = UUR(3         ); max[1] = UUR(4         ); min[2] = UUR(5         ); max[2] = UUR(6         ); }
-          else if (style == SW_STYLE_XZERRORRANGE ) { ac[0]=ac[2]=1; min[0] = UUR(3         ); max[0] = UUR(4         ); min[2] = UUR(5         ); max[2] = UUR(6         ); }
-          else if (style == SW_STYLE_XYZERRORBARS ) { ac[0]=ac[1]=ac[2]=1; min[0] = UUR(0) - UUR(3); max[0] = UUR(0) + UUR(3); min[1] = UUR(1) - UUR(4); max[1] = UUR(1) + UUR(4); min[2] = UUR(2) - UUR(5); max[2] = UUR(2) + UUR(6); }
-          else if (style == SW_STYLE_XYZERRORRANGE) { ac[0]=ac[1]=ac[2]=1; min[0] = UUR(3); max[0] = UUR(4); min[1] = UUR(5); max[1] = UUR(6); min[2] = UUR(7); max[2] = UUR(8); }
+          if      (style == SW_STYLE_XERRORBARS   ) { NDirections = 1; ac[0]=1; min[0] = UUR(0) - UUR(2+ThreeDim); max[0] = UUR(0) + UUR(2+ThreeDim); }
+          else if (style == SW_STYLE_YERRORBARS   ) { NDirections = 1; ac[1]=1; min[1] = UUR(1) - UUR(2+ThreeDim); max[1] = UUR(1) + UUR(2+ThreeDim); }
+          else if (style == SW_STYLE_ZERRORBARS   ) { NDirections = 1; ac[2]=1; min[2] = UUR(2) - UUR(3         ); max[2] = UUR(2) + UUR(3         ); }
+          else if (style == SW_STYLE_XERRORRANGE  ) { NDirections = 1; ac[0]=1; min[0] = UUR(2+ThreeDim); max[0] = UUR(3+ThreeDim); }
+          else if (style == SW_STYLE_YERRORRANGE  ) { NDirections = 1; ac[1]=1; min[1] = UUR(2+ThreeDim); max[1] = UUR(3+ThreeDim); }
+          else if (style == SW_STYLE_ZERRORRANGE  ) { NDirections = 1; ac[2]=1; min[2] = UUR(3         ); max[2] = UUR(4         ); }
+          else if (style == SW_STYLE_XYERRORBARS  ) { NDirections = 2; ac[0]=ac[1]=1; min[0] = UUR(0) - UUR(2+ThreeDim); max[0] = UUR(0) + UUR(2+ThreeDim); min[1] = UUR(1) - UUR(3+ThreeDim); max[1] = UUR(1) + UUR(3+ThreeDim); }
+          else if (style == SW_STYLE_XZERRORBARS  ) { NDirections = 2; ac[0]=ac[2]=1; min[0] = UUR(0) - UUR(3         ); max[0] = UUR(0) + UUR(3         ); min[2] = UUR(2) - UUR(4         ); max[2] = UUR(2) + UUR(4         ); }
+          else if (style == SW_STYLE_YZERRORBARS  ) { NDirections = 2; ac[1]=ac[2]=1; min[1] = UUR(1) - UUR(3         ); max[1] = UUR(1) + UUR(3         ); min[2] = UUR(2) - UUR(4         ); max[2] = UUR(2) + UUR(4         ); }
+          else if (style == SW_STYLE_XYERRORRANGE ) { NDirections = 2; ac[0]=ac[1]=1; min[0] = UUR(2+ThreeDim); max[0] = UUR(3+ThreeDim); min[1] = UUR(4+ThreeDim); max[1] = UUR(5+ThreeDim); }
+          else if (style == SW_STYLE_YZERRORRANGE ) { NDirections = 2; ac[1]=ac[2]=1; min[1] = UUR(3         ); max[1] = UUR(4         ); min[2] = UUR(5         ); max[2] = UUR(6         ); }
+          else if (style == SW_STYLE_XZERRORRANGE ) { NDirections = 2; ac[0]=ac[2]=1; min[0] = UUR(3         ); max[0] = UUR(4         ); min[2] = UUR(5         ); max[2] = UUR(6         ); }
+          else if (style == SW_STYLE_XYZERRORBARS ) { NDirections = 3; ac[0]=ac[1]=ac[2]=1; min[0] = UUR(0) - UUR(3); max[0] = UUR(0) + UUR(3); min[1] = UUR(1) - UUR(4); max[1] = UUR(1) + UUR(4); min[2] = UUR(2) - UUR(5); max[2] = UUR(2) + UUR(6); }
+          else if (style == SW_STYLE_XYZERRORRANGE) { NDirections = 3; ac[0]=ac[1]=ac[2]=1; min[0] = UUR(3); max[0] = UUR(4); min[1] = UUR(5); max[1] = UUR(6); min[2] = UUR(7); max[2] = UUR(8); }
 
           if (a[0]->log==SW_BOOL_TRUE) { if (min[0]<DBL_MIN) min[0]=DBL_MIN; if (max[0]<DBL_MIN) max[0]=DBL_MIN; }
           if (a[1]->log==SW_BOOL_TRUE) { if (min[1]<DBL_MIN) min[1]=DBL_MIN; if (max[1]<DBL_MIN) max[1]=DBL_MIN; }
@@ -388,6 +389,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             LineDraw_Point(ld, (i==xn)?(max[xn]):(UUR(xn)), (i==yn)?(max[yn]):(UUR(yn)), ThreeDim ? ((i==zn)?(max[zn]):(UUR(zn))) : 0.0, 0,0,0,
                   (i==xn)?(-b ):0, (i==yn)?(-b ):0, (i==zn)?(-b ):0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
             LineDraw_PenUp(ld);
+            if (NDirections!=1) continue; // Only put a central bar through errorbars which only go in a single direction
             LineDraw_Point(ld,                   (UUR(xn)),                   (UUR(yn)), ThreeDim ? (                   UUR(zn) ) : 0.0, 0,0,0,
                   (i==xn)?( ps):0, (i==yn)?( ps):0, (i==zn)?( ps):0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
             LineDraw_Point(ld,                   (UUR(xn)),                   (UUR(yn)), ThreeDim ? (                   UUR(zn) ) : 0.0, 0,0,0,
