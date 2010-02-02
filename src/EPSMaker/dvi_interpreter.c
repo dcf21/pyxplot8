@@ -1170,12 +1170,9 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
    }
 
   // Now repeat the process for the text size box
-  // Note that if we're using an extensible math font or a symbol font we use the size of the object being typeset
-  if (interp->curFnt->fontType != FONT_TEX_MEXT && interp->curFnt->fontType != FONT_SYMBOL && interp->curFnt->fontType != FONT_TEX_MSYM)
-   {
-    bbObj[1] = interp->state->v + interp->curFnt->maxDepth;
-    bbObj[3] = interp->state->v - interp->curFnt->maxHeight;
-   }
+  // This is the baseline and 70% of the use height, which we take to be the cap height
+  bbObj[1] = interp->state->v;
+  bbObj[3] = interp->state->v - interp->curFnt->useSize * 0.70;
 
   // Check to see if we already have a text size box
   if (interp->textSizeBox == NULL)
