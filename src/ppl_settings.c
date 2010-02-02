@@ -277,7 +277,8 @@ void ppl_settings_makedefault()
 
   // Set up current axes. Because default axis contains no malloced strings, we don't need to use AxisCopy() here.
   for (i=0; i<MAX_AXES; i++) XAxes[i] = YAxes[i] = ZAxes[i] = settings_axis_default;
-  XAxes[1].enabled = YAxes[1].enabled = ZAxes[1].enabled = 1;
+  XAxes[1].enabled   = YAxes[1].enabled   = ZAxes[1].enabled   = 1; // By default, only axes 1 are enabled
+  XAxes[2].topbottom = YAxes[2].topbottom = ZAxes[2].topbottom = 1; // By default, axes 2 are opposite axes 1
   for (i=0; i<MAX_AXES; i++) { XAxesDefault[i] = XAxes[i]; YAxesDefault[i] = YAxes[i]; ZAxesDefault[i] = ZAxes[i]; }
 
   // Setting which affect how we talk to the current interactive session

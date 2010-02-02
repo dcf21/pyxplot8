@@ -45,6 +45,9 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
  {
   int i,j,N,xrn;
   const double logmin = 1e-10;
+  double UnitMultiplier=1.0;
+  char *UnitString=NULL;
+  value CentralValue;
 
   axis->FinalActive = axis->FinalActive || axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
   if (!axis->FinalActive) { axis->RangeFinalised = 0; return; } // Axis is not in use
@@ -54,7 +57,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
    {
     // Work out axis range
     unsigned char MinSet=1;
-    double min_prelim, max_prelim, OoM;
 
     if       (HardMin != NULL)                               axis->MinFinal = *HardMin;
     else if ((axis->MinSet==SW_BOOL_TRUE) && (!HardAutoMin)) axis->MinFinal = axis->min;
@@ -91,9 +93,24 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
        }
      }
 
+   }
+
+  // Finalise the physical unit to be associated with data on this axis
+  CentralValue = axis->DataUnit;
+  CentralValue.FlagComplex = 0;
+  CentralValue.imag = 0.0;
+  CentralValue.real = (axis->format==NULL) ? eps_plot_axis_InvGetPosition(0.5, axis) : 1.0;
+  UnitString = ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L);
+  UnitMultiplier /= CentralValue.real;
+  if (!gsl_finite(UnitMultiplier)) UnitMultiplier=1.0;
+
+  if (!axis->RangeFinalised)
+   {
+    double min_prelim, max_prelim, OoM;
+
     // If axis does not have a user-specified range, round it outwards towards a round endpoint
-    min_prelim = axis->MinFinal;
-    max_prelim = axis->MaxFinal;
+    min_prelim = axis->MinFinal * UnitMultiplier;
+    max_prelim = axis->MaxFinal * UnitMultiplier;
 
     if (axis->log == SW_BOOL_TRUE) { min_prelim = log10(min_prelim); max_prelim = log10(max_prelim); }
 
@@ -102,6 +119,9 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     max_prelim = ceil (max_prelim / OoM) * OoM;
 
     if (axis->log == SW_BOOL_TRUE) { min_prelim = pow(10.0,min_prelim); max_prelim = pow(10.0,max_prelim); }
+
+    min_prelim /= UnitMultiplier;
+    max_prelim /= UnitMultiplier;
 
     if (gsl_finite(min_prelim) && (HardMin == NULL) && (axis->MinSet!=SW_BOOL_TRUE) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MinFinal = min_prelim;
     if (gsl_finite(max_prelim) && (HardMax == NULL) && (axis->MaxSet!=SW_BOOL_TRUE) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MaxFinal = max_prelim;
@@ -127,8 +147,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   // Secondly, decide what ticks to place on this axis
   if (!axis->TickListFinalised)
    {
-    double tick_sep_major , tick_sep_minor, UnitMultiplier=1.0;
-    value CentralValue;
+    double tick_sep_major , tick_sep_minor;
 
     // Work out optimal tick separation
     if (xyz!=1)
@@ -142,11 +161,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       tick_sep_minor = 0.008;
      }
 
-    // Finalise the label to be placed on the axis, appending a physical unit as necessary
-    CentralValue = axis->DataUnit;
-    CentralValue.FlagComplex = 0;
-    CentralValue.imag = 0.0;
-    CentralValue.real = (axis->format==NULL) ? eps_plot_axis_InvGetPosition(0.5, axis) : 1.0;
+    // Finalise the label to be placed on the axis, quoting a physical unit as necessary
     if (axis->DataUnit.dimensionless)
     { axis->FinalAxisLabel = axis->label; } // No units to append
     else
@@ -156,11 +171,9 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       if (!(axis->DataUnit.dimensionless)) i+= 1024;
       axis->FinalAxisLabel = (char *)lt_malloc(i);
       if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
-      if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s ($%s$)", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L));
-      else if (AxisUnitStyle == SW_AXISUNITSTY_RATIO)   sprintf(axis->FinalAxisLabel, "%s / $%s$", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L));
-      else                                              sprintf(axis->FinalAxisLabel, "%s [$%s$]", (axis->label != NULL)?axis->label:"", ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,SW_DISPLAY_L));
-      UnitMultiplier /= CentralValue.real;
-      if (!gsl_finite(UnitMultiplier)) UnitMultiplier=1.0;
+      if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s ($%s$)", (axis->label != NULL)?axis->label:"", UnitString);
+      else if (AxisUnitStyle == SW_AXISUNITSTY_RATIO)   sprintf(axis->FinalAxisLabel, "%s / $%s$", (axis->label != NULL)?axis->label:"", UnitString);
+      else                                              sprintf(axis->FinalAxisLabel, "%s [$%s$]", (axis->label != NULL)?axis->label:"", UnitString);
      }
 
     // MAJOR TICKS

@@ -1071,7 +1071,8 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
   // PHASE  3: EVALUATION OF **
   if (OpList[4]!=0) for (i=CalculatedEnd-1,p=len-1;p>0;i--,p--) if ((StatusRow[p]==7)&&(StatusRow[p-1]!=7))
    {
-    if (MATCH_TWO('*','*'))
+    for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++);
+    if ((StatusRow[j]>=BUFFER_OFFSET) && (MATCH_TWO('*','*')))
      {
       FETCHPREV(prev_start, prev_bufno, prev_end);
       FETCHNEXT(next_start, next_bufno, next_end);
@@ -1089,6 +1090,18 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     SETSTATUS(p, next_start, next_bufno);
     i = start + next_start;
     i--; p=i-start;
+   }
+  // PHASE 4b: EVALUATION OF ** IN CASE OF **-...
+  if (OpList[4]!=0) for (i=CalculatedEnd-1,p=len-1;p>0;i--,p--) if ((StatusRow[p]==7)&&(StatusRow[p-1]!=7))
+   {
+    if (MATCH_TWO('*','*'))
+     {
+      FETCHPREV(prev_start, prev_bufno, prev_end);
+      FETCHNEXT(next_start, next_bufno, next_end);
+      ppl_units_pow(ResultBuffer+prev_bufno , ResultBuffer+next_bufno , ResultBuffer+prev_bufno , errpos , errtext);
+      if (*errpos >= 0) { *errpos=i; return; }
+      SETSTATUS(prev_end, next_end, prev_bufno);
+     }
    }
   // PHASE  5: EVALUATION OF *  /  %
   if (OpList[5]!=0) for (i=start,p=0;i<CalculatedEnd;i++,p++) if (StatusRow[p]==7)

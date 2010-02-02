@@ -383,9 +383,9 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
      {
       // Check if we have partial range which conflicts with units of range of axis
       if ((pr->MinSet || pr->MaxSet) && (axis->DataUnitSet) && (!ppl_units_DimEqual(&axis->DataUnit, &pr->unit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-      if ((pr->MinSet && (!pr->MaxSet)) && (axis->MaxSet) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-      if (((!pr->MinSet) && pr->MaxSet) && (axis->MinSet) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-      if ((axis->MinSet || axis->MaxSet) && (axis->DataUnitSet) && (!ppl_units_DimEqual(&axis->unit, &axis->DataUnit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+      if ((pr->MinSet && (!pr->MaxSet)) && (axis->MaxSet==SW_BOOL_TRUE) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+      if (((!pr->MinSet) && pr->MaxSet) && (axis->MinSet==SW_BOOL_TRUE) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+      if (((axis->MinSet==SW_BOOL_TRUE) || (axis->MaxSet==SW_BOOL_TRUE)) && (axis->DataUnitSet) && (!ppl_units_DimEqual(&axis->unit, &axis->DataUnit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
 
       // Read information about axis range out of list of ranges supplied to the plot command, ready to pass to eps_plot_ticking
       if (pr->AutoMinSet) { HardAutoMin = 1; }
@@ -397,8 +397,8 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
     // Update axis->DataUnit to be the canonical reference for the units of the axis
     if (!axis->DataUnitSet)
      {
-      if      ((HardMin!=NULL) || (HardMax!=NULL)) { axis->DataUnitSet=1; axis->DataUnit=pr  ->unit; }
-      else if ( axis->MinSet   ||  axis->MaxSet  ) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
+      if      ((HardMin     !=NULL        ) || (HardMax     !=NULL        )) { axis->DataUnitSet=1; axis->DataUnit=pr  ->unit; }
+      else if ((axis->MinSet==SW_BOOL_TRUE) || (axis->MaxSet==SW_BOOL_TRUE)) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
      }
    }
 
