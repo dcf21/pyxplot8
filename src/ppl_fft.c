@@ -326,7 +326,7 @@ int directive_fft(Dict *command)
     datagrid[i][1] = datagrid[i][0] * normI + datagrid[i][1] * normR;
     #else
     datagrid[i].re = datagrid[i].re * normR - datagrid[i].im * normI;
-    datagrid[i].im = datagrid[i].re * normI + datagrid[i].im * normR
+    datagrid[i].im = datagrid[i].re * normI + datagrid[i].im * normR;
     #endif
    }
 
