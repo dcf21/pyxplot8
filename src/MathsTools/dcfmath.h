@@ -96,6 +96,11 @@ void dcfmath_gaussianPDF(value *in1, value *in2, value *output, int *status, cha
 void dcfmath_gaussianCDF(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_gaussianCDFi(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_heaviside(value *in, value *output, int *status, char *errtext);
+void dcfmath_hyperg_0F1(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_hyperg_1F1(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
+void dcfmath_hyperg_2F0(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
+void dcfmath_hyperg_2F1(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext);
+void dcfmath_hyperg_U(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_hypot(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_imag(value *in, value *output, int *status, char *errtext);
 void dcfmath_ldexp(value *in1, value *in2, value *output, int *status, char *errtext);
@@ -131,6 +136,8 @@ void dcfmath_sqrt(value *in, value *output, int *status, char *errtext);
 void dcfmath_tan(value *in, value *output, int *status, char *errtext);
 void dcfmath_tanh(value *in, value *output, int *status, char *errtext);
 void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext);
+void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext);
 
 #endif

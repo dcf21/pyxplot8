@@ -41,6 +41,7 @@
 #include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_hyperg.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_zeta.h>
 
@@ -831,6 +832,61 @@ void dcfmath_heaviside(value *in, value *output, int *status, char *errtext)
   CHECK_OUTPUT_OKAY;
  }
 
+void dcfmath_hyperg_0F1(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "hyperg_0F1(c,x)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_hyperg_0F1(in1->real,in2->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_hyperg_1F1(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "hyperg_1F1(a,b,x)";
+  CHECK_3NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  IF_3COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_hyperg_1F1(in1->real,in2->real,in3->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_hyperg_2F0(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "hyperg_2F0(a,b,x)";
+  CHECK_3NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  IF_3COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_hyperg_2F0(in1->real,in2->real,in3->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_hyperg_2F1(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "hyperg_2F1(a,b,c,x)";
+  CHECK_4NOTNAN;
+  CHECK_4INPUT_DIMLESS;
+  IF_4COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_hyperg_2F1(in1->real,in2->real,in3->real,in4->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_hyperg_U(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "hyperg_U(a,b,x)";
+  CHECK_3NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  IF_3COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_hyperg_U(in1->real,in2->real,in3->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
 void dcfmath_hypot(value *in1, value *in2, value *output, int *status, char *errtext)
  {
   value tmp, tmp2;
@@ -1294,6 +1350,34 @@ void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *er
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { if ( fabs(in1->real) <= fabs(in2->real) ) output->real = 1.0; }
   ENDIF
+ }
+
+void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "zernike(n,m,r,phi)";
+  int i;
+  CHECK_4NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  CHECK_DIMLESS_OR_HAS_UNIT(in4, "fourth", "an angle", UNIT_ANGLE, 1);
+  IF_4COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+   }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "zernikeR(n,m,r)";
+  CHECK_3NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  IF_3COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+   }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext)

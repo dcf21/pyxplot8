@@ -118,6 +118,11 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_gaussianCDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianCDF}@<@1,@2@>", "gaussianCDF(x,sigma) evaluates the Gaussian cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_gaussianCDFi  = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDFi, NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianCDFi}@<@1,@2@>", "gaussianCDFi(x,sigma) evaluates the inverse Gaussian cumulative distribution function of standard deviation sigma at x"};
   FunctionDescriptor fd_heaviside     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_heaviside   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{heaviside}@<@1@>", "heaviside(x) returns the Heaviside function, defined to be one for x>=0 and zero otherwise"};
+  FunctionDescriptor fd_hyperg_0F1    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_hyperg_0F1  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hyperg\\_}_0\\mathrm{F}_1}@<@1,@2@>", "hyperg_0F1(c,x) evaluates the hypergeometric function 0F1(c,x)"};
+  FunctionDescriptor fd_hyperg_1F1    = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_hyperg_1F1  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hyperg\\_}_1\\mathrm{F}_1}@<@1,@2,@3@>", "hyperg_1F1(a,b,x) evaluates the confluent hypergeometric function 1F1(a,b,x)"};
+  FunctionDescriptor fd_hyperg_2F0    = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_hyperg_2F0  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hyperg\\_}_2\\mathrm{F}_0}@<@1,@2,@3@>", "hyperg_2F0(a,b,x) evaluates the hypergeometric function 2F0(a,b,x)"};
+  FunctionDescriptor fd_hyperg_2F1    = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfmath_hyperg_2F1  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hyperg\\_}_2\\mathrm{F}_1}@<@1,@2,@3,@4@>", "hyperg_2F1(a,b,c,x) evaluates the Gauss hypergeometric function 2F1(a,b,c,x)"};
+  FunctionDescriptor fd_hyperg_U      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_hyperg_U    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hyperg\\_U}@<@1,@2,@3@>", "hyperg_U(a,b,x) evaluates the confluent hypergeometric function U(m,n,x)"};
   FunctionDescriptor fd_hypot         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_hypot       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hypot}@<@1,@2@>", "hypot(x,y) returns the quadrature sum of x and y"};
   FunctionDescriptor fd_imag          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_imag        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{Im}@<@1@>", "Im(z) returns the magnitude of the imaginary part of z"};
   FunctionDescriptor fd_ldexp         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ldexp       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ldexp}@<@1,@2@>", "ldexp(x,y) returns x times 2 to the power of an integer y"};
@@ -175,6 +180,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_time_diff_string={PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcftime_diff_string , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_diff\\_string@<@0@>", "time_diff_string(JD1,JD2,JD,format) returns a textual representation of the time interval elapsed between Julian Day numbers JD1 and JD2."};
   FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tophat}@<@1,@2@>", "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
   FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{unit}@<@0@>", "unit(...) multiplies a number by a physical unit"};
+  FunctionDescriptor fd_zernike       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfmath_zernike     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernike}@<@1,@2,@3,@4@>", "zernike(n,m,r,phi) evaluates the (n,m)th Zernike polynomial at radius r and position angle phi"};
+  FunctionDescriptor fd_zernikeR      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_zernikeR    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernikeR}@<@1,@2,@3@>", "zernikeR(n,m,r) evaluates the (n,m)th radial Zernike polynomial at radius r"};
   FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "\\zeta@<@1@>", "zeta(x) evaluates the Riemann zeta function at x"};
   FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\int_{@2}^{@3}@<@1@>\\,\\mathrm{d}@?", "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
   FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\left.\\frac{\\mathrm{d}}{\\mathrm{d}@?}\\right|_{@?=@2}@<@1@>", "diff_da(e,x,step) numerically differentiates an expression e wrt a at x, using a step size of step. 'a' can be any variable name with fewer than 16 characters."};
@@ -364,6 +371,11 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gaussianCDF"    , (void *)&fd_gaussianCDF , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gaussianCDFi"   , (void *)&fd_gaussianCDFi, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "heaviside"      , (void *)&fd_heaviside   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hyperg_0F1"     , (void *)&fd_hyperg_0F1  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hyperg_1F1"     , (void *)&fd_hyperg_1F1  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hyperg_2F0"     , (void *)&fd_hyperg_2F0  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hyperg_2F1"     , (void *)&fd_hyperg_2F1  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hyperg_U"       , (void *)&fd_hyperg_U    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hypot"          , (void *)&fd_hypot       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Im"             , (void *)&fd_imag        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ldexp"          , (void *)&fd_ldexp       , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -421,6 +433,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_diff_string",(void *)&fd_time_diff_string,sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tophat"         , (void *)&fd_tophat      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "unit"           , (void *)&fd_unit        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernike"        , (void *)&fd_zernike     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernikeR"       , (void *)&fd_zernikeR    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zeta"           , (void *)&fd_zeta        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "diff_d?"        , (void *)&fd_diff        , sizeof(FunctionDescriptor), DATATYPE_VOID);

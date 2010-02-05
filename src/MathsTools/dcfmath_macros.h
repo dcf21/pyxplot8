@@ -133,6 +133,17 @@
    } \
  }
 
+#define CHECK_4INPUT_DIMLESS \
+ { \
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless && in4->dimensionless)) \
+   { \
+    *status = 1; \
+    sprintf(errtext, "The %s function can only act upon dimensionless inputs.", FunctionDescription); \
+    return; \
+   } \
+ }
+
+
 #define CHECK_6INPUT_DIMLESS \
  { \
   if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless && in4->dimensionless && in5->dimensionless && in6->dimensionless)) \
