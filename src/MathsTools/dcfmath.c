@@ -1352,33 +1352,57 @@ void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *er
   ENDIF
  }
 
-void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "zernike(n,m,r,phi)";
-  int i;
-  CHECK_4NOTNAN;
-  CHECK_3INPUT_DIMLESS;
-  CHECK_DIMLESS_OR_HAS_UNIT(in4, "fourth", "an angle", UNIT_ANGLE, 1);
-  IF_4COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL
-   {
-   }
-  ENDIF
-  CHECK_OUTPUT_OKAY;
- }
+//void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext)
+// {
+//  char *FunctionDescription = "zernike(n,m,r,phi)";
+//  int i;
+//  CHECK_4NOTNAN;
+//  CHECK_3INPUT_DIMLESS;
+//  CHECK_NEEDINT(in1, "function can only evaluate Zernike polynomials");
+//  CHECK_NEEDINT(in2, "function can only evaluate Zernike polynomials");
+//  CHECK_DIMLESS_OR_HAS_UNIT(in4, "fourth", "an angle", UNIT_ANGLE, 1);
+//  IF_4COMPLEX { QUERY_MUST_BE_REAL }
+//  ELSE_REAL
+//   {
+//    int n,m;
+//    n = in1->real; m = in2->real;
+//    if ((m>n) || (m<-n))
+//     {
+//      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
+//      else { NULL_OUTPUT; }
+//     } 
+//    if ((n%2)!=(m%2)) return; // Defined to be zero
+//    output->real = gsl_sf_gamma(n+1) * gsl_sf_hyperg_2F1(-0.5*(fabs(m)+n),0.5*(fabs(m)-n),-n,pow(in3->real,-2.0)) / gsl_sf_gamma(0.5*(2+n+m)) / gsl_sf_gamma(0.5*(2+n-m));
+//    if (m>0) output->real *= cos(m*in4->real);
+//    else     output->real *= sin(m*in4->real);
+//   }
+//  ENDIF
+//  CHECK_OUTPUT_OKAY;
+// }
 
-void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
- {
-  char *FunctionDescription = "zernikeR(n,m,r)";
-  CHECK_3NOTNAN;
-  CHECK_3INPUT_DIMLESS;
-  IF_3COMPLEX { QUERY_MUST_BE_REAL }
-  ELSE_REAL
-   {
-   }
-  ENDIF
-  CHECK_OUTPUT_OKAY;
- }
+//void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+// {
+//  char *FunctionDescription = "zernikeR(n,m,r)";
+//  CHECK_3NOTNAN;
+//  CHECK_3INPUT_DIMLESS;
+//  CHECK_NEEDINT(in1, "function can only evaluate Zernike polynomials");
+//  CHECK_NEEDINT(in2, "function can only evaluate Zernike polynomials");
+//  IF_3COMPLEX { QUERY_MUST_BE_REAL }
+//  ELSE_REAL
+//   {
+//    int n,m;
+//    n = in1->real; m = in2->real;
+//    if ((m>n) || (m<-n))
+//     {
+//      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
+//      else { NULL_OUTPUT; }
+//     }
+//    if ((n%2)!=(m%2)) return; // Defined to be zero
+//    output->real = gsl_sf_gamma(n+1) * gsl_sf_hyperg_2F1(-0.5*(fabs(m)+n),0.5*(fabs(m)-n),-n,pow(in3->real,-2.0)) / gsl_sf_gamma(0.5*(2+n+m)) / gsl_sf_gamma(0.5*(2+n-m));
+//   }
+//  ENDIF
+//  CHECK_OUTPUT_OKAY;
+// }
 
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext)
  {

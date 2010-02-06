@@ -180,8 +180,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_time_diff_string={PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcftime_diff_string , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_diff\\_string@<@0@>", "time_diff_string(JD1,JD2,JD,format) returns a textual representation of the time interval elapsed between Julian Day numbers JD1 and JD2."};
   FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tophat}@<@1,@2@>", "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
   FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{unit}@<@0@>", "unit(...) multiplies a number by a physical unit"};
-  FunctionDescriptor fd_zernike       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfmath_zernike     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernike}@<@1,@2,@3,@4@>", "zernike(n,m,r,phi) evaluates the (n,m)th Zernike polynomial at radius r and position angle phi"};
-  FunctionDescriptor fd_zernikeR      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_zernikeR    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernikeR}@<@1,@2,@3@>", "zernikeR(n,m,r) evaluates the (n,m)th radial Zernike polynomial at radius r"};
+//  FunctionDescriptor fd_zernike       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfmath_zernike     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernike}@<@1,@2,@3,@4@>", "zernike(n,m,r,phi) evaluates the (n,m)th Zernike polynomial at radius r and position angle phi"};
+//  FunctionDescriptor fd_zernikeR      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_zernikeR    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernikeR}@<@1,@2,@3@>", "zernikeR(n,m,r) evaluates the (n,m)th radial Zernike polynomial at radius r"};
   FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "\\zeta@<@1@>", "zeta(x) evaluates the Riemann zeta function at x"};
   FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\int_{@2}^{@3}@<@1@>\\,\\mathrm{d}@?", "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
   FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\left.\\frac{\\mathrm{d}}{\\mathrm{d}@?}\\right|_{@?=@2}@<@1@>", "diff_da(e,x,step) numerically differentiates an expression e wrt a at x, using a step size of step. 'a' can be any variable name with fewer than 16 characters."};
@@ -433,8 +433,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_diff_string",(void *)&fd_time_diff_string,sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tophat"         , (void *)&fd_tophat      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "unit"           , (void *)&fd_unit        , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernike"        , (void *)&fd_zernike     , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernikeR"       , (void *)&fd_zernikeR    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+//  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernike"        , (void *)&fd_zernike     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+//  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernikeR"       , (void *)&fd_zernikeR    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zeta"           , (void *)&fd_zeta        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "diff_d?"        , (void *)&fd_diff        , sizeof(FunctionDescriptor), DATATYPE_VOID);

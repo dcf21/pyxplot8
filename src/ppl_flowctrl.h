@@ -24,6 +24,8 @@
 
 #include "ListTools/lt_dict.h"
 
+#include "ppl_units.h"
+
 // Maximum permitted iteration level
 #define MAX_ITERLEVEL_DEPTH 100
 
@@ -45,9 +47,13 @@ typedef struct SubroutineDescriptor {
 #ifndef _PPL_FLOWCTRL_C
 extern char *PPL_FLOWCTRL_LOOPNAME[MAX_ITERLEVEL_DEPTH+1];
 extern int   PPL_FLOWCTRL_BREAKABLE;
+extern int   PPL_FLOWCTRL_RETURNABLE;
 extern int   PPL_FLOWCTRL_BREAKLEVEL;
 extern int   PPL_FLOWCTRL_BROKEN;
 extern int   PPL_FLOWCTRL_CONTINUED;
+extern int   PPL_FLOWCTRL_RETURNED;
+extern int   PPL_FLOWCTRL_RETURNCONTEXT;
+extern value PPL_FLOWCTRL_RETURNVAL, PPL_FLOWCTRL_RETURNTOALGEBRA;
 extern Dict *PPL_SUBROUTINES;
 #endif
 
@@ -58,6 +64,7 @@ int directive_if     (Dict *command, int IterLevel);
 int directive_while  (Dict *command, int IterLevel);
 
 int directive_call      (Dict *command, int IterLevel);
+int CallSubroutineFromAlgebra(char *FunctionName, char *ArgStart, int *endpos, int *errpos, char *errtext, int IterLevel);
 int directive_subroutine(Dict *command, int IterLevel);
 
 void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *chain, cmd_chain *chainiter, int IterLevel, int *status);

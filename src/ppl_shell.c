@@ -170,7 +170,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
   int   memcontext, i, is, j, l, breakable;
   int   status=0;
   char  QuoteChar='\0';
-  static char *DirectiveLinebuffer = NULL;
+  char *DirectiveLinebuffer = NULL;
   Dict *command;
   FILE *SubstPipe;
   sigset_t sigs;
@@ -178,8 +178,6 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
   static int interactive_last=0;
   if (interactive < 0) interactive      = interactive_last;
   else                 interactive_last = interactive;
-
-  if (DirectiveLinebuffer != NULL) { free(DirectiveLinebuffer); DirectiveLinebuffer=NULL; }
 
   // If this line is blank, ignore it
   for (i=0; in[i]!='\0'; i++); for (; ((i>0)&&(in[i]<=' ')); i--);
@@ -193,7 +191,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
 
     // Do `` substitution
     l = strlen(in+1);
-    DirectiveLinebuffer = (char *)malloc(l*sizeof(char));
+    DirectiveLinebuffer = (char *)lt_malloc(l*sizeof(char));
     if (DirectiveLinebuffer==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
     for (i=0, j=0; in[i]!='\0'; i++)
      {
@@ -216,8 +214,15 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
          }
         while ((!feof(SubstPipe)) && (!ferror(SubstPipe)))
          {
-          if (l <= j) DirectiveLinebuffer = (char *)realloc((void *)DirectiveLinebuffer, l=l+1024);
-          if (DirectiveLinebuffer==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
+          if (l <= j)
+           {
+            char *new;
+            new = (char *)lt_malloc(l+4096);
+            if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
+            memcpy(new, DirectiveLinebuffer, l);
+            l+=4096;
+            DirectiveLinebuffer=new;
+           }
           fscanf(SubstPipe,"%c",DirectiveLinebuffer + j);
           if (DirectiveLinebuffer[j] == '\n') DirectiveLinebuffer[j] = ' ';
           if (DirectiveLinebuffer[j] != '\0') j++;
@@ -227,11 +232,27 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
        }
       else
        {
-        if (l <= j) DirectiveLinebuffer = (char *)realloc((void *)DirectiveLinebuffer, l=l+1024);
+        if (l <= j)
+         {
+          char *new;
+          new = (char *)lt_malloc(l+4096);
+          if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
+          memcpy(new, DirectiveLinebuffer, l);
+          l+=4096;
+          DirectiveLinebuffer=new;
+         }
         DirectiveLinebuffer[j++] = in[i];
        }
      }
-    if (l <= j) DirectiveLinebuffer = (char *)realloc((void *)DirectiveLinebuffer, l=l+1);
+    if (l <= j)
+     {
+      char *new;
+      new = (char *)lt_malloc(l+4096);
+      if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
+      memcpy(new, DirectiveLinebuffer, l);
+      l+=4096;
+      DirectiveLinebuffer=new;
+     }
     DirectiveLinebuffer[j] = '\0';
 
     // Parse and execute command
@@ -256,7 +277,6 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
   if (IterLevel == 0) sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
   lt_AscendOutOfContext(memcontext);
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir into temporary directory
-  if (DirectiveLinebuffer != NULL) { free(DirectiveLinebuffer); DirectiveLinebuffer=NULL; }
   return status;
  }
 
@@ -416,6 +436,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
     directive_clear();
     SendCommandToCSP("A");
    }
+  else if (strcmp(directive, "return")==0)
+   return directive_return(command, IterLevel);
   else if (strcmp(directive, "save")==0)
    directive_save(command);
   else if (strcmp(directive, "set")==0)
@@ -491,6 +513,23 @@ int directive_continue(Dict *command, int IterLevel)
     PPL_FLOWCTRL_BREAKLEVEL = -1;
    }
   PPL_FLOWCTRL_CONTINUED=1;
+  return 0;
+ }
+
+int directive_return(Dict *command, int IterLevel)
+ {
+  value *ReturnVal;
+  char  *ReturnValStr;
+
+  DictLookup(command,"return_value",NULL,(void **)(&ReturnVal));
+  DictLookup(command,"string_return_value",NULL,(void **)(&ReturnValStr));
+
+  if (!PPL_FLOWCTRL_RETURNABLE) { ppl_error(ERR_SYNTAX, "The return statement can only be placed inside subroutines."); return 1; }
+  PPL_FLOWCTRL_BREAKLEVEL = -1;
+  PPL_FLOWCTRL_RETURNED   =  1;
+  if (ReturnVal != NULL) PPL_FLOWCTRL_RETURNVAL = *ReturnVal;
+  else                   ppl_units_zero(&PPL_FLOWCTRL_RETURNVAL);
+  if (ReturnValStr != NULL) { PPL_FLOWCTRL_RETURNVAL.string = (char *)lt_malloc_incontext(strlen(ReturnValStr)+1,PPL_FLOWCTRL_RETURNCONTEXT); if (PPL_FLOWCTRL_RETURNVAL.string==NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } strcpy(PPL_FLOWCTRL_RETURNVAL.string, ReturnValStr); }
   return 0;
  }
 

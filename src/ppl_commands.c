@@ -78,6 +78,7 @@ pwd@2:directive =\n\
 quit@1:directive =\n\
 refresh@3:directive =\n\
 reset@3:directive =\n\
+return@3:directive = < %q:string_return_value | %fi:return_value >\n\
 save@2:directive = < %q:filename | %S:filename >\n\
 set@2:directive { item@1 %d:editno } %a:axis format@1:set_option:xformat = < auto@1:auto_format | %Q:format_string > { < horizontal@1:orient | vertical@1:orient | rotate@1:orient %fu:rotation > }\n\
 set@2:directive { item@1 %d:editno } %a:axis label@1:set_option:xlabel = < %q:label_text | %s:label_text > { rotate@1 %fu:rotation }\n\

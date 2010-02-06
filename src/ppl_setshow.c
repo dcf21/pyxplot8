@@ -2700,7 +2700,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      {
       FDiter = (FunctionDescriptor *)DictIter->data;
       SHOW_HIGHLIGHT((FDiter->modified==0));
-      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) && (FDiter->FunctionType != PPL_USERSPACE_HISTOGRAM) && (FDiter->FunctionType != PPL_USERSPACE_FFT))
+      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) && (FDiter->FunctionType != PPL_USERSPACE_HISTOGRAM) && (FDiter->FunctionType != PPL_USERSPACE_FFT) && (FDiter->FunctionType != PPL_USERSPACE_SUBROUTINE))
        {
         sprintf(out+i, "# %-17s: %s.\n", DictIter->key, FDiter->description);
        }
@@ -2775,36 +2775,24 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           i+=strlen(out+i);
           SHOW_DEHIGHLIGHT;
          }
+        else if (FDiter->FunctionType == PPL_USERSPACE_SUBROUTINE)
+         {
+          int l,m;
+          SHOW_HIGHLIGHT((FDiter->modified==0));
+          SDiter = (SubroutineDescriptor *)FDiter->FunctionPtr;
+          sprintf(out+i,"%s(", DictIter->key); i+=strlen(out+i);
+          for (l=0, m=0; l<SDiter->NumberArguments; l++, m++)
+           {
+            for ( ; SDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = SDiter->ArgList[m];
+            *(out+(i++)) = ',';
+           }
+          if (SDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
+          sprintf(out+i,") = [subroutine]\n");
+          i+=strlen(out+i);
+          SHOW_DEHIGHLIGHT;
+         }
         FDiter = FDiter->next;
        }
-      DictIter = DictIterate(DictIter, NULL, NULL);
-     }
-   }
-
-  // Show list of defined subroutines
-  if (StrAutocomplete(word, "subroutines", 1)>=0)
-   {
-    SHOW_HIGHLIGHT(1);
-    sprintf(out+i, "\n# Defined subroutines:\n\n"); i += strlen(out+i); p=1;
-    SHOW_DEHIGHLIGHT;
-
-    DictIter = DictIterateInit(PPL_SUBROUTINES);
-    while (DictIter != NULL)
-     {
-      SDiter = (SubroutineDescriptor *)DictIter->data;
-
-      SHOW_HIGHLIGHT(1);
-      sprintf(out+i,"%s(", DictIter->key); i+=strlen(out+i);
-      for (l=0, m=0; l<SDiter->NumberArguments; l++, m++)
-       {
-        for ( ; SDiter->ArgList[m]!='\0'; m++) *(out+(i++)) = SDiter->ArgList[m];
-        *(out+(i++)) = ',';
-       }
-      if (SDiter->NumberArguments>0) i--; // Remove final comma from list of arguments
-      *(out+(i++)) = ')';
-      *(out+(i++)) = '\n';
-      SHOW_DEHIGHLIGHT;
-
       DictIter = DictIterate(DictIter, NULL, NULL);
      }
    }

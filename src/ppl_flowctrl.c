@@ -47,13 +47,15 @@
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
-Dict *PPL_SUBROUTINES = NULL;
-
 char *PPL_FLOWCTRL_LOOPNAME[MAX_ITERLEVEL_DEPTH+1];
 int   PPL_FLOWCTRL_BREAKABLE  = 0;
+int   PPL_FLOWCTRL_RETURNABLE = 0;
 int   PPL_FLOWCTRL_BREAKLEVEL = -1;
 int   PPL_FLOWCTRL_BROKEN     = 0;
 int   PPL_FLOWCTRL_CONTINUED  = 0;
+int   PPL_FLOWCTRL_RETURNED   = 0;
+int   PPL_FLOWCTRL_RETURNCONTEXT = 0;
+value PPL_FLOWCTRL_RETURNVAL, PPL_FLOWCTRL_RETURNTOALGEBRA;
 
 void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel, int *status)
  {
@@ -116,26 +118,30 @@ void loopaddline(cmd_chain **cmd_put, char *line, int *bracegot, int *bracelevel
  }
 
 // Execute a loop chain once through
-int loop_execute(cmd_chain *chain, int breakable, int IterLevel)
+int loop_execute(cmd_chain *chain, int breakable, int returnable, int IterLevel)
  {
-  int   status=0, OldBreakable;
+  int   status=0, OldBreakable, OldReturnable;
   char *OldLB, *OldLBP, *OldLBA;
   char *line_ptr;
 
-  OldBreakable = PPL_FLOWCTRL_BREAKABLE;
+  OldBreakable  = PPL_FLOWCTRL_BREAKABLE;
+  OldReturnable = PPL_FLOWCTRL_RETURNABLE;
   PPL_FLOWCTRL_BREAKLEVEL = -1;
   PPL_FLOWCTRL_BROKEN     = 0;
   PPL_FLOWCTRL_CONTINUED  = 0;
+  PPL_FLOWCTRL_RETURNED   = 0;
   ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
-  while ((!status) && (PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
+  while ((!status) && (PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0) && (PPL_FLOWCTRL_RETURNED == 0))
    {
-    PPL_FLOWCTRL_BREAKABLE = (breakable || OldBreakable);
+    PPL_FLOWCTRL_BREAKABLE  = (breakable  || OldBreakable);
+    PPL_FLOWCTRL_RETURNABLE = (returnable || OldReturnable);
     SetInputSourceLoop(chain);
     line_ptr = FetchInputStatement("","");
     if (line_ptr == NULL) break;
     if (StrStrip(line_ptr,line_ptr)[0] != '\0') status = ProcessDirective(line_ptr, 0, IterLevel);
    }
-  PPL_FLOWCTRL_BREAKABLE = OldBreakable;
+  PPL_FLOWCTRL_BREAKABLE  = OldBreakable;
+  PPL_FLOWCTRL_RETURNABLE = OldReturnable;
   if ((breakable) && ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel))) PPL_FLOWCTRL_CONTINUED = 0;
   ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
   return status;
@@ -190,8 +196,9 @@ int directive_do(Dict *command, int IterLevel)
   do
    {
     chainiter = chain;
-    status = loop_execute(&chainiter, 1, IterLevel);
+    status = loop_execute(&chainiter, 1, 0, IterLevel);
     if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_RETURNED) break;
     if (status) break;
     i=-1; j=-1;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
@@ -250,8 +257,9 @@ int directive_while(Dict *command, int IterLevel)
     if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
     if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;
     chainiter = chain;
-    status = loop_execute(&chainiter, 1, IterLevel);
+    status = loop_execute(&chainiter, 1, 0, IterLevel);
     if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_RETURNED) break;
    }
   while (!status);
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
@@ -326,8 +334,9 @@ int directive_for(Dict *command, int IterLevel)
   while (((!backwards)&&(iterval->real < end->real)) || ((backwards)&&(iterval->real > end->real)))
    {
     chainiter = chain;
-    status = loop_execute(&chainiter, 1, IterLevel);
+    status = loop_execute(&chainiter, 1, 0, IterLevel);
     if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_RETURNED) break;
     if (status) break;
     iterval->real += step->real;
    }
@@ -414,8 +423,9 @@ int directive_foreach(Dict *command, int IterLevel)
            {
             iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
             chainiter = chain;
-            status = loop_execute(&chainiter, 1, IterLevel);
+            status = loop_execute(&chainiter, 1, 0, IterLevel);
             if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+            if (PPL_FLOWCTRL_RETURNED) break;
            }
           if (status) break;
          }
@@ -446,8 +456,9 @@ int directive_foreach(Dict *command, int IterLevel)
       iterval->string = strptr;
      }
     chainiter = chain;
-    status = loop_execute(&chainiter, 1, IterLevel);
+    status = loop_execute(&chainiter, 1, 0, IterLevel);
     if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+    if (PPL_FLOWCTRL_RETURNED) break;
     if (status) break;
     listiter = ListIterate(listiter, NULL);
    }
@@ -570,8 +581,9 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
       if (InRange) // Only run looped script if this data point is within supplied range
        {
        *chainiter = *chain;
-       *status = loop_execute(chainiter, 1, IterLevel);
+       *status = loop_execute(chainiter, 1, 0, IterLevel);
        if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+       if (PPL_FLOWCTRL_RETURNED) break;
        if (*status) break;
       }
      }
@@ -640,7 +652,7 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
 
   // If we were going to do this if ( ) codeblock, execute it now
   status = 0;
-  if (state == 1) status = loop_execute(&chain, 0, IterLevel);
+  if (state == 1) status = loop_execute(&chain, 0, 0, IterLevel);
   return status;
  }
 
@@ -673,6 +685,7 @@ int directive_subroutine(Dict *command, int IterLevel)
   List                 *ArgList;
   ListIterator         *ListIter;
   Dict                 *TempDict;
+  FunctionDescriptor   *NewFD;
   SubroutineDescriptor *NewSub;
   cmd_chain             chain     = NULL;
   cmd_chain            *cmd_put   = NULL;
@@ -697,12 +710,21 @@ int directive_subroutine(Dict *command, int IterLevel)
 
   // Malloc subroutine descriptor
   NewSub = (SubroutineDescriptor *)lt_malloc(sizeof(SubroutineDescriptor));
-  if (NewSub==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); _lt_SetMemContext(MemContext); return 1; }
+  NewFD  = (FunctionDescriptor *)lt_malloc(sizeof(FunctionDescriptor));
+  if ((NewSub==NULL)||(NewFD==NULL)) { ppl_error(ERR_MEMORY, "Out of memory."); _lt_SetMemContext(MemContext); return 1; }
   NewSub->ArgList = (char *)lt_malloc(j);
   if (NewSub->ArgList==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); _lt_SetMemContext(MemContext); return 1; }
   memcpy(NewSub->ArgList,temp_err_string,j);
-  NewSub->NumberArguments = NArgs;
+  NewSub->NumberArguments = NewFD->NumberArguments = NArgs;
   NewSub->commands = chain;
+  NewFD->modified        = 1;
+  NewFD->FunctionType    = PPL_USERSPACE_SUBROUTINE;
+  NewFD->FunctionPtr     = (void *)NewSub;
+  NewFD->ArgList         = NULL;
+  NewFD->min             = NewFD->max       = NULL;
+  NewFD->MinActive       = NewFD->MaxActive = NULL;
+  NewFD->next            = NULL;
+  NewFD->description     = NewFD->LaTeX = NULL;
 
   // Check whether subroutine statement had { and/or first command on same line
   DictLookup(command,"subroutine_name",NULL,(void **)(&name));
@@ -725,40 +747,41 @@ int directive_subroutine(Dict *command, int IterLevel)
 
   // Add subroutine to subroutine dictionary
   NewSub->commands = chain;
-  DictAppendPtr(PPL_SUBROUTINES, name, (void *)NewSub, sizeof(SubroutineDescriptor), 0, DATATYPE_VOID);
+  DictAppendPtr(_ppl_UserSpace_Funcs, name, (void *)NewFD, sizeof(FunctionDescriptor), 0, DATATYPE_VOID);
   _lt_SetMemContext(MemContext);
   return 0;
  }
 
-int directive_call(Dict *command, int IterLevel)
+int SubroutineCall(char *name, List *ArgList, char *errtext, int IterLevel)
  {
-  int           j, k, NArgs, status=0;
-  char         *name, *cptr;
+  int           j, k, NArgs, status=0, OldBreakable, OldReturnContext;
+  char         *cptr;
+  FunctionDescriptor *fd;
   SubroutineDescriptor *sd;
-  List         *ArgList;
   ListIterator *ListIter;
   Dict         *TempDict;
-  value     *VarData, *InputValue, *ValueBuffer, TempValue;
-  cmd_chain  chainiter = NULL;
+  value        *VarData, *InputValue, *ValueBuffer, TempValue;
+  cmd_chain     chainiter = NULL;
 
   ppl_units_zero(&TempValue);
 
   // Look up subroutine name
-  DictLookup(command,"subroutine_name",NULL,(void **)(&name));
-  DictLookup(PPL_SUBROUTINES,name,NULL,(void **)(&sd));
-  if (sd==NULL) { sprintf(temp_err_string,"No subroutine defined with name '%s'.",name); ppl_error(ERR_GENERAL,temp_err_string); return 1; }
+  DictLookup(_ppl_UserSpace_Funcs,name,NULL,(void **)(&fd));
+  if (fd==NULL) { sprintf(temp_err_string,"No subroutine defined with name '%s'.",name); if (errtext==NULL) ppl_error(ERR_GENERAL,temp_err_string); else strcpy(errtext, temp_err_string); return 1; }
 
   // Check that we have the right number of arguments
-  NArgs = sd->NumberArguments;
-  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
-  if (ListLen(ArgList)!=NArgs) { sprintf(temp_err_string,"Subroutine '%s' takes %d arguments, but %d have been supplied.",name,sd->NumberArguments,ListLen(ArgList)); ppl_error(ERR_GENERAL,temp_err_string); return 1; }
+  NArgs = fd->NumberArguments;
+  if (ListLen(ArgList)!=NArgs) { sprintf(temp_err_string,"Subroutine '%s' takes %d arguments, but %d have been supplied.",name,NArgs,ListLen(ArgList)); if (errtext==NULL) ppl_error(ERR_GENERAL,temp_err_string); else strcpy(errtext, temp_err_string); return 1; }
+
+  // Don't proceed any further for functions which are not subroutines
+  if (fd->FunctionType != PPL_USERSPACE_SUBROUTINE) return 0;
+  sd = (SubroutineDescriptor *)fd->FunctionPtr;
 
   // Malloc temporary buffer for holding the values of the variables which we overwrite
   ValueBuffer = (value *)lt_malloc(NArgs * sizeof(value));
-  if (ValueBuffer==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return 1; }
+  if (ValueBuffer==NULL) { sprintf(temp_err_string,"Out of memory."); if (errtext==NULL) ppl_error(ERR_GENERAL,temp_err_string); else strcpy(errtext, temp_err_string); return 1; }
 
   // Substitute arguments into user's variable dictionary
-  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
   ListIter = ListIterateInit(ArgList);
   for (j=k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
    {
@@ -790,8 +813,17 @@ int directive_call(Dict *command, int IterLevel)
   // Loop through command loop
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   chainiter = sd->commands;
-  status = loop_execute(&chainiter, 1, IterLevel);
-  if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; }
+  ppl_units_zero(&PPL_FLOWCTRL_RETURNVAL);
+  OldBreakable     = PPL_FLOWCTRL_BREAKABLE;
+  OldReturnContext = PPL_FLOWCTRL_RETURNCONTEXT;
+  PPL_FLOWCTRL_RETURNCONTEXT = lt_GetMemContext();
+  PPL_FLOWCTRL_BREAKABLE = 0; // Cannot break through a subroutine
+  status = loop_execute(&chainiter, 0, 1, IterLevel);
+  PPL_FLOWCTRL_BREAKABLE = OldBreakable;
+  PPL_FLOWCTRL_RETURNED=0;
+  PPL_FLOWCTRL_RETURNCONTEXT=OldReturnContext;
+  PPL_FLOWCTRL_RETURNTOALGEBRA = PPL_FLOWCTRL_RETURNVAL;
+  ppl_units_zero(&PPL_FLOWCTRL_RETURNVAL);
 
   // Return arguments to their original values
   for (j=k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
@@ -801,6 +833,71 @@ int directive_call(Dict *command, int IterLevel)
     j += strlen(sd->ArgList+j)+1;
    }
 
+  if (status && (errtext!=NULL)) sprintf(errtext, "Error encountered whilst executing subroutine.");
   return status;
+ }
+
+int directive_call(Dict *command, int IterLevel)
+ {
+  char *name;
+  List *ArgList;
+  DictLookup(command,"subroutine_name",NULL,(void **)(&name));
+  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
+  return SubroutineCall(name, ArgList, NULL, IterLevel);
+ }
+
+int CallSubroutineFromAlgebra(char *FunctionName, char *ArgStart, int *endpos, int *errpos, char *errtext, int IterLevel)
+ {
+  int i, j, k, output, sflag, NArgs;
+  FunctionDescriptor *fd;
+  List *ArgList;
+  Dict *tempdict;
+  value ResultTemp;
+  ArgList = ListInit();
+
+  // Look up subroutine name
+  DictLookup(_ppl_UserSpace_Funcs,FunctionName,NULL,(void **)(&fd));
+  if (fd==NULL) { sprintf(errtext,"No subroutine defined with name '%s'.",FunctionName); *errpos=-1; return 1; }
+  NArgs = fd->NumberArguments;
+
+  for (i=k=0; k<NArgs; k++) // Now collect together numeric arguments
+   {
+    while ((ArgStart[i]>'\0')&&(ArgStart[i]<=' ')) i++;
+    if (ArgStart[i]==')') { *errpos = i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return 1; }
+    j=-1;
+    if ((ArgStart[i]!='\'')&&(ArgStart[i]!='\"')) { sflag=0; ppl_EvaluateAlgebra(ArgStart+i, &ResultTemp    , 0, &j, 0, errpos, errtext, IterLevel+1); }
+    else                                          { sflag=1; ppl_GetQuotedString(ArgStart+i, temp_err_string, 0, &j, 0, errpos, errtext, IterLevel+1); }
+    if (*errpos >= 0) { (*errpos) += i; return 1; }
+    i+=j;
+
+    tempdict = DictInit();
+    if (sflag) DictAppendString(tempdict, "string_argument", temp_err_string);
+    else       DictAppendPtrCpy(tempdict, "argument"       , (void *)&ResultTemp, sizeof(value), DATATYPE_VOID);
+    ListAppendPtr(ArgList, (void *)tempdict, 0, 0, DATATYPE_VOID);
+
+    while ((ArgStart[i]>'\0')&&(ArgStart[i]<=' ')) i++;
+    if (k < NArgs-1)
+     {
+      if (ArgStart[i] != ',')
+       {
+        *errpos = i;
+        if (ArgStart[i] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
+        else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function.");
+        return 1;
+       } else { i++; }
+     }
+   }
+  if (ArgStart[i] != ')') // Check that we have a closing bracket
+   {
+    *errpos = i;
+    if (ArgStart[i] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
+    else                   strcpy(errtext,"Syntax Error: Unexpected trailing matter after final argument to function.");
+    return 1;
+   }
+
+  *errpos = -1;
+  *endpos = i+1;
+  output = SubroutineCall(FunctionName, ArgList, errtext, IterLevel);
+  return output;
  }
 

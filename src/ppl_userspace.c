@@ -47,6 +47,7 @@
 #include "ppl_constants.h"
 #include "ppl_datafile.h"
 #include "ppl_fft.h"
+#include "ppl_flowctrl.h"
 #include "ppl_histogram.h"
 #include "ppl_interpolation.h"
 #include "ppl_units.h"
@@ -436,66 +437,81 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
       sprintf(errtext, "Request for unrecognised column of datafile '$%s'.", temp_err_string);
       return;
      }
-    while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
+    while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<=*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
     if (in[pos]=='(') // We have a function
      {
       DictLookup(_ppl_UserSpace_Funcs, FormatString, NULL, (void **)&FuncDefn); // Look up in database of function definitions
       if (FuncDefn == NULL) { *errpos = start; sprintf(errtext, "No such function, '%s'.", FormatString); return; }
-      if (FuncDefn->FunctionType != PPL_USERSPACE_STRFUNC) { *errpos = start; sprintf(errtext, "This function returns a numeric result; a string function was expected."); return; }
-      NArgs = FuncDefn->NumberArguments;
-      pos++;
-      for (k=0; k<NArgs; k++) // Now collect together numeric arguments
+      if (FuncDefn->FunctionType == PPL_USERSPACE_SUBROUTINE)
        {
-        if (k+2 >= ALGEBRA_MAXITEMS) { *errpos = pos; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
-        while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
-        if (in[pos]==')') { *errpos = pos; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
-        j=-1;
-        ppl_EvaluateAlgebra(in+pos, ResultBuffer+k+2, 0, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
-        if (*errpos >= 0) { (*errpos) += pos; return; }
-        pos+=j;
-        while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
-        if (k < NArgs-1)
-         {
-          if (in[pos] != ',')
-           {
-            *errpos = pos;
-            if (in[pos] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
-            else               strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function.");
-            return;
-           } else { pos++; }
-         }
-       }
-      if (NArgs==-1) // We have a function which takes one string argument
-       {
-        pos--; // pos should point to opening bracket
-        StrBracketMatch(in+pos,NULL,NULL,&k,0);
-        if (k<=0) { *errpos = pos; strcpy(errtext,"Syntax Error: Mismatched bracket."); return; }
-        j=-1;
-        ((void(*)(char*,int,value*,unsigned char,int,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,DollarAllowed,RecursionDepth,&j,errtext);
-        if (j>=0) { *errpos = pos+1+j; return; }
-        pos += k;
-       }
-      if (in[pos] != ')') // Check that we have closing bracket
-       {
-        (*errpos) = pos;
-        if (in[pos] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
-        else               strcpy(errtext,"Syntax Error: Unexpected trailing matter after final argument to function");
+        int ep=-1, endpos, stat;
+        stat = CallSubroutineFromAlgebra(FormatString, in+pos+1, &endpos, &ep, errtext, RecursionDepth+1);
+        if (stat) { *errpos = (ep>=0) ? (pos+1+ep) : start; return; }
+        if (PPL_FLOWCTRL_RETURNTOALGEBRA.string == NULL) { *errpos = start; sprintf(errtext, "This subroutine returns a numeric result; a string result was expected."); return; }
+        pos += endpos+1;
+        strcpy(out, PPL_FLOWCTRL_RETURNTOALGEBRA.string);
+        if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; }
+        if ((end!=NULL)&&(*end<0)) *end=pos;
         return;
-       } else { pos++; }
-      if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; } // Have we used up as many characters as we were told we had to?
-      j=0;
-      if      (NArgs>=0) ResultBuffer[0].string = NULL;
-      if      (NArgs==0) ((void(*)(value*,                            int*,char*))FuncDefn->FunctionPtr)(                                                            ResultBuffer,&j,errtext);
-      else if (NArgs==1) ((void(*)(value*,value*,                     int*,char*))FuncDefn->FunctionPtr)(                                             ResultBuffer+2,ResultBuffer,&j,errtext);
-      else if (NArgs==2) ((void(*)(value*,value*,value*,              int*,char*))FuncDefn->FunctionPtr)(                              ResultBuffer+2,ResultBuffer+3,ResultBuffer,&j,errtext);
-      else if (NArgs==3) ((void(*)(value*,value*,value*,value*,       int*,char*))FuncDefn->FunctionPtr)(               ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer,&j,errtext);
-      else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,int*,char*))FuncDefn->FunctionPtr)(ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer+5,ResultBuffer,&j,errtext);
-      if (j>0) { *errpos = start; return; }
-      if ((end!=NULL)&&(*end<0)) *end=pos;
-      strcpy(out, ResultBuffer[0].string);
-      return;
+       }
+      else if (FuncDefn->FunctionType != PPL_USERSPACE_STRFUNC) { *errpos = start; sprintf(errtext, "This function returns a numeric result; a string function was expected."); return; }
+      else
+       {
+        NArgs = FuncDefn->NumberArguments;
+        pos++;
+        for (k=0; k<NArgs; k++) // Now collect together numeric arguments
+         {
+          if (k+2 >= ALGEBRA_MAXITEMS) { *errpos = pos; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
+          while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
+          if (in[pos]==')') { *errpos = pos; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
+          j=-1;
+          ppl_EvaluateAlgebra(in+pos, ResultBuffer+k+2, 0, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
+          if (*errpos >= 0) { (*errpos) += pos; return; }
+          pos+=j;
+          while ((in[pos]>'\0')&&(in[pos]<=' ')) pos++;
+          if (k < NArgs-1)
+           {
+            if (in[pos] != ',')
+             {
+              *errpos = pos;
+              if (in[pos] ==')') strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
+              else               strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function.");
+              return;
+             } else { pos++; }
+           }
+         }
+        if (NArgs==-1) // We have a function which takes one string argument
+         {
+          pos--; // pos should point to opening bracket
+          StrBracketMatch(in+pos,NULL,NULL,&k,0);
+          if (k<=0) { *errpos = pos; strcpy(errtext,"Syntax Error: Mismatched bracket."); return; }
+          j=-1;
+          ((void(*)(char*,int,value*,unsigned char,int,int*,char*))FuncDefn->FunctionPtr)(in+pos+1,k-1,ResultBuffer,DollarAllowed,RecursionDepth,&j,errtext);
+          if (j>=0) { *errpos = pos+1+j; return; }
+          pos += k;
+         }
+        if (in[pos] != ')') // Check that we have closing bracket
+         {
+          (*errpos) = pos;
+          if (in[pos] ==',') strcpy(errtext,"Syntax Error: Too many arguments supplied to function.");
+          else               strcpy(errtext,"Syntax Error: Unexpected trailing matter after final argument to function");
+          return;
+         } else { pos++; }
+        if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; } // Have we used up as many characters as we were told we had to?
+        j=0;
+        if      (NArgs>=0) ResultBuffer[0].string = NULL;
+        if      (NArgs==0) ((void(*)(value*,                            int*,char*))FuncDefn->FunctionPtr)(                                                            ResultBuffer,&j,errtext);
+        else if (NArgs==1) ((void(*)(value*,value*,                     int*,char*))FuncDefn->FunctionPtr)(                                             ResultBuffer+2,ResultBuffer,&j,errtext);
+        else if (NArgs==2) ((void(*)(value*,value*,value*,              int*,char*))FuncDefn->FunctionPtr)(                              ResultBuffer+2,ResultBuffer+3,ResultBuffer,&j,errtext);
+        else if (NArgs==3) ((void(*)(value*,value*,value*,value*,       int*,char*))FuncDefn->FunctionPtr)(               ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer,&j,errtext);
+        else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,int*,char*))FuncDefn->FunctionPtr)(ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer+5,ResultBuffer,&j,errtext);
+        if (j>0) { *errpos = start; return; }
+        if ((end!=NULL)&&(*end<0)) *end=pos;
+        strcpy(out, ResultBuffer[0].string);
+        return;
+       }
      }
     else
      {
@@ -785,8 +801,8 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue; // Nope...
        }
       p=1; i+=2;
-      NArgs = ((FunctionDescriptor *)DictIter->data)->NumberArguments;
       FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
+      NArgs = (FunctionType == PPL_USERSPACE_SUBROUTINE) ? -1 : (((FunctionDescriptor *)DictIter->data)->NumberArguments);
       for (k=0; k<NArgs; k++) // Now collect together numeric arguments
        {
         if (bufpos+k+2 >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
@@ -833,7 +849,17 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
            } else { i++; }
          }
        }
-      if (FunctionType == PPL_USERSPACE_STRFUNC)
+      if (FunctionType == PPL_USERSPACE_SUBROUTINE)
+       {
+        int ep=-1, endpos, stat, j;
+        j=i;
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+        stat = CallSubroutineFromAlgebra(DictIter->key, in+start+j, &endpos, &ep, errtext, RecursionDepth+1);
+        if (stat) { *errpos = (ep>=0) ? (start+j+ep) : (start+i); return; }
+        if (PPL_FLOWCTRL_RETURNTOALGEBRA.string != NULL) { *errpos = start+i; sprintf(errtext, "This subroutine returns a string result; a numeric result was expected."); return; }
+        ResultBuffer[bufpos] = PPL_FLOWCTRL_RETURNTOALGEBRA;
+       }
+      else if (FunctionType == PPL_USERSPACE_STRFUNC)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         (*errpos) = start+i;

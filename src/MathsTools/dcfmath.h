@@ -136,8 +136,8 @@ void dcfmath_sqrt(value *in, value *output, int *status, char *errtext);
 void dcfmath_tan(value *in, value *output, int *status, char *errtext);
 void dcfmath_tanh(value *in, value *output, int *status, char *errtext);
 void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *errtext);
-void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext);
-void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
+//void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext);
+//void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext);
 
 #endif
