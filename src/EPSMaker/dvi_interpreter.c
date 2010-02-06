@@ -1131,7 +1131,11 @@ int dviGetCharSize(dviInterpreterState *interp, unsigned char s, double *size)
   size[2] = tfm->depth[di]  * scale;
   size[3] = tfm->italic[ii] * scale;
 
-  if (DEBUG) { sprintf(temp_err_string, "DVI: Character %d chnum %d has indices %d %d %d %d width %g height %g depth %g italic %g useSize %g", s, chnum, wi, di, hi, ii, size[0], size[1], size[2], size[3], font->useSize*interp->scale); ppl_log(temp_err_string); }
+  // The following loop adds a small quantity of padding as the supplied sizes appear to be somewhat insufficient
+  size[1] += 0.05*scale;
+  size[2] += 0.05*scale;
+
+  if (DEBUG) { sprintf(temp_err_string, "DVI: Character %d chnum %d has indices %d %d %d %d width %g height %g depth %g italic %g useSize %g desSize %g", s, chnum, wi, di, hi, ii, size[0], size[1], size[2], size[3], font->useSize*interp->scale, font->desSize*interp->scale); ppl_log(temp_err_string); }
   return 0;
  }
 
