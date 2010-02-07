@@ -42,6 +42,7 @@
 #include "eps_colours.h"
 #include "eps_plot.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_filledregion.h"
 #include "eps_plot_linedraw.h"
 #include "eps_plot_styles.h"
 #include "eps_plot_threedimbuff.h"
@@ -165,7 +166,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
   else if (style == SW_STYLE_YZERRORRANGE   ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz2,n2,a2,UURU(3)); UUAU(xyz2,n2,a2,UURU(4)); UUAU(xyz3,n3,a3,UURU(5)); UUAU(xyz3,n3,a3,UURU(6)); }
   else if (style == SW_STYLE_XYZERRORRANGE  ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz1,n1,a1,UURU(3)); UUAU(xyz1,n1,a1,UURU(4)); UUAU(xyz2,n2,a2,UURU(5)); UUAU(xyz2,n2,a2,UURU(6)); UUAU(xyz3,n3,a3,UURU(7)); UUAU(xyz3,n3,a3,UURU(8)); }
   else if (style == SW_STYLE_FILLEDREGION   ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
-  else if (style == SW_STYLE_YERRORSHADED   ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz2,n2,a2,UURU(2)); UUAU(xyz2,n2,a2,UURU(3)); }
+  else if (style == SW_STYLE_YERRORSHADED   ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz2,n2,a2,UURU(2)); }
   else if (style == SW_STYLE_UPPERLIMITS    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
   else if (style == SW_STYLE_LOWERLIMITS    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
   else if (style == SW_STYLE_DOTS           ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) UUAU(xyz3,n3,a3,UURU(2)); }
@@ -532,16 +533,18 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      /* Fill box */ \
      IF_NOT_INVISIBLE \
       { \
-       double z,xl,xr,yb,yt,x1,y1,x2,y2,x3,y3,x4,y4,t1,t2,t3; \
+       double xl,xr,yb,yt; \
+       FilledRegionHandle *fr; \
        xl = x0-width; \
        xr = x0+width; \
        yb = sg->BoxFrom.real; \
        yt = y0; \
-       eps_plot_GetPosition(&x1, &y1, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xl, yb, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
-       eps_plot_GetPosition(&x2, &y2, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xl, yt, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
-       eps_plot_GetPosition(&x3, &y3, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xr, yt, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
-       eps_plot_GetPosition(&x4, &y4, &z, &t1,&t2,&t3, NULL, NULL, NULL, ThreeDim, xr, yb, 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
-       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath fill\n", x1,y1,x2,y2,x3,y3,x4,y4); \
+       fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z); \
+       FilledRegion_Point(fr, xl, yb); \
+       FilledRegion_Point(fr, xl, yt); \
+       FilledRegion_Point(fr, xr, yb); \
+       FilledRegion_Point(fr, xr, yt); \
+       FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth); \
       } \
      eps_core_SwitchFrom_FillColour(x); \
 \
@@ -678,10 +681,62 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if (style == SW_STYLE_FILLEDREGION) // FILLEDREGION
    {
+    FilledRegionHandle *fr;
+    fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
+
+    while (blk != NULL)
+     {
+      for (j=0; j<blk->BlockPosition; j++)
+       {
+        // Work out style information for next point
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
+        FilledRegion_Point(fr, UUR(xn), UUR(yn));
+       }
+      blk=blk->next;
+     }
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetFillColour(x, &pd->ww_final);
+    eps_core_SwitchTo_FillColour(x);
+    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth);
+    eps_core_SwitchFrom_FillColour(x);
+    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   else if (style == SW_STYLE_YERRORSHADED) // YERRORSHADED
    {
+    FilledRegionHandle *fr;
+    int BlkNo=0;
+
+    fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
+
+    // First add all of the points along the tops of the error bars, moving from left to right
+    while (blk != NULL)
+     {
+      for (j=0; j<blk->BlockPosition; j++) FilledRegion_Point(fr, UUR(xn), UUR(yn));
+      blk=blk->next;
+      BlkNo++;
+     }
+
+    // Now add the points along the bottoms of all of the error bars, moving from right to left
+    for (BlkNo-- ; BlkNo>=0; BlkNo--)
+     {
+      blk = data->first;
+      for (j=0; j<BlkNo; j++) blk=blk->next;
+      for (j=blk->BlockPosition-1; j>=0; j--)
+       {
+        // Work out style information for next point
+        eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
+        if (xn==0) FilledRegion_Point(fr, 0, 2);
+        else       FilledRegion_Point(fr, 2, 0);
+       }
+     }
+
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetFillColour(x, &pd->ww_final); 
+    eps_core_SwitchTo_FillColour(x); 
+    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth);
+    eps_core_SwitchFrom_FillColour(x);
+    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   // End looping over monotonic regions of axis space
