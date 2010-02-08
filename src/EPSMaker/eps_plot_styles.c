@@ -140,10 +140,12 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
   }
 
 // Update the usage of axes to include data from a particular data table, plotted in a particular style
-int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xyz1, int xyz2, int xyz3, int n1, int n2, int n3, int id)
+int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, settings_graph *sg, int xyz1, int xyz2, int xyz3, int n1, int n2, int n3, int id)
  {
   int i, j, Ncolumns;
   double z;
+  double ptAx, ptBx, ptCx;
+  unsigned char ptAset=0, ptBset=0, ptCset=0;
   DataBlock *blk;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
@@ -211,18 +213,61 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
       else if (style == SW_STYLE_UPPERLIMITS    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_DOTS           ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_IMPULSES       ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
-      else if (style == SW_STYLE_BOXES          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
       else if (style == SW_STYLE_WBOXES         ) { UUU(a1, UUR(0)); UUU(a1, UUR(0)-UUR(2)); UUU(a1, UUR(0)+UUR(2)); UUU(a2, UUR(1)); }
-      else if (style == SW_STYLE_STEPS          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
-      else if (style == SW_STYLE_FSTEPS         ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
-      else if (style == SW_STYLE_HISTEPS        ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
       else if (style == SW_STYLE_STARS          ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_ARROWS_HEAD    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
       else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
       else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
+      else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))
+       {
+        // Boxes and steps need slightly more complicated logic to take into account finite width of boxes/steps
+        UUU(a2, UUR(1)); // y-coordinates are easy
+        ptAx=ptBx; ptAset=ptBset;
+        ptBx=ptCx; ptBset=ptCset;
+        ptCx=UUR(0); ptCset=1;
+        if (ptBset)
+         {
+          if (ptAset) // We are processing a box in the midst of many
+           {
+            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUU(a1, ((ptBx+(ptAx+ptCx)/2)/2 - (ptCx-ptAx)/4)); UUU(a1, ((ptBx+(ptAx+ptCx)/2)/2 + (ptCx-ptAx)/4)); }
+            else if (style == SW_STYLE_BOXES)                                 { UUU(a1, (ptBx - sg->BoxWidth.real/2)); UUU(a1, (ptBx + sg->BoxWidth.real/2)); }
+            else if (style == SW_STYLE_HISTEPS)                               { UUU(a1, (ptBx - (ptCx-ptAx)/4      )); UUU(a1, (ptBx + (ptCx-ptAx)/4      )); }
+            else if (style == SW_STYLE_STEPS)  { UUU(a1, ((ptAx+ptBx)/2 - (ptBx-ptAx)/2)); UUU(a1, ((ptAx+ptBx)/2 + (ptBx-ptAx)/2)); }
+            else if (style == SW_STYLE_FSTEPS) { UUU(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUU(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
+           }
+          else // The first box/step we work out the width of
+           {
+            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUU(a1, (ptBx - (ptCx-ptBx)/2));       UUU(a1, (ptBx + (ptCx-ptBx)/2)); }
+            else if (style == SW_STYLE_BOXES)                                 { UUU(a1, (ptBx - sg->BoxWidth.real/2)); UUU(a1, (ptBx + sg->BoxWidth.real/2)); }
+            else if (style == SW_STYLE_HISTEPS)                               { UUU(a1, (ptBx - (ptCx-ptBx)/2));       UUU(a1, (ptBx + (ptCx-ptBx)/2)); }
+            else if (style == SW_STYLE_STEPS)  { UUU(a1, ptBx); }
+            else if (style == SW_STYLE_FSTEPS) { UUU(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUU(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
+           }
+         }
+       }
       i++;
      }
     blk=blk->next;
+   }
+
+  // Logic to take account of final boxes/steps
+  if (ptAset && ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS)))
+   {
+    if (ptBset) // We have one final box/step to process
+     {
+            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUU(a1, (ptCx - (ptCx-ptBx)/2      )); UUU(a1, (ptCx + (ptCx-ptBx)/2      )); }
+            else if (style == SW_STYLE_BOXES)                                 { UUU(a1, (ptCx - sg->BoxWidth.real/2)); UUU(a1, (ptCx + sg->BoxWidth.real/2)); }
+            else if (style == SW_STYLE_HISTEPS)                               { UUU(a1, (ptCx - (ptCx-ptBx)/2      )); UUU(a1, (ptCx + (ptCx-ptBx)/2      )); }
+            else if (style == SW_STYLE_STEPS)  { UUU(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUU(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
+            else if (style == SW_STYLE_FSTEPS) { UUU(a1, ptCx); }
+     }
+    else // We have a dataset with only a single box/step
+     {
+      if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUU(a1, (ptCx - 0.5)); UUU(a1, (ptCx + 0.5)); }
+      else if (style == SW_STYLE_BOXES)                                { UUU(a1, (ptCx - sg->BoxWidth.real/2)); UUU(a1, (ptCx + sg->BoxWidth.real/2)); }
+      else if (sg->BoxWidth.real<1e-200)                               { UUU(a1, (ptCx - 0.5)); UUU(a1, (ptCx + 0.5)); }
+      else                                                             { UUU(a1, (ptCx - sg->BoxWidth.real/2)); UUU(a1, (ptCx + sg->BoxWidth.real/2)); }
+     }
    }
 
   return 0;
@@ -572,7 +617,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
            {
             if (ptAset) // We are processing a box in the midst of many
              {
-              if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ((ptBx+(ptAx+ptBx)/2)/2, ptBy, (ptCx-ptAx)/4      ); }
+              if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ((ptBx+(ptAx+ptCx)/2)/2, ptBy, (ptCx-ptAx)/4      ); }
               else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptBx                 , ptBy, sg->BoxWidth.real/2); }
               else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptBx                 , ptBy, (ptCx-ptAx)/4      ); }
               else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptAx+ptBx)/2, ptBy, (ptBx-ptAx)/2); }
@@ -602,7 +647,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
               else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptBx+ptCx)/2, ptCy, (ptCx-ptBx)/2); }
               else if (style == SW_STYLE_FSTEPS) { MAKE_STEP( ptCx        , ptCy, 0.0          ); }
        }
-      else // We have a dataset with only a single box/step
+      else if (ptCset) // We have a dataset with only a single box/step
        {
         if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX (ptCx, ptCy, 0.5); }
         else if (style == SW_STYLE_BOXES)                                { MAKE_BOX (ptCx, ptCy, sg->BoxWidth.real/2); }
