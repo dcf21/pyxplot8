@@ -35,7 +35,7 @@
 #include "eps_plot_threedimbuff.h"
 #include "eps_settings.h"
 
-void LineDraw_FindCrossingPoints(double x1, double y1, double z1, double xap1, double yap1, double zap1, double x2, double y2, double z2, double xap2, double yap2, double zap2, int *Inside1, int *Inside2, double *cx1, double *cy1, double *cz1, double *cx2, double *cy2, double *cz2, unsigned char *face1, unsigned char *face2, int *NCrossings)
+void LineDraw_FindCrossingPoints(double x1, double y1, double z1, double xap1, double yap1, double zap1, double x2, double y2, double z2, double xap2, double yap2, double zap2, int *Inside1, int *Inside2, double *cx1, double *cy1, double *cz1, double *cx2, double *cy2, double *cz2, unsigned char *face1, double *AxisPos1, unsigned char *face2, double *AxisPos2, int *NCrossings)
  {
   double fr, cx, cy, cz;
 
@@ -45,6 +45,7 @@ void LineDraw_FindCrossingPoints(double x1, double y1, double z1, double xap1, d
   *cx2 = x2; *cy2 = y2; *cz2 = z2;
   *NCrossings = 0;
   *face1 = *face2 = 0;
+  *AxisPos1 = *AxisPos2 = -1;
   if ((*Inside1) && (*Inside2)) return; // If both points are inside canvas, don't need to find clip-region crossings
 
 #define DOCLIP(XAP1,XAP2,YAP1,YAP2,ZAP1,ZAP2,POS,SGN,FACE) \
@@ -61,8 +62,8 @@ void LineDraw_FindCrossingPoints(double x1, double y1, double z1, double xap1, d
         cx = x1 + (x2-x1)*fr; \
         cy = y1 + (y2-y1)*fr; \
         cz = z1 + (z2-z1)*fr; \
-        if   ((XAP1*SGN)<(XAP2*SGN)) { *cx1 = cx; *cy1 = cy; *cz1 = cz; *face1 = FACE; } \
-        else                         { *cx2 = cx; *cy2 = cy; *cz2 = cz; *face2 = FACE; } \
+        if   ((XAP1*SGN)<(XAP2*SGN)) { *cx1 = cx; *cy1 = cy; *cz1 = cz; *face1 = FACE; *AxisPos1 = yleft; } \
+        else                         { *cx2 = cx; *cy2 = cy; *cz2 = cz; *face2 = FACE; *AxisPos2 = yleft; } \
         (*NCrossings)++; \
        } \
      } \
@@ -104,6 +105,7 @@ LineDrawHandle *LineDraw_Init (EPSComm *x, settings_axis *xa, settings_axis *ya,
 void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_offset, double y_offset, double z_offset, double x_perpoffset, double y_perpoffset, double z_perpoffset, int linetype, double linewidth, char *colstr)
  {
   unsigned char f1, f2;
+  double ap1, ap2;
   int    Inside1, Inside2, NCrossings;
   double xpos, ypos, depth, xap, yap, zap;
   double theta_x, theta_y, theta_z;
@@ -123,9 +125,7 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
 
   if (!ld->x1set) { ld->x1set = 1; ld->x1=xpos; ld->y1=ypos; ld->z1=depth; ld->xap1=xap; ld->yap1=yap; ld->zap1=zap; ld->xpo1=x_perpoffset; ld->ypo1=y_perpoffset; ld->zpo1=z_perpoffset; return; }
 
-  LineDraw_FindCrossingPoints(ld->x1, ld->y1, ld->z1, ld->xap1, ld->yap1, ld->zap1, xpos, ypos, depth, xap, yap, zap, &Inside1, &Inside2, &cx1, &cy1, &cz1, &cx2, &cy2, &cz2, &f1, &f2, &NCrossings);
-
-
+  LineDraw_FindCrossingPoints(ld->x1, ld->y1, ld->z1, ld->xap1, ld->yap1, ld->zap1, xpos, ypos, depth, xap, yap, zap, &Inside1, &Inside2, &cx1, &cy1, &cz1, &cx2, &cy2, &cz2, &f1, &ap1, &f2, &ap2, &NCrossings);
 
   if      ((!Inside1) && (!Inside2)) // Neither point on line segment is inside clip-region
    {

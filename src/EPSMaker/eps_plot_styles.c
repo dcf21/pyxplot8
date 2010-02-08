@@ -542,9 +542,9 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
        fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z); \
        FilledRegion_Point(fr, xl, yb); \
        FilledRegion_Point(fr, xl, yt); \
-       FilledRegion_Point(fr, xr, yb); \
        FilledRegion_Point(fr, xr, yt); \
-       FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth); \
+       FilledRegion_Point(fr, xr, yb); \
+       FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 0); \
       } \
      eps_core_SwitchFrom_FillColour(x); \
 \
@@ -697,7 +697,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetFillColour(x, &pd->ww_final);
     eps_core_SwitchTo_FillColour(x);
-    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth);
+    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
     eps_core_SwitchFrom_FillColour(x);
     strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
@@ -734,7 +734,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetFillColour(x, &pd->ww_final); 
     eps_core_SwitchTo_FillColour(x); 
-    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth);
+    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
     eps_core_SwitchFrom_FillColour(x);
     strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }

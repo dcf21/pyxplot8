@@ -33,13 +33,14 @@
 
 typedef struct FilledRegionAxisCrossing {
  double x, y, x2, y2;
- double axispos;
+ double AxisPos;
  ListItem *point;
- unsigned char AxisFace, sense, singleton;
+ unsigned char AxisFace, sense, singleton, used;
+ int twin;
  } FilledRegionAxisCrossing;
 
 typedef struct FilledRegionPoint {
- double x, y, xap, yap;
+ double x, y, xa, ya, xap, yap;
  unsigned char inside;
  } FilledRegionPoint;
 
@@ -53,12 +54,12 @@ typedef struct FilledRegionHandle {
  List *points;
  int Naxiscrossings;
  double lastx, lasty, lastxap, lastyap;
- unsigned char first;
+ unsigned char first, EverInside;
  } FilledRegionHandle;
 
 FilledRegionHandle *FilledRegion_Init (EPSComm *x, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, unsigned char ThreeDim, double origin_x, double origin_y, double width, double height, double zdepth);
 void FilledRegion_Point(FilledRegionHandle *fr, double x, double y);
-void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth);
+void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth, unsigned char StrokeOutline);
 
 #endif
 
