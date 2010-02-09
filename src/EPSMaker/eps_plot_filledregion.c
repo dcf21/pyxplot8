@@ -167,7 +167,7 @@ static unsigned char TestPointInside(FilledRegionHandle *fr, double X, double Y,
 
 static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPointList, char *EndText)
  {
-  unsigned char face, sense, inside_ahead, FillSide, first_point=1, fail=0;
+  unsigned char face, sense, inside_ahead, FillSide, CurrentFace, first_point=1, fail=0;
   int i, j, k, l, nac, dir_x, dir_y;
   ListItem *li, *lil;
   FilledRegionPoint *p;
@@ -241,6 +241,17 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
       for (k=i; ((CrossPointList[i].x==CrossPointList[k].x)&&(CrossPointList[i].y==CrossPointList[k].y)); k=(k+nac-1)%nac) if (!CrossPointList[k].used) { i=k; FillSide = !FillSide; continue; }
       if (FillSide) j=(i+1)%nac; // Move anticlockwise around path
       else          j=(i+nac-1)%nac; // Move clockwise around path
+      CurrentFace = CrossPointList[i].AxisFace;
+      while (CurrentFace != CrossPointList[j].AxisFace) // If we've changed side of clip region, add corner to path
+       {
+        double xap,yap;
+        const double xaps[6] = {9,1,0,0,1,1};
+        const double yaps[6] = {9,1,1,0,0,1};
+        if (FillSide) { xap=xaps[CurrentFace+1]; yap=yaps[CurrentFace+1]; CurrentFace= (CurrentFace   %4)+1; }
+        else          { xap=xaps[CurrentFace  ]; yap=yaps[CurrentFace  ]; CurrentFace=((CurrentFace+2)%4)+1; }
+        if (!fr->ThreeDim) { PS_POINT(fr->origin_x + fr->width * xap, fr->origin_y + fr->height * yap); }
+        else               { PS_POINT(fr->origin_x + fr->width/2 + (xap-0.5)*fr->width*cos(fr->sg->XYview.real) + (yap-0.5)*fr->height*sin(fr->sg->XYview.real), fr->origin_y + fr->height/2 - (xap-0.5)*fr->width*cos(fr->sg->YZview.real)*sin(fr->sg->XYview.real) + (yap-0.5)*fr->height*cos(fr->sg->YZview.real)*cos(fr->sg->XYview.real)); }
+       }
       i=j;
       if (CrossPointList[i].used) break;
       FillSide = !FillSide;
