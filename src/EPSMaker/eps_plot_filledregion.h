@@ -42,6 +42,7 @@ typedef struct FilledRegionAxisCrossing {
 typedef struct FilledRegionPoint {
  double x, y, xa, ya, xap, yap;
  unsigned char inside;
+ int FillSideFlip_prv, FillSideFlip_fwd;
  } FilledRegionPoint;
 
 typedef struct FilledRegionHandle {

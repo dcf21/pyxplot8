@@ -77,6 +77,8 @@ void FilledRegion_Point(FilledRegionHandle *fr, double x, double y)
 
   // Add this to a list of points describing the outline of the region which we are going to fill
   p.inside = ((xap>=0)&&(xap<=1)&&(yap>=0)&&(yap<=1)&&(zap>=0)&&(zap<=1));
+  p.FillSideFlip_fwd = 0;
+  p.FillSideFlip_prv = 0;
   p.x      = xpos;
   p.y      = ypos;
   p.xa     = x;
@@ -146,28 +148,32 @@ static unsigned char TestPointInside(FilledRegionHandle *fr, double X, double Y,
     p2  = (FilledRegionPoint *)(li2->data); // p1 -> p2 is a line segment of perimeter
 
     // Count how many segments cross lines travelling out up/left/down/right from (X,Y)
+
     if (dir_x==0)
-     {
+     { 
       y_intersect = (p2->y - p1->y)/(p2->x - p1->x)*(X - p1->x) + p1->y; // y point where line p1->p2 intersects x=X
-      if ((gsl_finite(y_intersect)) && (y_intersect>=p1->y) && (y_intersect<p2->y) && (((dir_y>0)&&(y_intersect>Y)) || ((dir_y<0)&&(y_intersect<Y)))) n++;
-     }
+      if ((gsl_finite(y_intersect)) && (((X>=p1->x)&&(X<p2->x)) || ((X<=p1->x)&&(X>p2->x)))
+              && (((dir_y>0)&&(y_intersect>Y)) || ((dir_y<0)&&(y_intersect<Y)))) { n++; }
+     } 
     else
-     {
+     { 
       x_intersect = (p2->x - p1->x)/(p2->y - p1->y)*(Y - p1->y) + p1->x; // x point where line p1->p2 intersects y=Y
-      if ((gsl_finite(x_intersect)) && (x_intersect>=p1->x) && (x_intersect<p2->x) && (((dir_x>0)&&(x_intersect>X)) || ((dir_x<0)&&(x_intersect<X)))) n++;
-     }
+      if ((gsl_finite(x_intersect)) && (((Y>=p1->y)&&(Y<p2->y)) || ((Y<=p1->y)&&(Y>p2->y)))
+              && (((dir_x>0)&&(x_intersect>X)) || ((dir_x<0)&&(x_intersect<X)))) { n++; }
+     } 
    }
   inside = (n%2); // If were an even number of segments, we are outside. If there were an odd number, we are inside.
   return inside;
  }
 
 #define PS_POINT(X,Y) \
-   if (first_point) { fprintf(fr->x->epsbuffer, "newpath %.2f %.2f moveto\n", X, Y); first_point=0; } \
-   else             { fprintf(fr->x->epsbuffer, "%.2f %.2f lineto\n", X, Y); }
+   if      (first_subpath) { fprintf(fr->x->epsbuffer, "newpath "); first_subpath=0; } \
+   if      (first_point)   { fprintf(fr->x->epsbuffer, "%.2f %.2f moveto\n", X, Y); first_point=0; } \
+   else                    { fprintf(fr->x->epsbuffer, "%.2f %.2f lineto\n", X, Y); }
 
 static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPointList, char *EndText)
  {
-  unsigned char face, sense, inside_ahead, FillSide, CurrentFace, first_point=1, fail=0;
+  unsigned char face, sense, inside_ahead, FillSide, CurrentFace, first_point=1, first_subpath=1, fail=0;
   int i, j, k, l, nac, dir_x, dir_y;
   ListItem *li, *lil;
   FilledRegionPoint *p;
@@ -179,8 +185,10 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
   // Loop over multiple detached segments of filled region which may be caused by clipping it into pieces
   while (!fail)
    {
+    printf("*\n");
     // Find an axis crossing point which is unique
     l=-1;
+    for (i=0; i<nac; i++) printf("%d %d [%e %e] [%d %e] \n",i, (int)CrossPointList[i].used, CrossPointList[i].x, CrossPointList[i].y, (int)CrossPointList[i].AxisFace, CrossPointList[i].AxisPos);
     for (i=0; i<nac; i++)
      {
       if (CrossPointList[i].used) continue;
@@ -203,7 +211,8 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
     inside_ahead = TestPointInside(fr, CrossPointList[i].x, CrossPointList[i].y, dir_x, dir_y);
 
     // Decide whether we are proceeding clockwise or anticlockwise around the region we're going to fill
-    FillSide = !inside_ahead;
+    FillSide = inside_ahead;
+    printf("%d %d\n",i,(int)FillSide);
 
     while (1)
      {
@@ -212,6 +221,7 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
        {
         PS_POINT(CrossPointList[i].x , CrossPointList[i].y ); // Cut point where line enters canvas
         PS_POINT(CrossPointList[i].x2, CrossPointList[i].y2); // Cut point where line leaves canvas
+        if (((FilledRegionPoint *)CrossPointList[i].point->data)->FillSideFlip_prv%2) FillSide = !FillSide;
         i = CrossPointList[i].twin;
         CrossPointList[i].used = 1;
        }
@@ -225,11 +235,15 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
         while (p->inside)
          {
           PS_POINT(p->x, p->y);
+          if      ((sense == OUTGOING) && (p->FillSideFlip_fwd%2)) FillSide = !FillSide;
+          else if ((sense ==  INGOING) && (p->FillSideFlip_prv%2)) FillSide = !FillSide;
           lil=li;
           if (sense == OUTGOING) { li=li->prev; if (li==NULL) li=fr->points->last; } // Moving against flow in which line was originally drawn
           else                   { li=li->next; if (li==NULL) li=fr->points->first; } // Moving with flow in which line was originally drawn
           p=(FilledRegionPoint *)(li->data);
          }
+        if      ((sense == OUTGOING) && (p->FillSideFlip_fwd%2)) FillSide = !FillSide;
+        else if ((sense ==  INGOING) && (p->FillSideFlip_prv%2)) FillSide = !FillSide;
         for (i=0; i<nac; i++) if ((!CrossPointList[i].used)&&((CrossPointList[i].point==lil)||(CrossPointList[i].point==li))) break;
         if (!((!CrossPointList[i].used)&&((CrossPointList[i].point==lil)||(CrossPointList[i].point==li)))) { ppl_error(ERR_INTERNAL, "Failure within FilledRegion"); fail=1; break; }
         PS_POINT(CrossPointList[i].x, CrossPointList[i].y); // Cut point where line leaves canvas
@@ -239,38 +253,43 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
       // Skirt along edge of clip region to find next entry point
       for (k=i; ((CrossPointList[i].x==CrossPointList[k].x)&&(CrossPointList[i].y==CrossPointList[k].y)); k=(k+1)%nac) if (!CrossPointList[k].used) { i=k; FillSide = !FillSide; continue; }
       for (k=i; ((CrossPointList[i].x==CrossPointList[k].x)&&(CrossPointList[i].y==CrossPointList[k].y)); k=(k+nac-1)%nac) if (!CrossPointList[k].used) { i=k; FillSide = !FillSide; continue; }
-      if (FillSide) j=(i+1)%nac; // Move anticlockwise around path
-      else          j=(i+nac-1)%nac; // Move clockwise around path
+      if (FillSide) j=(i+nac-1)%nac; // Move anticlockwise around path
+      else          j=(i+1)%nac;     // Move clockwise around path
       CurrentFace = CrossPointList[i].AxisFace;
+      printf("%d %d %d %d %d\n",i,j,(int)FillSide,(int)CrossPointList[i].AxisFace,(int)CrossPointList[j].AxisFace);
       while (CurrentFace != CrossPointList[j].AxisFace) // If we've changed side of clip region, add corner to path
        {
         double xap,yap;
         const double xaps[6] = {9,1,0,0,1,1};
         const double yaps[6] = {9,1,1,0,0,1};
-        if (FillSide) { xap=xaps[CurrentFace+1]; yap=yaps[CurrentFace+1]; CurrentFace= (CurrentFace   %4)+1; }
-        else          { xap=xaps[CurrentFace  ]; yap=yaps[CurrentFace  ]; CurrentFace=((CurrentFace+2)%4)+1; }
+        if (!FillSide) { xap=xaps[CurrentFace+1]; yap=yaps[CurrentFace+1]; CurrentFace= (CurrentFace   %4)+1; }
+        else           { xap=xaps[CurrentFace  ]; yap=yaps[CurrentFace  ]; CurrentFace=((CurrentFace+2)%4)+1; }
         if (!fr->ThreeDim) { PS_POINT(fr->origin_x + fr->width * xap, fr->origin_y + fr->height * yap); }
         else               { PS_POINT(fr->origin_x + fr->width/2 + (xap-0.5)*fr->width*cos(fr->sg->XYview.real) + (yap-0.5)*fr->height*sin(fr->sg->XYview.real), fr->origin_y + fr->height/2 - (xap-0.5)*fr->width*cos(fr->sg->YZview.real)*sin(fr->sg->XYview.real) + (yap-0.5)*fr->height*cos(fr->sg->YZview.real)*cos(fr->sg->XYview.real)); }
        }
       i=j;
       if (CrossPointList[i].used) break;
-      FillSide = !FillSide;
      }
-    fprintf(fr->x->epsbuffer, "%s\n", EndText);
+    if (!first_point) { fprintf(fr->x->epsbuffer, "closepath\n"); }
     first_point=1;
    }
+  if (!first_point) { fprintf(fr->x->epsbuffer, "closepath\n"); }
+  fprintf(fr->x->epsbuffer, "%s\n", EndText);
   return;
  }
 
 void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth, unsigned char StrokeOutline)
  {
-  unsigned char f1, f2, first_point=1;
-  int i, j, l, NCrossings, i1, i2;
+  unsigned char f1, f2, first_point=1, first_subpath=1;
+  int i, j, k, kn, l, NCrossings, i1, i2;
   double lastx, lasty, lastxap, lastyap;
   double cx1,cy1,cz1,cx2,cy2,cz2,ap1,ap2;
   ListItem *li;
-  FilledRegionPoint *p;
+  FilledRegionPoint *p, *last_p;
   FilledRegionAxisCrossing *CrossPointList;
+  double ct_y_m1, ct_y_c1, ct_x_m1, ct_x_c1, ct_y_m2, ct_y_c2, ct_x_m2, ct_x_c2, ct_xi, ct_yi;
+  ListItem *ct_li;
+  FilledRegionPoint *ct_pA, *ct_pB;
 
   l = fr->points->length;
   li = fr->points->first;
@@ -286,12 +305,12 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
       PS_POINT(p->x, p->y);
       li=li->next;
      }
-    fprintf(fr->x->epsbuffer, "closepath fill\n");
+    fprintf(fr->x->epsbuffer, "closepath eofill\n");
     eps_core_SwitchFrom_FillColour(fr->x);
     if (!StrokeOutline) return;
     eps_core_SetLinewidth(fr->x, linewidth, linetype, 0.0);
     li = fr->points->first;
-    first_point=1;
+    first_point=first_subpath=1;
     for (i=0; i<l; i++)
      {
       p = (FilledRegionPoint *)(li->data);
@@ -310,6 +329,7 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
   lasty   = p->y;
   lastxap = p->xap;
   lastyap = p->yap;
+  last_p  = p;
   li=li->next;
 
   // Malloc a structure to hold the positions of all of the points where we cross the boundary of the clip region
@@ -319,10 +339,41 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
    {
     p = (FilledRegionPoint *)(li->data);
     LineDraw_FindCrossingPoints(lastx,lasty,0,lastxap,lastyap,0.5,p->x,p->y,0,p->xap,p->yap,0.5,&i1,&i2,&cx1,&cy1,&cz1,&cx2,&cy2,&cz2,&f1,&ap1,&f2,&ap2,&NCrossings);
+
+    // Check for whether line crosses a previous line segment; if so, flip fill side
+    ct_y_m1 = (cy2-cy1)/(cx2-cx1);
+    ct_y_c1 = cy1 - ct_y_m1 * cx1;
+    ct_x_m1 = (cx2-cx1)/(cy2-cy1);
+    ct_x_c1 = cx1 - ct_x_m1 * cy1;
+    ct_li   = fr->points->first;
+    ct_pB   = (FilledRegionPoint *)(ct_li->data);
+    ct_li   = ct_li->next;
+    for (k=1,kn=0; k<(i-1); k++)
+     {
+      ct_pA    = ct_pB;
+      ct_pB    = (FilledRegionPoint *)(ct_li->data);
+      ct_li    = ct_li->next;
+      ct_y_m2  = (ct_pB->y-ct_pA->y)/(ct_pB->x-ct_pA->x);
+      ct_y_c2  = ct_pA->y - ct_y_m2 * ct_pA->x;
+      ct_x_m2  = (ct_pB->x-ct_pA->x)/(ct_pB->y-ct_pA->y);
+      ct_x_c2  = ct_pA->x - ct_x_m2 * ct_pA->y;
+      ct_xi    = (ct_y_c2-ct_y_c1)/(ct_y_m1-ct_y_m2);
+      ct_yi    = (ct_x_c2-ct_x_c1)/(ct_x_m1-ct_x_m2);
+      if      ((gsl_finite(ct_xi))&&(((ct_xi>=cx1     )&&(ct_xi<cx2     )) || ((ct_xi<=cx1     )&&(ct_xi>cx2     )))
+                                  &&(((ct_xi>=ct_pA->x)&&(ct_xi<ct_pB->x)) || ((ct_xi<=ct_pA->x)&&(ct_xi>ct_pB->x))) )
+                        { kn++; ct_pB->FillSideFlip_prv++; ct_pB->FillSideFlip_fwd++; }
+      else if ((gsl_finite(ct_yi))&&(((ct_yi>=cy1     )&&(ct_yi<cy2     )) || ((ct_yi<=cy1     )&&(ct_yi>cy2     )))
+                                  &&(((ct_yi>=ct_pA->y)&&(ct_yi<ct_pB->y)) || ((ct_yi<=ct_pA->y)&&(ct_yi>ct_pB->y))) )
+                        { kn++; ct_pB->FillSideFlip_prv++; ct_pB->FillSideFlip_fwd++; }
+     }
+    p     ->FillSideFlip_prv = kn;
+    last_p->FillSideFlip_fwd = kn;
+
+
     if (NCrossings>0) // We have crossed boundary
      {
-      if (!i1) { CrossPointList[j].x = cx1; CrossPointList[j].y = cy1; CrossPointList[j].AxisFace = f1; CrossPointList[j].AxisPos = (f1<FACE_BOTTOM)?(1-ap1):ap1; }
-      else     { CrossPointList[j].x = cx2; CrossPointList[j].y = cy2; CrossPointList[j].AxisFace = f2; CrossPointList[j].AxisPos = (f2<FACE_BOTTOM)?(1-ap2):ap2; }
+      if (!i1) { CrossPointList[j].x = cx1; CrossPointList[j].y = cy1; CrossPointList[j].AxisFace = f1; CrossPointList[j].AxisPos = ap1; }
+      else     { CrossPointList[j].x = cx2; CrossPointList[j].y = cy2; CrossPointList[j].AxisFace = f2; CrossPointList[j].AxisPos = ap2; }
       if ((!i1)&&(!i2)) { CrossPointList[j].x2 = cx2; CrossPointList[j].y2 = cy2; }
       CrossPointList[j].singleton = (NCrossings==2);
       CrossPointList[j].twin      = j+1;
@@ -337,14 +388,16 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
       CrossPointList[j].x = cx2; CrossPointList[j].y = cy2;
       CrossPointList[j].x2= cx1; CrossPointList[j].y2= cy1;
       CrossPointList[j].AxisFace = f2;
-      CrossPointList[j].AxisPos  = (f2<FACE_BOTTOM)?(1-ap2):ap2;
-      CrossPointList[j].twin = j-1;
+      CrossPointList[j].AxisPos  = ap2;
+      CrossPointList[j].sense    = OUTGOING;
+      CrossPointList[j].twin     = j-1;
       j++;
      }
     lastx   = p->x;
     lasty   = p->y;
     lastxap = p->xap;
     lastyap = p->yap;
+    last_p  = p;
     li=li->next;
    }
 
@@ -352,12 +405,12 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
   qsort((void *)CrossPointList, j, sizeof(FilledRegionAxisCrossing), &frac_sorter);
 
   // Output path
-  OutputPath(fr, CrossPointList, "closepath fill\n");
+  OutputPath(fr, CrossPointList, "eofill");
   eps_core_SwitchFrom_FillColour(fr->x);
   if (!StrokeOutline) return;
   eps_core_SetLinewidth(fr->x, linewidth, linetype, 0.0);
   li = fr->points->first;
-  OutputPath(fr, CrossPointList, "closepath stroke\n");
+  OutputPath(fr, CrossPointList, "stroke");
   return;
  }
 
