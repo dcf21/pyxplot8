@@ -747,14 +747,14 @@ void eps_plot_RenderEPS(EPSComm *x)
   if (x->current->settings.clip == SW_ONOFF_ON)
    { fprintf(x->epsbuffer, "grestore\n"); x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0'; }
 
-  // Render legend
-  GraphLegend_Render(x, width, height);
-
   // Render axes
   eps_plot_axespaint(x, origin_x, origin_y, width, height);
 
   // Deactivate three-dimensional buffer
   ThreeDimBuffer_Deactivate(x);
+
+  // Render legend
+  GraphLegend_Render(x, width, height);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

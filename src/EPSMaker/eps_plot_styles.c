@@ -209,7 +209,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
       else if (style == SW_STYLE_XZERRORRANGE   ) { UUU(a1, UUR(0)); UUU(a1, UUR(3)); UUU(a1, UUR(4)); UUU(a2, UUR(1)); UUU(a3, UUR(2)); UUU(a3, UUR(5)); UUU(a3, UUR(6)); }
       else if (style == SW_STYLE_YZERRORRANGE   ) { UUU(a1, UUR(0)); UUU(a1, UUR(3)); UUU(a1, UUR(4)); UUU(a2, UUR(1)); UUU(a2, UUR(5)); UUU(a2, UUR(6)); UUU(a3, UUR(2)); UUU(a3, UUR(7)); UUU(a3, UUR(8)); }
       else if (style == SW_STYLE_FILLEDREGION   ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
-      else if (style == SW_STYLE_YERRORSHADED   ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a2, UUR(2)); UUU(a2, UUR(3)); }
+      else if (style == SW_STYLE_YERRORSHADED   ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a2, UUR(2)); }
       else if (style == SW_STYLE_LOWERLIMITS    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_UPPERLIMITS    ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_DOTS           ) { UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
@@ -772,8 +772,8 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
        {
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
-        if (xn==0) FilledRegion_Point(fr, 0, 2);
-        else       FilledRegion_Point(fr, 2, 0);
+        if (xn==0) FilledRegion_Point(fr, UUR(0), UUR(2));
+        else       FilledRegion_Point(fr, UUR(2), UUR(0));
        }
      }
 
@@ -805,7 +805,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
   if ((style==SW_STYLE_LINES) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_IMPULSES) || (style==SW_STYLE_BOXES) || (style==SW_STYLE_WBOXES) || (style==SW_STYLE_STEPS) || (style==SW_STYLE_FSTEPS) || (style==SW_STYLE_HISTEPS))
    {
     eps_core_SetColour(x, &pd->ww_final, 1);
-    eps_core_SetLinewidth(x, pd->ww_final.linewidth, pd->ww_final.linetype, 0);
+    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
     IF_NOT_INVISIBLE
      {
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", xpos-scale*0.60/2, ypos, xpos+scale*0.60/2, ypos);
@@ -837,7 +837,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
     ps  = pd->ww_final.pointsize * EPS_DEFAULT_PS;
     sgn = ( (style == SW_STYLE_UPPERLIMITS) ^ (a[yn]->MaxFinal > a[yn]->MinFinal) ) ? 1.0 : -1.0;
     eps_core_SetColour(x, &pd->ww_final, 1);
-    eps_core_SetLinewidth(x, pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
+    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
     IF_NOT_INVISIBLE
      {
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", xpos-ps, ypos-ps*sgn, xpos+ps, ypos-ps*sgn);
@@ -856,8 +856,55 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
     else if (style==SW_STYLE_ARROWS_NOHEAD)  ArrowStyle = SW_ARROWTYPE_NOHEAD;
     else                                     ArrowStyle = SW_ARROWTYPE_HEAD;
     eps_core_SetColour(x, &pd->ww_final, 1);
-    eps_core_SetLinewidth(x, pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
+    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
     IF_NOT_INVISIBLE eps_primitive_arrow(x, ArrowStyle, xpos-scale*0.60/2, ypos, xpos+scale*0.60/2, ypos, &pd->ww_final);
+   }
+
+  else if ((style == SW_STYLE_FILLEDREGION) || (style == SW_STYLE_YERRORSHADED))
+   {
+    double s=scale*0.45/2;
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetFillColour(x, &pd->ww_final);
+    eps_core_SwitchTo_FillColour(x);
+    IF_NOT_INVISIBLE
+     {
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath fill\n", xpos-s, ypos-s, xpos+s, ypos-s, xpos+s, ypos+s, xpos-s, ypos+s);
+      eps_core_BoundingBox(x, xpos-s, ypos-s, 0);
+      eps_core_BoundingBox(x, xpos+s, ypos-s, 0);
+      eps_core_BoundingBox(x, xpos-s, ypos+s, 0);
+      eps_core_BoundingBox(x, xpos+s, ypos+s, 0);
+     }
+    eps_core_SwitchFrom_FillColour(x);
+    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
+    IF_NOT_INVISIBLE
+     {
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath stroke\n", xpos-s, ypos-s, xpos+s, ypos-s, xpos+s, ypos+s, xpos-s, ypos+s);
+      eps_core_BoundingBox(x, xpos-s, ypos-s, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos+s, ypos-s, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos-s, ypos+s, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos+s, ypos+s, pd->ww_final.linewidth);
+     }
+   }
+
+  else if ((style==SW_STYLE_XERRORBARS)||(style==SW_STYLE_YERRORBARS)||(style==SW_STYLE_ZERRORBARS)||(style==SW_STYLE_XYERRORBARS)||(style==SW_STYLE_XZERRORBARS)||(style==SW_STYLE_XZERRORBARS)||(style==SW_STYLE_XZERRORBARS)||(style==SW_STYLE_XERRORRANGE)||(style==SW_STYLE_YERRORRANGE)||(style==SW_STYLE_ZERRORRANGE)||(style==SW_STYLE_XYERRORRANGE)||(style==SW_STYLE_XZERRORRANGE)||(style==SW_STYLE_YZERRORRANGE))
+   {
+    double s  = scale*0.6/2;
+    double b  = 0.0005 * x->current->settings.bar * M_TO_PS;
+    double ps = pd->ww_final.pointsize * EPS_DEFAULT_PS;
+
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    IF_NOT_INVISIBLE
+     {            
+      eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n",xpos-s,ypos   ,xpos+s,ypos   );
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n",xpos-s,ypos-b ,xpos-s,ypos+b );
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n",xpos+s,ypos-b ,xpos+s,ypos+b );
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n",xpos  ,ypos-ps,xpos  ,ypos+ps);
+      eps_core_BoundingBox(x, xpos-s, ypos-ps, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos-s, ypos+ps, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos+s, ypos-ps, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos+s, ypos+ps, pd->ww_final.linewidth);
+     }
    }
 
   return;
