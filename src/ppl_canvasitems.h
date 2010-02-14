@@ -55,6 +55,9 @@ typedef struct canvas_plotdesc {
  // Structure members which are used at plot time
  DataTable              *data;
  with_words              ww_final;
+ char                   *TitleFinal;
+ int                     TitleFinal_col;
+ double                  TitleFinal_xpos, TitleFinal_ypos, TitleFinal_width, TitleFinal_height;
 } canvas_plotdesc;
 
 typedef struct canvas_item {
@@ -78,7 +81,7 @@ typedef struct canvas_item {
  canvas_plotrange *plotranges;
  canvas_plotdesc  *plotitems;
  DataTable       **plotdata; // used at plot time
- int               FirstTextID, AxesTextID, TitleTextID, *DatasetTextID;
+ int               FirstTextID, AxesTextID, TitleTextID, LegendTextID, *DatasetTextID;
 } canvas_item;
 
 typedef struct canvas_itemlist {

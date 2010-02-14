@@ -132,7 +132,7 @@ void texify_generic(char *in, int *end, char *out, int EvalStrings, int *status,
 
 void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel)
  {
-  int  i=0, j=0, k, l, m, OpenQuotePos=0;
+  int  i=0, j=0, k, l, m, OpenQuotePos=0, DoubleQuoteLevel=0;
   char QuoteType='\0', buffer[LSTR_LENGTH];
   int  CommaPositions[MAX_STR_FORMAT_ITEMS], Nargs;
 
@@ -170,7 +170,7 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
     else if (in[i]=='~' ) { strcpy(out+j, "$\\sim$"); j+=strlen(out+j); }
     else if (in[i]=='<' ) { strcpy(out+j, "$\\lt$"); j+=strlen(out+j); }
     else if (in[i]=='>' ) { strcpy(out+j, "$\\gt$"); j+=strlen(out+j); }
-    else if (in[i]=='\"') { out[j++]='`'; out[j++]='`'; }
+    else if (in[i]=='\"') { out[j++]=DoubleQuoteLevel?'\'':'`'; out[j++]=DoubleQuoteLevel?'\'':'`'; DoubleQuoteLevel=!DoubleQuoteLevel; }
     else                  { out[j++]=in[i]; }
    }
 
@@ -361,7 +361,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       outpos += strlen(out+outpos) - 1; // Chop off final $
       ci = StatusRow[i];
       while (StatusRow[i]==ci) i++; i--;
-      while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
+      if (!((StatusRow[i+1]==7)&&(in[i+1]=='*')&&(in[i+2]=='*'))) while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
      }
     else if (StatusRow[i]==3)
      {
@@ -398,7 +398,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       else                     { out[OpenBracketPos+0]='\\'; out[OpenBracketPos+1]='{'; out[outpos-2]='\\'; out[outpos-1]='}'; }
 
       while (StatusRow[i]==3) i++; i--;
-      while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
+      if (!((StatusRow[i+1]==7)&&(in[i+1]=='*')&&(in[i+2]=='*'))) while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
 
       (*BracketLevel)++;
      }
@@ -542,7 +542,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
         while (StatusRow[i]==8) i++;
         i--;
        }
-      while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
+      if (!((StatusRow[i+1]==7)&&(in[i+1]=='*')&&(in[i+2]=='*'))) while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
      }
    }
   while (PowLevel>0) { out[outpos++]='}'; PowLevel--; }
@@ -554,16 +554,19 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
 
 void wrapper_texify(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
  {
-  int BracketLevel=0;
+  int BracketLevel=0, offset=0;
 
   *status=-1;
   ppl_units_zero(output);
   inlen--; // Make inlen point to last character
-  while ((in[0]!='\0')&&(in[0]<=' '))   { in++; inlen--; } // Strip spaces off front
-  while ((inlen>0)&&(in[inlen]<=' '))   {       inlen--; } // Strip spaces off back
+  while ((in[0]!='\0')&&(in[0]<=' '))   { in++; offset++; inlen--; } // Strip spaces off front
+  while ((inlen>0)&&(in[inlen]<=' '))   {                 inlen--; } // Strip spaces off back
   if ((inlen<0)||(inlen>ALGEBRA_MAXLENGTH)) { sprintf(errtext, "Supplied expression is longer than maximum of %d characters.", ALGEBRA_MAXLENGTH); *status=0; return; }
   output->string = lt_malloc(ALGEBRA_MAXLENGTH);
+  if (output->string==NULL) { sprintf(errtext,"Out of memory."); *status=0; return; }
   output->string[0] = '\0';
   texify_generic(in, &inlen, output->string, 1, status, errtext, 1, &BracketLevel);
+  if (*status>=0) (*status)+=offset;
+  return;
  }
 

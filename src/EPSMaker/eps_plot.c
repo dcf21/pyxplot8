@@ -39,6 +39,7 @@
 #include "eps_plot.h"
 #include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_legend.h"
 #include "eps_plot_styles.h"
 #include "eps_plot_threedimbuff.h"
 #include "eps_plot_ticking.h"
@@ -233,6 +234,10 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   i  = 0;
   while (pd != NULL)
    {
+    pd->TitleFinal=NULL;
+    pd->TitleFinal_col=0;
+    pd->TitleFinal_height = pd->TitleFinal_width = pd->TitleFinal_xpos = pd->TitleFinal_ypos = 0;
+
     // Merge together with words to form a final set
     eps_withwords_default(&ww_default, &x->current->settings, pd->function, Fcounter, Dcounter, settings_term_current.colour==SW_ONOFF_ON);
     if (pd->function != 0) { Fcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
@@ -626,21 +631,6 @@ void eps_plot_SampleFunctions(EPSComm *x)
   return;
  }
 
-// Adds all of the text items which will be needed to render this plot to the
-// list x->TextItems. It is vital that they be added in the exact order in
-// which they will be rendered.
-
-#define YIELD_TEXTITEM(X) \
-  if ((X != NULL) && (X[0]!='\0')) \
-   { \
-    i = (CanvasTextItem *)lt_malloc(sizeof(CanvasTextItem)); \
-    if (i==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *(x->status) = 1; return; } \
-    i->text              = X; \
-    i->CanvasMultiplotID = x->current->id; \
-    ListAppendPtr(x->TextItems, i, sizeof(CanvasTextItem), 0, DATATYPE_VOID); \
-    x->NTextItems++; \
-   }
-
 void eps_plot_YieldUpText(EPSComm *x)
  {
   int              j, k, l, m;
@@ -668,6 +658,10 @@ void eps_plot_YieldUpText(EPSComm *x)
      }
     pd=pd->next; k++;
    }
+
+  // Graph legend
+  x->current->LegendTextID = x->NTextItems;
+  GraphLegend_YieldUpText(x);
 
   // Axis labels and titles
   x->current->AxesTextID = x->NTextItems;
@@ -753,13 +747,14 @@ void eps_plot_RenderEPS(EPSComm *x)
   if (x->current->settings.clip == SW_ONOFF_ON)
    { fprintf(x->epsbuffer, "grestore\n"); x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0'; }
 
+  // Render legend
+  GraphLegend_Render(x, width, height);
+
   // Render axes
   eps_plot_axespaint(x, origin_x, origin_y, width, height);
 
   // Deactivate three-dimensional buffer
   ThreeDimBuffer_Deactivate(x);
-
-  // Render legend
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

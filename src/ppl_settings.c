@@ -156,7 +156,7 @@ void ppl_settings_makedefault()
   settings_graph_default.GridMinColourG= 0;
   settings_graph_default.GridMinColourB= 0;
   settings_graph_default.key           = SW_ONOFF_ON;
-  settings_graph_default.KeyColumns    = 1;
+  settings_graph_default.KeyColumns    = 0;
   settings_graph_default.KeyPos        = SW_KEYPOS_TR;
   ppl_units_zero(&(settings_graph_default.KeyXOff));
   settings_graph_default.KeyXOff.real  = 0.0;

@@ -159,7 +159,7 @@ GridAxisZ = 1
 GridMajColour = Grey60
 GridMinColour = Grey90
 Key = On
-KeyColumns=1
+KeyColumns = 0
 KeyPos = Top Right
 Key_XOff = 0.0
 Key_YOff = 0.0
@@ -407,11 +407,11 @@ filters, see Section~\ref{sec:filters}.
 
                Sets whether a legend is displayed on plots.
                \\
-{\tt KeyColumns} & {\bf Possible values:} Any integer $>0$.
+{\tt KeyColumns} & {\bf Possible values:} Any integer $\geq 0$.
 
                {\bf Analogous set command:} \indcmdts{set keycolumns}
 
-               Sets the number of columns into which the legends of plots should be divided.
+               Sets the number of columns into which the legends of plots should be divided. If a value of zero is given, then the number of columns is decided automatically for each plot.
                \\
 {\tt KeyPos} & {\bf Possible values:} {\tt Top Right}, {\tt Top XCentre}, {\tt Top Left}, {\tt YCentre Right}, {\tt YCentre XCentre}, {\tt YCentre Left}, {\tt Bottom Right}, {\tt Bottom XCentre}, {\tt Bottom Left}, {\tt Above}, {\tt Below}, {\tt Outside}.
 

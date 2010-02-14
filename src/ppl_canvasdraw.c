@@ -379,7 +379,7 @@ void canvas_CallLaTeX(EPSComm *x)
   sigaddset(&sigs,SIGCHLD);
 
   const char TextHeader1[] = "\\documentclass{article}\n\\pagestyle{empty}\n";
-  const char TextHeader2[] = "\\begin{document}\nIgnore page 1\n\\newpage\n";
+  const char TextHeader2[] = "\\begin{document}\n\\begin{center}{\\bf This page has been left deliberately blank.}\\end{center}\n\\newpage\n";
   const char ItemHeader [] = "\\vbox{\\hbox{\n";
   const char ItemFooter [] = "\n\\hskip 0pt plus 1filll minus 1filll}\n\\vskip 0pt plus 1filll minus 1filll}\n\\newpage\n";
   const char TextFooter [] = "\\end{document}\n";

@@ -201,7 +201,7 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_graph_default.key           = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Key."          , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "KEYCOLUMNS"   )==0)
-        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyColumns    = max((int)fl, 1);
+        if ((fl=GetFloat(setvalue, &i), i==strlen(setvalue)))               settings_graph_default.KeyColumns    = max((int)fl, 0);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting KeyColumns."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "KEYPOS"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_KEYPOS_INT,SW_KEYPOS_STR))>0) settings_graph_default.KeyPos        = i;

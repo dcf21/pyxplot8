@@ -384,7 +384,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       if (pd->label!=NULL) { sprintf(output+i, " label %s", pd->label); i+=strlen(output+i); } // Print label string
       if (pd->SelectCriterion!=NULL) { sprintf(output+i, " select %s", pd->SelectCriterion); i+=strlen(output+i); } // Print select criterion
       if      (pd->NoTitleSet) { strcpy(output+i, " notitle"); i+=strlen(output+i); } // notitle is set
-      else if (pd->TitleSet  ) { strcpy(output+i, " title"); i+=strlen(output+i); StrEscapify(pd->title, output+i); i+=strlen(output+i); }
+      else if (pd->TitleSet  ) { strcpy(output+i, " title "); i+=strlen(output+i); StrEscapify(pd->title, output+i); i+=strlen(output+i); }
       with_words_print(&pd->ww, output+i+6);
       if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; i+=strlen(output+i); }
       else                      { output[i]='\0'; }

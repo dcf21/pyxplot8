@@ -37,6 +37,7 @@
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
 
+#include "eps_arrow.h"
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_colours.h"
@@ -788,5 +789,77 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    }
 
   return 0;
+ }
+
+// Produce an icon representing a dataset on the graph's legend
+void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, double ypos, double scale, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn)
+ {
+  int            style;
+  DataTable     *data;
+  settings_axis *a[3] = {a1,a2,a3};
+
+  data  = x->current->plotdata[i];
+  style = pd->ww_final.linespoints;
+  if ((data==NULL) || (data->Nrows<1)) return; // No data present
+
+  if ((style==SW_STYLE_LINES) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_IMPULSES) || (style==SW_STYLE_BOXES) || (style==SW_STYLE_WBOXES) || (style==SW_STYLE_STEPS) || (style==SW_STYLE_FSTEPS) || (style==SW_STYLE_HISTEPS))
+   {
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetLinewidth(x, pd->ww_final.linewidth, pd->ww_final.linetype, 0);
+    IF_NOT_INVISIBLE
+     {
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", xpos-scale*0.60/2, ypos, xpos+scale*0.60/2, ypos);
+      eps_core_BoundingBox(x, xpos-scale*0.60/2, ypos, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos+scale*0.60/2, ypos, pd->ww_final.linewidth);
+     }
+   }
+
+  if ((style==SW_STYLE_POINTS) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_STARS) || (style==SW_STYLE_DOTS))
+   {
+    double final_pointsize = pd->ww_final.pointsize; 
+    if (style==SW_STYLE_DOTS) final_pointsize *= 0.05; // Dots are 1/20th size of points
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    IF_NOT_INVISIBLE
+     {
+      int pt = (pd->ww_final.pointtype-1) % N_POINTTYPES;
+      if (style==SW_STYLE_DOTS ) pt =  9; // Dots are always pt 9 (circle)
+      if (style==SW_STYLE_STARS) pt = 26; // Stars are always pt 26 (star)
+      while (pt<0) pt+=N_POINTTYPES;
+      x->PointTypesUsed[pt] = 1;
+      fprintf(x->epsbuffer, "/ps { %f } def %.2f %.2f pt%d\n", final_pointsize * EPS_DEFAULT_PS, xpos, ypos, pt+1);
+      eps_core_BoundingBox(x, xpos, ypos, 2 * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS);
+     }
+   }
+
+  else if ((style==SW_STYLE_LOWERLIMITS) || (style==SW_STYLE_UPPERLIMITS))
+   {
+    double ps, sgn, eah_old=EPS_ARROW_HEADSIZE;
+    ps  = pd->ww_final.pointsize * EPS_DEFAULT_PS;
+    sgn = ( (style == SW_STYLE_UPPERLIMITS) ^ (a[yn]->MaxFinal > a[yn]->MinFinal) ) ? 1.0 : -1.0;
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetLinewidth(x, pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
+    IF_NOT_INVISIBLE
+     {
+      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", xpos-ps, ypos-ps*sgn, xpos+ps, ypos-ps*sgn);
+      eps_core_BoundingBox(x, xpos-ps, ypos-ps*sgn, pd->ww_final.linewidth);
+      eps_core_BoundingBox(x, xpos+ps, ypos-ps*sgn, pd->ww_final.linewidth);
+      EPS_ARROW_HEADSIZE /=2;
+      eps_primitive_arrow(x, SW_ARROWTYPE_HEAD, xpos, ypos-ps*sgn, xpos, ypos+ps*sgn, &pd->ww_final);
+      EPS_ARROW_HEADSIZE = eah_old;
+     }
+   }
+
+  else if ((style==SW_STYLE_ARROWS_HEAD) || (style==SW_STYLE_ARROWS_NOHEAD) || (style==SW_STYLE_ARROWS_TWOHEAD))
+   {
+    int ArrowStyle;
+    if      (style==SW_STYLE_ARROWS_TWOHEAD) ArrowStyle = SW_ARROWTYPE_TWOWAY;
+    else if (style==SW_STYLE_ARROWS_NOHEAD)  ArrowStyle = SW_ARROWTYPE_NOHEAD;
+    else                                     ArrowStyle = SW_ARROWTYPE_HEAD;
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetLinewidth(x, pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
+    IF_NOT_INVISIBLE eps_primitive_arrow(x, ArrowStyle, xpos-scale*0.60/2, ypos, xpos+scale*0.60/2, ypos, &pd->ww_final);
+   }
+
+  return;
  }
 

@@ -542,8 +542,12 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
    {
     DictLookup(command,"key_columns",NULL,(void **)&tempint);
-    if (*tempint <= 0.0) { ppl_error(ERR_GENERAL, "Keys cannot have fewer than one columns."); return; }
-    sg->KeyColumns = *tempint;
+    if (tempint == NULL) sg->KeyColumns = 0; // automatic columns
+    else
+     {
+      if (*tempint <= 0.0) { ppl_error(ERR_GENERAL, "Keys cannot have fewer than one columns."); return; }
+      sg->KeyColumns = *tempint;
+     }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"keycolumns")==0)) /* unset keycolumns */
    {
@@ -2067,7 +2071,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "keycolumns",1)>=0))
    { 
-    sprintf(buf, "%d", sg->KeyColumns);
+    if (sg->KeyColumns>0) sprintf(buf, "%d", sg->KeyColumns);
+    else                  sprintf(buf, "auto");
     directive_show3(out+i, ItemSet, 1, interactive, "KeyColumns", buf, (settings_graph_default.KeyColumns == sg->KeyColumns), "Sets the number of columns into which legends on graphs are sorted");
     i += strlen(out+i) ; p=1;
    }
