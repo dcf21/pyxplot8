@@ -93,6 +93,7 @@ extern canvas_itemlist *canvas_items;
 #endif
 
 int directive_clear   ();
+char *canvas_item_textify(canvas_item *ptr, char *output);
 int directive_list    ();
 int directive_delete  (Dict *command);
 int directive_undelete(Dict *command);

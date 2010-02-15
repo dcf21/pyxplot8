@@ -363,15 +363,19 @@ void canvas_draw(unsigned char *unsuccessful_ops)
 
 void canvas_CallLaTeX(EPSComm *x)
  {
-  int   linecount=1, i, pid, LatexStatus, LatexStdIn, LatexOut;
+  int   linecount=1, i, j, pid, LatexStatus, LatexStdIn, LatexOut;
   char  filename[FNAME_LENGTH];
   FILE *output;
   ListIterator *ListIter;
-  CanvasTextItem *TempTextItem;
+  CanvasTextItem *TempTextItem, *SuspectTextItem=NULL;
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   unsigned char   FirstIter;
   fd_set          readable;
   sigset_t        sigs;
+
+  int  ErrLineNo=0, ErrReadState=0, ErrReadPos=0, NCharsRead=0;
+  char ErrFilename[FNAME_LENGTH]="", ErrMsg[FNAME_LENGTH]="";
+  char TempErrFilename[FNAME_LENGTH], TempErrLineNo[FNAME_LENGTH], TempErrMsg[FNAME_LENGTH];
 
   if (ListLen(x->TextItems) < 1) return; // We have no text to give to latex, and so don't need to fork
 
@@ -427,9 +431,29 @@ void canvas_CallLaTeX(EPSComm *x)
     if (!FD_ISSET(LatexOut , &readable)) { LatexStatus=1; ppl_log("latex's output pipe has not become readable within time limit"); break; }
     else
      {
-      if (read(LatexOut, temp_err_string, LSTR_LENGTH) > 0)
+      if ((NCharsRead = read(LatexOut, temp_err_string, LSTR_LENGTH)) > 0)
        {
-        // Scan temp_err_string for error messages in file:line:message format
+        for (j=0; j<NCharsRead; j++)
+         {
+          if (temp_err_string[j]=='\n')
+           {
+            if (ErrReadState==2) { TempErrMsg[ErrReadPos]='\0'; strcpy(ErrFilename, TempErrFilename); strcpy(ErrMsg, TempErrMsg); ErrLineNo = (int)GetFloat(TempErrLineNo, NULL); }
+            ErrReadState = ErrReadPos = 0;
+           }
+          else if (temp_err_string[j]==':')
+           {
+            if      (ErrReadState==0) { TempErrFilename[ErrReadPos]='\0'; ErrReadState++; ErrReadPos=0; }
+            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadState++; ErrReadPos=0; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
+            else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=temp_err_string[j]; }
+           }
+          else
+           {
+            if      (ErrReadState==0) { TempErrFilename[ErrReadPos++] = temp_err_string[j]; }
+            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos++] = temp_err_string[j]; }
+            else if (ErrReadState==2) { TempErrMsg     [ErrReadPos++] = temp_err_string[j]; }
+           }
+          if (ErrReadPos > FNAME_LENGTH-1) ErrReadPos=FNAME_LENGTH-1;
+         }
        }
       else { break; } // read function returned zero; indicates EOF
      }
@@ -443,7 +467,48 @@ void canvas_CallLaTeX(EPSComm *x)
   // Return error message if latex has failed
   if (LatexStatus)
    {
-    ppl_error(ERR_GENERAL,"latex fail");
+    StrStrip(ErrMsg,ErrMsg);
+    if (strcmp(filename, ErrFilename)==0) // Case 1: Error in the LaTeX file which we just generated
+     {
+      unsigned char ExactHit=0; // Cycle through all text items and see whether error line number is in the middle of one of them
+      ListIter = ListIterateInit(x->TextItems);
+      while (ListIter != NULL)
+       {
+        TempTextItem = (CanvasTextItem *)ListIter->data;
+        if (TempTextItem->LaTeXstartline > ErrLineNo) break; // We have gone past the line number where the error happened
+        SuspectTextItem = TempTextItem;
+        ExactHit        = (TempTextItem->LaTeXendline >= ErrLineNo); // If this is zero, then error was after the end of the item we just looked at
+        ListIter = ListIterate(ListIter, NULL);
+       }
+      if (SuspectTextItem==NULL) sprintf(temp_err_string, "LaTeX error encountered in an unidentifiable canvas item.");
+      else if (ExactHit)         sprintf(temp_err_string, "LaTeX error encountered in text string in canvas item %d.", SuspectTextItem->CanvasMultiplotID);
+      else                       sprintf(temp_err_string, "LaTeX error encountered at the end of text string in canvas item %d.", SuspectTextItem->CanvasMultiplotID);
+      ppl_error(ERR_GENERAL,temp_err_string);
+      sprintf(temp_err_string, "Error was: %s", ErrMsg); // Output the actual error which LaTeX returned to us
+      ppl_error(ERR_PREFORMED,temp_err_string);
+      if (SuspectTextItem!=NULL)
+       {
+        canvas_item *ptr = canvas_items->first; // Cycle through all canvas items to find the culprit
+        for (ptr = canvas_items->first; ((ptr!=NULL)&&(ptr->id!=SuspectTextItem->CanvasMultiplotID)); ptr = ptr->next);
+        if (ptr!=NULL) 
+         {
+          sprintf(temp_err_string, "\nInput PyXPlot command was:\n\n"); // Now tell the user what PyXPlot command produced the culprit
+          i  = strlen(temp_err_string);
+          canvas_item_textify(ptr, temp_err_string+i);
+          i += strlen(temp_err_string+i);
+          strcpy(temp_err_string+i, "\n");
+          ppl_error(ERR_PREFORMED,temp_err_string);
+         } // Then output the LaTeX string which produced the error
+        sprintf(temp_err_string, "\nOffending input to LaTeX was:\n\n%s\n", SuspectTextItem->text); ppl_error(ERR_PREFORMED,temp_err_string);
+       }
+     }
+    else // Case 2: Error in another file which the user seems to have imported
+     {
+      sprintf(temp_err_string, "LaTeX error encountered in imported file <%s> on line %d", ErrFilename, ErrLineNo);
+      ppl_error(ERR_GENERAL,temp_err_string);
+      sprintf(temp_err_string, "Error was: %s", ErrMsg);
+      ppl_error(ERR_PREFORMED,temp_err_string);
+     }
     if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
     *(x->status) = 1;
     return;
