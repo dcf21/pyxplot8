@@ -390,6 +390,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_minimise(command);
   else if (strcmp(directive, "move")==0)
    return directive_move(command);
+  else if (strcmp(directive, "piechart")==0)
+   return directive_piechart(command, interactive);
   else if (strcmp(directive, "polynomial")==0)
    return directive_interpolate(command,INTERP_POLYN);
   else if (strcmp(directive, "plot")==0)

@@ -33,9 +33,10 @@
 #define CANVAS_ELLPS 22004
 #define CANVAS_EPS   22005
 #define CANVAS_IMAGE 22006
-#define CANVAS_PLOT  22007
-#define CANVAS_POINT 22008
-#define CANVAS_TEXT  22009
+#define CANVAS_PIE   22007
+#define CANVAS_PLOT  22008
+#define CANVAS_POINT 22009
+#define CANVAS_TEXT  22010
 
 typedef struct canvas_plotrange {
  double                   min, max;
@@ -103,6 +104,7 @@ int directive_box     (Dict *command, int interactive);
 int directive_circle  (Dict *command, int interactive);
 int directive_ellipse (Dict *command, int interactive);
 int directive_eps     (Dict *command, int interactive);
+int directive_piechart(Dict *command, int interactive);
 int directive_point   (Dict *command, int interactive);
 int directive_text    (Dict *command, int interactive);
 int directive_image   (Dict *command, int interactive);

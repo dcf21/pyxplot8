@@ -325,7 +325,44 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
              NumericDisplay(ptr->rotation * 180/M_PI , 2, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
            );
    }
-  else if (ptr->type == CANVAS_PLOT ) // Produce textual representations of plot commands
+  else if (ptr->type == CANVAS_PIE) // Produce textual representations of piechart commands
+   {
+    canvas_plotdesc  *pd;
+
+    sprintf(output, "piechart item %d", ptr->id);
+    i = strlen(output);
+    pd = ptr->plotitems;
+    if (pd!=NULL)
+     {
+      if (!pd->function) { output[i++]=' '; StrEscapify(pd->filename, output+i); i+=strlen(output+i); } // Filename of datafile we are plotting
+      else
+       for (j=0; j<pd->NFunctions; j++) // Print out the list of functions which we are plotting
+        {
+         output[i++]=(j!=0)?':':' ';
+         StrStrip(pd->functions[j] , output+i);
+         i+=strlen(output+i);
+        }
+      if (pd->EverySet>0) { sprintf(output+i, " every %d", pd->EveryList[0]); i+=strlen(output+i); } // Print out 'every' clause of plot command
+      if (pd->EverySet>1) { sprintf(output+i, ":%d", pd->EveryList[1]); i+=strlen(output+i); }
+      if (pd->EverySet>2) { sprintf(output+i, ":%d", pd->EveryList[2]); i+=strlen(output+i); }
+      if (pd->EverySet>3) { sprintf(output+i, ":%d", pd->EveryList[3]); i+=strlen(output+i); }
+      if (pd->EverySet>4) { sprintf(output+i, ":%d", pd->EveryList[4]); i+=strlen(output+i); }
+      if (pd->EverySet>5) { sprintf(output+i, ":%d", pd->EveryList[5]); i+=strlen(output+i); }
+      if (ptr->text==NULL) { sprintf(output+i, " format auto"); i+=strlen(output+i); }
+      else                 { sprintf(output+i, " format %s", ptr->text); i+=strlen(output+i); }
+      if (pd->IndexSet) { sprintf(output+i, " index %d", pd->index); i+=strlen(output+i); } // Print index to use
+      if (pd->label!=NULL) { sprintf(output+i, " label %s", pd->label); i+=strlen(output+i); } // Print label string
+      if (pd->SelectCriterion!=NULL) { sprintf(output+i, " select %s", pd->SelectCriterion); i+=strlen(output+i); } // Print select criterion
+      sprintf(output+i, " using %s", (pd->UsingRowCols==DATAFILE_COL)?"columns":"rows"); i+=strlen(output+i); // Print using list
+      for (j=0; j<pd->NUsing; j++)
+       {
+        output[i++]=(j!=0)?':':' ';
+        strcpy(output+i, pd->UsingList[j]);
+        i+=strlen(output+i);
+       }
+     }
+   }
+  else if (ptr->type == CANVAS_PLOT) // Produce textual representations of plot commands
    {
     canvas_plotrange *pr;
     canvas_plotdesc  *pd;
@@ -362,11 +399,6 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
          StrStrip(pd->functions[j] , output+i);
          i+=strlen(output+i);
         }
-      if (pd->ContinuitySet) // Print continuous / discontinuous flag
-       {
-        if (pd->continuity == DATAFILE_DISCONTINUOUS) { sprintf(output+i, " discontinuous"); i+=strlen(output+i); }
-        else                                          { sprintf(output+i,    " continuous"); i+=strlen(output+i); }
-       }
       if (pd->axis1set || pd->axis2set || pd->axis3set) // Print axes to use
        {
         strcpy(output+i, " axes "); i+=strlen(output+i);
@@ -383,6 +415,11 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       if (pd->IndexSet) { sprintf(output+i, " index %d", pd->index); i+=strlen(output+i); } // Print index to use
       if (pd->label!=NULL) { sprintf(output+i, " label %s", pd->label); i+=strlen(output+i); } // Print label string
       if (pd->SelectCriterion!=NULL) { sprintf(output+i, " select %s", pd->SelectCriterion); i+=strlen(output+i); } // Print select criterion
+      if (pd->ContinuitySet) // Print continuous / discontinuous flag
+       {
+        if (pd->continuity == DATAFILE_DISCONTINUOUS) { sprintf(output+i, " discontinuous"); i+=strlen(output+i); }
+        else                                          { sprintf(output+i,    " continuous"); i+=strlen(output+i); }
+       }
       if      (pd->NoTitleSet) { strcpy(output+i, " notitle"); i+=strlen(output+i); } // notitle is set
       else if (pd->TitleSet  ) { strcpy(output+i, " title "); i+=strlen(output+i); StrEscapify(pd->title, output+i); i+=strlen(output+i); }
       with_words_print(&pd->ww, output+i+6);
@@ -577,11 +614,11 @@ int directive_move(Dict *command)
   ptr = canvas_items->first;
   while ((ptr!=NULL)&&(ptr->id!=*moveno)) ptr=ptr->next;
   if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *moveno); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_CIRC)&&(ptr->type!=CANVAS_PLOT)&&(ptr->type!=CANVAS_POINT));
+  rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_CIRC)&&(ptr->type!=CANVAS_PIE)&&(ptr->type!=CANVAS_PLOT)&&(ptr->type!=CANVAS_POINT));
   if ((ang != NULL) && (!rotatable)) { sprintf(temp_err_string, "It is not possible to rotate the specified multiplot item."); ppl_warning(ERR_GENERAL, temp_err_string); }
 
   // Most canvas items are moved using the xpos and ypos fields
-  if (ptr->type!=CANVAS_PLOT)
+  if ((ptr->type!=CANVAS_PLOT)&&(ptr->type!=CANVAS_PIE))
    {
     ptr->xpos = x->real;
     ptr->ypos = y->real;
@@ -997,6 +1034,155 @@ int directive_eps(Dict *command, int interactive)
   return 0;
  }
 
+// Implementation of the piechart command.
+int directive_piechart(Dict *command, int interactive)
+ {
+  canvas_item   *ptr;
+  int            id, *indexptr, *tempint;
+  long           i, j;
+  char          *cptr2, *tempstr, *SelectCrit;
+  List          *ExpressionList, *UsingList, *EveryList;
+  ListIterator  *ListIter2;
+  Dict          *TempDict2;
+
+  unsigned char *unsuccessful_ops;
+
+  if (canvas_itemlist_add(command,CANVAS_PIE,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } // Do not copy axes and settings here, as we do it below
+
+  ptr->settings = settings_graph_current; // Now copy graph settings
+  with_words_copy(&ptr->settings.DataStyle , &settings_graph_current.DataStyle);
+  with_words_copy(&ptr->settings.FuncStyle , &settings_graph_current.FuncStyle);
+
+  // Malloc a structure to hold this plot item
+  ptr->plotitems=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc));
+  if (ptr->plotitems == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  memset((void *)(ptr->plotitems), 0, sizeof(canvas_plotdesc));
+
+  // Store either filename of datafile, or the list of functions which we are plotting
+  DictLookup(command, "filename", NULL, (void **)&tempstr);
+  if (tempstr != NULL) // We are plotting a datafile
+   {
+    ptr->plotitems->function = 0;
+    ptr->plotitems->filename = (char *)malloc(strlen(tempstr)+1);
+    if (ptr->plotitems->filename == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    strcpy(ptr->plotitems->filename , tempstr);
+   }
+  else // We are plotting function(s)
+   {
+    ptr->plotitems->function = 1;
+    ptr->plotitems->filename = NULL;
+    ptr->plotitems->parametric = 0;
+    DictLookup(command, "expression_list:", NULL, (void **)&ExpressionList);
+    j = ptr->plotitems->NFunctions = ListLen(ExpressionList);
+    ptr->plotitems->functions = (char **)malloc(j * sizeof(char *));
+    if (ptr->plotitems->functions == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    ListIter2 = ListIterateInit(ExpressionList);
+    for (i=0; i<j; i++)
+     {
+      TempDict2 = (Dict *)ListIter2->data;
+      DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
+      ptr->plotitems->functions[i] = (char *)malloc(strlen(tempstr)+1);
+      if (ptr->plotitems->functions[i] == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+      strcpy(ptr->plotitems->functions[i], tempstr);
+      ListIter2 = ListIterate(ListIter2, NULL);
+     }
+   }
+
+  // Loop up format string
+  DictLookup(command, "format_string", NULL, (void **)&tempstr);
+  if (tempstr==NULL) { ptr->text = NULL; }
+  else
+   {
+    ptr->text = (char *)malloc(strlen(tempstr)+1);
+    if (ptr->text == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    strcpy(ptr->text, tempstr);
+   }
+
+  // Look up label to apply to datapoints
+  DictLookup(command, "label", NULL, (void **)&tempstr);
+  if (tempstr==NULL) { ptr->plotitems->label = NULL; }
+  else
+   {
+    ptr->plotitems->label = (char *)malloc(strlen(tempstr)+1);
+    if (ptr->plotitems->label == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    strcpy(ptr->plotitems->label, tempstr);
+   }
+
+  // Look up index , every, using modifiers
+  ptr->plotitems->UsingRowCols = DATAFILE_COL;
+  ptr->plotitems->index = -1;
+  DictLookup(command, "index"      , NULL, (void **)&indexptr);   if ((ptr->plotitems->IndexSet = (indexptr!=NULL))==1) ptr->plotitems->index = *indexptr;
+  DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) ptr->plotitems->UsingRowCols = DATAFILE_ROW;
+  DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) ptr->plotitems->UsingRowCols = DATAFILE_COL;
+
+  DictLookup(command, "every_list:", NULL, (void **)&EveryList);
+  if (EveryList==NULL) { ptr->plotitems->EverySet = 0; }
+  else
+   {
+    j = ptr->plotitems->EverySet = ListLen(EveryList);
+    if (j>6) { ppl_error(ERR_SYNTAX, "More than six items specified in every modifier -- final items are not valid syntax."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    ListIter2 = ListIterateInit(EveryList);
+    for (i=0; i<j; i++)
+     {
+      TempDict2 = (Dict *)ListIter2->data;
+      DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
+      if (tempint != NULL) ptr->plotitems->EveryList[i] = *tempint;
+      else                 ptr->plotitems->EveryList[i] = -1;
+      ListIter2 = ListIterate(ListIter2, NULL);
+     }
+   }
+
+  // Look up select modifier
+  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+  if (SelectCrit==NULL) { ptr->plotitems->SelectCriterion = NULL; }
+  else
+   { 
+    ptr->plotitems->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
+    if (ptr->plotitems->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    strcpy(ptr->plotitems->SelectCriterion, SelectCrit);
+   }
+
+  // Look up using modifiers
+  DictLookup(command, "using_list:", NULL, (void **)&UsingList);
+  if (UsingList==NULL) { ptr->plotitems->NUsing = 0; ptr->plotitems->UsingList = NULL; }
+  else
+   {
+    j = ListLen(UsingList);
+    if (j==1) // 'using columns' produces a NULL (optional) first using item. Consider this as a blank list
+     {
+      TempDict2 = (Dict *)(UsingList->first->data);
+      if (TempDict2==NULL) { ptr->plotitems->NUsing = 0; ptr->plotitems->UsingList = NULL; goto FinishedUsing; }
+      DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+      if (cptr2==NULL) { ptr->plotitems->NUsing = 0; ptr->plotitems->UsingList = NULL; goto FinishedUsing; }
+     }
+    ptr->plotitems->NUsing = j;
+    ptr->plotitems->UsingList = (char **)malloc(j * sizeof(char *));
+    if (ptr->plotitems->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    ListIter2 = ListIterateInit(UsingList);
+    for (i=0; i<j; i++)
+     {
+      TempDict2 = (Dict *)ListIter2->data;
+      DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+      if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
+      ptr->plotitems->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
+      if (ptr->plotitems->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+      strcpy(ptr->plotitems->UsingList[i], cptr2);
+      ListIter2 = ListIterate(ListIter2, NULL);
+     }
+   }
+FinishedUsing:
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Plot has been removed from multiplot, because it generated an error.")); return 1; }
+   }
+  return 0;
+ }
+
+
 // Implementation of the point command.
 int directive_point(Dict *command, int interactive)
  {
@@ -1368,7 +1554,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       strcpy((*PlotItemPtr)->title, tempstr);
      }
 
-    // Look up index , every, select, using modifiers
+    // Look up index , every, using modifiers
     (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
     (*PlotItemPtr)->index = -1;
     DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
