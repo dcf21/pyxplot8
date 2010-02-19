@@ -326,6 +326,19 @@ extern int   SW_CALENDAR_ACL[];
 extern int   SW_CALENDAR_INT[];
 #endif
 
+// Positions for the labels on piecharts
+
+#define SW_PIEKEYPOS_AUTO    19101
+#define SW_PIEKEYPOS_INSIDE  19102
+#define SW_PIEKEYPOS_KEY     19103
+#define SW_PIEKEYPOS_OUTSIDE 19104
+
+#ifndef _PPL_SETTING_TYPES_C
+extern char *SW_PIEKEYPOS_STR[];
+extern int   SW_PIEKEYPOS_ACL[];
+extern int   SW_PIEKEYPOS_INT[];
+#endif
+
 void *FetchSettingName      (int id, int *id_list, void *name_list, const int name_list_size);
 int   FetchSettingByName    (char *name, int *id_list, char **name_list);
 

@@ -111,6 +111,10 @@ char *SW_CALENDAR_STR[] = {"Gregorian"          , "Julian"          , "British" 
 int   SW_CALENDAR_INT[] = {SW_CALENDAR_GREGORIAN, SW_CALENDAR_JULIAN, SW_CALENDAR_BRITISH, SW_CALENDAR_FRENCH, SW_CALENDAR_CATHOLIC, SW_CALENDAR_RUSSIAN, SW_CALENDAR_GREEK, SW_CALENDAR_HEBREW, SW_CALENDAR_ISLAMIC, -1};
 int   SW_CALENDAR_ACL[] = {1                    , 1                 , 1                  , 1                 , 1                   , 1                  , 5                , 1                 , 1                  , -1};
 
+char *SW_PIEKEYPOS_STR[] = {"auto"           , "inside"           , "key"           , "outside"           };
+int   SW_PIEKEYPOS_INT[] = {SW_PIEKEYPOS_AUTO, SW_PIEKEYPOS_INSIDE, SW_PIEKEYPOS_KEY, SW_PIEKEYPOS_OUTSIDE, -1};
+int   SW_PIEKEYPOS_ACL[] = {1                , 1                  , 1               , 1                   , -1};
+
 void *FetchSettingName(int id, int *id_list, void *name_list, const int name_list_size)
  {
   int first;

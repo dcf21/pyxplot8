@@ -59,6 +59,7 @@ typedef struct canvas_plotdesc {
  char                   *TitleFinal;
  int                     TitleFinal_col;
  double                  TitleFinal_xpos, TitleFinal_ypos, TitleFinal_width, TitleFinal_height;
+ double                  PieChart_total;
 } canvas_plotdesc;
 
 typedef struct canvas_item {

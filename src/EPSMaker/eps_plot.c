@@ -30,6 +30,7 @@
 #include "MathsTools/dcfmath.h"
 
 #include "ppl_datafile.h"
+#include "ppl_error.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"

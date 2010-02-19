@@ -22,7 +22,11 @@
 #ifndef _PPL_EPS_PLOT_H
 #define _PPL_EPS_PLOT_H 1
 
+#include "ListTools/lt_list.h"
+
 #include "eps_comm.h"
+
+int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *UsingList);
 
 void eps_plot_ReadAccessibleData(EPSComm *x);
 void eps_plot_SampleFunctions(EPSComm *x);

@@ -351,8 +351,18 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       if (ptr->text==NULL) { sprintf(output+i, " format auto"); i+=strlen(output+i); }
       else                 { sprintf(output+i, " format %s", ptr->text); i+=strlen(output+i); }
       if (pd->IndexSet) { sprintf(output+i, " index %d", pd->index); i+=strlen(output+i); } // Print index to use
-      if (pd->label!=NULL) { sprintf(output+i, " label %s", pd->label); i+=strlen(output+i); } // Print label string
+      if ((pd->label!=NULL) || (ptr->ArrowType!=SW_PIEKEYPOS_AUTO))
+       {
+        sprintf(output+i, " label %s", *(char **)FetchSettingName(ptr->ArrowType, SW_PIEKEYPOS_INT, (void *)SW_PIEKEYPOS_STR, sizeof(char *)));
+        i+=strlen(output+i);
+        if (pd->label!=NULL) sprintf(output+i, " %s", pd->label); // Print label string
+        i+=strlen(output+i);
+       }
       if (pd->SelectCriterion!=NULL) { sprintf(output+i, " select %s", pd->SelectCriterion); i+=strlen(output+i); } // Print select criterion
+      with_words_print(&pd->ww, output+i+6);
+      if (strlen(output+i+6)>0) { sprintf(output+i, " with"); output[i+5]=' '; }
+      else                      { output[i]='\0'; }
+      i+=strlen(output+i);
       sprintf(output+i, " using %s", (pd->UsingRowCols==DATAFILE_COL)?"columns":"rows"); i+=strlen(output+i); // Print using list
       for (j=0; j<pd->NUsing; j++)
        {
@@ -1108,6 +1118,11 @@ int directive_piechart(Dict *command, int interactive)
     strcpy(ptr->plotitems->label, tempstr);
    }
 
+  // Look up label position
+  DictLookup(command, "piekeypos", NULL, (void **)&tempstr);
+  if (tempstr==NULL) ptr->ArrowType = SW_PIEKEYPOS_AUTO;
+  else               ptr->ArrowType = FetchSettingByName(tempstr, SW_PIEKEYPOS_INT, SW_PIEKEYPOS_STR);
+
   // Look up index , every, using modifiers
   ptr->plotitems->UsingRowCols = DATAFILE_COL;
   ptr->plotitems->index = -1;
@@ -1172,6 +1187,9 @@ int directive_piechart(Dict *command, int interactive)
    }
 FinishedUsing:
 
+  // Read in style information from with clause
+  with_words_fromdict(command, &ptr->plotitems->ww, 1);
+
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
    {
@@ -1181,7 +1199,6 @@ FinishedUsing:
    }
   return 0;
  }
-
 
 // Implementation of the point command.
 int directive_point(Dict *command, int interactive)
