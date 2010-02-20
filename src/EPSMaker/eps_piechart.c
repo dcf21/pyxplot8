@@ -29,18 +29,23 @@
 
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_list.h"
+#include "ListTools/lt_dict.h"
 
 #include "MathsTools/dcfmath.h"
 
+#include "ppl_canvasdraw.h"
 #include "ppl_datafile.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_units_fns.h"
+#include "ppl_userspace.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_piechart.h"
 #include "eps_plot.h"
+#include "eps_plot_legend.h"
 #include "eps_plot_styles.h"
 #include "eps_settings.h"
 
@@ -113,6 +118,69 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
 
 void eps_pie_YieldUpText(EPSComm *x)
  {
+  int              j, k, l, Ncolumns;
+  char            *FormatString, *label, DefaultFormat[64]="\"%.1d\\%% %s\"%(percentage,label)";
+  canvas_plotdesc *pd;
+  DataBlock       *blk;
+  CanvasTextItem  *i;
+  value            DummyTemp_l, DummyTemp_p, DummyTemp_w;
+  value           *var_l      , *var_p     , *var_w;
+
+  if ((pd=x->current->plotitems)==NULL) return;
+  x->current->FirstTextID = x->NTextItems;
+
+  // Work out what format string to use
+  if (x->current->text==NULL) FormatString=DefaultFormat;
+  else                        FormatString=x->current->text;
+
+  // Get pointers to the variables [percentage, label, wedgesize]
+  DictLookup(_ppl_UserSpace_Vars, "label"     , NULL, (void **)&var_l);
+  if (var_l != NULL) { DummyTemp_l = *var_l; }
+  else  { ppl_units_zero(&DummyTemp_l); DictAppendValue(_ppl_UserSpace_Vars, "label"     , DummyTemp_l); DictLookup(_ppl_UserSpace_Vars, "label"     , NULL, (void **)&var_l); DummyTemp_l.modified = 2; }
+  DictLookup(_ppl_UserSpace_Vars, "percentage", NULL, (void **)&var_p);
+  if (var_p != NULL) { DummyTemp_p = *var_p; }
+  else  { ppl_units_zero(&DummyTemp_p); DictAppendValue(_ppl_UserSpace_Vars, "percentage", DummyTemp_p); DictLookup(_ppl_UserSpace_Vars, "percentage", NULL, (void **)&var_p); DummyTemp_p.modified = 2; }
+  DictLookup(_ppl_UserSpace_Vars, "wedgesize" , NULL, (void **)&var_w);
+  if (var_w != NULL) { DummyTemp_w = *var_w; }
+  else  { ppl_units_zero(&DummyTemp_w); DictAppendValue(_ppl_UserSpace_Vars, "wedgesize" , DummyTemp_w); DictLookup(_ppl_UserSpace_Vars, "wedgesize" , NULL, (void **)&var_w); DummyTemp_w.modified = 2; }
+  ppl_units_zero(var_l);
+  ppl_units_zero(var_p);
+  *var_w = x->current->plotdata[0]->FirstEntries[0];
+
+  // Labels of pie wedges
+  Ncolumns = x->current->plotdata[0]->Ncolumns;
+  blk      = x->current->plotdata[0]->first;
+  while (blk != NULL)
+   {
+    for (j=0; j<blk->BlockPosition; j++)
+     {
+      // Set values of variables [percentage, label, wedgesize] for this wedge
+      var_w->real   = blk->data_real[0 + Ncolumns*j].d;
+      var_p->real   = var_w->real / pd->PieChart_total * 100.0;
+      var_l->string = blk->text[j];
+      label         = (char *)lt_malloc((strlen(FormatString)+10)*8);
+      k             = strlen(FormatString)-1;
+      l             = -1;
+      if (label!=NULL)
+       {
+        ppl_GetQuotedString(FormatString, label, 0, &k, 0, &l, temp_err_string, 1);
+        if (l>=0) strcpy(label, "?");
+       }
+      blk->text[j] = label;
+      YIELD_TEXTITEM(label);
+     }
+    blk=blk->next;
+   }
+
+  // Restore values of the variables [percentage, label, wedgesize]
+  *var_l = DummyTemp_l;
+  *var_p = DummyTemp_p;
+  *var_w = DummyTemp_w;
+
+  // Title of piechart
+  x->current->TitleTextID = x->NTextItems;
+  YIELD_TEXTITEM(x->current->settings.title);
+  return;
  }
 
 void eps_pie_RenderEPS(EPSComm *x)
@@ -125,6 +193,7 @@ void eps_pie_RenderEPS(EPSComm *x)
   with_words       ww;
 
   if ((pd=x->current->plotitems)==NULL) return;
+  x->LaTeXpageno = x->current->FirstTextID;
 
   // Print label at top of postscript description of box
   fprintf(x->epsbuffer, "%% Canvas item %d [piechart]\n", x->current->id);
@@ -201,6 +270,18 @@ void eps_pie_RenderEPS(EPSComm *x)
   eps_core_BoundingBox(x, xpos+rad, ypos-rad, lw);
   eps_core_BoundingBox(x, xpos-rad, ypos+rad, lw);
   eps_core_BoundingBox(x, xpos+rad, ypos+rad, lw);
+
+  // Title of piechart
+  x->LaTeXpageno = x->current->TitleTextID;
+  if ((x->current->settings.title != NULL) && (x->current->settings.title[0] != '\0'))
+   {
+    int pageno = x->LaTeXpageno++;
+    with_words_zero(&ww,0);
+    if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
+    else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
+    eps_core_SetColour(x, &ww, 1);
+    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS, (ypos+rad+8)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+   }
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");
