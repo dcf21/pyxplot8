@@ -134,6 +134,8 @@ typedef struct label_object {
  int         axis_x  ,axis_y  ,axis_z;
  char       *text;
  with_words  style;
+ double      rotation, gap;
+ int         HAlign, VAlign;
  struct label_object *next;
  } label_object;
 

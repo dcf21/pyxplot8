@@ -83,7 +83,7 @@ typedef struct canvas_item {
  canvas_plotrange *plotranges;
  canvas_plotdesc  *plotitems;
  DataTable       **plotdata; // used at plot time
- int               FirstTextID, AxesTextID, TitleTextID, LegendTextID, *DatasetTextID;
+ int               FirstTextID, AxesTextID, TitleTextID, LegendTextID, SetLabelTextID, *DatasetTextID;
 } canvas_item;
 
 typedef struct canvas_itemlist {

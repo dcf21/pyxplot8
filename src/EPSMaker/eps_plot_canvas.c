@@ -37,6 +37,7 @@
 double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn, unsigned char AllowOffBounds)
  {
   int imin, imax, i;
+  if (xa==NULL) return xin;
   if (xa->AxisLinearInterpolation != NULL) // Axis is linearly interpolated
    {
     imin = xa->AxisTurnings[xrn  ];

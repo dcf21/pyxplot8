@@ -729,11 +729,37 @@ void arrow_print(arrow_object *in, char *out)
 // ROUTINES FOR MANIPULATING LABELS STRUCTURES
 // -------------------------------------------
 
+#define ASSERT_LENGTH(VAR) \
+  if (!(VAR->dimensionless)) \
+   { \
+    for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
+     if (VAR->exponent[i] != (i==UNIT_LENGTH)) \
+      { \
+       sprintf(temp_err_string,"The gap size supplied to the 'set label' command must have dimensions of length. Supplied gap size input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,0)); \
+       ppl_error(ERR_NUMERIC, temp_err_string); \
+       return; \
+      } \
+   } \
+  else { VAR->real /= 100; } // By default, dimensionless positions are in centimetres
+
+#define ASSERT_ANGLE(VAR) \
+  if (!(VAR->dimensionless)) \
+   { \
+    for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
+     if (VAR->exponent[i] != (i==UNIT_ANGLE)) \
+      { \
+       sprintf(temp_err_string,"The rotation angle supplied to the 'set label' command must have dimensions of angle. Supplied input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,0)); \
+       ppl_error(ERR_NUMERIC, temp_err_string); \
+       return; \
+      } \
+   } \
+  else { VAR->real *= M_PI/180.0; } // By default, dimensionless angles are in degrees
+
 void label_add(label_object **list, Dict *in)
  {
   int   *tempint, i, system_x, system_y, system_z;
   char  *tempstr, *label;
-  value *tempval, tempvalobj;
+  value *tempval, tempvalobj, *gap, *ang;
   with_words ww_temp1;
   label_object *out;
 
@@ -746,6 +772,15 @@ void label_add(label_object **list, Dict *in)
   if (label == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
   strcpy(label, tempstr);
 
+  // Check for rotation modifier
+  DictLookup(in, "rotation", NULL, (void *)&ang);
+  if (ang != NULL) { ASSERT_ANGLE(ang); }
+
+  // Check for gap modifier
+  DictLookup(in, "gap", NULL, (void *)&gap);
+  if (gap != NULL) { ASSERT_LENGTH(gap); }
+
+  // Look up ID number of the label we are adding and find appropriate place for it in label list
   DictLookup(in,"label_id",NULL,(void **)&tempint);
   while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
   if ((*list != NULL) && ((*list)->id == *tempint))
@@ -759,6 +794,19 @@ void label_add(label_object **list, Dict *in)
     out->next = *list;
     *list     = out;
    }
+
+  // Check for halign or valign modifiers
+  DictLookup(in,"halign",NULL,(void **)&tempstr);
+  if (tempstr != NULL) out->HAlign = FetchSettingByName(tempstr, SW_HALIGN_INT, SW_HALIGN_STR);
+  else                 out->HAlign = 0;
+  DictLookup(in,"valign",NULL,(void **)&tempstr);
+  if (tempstr != NULL) out->VAlign = FetchSettingByName(tempstr, SW_VALIGN_INT, SW_VALIGN_STR);
+  else                 out->VAlign = 0;
+
+  if (ang != NULL) out->rotation = ang->real;
+  else             out->rotation = 0.0;
+  if (gap != NULL) out->gap      = gap->real;
+  else             out->gap      = 0.0;
 
   with_words_fromdict(in, &ww_temp1, 1);
   with_words_copy(&out->style, &ww_temp1);
@@ -903,6 +951,14 @@ void label_print(label_object *in, char *out)
   sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_z, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_z==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z); i+=strlen(out+i); }
   sprintf(out+i, " %s", ppl_units_NumericDisplay(&(in->z),0,0,0)); i+=strlen(out+i);
+  if (in->rotation!=0.0) { sprintf(out+i, " rotate %s",
+             NumericDisplay( in->rotation *180/M_PI , 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           ); i+=strlen(out+i); }
+  if (in->HAlign>0) { sprintf(out+i, " halign %s", *(char **)FetchSettingName(in->HAlign, SW_HALIGN_INT, (void *)SW_HALIGN_STR, sizeof(char *))); i+=strlen(out+i); }
+  if (in->VAlign>0) { sprintf(out+i, " valign %s", *(char **)FetchSettingName(in->VAlign, SW_VALIGN_INT, (void *)SW_VALIGN_STR, sizeof(char *))); i+=strlen(out+i); }
+  if (in->gap!=0.0) { sprintf(out+i, " gap %s",
+             NumericDisplay( in->gap * 100          , 0, settings_term_current.SignificantFigures, (settings_term_current.NumDisplay==SW_DISPLAY_L))
+           ); i+=strlen(out+i); }
   with_words_print(&in->style, out+i+6);
   if (strlen(out+i+6)>0) { sprintf(out+i, " with"); out[i+5]=' '; }
   else                   { out[i]='\0'; }

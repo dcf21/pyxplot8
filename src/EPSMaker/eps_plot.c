@@ -661,6 +661,10 @@ void eps_plot_YieldUpText(EPSComm *x)
     pd=pd->next; k++;
    }
 
+  // Text for the 'set label' command
+  x->current->SetLabelTextID = x->NTextItems;
+  eps_plot_labelsarrows_YieldUpText(x);
+
   // Graph legend
   x->current->LegendTextID = x->NTextItems;
   GraphLegend_YieldUpText(x);
