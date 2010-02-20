@@ -40,6 +40,7 @@
 #include "eps_plot.h"
 #include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_labelsarrows.h"
 #include "eps_plot_legend.h"
 #include "eps_plot_styles.h"
 #include "eps_plot_threedimbuff.h"
@@ -743,6 +744,9 @@ void eps_plot_RenderEPS(EPSComm *x)
 
     pd=pd->next; i++;
    }
+
+  // Render text labels and arrows
+  eps_plot_labelsarrows(x, origin_x, origin_y, width, height);
 
   // Turn off clipping if 'set clip' is set
   if (x->current->settings.clip == SW_ONOFF_ON)

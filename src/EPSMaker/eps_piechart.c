@@ -186,11 +186,11 @@ void eps_pie_YieldUpText(EPSComm *x)
 void eps_pie_RenderEPS(EPSComm *x)
  {
   int              j, Ncolumns, lt, WedgeNumber, l, m;
-  double           xpos,ypos,rad,angle,size;
+  double           xpos,ypos,rad,angle,size,vtitle;
   canvas_plotdesc *pd;
   DataBlock       *blk;
   double           lw, lw_scale;
-  with_words       ww;
+  with_words       ww, ww_txt;
 
   if ((pd=x->current->plotitems)==NULL) return;
   x->LaTeXpageno = x->current->FirstTextID;
@@ -200,9 +200,10 @@ void eps_pie_RenderEPS(EPSComm *x)
   eps_core_clear(x);
 
   // Calculate position of centre of piechart, and its radius
-  xpos = x->current->settings.OriginX.real * M_TO_PS;
-  ypos = x->current->settings.OriginX.real * M_TO_PS;
-  rad  = x->current->settings.width  .real * M_TO_PS / 2;
+  xpos   = x->current->settings.OriginX.real * M_TO_PS;
+  ypos   = x->current->settings.OriginX.real * M_TO_PS;
+  rad    = x->current->settings.width  .real * M_TO_PS / 2;
+  vtitle = ypos+rad;
 
   // Expand any numbered styles which may appear in the with words we are passed
   with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
@@ -271,16 +272,153 @@ void eps_pie_RenderEPS(EPSComm *x)
   eps_core_BoundingBox(x, xpos-rad, ypos+rad, lw);
   eps_core_BoundingBox(x, xpos+rad, ypos+rad, lw);
 
-  // Title of piechart
-  x->LaTeXpageno = x->current->TitleTextID;
-  if ((x->current->settings.title != NULL) && (x->current->settings.title[0] != '\0'))
+  // Write text on piechart
+  with_words_zero(&ww_txt,0);
+  if (x->current->settings.TextColour > 0) { ww_txt.USEcolour = 1; ww_txt.colour = x->current->settings.TextColour; }
+  else                                     { ww_txt.USEcolourRGB = 1; ww_txt.colourR = x->current->settings.TextColourR; ww_txt.colourG = x->current->settings.TextColourG; ww_txt.colourB = x->current->settings.TextColourB; }
+  eps_core_SetColour(x, &ww_txt, 1);
+
+  IF_NOT_INVISIBLE
    {
-    int pageno = x->LaTeXpageno++;
-    with_words_zero(&ww,0);
-    if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
-    else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
-    eps_core_SetColour(x, &ww, 1);
-    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS, (ypos+rad+8)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+    int ItemNo=0;
+    double *TextWidth, *TextHeight, TotalHeight=0.0;
+    double height1,height2,bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
+    double width_available, height_available, key_vpos=0.0;
+    postscriptPage *dviPage;
+
+    // Calculate dimensions of text items
+    TextWidth  = (double *)lt_malloc(x->current->plotdata[0]->Nrows * sizeof(double));
+    TextHeight = (double *)lt_malloc(x->current->plotdata[0]->Nrows * sizeof(double));
+    if ((TextWidth==NULL)||(TextHeight==NULL)) goto END_LABEL_PRINTING;
+    blk        = x->current->plotdata[0]->first;
+    while (blk != NULL)
+     {
+      for (j=0; j<blk->BlockPosition; j++)
+       {
+        dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, x->LaTeXpageno+ItemNo);
+        if (dviPage== NULL) { ItemNo++; continue; } // Such doom will trigger errors later
+        bb_left   = dviPage->boundingBox[0];
+        bb_bottom = dviPage->boundingBox[1];
+        bb_right  = dviPage->boundingBox[2];
+        bb_top    = dviPage->boundingBox[3];
+        ab_left   = dviPage->textSizeBox[0];
+        ab_bottom = dviPage->textSizeBox[1];
+        ab_right  = dviPage->textSizeBox[2];
+        ab_top    = dviPage->textSizeBox[3];
+        height1   = fabs(ab_top - ab_bottom) * AB_ENLARGE_FACTOR;
+        height2   = fabs(bb_top - bb_bottom) * BB_ENLARGE_FACTOR;
+        TextWidth [ItemNo] = (ab_right - ab_left) + MARGIN_HSIZE;
+        TextHeight[ItemNo] = (height2<height1) ? height2 : height1;
+        TotalHeight += TextHeight[ItemNo];
+        ItemNo++;
+       }
+      blk=blk->next;
+     }
+
+    // Labels of pie wedges
+    Ncolumns = x->current->plotdata[0]->Ncolumns;
+    blk      = x->current->plotdata[0]->first;
+    angle    = 0.0;
+    ItemNo   = 0;
+    while (blk != NULL)
+     {
+      for (j=0; j<blk->BlockPosition; j++)
+       {
+        if ((blk->text[j]!=NULL)&&(blk->text[j][0]!='\0'))
+         {
+          double a, X=2;
+          size             = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 2 * M_PI;
+          a                = angle+size/2;
+          width_available  = hypot(rad*pow(fabs(sin(a)),X) , size*rad/2*pow(fabs(cos(a)),X));
+          height_available = hypot(rad*pow(fabs(cos(a)),X) , size*rad/2*pow(fabs(sin(a)),X));
+          if ((x->current->ArrowType==SW_PIEKEYPOS_INSIDE) || ((x->current->ArrowType==SW_PIEKEYPOS_AUTO)&&(width_available>TextWidth[ItemNo])&&(height_available>TextHeight[ItemNo])))
+           { // Labelling pie wedges inside pie
+            int pageno = x->LaTeXpageno++;
+            eps_core_SetColour(x, &ww_txt, 1);
+            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*2/3)/M_TO_PS, (ypos+rad*cos(a)*2/3)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_CENT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+           }
+          else if ((x->current->ArrowType==SW_PIEKEYPOS_OUTSIDE) || (x->current->ArrowType==SW_PIEKEYPOS_AUTO))
+           { // Labelling pie wedges around edge of pie
+            int    hal, val, pageno = x->LaTeXpageno++;
+            double vtop;
+            if      (a <   5*M_PI/180) { hal=SW_HALIGN_CENT ; val=SW_VALIGN_BOT;  }
+            else if (a <  30*M_PI/180) { hal=SW_HALIGN_LEFT ; val=SW_VALIGN_BOT;  }
+            else if (a < 150*M_PI/180) { hal=SW_HALIGN_LEFT ; val=SW_VALIGN_CENT; }
+            else if (a < 175*M_PI/180) { hal=SW_HALIGN_LEFT ; val=SW_VALIGN_TOP;  }
+            else if (a < 185*M_PI/180) { hal=SW_HALIGN_CENT ; val=SW_VALIGN_TOP;  }
+            else if (a < 210*M_PI/180) { hal=SW_HALIGN_RIGHT; val=SW_VALIGN_TOP;  }
+            else if (a < 330*M_PI/180) { hal=SW_HALIGN_RIGHT; val=SW_VALIGN_CENT; }
+            else if (a < 355*M_PI/180) { hal=SW_HALIGN_RIGHT; val=SW_VALIGN_BOT;  }
+            else                       { hal=SW_HALIGN_CENT ; val=SW_VALIGN_BOT;  }
+            if      (val == SW_VALIGN_BOT ) vtop = ypos+rad*cos(a)*1.05 + TextHeight[ItemNo];
+            else if (val == SW_VALIGN_CENT) vtop = ypos+rad*cos(a)*1.05 + TextHeight[ItemNo]/2;
+            else                            vtop = ypos+rad*cos(a)*1.05;
+            if (vtop > vtitle) vtitle=vtop;
+            eps_core_SetColour(x, &ww, 1);
+            IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nclosepath\nstroke\n",xpos+rad*sin(a),ypos+rad*cos(a),xpos+rad*sin(a)*1.03,ypos+rad*cos(a)*1.03);
+            eps_core_SetColour(x, &ww_txt, 1);
+            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*1.05)/M_TO_PS, (ypos+rad*cos(a)*1.05)/M_TO_PS, hal, val, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+           }
+          else // Labelling pie wedges in a key
+           {
+            int    pageno = x->LaTeXpageno++;
+            double h = xpos + rad*1.1; // Position of left of key
+            double v = ypos + TotalHeight/2 - key_vpos - TextHeight[ItemNo]/2; // Vertical position of centre of key item
+            double s = MARGIN_HSIZE_LEFT*0.45/3; // Controls size of filled square which appears next to wedge label
+            double st= MARGIN_HSIZE_LEFT*0.67;
+
+            // Work out what fillcolour to use
+            for (l=0; l<PALETTE_LENGTH; l++) if (settings_palette_current[l]==-1) break; // l now contains length of palette
+            m = ItemNo % l; // m is now the palette colour number to use
+            while (m<0) m+=l;
+            if (settings_palette_current[m] > 0) { ww.fillcolour  = settings_palette_current[m]; ww.USEfillcolour = 1; ww.USEfillcolourRGB = 0; }
+            else                                 { ww.fillcolourR = settings_paletteR_current[m]; ww.fillcolourG = settings_paletteG_current[m]; ww.fillcolourB = settings_paletteB_current[m]; ww.USEfillcolour = 0; ww.USEfillcolourRGB = 1; }
+
+            // Fill icon
+            eps_core_SetFillColour(x, &ww);
+            eps_core_SwitchTo_FillColour(x);
+            IF_NOT_INVISIBLE
+             {
+              fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath fill\n", h, v-s, h, v+s, h+2*s, v+s, h+2*s, v-s);
+              eps_core_BoundingBox(x, h    , v-s, 0);
+              eps_core_BoundingBox(x, h    , v+s, 0);
+              eps_core_BoundingBox(x, h+2*s, v-s, 0);
+              eps_core_BoundingBox(x, h+2*s, v+s, 0);
+             }
+
+            // Stroke icon
+            eps_core_SetColour(x, &ww, 1);
+            eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * ww.linewidth, ww.USElinetype ? ww.linetype : 1, 0);
+            IF_NOT_INVISIBLE
+             {
+              fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath stroke\n", h, v-s, h, v+s, h+2*s, v+s, h+2*s, v-s);
+              eps_core_BoundingBox(x, h    , v-s, ww.linewidth);
+              eps_core_BoundingBox(x, h    , v+s, ww.linewidth);
+              eps_core_BoundingBox(x, h+2*s, v-s, ww.linewidth);
+              eps_core_BoundingBox(x, h+2*s, v+s, ww.linewidth);
+             }
+
+            // Write text next to icon
+            eps_core_SetColour(x, &ww_txt, 1);
+            canvas_EPSRenderTextItem(x, pageno, (h+st)/M_TO_PS, v/M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            key_vpos += TextHeight[ItemNo];
+           }
+         }
+        angle += size;
+        ItemNo++;
+       }
+      blk=blk->next;
+     }
+
+END_LABEL_PRINTING:
+
+    // Title of piechart
+    x->LaTeXpageno = x->current->TitleTextID;
+    if ((x->current->settings.title != NULL) && (x->current->settings.title[0] != '\0'))
+     {
+      int pageno = x->LaTeXpageno++;
+      canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS, (vtitle+8)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+     }
    }
 
   // Final newline at end of canvas item

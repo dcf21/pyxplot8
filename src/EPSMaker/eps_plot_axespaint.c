@@ -32,6 +32,7 @@
 
 #include "eps_comm.h"
 #include "eps_core.h"
+#include "eps_plot_axespaint.h"
 #include "eps_settings.h"
 
 void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
