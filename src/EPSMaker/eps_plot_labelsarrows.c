@@ -32,6 +32,7 @@
 #include "ppl_setting_types.h"
 #include "ppl_units_fns.h"
 
+#include "eps_arrow.h"
 #include "eps_colours.h"
 #include "eps_comm.h"
 #include "eps_core.h"
@@ -71,7 +72,6 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
 void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double width, double height)
  {
   int           pageno, hal, val;
-  double        xpos, ypos, depth, xap, yap, zap, theta_x, theta_y, theta_z;
   char          ItemName[64];
   arrow_object *ai;
   label_object *li;
@@ -88,6 +88,42 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
   // Loop through all arrows, rendering them in turn
   for (ai=x->current->arrow_list; ai!=NULL; ai=ai->next)
    {
+    settings_axis *xa0, *ya0, *za0=NULL, *xa1, *ya1, *za1=NULL;
+    double         xin0, yin0, zin0=0.5, xin1, yin1, zin1=0.5;
+    double         xpos, ypos, xpos0, ypos0, xpos1, ypos1, depth, xap, yap, zap, theta_x, theta_y, theta_z;
+    int            status=0, xrn0, yrn0, zrn0, xrn1, yrn1, zrn1;
+    sprintf(ItemName, "arrow %d on plot %d", ai->id, x->current->id);
+    FETCH_AXES(ai->system_x0, xa0, x->current->XAxes, ai->axis_x0, ai->x0, xin0);
+    FETCH_AXES(ai->system_y0, ya0, x->current->YAxes, ai->axis_y0, ai->y0, yin0);
+    if (x->current->ThreeDim) { FETCH_AXES(ai->system_z0, za0, x->current->ZAxes, ai->axis_z0, ai->z0, zin0); }
+    FETCH_AXES(ai->system_x1, xa1, x->current->XAxes, ai->axis_x1, ai->x1, xin1);
+    FETCH_AXES(ai->system_y1, ya1, x->current->YAxes, ai->axis_y1, ai->y1, yin1);
+    if (x->current->ThreeDim) { FETCH_AXES(ai->system_z1, za1, x->current->ZAxes, ai->axis_z1, ai->z1, zin1); }
+    if (!status)
+     for (xrn0=0; xrn0<=(                         (xa0!=NULL)  ? xa0->AxisValueTurnings : 0); xrn0++)
+     for (yrn0=0; yrn0<=(                         (ya0!=NULL)  ? ya0->AxisValueTurnings : 0); yrn0++)
+     for (zrn0=0; zrn0<=((x->current->ThreeDim && (za0!=NULL)) ? za0->AxisValueTurnings : 0); zrn0++)
+     for (xrn1=0; xrn1<=(                         (xa1!=NULL)  ? xa1->AxisValueTurnings : 0); xrn1++)
+     for (yrn1=0; yrn1<=(                         (ya1!=NULL)  ? ya1->AxisValueTurnings : 0); yrn1++)
+     for (zrn1=0; zrn1<=((x->current->ThreeDim && (za1!=NULL)) ? za1->AxisValueTurnings : 0); zrn1++)
+      {
+       if ((xa0==xa1)&&(xrn0!=xrn1)) continue;
+       if ((ya0==ya1)&&(yrn0!=yrn1)) continue;
+       if ((za0==za1)&&(zrn0!=zrn1)) continue;
+       eps_plot_GetPosition(&xpos0, &ypos0, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, width, 0);
+       eps_plot_GetPosition(&xpos1, &ypos1, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, width, 0);
+       xpos=xpos0; ypos=ypos0;
+       ADD_PAGE_COORDINATES(ai->system_x0, ai->x0, theta_x);
+       ADD_PAGE_COORDINATES(ai->system_y0, ai->y0, theta_y);
+       if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(ai->system_z0, ai->z0, theta_z); }
+       xpos0=xpos; ypos0=ypos; xpos=xpos1; ypos=ypos1;
+       ADD_PAGE_COORDINATES(ai->system_x1, ai->x1, theta_x);
+       ADD_PAGE_COORDINATES(ai->system_y1, ai->y1, theta_y);
+       xpos1=xpos; ypos1=ypos;
+       if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(ai->system_z1, ai->z1, theta_z); }
+       with_words_merge(&ww, &ai->style, &ww_default, NULL, NULL, NULL, 1);
+       if ((gsl_finite(xpos0))&&(gsl_finite(ypos0))&&(gsl_finite(xpos1))&&(gsl_finite(ypos1))) eps_primitive_arrow(x, ai->arrow_style, xpos0, ypos0, xpos1, ypos1, &ww);
+      }
    }
 
   // By default, use 'set textcolour' colour for text labels
@@ -100,11 +136,12 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
     {
      settings_axis *xa, *ya, *za=NULL;
      double         xin, yin, zin=0.5;
+     double        xpos, ypos, depth, xap, yap, zap, theta_x, theta_y, theta_z;
      int            status=0, xrn, yrn, zrn;
      sprintf(ItemName, "label %d on plot %d", li->id, x->current->id);
      FETCH_AXES(li->system_x, xa, x->current->XAxes, li->axis_x, li->x, xin);
      FETCH_AXES(li->system_y, ya, x->current->YAxes, li->axis_y, li->y, yin);
-     /* if (x->current->ThreeDim) */ { FETCH_AXES(li->system_z, za, x->current->ZAxes, li->axis_z, li->z, zin); }
+     if (x->current->ThreeDim) { FETCH_AXES(li->system_z, za, x->current->ZAxes, li->axis_z, li->z, zin); }
      if (!status)
       for (xrn=0; xrn<=(                         (xa!=NULL)  ? xa->AxisValueTurnings : 0); xrn++)
       for (yrn=0; yrn<=(                         (ya!=NULL)  ? ya->AxisValueTurnings : 0); yrn++)

@@ -123,6 +123,7 @@ typedef struct arrow_object {
  value      x0       ,y0       ,z0       ,x1       ,y1       ,z1;
  int        system_x0,system_y0,system_z0,system_x1,system_y1,system_z1;
  int        axis_x0  ,axis_y0  ,axis_z0  ,axis_x1  ,axis_y1  ,axis_z1;
+ int        arrow_style;
  with_words style;
  struct arrow_object *next;
  } arrow_object;

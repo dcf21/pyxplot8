@@ -566,6 +566,12 @@ void arrow_add(arrow_object **list, Dict *in)
     *list     = out;
    }
 
+  // Check whether arrow head type has been specified
+  DictLookup(in,"arrow_style",NULL,(void **)&tempstr);
+  if (tempstr==NULL) out->arrow_style = SW_ARROWTYPE_HEAD;
+  else               out->arrow_style = FetchSettingByName(tempstr, SW_ARROWTYPE_INT, SW_ARROWTYPE_STR);
+
+  // Check what style keywords have been specified in the 'with' clause
   with_words_fromdict(in, &ww_temp1, 1);
   with_words_copy(&out->style, &ww_temp1);
 
@@ -719,9 +725,8 @@ void arrow_print(arrow_object *in, char *out)
   sprintf(out+i, " %s", *(char **)FetchSettingName(in->system_z1, SW_SYSTEM_INT, (void *)SW_SYSTEM_STR, sizeof(char *))); i+=strlen(out+i);
   if (in->system_z1==SW_SYSTEM_AXISN) { sprintf(out+i, " %d",in->axis_z1); i+=strlen(out+i); }
   sprintf(out+i, " %s", ppl_units_NumericDisplay(&(in->z1),0,0,0)); i+=strlen(out+i);
-  with_words_print(&in->style, out+i+6);
-  if (strlen(out+i+6)>0) { sprintf(out+i, " with"); out[i+5]=' '; }
-  else                   { out[i]='\0'; }
+  sprintf(out+i, " with %s ", *(char **)FetchSettingName(in->arrow_style, SW_ARROWTYPE_INT, (void *)SW_ARROWTYPE_STR, sizeof(char *))); i+=strlen(out+i);
+  with_words_print(&in->style, out+i);
   return;
  }
 
