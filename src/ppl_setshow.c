@@ -1057,7 +1057,7 @@ void directive_set(Dict *command)
     if (DictContains(command,"ratio"))
      {
       DictLookup(command,"ratio",NULL,(void **)&tempdbl);
-      if ((fabs(*tempdbl) < 1e-4) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, "The requested aspect ratios for graphs must be in the range 0.001 to 10000."); return; }
+      if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, "The requested aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
       sg->aspect = *tempdbl;
       sg->AutoAspect = SW_ONOFF_OFF;
      }

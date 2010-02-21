@@ -27,7 +27,7 @@
 In this chapter, we describe more sophisticated ways of dealing with data files
 and outline the facilities provided for data processing within PyXPlot.
 
-\section{Input filters}
+\section{Input Filters}
 \label{sec:filters}
 
 By default, PyXPlot expects \datafile s to be in a simple plaintext format
@@ -58,7 +58,7 @@ into numbers representing days, months and years. To add to this list of
 filters, it is necessary to write a short program or shell script, and the
 filters provided for {\tt .log} and {.fits} files may provide a useful model.
 
-\section{Reading data from a pipe}
+\section{Reading Data from a Pipe}
 
 PyXPlot usually reads data from a file, but it possible to read data via a pipe
 from standard input.  To do this, one uses the magic filename {\tt -}:
@@ -79,7 +79,7 @@ style, remembering how to use a sizeable program can prove tricky -- especially
 if the person struggling to do so is not you! But a simple \datafile\ is quite
 straightforward to plot time and again.
 
-\section{Including data within PyXPlot command scripts}
+\section{Including Data within Command Scripts}
 
 It is also possible to embed data directly within PyXPlot scripts, which may be
 useful when a small number of markers are wanted at particular pre-defined
@@ -447,7 +447,13 @@ specified in the {\tt fft} or {\tt ifft} command, and must be arranged strictly
 in row-major order.
 
 \example{ex:fourier}{An example}{
-In this example,.
+In this example,.\\
+\begin{center}
+\includegraphics{examples/eps/ex_fft.eps}
+\end{center}\\
+\begin{center}
+\includegraphics{examples/eps/ex_fft2.eps}
+\end{center}
 }
 
 \subsection{Window Functions}
@@ -455,9 +461,10 @@ In this example,.
 
 A range of commonly-used window functions may automatically be applied to data
 as it is read into the {\tt fft} and {\tt ifft} commands; these are listed
-together with their algebraic forms in Table~\ref{tab:windowfuncs}. In each case, the
-window functions are given for sample number $n$, which ranges between $0$ and
-$N_x$. The window functions may be invoked using the following syntax:
+together with their algebraic forms in Table~\ref{tab:windowfuncs} and shown in
+Figure~\ref{fig:windowfuncs}. In each case, the window functions are given for
+sample number $n$, which ranges between $0$ and $N_x$. The window functions may
+be invoked using the following syntax:
 
 \begin{verbatim}
 fft [...] out() of in() window <window_name>
@@ -478,7 +485,7 @@ BartlettHann & $\displaystyle w(n) = a_0 - a_1\left|\frac{n}{N_x-1}-\frac{1}{2}\
              & $a_0=0.62,\; a_1=0.48,\; a_2=0.38.$ \vspace{\wfgap}\\
 Cosine       & $\displaystyle w(n) = \cos\left(\frac{\pi n}{N_x-1} - \frac{\pi}{2} \right)$ \vspace{\wfgap}\\
 Gauss        & $\displaystyle w(n) = \exp \left\{ -\frac{1}{2}\left[ \frac{n-(N_x-1)/2}{\sigma(N_x-1)/2} \right]^2 \right\},\;\textrm{for}\;\sigma=0.5$ \vspace{\wfgap}\\
-Hamming      & $\displaystyle w(n) = 0.54 + 0.46\cos\left(\frac{2\pi n}{N_x-1}\right)$ \vspace{\wfgap}\\
+Hamming      & $\displaystyle w(n) = 0.54 - 0.46\cos\left(\frac{2\pi n}{N_x-1}\right)$ \vspace{\wfgap}\\
 Hann         & $\displaystyle w(n) = 0.5 \left[ 1 - \cos\left(\frac{2\pi n}{N_x-1}\right) \right]$ \vspace{\wfgap}\\
 Lanczos      & $\displaystyle w(n) = \mathrm{sinc}\left( \frac{2n}{N_x-1} - 1 \right)$ \vspace{\wfgap}\\
 Rectangular  & $\displaystyle w(n) = 1$ \vspace{\wfgap}\\
@@ -487,6 +494,14 @@ Triangular   & $\displaystyle w(n) = \left( \frac{2}{N_x} \right) \left( \frac{N
 \caption{Window functions available in the {\tt fft} and {\tt ifft} commands.}
 \label{tab:windowfuncs}
 \end{table}
+
+\begin{figure}
+\begin{center}
+\includegraphics{examples/eps/ex_windowfuncs.eps}
+\end{center}
+\caption{Window functions available in the {\tt fft} and {\tt ifft} commands.}
+\label{fig:windowfuncs}
+\end{figure}
 
 \section{Histograms}
 
@@ -561,13 +576,21 @@ generator, whose seed may be set using the \indcmdt{set seed}, followed by any
 integer.
 
 \example{ex:random}{Using random numbers to estimate the value of $\pi$.}{
-PyXPlot's random number generator has a range of applications in adding noise
-to artificially-generated data. In this example, however, we use it to produce
-an estimate of the value of $\pi$. We generate random samples in the square
-$\left\{ -1<x<1;\; -1<y<1\right\}$ and count how many lie within the circle of
-unit radius about the origin. Since the square has an area of
-$4\,\mathrm{unit}^2$ and the circle has an area of $\pi\,\mathrm{unit}^2$, the
-fraction of points which lie within the unit circle should be $\pi/4$.
+PyXPlot's functions for generating random numbers are most commonly used for
+adding noise to artificially-generated data. In this example, however, we use
+them to implement a rather inefficient algorithm for estimating the value of
+the mathematical constant $\pi$.  The algorithm works by spreading
+randomly-placed samples in the square $\left\{ -1<x<1;\; -1<y<1\right\}$. The
+number of these which lie within the circle of unit radius about the origin are
+then counted. Since the square has an area of $4\,\mathrm{unit}^2$ and the
+circle has an area of $\pi\,\mathrm{unit}^2$, the fraction of the points which
+lie within the unit circle equal the ratio of these two areas: $\pi/4$. \\
+
+The following script performs this calculation using $N=5000$~randomly placed
+samples. First, the positions of the random samples are generated using the
+{\tt random()} function, and output to a file called {\tt random.dat} using the
+{\tt tabulate} command. Then, the {\tt foreach datum} command is used to loop
+over these, counting how many lie within the unit circle. \\
 
 \vspace{3mm}
 \noindent {\tt Nsamples = 5000 }\newline
@@ -581,9 +604,20 @@ fraction of points which lie within the unit circle should be $\pi/4$.
 \noindent {\tt \phantom{xx}n = n + (hypot(i,j)<1) }\newline
 \noindent {\tt \} }\newline
 \noindent {\tt }\newline
-\noindent {\tt print n / Nsamples * 4 }\newline
-\vspace{3mm}
+\noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }\newline
+\vspace{3mm} \\
 
-Result: 3.1352.
+On the author's machine, this script returns a value of $3.1352$ when executed
+using the random samples which are returned immediately after starting PyXPlot.
+This method of estimating $\pi$ is well modelled as a Poisson process, and the
+uncertainty in this result can be estimated from the Poisson distribution to be
+$1/\sqrt{N}$. In this case, the uncertainty is $0.01$, in close agreement with
+the deviation of the returned value of $3.1352$ from more accurate measures of
+$\pi$. \\
+
+\begin{center}
+\includegraphics{examples/eps/ex_pi_estimation.eps}
+\end{center}
+
 }
 

@@ -23,7 +23,7 @@
 
 \documentclass[a4paper,onecolumn,10pt]{book}
 \usepackage[dvips]{graphicx}
-\usepackage{afterpage,amssymb,amsmath,bbding,enumerate,lscape,longtable,multicol,nicefrac,fancyvrb,makeidx,supertabular,upgreek,url,wasysym}
+\usepackage{afterpage,amssymb,amsmath,bbding,color,colortbl,enumerate,lscape,longtable,multicol,nicefrac,fancyvrb,makeidx,pstricks,supertabular,upgreek,url,wasysym}
 \makeindex
 \input{definitions}
 
@@ -39,12 +39,14 @@
 
 \usepackage[bf]{caption}
 
+\definecolor{LightGrey}{gray}{0.9}
+
 \newcommand{\example}[3]{
 %\afterpage{
 \upshape\mdseries\rm
 \begin{exampletag}[H]\caption[#2]{}\label{#1}\end{exampletag}
 \vspace{-5mm}
-\begin{longtable}{|p{\textwidth}|}
+\begin{longtable}{|>{\columncolor{LightGrey}}p{\textwidth}|}
 \hline \endfoot
 \hline \endhead
 #3

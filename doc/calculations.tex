@@ -358,7 +358,10 @@ The moral of this story is: pick what unit of temperature you want to work in,
 convert all of your temperatures to that scale, and then stick to it.
 
 \example{ex:temperature}{Creating a simple temperature conversion scale}{
-In this example, we use PyXPlot's automatic conversion of physical units to create a temperature conversion scale.
+In this example, we use PyXPlot's automatic conversion of physical units to create a temperature conversion scale.\\
+\begin{center}
+\includegraphics{examples/eps/ex_tempscale.eps}
+\end{center}
 }
 
 \section{Configuring how Numbers are Displayed}
@@ -629,10 +632,10 @@ In this example, we use of function splicing to calculate the Fibonacci numbers 
 \noindent {\tt fib(x)[2:] = fib(x-1) + fib(x-2)}\newline
 \noindent {\tt plot [0:8] fib(x)}\newline
 
-We compare the result against Binet's formula, that
+We compare the result against Binet's formula for the Fibonacci numbers,
 
 \begin{displaymath}
-f(x) = {/psi^x - (1-\psi)^x}{\sqrt{5}}
+f(x) = {\psi^x - (1-\psi)^x}{\sqrt{5}},
 \end{displaymath}
 
 \noindent where $\psi=1+\sqrt{5}/2$ is the golden ratio.
@@ -685,8 +688,8 @@ print diff\_dx('cos(x)', 1.0)
 The following is an example of a function which is not differentiable, and
 which throws an error because the Cauchy-Riemann equations are not satisfied:
 
-\begin{dontdo}\\
-set num comp\\
+\begin{dontdo}
+set num comp\newline
 print diff\_dx(Re(sin(x)),1)
 \end{dontdo}
 

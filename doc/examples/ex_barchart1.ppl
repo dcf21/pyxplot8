@@ -34,7 +34,6 @@ set multiplot
 set nodisplay
 set samples 25
 width=5.4
-gold_ratio = 1/((1+sqrt(5))/2)
 
 set width width
 set xrange [-4.5:4.5]

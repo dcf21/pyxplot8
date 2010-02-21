@@ -33,7 +33,6 @@ set output "examples/eps/ex_barchart2.eps"
 set multiplot
 set nodisplay
 width=5.4
-gold_ratio = 1/((1+sqrt(5))/2)
 
 set width width
 set xrange [0.1:10.4]
