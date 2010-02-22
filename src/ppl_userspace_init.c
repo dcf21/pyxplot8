@@ -257,7 +257,7 @@ void ppl_UserSpaceInit()
   v.real = GSL_CONST_MKSA_SOLAR_MASS;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Msun"      , v); // The solar mass
   ppl_units_zero(&v);
-  v.real = GSL_CONST_MKSA_RYDBERG;
+  v.real = GSL_CONST_MKSA_RYDBERG / GSL_CONST_MKSA_SPEED_OF_LIGHT / GSL_CONST_MKSA_PLANCKS_CONSTANT_H;
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = -1;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_Ry"        , v); // The Rydberg constant
