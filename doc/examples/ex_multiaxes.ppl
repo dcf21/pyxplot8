@@ -29,15 +29,22 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_multiaxes.eps"
 
 # Main body of figure script
-set width 7.0
-set size ratio 0.5
-set xlabel  "The X  axis"
-set x2label "The X2 axis" ; set axis x2 top
-set x3label "The X3 axis"
-set x4label "The X4 axis" ; set axis x4 top
-set x6label "The X8 axis"
-set ylabel  "The Y  axis"
-set y2label "The Y2 axis"
-set y3label "The Y3 axis" ; set axis y3 right
-plot
+set numeric display latex
+set log x y
+set key bottom right
+set ylabel "Flux density / W/Hz/m$^2$/sterad"
+set x1label "Wavelength"
+set x2label "Frequency"     ; set unit of frequency Hz
+set x3label "Photon Energy" ; set unit of energy eV
+set axis x2 linked x1 using phy_c/x
+set axis x3 linked x2 using phy_h*x
+
+bb(wlen,T) = Bv(phy_c/wlen,T)/unit(W/Hz/m^2/sterad)
+
+plot [80*unit(nm):unit(mm)][1e-20:] \
+  bb(x,  30) title "$T=  30$\,K", \
+  bb(x, 100) title "$T= 100$\,K", \
+  bb(x, 300) title "$T= 300$\,K", \
+  bb(x,1000) title "$T=1000$\,K", \
+  bb(x,3000) title "$T=3000$\,K"
 

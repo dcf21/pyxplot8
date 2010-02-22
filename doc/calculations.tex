@@ -358,7 +358,9 @@ The moral of this story is: pick what unit of temperature you want to work in,
 convert all of your temperatures to that scale, and then stick to it.
 
 \example{ex:temperature}{Creating a simple temperature conversion scale}{
-In this example, we use PyXPlot's automatic conversion of physical units to create a temperature conversion scale.\\
+In this example, we use PyXPlot's automatic conversion of physical units to
+create a temperature conversion scale.
+\nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_tempscale.eps}
 \end{center}
@@ -625,13 +627,18 @@ fib(x)[2:] = fib(x-1) + fib(x-2)
 plot [0:8] fib(x)
 \end{verbatim}
 
-\example{ex:funcsplice}{The use of function splicing to calculate the Fibonacci numbers}{
-In this example, we use of function splicing to calculate the Fibonacci numbers in an iterative and highly inefficient way, using the knowledge that the zeroth and first Fibonacci numbers are both one, and that all subsequent numbers are the sums of their two immediate predecessors:
+\noindent The output of this example can be seen in Example~\ref{ex:funcsplice}
 
+\example{ex:funcsplice}{The use of function splicing to calculate the Fibonacci numbers}{
+In this example, we use of function splicing to calculate the Fibonacci numbers
+in an iterative and highly inefficient way, using the knowledge that the zeroth
+and first Fibonacci numbers are both one, and that all subsequent numbers are
+the sums of their two immediate predecessors:
+\nlscf
 \noindent {\tt fib(x) = 1}\newline
 \noindent {\tt fib(x)[2:] = fib(x-1) + fib(x-2)}\newline
 \noindent {\tt plot [0:8] fib(x)}\newline
-
+\nlfcf
 We compare the result against Binet's formula for the Fibonacci numbers,
 
 \begin{displaymath}
@@ -639,13 +646,11 @@ f(x) = {\psi^x - (1-\psi)^x}{\sqrt{5}},
 \end{displaymath}
 
 \noindent where $\psi=1+\sqrt{5}/2$ is the golden ratio.
-
+\nlscf
 \begin{center}
 \includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
 \end{center}
 }
-
-\noindent The output of this example can be seen in Example~\ref{ex:funcsplice}
 
 \section{Numerical Integration and Differentiation}
 

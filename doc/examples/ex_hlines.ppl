@@ -29,6 +29,7 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_hlines.eps"
 
 # Main body of figure script
+set numeric display latex
 set width 20
 set size ratio 0.4
 set numerics sf 4

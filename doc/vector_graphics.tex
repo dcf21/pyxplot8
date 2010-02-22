@@ -262,9 +262,8 @@ but with a different style setting of {\tt nohead}.
 \example{ex:notice}{A notice to advertise that a lecture has moved}{
 In this example script, we use PyXPlot's {\tt arrow} and {\tt text} commands to
 produce a simple notice advertising that a lecture has moved to a different
-seminar room:\\
-
-\vspace{3mm}
+seminar room:
+\nlscf
 \noindent {\tt \# Turn on multiplot mode }\newline
 \noindent {\tt set multiplot ; set nodisplay }\newline
 \\
@@ -286,10 +285,9 @@ seminar room:\\
 \\
 \noindent {\tt \# Display the notice }\newline
 \noindent {\tt set display ; refresh }\newline
-\vspace{2mm}\\
-
+\nlfcf
 The resulting notice is shown below:
-
+\nlscf
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_notice.eps}}
 }
 
@@ -299,8 +297,7 @@ text} commands to produce a diagram illustrating the 47th Proposition from
 Euclid's First Book of {\it Elements}, better known as Pythagoras' Theorem. A
 full text of the proof which accompanies this diagram can be found at
 \url{http://www.gutenberg.org/etext/21076}.
-
-\vspace{3mm}
+\nlscf
 {\footnotesize
 \noindent {\tt set multiplot ; set nodisplay}\newline
 }\\{\footnotesize
@@ -357,10 +354,9 @@ full text of the proof which accompanies this diagram can be found at
 \noindent {\tt \# Display diagram}\newline
 \noindent {\tt set display ; refresh}\newline
 }
-\vspace{2mm}\\
-
+\nlfcf
 The resulting diagram is shown below:
-
+\nlscf
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_euclid_I_47.eps}}
 }
 
@@ -447,9 +443,8 @@ circle at 0,0 radius 5 with lw 10 colour red fillcolour yellow
 \example{ex:noentry}{A no-entry sign}{
 In this example script, we use PyXPlot's {\tt box} and {\tt circle} commands to
 produce a no-entry sign warning passers by that code monkeys can turn nasty
-when interrupted from their work.\\
-
-\vspace{3mm}
+when interrupted from their work.
+\nlscf
 \noindent {\tt set multiplot ; set nodisplay}\newline
 \noindent {\tt }\newline
 \noindent {\tt w = 10 \# Width of sign / cm}\newline
@@ -467,9 +462,9 @@ when interrupted from their work.\\
 \noindent {\tt \# Display sign}\newline
 \noindent {\tt set display ; refresh}\newline
 \vspace{2mm}\\
-
+\nlfcf
 The resulting sign is shown below:
-
+\nlscf
 \centerline{\includegraphics[width=5cm]{examples/eps/ex_noentry.eps}}
 }
 
@@ -496,9 +491,15 @@ arc at 0,0 radius 5 from 0 to 30 with lw 3 fillcolour red
 \end{verbatim}
 
 \example{ex:triangle}{A labelled diagram of a triangle}{
-In this example, we make a subroutine to draw labelled diagrams of the interior angles of triangles, taking as its inputs the lengths of the three sides of the triangle to be drawn and the position of its lower-left corner. The subroutine calculates the positions of the three vertices of the triangle and then labels them. We use PyXPlot's automatic handling of physical units to generate the \LaTeX\ strings required to label the side lengths in centimetres and the angles in degrees. We use PyXPlot's {\tt arc} command to draw angle symbols in the three corners of a triangle.\\
-
-\vspace{3mm}
+In this example, we make a subroutine to draw labelled diagrams of the interior
+angles of triangles, taking as its inputs the lengths of the three sides of the
+triangle to be drawn and the position of its lower-left corner. The subroutine
+calculates the positions of the three vertices of the triangle and then labels
+them. We use PyXPlot's automatic handling of physical units to generate the
+\LaTeX\ strings required to label the side lengths in centimetres and the
+angles in degrees. We use PyXPlot's {\tt arc} command to draw angle symbols in
+the three corners of a triangle.
+\nlscf
 {\footnotesize
 \noindent {\tt \# Define subroutine for drawing triangles}\newline
 \noindent {\tt subroutine TriangleDraw(Bx,By,AB,AC,BC)}\newline
@@ -552,17 +553,16 @@ In this example, we make a subroutine to draw labelled diagrams of the interior 
 \noindent {\tt call TriangleDraw(6.5*unit(cm),0.0*unit(cm), 3*unit(cm),3*unit(cm),3*unit(cm))}\newline
 \noindent {\tt set display ; refresh}\newline
 }
-\vspace{2mm}\\
-
+\nlfcf
 The resulting diagram is shown below:
-
+\nlscf
 \centerline{\includegraphics{examples/eps/ex_triangle.eps}}
 }
 
 \example{ex:lens}{A labelled diagram of a converging lens forming a real image}{
-In this example, we make a subroutine to draw labelled diagrams of converging lenses forming real images.\\
-
-\vspace{3mm}
+In this example, we make a subroutine to draw labelled diagrams of converging
+lenses forming real images.
+\nlscf
 {\footnotesize
 \noindent {\tt subroutine LensDraw(x0,y0,u,h,f)}\newline
 \noindent {\tt \phantom{x}\{}\newline
@@ -609,10 +609,9 @@ In this example, we make a subroutine to draw labelled diagrams of converging le
 \noindent {\tt call LensDraw(0*unit(cm),0*unit(cm), 5*unit(cm),1.5*unit(cm),2*unit(cm))}\newline
 \noindent {\tt set display ; refresh}\newline
 }
-\vspace{2mm}\\
-
+\nlfcf
 The resulting diagram is shown below:
-
+\nlscf
 \centerline{\includegraphics{examples/eps/ex_lenses.eps}}
 }
 
@@ -673,9 +672,8 @@ using PyXPlot's {\tt ellipse} command, together with arrows and text labels, to
 produce a labelled diagram of an ellipse. We label the semi-major axis $a$, the
 semi-minor axis $b$, the semi-latus rectum $L$, and the distance between the
 centre of the ellipse and one of its foci with the length $ae$, where $e$ is
-the eccentricity of the ellipse.\\
-
-\vspace{3mm}
+the eccentricity of the ellipse.
+\nlscf
 {\footnotesize
 \noindent {\tt set multiplot ; set nodisplay }\newline
 \noindent {\tt }\newline
@@ -711,10 +709,9 @@ the eccentricity of the ellipse.\\
 \noindent {\tt \# Display diagram }\newline
 \noindent {\tt set display ; refresh }\newline
 }
-\vspace{2mm}\\
-
+\nlfcf
 The resulting diagram is shown below:
-
+\nlscf
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_ellipse.eps}}
 }
 

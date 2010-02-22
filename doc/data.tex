@@ -584,15 +584,14 @@ randomly-placed samples in the square $\left\{ -1<x<1;\; -1<y<1\right\}$. The
 number of these which lie within the circle of unit radius about the origin are
 then counted. Since the square has an area of $4\,\mathrm{unit}^2$ and the
 circle has an area of $\pi\,\mathrm{unit}^2$, the fraction of the points which
-lie within the unit circle equal the ratio of these two areas: $\pi/4$. \\
-
+lie within the unit circle equal the ratio of these two areas: $\pi/4$.
+\nlnp
 The following script performs this calculation using $N=5000$~randomly placed
 samples. First, the positions of the random samples are generated using the
 {\tt random()} function, and output to a file called {\tt random.dat} using the
 {\tt tabulate} command. Then, the {\tt foreach datum} command is used to loop
-over these, counting how many lie within the unit circle. \\
-
-\vspace{3mm}
+over these, counting how many lie within the unit circle.
+\nlscf
 \noindent {\tt Nsamples = 5000 }\newline
 \noindent {\tt }\newline
 \noindent {\tt set samp Nsamples }\newline
@@ -605,19 +604,17 @@ over these, counting how many lie within the unit circle. \\
 \noindent {\tt \} }\newline
 \noindent {\tt }\newline
 \noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }\newline
-\vspace{3mm} \\
-
+\nlfcf
 On the author's machine, this script returns a value of $3.1352$ when executed
 using the random samples which are returned immediately after starting PyXPlot.
 This method of estimating $\pi$ is well modelled as a Poisson process, and the
 uncertainty in this result can be estimated from the Poisson distribution to be
 $1/\sqrt{N}$. In this case, the uncertainty is $0.01$, in close agreement with
 the deviation of the returned value of $3.1352$ from more accurate measures of
-$\pi$. \\
-
+$\pi$.
+\nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_pi_estimation.eps}
 \end{center}
-
 }
 

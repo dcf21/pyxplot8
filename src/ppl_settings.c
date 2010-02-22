@@ -412,14 +412,14 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
                     unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced)
  {
   char *tempstr, *tempstr2, DictName[32];
-  int  *tempint, cindex, i, j, palette_index;
+  int   cindex, i, j, palette_index;
   void *tmp;
-  value valobj;
+  value valobj, *tempval;
 
   sprintf(DictName, "%scolour", prefix);
   DictLookup(in,DictName,NULL,(void **)&tempstr);
   sprintf(DictName, "%scolourR", prefix);
-  DictLookup(in,DictName,NULL,(void **)&tempint);
+  DictLookup(in,DictName,NULL,(void **)&tempval);
   sprintf(DictName, "%scolourRexpr", prefix);
   DictLookup(in,DictName,NULL,(void **)&tempstr2);
   if (tempstr != NULL) // Colour is specified by name or by palette index
@@ -457,15 +457,23 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
      }
     if (USEcol   !=NULL) *USEcol    = (cindex> 0);
     if (USEcolRGB!=NULL) *USEcolRGB = (cindex==0);
-   } else if (tempint != NULL) { // Colour is specified by RGB components
+   } else if (tempval != NULL) { // Colour is specified by RGB components
+
+#define CHECK_REAL_DIMLESS \
+    if (!tempval->dimensionless) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+    if (tempval->imag>1e-6) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+
+    CHECK_REAL_DIMLESS;
     *outcol  = 0;
-    *outcolR = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
+    *outcolR = (tempval->real <= 0) ? 0 : ((tempval->real >= 255) ? 255 : tempval->real); // Make sure that colour component is in the range 0-255
     sprintf(DictName, "%scolourG", prefix);
-    DictLookup(in,DictName,NULL,(void **)&tempint);
-    *outcolG = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
+    DictLookup(in,DictName,NULL,(void **)&tempval);
+    CHECK_REAL_DIMLESS;
+    *outcolG = (tempval->real <= 0) ? 0 : ((tempval->real >= 255) ? 255 : tempval->real); // Make sure that colour component is in the range 0-255
     sprintf(DictName, "%scolourB", prefix);
-    DictLookup(in,DictName,NULL,(void **)&tempint);
-    *outcolB = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
+    DictLookup(in,DictName,NULL,(void **)&tempval);
+    CHECK_REAL_DIMLESS;
+    *outcolB = (tempval->real <= 0) ? 0 : ((tempval->real >= 255) ? 255 : tempval->real); // Make sure that colour component is in the range 0-255
     if (USEcol   !=NULL) *USEcol    = 0;
     if (USEcolRGB!=NULL) *USEcolRGB = 1;
     if (outcolRS !=NULL)
