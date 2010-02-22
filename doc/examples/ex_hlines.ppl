@@ -1,0 +1,92 @@
+# EX_HLINES.PPL
+#
+# The code in this file is part of PyXPlot
+# <http://www.pyxplot.org.uk>
+#
+# Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+#               2009-2010 Ross Church
+#
+# $Id$
+#
+# PyXPlot is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# You should have received a copy of the GNU General Public License along with
+# PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# ----------------------------------------------------------------------------
+
+# This script produces a figure for the PyXPlot Users' Guide
+
+# Call common initialisation script
+reset
+load "examples/fig_init.ppl"
+
+# Set output destination
+set output "examples/eps/ex_hlines.eps"
+
+# Main body of figure script
+set width 20
+set size ratio 0.4
+set numerics sf 4
+set log x
+set x1label "Wavelength"
+set x2label "Frequency"     ; set unit of frequency Hz
+set x3label "Photon Energy" ; set unit of energy eV
+set axis x2 linked x1 using phy_c/x
+set axis x3 linked x2 using phy_h*x
+set noytics ; set nomytics
+
+# Draw lines of first four series of hydrogen lines
+an=2
+n=1
+foreach SeriesName in ("Ly","Ba","Pa","Br")
+ {
+  for m=n+1 to n+21
+   {
+    wl = 1/(phy_Ry*(1/n**2-1/m**2))
+    set arrow an from wl,0.3 to wl,0.6 with nohead col n
+    if (m-n==1) { ; GreekLetter = "\\alpha" ; }
+    if (m-n==2) { ; GreekLetter = "\\beta"  ; }
+    if (m-n==3) { ; GreekLetter = "\\gamma" ; }
+    if (m-n<4)
+     {
+      set label an "\parbox{5cm}{\footnotesize\center{\
+        %s-$%s$\\newline $%d\to%d$\\newline %s\\newline}}" \
+        %(SeriesName,GreekLetter,n,m,wl) at wl,0.55+0.2*(m-n) \
+        hal centre val centre
+     }
+    an = an+1
+   }
+  n=n+1
+ }
+
+# Label astronomical photometric colours
+#foreach datum name,wlen_c,wlen_w in "--" using "%s"%($1):2:3
+# {
+#  print "%s %s %s"%(name,wlen_c,wlen_w)
+# }
+#ColumnUnits: 1 nm nm
+#"U"   365   66
+#"B"   445   94
+#"V"   551   88
+#"R"   658  138
+#"I"   806  149
+#"J"  1220  213
+#"H"  2190  390
+#"L"  3450  472
+#"M"  4750  460
+#END
+
+# Draw a marker for the Lyman limit
+ll = 91.1267*unit(nm)
+set arrow 1 from ll,0.12 to ll,0.22
+set label 1 "Lyman Limit: %s"%(ll) at 95*unit(nm),0.17 \
+     hal left val centre
+
+# Finally produce plot
+plot [80*unit(nm):5500*unit(nm)][0:1.25]
+

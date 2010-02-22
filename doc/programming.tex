@@ -205,57 +205,39 @@ while (1)
 \example{ex:mandelbrot}{A script to produce an ASCII-art representation of the Mandelbrot Set}{
 In this example, we use all of PyXPlot's loop constructs together in a script
 which calculates the Mandelbrot Set and outputs an ASCII-art representation of
-it to the terminal. Insert details about what the Mandelbrot Set is. The script is as follows: \vspace{0.5cm}\\
+it to the terminal. Insert details about what the Mandelbrot Set is. The script
+is as follows:\\
 
-{\footnotesize\tt set numerics complex}\\
-{\footnotesize\tt for~y=2~to~-2~step~-0.15}\\
-{\footnotesize\tt ~\{}\\
-{\footnotesize\tt ~~linebuffer~=~""}\\
-{\footnotesize\tt ~~for~x=-2~to~2~step~0.075}\\
-{\footnotesize\tt ~~~\{}\\
-{\footnotesize\tt ~~~~zi~=~x+i*y;~z=zi;~iter=0;}\\
-{\footnotesize\tt ~~~~while~(abs(z)<2)~and~(iter<21)}\\
-{\footnotesize\tt ~~~~~\{}\\
-{\footnotesize\tt ~~~~~~z~=~z**2~+~zi}\\
-{\footnotesize\tt ~~~~~~iter=iter+1}\\
-{\footnotesize\tt ~~~~~\}}\\
-{\footnotesize\tt ~~~~if~~~~~~(iter~<~~1)~\{~;~linebuffer~="\%s~"\%(linebuffer)~;~\}~$\backslash$}\\
-{\footnotesize\tt ~~~~else~if~(iter~<~~2)~\{~;~linebuffer~="\%s."\%(linebuffer)~;~\}~$\backslash$}\\
-{\footnotesize\tt ~~~~else~if~(iter~<~~4)~\{~;~linebuffer~="\%s-"\%(linebuffer)~;~\}~$\backslash$}\\
-{\footnotesize\tt ~~~~else~if~(iter~<~20)~\{~;~linebuffer~="\%s*"\%(linebuffer)~;~\}~$\backslash$}\\
-{\footnotesize\tt ~~~~else~~~~~~~~~~~~~~~~\{~;~linebuffer~="\%s\&"\%(linebuffer)~;~\}}\\
-{\footnotesize\tt ~~~\}}\\
-{\footnotesize\tt ~~print~linebuffer}\\
-{\footnotesize\tt ~\}} \vspace{0.5cm}\\
+\vspace{3mm}
+\noindent {\tt set~multiplot }\newline
+\noindent {\tt set~nodisplay }\newline
+\noindent {\tt set~numerics~complex }\newline
+\noindent {\tt StepsMax=30 }\newline
+\noindent {\tt yn=0 }\newline
+\noindent {\tt for~y=2~to~-2~step~-0.05 }\newline
+\noindent {\tt \phantom{x}\{ }\newline
+\noindent {\tt \phantom{xx}xn=0 }\newline
+\noindent {\tt \phantom{xx}for~x=-2~to~2~step~0.05 }\newline
+\noindent {\tt \phantom{xxx}\{ }\newline
+\noindent {\tt \phantom{xxxx}zi~=~x+i*y;~z=zi;~iter=0; }\newline
+\noindent {\tt \phantom{xxxx}while~(abs(z)<2)~and~(iter<StepsMax)~$\backslash$ }\newline
+\noindent {\tt \phantom{xxxxxxxx}\{~;~z~=~z**2~+~zi~;~iter=iter+1~;~\} }\newline
+\noindent {\tt \phantom{xxxx}cd~=~Re((StepsMax/2-iter)**3/(StepsMax/2)**3+1)/2*256 }\newline
+\noindent {\tt \phantom{xxxx}rect~from~xn,yn~to~xn+0.21,yn+0.21~with~col~null~$\backslash$ }\newline
+\noindent {\tt \phantom{xxxxxxxxxxx}fillc~rgb(cd):(cd):(cd) }\newline
+\noindent {\tt \phantom{xxxx}xn=xn+0.2 }\newline
+\noindent {\tt \phantom{xxx}\} }\newline
+\noindent {\tt \phantom{xx}yn=yn+0.2 }\newline
+\noindent {\tt \phantom{x}\} }\newline
+\noindent {\tt }\newline
+\noindent {\tt \#~Display~output }\newline
+\noindent {\tt set~display }\newline
+\noindent {\tt refresh }\newline
+\vspace{2mm}\\
 
-The output of this script is as follows: \\
-
-{\tt |~~~~~~~~~~~~~~~~~....................~~~~~~~~~~~~~~~~~}\newline
-{\tt |~~~~~~~~~~~~~............................~~~~~~~~~~~~~}\newline
-{\tt |~~~~~~~~~~..................................~~~~~~~~~~}\newline
-{\tt |~~~~~~~~......................................~~~~~~~~}\newline
-{\tt |~~~~~~........-------------.....................~~~~~~}\newline
-{\tt |~~~~~....--------------****-----.................~~~~~}\newline
-{\tt |~~~~..----------------*******------................~~~}\newline
-{\tt |~~~.---------------*****\&\&\&****------...............~~}\newline
-{\tt |~~.-------------***\&***\&\&\&\&\&*****-----..............~~}\newline
-{\tt |~.---------********\&\&\&\&\&\&\&\&\&\&\&\&\&**-----..............~}\newline
-{\tt |~------**********\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&*------.............~}\newline
-{\tt |~----******\&\&\&\&\&*\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&*------..............}\newline
-{\tt |~********\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&**------..............}\newline
-{\tt |~---*****\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&**------..............}\newline
-{\tt |~-----*****\&\&\&\&\&*\&\&\&\&\&\&\&\&\&\&\&\&\&\&\&**------..............}\newline
-{\tt |~-------***********\&\&\&\&\&\&\&\&\&\&\&\&\&**------.............~}\newline
-{\tt |~~----------*******\&\&\&\&\&\&\&\&\&\&\&\&\&**-----..............~}\newline
-{\tt |~~.--------------*******\&\&\&******-----..............~~}\newline
-{\tt |~~~..---------------*****\&****------...............~~~}\newline
-{\tt |~~~~...---------------******------................~~~~}\newline
-{\tt |~~~~~.....---------------------..................~~~~~}\newline
-{\tt |~~~~~~~..........-------.......................~~~~~~~}\newline
-{\tt |~~~~~~~~~.....................................~~~~~~~~}\newline
-{\tt |~~~~~~~~~~~................................~~~~~~~~~~~}\newline
-{\tt |~~~~~~~~~~~~~~..........................~~~~~~~~~~~~~~}\newline
-{\tt |~~~~~~~~~~~~~~~~~~~................~~~~~~~~~~~~~~~~~~~}\\
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_mandelbrot.eps}
+\end{center}
 }
 
 \section{Subroutines}
