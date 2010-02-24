@@ -1373,7 +1373,7 @@ int directive_plot(Dict *command, int interactive, int replot)
   value         *min, *max;
   canvas_plotrange **RangePtr;
   canvas_plotdesc  **PlotItemPtr;
-  ppl_glob          *glob_handle=NULL;
+  ppl_glob          *glob_handle;
 
   unsigned char *unsuccessful_ops, PlottingDatafiles;
 
@@ -1498,6 +1498,7 @@ int directive_plot(Dict *command, int interactive, int replot)
     // Test whether we're plotting datafile or functions
     DictLookup(TempDict, "filename", NULL, (void **)&tempstr);
     if (tempstr != NULL) PlottingDatafiles=1; else PlottingDatafiles=0;
+    glob_handle = NULL;
 
     // Loop over globbed filenames or single (set of) function(s) which we are plotting
     while (1)
