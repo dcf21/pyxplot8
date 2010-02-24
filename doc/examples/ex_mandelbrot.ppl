@@ -41,7 +41,7 @@ for y=2 to -2 step -0.04
    {
     zi = x+i*y; z=zi; iter=0;
     while (abs(z)<2) and (iter<StepsMax) { ; z = z**2 + zi ; iter=iter+1 ; }
-    cd = (1-iter/StepsMax)*256
+    cd = (iter/StepsMax)*256
     rect from xn,yn to xn+0.21,yn+0.21 with col null fillc rgb(cd):(cd):(cd)
     xn=xn+0.2
    }

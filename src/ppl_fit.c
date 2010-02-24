@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <wordexp.h>
-#include <glob.h>
 
 #include <gsl/gsl_deriv.h>
 #include <gsl/gsl_errno.h>
@@ -44,6 +42,7 @@
 #include "ppl_datafile.h"
 #include "ppl_error.h"
 #include "ppl_fit.h"
+#include "ppl_glob.h"
 #include "ppl_settings.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
@@ -312,8 +311,6 @@ int directive_fit(Dict *command)
  {
   int        status, NArgs, NExpect;
   char      *cptr, *filename;
-  wordexp_t  WordExp;
-  glob_t     GlobData;
   long int   i, j, k, NDataPoints;
   int        ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
   char       errtext[LSTR_LENGTH], *FitVars[USING_ITEMS_MAX], *tempstr=NULL, *SelectCrit=NULL;
@@ -340,18 +337,11 @@ int directive_fit(Dict *command)
   // Expand filename if it contains wildcards
   DictLookup(command,"filename",NULL,(void **)(&cptr));
   if (cptr==NULL) ppl_error(ERR_INTERNAL, "File attribute not found in fit command.");
-  status=0;
-  if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
-  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
-  if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
-  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return 1; }
-  filename = lt_malloc(strlen(GlobData.gl_pathv[0])+1);
-  if (filename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); return 1; }
-  strcpy(filename, GlobData.gl_pathv[0]);
-  wordfree(&WordExp);
-  globfree(&GlobData);
+  filename = ppl_glob_oneresult(cptr);
+  if (filename == NULL) return 1;
 
   // Default starting point for fitting is 1.0
+  status=0;
   ppl_units_zero(&DummyTemp);
   DummyTemp.real    = 1.0;
 

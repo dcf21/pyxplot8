@@ -25,8 +25,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <wordexp.h>
-#include <glob.h>
 
 #include <gsl/gsl_math.h>
 
@@ -35,6 +33,7 @@
 
 #include "ppl_datafile.h"
 #include "ppl_error.h"
+#include "ppl_glob.h"
 #include "ppl_histogram.h"
 #include "ppl_settings.h"
 #include "ppl_units.h"
@@ -59,8 +58,6 @@ int directive_histogram(Dict *command)
   long int   i, j, k, Nrows;
   int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=DATAFILE_NERRS;
   char       errtext[LSTR_LENGTH], *cptr, *filename=NULL, *histfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
-  wordexp_t  WordExp;
-  glob_t     GlobData;
   double    *xdata, xbinmin, xbinmax, BinOriginDbl, BinWidthDbl;
   List      *UsingList=NULL, *EveryList=NULL, *templist;
   Dict      *tempdict;
@@ -74,17 +71,10 @@ int directive_histogram(Dict *command)
   // Expand filename if it contains wildcards
   DictLookup(command,"filename",NULL,(void **)(&cptr));
   if (cptr==NULL) ppl_error(ERR_INTERNAL, "File attribute not found in histogram command.");
-  status=0;
-  if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
-  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
-  if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
-  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return 1; }
-  filename = lt_malloc(strlen(GlobData.gl_pathv[0])+1);
-  if (filename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); return 1; }
-  strcpy(filename, GlobData.gl_pathv[0]);
-  wordfree(&WordExp);
-  globfree(&GlobData);
+  filename = ppl_glob_oneresult(cptr);
+  if (filename == NULL) return 1;
 
+  status=0;
   DictLookup(command, "hist_function", NULL, (void **)&histfunc);   if (histfunc == NULL) { ppl_error(ERR_INTERNAL, "ppl_histogram could not read name of function for output."); return 1; }
   DictLookup(command, "index"        , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
   DictLookup(command, "use_rows"     , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;

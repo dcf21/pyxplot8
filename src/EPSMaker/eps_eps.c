@@ -25,14 +25,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <glob.h>
-#include <wordexp.h>
 
 #include "ListTools/lt_memory.h"
 
 #include "StringTools/asciidouble.h"
 
 #include "ppl_error.h"
+#include "ppl_glob.h"
 #include "ppl_settings.h"
 
 #include "eps_comm.h"
@@ -43,27 +42,16 @@
 void eps_eps_RenderEPS(EPSComm *x)
  {
   FILE *inf;
-  char  tmpdata[FNAME_LENGTH], command[LSTR_LENGTH], *filename, *cptr;
+  char  tmpdata[FNAME_LENGTH], command[LSTR_LENGTH], *filename;
   double bb_left=0.0, bb_right=0.0, bb_top=0.0, bb_bottom=0.0;
   double xscale, yscale, r;
   unsigned char GotBBox;
-  wordexp_t WordExp;
-  glob_t GlobData;
 
   fprintf(x->epsbuffer, "%% Canvas item %d [eps image]\n", x->current->id);
 
   // Expand filename if it contains wildcards
-  cptr = x->current->text;
-  if (cptr==NULL) { ppl_error(ERR_INTERNAL, "File attribute not found in eps data structure."); *(x->status) = 1; return; }
-  if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
-  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", cptr); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
-  if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); *(x->status) = 1; return; }
-  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); *(x->status) = 1; return; }
-  filename = lt_malloc(strlen(GlobData.gl_pathv[0])+1);
-  if (filename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); *(x->status) = 1; return; }
-  strcpy(filename, GlobData.gl_pathv[0]);
-  wordfree(&WordExp);
-  globfree(&GlobData);
+  filename = ppl_glob_oneresult(x->current->text);
+  if (filename == NULL) { *(x->status) = 1; return; }
 
   // Work out bounding box of EPS image
   GotBBox = 0;

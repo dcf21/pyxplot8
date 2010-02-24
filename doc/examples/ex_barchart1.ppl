@@ -32,12 +32,11 @@ set output "examples/eps/ex_barchart1.eps"
 # Main body of figure script
 set multiplot
 set nodisplay
-set samples 25
 width=5.4
 
 set width width
-set xrange [-4.5:4.5]
-set yrange [-0.3:1.1]
+set xrange [0:23.999]
+set yrange [0:0.11]
 set nokey
 
 set texthalign left
@@ -45,7 +44,7 @@ set textvalign centre
 
 # Plot 1 (bottom left)
 set xlabel "$x$"
-set ylabel "$y$"
+set ylabel ""
 set label 1 "(e) fsteps" at graph width*0.03 , graph width*gold_ratio*0.9
 plot "examples/ex_barchart1.dat" with fsteps, "" with points
 
@@ -54,14 +53,14 @@ set axis y linked item 1 y
 
 # Plot 2 (bottom right)
 set origin 1*width, 0*width*gold_ratio
-set yformat "" ; set ylabel ""
+set yformat ""
 set label 1 "(f) histeps" at graph width*0.03 , graph width*gold_ratio*0.9
 plot "examples/ex_barchart1.dat" with histeps, "" with points
 
 # Plot 3 (middle left)
 set origin 0*width, 1*width*gold_ratio
 set xformat "" ; set xlabel ""
-unset yformat ; set ylabel "$y$"
+unset yformat ; set ylabel texify(poissonPDF(x,18))
 set label 1 "(c) impulses" at graph width*0.03 , graph width*gold_ratio*0.9
 plot "examples/ex_barchart1.dat" with impulses, "" with points
 
@@ -73,14 +72,13 @@ plot "examples/ex_barchart1.dat" with steps, "" with points
 
 # Plot 5 (top left)
 set origin 0*width, 2*width*gold_ratio
-set boxfrom -0.5
-unset yformat ; set ylabel "$y$"
+unset yformat
 set label 1 "(a) boxes" at graph width*0.03 , graph width*gold_ratio*0.9
 plot "examples/ex_barchart1.dat" with boxes, "" with points
 
 # Plot 6 (top right)
 set origin 1*width, 2*width*gold_ratio
-unset boxfrom
+set boxfrom 0.03
 set yformat "" ; set ylabel ""
 set label 1 "(b) boxes" at graph width*0.03 , graph width*gold_ratio*0.9
 plot "examples/ex_barchart1.dat" with boxes, "" with points

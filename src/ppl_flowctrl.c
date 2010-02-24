@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <wordexp.h>
-#include <glob.h>
 
 #include <gsl/gsl_math.h>
 
@@ -39,6 +37,7 @@
 #include "pyxplot.h"
 #include "ppl_datafile.h"
 #include "ppl_error.h"
+#include "ppl_glob.h"
 #include "ppl_input.h"
 #include "ppl_parser.h"
 #include "ppl_settings.h"
@@ -350,20 +349,18 @@ int directive_foreach(Dict *command, int IterLevel)
   unsigned char foreachdatum;
   int        bracegot=0; // becomes one after we parse opening {
   int        bracelevel=0;
-  int        i,j,status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
+  int        status=0; // status =-2 (found }), =-1 (found }...), =0 (still reading), =1 (didn't find {)
   char      *loopvar;    // The loop variable
   value     *iterval, *valptr;
   value      dummy;
-  char      *cptr, *strptr;
+  char      *cptr, *strptr, *filename;
   List      *listptr;
   Dict      *dictptr;
   ListIterator *listiter;
   cmd_chain  chain     = NULL;
   cmd_chain  chainiter = NULL;
   cmd_chain *cmd_put   = NULL;
-  wordexp_t  WordExp;
-  glob_t     GlobData;
-  unsigned char WordExpNull=1,GlobDataNull=1;
+  ppl_glob  *glob_handle;
 
   cmd_put = &chain;
 
@@ -410,30 +407,23 @@ int directive_foreach(Dict *command, int IterLevel)
       dictptr = (Dict *)listiter->data;
       DictLookup(dictptr,"filename",NULL,(void **)(&cptr));
       status=0;
-      if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); listiter = ListIterate(listiter, NULL); continue; }
-      WordExpNull = 0;
-      for (j=0; j<WordExp.we_wordc; j++)
+      glob_handle = ppl_glob_allresults(cptr);
+      if (glob_handle == NULL) return 1;
+      while ((filename = ppl_glob_iterate(glob_handle)) != NULL)
        {
-        if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); GlobDataNull=1; continue; }
-        GlobDataNull=0;
-        for (i=0; i<GlobData.gl_pathc; i++)
+        if (foreachdatum) { directive_foreach_LoopOverData(command, filename, &chain, &chainiter, IterLevel, &status); } // Looping over data
+        else
          {
-          if (foreachdatum) { directive_foreach_LoopOverData(command, GlobData.gl_pathv[i], &chain, &chainiter, IterLevel, &status); } // Looping over data
-          else
-           {
-            iterval->string = GlobData.gl_pathv[i]; // Looping over filenames
-            chainiter = chain;
-            status = loop_execute(&chainiter, 1, 0, IterLevel);
-            if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
-            if (PPL_FLOWCTRL_RETURNED) break;
-           }
-          if (status) break;
+          iterval->string = filename; // Looping over filenames
+          chainiter = chain;
+          status = loop_execute(&chainiter, 1, 0, IterLevel);
+          if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
+          if (PPL_FLOWCTRL_RETURNED) break;
          }
         if (status) break;
        }
-      if (!WordExpNull ) { wordfree(&WordExp ); WordExpNull =1; }
+      ppl_glob_close(glob_handle);
       if (!foreachdatum) ppl_units_zero(iterval);
-      if (!GlobDataNull) { globfree(&GlobData); GlobDataNull=1; }
       if (status) break;
       listiter = ListIterate(listiter, NULL);
      }

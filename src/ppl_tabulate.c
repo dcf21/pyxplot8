@@ -26,7 +26,6 @@
 #include <string.h>
 #include <math.h>
 #include <wordexp.h>
-#include <glob.h>
 
 #include <gsl/gsl_math.h>
 
@@ -40,6 +39,7 @@
 
 #include "ppl_datafile.h"
 #include "ppl_error.h"
+#include "ppl_glob.h"
 #include "ppl_passwd.h"
 #include "ppl_settings.h"
 #include "ppl_tabulate.h"
@@ -201,8 +201,8 @@ int directive_tabulate(Dict *command, char *line)
   FILE         *output;
   char         *cptr, *cptr2, *filename, *format, FilenameTemp[FNAME_LENGTH];
   wordexp_t     WordExp;
-  glob_t        GlobData;
-  int           i, k, status, iwe, igl, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
+  ppl_glob     *glob_handle;
+  int           i, k, status, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
   int           NumberOfSamples;
   long int      j;
   value        *min[USING_ITEMS_MAX+1], *max[USING_ITEMS_MAX+1], *spacing;
@@ -288,32 +288,27 @@ int directive_tabulate(Dict *command, char *line)
 
       // Expand filename if it contains wildcards
       status=0;
-      if ((wordexp(cptr, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", cptr); ppl_error(ERR_FILE, temp_err_string); return 1; }
-      for (iwe=0; iwe<WordExp.we_wordc; iwe++)
+      glob_handle = ppl_glob_allresults(cptr);
+      if (glob_handle == NULL) return 1;
+      while ((filename = ppl_glob_iterate(glob_handle)) != NULL)
        {
-        if ((glob(WordExp.we_wordv[iwe], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[iwe]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); fclose(output); return 1; }
-        for (igl=0; igl<GlobData.gl_pathc; igl++)
-         {
-          filename = GlobData.gl_pathv[igl];
-          fprintf(output, "\n# %s\n\n", filename); // Start new data block for each globbed filename
+        fprintf(output, "\n# %s\n\n", filename); // Start new data block for each globbed filename
 
-          // Allocate a new memory context for the data file we're about to read
-          ContextOutput  = lt_GetMemContext();
-          ContextLocalVec= lt_DescendIntoNewContext();
-          ContextDataTab = lt_DescendIntoNewContext();
+        // Allocate a new memory context for the data file we're about to read
+        ContextOutput  = lt_GetMemContext();
+        ContextLocalVec= lt_DescendIntoNewContext();
+        ContextDataTab = lt_DescendIntoNewContext();
 
-          // Read data from file
-          DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
-          if (status) { ppl_error(ERR_GENERAL, errtext); globfree(&GlobData); wordfree(&WordExp); fclose(output); return 1; }
-          status = DataGridDisplay(output, data, NUsingItems, min, max, format);
-          if (status) { globfree(&GlobData); wordfree(&WordExp); fclose(output); return 1; }
+        // Read data from file
+        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
+        if (status) { ppl_error(ERR_GENERAL, errtext); ppl_glob_close(glob_handle); fclose(output); return 1; }
+        status = DataGridDisplay(output, data, NUsingItems, min, max, format);
+        if (status) { ppl_glob_close(glob_handle); fclose(output); return 1; }
 
-          // We're finished... can now free DataTable
-          lt_AscendOutOfContext(ContextLocalVec);
-         }
-        globfree(&GlobData);
+        // We're finished... can now free DataTable
+        lt_AscendOutOfContext(ContextLocalVec);
        }
-      wordfree(&WordExp);
+      ppl_glob_close(glob_handle);
      }
     else // Case 2: Plotting a function
      {
