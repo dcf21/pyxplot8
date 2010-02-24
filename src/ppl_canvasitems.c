@@ -33,6 +33,7 @@
 #include "ppl_canvasdraw.h"
 #include "ppl_canvasitems.h"
 #include "ppl_error.h"
+#include "ppl_glob.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_units.h"
@@ -1372,8 +1373,9 @@ int directive_plot(Dict *command, int interactive, int replot)
   value         *min, *max;
   canvas_plotrange **RangePtr;
   canvas_plotdesc  **PlotItemPtr;
+  ppl_glob          *glob_handle=NULL;
 
-  unsigned char *unsuccessful_ops;
+  unsigned char *unsuccessful_ops, PlottingDatafiles;
 
   if (replot) // If replotting, find canvas item to append plot items onto
    {
@@ -1493,152 +1495,173 @@ int directive_plot(Dict *command, int interactive, int replot)
        }
      }
 
-    // Malloc a structure to hold this plot item
-    if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
-
-    // Store either filename of datafile, or the list of functions which we are plotting
+    // Test whether we're plotting datafile or functions
     DictLookup(TempDict, "filename", NULL, (void **)&tempstr);
-    if (tempstr != NULL) // We are plotting a datafile
+    if (tempstr != NULL) PlottingDatafiles=1; else PlottingDatafiles=0;
+
+    // Loop over globbed filenames or single (set of) function(s) which we are plotting
+    while (1)
      {
-      (*PlotItemPtr)->function = 0;
-      (*PlotItemPtr)->filename = (char *)malloc(strlen(tempstr)+1);
-      if ((*PlotItemPtr)->filename == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      strcpy((*PlotItemPtr)->filename , tempstr);
-     }
-    else // We are plotting function(s)
-     {
-      (*PlotItemPtr)->function = 1;
-      (*PlotItemPtr)->filename = NULL;
-      DictLookup(TempDict, "parametric", NULL, (void **)&tempstr);
-      (*PlotItemPtr)->parametric = (tempstr!=NULL);
-      DictLookup(TempDict, "expression_list:", NULL, (void **)&ExpressionList);
-      j = (*PlotItemPtr)->NFunctions = ListLen(ExpressionList);
-      (*PlotItemPtr)->functions = (char **)malloc(j * sizeof(char *));
-      if ((*PlotItemPtr)->functions == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      ListIter2 = ListIterateInit(ExpressionList);
-      for (i=0; i<j; i++)
-       { 
-        TempDict2 = (Dict *)ListIter2->data;
-        DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
-        (*PlotItemPtr)->functions[i] = (char *)malloc(strlen(tempstr)+1);
-        if ((*PlotItemPtr)->functions[i] == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-        strcpy((*PlotItemPtr)->functions[i], tempstr);
-        ListIter2 = ListIterate(ListIter2, NULL);
-       }
-     }
 
-    // Look up axes to use
-    (*PlotItemPtr)->axis1set = (*PlotItemPtr)->axis2set = (*PlotItemPtr)->axis3set = 0;
-    (*PlotItemPtr)->axis1    = (*PlotItemPtr)->axis2    = (*PlotItemPtr)->axis3    = 1;
-    (*PlotItemPtr)->axis1xyz = 0;
-    (*PlotItemPtr)->axis2xyz = 1;
-    (*PlotItemPtr)->axis3xyz = 2;
-    DictLookup(TempDict, "axis_1", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->axis1set = 1; (*PlotItemPtr)->axis1 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis1xyz = tempstr[0]-'x'; }
-    DictLookup(TempDict, "axis_2", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->axis2set = 1; (*PlotItemPtr)->axis2 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis2xyz = tempstr[0]-'x'; }
-    DictLookup(TempDict, "axis_3", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->axis3set = 1; (*PlotItemPtr)->axis3 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis3xyz = tempstr[0]-'x'; }
-
-    // Look up label to apply to datapoints
-    DictLookup(TempDict, "label", NULL, (void **)&tempstr);
-    if (tempstr==NULL) { (*PlotItemPtr)->label = NULL; }
-    else
-     {
-      (*PlotItemPtr)->label = (char *)malloc(strlen(tempstr)+1);
-      if ((*PlotItemPtr)->label == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      strcpy((*PlotItemPtr)->label, tempstr);
-     }
-
-    // Look up continuous / discontinuous flags
-    (*PlotItemPtr)->ContinuitySet = 0;
-    (*PlotItemPtr)->continuity    = DATAFILE_CONTINUOUS;
-    DictLookup(TempDict, "continuous", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_CONTINUOUS; }
-    DictLookup(TempDict, "discontinuous", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_DISCONTINUOUS; }
-
-    // Look up title and notitle modifiers
-    (*PlotItemPtr)->NoTitleSet = (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL;
-    DictLookup(TempDict, "notitle", NULL, (void **)&tempstr);
-    if (tempstr!=NULL) { (*PlotItemPtr)->NoTitleSet = 1; (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL; }
-    DictLookup(TempDict, "title", NULL, (void **)&tempstr);
-    if (tempstr!=NULL)
-     {
-      (*PlotItemPtr)->NoTitleSet = 0; (*PlotItemPtr)->TitleSet = 1;
-      (*PlotItemPtr)->title = (char *)malloc(strlen(tempstr)+1);
-      if ((*PlotItemPtr)->title == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      strcpy((*PlotItemPtr)->title, tempstr);
-     }
-
-    // Look up index , every, using modifiers
-    (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
-    (*PlotItemPtr)->index = -1;
-    DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
-    DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_ROW;
-    DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
-
-    DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
-    if (EveryList==NULL) { (*PlotItemPtr)->EverySet = 0; }
-    else
-     {
-      j = (*PlotItemPtr)->EverySet = ListLen(EveryList);
-      if (j>6) { ppl_error(ERR_SYNTAX, "More than six items specified in every modifier -- final items are not valid syntax."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      ListIter2 = ListIterateInit(EveryList);
-      for (i=0; i<j; i++)
-       {        
-        TempDict2 = (Dict *)ListIter2->data;
-        DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
-        if (tempint != NULL) (*PlotItemPtr)->EveryList[i] = *tempint;
-        else                 (*PlotItemPtr)->EveryList[i] = -1;
-        ListIter2 = ListIterate(ListIter2, NULL);
-       }
-     }
-
-    // Look up select modifier
-    DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
-    if (SelectCrit==NULL) { (*PlotItemPtr)->SelectCriterion = NULL; }
-    else
-     {  
-      (*PlotItemPtr)->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
-      if ((*PlotItemPtr)->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      strcpy((*PlotItemPtr)->SelectCriterion, SelectCrit);
-     }
-
-    // Look up using modifiers
-    DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
-    if (UsingList==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; }
-    else
-     {
-      j = ListLen(UsingList);
-      if (j==1) // 'using columns' produces a NULL (optional) first using item. Consider this as a blank list
+      // If we are plotting datafile(s), start globbing it
+      if (PlottingDatafiles) // We are plotting a datafile
        {
-        TempDict2 = (Dict *)(UsingList->first->data);
-        if (TempDict2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
-        DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
-        if (cptr2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
+        if (glob_handle==NULL) // We are going around for the first time
+         {
+          glob_handle = ppl_glob_allresults(tempstr);
+          if (glob_handle == NULL) break;
+         }
+        tempstr = ppl_glob_iterate(glob_handle);
+        if (tempstr == NULL) break;
        }
-      (*PlotItemPtr)->NUsing = j;
-      (*PlotItemPtr)->UsingList = (char **)malloc(j * sizeof(char *));
-      if ((*PlotItemPtr)->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-      ListIter2 = ListIterateInit(UsingList);
-      for (i=0; i<j; i++)
+
+      // Malloc a structure to hold this plot item
+      if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
+
+      // Enter details of datafile filename or functions into plotdesc structure
+      if (PlottingDatafiles) // We are plotting a datafile
        {
-        TempDict2 = (Dict *)ListIter2->data;
-        DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
-        if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
-        (*PlotItemPtr)->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
-        if ((*PlotItemPtr)->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
-        strcpy((*PlotItemPtr)->UsingList[i], cptr2);
-        ListIter2 = ListIterate(ListIter2, NULL);
+        (*PlotItemPtr)->function = 0;
+        (*PlotItemPtr)->filename = (char *)malloc(strlen(tempstr)+1);
+        if ((*PlotItemPtr)->filename == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        strcpy((*PlotItemPtr)->filename , tempstr);
        }
-     }
+      else // We are plotting function(s)
+       {
+        (*PlotItemPtr)->function = 1;
+        (*PlotItemPtr)->filename = NULL;
+        DictLookup(TempDict, "parametric", NULL, (void **)&tempstr);
+        (*PlotItemPtr)->parametric = (tempstr!=NULL);
+        DictLookup(TempDict, "expression_list:", NULL, (void **)&ExpressionList);
+        j = (*PlotItemPtr)->NFunctions = ListLen(ExpressionList);
+        (*PlotItemPtr)->functions = (char **)malloc(j * sizeof(char *));
+        if ((*PlotItemPtr)->functions == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        ListIter2 = ListIterateInit(ExpressionList);
+        for (i=0; i<j; i++)
+         {
+          TempDict2 = (Dict *)ListIter2->data;
+          DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
+          (*PlotItemPtr)->functions[i] = (char *)malloc(strlen(tempstr)+1);
+          if ((*PlotItemPtr)->functions[i] == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+          strcpy((*PlotItemPtr)->functions[i], tempstr);
+          ListIter2 = ListIterate(ListIter2, NULL);
+         }
+       }
+
+      // Look up which axes to use
+      (*PlotItemPtr)->axis1set = (*PlotItemPtr)->axis2set = (*PlotItemPtr)->axis3set = 0;
+      (*PlotItemPtr)->axis1    = (*PlotItemPtr)->axis2    = (*PlotItemPtr)->axis3    = 1;
+      (*PlotItemPtr)->axis1xyz = 0;
+      (*PlotItemPtr)->axis2xyz = 1;
+      (*PlotItemPtr)->axis3xyz = 2;
+      DictLookup(TempDict, "axis_1", NULL, (void **)&tempstr);
+      if (tempstr!=NULL) { (*PlotItemPtr)->axis1set = 1; (*PlotItemPtr)->axis1 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis1xyz = tempstr[0]-'x'; }
+      DictLookup(TempDict, "axis_2", NULL, (void **)&tempstr);
+      if (tempstr!=NULL) { (*PlotItemPtr)->axis2set = 1; (*PlotItemPtr)->axis2 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis2xyz = tempstr[0]-'x'; }
+      DictLookup(TempDict, "axis_3", NULL, (void **)&tempstr);
+      if (tempstr!=NULL) { (*PlotItemPtr)->axis3set = 1; (*PlotItemPtr)->axis3 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis3xyz = tempstr[0]-'x'; }
+
+      // Look up label to apply to datapoints
+      DictLookup(TempDict, "label", NULL, (void **)&tempstr);
+      if (tempstr==NULL) { (*PlotItemPtr)->label = NULL; }
+      else
+       {
+        (*PlotItemPtr)->label = (char *)malloc(strlen(tempstr)+1);
+        if ((*PlotItemPtr)->label == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        strcpy((*PlotItemPtr)->label, tempstr);
+       }
+
+      // Look up continuous / discontinuous flags
+      (*PlotItemPtr)->ContinuitySet = 0;
+      (*PlotItemPtr)->continuity    = DATAFILE_CONTINUOUS;
+      DictLookup(TempDict, "continuous", NULL, (void **)&tempstr);
+      if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_CONTINUOUS; }
+      DictLookup(TempDict, "discontinuous", NULL, (void **)&tempstr);
+      if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_DISCONTINUOUS; }
+
+      // Look up title and notitle modifiers
+      (*PlotItemPtr)->NoTitleSet = (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL;
+      DictLookup(TempDict, "notitle", NULL, (void **)&tempstr);
+      if (tempstr!=NULL) { (*PlotItemPtr)->NoTitleSet = 1; (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL; }
+      DictLookup(TempDict, "title", NULL, (void **)&tempstr);
+      if (tempstr!=NULL)
+       {
+        (*PlotItemPtr)->NoTitleSet = 0; (*PlotItemPtr)->TitleSet = 1;
+        (*PlotItemPtr)->title = (char *)malloc(strlen(tempstr)+1);
+        if ((*PlotItemPtr)->title == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        strcpy((*PlotItemPtr)->title, tempstr);
+       }
+
+      // Look up index , every, using modifiers
+      (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
+      (*PlotItemPtr)->index = -1;
+      DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
+      DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_ROW;
+      DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
+  
+      DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
+      if (EveryList==NULL) { (*PlotItemPtr)->EverySet = 0; }
+      else
+       {
+        j = (*PlotItemPtr)->EverySet = ListLen(EveryList);
+        if (j>6) { ppl_error(ERR_SYNTAX, "More than six items specified in every modifier -- final items are not valid syntax."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        ListIter2 = ListIterateInit(EveryList);
+        for (i=0; i<j; i++)
+         {        
+          TempDict2 = (Dict *)ListIter2->data;
+          DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
+          if (tempint != NULL) (*PlotItemPtr)->EveryList[i] = *tempint;
+          else                 (*PlotItemPtr)->EveryList[i] = -1;
+          ListIter2 = ListIterate(ListIter2, NULL);
+         }
+       }
+
+      // Look up select modifier
+      DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
+      if (SelectCrit==NULL) { (*PlotItemPtr)->SelectCriterion = NULL; }
+      else
+       {  
+        (*PlotItemPtr)->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
+        if ((*PlotItemPtr)->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        strcpy((*PlotItemPtr)->SelectCriterion, SelectCrit);
+       }
+
+      // Look up using modifiers
+      DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
+      if (UsingList==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; }
+      else
+       {
+        j = ListLen(UsingList);
+        if (j==1) // 'using columns' produces a NULL (optional) first using item. Consider this as a blank list
+         {
+          TempDict2 = (Dict *)(UsingList->first->data);
+          if (TempDict2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
+          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          if (cptr2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
+         }
+        (*PlotItemPtr)->NUsing = j;
+        (*PlotItemPtr)->UsingList = (char **)malloc(j * sizeof(char *));
+        if ((*PlotItemPtr)->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        ListIter2 = ListIterateInit(UsingList);
+        for (i=0; i<j; i++)
+         {
+          TempDict2 = (Dict *)ListIter2->data;
+          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
+          (*PlotItemPtr)->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
+          if ((*PlotItemPtr)->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+          strcpy((*PlotItemPtr)->UsingList[i], cptr2);
+          ListIter2 = ListIterate(ListIter2, NULL);
+         }
+       }
 FinishedUsing:
 
-    // Read in style information from with clause
-    with_words_fromdict(TempDict, &(*PlotItemPtr)->ww, 1);
+      // Read in style information from with clause
+      with_words_fromdict(TempDict, &(*PlotItemPtr)->ww, 1);
 
-    PlotItemPtr=&(*PlotItemPtr)->next; // Next plot item...
+      PlotItemPtr=&(*PlotItemPtr)->next; // Next plot item...
+      if (!PlottingDatafiles) break; // Only loop once when plotting functions, as there's no globbing to do
+     }
     ListIter = ListIterate(ListIter, NULL);
    }
 

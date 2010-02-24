@@ -793,6 +793,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     // Ignore comment lines
     if (linebuffer[j]=='#')
      {
+printf("%s\n",linebuffer);
       for (i=j+1; ((linebuffer[i]!='\0')&&(linebuffer[i]<=' ')); i++);
       if ((strncmp(linebuffer+i, "Columns:", 8)==0) && (UsingRowCol == DATAFILE_COL)) // '# Columns:' means we have a list of column headings
        {

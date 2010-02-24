@@ -26,10 +26,11 @@
 #include <wordexp.h>
 
 typedef struct ppl_glob {
-  glob_t        GlobData;
-  wordexp_t     WordExp;
-  int           ig,iw;
-  unsigned char GlobDataSet, WordExpSet;
+  glob_t         GlobData;
+  wordexp_t      WordExp;
+  int            ig,iw;
+  char          *SpecialFilename;
+  unsigned char  GlobDataSet, WordExpSet, SpecialCase;
  } ppl_glob;
 
 char     *ppl_glob_oneresult (char *filename);

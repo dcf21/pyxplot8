@@ -66,21 +66,29 @@ foreach SeriesName in ("Ly","Ba","Pa","Br")
  }
 
 # Label astronomical photometric colours
-#foreach datum name,wlen_c,wlen_w in "--" using "%s"%($1):2:3
-# {
-#  print "%s %s %s"%(name,wlen_c,wlen_w)
-# }
-#ColumnUnits: 1 nm nm
-#"U"   365   66
-#"B"   445   94
-#"V"   551   88
-#"R"   658  138
-#"I"   806  149
-#"J"  1220  213
-#"H"  2190  390
-#"L"  3450  472
-#"M"  4750  460
-#END
+foreach datum i,name,wl_c,wl_w in "--" using \
+    1:"%s"%($2):($3*unit(nm)):($4*unit(nm))
+ {
+  arry = 0.12+0.1*(i%2) # Vertical positions for arrows
+  laby = 0.07+0.1*(i%2) # Vertical positions for labels
+  x0 = (wl_c-wl_w/2) # Shortward end of passband
+  x1 =  wl_c         # Centre of passband
+  x2 = (wl_c+wl_w/2) # Longward end of passband
+  set arrow an from x0,arry to x2,arry with nohead
+  set label an name at x1,laby hal centre val centre
+  an = an+1
+ }
+ 1 U  365   66
+ 2 B  445   94
+ 3 V  551   88
+ 4 R  658  138
+ 5 I  806  149
+ 6 J 1220  213
+ 7 H 1630  307
+ 8 K 2190  390
+ 9 L 3450  472
+10 M 4750  460
+END
 
 # Draw a marker for the Lyman limit
 ll = 91.1267*unit(nm)

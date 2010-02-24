@@ -29,57 +29,115 @@
 
 #include "ListTools/lt_memory.h"
 
+#include "StringTools/str_constants.h"
+
 #include "ppl_error.h"
 #include "ppl_glob.h"
 
+static char LastFilename[FNAME_LENGTH]="";
+
+static int ppl_glob_SpecialFilename(char *fn)
+ {
+  int i;
+  if (fn[0]=='\0') return 1;
+  for (i=0; fn[i]!='\0'; i++) if ((fn[i]==':')&&(fn[i+1]=='/')&&(fn[i+2]=='/')) return 1;
+  if (strcmp(fn,"-" )==0) return 1;
+  if (strcmp(fn,"--")==0) return 1;
+  return 0;
+ }
+
 char *ppl_glob_oneresult(char *filename)
  {
-  char      *output;
+  char      *output, *outtemp;
   wordexp_t  WordExp;
   glob_t     GlobData;
+  unsigned char GlobSet=0;
 
-  if (wordexp(filename, &WordExp, 0) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); return NULL; }
-  if (WordExp.we_wordc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
-  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", filename); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
+  if (filename[0]!='\0')
+   {
+    strncpy(LastFilename, filename, FNAME_LENGTH);
+    filename[FNAME_LENGTH-1]='\0';
+   } else {
+    filename = LastFilename;
+   }
 
-  if (glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
-  if (GlobData.gl_pathc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return NULL; }
-  if  (GlobData.gl_pathc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return NULL; }
+  if (ppl_glob_SpecialFilename(filename))
+   {
+    outtemp=filename;
+   }
+  else
+   {
+    if (wordexp(filename, &WordExp, 0) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); return NULL; }
+    if (WordExp.we_wordc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
+    if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", filename); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
 
-  output = (char *)lt_malloc(strlen(GlobData.gl_pathv[0])+1);
-  if (output==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); return NULL; }
-  strcpy(output, GlobData.gl_pathv[0]);
-  wordfree(&WordExp);
-  globfree(&GlobData);
+    if (glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
+    if (GlobData.gl_pathc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return NULL; }
+    if (GlobData.gl_pathc  > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return NULL; }
+    outtemp=GlobData.gl_pathv[0];
+    GlobSet=1;
+   }
+
+  output = (char *)lt_malloc(strlen(outtemp)+1);
+  if (output==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); if (GlobSet) { wordfree(&WordExp); globfree(&GlobData); } return NULL; }
+  strcpy(output, outtemp);
+  if (GlobSet) { wordfree(&WordExp); globfree(&GlobData); }
   return output;
  }
 
 ppl_glob *ppl_glob_allresults(char *filename)
  {
   ppl_glob  *output;
-  wordexp_t  WordExp;
-  glob_t     GlobData;
+  char      *outtemp, *SpecialFilename=NULL;
+  unsigned char GlobSet=0;
 
-  if (wordexp(filename, &WordExp, 0) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); return NULL; }
-  if (WordExp.we_wordc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
-
-  if (glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return NULL; }
-  if (GlobData.gl_pathc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); globfree(&GlobData); return NULL; }
+  if (filename[0]!='\0')
+   {
+    strncpy(LastFilename, filename, FNAME_LENGTH);
+    LastFilename[FNAME_LENGTH-1]='\0';
+   } else {
+    filename = LastFilename;
+   }
 
   output = (ppl_glob *)lt_malloc(sizeof(ppl_glob));
-  if (output==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); wordfree(&WordExp); globfree(&GlobData); return NULL; }
-  output->GlobData    = GlobData;
-  output->WordExp     = WordExp;
-  output->GlobDataSet = 1;
-  output->WordExpSet  = 1;
-  output->ig          = 0;
-  output->iw          = 0;
+  if (output==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return NULL; }
+
+  if (ppl_glob_SpecialFilename(filename))
+   {
+    outtemp=filename;
+    SpecialFilename = (char *)lt_malloc(strlen(outtemp)+1);
+    if (SpecialFilename==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return NULL; }
+    strcpy(SpecialFilename, outtemp);
+   }
+  else
+   {
+    if (wordexp(filename, &output->WordExp, 0) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); return NULL; }
+    if (output->WordExp.we_wordc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); wordfree(&output->WordExp); return NULL; }
+
+    if (glob(output->WordExp.we_wordv[0], 0, NULL, &output->GlobData) != 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", output->WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&output->WordExp); return NULL; }
+    if (output->GlobData.gl_pathc <= 0) { sprintf(temp_err_string, "Could not glob filename '%s'.", output->WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&output->WordExp); globfree(&output->GlobData); return NULL; }
+    GlobSet=1;
+   }
+
+  output->GlobDataSet     = GlobSet;
+  output->WordExpSet      = GlobSet;
+  output->SpecialFilename = SpecialFilename;
+  output->SpecialCase     = (SpecialFilename!=NULL);
+  output->ig              = 0;
+  output->iw              = 0;
   return output;
  }
 
 char *ppl_glob_iterate(ppl_glob *x)
  {
   char *output;
+
+  if (x->SpecialCase)
+   {
+    output = x->SpecialFilename;
+    x->SpecialFilename = NULL;
+    return output;
+   }
 
   if (x->GlobDataSet && (x->ig < x->GlobData.gl_pathc))
    {
