@@ -76,12 +76,12 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     if ((axis->log == SW_BOOL_TRUE) && (axis->MinFinal <= 1e-200)) { axis->MinFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
 
     // If there's no spread of data on the axis, make a spread up
-    if (ppl_units_DblApprox(axis->MinFinal , axis->MaxFinal , 1e-14))
+    if ( (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MinFinal)) || (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MaxFinal)) )
      {
       if (   ((HardMin != NULL) || ((axis->MinSet==SW_BOOL_TRUE) && (!HardAutoMin)))
           && ((HardMax != NULL) || ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax))) )
        { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
-      if (axis->log == SW_BOOL_TRUE)
+      if (axis->log != SW_BOOL_TRUE)
        {
         axis->MinFinal -= max(1.0,1e-3*fabs(axis->MinFinal));
         axis->MaxFinal += max(1.0,1e-3*fabs(axis->MinFinal));

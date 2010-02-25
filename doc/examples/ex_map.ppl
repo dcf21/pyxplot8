@@ -66,5 +66,6 @@ set label 17 '{\sf Canberra}' 145, -35.25
 set label 20 '{\Huge \sf \slshape Australia}' 117,-42
 
 # Plot the coastline and cities
-plot [][-45:]'examples/ex_map_1.dat.gz' every ::1 with lines, \
+plot [][-45:] 'examples/ex_map_1.dat.gz' every ::1 with lines, \
      'examples/ex_map_2.dat' with points pointtype 10 pointsize 2
+

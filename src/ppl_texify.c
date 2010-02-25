@@ -250,8 +250,10 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
   unsigned char OpList[OPLIST_LEN];                  // A list of what operations this expression contains
   unsigned char StatusRow       [ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
   unsigned char StatusRowInitial[ALGEBRA_MAXLENGTH];
-  char dummy[DUMMYVAR_MAXLEN], GreekifiedDummy[DUMMYVAR_MAXLEN+10], *LaTeXModel, DummyLaTeXModel[FNAME_LENGTH], *FunctionName;
-  int  CommaPositions[MAX_STR_FORMAT_ITEMS], Nargs, RequiredNargs;
+  char          dummy[DUMMYVAR_MAXLEN], GreekifiedDummy[DUMMYVAR_MAXLEN+10], *LaTeXModel, DummyLaTeXModel[FNAME_LENGTH], *FunctionName;
+  int           CommaPositions[MAX_STR_FORMAT_ITEMS], Nargs, RequiredNargs;
+  int           LastItemStartPos;
+  unsigned char LastItemContainedSuperscript;
   value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
   DictIterator *DictIter;
 
@@ -355,9 +357,12 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
    {
     if (StatusRow[i]>=BUFFER_OFFSET) // A numeric constant
      {
+      LastItemContainedSuperscript = 0;
       if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
+      LastItemStartPos = outpos;
       strcpy(out+outpos, ppl_units_NumericDisplay(ResultBuffer+StatusRow[i]-BUFFER_OFFSET, 0, SW_DISPLAY_L, 0)+1); // Chop off initial $
+      for (k=0; out[outpos+k]!='\0'; k++) if ((out[outpos+k]=='^')||((out[outpos+k]=='\\')&&(out[outpos+k+1]==','))) LastItemContainedSuperscript = 1;
       outpos += strlen(out+outpos) - 1; // Chop off final $
       ci = StatusRow[i];
       while (StatusRow[i]==ci) i++; i--;
@@ -365,6 +370,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
      }
     else if (StatusRow[i]==3)
      {
+      LastItemContainedSuperscript = 0;
       i++; // Fastforward over (
       if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
@@ -416,7 +422,18 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       else if ((in[i]=='=')&&(in[i+1]=='=')                ) strcpy(out+outpos, "==");
       else if ((in[i]=='<')&&(in[i+1]=='>')                ) strcpy(out+outpos, "\\neq ");
       else if ((in[i]=='!')&&(in[i+1]=='=')                ) strcpy(out+outpos, "\\neq ");
-      else if ((in[i]=='*')&&(in[i+1]=='*')                ) { strcpy(out+outpos, "^{"); PowLevel++; }
+      else if ((in[i]=='*')&&(in[i+1]=='*')                )
+       {
+        if (LastItemContainedSuperscript) // Need to put brackets around the last rendered item
+         {
+          for (k=0; (outpos-k)>=LastItemStartPos; k++) out[outpos-k+6] = out[outpos-k];
+          sprintf(out+LastItemStartPos, "\\left");
+          out[LastItemStartPos+5]='(';
+          sprintf(out+outpos+6, "\\right)");
+          outpos += strlen(out+outpos);
+         }
+        strcpy(out+outpos, "^{"); PowLevel++;
+       }
       else if ((in[i]=='+')                                ) strcpy(out+outpos, "+");
       else if ((in[i]=='-')                                ) strcpy(out+outpos, "-");
       else if ((in[i]=='*')                                ) strcpy(out+outpos, "\\times ");
@@ -429,9 +446,11 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       else if ((in[i]=='^')                                ) strcpy(out+outpos, "\\^{}");
       outpos += strlen(out+outpos);
       while (StatusRow[i]==7) i++; i--;
+      LastItemContainedSuperscript = 0;
      }
     else if (StatusRow[i]==4) // Texify a $
      {
+      LastItemContainedSuperscript = 0;
       if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
       strcpy(out+outpos, "\\$");
@@ -440,6 +459,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
      }
     else if (StatusRow[i]==8) // Texify a variable name or function call
      {
+      LastItemContainedSuperscript = 0;
       if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
       if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
 
