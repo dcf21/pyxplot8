@@ -921,10 +921,10 @@ $v$. We then plot this function for three different sets of inputs.
 {\footnotesize
 \noindent {\tt g~~~= 9.81~~~~\# Acceleration due to gravity}\newline
 \noindent {\tt d2r~= pi/180~~\# Convert degrees to radians}\newline
-\noindent {\tt }\newline
+\noindent {\tt }\newline}\\{\footnotesize
 \noindent {\tt \# The mathematical equation of a trajectory}\newline
 \noindent {\tt h(x,theta,v) = x*tan(theta*d2r) - 0.5*g*x**2/(v**2*cos(theta*d2r)**2)}\newline
-\noindent {\tt }\newline
+\noindent {\tt }\newline}\\{\footnotesize
 \noindent {\tt \# Plot configuration}\newline
 \noindent {\tt set xlabel "\$x/{$\backslash$rm m}\$"}\newline
 \noindent {\tt set ylabel "\$h/{$\backslash$rm m}\$"}\newline
@@ -932,9 +932,11 @@ $v$. We then plot this function for three different sets of inputs.
 \noindent {\tt set yrange [0:]}\newline
 \noindent {\tt set key below}\newline
 \noindent {\tt set title 'Trajectories of projectiles fired with speed \$v\$ and angle \$$\backslash$theta\$'}\newline
-\noindent {\tt plot h(x,30,10) title "\$$\backslash$theta=30\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$",}\newline
-\noindent {\tt \phantom{xxxxx}h(x,60,10) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$",}\newline
-\noindent {\tt \phantom{xxxxx}h(x,60,15) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=15$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$",}\newline
+\noindent {\tt plot h(x,30,10) title "\$$\backslash$theta=30\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$", $\backslash$}\newline
+\noindent {\tt \phantom{xxxxx}h(x,45,10) title "\$$\backslash$theta=45\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$", $\backslash$}\newline
+\noindent {\tt \phantom{xxxxx}h(x,60,10) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=10$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$", $\backslash$}\newline
+\noindent {\tt \phantom{xxxxx}h(x,30,15) title "\$$\backslash$theta=30\^{}$\backslash$circ;$\backslash$qquad v=15$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$", $\backslash$}\newline
+\noindent {\tt \phantom{xxxxx}h(x,60,15) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=15$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$"}
 }
 \nlscf
 \begin{center}
