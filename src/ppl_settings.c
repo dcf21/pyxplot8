@@ -208,6 +208,7 @@ void ppl_settings_makedefault()
   settings_axis_default.enabled     = 0;
   settings_axis_default.invisible   = 0;
   settings_axis_default.linked      = 0;
+  settings_axis_default.RangeReversed=0;
   settings_axis_default.topbottom   = 0;
   settings_axis_default.ArrowType   = SW_AXISDISP_NOARR;
   settings_axis_default.LinkedAxisCanvasID = 0;

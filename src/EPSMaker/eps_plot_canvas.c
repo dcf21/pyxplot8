@@ -75,6 +75,32 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
   else                       return xa->MinFinal * pow(xa->MaxFinal / xa->MinFinal , xin); // ... or logarithmic
  }
 
+int eps_plot_axis_InRange(settings_axis *xa, double xin)
+ {
+  int xrn, swapI, xminset=0, xmaxset=0;
+  double xmin, xmax, swapD;
+
+  if (xa->AxisLinearInterpolation != NULL)
+   {
+    for (xrn=0; xrn<=xa->AxisValueTurnings; xrn++) if (gsl_finite(eps_plot_axis_GetPosition(xin,xa,xrn,0))) return 1;
+    return 0;
+   }
+
+  if (xa->HardMinSet)           { xminset=1; xmin=xa->HardMin; }
+  if (xa->HardMaxSet)           { xmaxset=1; xmax=xa->HardMax; }
+  if (xa->MinSet==SW_BOOL_TRUE) { xminset=1; xmin=xa->min; }
+  if (xa->MaxSet==SW_BOOL_TRUE) { xmaxset=1; xmax=xa->max; }
+  if (xa->HardAutoMinSet)       { xminset=0; }
+  if (xa->HardAutoMaxSet)       { xmaxset=0; }
+
+  if (xa->RangeReversed)         { swapI=xminset; xminset=xmaxset; xmaxset=swapI; swapD=xmin; xmin=xmax; xmax=swapD; }
+
+  if (xminset && xmaxset) return (((xin>=xmin)&&(xin<=xmax))||((xin<=xmin)&&(xin>=xmax)));
+  if (xminset           ) return (xin>xmin);
+  if (xmaxset           ) return (xin<xmax);
+  return 1; // Axis range is not fixed
+ }
+
 void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, double *theta_x, double *theta_y, double *theta_z, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds)
  {
   double x,y,z,x2,y2,z2,x3,y3,z3;

@@ -87,7 +87,7 @@ void directive_set(Dict *command)
   value   valobj, valobj2;
   value  *tempval, *tempval2, *tempval3;
   int    *tempint, ten=10;
-  double *tempdbl, dblobj, dbl1, dbl2;
+  double *tempdbl, dbl1, dbl2;
   char   *tempstr, *tempstr2, *tempstr3, *tempstr4;
   List   *templist;
   Dict   *tempdict;
@@ -1767,8 +1767,10 @@ void directive_set(Dict *command)
           tempaxis->MTickStrs  = NULL;
          }
        }
-      DictLookup(command,"reverse",NULL,(void **)&tempstr);
-      if (tempstr != NULL) { dblobj = tempaxis->min; tempaxis->min = tempaxis->max; tempaxis->max = dblobj; }
+      DictLookup(command,"reverse"  ,NULL,(void **)&tempstr);
+      if (tempstr != NULL) { tempaxis->RangeReversed = 1; }
+      DictLookup(command,"noreverse",NULL,(void **)&tempstr);
+      if (tempstr != NULL) { tempaxis->RangeReversed = 0; }
      }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"range")==0)) /* unset xrange */
@@ -1780,10 +1782,11 @@ void directive_set(Dict *command)
       if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-      tempaxis->max    = tempaxis2->max;
-      tempaxis->MaxSet = tempaxis2->MaxSet;
-      tempaxis->min    = tempaxis2->min;
-      tempaxis->MinSet = tempaxis2->MinSet;
+      tempaxis->max           = tempaxis2->max;
+      tempaxis->MaxSet        = tempaxis2->MaxSet;
+      tempaxis->min           = tempaxis2->min;
+      tempaxis->MinSet        = tempaxis2->MinSet;
+      tempaxis->RangeReversed = tempaxis2->RangeReversed;
      }
    }
   else
@@ -2448,7 +2451,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          AxisPtr->unit.real = AxisPtr->max;
          if (AxisPtr->MaxSet==SW_BOOL_TRUE) bufp2 = ppl_units_NumericDisplay(&(AxisPtr->unit),1,0,0);
          else                               bufp2 = "*";
-         sprintf(buf , "[%s:%s]", bufp, bufp2);
+         sprintf(buf , "[%s:%s]%s", bufp, bufp2, AxisPtr->RangeReversed ? " reversed" : "");
          sprintf(buf2, "Sets the range of the %c%d axis", "xyz"[k], j);
          directive_show3(out+i, ItemSet, 1, interactive, temp1, buf, (AxisPtr->min    == AxisPtrDef->min   ) &&
                                                                      (AxisPtr->MinSet == AxisPtrDef->MinSet) &&

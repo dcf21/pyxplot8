@@ -140,6 +140,13 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       ppl_log(temp_err_string);
      }
 
+    // Flip axis range if it is reversed
+    if (axis->RangeReversed)
+     {
+      double swap;
+      swap=axis->MinFinal; axis->MinFinal=axis->MaxFinal; axis->MaxFinal=swap;
+     }
+
     // Set flag to show that we have finalised the range of this axis
     axis->RangeFinalised = 1;
    }
@@ -198,21 +205,50 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     else if (axis->TickStepSet)
      {
       double TMin, TStep, TMax, tmp;
-      TMin  = (axis->TickMinSet) ? axis->TickMin : axis->MinFinal;
-      TStep = axis->TickStep;
-      TMax  = (axis->TickMaxSet) ? axis->TickMax : axis->MaxFinal;
-      if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
-      if (TStep<0) TStep=-TStep;
-      if (axis->log == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
-      if (TMin < axis->MinFinal) TMin += ceil ((axis->MinFinal-TMin)/TStep) * TStep;
-      if (TMax > axis->MaxFinal) TMax -= floor((TMax-axis->MaxFinal)/TStep) * TStep;
       axis->TickListPositions = (double  *)lt_malloc(102 * (axis->AxisValueTurnings+1) * sizeof(double));
       axis->TickListStrings   = (char   **)lt_malloc(102 * (axis->AxisValueTurnings+1) * sizeof(char *));
       if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
-      tmp = TMin;
-      for (i=j=0; (i<100)&&(tmp<=TMax); i++)
+      TStep= axis->TickStep;
+      if (TStep<0) TStep=-TStep;
+      if (axis->log == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
+
+      for (xrn=j=0; xrn<=axis->AxisValueTurnings; xrn++)
        {
-        for (xrn=0; xrn<=axis->AxisValueTurnings; xrn++)
+        TMin = axis->TickMinSet ? axis->TickMin : axis->MinFinal;
+        TMax = axis->TickMaxSet ? axis->TickMax : axis->MaxFinal;
+
+        if (axis->AxisLinearInterpolation!=NULL)
+         {
+          double RegionMin, RegionMax, first;
+          first     = axis->AxisLinearInterpolation[axis->AxisTurnings[0    ]];
+          RegionMin = axis->AxisLinearInterpolation[axis->AxisTurnings[xrn  ]];
+          RegionMax = axis->AxisLinearInterpolation[axis->AxisTurnings[xrn+1]];
+          if (RegionMax<RegionMin) { tmp=RegionMin; RegionMin=RegionMax; RegionMax=tmp; }
+
+          if (!axis->TickMaxSet) TMax = RegionMax;
+          if (!axis->TickMinSet)
+           {
+            if (axis->log == SW_BOOL_TRUE) TMin = first - floor((TMin-RegionMin)/TStep) * TStep;
+            else                           TMin = exp(log(first) - floor((log(TMin)-log(RegionMin))/log(TStep)) * log(TStep));
+           }
+          if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
+         }
+        else
+         {
+          if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
+          if (TMin < axis->MinFinal)
+           {
+            if (axis->log == SW_BOOL_TRUE) TMin += exp(ceil ((log(axis->MinFinal)-log(TMin))/log(TStep)) * log(TStep));
+            else                           TMin +=     ceil ((    axis->MinFinal -    TMin )/    TStep ) *     TStep  ;
+           }
+          if (TMax > axis->MaxFinal)
+           {
+            if (axis->log == SW_BOOL_TRUE) TMax -= exp(floor((log(TMax)-log(axis->MaxFinal))/log(TStep)) * log(TStep));
+            else                           TMax -=     floor((    TMax -    axis->MaxFinal )/    TStep ) *     TStep  ;
+           }
+         }
+        tmp = TMin;
+        for (i=0; (i<100)&&(tmp<=TMax); i++)
          {
           axis->TickListPositions[j] = eps_plot_axis_GetPosition(tmp, axis, xrn, 0);
           if ( (!gsl_finite(axis->TickListPositions[j])) || (axis->TickListPositions[j]<0.0) || (axis->TickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
@@ -220,8 +256,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
           else                      TickLabelFromFormat(&axis->TickListStrings[j], axis->format, tmp, &axis->DataUnit, xyz);
           if (axis->TickListStrings[j]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
           j++;
+          if (axis->log == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
          }
-        if (axis->log == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
        }
       axis->TickListStrings[j] = NULL; // null terminate list
      }
