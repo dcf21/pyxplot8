@@ -43,6 +43,130 @@ a=2*pi
 plot [0:1] sin(a*x)
 \end{verbatim}
 
+\section{Physical Constants}
+\label{sec:constants}
+\index{physical constants}\index{constants}
+
+A wide range of mathematical and physical constants are defined by default in
+PyXPlot: most of the physical constants are prefixed with {\tt phy\_} to
+minimise name clashes with variables which the user may wish to define,
+although it is not an error for the user to redefine any of the built-in
+variables.
+
+These physical constants make it easy to evaluate physical formulae without
+explicitly looking up their values, as well as having a wide range of other
+uses. For example, the default aspect ratio of plots is the golden ratio,
+$\left((1+\sqrt{5})/2\right)^{-1}$, whose value is also contained in the
+constant {\tt GoldenRatio}.\index{golden ratio} Thus, the statement
+
+\begin{verbatim}
+set size ratio 1/GoldenRatio
+\end{verbatim}
+
+\noindent is entirely equivalent to setting plots to have the automatic aspect
+ratio. To obtain a square grid on a plot of the default aspect ratio, it is
+necessary that the range of the vertical axis should be {\tt 1/GoldenRatio}
+times that of the horizontal axis:
+
+\begin{verbatim}
+x0 = 0 ; y0 = 0; xspan = 2
+set xrange[x0 - xspan/2            :x0 + xspan/2             ]
+set yrange[y0 - xspan/2/GoldenRatio:y0 + xspan/2/GoldenRatio ]
+\end{verbatim}
+
+\section{User-defined Functions}
+\index{function splicing}
+\index{splicing functions}
+
+User-defined functions may be declared on the command line using the following
+syntax:
+
+\begin{verbatim}
+f(x) = x*sin(x)
+\end{verbatim}
+
+\noindent It is also possible to declare functions which are valid only over
+certain ranges of argument space. For example, the following function would
+only be valid within the range $-2<x<2$:\footnote{The syntax {\tt [-2:2]} can
+also be written {\tt [-2 to 2]}.}
+
+\begin{verbatim}
+f(x)[-2:2] = x*sin(x)
+\end{verbatim}
+
+\noindent The following function would only be valid when all of ${a,b,c}$ were
+in the range $-1 \to 1$:
+
+\begin{verbatim}
+f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
+\end{verbatim}
+
+If an attempt is made to evaluate a function outside of its specified range,
+then an error results. This may be useful, for example, for plotting a function
+only within some specified range. The following would plot the function
+$\sinc(x)$, but only in the range $-2<x<7$:
+
+\begin{verbatim}
+f(x)[-2:7] = sin(x)/x
+plot f(x)
+\end{verbatim}
+
+\noindent A similar effect could also have been achieved with the {\tt select}
+keyword; see Section~\ref{sec:select_modifier}.
+
+It is possible to make multiple declarations of the same function, over
+different regions of argument space; if there is an overlap in the valid
+argument space for multiple definitions, then later declarations take
+precedence. This makes it possible to use different functional forms for
+functions in different parts of parameter space, and is especially useful when
+fitting functions to data, if different functional forms are to be spliced
+together to fit different regimes in the data.
+
+Another application of function splicing is to work with functions which do not
+have analytic forms, or which are, by definition, discontinuous, such as
+top-hat functions or Heaviside functions. The following example would define
+$f(x)$ to be a Heaviside function:
+
+\begin{verbatim}
+f(x) = 0
+f(x)[0:] = 1
+\end{verbatim}
+
+\noindent The following example would define $fib(x)$ to follow the Fibonacci
+sequence, though it is not at all computationally efficient, and it is
+inadvisable to evaluate it for $x\gtrsim25$:
+
+\begin{verbatim}
+fib(x) = 1
+fib(x)[2:] = fib(x-1) + fib(x-2)
+plot [0:8] fib(x)
+\end{verbatim}
+
+\noindent The output of this example can be seen in Example~\ref{ex:funcsplice}
+
+\example{ex:funcsplice}{The use of function splicing to calculate the Fibonacci numbers}{
+In this example, we use of function splicing to calculate the Fibonacci numbers
+in an iterative and highly inefficient way, using the knowledge that the zeroth
+and first Fibonacci numbers are both one, and that all subsequent numbers are
+the sums of their two immediate predecessors:
+\nlscf
+\noindent {\tt fib(x) = 1}\newline
+\noindent {\tt fib(x)[2:] = fib(x-1) + fib(x-2)}\newline
+\noindent {\tt plot [0:8] fib(x)}\newline
+\nlfcf
+We compare the result against Binet's formula for the Fibonacci numbers,
+
+\begin{displaymath}
+f(x) = {\psi^x - (1-\psi)^x}{\sqrt{5}},
+\end{displaymath}
+
+\noindent where $\psi=1+\sqrt{5}/2$ is the golden ratio.
+\nlscf
+\begin{center}
+\includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
+\end{center}
+}
+
 \section{Handling Numerical Errors}
 \label{sec:num_errs}
 \index{numerical errors}
@@ -185,7 +309,8 @@ dimensionless number of hours in two seconds:
 print 2*unit(s)/unit(hr)
 \end{verbatim}
 
-\begin{boxout}\index{units!angle}\index{angles, handling of}
+\boxout{A note on the use of the radian is a base unit in PyXPlot.}{box:angles}{
+\index{units!angle}\index{angles, handling of}
 By convention, the SI system of units does not have a base unit of angle:
 instead, the radian is considered to be a dimensionless unit.  There are some
 strong mathematical reasons why this makes sense, since it makes it possible to
@@ -214,8 +339,7 @@ As compensation, the $\exp()$ function and all of the trigonometric functions
 accept either quantities with dimensions of angles, or dimensionless numbers as
 inputs. The second equation above might need some modification, however, since
 it is not possible to add a dimensionless number to an angle.
-\caption{A note on the use of the radian is a base unit in PyXPlot.}
-\end{boxout}
+}
 
 Compound units such as miles per hour, which is defined in terms of two other
 units, can be used thus
@@ -527,130 +651,6 @@ The first case is the default way in which PyXPlot displays numbers. The second
 case produces text which forms a valid algebraic expression which could be
 pasted into another PyXPlot calculation. The final case produces a string of
 \LaTeX\ text which could be used as a label on a plot.
-
-\section{Physical Constants}
-\label{sec:constants}
-\index{physical constants}\index{constants}
-
-A wide range of mathematical and physical constants are defined by default in
-PyXPlot: most of the physical constants are prefixed with {\tt phy\_} to
-minimise name clashes with variables which the user may wish to define,
-although it is not an error for the user to redefine any of the built-in
-variables.
-
-These physical constants make it easy to evaluate physical formulae without
-explicitly looking up their values, as well as having a wide range of other
-uses. For example, the default aspect ratio of plots is the golden ratio,
-$\left((1+\sqrt{5})/2\right)^{-1}$, whose value is also contained in the
-constant {\tt GoldenRatio}.\index{golden ratio} Thus, the statement
-
-\begin{verbatim}
-set size ratio 1/GoldenRatio
-\end{verbatim}
-
-\noindent is entirely equivalent to setting plots to have the automatic aspect
-ratio. To obtain a square grid on a plot of the default aspect ratio, it is
-necessary that the range of the vertical axis should be {\tt 1/GoldenRatio}
-times that of the horizontal axis:
-
-\begin{verbatim}
-x0 = 0 ; y0 = 0; xspan = 2
-set xrange[x0 - xspan/2            :x0 + xspan/2             ]
-set yrange[y0 - xspan/2/GoldenRatio:y0 + xspan/2/GoldenRatio ]
-\end{verbatim}
-
-\section{User-defined Functions}
-\index{function splicing}
-\index{splicing functions}
-
-User-defined functions may be declared on the command line using the following
-syntax:
-
-\begin{verbatim}
-f(x) = x*sin(x)
-\end{verbatim}
-
-\noindent It is also possible to declare functions which are valid only over
-certain ranges of argument space. For example, the following function would
-only be valid within the range $-2<x<2$:\footnote{The syntax {\tt [-2:2]} can
-also be written {\tt [-2 to 2]}.}
-
-\begin{verbatim}
-f(x)[-2:2] = x*sin(x)
-\end{verbatim}
-
-\noindent The following function would only be valid when all of ${a,b,c}$ were
-in the range $-1 \to 1$:
-
-\begin{verbatim}
-f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
-\end{verbatim}
-
-If an attempt is made to evaluate a function outside of its specified range,
-then an error results. This may be useful, for example, for plotting a function
-only within some specified range. The following would plot the function
-$\sinc(x)$, but only in the range $-2<x<7$:
-
-\begin{verbatim}
-f(x)[-2:7] = sin(x)/x
-plot f(x)
-\end{verbatim}
-
-\noindent A similar effect could also have been achieved with the {\tt select}
-keyword; see Section~\ref{sec:select_modifier}.
-
-It is possible to make multiple declarations of the same function, over
-different regions of argument space; if there is an overlap in the valid
-argument space for multiple definitions, then later declarations take
-precedence. This makes it possible to use different functional forms for
-functions in different parts of parameter space, and is especially useful when
-fitting functions to data, if different functional forms are to be spliced
-together to fit different regimes in the data.
-
-Another application of function splicing is to work with functions which do not
-have analytic forms, or which are, by definition, discontinuous, such as
-top-hat functions or Heaviside functions. The following example would define
-$f(x)$ to be a Heaviside function:
-
-\begin{verbatim}
-f(x) = 0
-f(x)[0:] = 1
-\end{verbatim}
-
-\noindent The following example would define $fib(x)$ to follow the Fibonacci
-sequence, though it is not at all computationally efficient, and it is
-inadvisable to evaluate it for $x\gtrsim25$:
-
-\begin{verbatim}
-fib(x) = 1
-fib(x)[2:] = fib(x-1) + fib(x-2)
-plot [0:8] fib(x)
-\end{verbatim}
-
-\noindent The output of this example can be seen in Example~\ref{ex:funcsplice}
-
-\example{ex:funcsplice}{The use of function splicing to calculate the Fibonacci numbers}{
-In this example, we use of function splicing to calculate the Fibonacci numbers
-in an iterative and highly inefficient way, using the knowledge that the zeroth
-and first Fibonacci numbers are both one, and that all subsequent numbers are
-the sums of their two immediate predecessors:
-\nlscf
-\noindent {\tt fib(x) = 1}\newline
-\noindent {\tt fib(x)[2:] = fib(x-1) + fib(x-2)}\newline
-\noindent {\tt plot [0:8] fib(x)}\newline
-\nlfcf
-We compare the result against Binet's formula for the Fibonacci numbers,
-
-\begin{displaymath}
-f(x) = {\psi^x - (1-\psi)^x}{\sqrt{5}},
-\end{displaymath}
-
-\noindent where $\psi=1+\sqrt{5}/2$ is the golden ratio.
-\nlscf
-\begin{center}
-\includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
-\end{center}
-}
 
 \section{Numerical Integration and Differentiation}
 

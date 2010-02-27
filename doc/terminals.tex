@@ -1,0 +1,183 @@
+% TERMINALS.TEX
+%
+% The documentation in this file is part of PyXPlot
+% <http://www.pyxplot.org.uk>
+%
+% Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+%               2009-2010 Ross Church
+%
+% $Id$
+%
+% PyXPlot is free software; you can redistribute it and/or modify it under the
+% terms of the GNU General Public License as published by the Free Software
+% Foundation; either version 2 of the License, or (at your option) any later
+% version.
+%
+% You should have received a copy of the GNU General Public License along with
+% PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+% Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+% ----------------------------------------------------------------------------
+
+% LaTeX source for the PyXPlot Users' Guide
+
+\chapter{Producing Image Files}
+
+\section{Formatting and Terminals}
+\label{sec:set_terminal}
+
+In this section, we describe the commands used to control the format of the
+graphic output produced by PyXPlot. This continues the discussion from
+Section~\ref{sec:directing_output} of how the \indcmdt{set terminal} can be
+used to produce plots in various graphic formats, such as postscript files,
+jpeg images, etc.
+
+Many of these {\it terminals} -- the word we use to describe an output format
+-- accept additional parameters which configure the exact appearance of the
+output produced.  For example, the default terminal, {\tt X11}, which displays
+plots on the screen, has such settings. By default, each time a new plot is
+generated, if the previous plot is still open on the display, the old plot is
+replaced with the new one. This way, only one plot window is open at any one
+time.  This behaviour has the advantage that the desktop does not become
+flooded with plot windows.
+
+If this is not desired, however -- for example if you want to compare two plots
+-- old graphs can be kept visible when plotting further graphs by using the the
+{\tt X11\_MultiWindow} terminal:\index{X11 terminal}\index{multiple windows}
+
+\begin{verbatim}
+set terminal X11_SingleWindow
+plot sin(x)
+plot cos(x)  <-- first plot window disappears
+\end{verbatim}
+
+\noindent c.f.:
+
+\begin{verbatim}
+set terminal X11_MultiWindow
+plot sin(x)
+plot cos(x)  <-- first plot window remains
+\end{verbatim}
+
+As an additional option, the {\tt X11\_Persist} terminal keeps plot windows
+open after PyXPlot exits; the above two terminals close all plot windows upon
+exit.
+
+If the {\tt enlarge} modifier is used with the \indcmdt{set terminal} then the
+whole plot is enlarged, or, in the case of large plots, shrunk, to the current
+paper size, minus a small margin. The aspect ratio of the plot is preserved.
+This is most useful with the {\tt postscript} terminal, when preparing a plot
+to send directly to a printer.
+
+The {\tt set terminal} command takes many options. Its complete syntax is:
+
+\begin{verbatim}
+set terminal { X11_SingleWindow | X11_MultiWindow | X11_Persist |
+               bmp | eps | gif | jpeg | pdf | png | postscript |
+               svg | tiff }
+             { colour | color | monochrome }
+             { dpi <value> }
+             { portrait | landscape }
+             { invert | noinvert }
+             { transparent | solid }
+             { antialias | noantialias }
+             { enlarge | noenlarge }
+\end{verbatim}
+
+The following table lists the effects which each of these settings has:
+
+\begin{longtable}{p{3cm}p{9cm}}
+{\tt X11\_SingleWindow} & Displays plots on the screen (in X11 windows, using \ghostview). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
+{\tt X11\_MultiWindow} & As above, but each new plot appears in a new window, and the old plots remain visible. As many plots as may be desired can be left on the desktop simultaneously.\\
+{\tt X11\_Persist} & As above, but plot windows remain open after PyXPlot closes.\\
+{\tt bmp} & Sends output to a Windows bitmap ({\tt .bmp}) file. The filename for this file should be set using {\tt set output}. This is a bitmap graphics terminal. \index{bmp output}\\
+{\tt eps} & As above, but produces encapsulated postscript.\index{encapsulated postscript}\index{postscript!encapsulated}\\
+{\tt gif} & As above, but produces a gif image. This is a bitmap graphics terminal.\index{gif output}\\
+{\tt jpeg} & As above, but produces a jpeg image. This is a bitmap graphics terminal.\index{jpeg output}\\
+{\tt pdf} & As above, but produces pdf output.\index{pdf output}\\
+{\tt png} & As above, but produces a png image. This is a bitmap graphics terminal.\index{png output}\\
+{\tt postscript} & As above, but sends output to a postscript file. {\bf [default when running non-interactively; see below]}\index{postscript output}\\
+{\tt svg} & As above, but produces an svg image.\footnote{The {\tt svg} output terminal is experimental and may be unstable. It relies upon the use of the {\tt svg} output device in Ghostscript, which may not be present on all systems.}\index{svg output}\\
+{\tt tiff} & As above, but produces a tiff image. This is a bitmap graphics terminal.\index{tiff output}\\
+{\tt colour} & Allows datasets to be plotted in colour. Automatically they will be displayed in a series of different colours, or alternatively colours may be specified using the {\tt with colour} plot modifier (see below). {\bf [default]}\index{colour output}\\
+{\tt color} & Equivalent US spelling of the above. \\
+{\tt monochrome} & Opposite to the above; all datasets will be plotted in black by default.\index{monochrome output}\\
+{\tt portrait} & Sets plots to be displayed in upright (normal) orientation. {\bf [default]}\index{portrait orientation}\\
+{\tt landscape} & Opposite of the above; produces side-ways plots. Not very useful when displayed on the screen, but you fit more on a sheet of paper that way around.\index{landscape orientation}\\
+{\tt invert} & Modifier for the bitmap output terminals identified above -- i.e.\ the {\tt bmp}, {\tt gif}, {\tt jpeg}, {\tt png} and {\tt tiff} terminals -- which produces output with inverted colours.\footnote{This terminal setting is useful for producing plots to embed in talk slideshows, which often contain bright text on a dark background. It only works when producing bitmapped output, though a similar effect can be achieved in postscript using the {\tt set textcolour} and {\tt set axescolour} commands (see Section~\ref{sec:set_colours}).}\index{colours!inverting}\\
+{\tt noinvert} & Modifier for the bitmap output terminals identified above; opposite to the above. {\bf [default]}\\
+{\tt transparent} & Modifier for the {\tt gif} and {\tt png} terminals; produces output with a transparent background.\index{transparent terminal}\index{gif output!transparency}\index{png output!transparency}\\
+{\tt solid} & Modifier for the {\tt gif} and {\tt png} terminals; opposite to the above. {\bf [default]}\\
+{\tt antialias} & Modifier for the bitmap output terminals identified above; produces antialiased output, with colour boundaries smoothed to disguise the effects of pixelisation {\bf [default]}\\
+{\tt noantialias} & Modifier for the bitmap output terminals identified above; opposite to the above\\
+{\tt enlarge} & Enlarge or shrink contents to fit the current paper size.\index{enlarging output}\\
+{\tt noenlarge} & Do not enlarge output; opposite to the above. {\bf [default]}\\
+\end{longtable}
+
+The default terminal is normally {\tt X11\_SingleWindow}, except when PyXPlot
+is used non-interactively -- i.e.\ one or more command scripts are specified on
+the command line, and PyXPlot exits as soon as it finishes executing them. In
+this case, the {\tt X11\_SingleWindow} would not be a very sensible terminal to
+use as any plot window would close as soon as PyXPlot exited. The default
+terminal in this case changes to {\tt postscript}.
+
+This rule does not apply when the special `--' filename is specified in a list
+of command scripts on the command line, where an interactive terminal will
+operate between running a series of scripts. In this case, PyXPlot detects that
+the session will be interactive, and defaults to the usual {\tt
+X11\_SingleWindow} terminal. Conversely, on machines where the {\tt DISPLAY}
+environment variable\index{display environment variable@{\tt DISPLAY}
+environment variable} is not set, PyXPlot detects that it has access to no
+X-terminal on which to display plots, and defaults to the {\tt postscript}
+terminal.
+
+Use of the bitmap output terminals identified in the table above -- i.e.\ the
+{\tt bmp}, {\tt gif}, {\tt jpeg}, {\tt png} and {\tt tiff} terminals --
+inevitably results in some loss of image quality, since the plot has to be
+rasterised into a bitmapped graphic image.  By default, this rasterisation is
+performed at $300\,\mathrm{dpi}$, though this may be changed using the command
+{\tt set terminal dpi <value>}. Alternatively, it may be changed using the {\tt
+DPI} option in the {\tt settings} section of a configuration file (see
+Chapter~\ref{ch:configuration}).\index{set terminal command!dpi modifier@{\tt
+dpi} modifier}\index{bitmap output!resolution}\index{image resolution}
+
+\section{Backing Up Over-Written Files}
+
+\index{overwriting files}\index{backup files}\label{sec:file_backup}
+
+By default, when graphical output is sent to a file -- i.e.\ a postscript file or
+a bitmap image -- pre-existing files are overwritten if their filenames match
+that of the file which PyXPlot generates. This behaviour may be changed with
+the \indcmdt{set backup}, which has the syntax:
+
+\begin{verbatim}
+set backup
+set nobackup
+\end{verbatim}
+
+When this switch is turned on, pre-existing files will be renamed with a tilde
+appended to their filenames, rather than being overwritten.
+
+\section{Paper Sizes}
+\label{sec:set_papersize}
+
+By default, when the postscript terminal produces printable, i.e.\ not
+encapsulated, output, the paper size for this output is read from the user's
+system locale settings. It may be changed, however, with \indcmdt{set
+papersize}, which may be followed either by the name of a recognised paper
+size, or by the dimensions of a user-defined size, specified as a {\tt height},
+{\tt width} pair, both being measured in millimetres. For example:
+
+\begin{verbatim}
+set papersize a4
+set papersize 100,100
+\end{verbatim}
+
+\noindent A complete list of recognised paper size names can be found in
+Appendix~\ref{ch:paper_sizes}.\footnote{Marcus Kuhn has written a very complete
+treatise on international paper sizes, which can be downloaded from:
+\url{http://www.cl.cam.ac.uk/~mgk25/iso-paper.html}. Further details on the
+Swedish extensions to this system, and the Japanese B-series, can be found on
+Wikipedia: \url{http://en.wikipedia.org/wiki/Paper_size}.}\index{Kuhn,
+Marcus}\index{paper sizes}
+

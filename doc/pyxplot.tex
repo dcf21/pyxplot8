@@ -28,18 +28,34 @@
 \input{definitions}
 
 % Make box and example float environments
+\definecolor{LightGrey}{gray}{0.9}
+\usepackage[bf]{caption}
 \usepackage{float}
-\floatstyle{boxed}
-\newfloat{boxout}{thp}{lob}
-\floatname{boxout}{Box}
-
 \floatstyle{plain}
+
+% Make box float environment
+\newfloat{boxout2}{thp}{lob}
+\floatname{boxout2}{Box}
+
+\newcommand{\boxout}[3]{
+\begin{boxout2}
+\begin{tabular}{|>{\columncolor{LightGrey}}l|}
+\hline
+\begin{minipage}{\textwidth}
+\vspace{2.5mm}
+#3
+\vspace{2.5mm}
+\end{minipage} \\
+\hline
+\end{tabular}
+\caption{#1}
+\label{#2}
+\end{boxout2}
+}
+
+% Make example float environment
 \newfloat{exampletag}{thp}{loe}
 \floatname{exampletag}{Example}
-
-\usepackage[bf]{caption}
-
-\definecolor{LightGrey}{gray}{0.9}
 
 \newcommand{\example}[3]{
 %\afterpage{
@@ -107,6 +123,7 @@
 \include{programming}
 \part{Plotting and Vector Graphics}
 \include{plotting}
+\include{terminals}
 \include{vector_graphics}
 \part{Reference Manual}
 \include{reference}

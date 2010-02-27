@@ -98,7 +98,7 @@ Usually a text editor is used to produce PyXPlot command scripts, but the
 \indcmdt{save} may also assist. This stores a history of the commands which
 have been typed into the present interactive session to file.
 
-\begin{boxout}
+\boxout{A list of the command line options accepted by PyXPlot.}{box:CommandSwitches}{
 From the shell command line, PyXPlot accepts the following switches which
 modify its behaviour:\index{command line syntax}
 \vspace{0.5cm}
@@ -111,11 +111,9 @@ modify its behaviour:\index{command line syntax}
 {\tt -c --colour} & Use colour highlighting\footnote{This will only function on terminals which support colour output.} to display output in green, warning messages in amber, and error messages in red.\footnote{The authors apologise to those members of the population who are red/green colourblind, but draws their attention to the following sentence.} These colours can be changed in the {\tt terminal} section of the configuration file; see Section~\ref{sec:configfile_terminal} for more details. \\
 {\tt -m --monochrome} & Do not use colour highlighting, as happens by default. \\
 \end{tabular}
-\caption{A list of the command line options accepted by PyXPlot.}
-\label{box:command_switches}
-\end{boxout}
+}
 
-\begin{boxout}
+\boxout{The storage of command histories in PyXPlot.}{box:CommandHistory}{
 When PyXPlot is used interactively, its command-line environment is based upon
 the GNU Readline Library. This means that the up- and down-arrow keys can be
 used to repeat or modify previously executed commands. Each user's command
@@ -125,9 +123,7 @@ sessions. PyXPlot's \indcmdt{save} allows the user a mechanism for saving a
 list of the commands which have been typed into the present session to a text
 file; this has the following syntax:
 
-\begin{verbatim}
-save 'output_filename.ppl'
-\end{verbatim}
+\noindent {\tt save 'output\_filename.ppl' }
 
 The related \indcmdt{history} outputs to the terminal a history of all of the
 commands which have been typed into this and previous interactive sessions. The
@@ -135,12 +131,8 @@ total history can stretch to several hundred lines long, in which case it can
 be useful to follow the \indcmdt{history} by an optional number, in which case
 it displays the last $n$ commands, e.g.:
 
-\begin{verbatim}
-history 20
-\end{verbatim}
-\caption{The storage of command histories in PyXPlot.}
-\label{box:command_history}
-\end{boxout}
+\noindent {\tt history 20 }
+}
 
 \section{First Plots}
 \label{sec:first_plots}
@@ -660,6 +652,8 @@ plot sin(x) select ($1>0) discontinuous
 \example{ex:select}{An example}{
 Here, we have an example of the use of the {\tt select} modifier.
 }
+
+\section{The {\tt replot} Command}
 
 \section{Directing Where Output Goes}
 
