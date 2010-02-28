@@ -29,5 +29,6 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_intro_legendre.eps"
 
 # Main body of figure script
+set key xcentre
 p [-1:1][:] legendreP(2,x), legendreP(4,x), legendreP(6,x)
 

@@ -235,7 +235,11 @@ Table~\ref{tab:operators_table}.\index{functions!pre-defined}\index{operators}
 {\tt or} & Logical or & left \\
 \end{tabular}}
 \caption{A list of mathematical operators which PyXPlot recognises, in order of
-descending precedence.}
+descending precedence. Items separated by horizontal rules are of differing
+precedence; those not separated by horizontal rules are of equivalent
+precedence. The third column indicates whether strings of operators are
+evaluated from left to right (left), or from right to left (right). For
+example, the expression {\tt x**y**z} is evaluated as {\tt (x**(y**z))}.}
 \label{tab:operators_table}
 \end{table}
 
@@ -837,15 +841,17 @@ Here, we have an example of the errorbars plot style.
 \section{Setting Axis Ranges}
 \label{sec:plot_ranges}
 
-In Section~\ref{sec:first_plots}, the {\tt set xlabel} configuration command
-was previously introduced for placing text labels on axes. In this section, the
-configuration of axes is extended to setting their ranges.
-
 By default, PyXPlot automatically scales axes to some sensible range which
 contains all of the plotted data. However, it is possible for the user to
 override this and set his own range.\index{axes!setting ranges} This can be
-done directly from the plot command, as in the following plot of the first
-three cylindrical Bessel functions:
+done directly from the plot command, by following the word {\tt plot} with the
+syntax {\tt [minimum:maximum]}.\footnote{An alternative valid syntax is to
+replace the colon with the word {\tt to}: {\tt [minimum to maximum]}.} The
+first specified range applies to the $x$-axis, and the second to the
+$y$-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
+further ranges are specified, they apply to the $x2$-axis, then the $y2$-axis,
+and so forth.} In the following example, the first three cylindrical Bessel
+functions are plotting in the range $0<x<10$:
 
 \begin{verbatim}
 plot [0:10][-0.5:1] besselJ(0,x), besselJ(1,x), besselJ(2,x)
@@ -854,26 +860,24 @@ plot [0:10][-0.5:1] besselJ(0,x), besselJ(1,x), besselJ(2,x)
 \includegraphics[width=8cm]{examples/eps/ex_intro_bessel.eps}
 \end{center}
 
-\noindent The ranges are specified immediately after the \indcmdt{plot}, with
-the syntax {\tt [minimum:maximum]}.\footnote{An alternative valid syntax is to
-replace the colon with the word {\tt to}: {\tt [minimum to maximum]}.} The
-first specified range applies to the $x$-axis, and the second to the
-$y$-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
-further ranges are specified, they apply to the $x2$-axis, then the $y2$-axis,
-and so forth.} Any of the values can be omitted, as in the following plot of
+\noindent Any of the values can be omitted, as in the following plot of
 three Legendre polynomials:
 
 \begin{verbatim}
+set key xcentre
 plot [-1:1][:] legendreP(2,x), legendreP(4,x), legendreP(6,x)
 \end{verbatim}
 \begin{center}
 \includegraphics[width=8cm]{examples/eps/ex_intro_legendre.eps}
 \end{center}
 
-\noindent would only set a range on the $y$-axis.
+\noindent Here, we have used the {\tt set key} command to specify that the
+plot's legend should be horizontally aligned in the centre of the plot, to
+complement the symmetry of the Legendre polynomials. This command will be
+described more fully in Section~\ref{sec:legends}.
 
 Alternatively, ranges can be set before the {\tt plot} statement, using the
-\indcmdt{set xrange}, for example:
+\indcmdt{set xrange}, as in the examples:
 
 \begin{verbatim}
 set xrange [-2:2]
@@ -912,11 +916,22 @@ Section~\ref{sec:multiple_axes}.
 
 \example{ex:axislab}{A diagram of the trajectories of projectiles fired with different initial velocities}{
 In this example we produce a diagram of the trajectories of projectiles fired
-by a cannon from the origin with different initial velocities and at different
-angles of inclination.  We first define a function {\tt h}$()$ which gives the
-height of a projectile when it is at a horizontal distance $x$ from the cannon,
-if it is fired at angle $\theta$ to the horizontal and with initial velocity
-$v$. We then plot this function for three different sets of inputs.
+by a cannon at the origin with different initial velocities $v$ and different
+angles of inclination $\theta$. According to the equations of motion under
+constant acceleration, the distance of such a projectile from the origin after
+time $t$ is given by
+\begin{eqnarray*}
+x(t) & = & vt\cos\,\theta \\
+h(t) & = & vt\sin\,\theta + \nicefrac{1}{2}gt^2 \\
+\end{eqnarray*}
+where $x(t)$ is the horizontal displacement of the projectile and $h(t)$ the
+vertical displacement. Eliminating $t$ from these equation gives the expression
+\begin{displaymath}
+h(x) = x\tan\,\theta - \frac{gx^2}{2v^2\cos^2\,\theta}.
+\end{displaymath}
+\nlscf
+In the script below, we plot this function for five different values of $v$ and
+$\theta$.
 \nlscf
 {\footnotesize
 \noindent {\tt g~~~= 9.81~~~~\# Acceleration due to gravity}\newline
@@ -939,9 +954,19 @@ $v$. We then plot this function for three different sets of inputs.
 \noindent {\tt \phantom{xxxxx}h(x,60,15) title "\$$\backslash$theta=60\^{}$\backslash$circ;$\backslash$qquad v=15$\backslash$,\{$\backslash$rm m$\backslash$,s\^{}\{-1\}\}\$"}
 }
 \nlscf
+The resulting plot is shown below:
+\nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_trajectories.eps}
 \end{center}
+\nlscf
+In the next chapter, we will meet various ways in which this script could be
+improved. Here, we have used to numerical constants, {\tt g} being the
+acceleration due to gravity, and {\tt d2r} being a factor for converting angles
+between degrees and radians.  The former is, in fact, already defined within
+PyXPlot as a numerical constant, and the latter conversion can be made using
+PyXPlot's automatic ability to convert numbers between different physical
+units.
 }
 
 \section{Interactive Help}
