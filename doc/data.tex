@@ -612,6 +612,33 @@ uncertainty in this result can be estimated from the Poisson distribution to be
 $1/\sqrt{N}$. In this case, the uncertainty is $0.01$, in close agreement with
 the deviation of the returned value of $3.1352$ from more accurate measures of
 $\pi$.
+\nlnp
+With a little modification, this script can be adapted to produce a diagram of the
+datapoints used in its calculation. Below is a modified version of the second
+half of the script, which loops over the \datapoint s previously stored in the
+\datafile\ {\tt random.dat} which uses PyXPlot's vector graphics commands,
+which will be introduced in Chapter~\ref{ch:vector_graphics}, to produce such a
+diagram:
+
+\nlscf
+\noindent {\tt set multiplot ; set nodisplay}\newline
+\noindent {\tt \# Draw a unit circle and a unit square}\newline
+\noindent {\tt box from -width/2,-width/2 to width/2,width/2}\newline
+\noindent {\tt circle at 0,0 radius width/2 with lt 2}\newline
+\noindent {\tt }\newline
+\noindent {\tt \# Now plot the positions of the random data points}\newline
+\noindent {\tt n=0}\newline
+\noindent {\tt foreach datum i,j in 'random.dat' using 2:3}\newline
+\noindent {\tt \phantom{x}\{}\newline
+\noindent {\tt \phantom{xx}point at width/2*i , width/2*j with ps 0.1}\newline
+\noindent {\tt \phantom{xx}n = n + (hypot(i,j)<1)}\newline
+\noindent {\tt \phantom{x}\}}\newline
+\noindent {\tt set display ; refresh}\newline
+\noindent {\tt }\newline
+\noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }\newline
+\nlscf
+The graphical output from this script is shown below. The number of datapoints
+has been reduced to {\tt Nsamples}$=500$ for clarity:
 \nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_pi_estimation.eps}

@@ -895,10 +895,11 @@ pyxplot> print y
 3.4285714
 \end{verbatim}
 
-When complex arithmetic is enabled, the \indcmdt{solve} allows each fitting
-variable to take any value in the complex plane, and thus the number of
-dimensions of the fitting problem is effectively doubled, as in the following
-example:
+When complex arithmetic is enabled, the \indcmdt{solve} allows each of the
+variables being fitted to take any value in the complex plane, and thus the
+number of dimensions of the fitting problem is effectively doubled -- the real
+and imaginary components of each variable are solved for separately -- as in
+the following example:
 
 \begin{verbatim}
 pyxplot> set numerics complex
