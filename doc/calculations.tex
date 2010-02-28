@@ -948,8 +948,50 @@ guaranteed not to wildly overshoot and produce unexpected results in such
 cases.  To reiterate, it is always advisable to double-check that the answered
 returned agree with common sense.
 
-\example{ex:eqnsolve}{An example}{
-In this example,.
+\example{ex:eqnsolve}{Finding the maximum of a blackbody curve}{
+When a surface is heated to any given temperature $T$, it radiates thermally.
+The amount of electromagnetic radiation emitted at any particular frequency,
+per unit area of surface, per unit frequency of light, is given by the Planck
+Law:
+\begin{displaymath}
+B_\nu(\nu,T)=\left(\frac{2h^3}{c^2}\right)\frac{\nu^3}{\exp(h\nu/kT)-1}
+\end{displaymath}
+The visible surface of the Sun has a temperature of approximately
+$5800\,\mathrm{K}$ and radiates in such a fashion. In this example, we use the
+{\tt solve}, {\tt minimise} and {\tt maximise} commands to locate the frequency
+of light at which it emits the most energy per unit frequency interval.  This
+task is simplified as PyXPlot has a system-defined mathematical function {\tt
+Bv(nu,T)} which evaluates the expression given above.
+\nlnp
+Below, a plot is shown of the Planck Law for $T=5800\,\mathrm{K}$ to aid in
+visualising the solution to this problem:
+\nlscf
+\begin{center}
+\includegraphics[width=\textwidth]{examples/eps/ex_eqnsolve.eps}
+\end{center}
+\nlnp
+To search for the maximum of this function using the \indcmdt{maximise}, we
+must provide an initial guess to indicate that the answer sought should have
+units of Hz:
+\nlscf
+\noindent {\tt pyxplot> nu = 1e14*unit(Hz)}\newline
+\noindent {\tt pyxplot> maximise Bv(nu,5800*unit(K)) via nu}\newline
+\noindent {\tt pyxplot> print nu}\newline
+\noindent {\tt 340.9781 THz}\newline
+\nlnp
+This maximum could also be sought be searching for turning points in the
+function $B_\nu(\nu,T)$, i.e.\ by solving the equation
+\begin{displaymath}
+\frac{\mathrm{d}B_\nu(\nu,T)}{\mathrm{d}\nu}=0.
+\end{displaymath}
+This can be done as follows:
+\nlscf
+\noindent {\tt pyxplot> nu = 1e14*unit(Hz)}\newline
+\noindent {\tt pyxplot> solve diff\_dnu(Bv(nu,5800*unit(K)))=0 via nu}\newline
+\noindent {\tt pyxplot> print nu}\newline
+\noindent {\tt YAY FOR PYXPLOT}\newline
+\nlnp
+foo
 }
 
 \section{Working with Time-Series Data}
