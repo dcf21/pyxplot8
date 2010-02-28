@@ -1,4 +1,4 @@
-# EX_FUNCSPLICE.PPL
+# EX_INTRO_FUNC_SPLICE.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,22 +26,10 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_funcsplice.eps"
+set output "examples/eps/ex_intro_func_splice.eps"
 
 # Main body of figure script
-f(x)     = 0.0
-f(x)[1:] = 1.0
-f(x)[3:] = f(x-1) + f(x-2)
-
-# Binet's Formula for the Fibonacci numbers
-set numerics complex
-binet(x) = Re((GoldenRatio**x - (1-GoldenRatio)**x) / sqrt(5))
-
-set samples 100
-set xrange [0:9.5]
-set yrange [0:35]
-set xlabel "$x$"
-set ylabel "$y$"
-set key bottom right
-plot f(x) , binet(x)
+f(x) = 0
+f(x)[-pi/2:pi/2] = cos(x)
+plot [-pi:pi][-0.1:1.1] f(x) with lines
 

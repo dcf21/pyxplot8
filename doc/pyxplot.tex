@@ -60,13 +60,13 @@
 \newcommand{\example}[3]{
 %\afterpage{
 \upshape\mdseries\rm
-\begin{exampletag}[H]\caption[#2]{#2}\label{#1}\end{exampletag}
+\begin{exampletag}[H]\caption[#2]{#2.}\label{#1}\end{exampletag}
 \vspace{-5mm}
 \begin{longtable}{|>{\columncolor{LightGrey}}p{\textwidth}|}
 \hline \endfoot
 \hline \endhead
 #3
-\end{longtable}\newpage
+\end{longtable}%\newpage
 %}
 }
 

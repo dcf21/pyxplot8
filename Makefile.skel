@@ -36,7 +36,7 @@ MANDIR=${USRDIR}/man/man1
 CWD=$(shell pwd)
 
 VERSION = 0.8.0
-DATE    = 36/15/2012
+DATE    = xx/05/2010
 
 COMPILE = $(CC) -Wall -g `xml2-config --cflags` -c -I $(CWD)/src
 LINK    = $(CC) -Wall -g `xml2-config --libs`   -lm -lgsl -lgslcblas $(LINK_FFTW) -lreadline -lz -lpng -lkpathsea

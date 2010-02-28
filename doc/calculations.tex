@@ -23,144 +23,257 @@
 
 \chapter{Performing Calculations}
 
-This chapter describes how PyXPlot may be used as a sophisticated calculator.
+The previous chapter described how PyXPlot can be used to plot data directly
+from \datafile s onto graphs. Often, however, calculations need to be performed
+on data before it is plotted, and so in this chapter we show the mathematical
+environment which PyXPlot provides for manipulating and perform calculationing
+on data.  For simplicity, throughout this chapter we perform single
+calculations on the values of variables, displaying the results using the {\tt
+print} command, essentially using PyXPlot as a desktop calculator; we will show
+in subsequent chapters examples of the use of this mathematical environment in
+producing plots.
 
 \section{Variables}
 
-In PyXPlot variables that hold numeric values can be assigned using any valid
-mathematical expression.\footnote{PyXPlot also recognises string variables,
-which are discussed in Section~\ref{sect:stringvars}.}  For example:
+Variables can be assigned to hold numerical values using syntax of the form:
 
 \begin{verbatim}
 a = 5.2 * sqrt(64)
 \end{verbatim}
 
-\noindent would assign the value 41.6 to the variable {\tt a}.  Numerical variables can
-subsequently be used in mathematical expressions themselves, for example:
+\noindent which may optionally be written as:\indcmd{let}
 
 \begin{verbatim}
-a=2*pi
-plot [0:1] sin(a*x)
+let a = 5.2 * sqrt(64)
 \end{verbatim}
+
+\noindent Numerical variables can subsequently be used by name in mathematical
+expressions, as in the example:
+
+\begin{verbatim}
+print a / sqrt(64)
+\end{verbatim}
+
+\noindent A variable can subsequently be undefined to have no value using
+syntax of the form:
+
+\begin{verbatim}
+a=
+\end{verbatim}
+
+A list of all variables which are currently defined can be obtained by typing
+{\tt show variables}\indcmd{show variables}. By default quite an extensive list
+is returned, as many physical constants are defined by default in PyXPlot. In
+Section~\ref{sect:stringvars}, we will see that variables can also be set to
+hold string values -- i.e.\ to hold pieces of text -- and that such variables
+can have great power in allowing the user to autogenerate titles and labels for
+graphs.
 
 \section{Physical Constants}
 \label{sec:constants}
 \index{physical constants}\index{constants}
 
 A wide range of mathematical and physical constants are defined by default in
-PyXPlot: most of the physical constants are prefixed with {\tt phy\_} to
-minimise name clashes with variables which the user may wish to define,
-although it is not an error for the user to redefine any of the built-in
-variables.
+PyXPlot. A complete list can be obtained by typing {\tt show variables} or by
+consulting Chapter~\ref{ch:constants}. Some of these, for example, {\tt e},
+{\tt pi} and {\tt GoldenRatio} are standard mathematical constants, the last of
+these being the default aspect ratio of plots produced by PyXPlot. Many of the
+others are physical constants, which are prefixed with {\tt phy\_} to minimise
+clashes between their names and those of variables which the user may wish to
+define.  Nonetheless, pre-defined constants are no different from any other
+variables in PyXPlot, and the user can freely redefine them without this being
+an error.
 
-These physical constants make it easy to evaluate physical formulae without
-explicitly looking up their values, as well as having a wide range of other
-uses. For example, the default aspect ratio of plots is the golden ratio,
-$\left((1+\sqrt{5})/2\right)^{-1}$, whose value is also contained in the
-constant {\tt GoldenRatio}.\index{golden ratio} Thus, the statement
+Most of the pre-defined physical constants are not dimensionless quantities,
+and make use of PyXPlot's native ability to keep track of the physical units of
+quantities and to convert between different unit systems -- for example,
+between inchs and centimetres.  This will be explained in more detail in
+Section~\ref{sec:units}.
+
+\section{Functions}
+
+A large number of standard functions are pre-defined within PyXPlot's
+mathematical environment, ranging from trigonometric functions, to very
+specialised functions, for example to evaluate the phase of the Moon on any
+given day or the size of the Universe in the $\Uplambda_\mathrm{CDM}$
+cosmological model. A complete list of these can be obtained by typing {\tt
+show functions}\indcmd{show functions}, or by consulting
+Chapter~\ref{ch:function_list}. In addition, the user can define his own
+functions using a similar syntax to that used to declare new variables, as in
+the examples:
 
 \begin{verbatim}
-set size ratio 1/GoldenRatio
+f()~~~~= pi
+f(x)~~~= x*sin(x)
+f(x,y)~= x*y
 \end{verbatim}
 
-\noindent is entirely equivalent to setting plots to have the automatic aspect
-ratio. To obtain a square grid on a plot of the default aspect ratio, it is
-necessary that the range of the vertical axis should be {\tt 1/GoldenRatio}
-times that of the horizontal axis:
+A list of all of the user-defined functions which have been set can be found at
+the end of the output of the \indcmdt{show functions}, or can be obtained
+without the list of system-defined functions by typing {\tt show
+userfunctions}\indcmd{show userfunctions}. Unlike in the case of pre-defined
+variables, system-defined functions may not be over-written; trying to define a
+function with the name {\tt sin(x)}, for example, will result in an error.
+
+Once defined, user-defined functions can be undefined by typing, for example:
 
 \begin{verbatim}
-x0 = 0 ; y0 = 0; xspan = 2
-set xrange[x0 - xspan/2            :x0 + xspan/2             ]
-set yrange[y0 - xspan/2/GoldenRatio:y0 + xspan/2/GoldenRatio ]
+f()~=
 \end{verbatim}
 
-\section{User-defined Functions}
+Where the logic required to define a particular function is greater than can be
+contained in a single algebraic expression, a subroutine should be used (see
+Section~\ref{sec:subroutines}); these allow an arbitrary numbers of PyXPlot
+code to be executed whenever a function is evaluated.
+
+\subsection{Spliced Functions}
 \index{function splicing}
 \index{splicing functions}
 
-User-defined functions may be declared on the command line using the following
-syntax:
+Functions can be given definitions which are declared to be valid only within a
+certain range of argument space, or given multiple definitions which are valid
+in different parts of argument space. We term this {\it function splicing},
+since multiple algebraic definitions of a functions are being spliced at the
+boundaries between the variouss regimes.  The following example would define a
+function which is only valid within the range $-2<x<2$:\footnote{The syntax
+{\tt [-2:2]} can also be written {\tt [-2 to 2]}.}
 
 \begin{verbatim}
-f(x) = x*sin(x)
+f(x)[-pi/2:pi/2] = cos(x)
 \end{verbatim}
 
-\noindent It is also possible to declare functions which are valid only over
-certain ranges of argument space. For example, the following function would
-only be valid within the range $-2<x<2$:\footnote{The syntax {\tt [-2:2]} can
-also be written {\tt [-2 to 2]}.}
+\noindent Attempts to evaluate this function outside of the range in which it
+was defined would return an error, that the function is not defined at the
+requested ordinate value. So, if the above function were to be plotted, no line
+would be drawn outside of the range $-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$. A
+similar effect could also have been acheieved using the {\tt select} keyword;
+see Section~\ref{sec:select_modifier}. Commonly, however, the desired behaviour
+is rather that the function should be zero outside of some region of parameter
+space where it has a finite value. This can be achieved as in the following
+example:
 
 \begin{verbatim}
-f(x)[-2:2] = x*sin(x)
+f(x) = 0
+f(x)[-pi/2:pi/2] = cos(x)
 \end{verbatim}
 
-\noindent The following function would only be valid when all of ${a,b,c}$ were
-in the range $-1 \to 1$:
+\noindent Plotting this function would yield the result:
+
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_intro_func_splice.eps}
+\end{center}
+
+\noindent In this example, we have made use of the fact that if there is an
+overlap in the valid argument space for multiple definitions, then later
+declarations take precedence. The definition that the function equals zero is
+valid everywhere, but is overridden in the region
+$-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$ by the second function definition.
+
+Where functions have been spliced together, the {\tt show functions} command
+will show all of the definitions of the spliced function, together with the
+regions of parameter space in which they are used. This is indicated using the
+same syntax as is used for defining spliced functions, such that the output can
+be stored and pasted into a future PyXPlot session to redefine exactly the same
+spliced function.
+
+When a function takes more than one argument, multiple ranges can be specified,
+one for each argument. Any of the limits can be left blank if there is no
+upper- or lower-limit upon the value of a particular argument. In the following
+example, the function {\tt f(a,b,c)} would only be defined when all of {\tt a},
+{\tt b} and {\tt c} were in the range $-1 \to 1$:
 
 \begin{verbatim}
 f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
 \end{verbatim}
 
-If an attempt is made to evaluate a function outside of its specified range,
-then an error results. This may be useful, for example, for plotting a function
-only within some specified range. The following would plot the function
-$\sinc(x)$, but only in the range $-2<x<7$:
-
-\begin{verbatim}
-f(x)[-2:7] = sin(x)/x
-plot f(x)
-\end{verbatim}
-
-\noindent A similar effect could also have been achieved with the {\tt select}
-keyword; see Section~\ref{sec:select_modifier}.
-
-It is possible to make multiple declarations of the same function, over
-different regions of argument space; if there is an overlap in the valid
-argument space for multiple definitions, then later declarations take
-precedence. This makes it possible to use different functional forms for
-functions in different parts of parameter space, and is especially useful when
-fitting functions to data, if different functional forms are to be spliced
-together to fit different regimes in the data.
-
-Another application of function splicing is to work with functions which do not
-have analytic forms, or which are, by definition, discontinuous, such as
-top-hat functions or Heaviside functions. The following example would define
-$f(x)$ to be a Heaviside function:
+Function splicing can be used to define functions which do not have analytic
+forms, or which are, by definition, discontinuous, such as top-hat functions or
+Heaviside functions. The following example would define $f(x)$ to be a
+Heaviside function:
 
 \begin{verbatim}
 f(x) = 0
 f(x)[0:] = 1
 \end{verbatim}
 
-\noindent The following example would define $fib(x)$ to follow the Fibonacci
-sequence, though it is not at all computationally efficient, and it is
-inadvisable to evaluate it for $x\gtrsim25$:
-
-\begin{verbatim}
-fib(x) = 1
-fib(x)[2:] = fib(x-1) + fib(x-2)
-plot [0:8] fib(x)
-\end{verbatim}
-
-\noindent The output of this example can be seen in Example~\ref{ex:funcsplice}
-
-\example{ex:funcsplice}{The use of function splicing to calculate the Fibonacci numbers}{
-In this example, we use of function splicing to calculate the Fibonacci numbers
-in an iterative and highly inefficient way, using the knowledge that the zeroth
-and first Fibonacci numbers are both one, and that all subsequent numbers are
-the sums of their two immediate predecessors:
+\example{ex:funcsplice2}{Modelling a physics problem using a spliced function}{
+In this example we use a spliced function to model a simple physics problem.  A
+light bead is free to move from side to side between two walls which are placed
+at $x=-2l$ and $x=2l$. It is connected to each wall by a light elastic string
+of natural length $l$, which applies a force $k\Updelta x$ when extended by an
+amount $\Updelta x$, but which applies no force when slack. What is the force
+on the bead as a function of its horizontal position $x$?
+\nlnp
+This system has three distinct regimes. In the region $-l<x<l$, both strings
+are under tension. When $x<-l$, the left-hand string is slack, and only the
+right-hand string exerts a force. When $x>l$, the converse is true: only the
+left-hand string exerts a force. The case $|x|>2l$ is not possible, as the bead
+would be penetrate the hard walls. It is left as an exercise for the reader to
+use Hooke's Law to solve this problem, but in summary, the force on the bead
+can be defined in PyXPlot using the expressions:
 \nlscf
-\noindent {\tt fib(x) = 1}\newline
-\noindent {\tt fib(x)[2:] = fib(x-1) + fib(x-2)}\newline
-\noindent {\tt plot [0:8] fib(x)}\newline
+\noindent {\tt F(x)[-2*l~:-~~l]~= -k*(x+l)}\newline
+\noindent {\tt F(x)[-~~l~:~~~l]~= -2*k*x}\newline
+\noindent {\tt F(x)[~~~l~:~2*l]~= -k*(x+l)}\newline
 \nlfcf
-We compare the result against Binet's formula for the Fibonacci numbers,
+where it is necessary to first define a value for {\tt l} and {\tt k}. Plotting
+these functions yields the result:
+\nlscf
+\begin{center}
+\includegraphics[width=\textwidth]{examples/eps/ex_funcsplice2.eps}
+\end{center}
+\nlscf
+Attempting to plot this function with an $x$-axis which extends outside of the
+range of values of $x$ for which $F(x)$ is defined will result in error
+messages being returned that the function could not be evaluated at all
+ordinate values. These can be suppressed by typing (see
+Section~\ref{sec:num_errs}):
+\newline\noindent {\tt set numeric errors quiet}
+}
 
+\example{ex:funcsplice}{Using a spliced function to calculate the Fibonacci numbers}{
+The Fibonacci numbers are defined to be the sequence of numbers in which each
+member is the sum of its two immediate predecessors, and the first three
+members of the sequence are ${0,1,1}$. Thus, the sequence runs
+${0,1,1,2,3,5,8,13,21,34,55,...}$. In this example, we use of function splicing
+to calculate the Fibonacci sequence in an iterative and highly inefficient way,
+by hard-coding the first three members of the sequence, and then using the
+knowledge that all of the subsequent members of the sequence are the sums of
+their two immediate predecessors:
+\nlscf
+\noindent {\tt f(x)     = 0.0}\newline
+\noindent {\tt f(x)[1:] = 1.0}\newline
+\noindent {\tt f(x)[3:] = f(x-1) + f(x-2)}\newline
+\nlfcf
+This method is highly inefficient because each evaluation spawns two further
+evaluations of the function, and so the number of operations required to
+evaluated {\tt f(x)} scales as $2^x$.  It is inadvisable to evaluate it for
+$x\gtrsim25$ unless you're prepared for a long wait.
+\nlnp
+A much more efficient method of calculating the Fibonacci numbers is to use Binet's formula,
 \begin{displaymath}
 f(x) = {\psi^x - (1-\psi)^x}{\sqrt{5}},
 \end{displaymath}
-
-\noindent where $\psi=1+\sqrt{5}/2$ is the golden ratio.
+where $\psi=1+\sqrt{5}/2$ is the golden ratio, which provides an analytic
+expression for the sequence.  In the following script, we compare the values
+returned by these two implementations. We enable complex arithmetic as Binet's
+formula returns complex numbers for non-integer values of $x$.
+\nlscf
+\noindent {\tt f(x)~~~~~= 0.0}\newline
+\noindent {\tt f(x)[1:]~= 1.0}\newline
+\noindent {\tt f(x)[3:]~= f(x-1) + f(x-2)}\newline
+\\
+\noindent {\tt \# Binet's Formula for the Fibonacci numbers}\newline
+\noindent {\tt set numerics complex}\newline
+\noindent {\tt binet(x) = Re((GoldenRatio**x - (1-GoldenRatio)**x) / sqrt(5))}\newline
+\\
+\noindent {\tt set samples 100}\newline
+\noindent {\tt set xrange [0:9.5]}\newline
+\noindent {\tt set yrange [0:35]}\newline
+\noindent {\tt set xlabel "\$x\$"}\newline
+\noindent {\tt set ylabel "\$y\$"}\newline
+\noindent {\tt set key bottom right}\newline
+\noindent {\tt plot f(x) , binet(x)}\newline
 \nlscf
 \begin{center}
 \includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
@@ -249,28 +362,27 @@ print (2 + 3*i       )
 print (2 + 3*sqrt(-1))
 \end{verbatim}
 
-\noindent The former version depends upon the built-in system variable {\tt i}
-being defined to equal $\sqrt{-1}$; the user could stop this from working if he
-had previously typed, for example
-
-\begin{verbatim}
-i=1
-\end{verbatim}
-
-\noindent However, the variable {\tt i} can straightforwardly be returned to
-its default value by typing
+\noindent The former version depends upon the pre-defined system variable {\tt
+i} being defined to equal $\sqrt{-1}$. The user could cause this to stop working,
+of course, by re-defining this variable to have a different value.  However, in
+this case the variable {\tt i} could straightforwardly be returned to its
+default value by typing:
 
 \begin{verbatim}
 i=sqrt(-1)
 \end{verbatim}
 
-Several functions are provided especially for performing manipulations on
-complex numbers. the \indfunt{Re(z)} and \indfunt{Im(z)} functions return
-respectively the real and imaginary parts of a complex number $z$, the
-\indfunt{arg(z)} function returns the complex argument of $z$, and the
-\indfunt{abs(z)} function returns the modulus of $z$.  The
-\indfunt{conjugate(z)} command returns the complex conjugate of $z$.  For
-example:
+\noindent The user can, of course, define any other variable to equal
+$\sqrt{-1}$, thus allowing him to use any other letter, e.g.\ {\tt j}, to
+represent the imaginary component of a number.
+
+Several built-in functions are provided for performing manipulations on complex
+numbers. the \indfunt{Re(z)} and \indfunt{Im(z)} functions return respectively
+the real and imaginary parts of a complex number $z$, the \indfunt{arg(z)}
+function returns the complex argument of $z$, and the \indfunt{abs(z)} function
+returns the modulus of $z$.  The \indfunt{conjugate(z)} command returns the
+complex conjugate of $z$. The following lines of code demonstrate the use of
+these functions:
 
 \begin{verbatim}
 set numeric complex
@@ -709,23 +821,65 @@ numerical calculus routines.
 In this example,.
 }
 
-\section{Equation Solving and Searching for Minima and Maxima}
+\section{Solving Systems of Equations}
 
-The \indcmdt{solve} can be used to solve simple systems of
-equations numerically, as in the following example, which solves a simple pair of
-simultaneous equations of two variables:
+The \indcmdt{solve} can be used to solve simple systems of one or more
+equations numerically. It takes as its arguments a comma-separated list of the
+equations which are to be solved, and a comma-separated list of the variables
+which are to be solved for. The latter should be prefixed by the word {\tt
+via}, to separate it from the list of equations:
 
 \begin{verbatim}
-solve x+y=10, x-y=3 via x,y
+solve <equation 1>,... via <variable 1>, ...
 \end{verbatim}
 
-\noindent As in the {\tt fit} command, the list of variables which should be
-varied to achieve a numerical fit should be supplied as a comma-separated list
-after the word {\tt via}. No output is returned if the numerical solver
+Note that the time taken by the solver dramatically increases with the number
+of variables which are simultaneously solved for, meanwhile the accuracy
+achieved simultaneously decreases. The following example solves a simple pair
+of simultaneous equations of two variables:
+
+\begin{verbatim}
+pyxplot> solve x+y=10, x-y=3 via x,y
+pyxplot> print x
+6.5
+pyxplot> print y
+3.5
+\end{verbatim}
+
+\noindent No output is returned to the terminal if the numerical solver
 succeeds, otherwise an error message is displayed. If any of the fitting
 variables are already defined prior to the \indcmdt{solve} being called, their
-values are used as initial guesses, otherwise an initial guess of unity for each
-fitting variable is assumed.
+values are used as initial guesses, otherwise an initial guess of unity for
+each fitting variable is assumed. Thus, the same \indcmdt{solve} returns two
+different values in the following two cases:
+
+\begin{verbatim}
+pyxplot> x= # Undefine x
+pyxplot> solve cos(x)=0 via x
+pyxplot> print x/pi
+0.5
+pyxplot> x=10
+pyxplot> solve cos(x)=0 via x
+pyxplot> print x/pi
+3.5
+\end{verbatim}
+
+\noindent In cases where any of the variables being solved for are not
+dimensionless, it is essential that an initial guess with appropriate units be
+supplied, otherwise the solver will try and fail to solve the system of
+equations using dimensionless values:
+
+\begin{dontdo}
+x =\newline
+y = 5*unit(km)\newline
+solve x=y via x
+\end{dontdo}
+
+\begin{dodo}
+x = unit(m)\newline
+y = 5*unit(km)\newline
+solve x=y via x
+\end{dodo}
 
 The \indcmdt{solve} works by minimising the squares of the residuals of all of the
 equations supplied, and so even when no exact solution can be found, the best
@@ -734,7 +888,11 @@ three equations with two variables is over-constrained -- but PyXPlot
 nonetheless finds a compromise solution:
 
 \begin{verbatim}
-solve x+y=10, x-y=3, 2*x+y=16 via x,y
+pyxplot> solve x+y=10, x-y=3, 2*x+y=16 via x,y
+pyxplot> print x
+6.3571429
+pyxplot> print y
+3.4285714
 \end{verbatim}
 
 When complex arithmetic is enabled, the \indcmdt{solve} allows each fitting
@@ -743,37 +901,52 @@ dimensions of the fitting problem is effectively doubled, as in the following
 example:
 
 \begin{verbatim}
-set numerics complex
-solve abs(x)=2, arg(x)=90*unit(deg) via x
+pyxplot> set numerics complex
+pyxplot> solve exp(x)=e*i via x
+pyxplot> print Re(x)
+1
+pyxplot> print Im(x)/pi
+0.5
 \end{verbatim}
 
-The related \indcmd{minimise}\indcmd{maximise} {\tt minimise} and {\tt
-maximise} commands can be used to find the minima or maxima of algebraic
-expressions, for example:
+\section{Searching for Minima and Maxima of Functions}
+
+The \indcmd{minimise}\indcmd{maximise} {\tt minimise} and {\tt maximise}
+commands can be used to find the minima or maxima of algebraic expressions. In
+each case, a single algebraic expression should be supplied for optimisation,
+together with a comma-separated list of the variables which is should be
+optimised with respect to. In the following example, a minimum of the
+sinusoidal function $\cos(x)$ is sought:
 
 \begin{verbatim}
-x=0.1
-minimise cos(x) via x
+pyxplot> set numerics real
+pyxplot> x=0.1
+pyxplot> minimise cos(x) via x
+pyxplot> print x/pi
+1
 \end{verbatim}
 
-\noindent Note that this example doesn't work when complex arithmetic is
-enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty i$.
+\noindent Note that this particular example doesn't work when complex
+arithmetic is enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty
+i$, and this is correctly identified by PyXPlot as the global minimum of the
+function when complex numbers are allowed.
 
-Various caveats apply to all of the commands discussed in this section, which
-are common to almost all numerical equation solvers. The {\tt solve}, {\tt
-minimise} and {\tt maximise} commands can only claim to return the {\it
-locally} optimum solution which is closest to the supplied initial guess, and
-this may or may not be the {\it globally} optimum solution.
+Various caveats apply both to the {\tt minimise} and {\tt maximise} commands,
+as well as to the {\tt solve} command.  All of these commands operate by
+searching numerically for optimal sets of input parameters to meet the criteria
+set by the user. As with all numerical algorithms, there is no guarantee that
+the {\it locally} optimum solutions returned are the {\it globally} optimum
+solutions. It is always advisable to double-check that the answered returned
+agree with common sense.
 
-Furthermore, these commands usually work best when the optimum value they are
-searching for is of order unity, and if the convergence radius of this solution
-is of at least similar magnitude. PyXPlot does attempt to correct cases where
-the supplied initial guess turns out to be many orders of magnitude different
-from the true solution, but cannot be guaranteed in these cases not to wildly
-overshoot and produce unexpected results.
-
-Wherever possible, it is strongly advised that the results returned by these
-numerical solvers should be sanity checked.
+These commands can often find solutions to equations when these solutions are
+either very large or very small, but they usually work best when the solution
+they are looking for is roughly of order unity.  PyXPlot does have mechanisms
+which attempt to correct cases where the supplied initial guess turns out to be
+many orders of magnitude different from the true solution, but it cannot be
+guaranteed not to wildly overshoot and produce unexpected results in such
+cases.  To reiterate, it is always advisable to double-check that the answered
+returned agree with common sense.
 
 \example{ex:eqnsolve}{An example}{
 In this example,.
