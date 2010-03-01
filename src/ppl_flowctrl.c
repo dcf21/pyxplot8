@@ -276,6 +276,7 @@ int directive_for(Dict *command, int IterLevel)
   value     *end;
   value     *step;
   value     *iterval;
+  double     itervalD;
   value      step_dummy;
   unsigned char backwards;
   char      *cptr;
@@ -323,6 +324,7 @@ int directive_for(Dict *command, int IterLevel)
 
   DictAppendValue(_ppl_UserSpace_Vars , loopvar , *start);
   DictLookup     (_ppl_UserSpace_Vars , loopvar , NULL, (void *)&iterval);
+  itervalD = start->real;
 
   // Set loop name, if we have one
   DictLookup(command,"loopname",NULL,(void **)(&cptr));
@@ -337,7 +339,9 @@ int directive_for(Dict *command, int IterLevel)
     if (PPL_FLOWCTRL_BROKEN) { if ((PPL_FLOWCTRL_BREAKLEVEL<0)||(PPL_FLOWCTRL_BREAKLEVEL==IterLevel)) PPL_FLOWCTRL_BROKEN=0; break; }
     if (PPL_FLOWCTRL_RETURNED) break;
     if (status) break;
-    iterval->real += step->real;
+    itervalD += step->real;
+    *iterval = *start;
+    iterval->real += itervalD;
    }
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   return status;
