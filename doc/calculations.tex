@@ -214,7 +214,7 @@ can be defined in PyXPlot using the expressions:
 \nlscf
 \noindent {\tt F(x)[-2*l~:-~~l]~= -k*(x+l)}\newline
 \noindent {\tt F(x)[-~~l~:~~~l]~= -2*k*x}\newline
-\noindent {\tt F(x)[~~~l~:~2*l]~= -k*(x+l)}\newline
+\noindent {\tt F(x)[~~~l~:~2*l]~= -k*(x+l)}
 \nlfcf
 where it is necessary to first define a value for {\tt l} and {\tt k}. Plotting
 these functions yields the result:
@@ -243,7 +243,7 @@ their two immediate predecessors:
 \nlscf
 \noindent {\tt f(x)     = 0.0}\newline
 \noindent {\tt f(x)[1:] = 1.0}\newline
-\noindent {\tt f(x)[3:] = f(x-1) + f(x-2)}\newline
+\noindent {\tt f(x)[3:] = f(x-1) + f(x-2)}
 \nlfcf
 This method is highly inefficient because each evaluation spawns two further
 evaluations of the function, and so the number of operations required to
@@ -273,7 +273,7 @@ formula returns complex numbers for non-integer values of $x$.
 \noindent {\tt set xlabel "\$x\$"}\newline
 \noindent {\tt set ylabel "\$y\$"}\newline
 \noindent {\tt set key bottom right}\newline
-\noindent {\tt plot f(x) , binet(x)}\newline
+\noindent {\tt plot f(x) , binet(x)}
 \nlscf
 \begin{center}
 \includegraphics[width=\textwidth]{examples/eps/ex_funcsplice.eps}
@@ -788,22 +788,22 @@ optional parameters. The first is the expression to be differentiated, which,
 as above, may optionally placed in quotes for clarity. This should be followed
 by the numerical value of the dummy variable at the point where the given
 expression is to be differentiated. This value may have any physical
-dimensions, and may be a complex number. When complex arithmetic is enabled,
-PyXPlot checks that the function being differentiated satisfies the
-Cauchy-Riemann equations, and returns an error if it does not to indicate that it
-is not differentiable.  The final, optional, parameter to the {\tt diff\_dx()}
-function is an approximate step size which indicates the range of argument
-values over which PyXPlot should take samples to determine the gradient. If no
-value is supplied, a value of $10^{-6}$ is used.  The following example would
-evaluate the differential of the function $\cos(x)$ with respect to $x$ at
-$x=1.0$:
+dimensions, and may be a complex number if complex arithmetic is enabled. The
+final, optional, parameter to the {\tt diff\_dx()} function is an approximate
+step size which indicates the range of argument values over which PyXPlot
+should take samples to determine the gradient. If no value is supplied, a value
+of $10^{-6}$ is used.  The following example would evaluate the differential of
+the function $\cos(x)$ with respect to $x$ at $x=1.0$:
 
 \begin{dodo}
 print diff\_dx('cos(x)', 1.0)
 \end{dodo}
 
-The following is an example of a function which is not differentiable, and
-which throws an error because the Cauchy-Riemann equations are not satisfied:
+When complex arithmetic is enabled, PyXPlot checks that the function being
+differentiated satisfies the Cauchy-Riemann equations, and returns an error if
+it does not to indicate that it is not differentiable.  The following is an
+example of a function which is not differentiable, and which throws an error
+because the Cauchy-Riemann equations are not satisfied:
 
 \begin{dontdo}
 set num comp\newline
@@ -978,7 +978,7 @@ units of Hz:
 \noindent {\tt pyxplot> nu = 1e14*unit(Hz)}\newline
 \noindent {\tt pyxplot> maximise Bv(nu,5800*unit(K)) via nu}\newline
 \noindent {\tt pyxplot> print nu}\newline
-\noindent {\tt 340.9781 THz}\newline
+\noindent {\tt 340.9781 THz}
 \nlnp
 This maximum could also be sought be searching for turning points in the
 function $B_\nu(\nu,T)$, i.e.\ by solving the equation
@@ -990,7 +990,7 @@ This can be done as follows:
 \noindent {\tt pyxplot> nu = 1e14*unit(Hz)}\newline
 \noindent {\tt pyxplot> solve diff\_dnu(Bv(nu,5800*unit(K)))=0 via nu}\newline
 \noindent {\tt pyxplot> print nu}\newline
-\noindent {\tt YAY FOR PYXPLOT}\newline
+\noindent {\tt YAY FOR PYXPLOT}
 \nlnp
 foo
 }

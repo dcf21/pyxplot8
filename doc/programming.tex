@@ -165,6 +165,7 @@ foreach x in (-1,pi,10)
 \noindent would print out the numbers $-1$, $\pi$ and 10.
 
 \section{Foreach Datum Loops}
+\label{sec:foreach_datum}
 
 \section{While and Do Loops}
 
@@ -203,10 +204,27 @@ while (1)
 \end{verbatim}
 
 \example{ex:mandelbrot}{A script to produce an ASCII-art representation of the Mandelbrot Set}{
-In this example, we use all of PyXPlot's loop constructs together in a script
-which calculates the Mandelbrot Set and outputs an ASCII-art representation of
-it to the terminal. Insert details about what the Mandelbrot Set is. The script
-is as follows:
+The Mandelbrot set is a set of points in the complex plane, whose boundary
+forms a fractal. It is an iconic image of the power of chaos theory to produce
+complicated structure out of simple algorithms, and so we now use all of
+PyXPlot's loop constructs together in a script which produces an image of the
+fractal.
+\nlnp
+A point $c$ in the complex plane is defined to lie within the Mandelbrot set if the complex sequence of numbers
+\begin{displaymath}
+z_{n+1} = z_n^2 + c,
+\end{displaymath}
+subject to the starting condition $z_0=0$, remains bounded. In practice, the
+sequence is certain to diverge if $|z_n|$ ever exceeds~2.  It cannot generally
+be proven not to diverge at any particular point, but is declared to remain
+bounded in our algorithm if $|z_n|$ has not exceeded~2 within a certain number
+{\tt StepsMax} of steps. To increase the aesthetic appeal of the fractal,
+pixels outside of the fractal are assigned different colours depending upon how
+many iterations were required before the sequence moved outside the circle
+$|z_n|=2$.
+\nlnp
+This script makes use of the \indcmdt{rectangle}, which will be introduced in
+Section~\ref{sec:rectangle}.
 \nlscf
 \noindent {\tt set~multiplot }\newline
 \noindent {\tt set~nodisplay }\newline
@@ -222,7 +240,7 @@ is as follows:
 \noindent {\tt \phantom{xxxx}while~(abs(z)<2)~and~(iter<StepsMax)~$\backslash$ }\newline
 \noindent {\tt \phantom{xxxxxxxx}\{~;~z~=~z**2~+~zi~;~iter=iter+1~;~\} }\newline
 \noindent {\tt \phantom{xxxx}cd~=~(1-iter/StepsMax)*256 }\newline
-\noindent {\tt \phantom{xxxx}rect~from~xn,yn~to~xn+0.21,yn+0.21~with~col~null~$\backslash$ }\newline
+\noindent {\tt \phantom{xxxx}rectangle~from~xn,yn~to~xn+0.21,yn+0.21~with~col~null~$\backslash$ }\newline
 \noindent {\tt \phantom{xxxxxxxxxxx}fillc~rgb(cd):(cd):(cd) }\newline
 \noindent {\tt \phantom{xxxx}xn=xn+0.2 }\newline
 \noindent {\tt \phantom{xxx}\} }\newline
@@ -232,6 +250,8 @@ is as follows:
 \noindent {\tt \#~Display~output }\newline
 \noindent {\tt set~display }\newline
 \noindent {\tt refresh }\newline
+\nlscf
+The resulting image is shown below:
 \nlscf
 \begin{center}
 \includegraphics[width=8cm]{examples/eps/ex_mandelbrot.eps}

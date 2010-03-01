@@ -446,14 +446,59 @@ transformed. The ordinate values must strictly match those in the raster
 specified in the {\tt fft} or {\tt ifft} command, and must be arranged strictly
 in row-major order.
 
-\example{ex:fourier}{An example}{
-In this example,.\\
+\example{ex:fourier}{The Fourier transform of a top-hat function}{
+It is straightforward to show that the Fourier transform of a top-hat function
+of unit width is the function $\sinc(x)=\sin(\pi x)/\pi x$. If
+\begin{displaymath}
+f(x)=\left\{\begin{array}{l}1\;|x|\leq\nicefrac{1}{2}\\0\;|x|>\nicefrac{1}{2}\end{array}\right. ,
+\end{displaymath}
+then the Fourier transform $F(\omega)$ of $f(x)$ is
+\begin{eqnarray*}
+F(\omega) & = & \int_0^\infty f(x) \exp \left(-2\pi ix\omega\right) \,\mathrm{d}x
+            =   \int_{-\nicefrac{1}{2}}^{\nicefrac{1}{2}} \exp\left(-2\pi ix\omega\right) \,\mathrm{d}x
+\\        & = & \frac{1}{2\pi\omega}\left[ \exp\left(\pi i\omega\right) - \exp\left(-\pi i\omega\right) \right]
+            = \frac{\sin(\pi\omega)}{\pi\omega}
+            = \sinc(\omega).
+\end{eqnarray*}
+\nlnp
+In this example, we demonstrate this by taking the Fourier transform of such a
+step function, and comparing the result against the function {\tt sinc(x)}
+which is pre-defined within PyXPlot:
+\nlscf
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt step(x) = tophat(x,0.5)}\newline
+\noindent{\tt fft [-1:1:0.01] f() of step()}\newline
+\noindent{\tt plot [-10:10] Re(f(x)), sinc(x)}
+\nlscf
+Note that the function {\tt Re(x)} is needed in the {\tt plot} statement here,
+since although the Fourier transform of a symmetric function is in theory real,
+in practice any numerical Fourier transform will yield a small imaginary
+component at the level of the accuracy of the numerical method used. Although
+the calculated numerical Fourier transform is defined throughout the range
+$-50\leq x<50$, discretised with steps of size $\Updelta x=0.5$, we only plot
+the central region in order to clearly show the stepping of the function:
+\nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_fft.eps}
-\end{center}\\
+\end{center}
+\nlscf
+In the following steps, we take the square of the function $\sinc(x)$ just
+calculated, and then plot the numerical inverse Fourier transform of the
+result:
+\nlscf
+\noindent{\tt g(x) = f(x)**2}\newline
+\noindent{\tt ifft [-50:49.5:0.5] h(x) of g(x)}\newline
+\noindent{\tt plot [-2:2] Re(h(x))}
+\nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_fft2.eps}
 \end{center}
+\nlscf
+As can be seen, the result is a triangle function. This is the result which
+would be expected from the convolution theorem, which states that when the
+Fourier transforms of two functions are multiplied together and then inverse
+transformed, the result is the convolution of the two original functions. The
+convolution of a top-hat function with itself is, indeed, a triangle function.
 }
 
 \subsection{Window Functions}
@@ -589,8 +634,9 @@ lie within the unit circle equal the ratio of these two areas: $\pi/4$.
 The following script performs this calculation using $N=5000$~randomly placed
 samples. First, the positions of the random samples are generated using the
 {\tt random()} function, and output to a file called {\tt random.dat} using the
-{\tt tabulate} command. Then, the {\tt foreach datum} command is used to loop
-over these, counting how many lie within the unit circle.
+{\tt tabulate} command. Then, the {\tt foreach datum} command -- which will be
+introduced in Section~\ref{sec:foreach_datum} -- is used to loop over these,
+counting how many lie within the unit circle.
 \nlscf
 \noindent {\tt Nsamples = 5000 }\newline
 \noindent {\tt }\newline

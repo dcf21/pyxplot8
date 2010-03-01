@@ -395,6 +395,7 @@ eps 'filename' at 3,2 rotate 5
 $(3,2)$\,cm from the origin, rotated counter-clockwise through 5 degrees.
 
 \subsection{The {\tt box} and {\tt circle} Commands}
+\label{sec:rectangle}
 
 Rectangular boxes and circles may be placed on multiplot canvases
 using the {\tt box} and {\tt circle} commands\indcmd{box}\indcmd{circle}, as
@@ -721,7 +722,26 @@ The resulting diagram is shown below:
 \label{sec:piechart}
 
 \example{ex:piechart}{A piechart of the composition of the Universe}{
-foo
+It is the beginning of many a news story about cosmology. Astronomers tell us
+that of the material which makes up the Universe, only 4\% is in the form of
+the baryonic matter which we know and love. The rest is composed of dark matter
+(22\%) and dark energy (74\%). That is all very well, though, of course, rather
+few people were actually aware until a few seconds ago that they were made up
+of stuff called baryonic matter at all. And then, of course, comes the next
+obvious question, ``So what is dark matter and dark energy?''. And there,
+sadly, the story ends.  Dark energy is... well... it's the number in the
+equations which makes the cosmology work.
+\nlnp
+But rest assured. While cosmologists work on the problem, PyXPlot can plot
+piecharts of the composition of the Universe:
+\nlscf
+\noindent{\tt set palette grey40, grey60, grey80}\newline
+\noindent{\tt set width 6}\newline
+\noindent{\tt piechart '--' using \$1 label key "\%s"\%(\$2)}\newline
+\noindent{\tt 0.22 Dark$\sim$Matter}\newline
+\noindent{\tt 0.04 Baryonic$\sim$Matter}\newline
+\noindent{\tt 0.74 Dark$\sim$Energy}\newline
+\noindent{\tt END}
 \nlscf
 \centerline{\includegraphics{examples/eps/ex_piechart.eps}}
 \nlfcf
