@@ -147,6 +147,7 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
       for (yrn=0; yrn<=(                         (ya!=NULL)  ? ya->AxisValueTurnings : 0); yrn++)
       for (zrn=0; zrn<=((x->current->ThreeDim && (za!=NULL)) ? za->AxisValueTurnings : 0); zrn++)
       {
+       double xgap,ygap,xgap2,ygap2;
        eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin, yin, zin, xa, ya, za, xrn, yrn, zrn, &x->current->settings, origin_x, origin_y, width, height, width, 0);
        ADD_PAGE_COORDINATES(li->system_x, li->x, theta_x);
        ADD_PAGE_COORDINATES(li->system_y, li->y, theta_y);
@@ -155,10 +156,14 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        else                 hal = x->current->settings.TextHAlign;
        if (li->VAlign != 0) val = li->VAlign;
        else                 val = x->current->settings.TextVAlign;
+       xgap  = -(hal - SW_HALIGN_CENT) * li->gap;
+       ygap  =  (val - SW_VALIGN_CENT) * li->gap;
+       xgap2 = xgap*cos(li->rotation) - ygap*sin(li->rotation);
+       ygap2 = xgap*sin(li->rotation) + ygap*cos(li->rotation);
        with_words_merge(&ww, &li->style, &ww_default, NULL, NULL, NULL, 1);
        eps_core_SetColour(x, &ww, 1);
        IF_NOT_INVISIBLE if ((gsl_finite(xpos))&&(gsl_finite(ypos)))
-           canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS, ypos/M_TO_PS, hal, val, x->LastEPSColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
+           canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS+xgap2, ypos/M_TO_PS+ygap2, hal, val, x->LastEPSColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
       }
      pageno++;
     }

@@ -835,10 +835,82 @@ set textvalign top
 \end{verbatim}
 
 \example{ex:hlines}{A diagram of the atomic lines of hydrogen}{
-A diagram...
+foobar
+\nlscf
+{\footnotesize
+\noindent{\tt set numeric display latex}\newline
+\noindent{\tt set width 20}\newline
+\noindent{\tt set size ratio 0.4}\newline
+\noindent{\tt set numerics sf 4}\newline
+\noindent{\tt set log x}\newline
+\noindent{\tt set x1label "Wavelength"}\newline
+\noindent{\tt set x2label "Frequency"     ; set unit of frequency Hz}\newline
+\noindent{\tt set x3label "Photon Energy" ; set unit of energy eV}\newline
+\noindent{\tt set axis x2 linked x1 using phy\_c/x}\newline
+\noindent{\tt set axis x3 linked x2 using phy\_h*x}\newline
+\noindent{\tt set noytics ; set nomytics}\newline
+}\\{\footnotesize
+\noindent{\tt \# Draw lines of first four series of hydrogen lines}\newline
+\noindent{\tt an=2}\newline
+\noindent{\tt n=1}\newline
+\noindent{\tt foreach SeriesName in ("Ly","Ba","Pa","Br")}\newline
+\noindent{\tt \phantom{x}\{}\newline
+\noindent{\tt \phantom{xx}for m=n+1 to n+21}\newline
+\noindent{\tt \phantom{xxx}\{}\newline
+\noindent{\tt \phantom{xxxx}wl = 1/(phy\_Ry*(1/n**2-1/m**2))}\newline
+\noindent{\tt \phantom{xxxx}set arrow an from wl,0.3 to wl,0.6 with nohead col n}\newline
+\noindent{\tt \phantom{xxxx}if (m-n==1) \{ ; GreekLetter = "$\backslash$$\backslash$alpha" ; \}}\newline
+\noindent{\tt \phantom{xxxx}if (m-n==2) \{ ; GreekLetter = "$\backslash$$\backslash$beta"  ; \}}\newline
+\noindent{\tt \phantom{xxxx}if (m-n==3) \{ ; GreekLetter = "$\backslash$$\backslash$gamma" ; \}}\newline
+\noindent{\tt \phantom{xxxx}if (m-n$<$4)}\newline
+\noindent{\tt \phantom{xxxxx}\{}\newline
+\noindent{\tt \phantom{xxxxxx}set label an "$\backslash$parbox\{5cm\}\{$\backslash$footnotesize$\backslash$center\{$\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxx}\%s-\$\%s\$$\backslash$$\backslash$newline \$\%d$\backslash$to\%d\$$\backslash$$\backslash$newline \%s$\backslash$$\backslash$newline\}\}" $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxx}\%(SeriesName,GreekLetter,n,m,wl) at wl,0.55+0.2*(m-n) $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxx}hal centre val centre}\newline
+\noindent{\tt \phantom{xxxxx}\}}\newline
+\noindent{\tt \phantom{xxxx}an = an+1}\newline
+\noindent{\tt \phantom{xxx}\}}\newline
+\noindent{\tt \phantom{xx}n=n+1}\newline
+\noindent{\tt \phantom{x}\}}\newline
+}\\{\footnotesize
+\noindent{\tt \# Label astronomical photometric colours}\newline
+\noindent{\tt foreach datum i,name,wl\_c,wl\_w in "--" using $\backslash$}\newline
+\noindent{\tt \phantom{xxxx}1:"\%s"\%(\$2):(\$3*unit(nm)):(\$4*unit(nm))}\newline
+\noindent{\tt \phantom{x}\{}\newline
+\noindent{\tt \phantom{xx}arry = 0.12+0.1*(i\%2) \# Vertical positions for arrows}\newline
+\noindent{\tt \phantom{xx}laby = 0.07+0.1*(i\%2) \# Vertical positions for labels}\newline
+\noindent{\tt \phantom{xx}x0 = (wl\_c-wl\_w/2) \# Shortward end of passband}\newline
+\noindent{\tt \phantom{xx}x1 =  wl\_c         \# Centre of passband}\newline
+\noindent{\tt \phantom{xx}x2 = (wl\_c+wl\_w/2) \# Longward end of passband}\newline
+\noindent{\tt \phantom{xx}set arrow an from x0,arry to x2,arry with nohead}\newline
+\noindent{\tt \phantom{xx}set label an name at x1,laby hal centre val centre}\newline
+\noindent{\tt \phantom{xx}an = an+1}\newline
+\noindent{\tt \phantom{x}\}}\newline
+\noindent{\tt \phantom{x}1 U  365   66}\newline
+\noindent{\tt \phantom{x}2 B  445   94}\newline
+\noindent{\tt \phantom{x}3 V  551   88}\newline
+\noindent{\tt \phantom{x}4 R  658  138}\newline
+\noindent{\tt \phantom{x}5 I  806  149}\newline
+\noindent{\tt \phantom{x}6 J 1220  213}\newline
+\noindent{\tt \phantom{x}7 H 1630  307}\newline
+\noindent{\tt \phantom{x}8 K 2190  390}\newline
+\noindent{\tt \phantom{x}9 L 3450  472}\newline
+\noindent{\tt 10 M 4750  460}\newline
+\noindent{\tt END}\newline
+}\\{\footnotesize
+\noindent{\tt \# Draw a marker for the Lyman limit}\newline
+\noindent{\tt ll = 91.1267*unit(nm)}\newline
+\noindent{\tt set arrow 1 from ll,0.12 to ll,0.22}\newline
+\noindent{\tt set label 1 "Lyman Limit: \%s"\%(ll) at 95*unit(nm),0.17 $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}hal left val centre}\newline
+}\\{\footnotesize
+\noindent{\tt \# Finally produce plot}\newline
+\noindent{\tt plot [80*unit(nm):5500*unit(nm)][0:1.25]}\newline
+}
 \nlscf
 \begin{center}
-\includegraphics[width=\textwidth]{examples/eps/ex_hlines.eps}
+\includegraphics[width=11cm]{examples/eps/ex_hlines.eps}
 \end{center}
 }
 

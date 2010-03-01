@@ -146,8 +146,8 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
 // Simultaneously update usage with UUU and check whether position is within range
 #define UUF(X,Y) \
 { \
- UUC(X,Y) \
- UUU(X,Y) \
+ UUC(X,logaxis?exp(Y):(Y)) \
+ UUU(X,logaxis?exp(Y):(Y)) \
 }
 
 // Reset flags used to test whether a datapoint is within range before using it to update ranges of other axes
@@ -184,7 +184,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
  {
   int i, j, Ncolumns;
   double z;
-  double ptAx, ptBx, ptCx;
+  double ptAx, ptBx, ptCx, lasty;
   unsigned char ptAset=0, ptBset=0, ptCset=0;
   unsigned char InRange, PartiallyInRange, InRangeMemory;
   DataBlock *blk;
@@ -335,10 +335,11 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
       else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))
        {
         // Boxes and steps need slightly more complicated logic to take into account finite width of boxes/steps
+        unsigned char logaxis = (a1->log==SW_BOOL_TRUE);
         UUC(a2, UUR(1)); // y-coordinates are easy
         ptAx=ptBx; ptAset=ptBset;
         ptBx=ptCx; ptBset=ptCset;
-        ptCx=UUR(0); ptCset=1;
+        ptCx=logaxis?log(UUR(0)):(UUR(0)); ptCset=1;
         if (ptBset)
          {
           if (ptAset) // We are processing a box in the midst of many
@@ -359,6 +360,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
            }
          }
         UUU(a2, UUR(1)); // y-coordinates are easy  
+        lasty = UUR(1);
        }
       i++;
      }
@@ -368,20 +370,23 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
   // Logic to take account of final boxes/steps
   if (ptAset && ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS)))
    {
+    unsigned char logaxis = (a1->log==SW_BOOL_TRUE);
+    UUC_RESET;
+    UUC(a2, lasty);
     if (ptBset) // We have one final box/step to process
      {
-            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUU(a1, (ptCx - (ptCx-ptBx)/2      )); UUU(a1, (ptCx + (ptCx-ptBx)/2      )); }
-            else if (style == SW_STYLE_BOXES)                                 { UUU(a1, (ptCx - sg->BoxWidth.real/2)); UUU(a1, (ptCx + sg->BoxWidth.real/2)); }
-            else if (style == SW_STYLE_HISTEPS)                               { UUU(a1, (ptCx - (ptCx-ptBx)/2      )); UUU(a1, (ptCx + (ptCx-ptBx)/2      )); }
-            else if (style == SW_STYLE_STEPS)  { UUU(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUU(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
-            else if (style == SW_STYLE_FSTEPS) { UUU(a1, ptCx); }
+            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, (ptCx - (ptCx-ptBx)/2      )); UUF(a1, (ptCx + (ptCx-ptBx)/2      )); }
+            else if (style == SW_STYLE_BOXES)                                 { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); }
+            else if (style == SW_STYLE_HISTEPS)                               { UUF(a1, (ptCx - (ptCx-ptBx)/2      )); UUF(a1, (ptCx + (ptCx-ptBx)/2      )); }
+            else if (style == SW_STYLE_STEPS)  { UUF(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUF(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
+            else if (style == SW_STYLE_FSTEPS) { UUF(a1, ptCx); }
      }
     else // We have a dataset with only a single box/step
      {
-      if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUU(a1, (ptCx - 0.5)); UUU(a1, (ptCx + 0.5)); }
-      else if (style == SW_STYLE_BOXES)                                { UUU(a1, (ptCx - sg->BoxWidth.real/2)); UUU(a1, (ptCx + sg->BoxWidth.real/2)); }
-      else if (sg->BoxWidth.real<1e-200)                               { UUU(a1, (ptCx - 0.5)); UUU(a1, (ptCx + 0.5)); }
-      else                                                             { UUU(a1, (ptCx - sg->BoxWidth.real/2)); UUU(a1, (ptCx + sg->BoxWidth.real/2)); }
+      if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, (ptCx - 0.5)); UUF(a1, (ptCx + 0.5)); }
+      else if (style == SW_STYLE_BOXES)                                { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); }
+      else if (sg->BoxWidth.real<1e-200)                               { UUF(a1, (ptCx - 0.5)); UUF(a1, (ptCx + 0.5)); }
+      else                                                             { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); }
      }
    }
 
@@ -676,15 +681,23 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    IF_NOT_INVISIBLE \
     { \
      double x0=X0,y0=Y0,width=WIDTH; \
+     double xl,xr; \
      if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
-     LineDraw_Point(ld, x0-width, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, x0+width, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     xl=x0-width; \
+     xr=x0+width; \
+     if (logaxis) { xl=exp(xl); xr=exp(xr); } \
+     LineDraw_Point(ld, xl, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, xr, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
     } \
 
 #define MAKE_BOX(X0,Y0,WIDTH) \
    IF_NOT_INVISIBLE \
     { \
      double x0=X0,y0=Y0,width=WIDTH; \
+     double xl,xr,yb,yt; \
+     xl = x0-width; \
+     xr = x0+width; \
+     if (logaxis) { xl=exp(xl); xr=exp(xr); } \
 \
      /* Set fill colour of box */ \
      eps_core_SetFillColour(x, &pd->ww_final); \
@@ -693,10 +706,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      /* Fill box */ \
      IF_NOT_INVISIBLE \
       { \
-       double xl,xr,yb,yt; \
        FilledRegionHandle *fr; \
-       xl = x0-width; \
-       xr = x0+width; \
        yb = sg->BoxFrom.real; \
        yt = y0; \
        fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z); \
@@ -709,11 +719,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      eps_core_SwitchFrom_FillColour(x); \
 \
      if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
-     LineDraw_Point(ld, x0-width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, x0-width, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, x0+width, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, x0+width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, x0-width, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, xl, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, xl, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, xr, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, xr, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+     LineDraw_Point(ld, xl, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
      LineDraw_PenUp(ld); \
     } \
 
@@ -721,13 +731,14 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     else if (a[xn]->DataUnitSet && (sg->BoxWidth.real>DBL_MIN) && (!ppl_units_DimEqual(&sg->BoxWidth, &a[xn]->DataUnit))) { sprintf(temp_err_string, "Data with ordinate units of <%s> plotted as boxes/steps when BoxWidth is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[xn]->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&sg->BoxWidth,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); }
     else
      {
+      unsigned char logaxis = (a[xn]->log==SW_BOOL_TRUE);
       while (blk != NULL)
        {
         for (j=0; j<blk->BlockPosition; j++)
          {
           ptAx=ptBx; ptAy=ptBy; ptAset=ptBset;
           ptBx=ptCx; ptBy=ptCy; ptBset=ptCset;
-          ptCx=UUR(0); ptCy=UUR(1); ptCset=1;
+          ptCx=logaxis?log(UUR(0)):(UUR(0)); ptCy=UUR(1); ptCset=1;
           if (ptBset)
            {
             if (ptAset) // We are processing a box in the midst of many

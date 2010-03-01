@@ -195,7 +195,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     source->MinFinal = target->MinFinal;
     source->MaxFinal = target->MaxFinal;
     if (source->linkusing != NULL) eps_plot_LinkedAxisLinkUsing(source, target, target_xyz);
-    else                           { source->DataUnit = target->DataUnit; source->DataUnitSet = target->DataUnitSet; }
+    else                           { source->DataUnit = target->DataUnit; source->DataUnitSet = target->DataUnitSet; source->AxisValueTurnings = target->AxisValueTurnings; source->AxisLinearInterpolation = target->AxisLinearInterpolation; source->AxisTurnings = target->AxisTurnings; }
     source->RangeFinalised = 1;
     if (source->LinkedAxisCanvasID <= 0)
      { item = x->current; } // Linked to an axis on the same graph

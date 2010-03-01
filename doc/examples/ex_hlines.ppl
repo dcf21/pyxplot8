@@ -27,6 +27,7 @@ load "examples/fig_init.ppl"
 
 # Set output destination
 set output "examples/eps/ex_hlines.eps"
+set terminal landscape
 
 # Main body of figure script
 set numeric display latex

@@ -36,7 +36,7 @@ set xrange[xmin:xmax]
 set yrange[1e-9:1e-4]
 set log x y
 set xlabel "Frequency"
-set ylabel "%s / $\mathrm{erg}\,\mathrm{Hz}^{-1}\,\mathrm{cm}^{-2}\,\mathrm{sterad}^{-1}$"%(texify(Bv(nu,T)))
+set ylabel "%s / $\mathrm{erg}\,\mathrm{s}^{-1}\,\mathrm{Hz}^{-1}\,\mathrm{cm}^{-2}\,\mathrm{sterad}^{-1}$"%(texify(Bv(nu,T)))
 set key bottom right
-plot Bv(x,T) / unit(erg/Hz/cm**2/sterad) title "Blackbody at %s"%(T)
+plot Bv(x,T) / unit(erg/s/Hz/cm**2/sterad) title "Blackbody at %s"%(T)
 

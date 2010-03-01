@@ -96,6 +96,11 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
    }
 
   // Finalise the physical unit to be associated with data on this axis
+  if (!axis->DataUnitSet)
+   {
+    if ((axis->MinSet==SW_BOOL_TRUE) || (axis->MaxSet==SW_BOOL_TRUE)) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
+    else ppl_units_zero(&axis->DataUnit);
+   }
   CentralValue = axis->DataUnit;
   CentralValue.FlagComplex = 0;
   CentralValue.imag = 0.0;
@@ -169,13 +174,11 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
      }
 
     // Finalise the label to be placed on the axis, quoting a physical unit as necessary
-    if (axis->DataUnit.dimensionless)
-    { axis->FinalAxisLabel = axis->label; } // No units to append
+    if (axis->DataUnit.dimensionless) { axis->FinalAxisLabel = axis->label; } // No units to append
     else
      {
-      i = 0;
+      i = 1024;
       if (axis->label != NULL) i+=strlen(axis->label);
-      if (!(axis->DataUnit.dimensionless)) i+= 1024;
       axis->FinalAxisLabel = (char *)lt_malloc(i);
       if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
       if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s ($%s$)", (axis->label != NULL)?axis->label:"", UnitString);

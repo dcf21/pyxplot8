@@ -838,8 +838,11 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
              {
               if ((FunctionType == PPL_USERSPACE_INT) && (DictIter->key[0]!='i') && (k==NArgs-2)) // Last argument to diff_dx is optional
                {
-                ppl_units_zero(ResultBuffer+bufpos+k+3);
-                (ResultBuffer+bufpos+k+3)->real = 1e-6;
+                ResultBuffer[bufpos+k+3] = ResultBuffer[bufpos+k+2];
+                ResultBuffer[bufpos+k+3].real = hypot(ResultBuffer[bufpos+k+3].real , ResultBuffer[bufpos+k+3].imag) * 1e-6;
+                ResultBuffer[bufpos+k+3].imag = 0.0;
+                ResultBuffer[bufpos+k+3].FlagComplex = 0;
+                if (ResultBuffer[bufpos+k+3].real < DBL_MIN*1e5) ResultBuffer[bufpos+k+3].real = 1e-6;
                 k++; *errpos=-1; continue;
                }
               strcpy(errtext,"Syntax Error: Too few arguments supplied to function.");
