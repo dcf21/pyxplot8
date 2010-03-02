@@ -835,7 +835,23 @@ set textvalign top
 \end{verbatim}
 
 \example{ex:hlines}{A diagram of the atomic lines of hydrogen}{
-foobar
+The wavelengths of the spectral lines of atomic hydrogen are given by the Rydberg formula,
+\begin{displaymath}
+\frac{1}{\lambda} = R_\mathrm{H}\left(\frac{1}{n^2}-\frac{1}{m^2}\right),
+\end{displaymath}
+where $\lambda$ is wavelength, $R_\mathrm{H}$ is the Rydberg constant,
+predefined in PyXPlot as the variable {\tt phy\_Ry}, and {\tt n} and {\tt m}
+are positive non-zero integers such that {\tt m>n}. The first few series are
+called the Lyman series ({\tt n}$=1$), the Balmer series ({\tt n}$=2$), the
+Paschen series ({\tt n}$=3$) and the Brackett series ({\tt n}$=4$). Within each
+series, the lines are given Greek letter designations -- $\alpha$ for {\tt
+m}$=${\tt n}$+1$, $\beta$ for {\tt m}$=${\tt n}$+2$, and so forth.
+\nlnp
+In the following example, we produce a diagram of the lines in the first four
+series, drawing the first~20 lines within each. At the bottom of the diagram,
+we overlay indications of the wavelengths of ten colour filters commonly used
+by astronomers (data taken from Binney \& Merrifield, {\it Galactic Astronomy},
+Princeton, 1998).
 \nlscf
 {\footnotesize
 \noindent{\tt set numeric display latex}\newline

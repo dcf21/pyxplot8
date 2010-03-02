@@ -24,13 +24,102 @@
 \chapter{Programming and Flow Control}
 
 In this chapter we describe the facilities which PyXPlot has for automating
-repetitive tasks.  Loop constructs make it possible to produce similar plots of
-many different \datafile s, or to perform calculations in an iterative fashion.
-We go on to introduce string variables, which can be useful for auto-generating
-titles and labels for graphs which are being produced in batch jobs. Finally,
-we introduce a simple framework which automatically re-executing PyXPlot
-scripts whenever they change, allowing plots to be automatically regenerated
-whenever the scripts used to produce them are modified.
+repetitive tasks. We begin by introducing string variables, which can be useful
+for auto-generating titles and labels for graphs which are being produced in
+batch jobs. Then we discuss the loop constructs which make it possible to
+produce similar plots of many different \datafile s, or to perform calculations
+in an iterative fashion.  Finally, we introduce a simple framework which
+automatically re-executing PyXPlot scripts whenever they change, allowing plots
+to be automatically regenerated whenever the scripts used to produce them are
+modified.
+
+\section{String variables}
+\label{sec:stringvars}
+
+String variables can be assigned in a manner analogous to numeric variables,
+using the $=$ command followed by a string enclosed in quotation marks. They can
+then be used wherever a quoted string could be used, for example as a filename
+or a plot title, as in:\index{variables!string}
+
+\begin{verbatim}
+plotname = "The Growth of a Rabbit Population"
+set title plotname
+\end{verbatim}
+
+\subsection{The String Substitution Operator}
+
+Strings may also be put together using the string substitution operator, {\tt
+\%}\index{\% operator@{\tt \%} operator}, which works in a similar fashion to
+the Python string substitution operator\index{string operators!substitution}. This
+is described in detail in Section~\ref{sec:string_subs_op}.  For example, to
+concatenate the two strings contained in variables {\tt a} and {\tt b} into
+variable {\tt c} one would run:\index{string operators!concatenation}
+
+\begin{verbatim}
+c = "%s%s"%(a,b)
+\end{verbatim}
+
+One common practical application of these string operators is to label plots
+with the title of the \datafile\ being plotted, as in:
+
+\begin{verbatim}
+filename="data_file.dat"
+title="A plot of the data in {\tt %s}."%(filename)
+title=~s/_/\_/g # Underscore is a reserved character in LaTeX
+set title title
+plot filename
+\end{verbatim}
+
+\subsection{Regular Expressions}
+
+String variables can be modified using the search-and-replace string
+operator\index{string operators!search and replace}\footnote{Programmers with
+experience of {\tt perl} will recognise this syntax.}, =$\sim$\index{=$\sim$
+operator}, which takes a regular expression with a syntax similar to that
+expected by the shell command {\tt sed}\index{sed shell command@{\tt sed} shell
+command} and applies it to the relevant string.\footnote{Regular expression
+syntax is a massive subject, and is beyond the scope of this manual. The
+official GNU documentation for the {\tt sed} command is heavy reading, but
+there are many more accessible tutorials on the web.}\index{regular
+expressions} For example:
+
+\begin{verbatim}
+twister="seven silver soda syphons"
+twister =~ s/s/th/
+print twister
+\end{verbatim}
+
+Note that only the {\tt s} (substitute) command of {\tt sed} is implemented in
+PyXPlot. Any character can be used in place of the {\tt /} characters in the
+above example, for example:
+
+\begin{verbatim}
+twister =~ s@s@th@
+\end{verbatim}
+
+\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, for example:
+
+\begin{verbatim}
+twister =~ s@s@th@g
+\end{verbatim}
+
+\noindent Table~\ref{tab:re_flags} lists all of the regular expression flags
+recognised by the =$\sim$ operator.
+
+\begin{table}
+\framebox[\textwidth]{\footnotesize
+\begin{tabular}{p{5mm}p{10.5cm}}
+{\tt g} & Replace {\it all} matches of the pattern; by default, only the first match is replaced. \\
+{\tt i} & Perform case-insensitive matching, such that expressions like {\tt [A-Z]} will match lowercase letters, too. \\
+{\tt l} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the current locale. \\
+{\tt m} & When specified, the pattern character {\tt \^{}} matches the beginning of the string and the beginning of each line immediately following each newline. The pattern character {\tt \$} matches at the end of the string and the end of each line immediately preceding each newline. By default, {\tt \^{}} matches only the beginning of the string, and {\tt \$} only the end of the string and immediately before the newline, if present, at the end of the string. \\
+{\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
+{\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
+{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through to the end of the line are ignored. \\
+\end{tabular}}
+\caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
+\label{tab:re_flags}
+\end{table}
 
 \section{Conditionals}
 
@@ -164,56 +253,83 @@ is used in conjunction with the {\tt break} and {\tt continue} statements which
 will be introduced in Section~\ref{sec:breakcontinue}.
 
 \section{Foreach Loops}
+\indcmd{foreach}
+\index{wildcards}
 
-The \indcmdt{foreach} command may be used to run a script block once for every
-file in the current working directory which matches one or more supplied file
-wildcards.  For example,
-
-\begin{verbatim}
-foreach x in "*.dat" "*.txt"
- {
-  print x
- }
-\end{verbatim}
-
-\noindent would run the supplied script block once for every file in the
-current working directory with a {\tt .dat} or a {\tt .txt} suffix. The effect
-would be rather similar to typing
-
-\begin{verbatim}
-!ls *.dat
-\end{verbatim}
-
-The quotes around each supplied search string are optional if and only if all
-of the characters in that search string are alphanumeric. Since both of the
-wildcard characters {\tt *} and {\tt ?} are non-alphanumeric, this exception
-applies in practice only to unique explicit filenames in the present working
-directory.  An error is returned if there are no files in the present directory
-which match the supplied wildcard. The following example would produce a plot
-of all of the \datafile s in the current directory:
-
-\begin{verbatim}
-plot
-foreach x in "*.dat"
- {
-  replot x using 1:2
- }
-\end{verbatim}
-
-Alternatively, the \indcmdt{foreach} command may be used to run a script block
-once for every value of a variable in a supplied list, as in
+Foreach loops may be used to run a script block once for each item in a list.
+The list may either take the form of an explicit bracketed comma-separated list
+of items, or the form of a filename wildcard, as in the examples:
 
 \begin{verbatim}
 foreach x in (-1,pi,10)
  {
   print x
  }
+
+foreach x in "*.dat"
+ {
+  print x
+ }
 \end{verbatim}
 
-\noindent would print out the numbers $-1$, $\pi$ and 10.
+The first of these loops would iterate three times, with the variable {\tt x}
+holding the values $-1$, $\pi$ and $10$ in turn. The second of these loops
+would search for any \datafile s in the user's current directory with filenames
+ending in {\tt .dat} and iterate for each of them. As previously, the wildcard
+character {\tt *} matches any string of characters, and the character {\tt ?}
+matches any single character. Thus, {\tt foo?.dat} would match {\tt foo1.dat}
+and {fooX.dat}, but not {\tt foo.dat} or {\tt foo10.dat}. The effect of the
+{\tt print} statement in this particular example would be rather similar to
+typing:
+
+\begin{verbatim}
+!ls *.dat
+\end{verbatim}
+
+The quotes around each supplied search string are compulsory if any of the
+characters in the search string are alphanumeric, but optional otherwise. Since
+both of the wildcard characters {\tt *} and {\tt ?} are non-alphanumeric, the
+quotes are compulsory in most useful cases.  An error is returned if there are
+no files in the present directory which match the supplied wildcard. The
+following example would produce plots of all of the \datafile
+s in the current directory as {\tt eps} files with matching filenames:
+
+\begin{verbatim}
+set terminal eps
+foreach x in "*.dat"
+ {
+  outfilename =  x
+  outfilename =~ s/dat/eps/
+  set output outfilename
+  plot x using 1:2
+ }
+\end{verbatim}
 
 \section{Foreach Datum Loops}
 \label{sec:foreach_datum}
+
+Foreach datum loops are similar to foreach loops in that they run a script
+block once for each item in a list.  In this case, however, the list in
+question is the list of \datapoint s in a file. The syntax of the
+\indcmdt{foreach datum} is similar to that of the commands met in the previous
+chapter for acting upon \datafile s: the standard modifiers {\tt every}, {\tt
+index}, {\tt select} and {\tt using} can be used to select which columns of the
+\datafile, and which subset of the datapoints, should be used:
+
+\begin{verbatim}
+foreach datum i,j,name in "data.dat" using 1:2:"%s"%($3)
+ {
+  ...
+ }
+\end{verbatim}
+
+The \indcmdt{foreach datum} is followed by a comma-separated list of the
+variable(s) which are to be read from the \datafile on each iteration of the
+loop. The {\tt using} modifier specifies the columns or rows of data which are
+to be used to set the values of each variable. In this example, the third
+variable, {\tt name}, is set using a quoted string, indicating that it will be
+set to equal whatever string of text is found in the third column of the
+\datafile.
 
 \section{While and Do Loops}
 
@@ -221,28 +337,29 @@ The \indcmdt{while} command may be used to continue running a script block
 until some stopping criterion is met. Two types of while loop are supported:
 
 \begin{verbatim}
-while <criterion>
+while <criterion> {loopname <name>}
  {
   ....
  }
 
-do
+do {loopname <name>}
  {
   ....
  } while <criterion>
 \end{verbatim}
 \indcmd{do}
 
-The former example would execute the enclosed script block repeatedly, testing
-the algebraic expression supplied to the \indcmdt{while} command immediately
-before each repetition, and stopping if it tested false. The latter example is
-very similar, but tests the supplied algebraic expression immediately {\it
-after} each repetition. Thus, the former example may never actually execute the
-supplied script block if the looping criterion tests false, but the latter
-example is always guaranteed to run its script block at least once.
+In the former case, the enclosed script block is executed repeatedly, and the
+algebraic expression supplied to the \indcmdt{while} command is tested
+immediately before each repetition. If it tests false, then the loop finishs.
+The latter case is very similar, except that the supplied algebraic expression
+is tested immediately {\it after} each repetition. Thus, the former example may
+never actually execute the supplied script block if the looping criterion tests
+false upon the first iteration, but the latter example is always guaranteed to
+run its script block at least once.
 
 The following example would continue looping indefinitely until stopped by the
-user:
+user, since the value {\tt 1} is considered to be true:
 
 \begin{verbatim}
 while (1)
@@ -253,152 +370,110 @@ while (1)
 
 \section{The {\tt break} and {\tt continue} statements}
 \label{sec:breakcontinue}
+\indcmd{break}
+\indcmd{continue}
 
-\example{ex:mandelbrot}{Producing an image of the Mandelbrot Set}{
-The Mandelbrot set is a set of points in the complex plane, whose boundary
-forms a fractal. It is an iconic image of the power of chaos theory to produce
-complicated structure out of simple algorithms, and so we now use all of
-PyXPlot's loop constructs together in a script which produces an image of the
-fractal.
-\nlnp
-A point $c$ in the complex plane is defined to lie within the Mandelbrot set if the complex sequence of numbers
-\begin{displaymath}
-z_{n+1} = z_n^2 + c,
-\end{displaymath}
-subject to the starting condition $z_0=0$, remains bounded. In practice, the
-sequence is certain to diverge if $|z_n|$ ever exceeds~2.  It cannot generally
-be proven not to diverge at any particular point, but is declared to remain
-bounded in our algorithm if $|z_n|$ has not exceeded~2 within a certain number
-{\tt StepsMax} of steps. To increase the aesthetic appeal of the fractal,
-pixels outside of the fractal are assigned different colours depending upon how
-many iterations were required before the sequence moved outside the circle
-$|z_n|=2$.
-\nlnp
-This script makes use of the \indcmdt{rectangle}, which will be introduced in
-Section~\ref{sec:rectangle}.
-\nlscf
-\noindent {\tt set~multiplot }\newline
-\noindent {\tt set~nodisplay }\newline
-\noindent {\tt set~numerics~complex }\newline
-\noindent {\tt StepsMax=10 }\newline
-\noindent {\tt yn=0 }\newline
-\noindent {\tt for~y=2~to~-2~step~-0.05 }\newline
-\noindent {\tt \phantom{x}\{ }\newline
-\noindent {\tt \phantom{xx}xn=0 }\newline
-\noindent {\tt \phantom{xx}for~x=-2~to~2~step~0.05 }\newline
-\noindent {\tt \phantom{xxx}\{ }\newline
-\noindent {\tt \phantom{xxxx}zi~=~x+i*y;~z=zi;~iter=0; }\newline
-\noindent {\tt \phantom{xxxx}while~(abs(z)<2)~and~(iter<StepsMax)~$\backslash$ }\newline
-\noindent {\tt \phantom{xxxxxxxx}\{~;~z~=~z**2~+~zi~;~iter=iter+1~;~\} }\newline
-\noindent {\tt \phantom{xxxx}cd~=~(1-iter/StepsMax)*256 }\newline
-\noindent {\tt \phantom{xxxx}rectangle~from~xn,yn~to~xn+0.21,yn+0.21~with~col~null~$\backslash$ }\newline
-\noindent {\tt \phantom{xxxxxxxxxxx}fillc~rgb(cd):(cd):(cd) }\newline
-\noindent {\tt \phantom{xxxx}xn=xn+0.2 }\newline
-\noindent {\tt \phantom{xxx}\} }\newline
-\noindent {\tt \phantom{xx}yn=yn+0.2 }\newline
-\noindent {\tt \phantom{x}\} }\newline
-\noindent {\tt }\newline
-\noindent {\tt \#~Display~output }\newline
-\noindent {\tt set~display }\newline
-\noindent {\tt refresh }\newline
-\nlscf
-The resulting image is shown below:
-\nlscf
-\begin{center}
-\includegraphics[width=8cm]{examples/eps/ex_mandelbrot.eps}
-\end{center}
-}
+The {\tt break} and {\tt continue} statements may be placed within loop
+structures to interrupt their iteration. The {\tt break} statement terminates
+execution of the smallest loop currently being executed, and PyXPlot resumes
+execution at the next statement after the closing brace which marks the end of
+that loop structure. The {\tt continue} statement terminates execution of the
+{\tt current iteration} of the smallest loop currently being executed, and
+execution proceeds with the next iteration of that loop, as demonstrated by the
+following pair of examples.
+
+\begin{verbatim}
+pyxplot> for i=0 to 4 {
+for... >  if (i==2) { ; break; }
+for... >  print i
+for... > }
+0
+1
+pyxplot> for i=0 to 4 {
+for... >  if (i==2) { ; continue ; }
+for... >  print i
+for... > }
+0
+1
+3
+\end{verbatim}
+
+Note that if several loops are nested, the {\tt break} and {\tt continue}
+statements only act upon the innermost loop. If either statement is encountered
+outside of a loop structure, an error results.
+
+Optionally, the {\tt for}, {\tt foreach}, {\tt do} and {\tt while}, may be
+supplied with a name for the loop, prefixed by the word {\tt loopname}, as in
+the examples:
+
+\begin{verbatim}
+for i=0 to 4 loopname iloop
+...
+foreach i in "*.dat" loopname DatafileLoop
+...
+\end{verbatim}
+
+When loops are given names, the {\tt break} and {\tt continue} statements may
+be followed by the name of the loop to be broken out of, allowing the user to
+act upon loops other than the innermost one.
 
 \section{Subroutines}
+\indcmd{subroutine}
 \label{sec:subroutines}
 
-\section{String variables}
-\label{sect:stringvars}
-
-String variables can be assigned in a manner analogous to numeric variables,
-using the $=$ command followed by a string enclosed in quotation marks. They can
-then be used wherever a quoted string could be used, for example as a filename
-or a plot title, as in:\index{variables!string}
-
+Subroutines are similar to mathematical functions (see
+Section~\ref{sec:functions}), and once defined, can be used anywhere in
+algebraic expressions, just as functions can be.  However, instead of being
+defined by a single algebraic expression, whenever a subroutine is evaluated, a
+block of PyXPlot commands of arbitrary length is executed. This gives much
+greater flexibility for implementing complex algorithms. Subroutines are
+defined using the following syntax:
 \begin{verbatim}
-plotname = "The Growth of a Rabbit Population"
-set title plotname
+subroutine <name>(<variable1>,...)
+ {
+  ...
+  return <value>
+ }
 \end{verbatim}
-
-\subsection{The String Substitution Operator}
-
-Strings may also be put together using the string substitution operator, {\tt
-\%}\index{\% operator@{\tt \%} operator}, which works in a similar fashion to
-the Python string substitution operator\index{string operators!substitution}. This
-is described in detail in Section~\ref{sec:string_subs_op}.  For example, to
-concatenate the two strings contained in variables {\tt a} and {\tt b} into
-variable {\tt c} one would run:\index{string operators!concatenation}
-
+Where {\tt name} is the name of the subroutine, {\tt variable1} is an argument
+taken by the subroutine, and the value given to the {\tt return} statement is
+the value returned to the caller. Once the {\tt return} statement is reached,
+execution of the subroutine is terminated. The following two examples would
+produce entirely equivalent results:
 \begin{verbatim}
-c = "%s%s"%(a,b)
+f(x,y) = x*sin(y)
+
+subroutine f(x,y)
+ {
+  return x*sin(y)
+ }
 \end{verbatim}
-
-One common practical application of these string operators is to label plots
-with the title of the \datafile\ being plotted, as in:
-
+In either case, the function/subroutine could be evaluated by typing:
 \begin{verbatim}
-filename="data_file.dat"
-title="A plot of the data in {\tt %s}."%(filename)
-title=~s/_/\_/g # Underscore is a reserved character in LaTeX
-set title title
-plot filename
+print f(1,pi/2)
 \end{verbatim}
+If a subroutine ends without any value being returned using the {\tt return}
+statement, then a value of zero is returned.
 
-\subsection{Regular Expressions}
-
-String variables can be modified using the search-and-replace string
-operator\index{string operators!search and replace}\footnote{Programmers with
-experience of {\tt perl} will recognise this syntax.}, =$\sim$\index{=$\sim$
-operator}, which takes a regular expression with a syntax similar to that
-expected by the shell command {\tt sed}\index{sed shell command@{\tt sed} shell
-command} and applies it to the relevant string.\footnote{Regular expression
-syntax is a massive subject, and is beyond the scope of this manual. The
-official GNU documentation for the {\tt sed} command is heavy reading, but
-there are many more accessible tutorials on the web.}\index{regular
-expressions} For example:
-
+Subroutines may serve one of two purposes. In many cases they are used to
+implement complicated mathematical functions for which no simple algebraic
+expression may be given. Secondly, they may be used to repetitively execute a
+set of commands whenever they are required. In the latter case, the subroutine
+may not have a return value, but may merely be used as a mechanism for
+encapsulating a block of commands.  In this case, the \indcmdt{call} may be
+used to execute a subroutine, discarding any return value which it may produce,
+as in the example:
 \begin{verbatim}
-twister="seven silver soda syphons"
-twister =~ s/s/th/
-print twister
+pyxplot> subroutine f(x,y)
+subrtne>  {
+subrtne>   print "%s - %s = %s"%(x,y,x-y)
+subrtne>  }
+pyxplot> 
+pyxplot> call f(2,1)
+2 - 1 = 1
+pyxplot> call f(5*unit(inch), 10*unit(mm))
+127 mm - 10 mm = 117 mm
 \end{verbatim}
-
-Note that only the {\tt s} (substitute) command of {\tt sed} is implemented in
-PyXPlot. Any character can be used in place of the {\tt /} characters in the
-above example, for example:
-
-\begin{verbatim}
-twister =~ s@s@th@
-\end{verbatim}
-
-\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, for example:
-
-\begin{verbatim}
-twister =~ s@s@th@g
-\end{verbatim}
-
-\noindent Table~\ref{tab:re_flags} lists all of the regular expression flags
-recognised by the =$\sim$ operator.
-
-\begin{table}
-\framebox[\textwidth]{\footnotesize
-\begin{tabular}{p{5mm}p{10.5cm}}
-{\tt g} & Replace {\it all} matches of the pattern; by default, only the first match is replaced. \\
-{\tt i} & Perform case-insensitive matching, such that expressions like {\tt [A-Z]} will match lowercase letters, too. \\
-{\tt l} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the current locale. \\
-{\tt m} & When specified, the pattern character {\tt \^{}} matches the beginning of the string and the beginning of each line immediately following each newline. The pattern character {\tt \$} matches at the end of the string and the end of each line immediately preceding each newline. By default, {\tt \^{}} matches only the beginning of the string, and {\tt \$} only the end of the string and immediately before the newline, if present, at the end of the string. \\
-{\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
-{\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
-{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through to the end of the line are ignored. \\
-\end{tabular}}
-\caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
-\label{tab:re_flags}
-\end{table}
 
 \section{The \indcmdt{exec}}
 

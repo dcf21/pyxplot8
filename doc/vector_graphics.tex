@@ -261,7 +261,7 @@ which produced arrows with heads on both ends.
 The \indcmdt{arrow} has a twin, the \indcmdt{line}, which has the same syntax
 but with a different style setting of {\tt nohead}.
 
-\example{ex:notice}{A notice to advertise that a lecture has moved}{
+\example{ex:notice}{A simple notice with text and arrow}{
 In this example script, we use PyXPlot's {\tt arrow} and {\tt text} commands to
 produce a simple notice advertising that a lecture has moved to a different
 seminar room:
@@ -293,7 +293,7 @@ The resulting notice is shown below:
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_notice.eps}}
 }
 
-\example{ex:euclid}{A diagram from Euclid's {\it Elements}}{
+\example{ex:euclid}{Reproducing a diagram from Euclid's {\it Elements}}{
 In this more extended example script, we use PyXPlot's {\tt arrow} and {\tt
 text} commands to produce a diagram illustrating the 47th Proposition from
 Euclid's First Book of {\it Elements}, better known as Pythagoras' Theorem. A
@@ -361,7 +361,6 @@ The resulting diagram is shown below:
 \nlscf
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_euclid_I_47.eps}}
 }
-
 
 \subsection{The {\tt image} Command}
 
@@ -443,7 +442,7 @@ circle at 0,0 radius 5 with linetype 1 linewidth 2 colour red
 circle at 0,0 radius 5 with lw 10 colour red fillcolour yellow
 \end{verbatim}
 
-\example{ex:noentry}{A no-entry sign}{
+\example{ex:noentry}{A simple no-entry sign}{
 In this example script, we use PyXPlot's {\tt box} and {\tt circle} commands to
 produce a no-entry sign warning passers by that code monkeys can turn nasty
 when interrupted from their work.
@@ -469,6 +468,62 @@ when interrupted from their work.
 The resulting sign is shown below:
 \nlscf
 \centerline{\includegraphics[width=5cm]{examples/eps/ex_noentry.eps}}
+}
+
+\example{ex:mandelbrot}{Producing an image of the Mandelbrot Set}{
+The Mandelbrot set is a set of points in the complex plane, whose boundary
+forms a fractal. It is an iconic image of the power of chaos theory to produce
+complicated structure out of simple algorithms, which we implement in this
+example using PyXPlot's loop constructs.
+\nlnp
+A point $c$ in the complex plane is defined to lie within the Mandelbrot set if
+the complex sequence of numbers
+\begin{displaymath}
+z_{n+1} = z_n^2 + c,
+\end{displaymath}
+subject to the starting condition $z_0=0$, remains bounded. In practice, the
+sequence is certain to diverge if $|z_n|$ ever exceeds~2.  It cannot generally
+be proven not to diverge at any particular point, but is declared to remain
+bounded in our algorithm if $|z_n|$ has not exceeded~2 within a certain number
+{\tt StepsMax} of steps. To increase the aesthetic appeal of the fractal,
+pixels outside of the fractal are assigned different colours depending upon how
+many iterations were required before the sequence moved outside the circle
+$|z_n|=2$.
+\nlnp
+This script makes use of the \indcmdt{rectangle} to paint each pixel of the
+fractal one by one, which is highly inefficient, but demonstrates PyXPlot's
+versatility.
+\nlscf
+\noindent {\tt set~multiplot }\newline
+\noindent {\tt set~nodisplay }\newline
+\noindent {\tt set~numerics~complex }\newline
+\noindent {\tt StepsMax=10 }\newline
+\noindent {\tt yn=0 }\newline
+\noindent {\tt for~y=2~to~-2~step~-0.05 }\newline
+\noindent {\tt \phantom{x}\{ }\newline
+\noindent {\tt \phantom{xx}xn=0 }\newline
+\noindent {\tt \phantom{xx}for~x=-2~to~2~step~0.05 }\newline
+\noindent {\tt \phantom{xxx}\{ }\newline
+\noindent {\tt \phantom{xxxx}zi~=~x+i*y;~z=zi;~iter=0; }\newline
+\noindent {\tt \phantom{xxxx}while~(abs(z)<2)~and~(iter<StepsMax)~$\backslash$ }\newline
+\noindent {\tt \phantom{xxxxxxxx}\{~;~z~=~z**2~+~zi~;~iter=iter+1~;~\} }\newline
+\noindent {\tt \phantom{xxxx}cd~=~(1-iter/StepsMax)*256 }\newline
+\noindent {\tt \phantom{xxxx}rectangle~from~xn,yn~to~xn+0.21,yn+0.21~with~col~null~$\backslash$ }\newline
+\noindent {\tt \phantom{xxxxxxxxxxx}fillc~rgb(cd):(cd):(cd) }\newline
+\noindent {\tt \phantom{xxxx}xn=xn+0.2 }\newline
+\noindent {\tt \phantom{xxx}\} }\newline
+\noindent {\tt \phantom{xx}yn=yn+0.2 }\newline
+\noindent {\tt \phantom{x}\} }\newline
+\noindent {\tt }\newline
+\noindent {\tt \#~Display~output }\newline
+\noindent {\tt set~display }\newline
+\noindent {\tt refresh }\newline
+\nlscf
+The resulting image is shown below:
+\nlscf
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_mandelbrot.eps}
+\end{center}
 }
 
 \subsection{The {\tt arc} Command}

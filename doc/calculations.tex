@@ -91,6 +91,7 @@ between inchs and centimetres.  This will be explained in more detail in
 Section~\ref{sec:units}.
 
 \section{Functions}
+\label{sec:functions}
 
 A large number of standard functions are pre-defined within PyXPlot's
 mathematical environment, ranging from trigonometric functions, to very
@@ -597,6 +598,15 @@ convert all of your temperatures to that scale, and then stick to it.
 In this example, we use PyXPlot's automatic conversion of physical units to
 create a temperature conversion scale.
 \nlscf
+\noindent{\tt set size ratio 1e-2}\newline
+\noindent{\tt set axis x2 linked x using x*unit(oC)/unit(oF)}\newline
+\noindent{\tt set axis y invisible}\newline
+\noindent{\tt set xtics outward -10,10}\newline
+\noindent{\tt set x2tics outward 20,20}\newline
+\noindent{\tt set xlabel "\$\^{}$\backslash$circ\$C"}\newline
+\noindent{\tt set x2label "\$\^{}$\backslash$circ\$F"}\newline
+\noindent{\tt plot [-10:100]}\newline
+\nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_tempscale.eps}
 \end{center}
@@ -786,14 +796,15 @@ plot int_dt('sin(t)',0,x)
 The function {\tt diff\_dx()} takes two obligatory parameters plus one further
 optional parameters. The first is the expression to be differentiated, which,
 as above, may optionally placed in quotes for clarity. This should be followed
-by the numerical value of the dummy variable at the point where the given
+by the numerical value $x$ of the dummy variable at the point where the given
 expression is to be differentiated. This value may have any physical
 dimensions, and may be a complex number if complex arithmetic is enabled. The
 final, optional, parameter to the {\tt diff\_dx()} function is an approximate
 step size which indicates the range of argument values over which PyXPlot
 should take samples to determine the gradient. If no value is supplied, a value
-of $10^{-6}$ is used.  The following example would evaluate the differential of
-the function $\cos(x)$ with respect to $x$ at $x=1.0$:
+of $10^{-6}x$ is used, replaced by $10^{-6}$ if $x=0$.  The following example
+would evaluate the differential of the function $\cos(x)$ with respect to $x$
+at $x=1.0$:
 
 \begin{dodo}
 print diff\_dx('cos(x)', 1.0)
