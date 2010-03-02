@@ -341,7 +341,7 @@ int directive_for(Dict *command, int IterLevel)
     if (status) break;
     itervalD += step->real;
     *iterval = *start;
-    iterval->real += itervalD;
+    iterval->real = itervalD;
    }
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
   return status;
