@@ -144,10 +144,10 @@ void ReadConfigFile(char *ConfigFname)
                                                                               settings_graph_default.BoxWidthAuto  = (fl>0.0);  }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting BoxWidth."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "CALENDARIN"   )==0)
-        if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarIn = fl;
+        if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarIn = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CalendarIn."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "CALENDAROUT"  )==0)
-        if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarOut= fl;
+        if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0) settings_term_default.CalendarOut= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CalendarOut."  , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "COLOUR"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .colour        = i;
