@@ -554,7 +554,7 @@ equivalent.
 Times are occasionally expressed as absolute quantities: the year 1453, for
 example, implicitly corresponds to 1453 years since the Christian epoch.
 Similar problems would arise in trying to convert such a year into the Muslim
-calendar, which counts from the year {\footnotesize AD} 622, to those of
+calendar, which counts from the year {\footnotesize AD}\,622, to those of
 encountered in converting between temperature scales.\footnote{PyXPlot can,
 incidentally, make this conversion, as will be seen in
 Section~\ref{sec:time_series}.}
@@ -617,23 +617,23 @@ create a temperature conversion scale.
 
 \subsection{Units}
 
-By default, when a number which has physical dimensions is displayed PyXPlot
-searches through its database of physical units for the most appropriate unit
-in which to represent it. The name of the adopted unit is printed after the
-value. By default, quantities are displayed by preference in SI units, and SI
-prefixes such as milli- or kilo- are applied where appropriate. All of the
-behaviour, however, can be configured.
+Before quantities which are not dimensionless are displayed, PyXPlot searches
+through its database of physical units looking for the most appropriate unit,
+or combination of units, in which to represent them.  By default, SI units, or
+combinations of SI units, are chosen for preference, and SI prefixes such as
+milli- or kilo- are applied where appropriate. This behaviour can, however, be
+extensively configured.
 
-PyXPlot has a number of different {\it units schemes}\index{units!unit
-schemes}, each of which comprises a list of units which are to be used in
-preference to all others. For example, in the CGS unit scheme\index{CGS
-units}\index{units!CGS}, all lengths are displayed in centimetres, all masses
-are displayed in grammes, and so forth. In the imperial unit
+The most general configuration option allows one of several {\it units
+schemes}\index{units!unit schemes} to be selected, each of which comprises a
+list of units which are deemed to be members of the particular scheme. For
+example, in the CGS unit scheme\index{CGS units}\index{units!CGS}, all lengths
+are displayed in centimetres, all masses are displayed in grammes, all energies
+are displayed in ergs, and so forth.  In the imperial unit
 scheme\index{imperial units}\index{units!imperial}, quantities are displayed in
-British imperial units, meanwhile in the US unit scheme, US customary units are
-used. The current unit scheme can be changed using the \indcmdt{set unit
-scheme}:
-
+British imperial units -- inches, pounds, pints, and so forth -- and in the US
+unit scheme, US customary units are used. The current unit scheme can be
+changed using the \indcmdt{set unit scheme}:
 \begin{verbatim}
 pyxplot> vol = 3*unit(m**3)
 pyxplot> set unit scheme si ; print vol
@@ -650,8 +650,9 @@ pyxplot> set unit scheme us ; print vol
 Table~\ref{tab:unit_schemes}.\index{natural units}\index{units!natural}
 
 \begin{table}
-\framebox[\textwidth]{
-\begin{tabular}{lp{9cm}}
+\begin{center}
+\begin{tabular}{|>{\columncolor{LightGrey}}l>{\columncolor{LightGrey}}p{9cm}|}
+\hline
 {\bf Name} & {\bf Description} \\
 \hline
 {\tt ancient} & Ancient units, especially those used in the Authorised Version of the Bible. \\
@@ -661,32 +662,57 @@ Table~\ref{tab:unit_schemes}.\index{natural units}\index{units!natural}
 {\tt SI} & SI units. \\
 {\tt US} & US customary units. \\
 \hline
-\end{tabular}}
+\end{tabular}
+\end{center}
 \caption{A list of PyXPlot's unit schemes.}
 \label{tab:unit_schemes}
 \end{table}
 
-In some cases, one may want to broadly use one of these unit schemes, but
-override one of the units in favour of another.  Astronomers, for example, may
-wish to use SI or CGS units to express all quantities with the exception of
-distances, which they wish to express in parsecs or astronomical units. Another
-astronomer might wish to express masses in solar or Jupiter masses, or
-luminosities in solar luminosities. This level of control is made available
-through the \indcmdt{set unit of} command, for example:
-
+These units schemes are often sufficient to ensure that most quantities are
+displayed in the desired units, but commonly there are a few specific
+quantities in any particular piece of work where non-standard units are used.
+For example, a study of Jupiter-like planets might express masses in Jupiter
+masses, rather than kilograms. A study of the luminosities of stars might
+express powers in units of solar luminosities, rather than watts. And a
+cosmology paper might express distances in parsecs. This level of control is
+made available through the \indcmdt{set unit of}, and the three examples just
+given would be achieved using the following commands:
 \begin{verbatim}
-set unit of length parsec
 set unit of mass Mjupiter
+set unit of power solar_luminosity
+set unit of length parsec
 \end{verbatim}
 
-The more unusual case of the astronomer who wishes to express masses in Pluto
-masses is more complicated: the Pluto mass is not a pre-defined unit in
-PyXPlot, and it must first be defined before it can be set as a default unit.
-In Chapter~\ref{ch:configuration}, we shall see how to define new units in a
-configuration script.
+An astronomer wishing to express masses in Pluto masses would need to first
+define the Pluto mass as a user-defined unit, since it is not pre-defined unit
+within PyXPlot. In Chapter~\ref{ch:configuration}, we shall see how to define
+new units in a configuration script. Having done so, the following syntax would
+be allowed:
+\begin{verbatim}
+set unit of mass Mpluto
+\end{verbatim}
 
-By default, units are displayed in their abbreviated forms, for example {\tt A} for amperes, and SI prefixes such as milli- and kilo- are applied to SI units where they are appropriate.\index{SI prefixes}\index{units!SI prefixes} In both cases, this behaviour
-can be turned on or off, in the former case with the commands:
+The \indcmdt{set unit preferred} offers a slightly more flexible way of
+achieving the same result. Whereas the \indcmdt{set unit of} can only operate
+on named quanities such as lengths and powers, and cannot act upon compound
+units such as {\tt W/Hz}, the \indcmdt{set unit preferred} can act upon any
+unit or combination of units:
+\begin{verbatim}
+set unit preferred parsec
+set unit preferred W/Hz
+set unit preferred Nm
+\end{verbatim}
+The latter two examples are particularly useful when working with spectral
+densities (powers per unit frequency) or torques (forces multiplied by
+distances). Unfortunately, both of these units are dimensionally equal to
+powers, and so are displayed by PyXPlot in Joules by default. The above
+statement overrides such behaviour.
+
+By default, units are displayed in their abbreviated forms, for example {\tt A}
+instead of {\tt amperes} and {\tt W} instead of {\tt watts}. Furthermore, SI
+prefixes such as milli- and kilo- are applied to SI units where they are
+appropriate.\index{SI prefixes}\index{units!SI prefixes} Both of these
+behaviours can be turned on or off, in the former case with the commands:
 
 \begin{verbatim}
 set unit display abbreviated
@@ -729,7 +755,7 @@ that the number supplied is the {\it minimum} number of significant figures to
 which numbers are displayed; on occasion an extra figure may be displayed.
 
 Alternatively, the string substitution operator, described in
-Section~\ref{sec:string_subs_op} may be used to specify how a number should be
+Section~\ref{sec:stringsubop} may be used to specify how a number should be
 displayed on a one-by-one basis, for example:
 
 \begin{verbatim}
@@ -1019,20 +1045,22 @@ calendar dates. But working out what calendar date comes $N$ days after some
 start point requires considerable effort.
 
 Astronomers usually get around such issues by expressing dates and times as
-Julian Day (JD) numbers, which count the number of days ellapsed since noon on
-1st~January 4713\,{\footnotesize BC} in the Julian Calendar. The time of day is
-represented as the fractional part of the Julian Day number. For example,
-midnight in 1st~January 2000 (Gregorian calendar) was $2451544.5$, and noon on
-the same day was $2451545.0$.
+Julian Day (JD) numbers\index{Julian Day numbers}, which count the number of
+days ellapsed since noon on 1st~January 4713\,{\footnotesize BC} in the Julian
+Calendar. The time of day is represented as the fractional part of the Julian
+Day number. For example, midnight in 1st~January 2000 (Gregorian calendar) was
+$2451544.5$, and noon on the same day was $2451545.0$.
 
 PyXPlot provides a range of pre-defined functions, all prefixed {\tt time\_}
 for converting between calendar dates and Julian Day numbers. The function {\tt
-time\_juliandate()} is used to convert from a calendar date to a Julian Day
-number. It takes six inputs: the year, the month number (1--12), the day of the
-month (1--31), the hour of day (0--24), the number of minutes (0--59), and the
-number of seconds (0--59). To enter dates before 1\,{\footnotesize AD}, a year
-of~$0$ should be passed to indicate 1~{\footnotesize BC}, $-1$ should be passed
-to indicate the year 2~{\footnotesize BC}, and so forth.
+time\_juliandate()}\indfun{time\_\-julianday({\it year},\-{\it month},\-{\it
+day},\-{\it hour},\-{\it min},\-{\it sec})} is used to convert from a calendar
+date to a Julian Day number. It takes six inputs: the year, the month number
+(1--12), the day of the month (1--31), the hour of day (0--24), the number of
+minutes (0--59), and the number of seconds (0--59). To enter dates before
+{\footnotesize AD}\,1, a year of~$0$ should be passed to indicate
+1\,{\footnotesize BC}, $-1$ should be passed to indicate the year
+2\,{\footnotesize BC}, and so forth.
 \begin{verbatim}
 pyxplot> time_juliandate(2000,1,1,0,0,0)
 2451544.5
@@ -1042,7 +1070,9 @@ By default, the {\tt time\_juliandate()} function makes a transition from the
 Julian calendar to the Gregorian calendar at midnight on 14th~September 1752
 (Gregorian calendar), when Britain and the British Empire switched calendars.
 Thus, inputed dates between 2nd~September and 14th~September 1752 return
-errors, since they days never occured in the British calendar. This behaviour may be changed using the \indcmdt{set calendar}, which offers a choice of nine different calendars listed in Table~\ref{tab:calendars}.
+errors, since they days never occured in the British calendar. This behaviour
+may be changed using the \indcmdt{set calendar}, which offers a choice of nine
+different calendars listed in Table~\ref{tab:calendars}.
 
 \begin{table}
 \begin{center}
@@ -1066,7 +1096,7 @@ Use the Gregorian calendar for all dates. \\
 Hebrew &
 Use the Hebrew (Jewish) calendar. \\
 Islamic &
-Use the Islamic (Muslim) calendar. Note that the Islamic calendar is undefined prior to 1st~Muharram 0\,{\footnotesize AH}, corresponding to 18th~July 622\,{\footnotesize AD}. \\
+Use the Islamic (Muslim) calendar. Note that the Islamic calendar is undefined prior to 1st~Muharram {\footnotesize AH}\,1, corresponding to 18th~July {\footnotesize AD}\,622. \\
 Julian &
 Use the Julian calendar for all dates. \\
 Russian &
@@ -1082,10 +1112,11 @@ used to convert dates between calendar dates and Julian Day numbers.}
 
 Several functions are provided for converting dates back from Julian Day
 numbers to calendar dates. For producing string representations of calendar
-dates, the function {\tt time\_string()} should be used, which takes two
-inputs, the second of which is optional. The first is the Julian Day number to
-be converted, and the second is a string which controls the format of the
-output.  If no format string is provided, then the format\newline
+dates, the function {\tt time\_string()}\indfun{time\_\-string({\it JD},\-{\it
+format})} should be used, which takes two inputs, the second of which is
+optional. The first is the Julian Day number to be converted, and the second is
+a string which controls the format of the output.  If no format string is
+provided, then the format\newline
 \noindent {\tt "\%a \%Y \%b \%d \%H:\%M:\%S"}\newline
 \noindent is used.  Table~\ref{tab:time_string_subs} lists the tokens which are
 substituted for various parts of the date. The following examples demonstrate
@@ -1139,14 +1170,23 @@ a single input, which should be a Julian Day number:
 \noindent
 \setlength{\extrarowheight}{2mm}
 \begin{longtable}{p{4cm}p{7.3cm}}
+\indfun{time\_\-daymonth({\it JD})}
 {\tt time\_daymonth()    }\dotfill & returns the day of the calendar month. \\
+\indfun{time\_\-dayweekname({\it JD})}
 {\tt time\_dayweekname() }\dotfill & takes two arguments, the first of which should be a Julian Day number, and the second of which should be a number $l$ indicating the number of characters to return. Returns the name, truncated to $l$ characters, of the day of the week. If $l<1$, the full name is returned. \\
+\indfun{time\_\-dayweeknum({\it JD})}
 {\tt time\_dayweeknum()  }\dotfill & returns the number (1=Monday--7=Sunday) of the day of the week. \\
+\indfun{time\_\-hour({\it JD})}
 {\tt time\_hour()        }\dotfill & returns the hour of the day. \\
+\indfun{time\_\-min({\it JD})}
 {\tt time\_min()         }\dotfill & returns the minutes component of the time. \\
+\indfun{time\_\-monthname({\it JD})}
 {\tt time\_monthname()   }\dotfill & takes two arguments, the first of which should be a Julian Day number, and the second of which should be a number $l$ indicating the number of characters to return. Returns the name, truncated to $l$ characters, of the calendar month. If $l<1$, the full name is returned. \\
+\indfun{time\_\-monthnum({\it JD})}
 {\tt time\_monthnum()    }\dotfill & returns the number (1-12) of the calendar month. \\
+\indfun{time\_\-sec({\it JD})}
 {\tt time\_sec()         }\dotfill & returns the seconds component of the time. \\
+\indfun{time\_\-year({\it JD})}
 {\tt time\_year()        }\dotfill & returns the calendar year number. \\
 \end{longtable}
 \setlength{\extrarowheight}{0mm}
@@ -1156,7 +1196,6 @@ to use when reading calendar dates in and converting them to Julian Day
 numbers, and when converting Julian Day numbers to calendar dates. This is
 useful when converting data from one calendar to another. The syntax used to do
 this is as follows:
-
 \begin{verbatim}
 set calendar in Julian      # only applies to time_juliandate()
 set calendar out Gregorian  # does not apply to time_juliandate()
@@ -1164,19 +1203,18 @@ set calendar in Julian out Gregorian      # change both
 show calendar               # show calendars currently being used
 \end{verbatim}
 
-Finally, the function {\tt time\_now()}, which takes no arguments, returns the
-Julian Day number corresponding to the current system clock time, as in the
-following example:
-
+Finally, the function {\tt time\_now()}\indfun{time\_\-now()}, which takes no
+arguments, returns the Julian Day number corresponding to the current system
+clock time, as in the following example:
 \begin{verbatim}
 pyxplot> print time_string(time_now())
 Wed 2010 Mar 3 17:04:07
 \end{verbatim}
 
 \example{ex:tolstoy}{Calculating the date of Leo Tolstoy's birth}{
-The Russian novelist Leo Tolstoy was born on 28th August 1828 and died on 7th
-November 1910 in the Russian calendar. What dates do these correspond to in
-the Western calendar?
+The Russian novelist Leo Tolstoy was born on 28th~August~$1828$ and died on
+7th~November~$1910$ in the Russian calendar. What dates do these correspond to
+in the Western calendar?
 \nlscf
 \noindent {\tt pyxplot> set calendar in russian out british}\newline
 \noindent {\tt pyxplot> birth = time\_julianday(1828, 8,28,12,0,0)}\newline
@@ -1184,34 +1222,76 @@ the Western calendar?
 \noindent {\tt pyxplot> print time\_string(birth)}\newline
 \noindent {\tt Tue 1828 Sep 9 12:00:00}\newline
 \noindent {\tt pyxplot> print time\_string(death)}\newline
-\noindent {\tt Sun 1910 Nov 20 12:00:00}\newline
+\noindent {\tt Sun 1910 Nov 20 12:00:00}
 }
 
 \subsection{Time Intervals}
 
+Two functions are provided for measuring the time intervals elapsed between
+pairs of Julian Day numbers.  These are useful when an experiment is started at
+some time $x$, and datapoints are to be labelled with the times elapsed since
+the beginning of the experiment. The {\tt time\_diff()}
+function\indfun{time\_\-diff({\it JD}$_1$,\-{\it JD}$_2$)} returns the time
+interval, with physical dimensions of time, between two Julian Day numbers.
+This function is actually very simple, and is entirely equivalent to the
+algebraic expression {\tt (y-x)*unit(day)}. In the following example, we
+demonstrate its use to calculate the time elapsed between the traditional date
+for the foundation of Rome by Romulus and Remus in 753\,{\footnotesize BC} and
+that of the deposition of the last Emperor of the Western Empire in
+{\footnotesize AD}\,476:
+
 \begin{verbatim}
-set calendar british
-x = time_juliandate(2000,1,1,0,0,0)
-print time_diff(x, time_now())
-print time_diff_string(x, time_now())
+pyxplot> x = time_julianday(-752,4,21,12,0,0)
+pyxplot> y = time_julianday( 476,9, 4,12,0,0)
+pyxplot> print time_diff(x,y)
+3.8764483e+10 s
+pyxplot> print time_diff(x,y)/unit(year)
+1228.3723
+\end{verbatim}
 
-x = time_now()
-print time_string(x)
+The function {\tt time\_diff\_string()}\indfun{time\_\-diff\_\-string({\it
+JD}$_1$,\-{\it JD}$_2$,\-{\it format})} is similar, but returns a
+textual-representation of the time interval, and is useful for producing
+textual axis labels representing the time elapsed since the beginning of an
+experiment. As with the {\tt time\_string()} function, it takes an optional
+third parameter which specifies the textual format in which the time interval
+should be represented. If no format is supplied, then the following verbose
+format is used:\newline
+\noindent {\tt "\%Y years \%d days \%h hours \%m minutes and \%s seconds"}\newline
+Table~\ref{tab:time_diff_string_subs} lists the tokens which are substituted
+for various parts of the time interval. The following examples demonstrates the
+use of the function:
 
-set calendar julian
+\begin{table}
+\begin{center}
+\begin{tabular}{|>{\columncolor{LightGrey}}l|>{\columncolor{LightGrey}}l|}
+\hline
+Token & Substitution value \\
+\hline
+{\tt \%\%} & A literal \% sign.\\
+{\tt \%d} & The number of days elapsed, modulo 365.\\
+{\tt \%D} & The number of days elapsed. \\
+{\tt \%h} & The number of hours elapsed, modulo 24.\\
+{\tt \%H} & The number of hours elapsed.\\
+{\tt \%m} & The number of minutes elapsed, modulo 60.\\
+{\tt \%M} & The number of minutes elapsed.\\
+{\tt \%s} & The number of seconds elapsed, modulo 60.\\
+{\tt \%S} & The number of seconds elapsed.\\
+{\tt \%Y} & The number of years elapsed.\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Tokens which are substituted for various components of the time interval by the {\tt time\_diff\_string} function.}
+\label{tab:time_diff_string_subs}
+\end{table}
 
-print time_string(x)
-print time_string(time_now())
-
-set calendar input russian output british
-x = time_juliandate(1828,8,28,0,0,0)
-print time_string(x)
-
-set calendar islamic
-print time_string(time_now())
-
-set calendar hebrew
-print time_string(time_now())
+\begin{verbatim}
+pyxplot> x = time_julianday(-752,4,21,12,0,0)
+pyxplot> y = time_julianday( 476,9, 4,12,0,0)
+pyxplot> print time_diff_string(x,y)
+1229 years 78 days 0 hours 0 minutes and 0 seconds
+pyxplot> print time_diff_string(x,y,"$%Y^\mathrm{y}%d^\mathrm{d}$")
+$1229^\mathrm{y}78^\mathrm{d}$
 \end{verbatim}
 
 \example{ex:timeseries}{An example}{

@@ -33,41 +33,99 @@ automatically re-executing PyXPlot scripts whenever they change, allowing plots
 to be automatically regenerated whenever the scripts used to produce them are
 modified.
 
-\section{String variables}
+\section{String Variables}
 \label{sec:stringvars}
+\index{variables!string}
 
-String variables can be assigned in a manner analogous to numeric variables,
-using the $=$ command followed by a string enclosed in quotation marks. They can
-then be used wherever a quoted string could be used, for example as a filename
-or a plot title, as in:\index{variables!string}
-
+Variables may not only hold numerical quantities, but also strings of text.  In
+the course of this chapter, we will see several examples where string variables
+are used either to generate automatic labels for graphs plotted in batch jobs,
+or to read strings to text from columns of \datafile s. String variables can be
+assigned in a analogous manner to numeric variables, and can subsequently be
+used anywhere where a quoted string could have been used, as in the example:
 \begin{verbatim}
-plotname = "The Growth of a Rabbit Population"
+plotname = "Insert title here"
 set title plotname
 \end{verbatim}
 
 \subsection{The String Substitution Operator}
+\label{sec:stringsubop}
 
-Strings may also be put together using the string substitution operator, {\tt
-\%}\index{\% operator@{\tt \%} operator}, which works in a similar fashion to
-the Python string substitution operator\index{string operators!substitution}. This
-is described in detail in Section~\ref{sec:string_subs_op}.  For example, to
-concatenate the two strings contained in variables {\tt a} and {\tt b} into
-variable {\tt c} one would run:\index{string operators!concatenation}
-
+Most string manipulations are performed using the string substitution operator,
+{\tt \%}\index{\% operator@{\tt \%} operator}. The operator is preceeded by a
+format string, in which the places where numbers and strings should be
+substituted are marked by tokens such as {\tt \%e} and {\tt \%s}. The
+substitution operator is followed by a bracketed list of the quantities which
+are to be substituted into the format string. This behaviour is similar to that
+of the Python programming language's \% operator\footnote{Unlike in Python, the
+brackets are obligatory; {\tt '\%d'\%2} is {\it not} valid in PyXPlot, and
+should be written as {\tt '\%d'\%(2)}.}, and of the {\tt printf} command in C.
+For example, to concatenate the two strings contained in variables {\tt a} and
+{\tt b} into variable {\tt c} one would issue the command:\index{string
+operators!concatenation}
 \begin{verbatim}
 c = "%s%s"%(a,b)
 \end{verbatim}
 
 One common practical application of these string operators is to label plots
 with the title of the \datafile\ being plotted, as in:
-
 \begin{verbatim}
 filename="data_file.dat"
 title="A plot of the data in {\tt %s}."%(filename)
-title=~s/_/\_/g # Underscore is a reserved character in LaTeX
 set title title
 plot filename
+\end{verbatim}
+
+The syntax of the substitution tokens placed in the format string is similar to
+that used by many other languages and is as follows. All substitution tokens
+begin with a {\tt \%} character, after which there may be placed, in order:
+
+\begin{enumerate}
+\item An optional minus sign, to specify that the substituted item should be left-justified.
+\item An optional integer specifying the minimum character width of the substituted item, or a {\tt *} (see below).
+\item An optional decimal point/period ({\tt .}) separator.
+\item An optional integer, or a {\tt *} (see below), specifying either (a) the maximum number of characters to be printed from a string, or (b) the number of decimal places of a floating-point number to be displayed, or (c) the minimum number of digits of an integer to be displayed, padded to the left with zeros.
+\item A conversion character.
+\end{enumerate}
+
+\noindent The conversion character is a single character which specifies what
+kind of substitution should take place. Its possible values are listed in
+Table~\ref{tab:conversion_chars}. Note that where numerical quantities with
+physical units are provided, the physical units are not displayed unless the
+{\tt \%s} token is used. Although it is not an error to pass a quantity with
+physical units to, for example, the {\tt \%f} substitution token, it is good
+practice to divide the quantity by a suitable unit to make it dimensionless
+first, to be certain of what unit it will be displayed in.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|>{\columncolor{LightGrey}}l>{\columncolor{LightGrey}}p{9cm}|}
+\hline
+{\bf Character} & {\bf Substitutes} \\
+\hline
+{\tt d}, {\tt i}   & An integer value. \\
+{\tt e}, {\tt E}   & A floating-point value in scientific notation using either the character {\tt e} or {\tt E} to indicate exponentiation. \\
+{\tt f}            & A floating-point value without the use of scientific notation. \\
+{\tt g}, {\tt G}   & A floating-point value, either using scientific notation, if the exponent is greater than the precision or less than $4$, otherwise without the use of scientific notation. \\
+{\tt o}            & An integer value in octal (base~8). \\
+{\tt s}, {\tt S}, {\tt c} & A string, if a string is provided, or a numerical quantity, with units, if such is provided. \\
+{\tt x}, {\tt X}   & An integer value in hexidecimal (base~16). \\
+{\tt \%}           & A literal {\tt \%} sign. \\
+\hline
+\end{tabular}
+\end{center}
+\caption{The conversion characters recognised by the string substitution operator, {\tt \%}.}
+\label{tab:conversion_chars}
+\end{table}
+
+Where the character {\tt *} is specified for either the character width or the
+precision of the substitution token, an integer is read from the list of items
+to be substituted, as happens in C's {\tt printf} command:
+\begin{verbatim}
+pyxplot> print "%.*f"%(3,pi)
+3.142
+pyxplot> print "%.*f"%(6,pi)
+3.141593
 \end{verbatim}
 
 \subsection{Regular Expressions}
@@ -77,16 +135,18 @@ operator\index{string operators!search and replace}\footnote{Programmers with
 experience of {\tt perl} will recognise this syntax.}, =$\sim$\index{=$\sim$
 operator}, which takes a regular expression with a syntax similar to that
 expected by the shell command {\tt sed}\index{sed shell command@{\tt sed} shell
-command} and applies it to the relevant string.\footnote{Regular expression
-syntax is a massive subject, and is beyond the scope of this manual. The
-official GNU documentation for the {\tt sed} command is heavy reading, but
+command} and applies it to the relevant string variable.\footnote{Regular
+expression syntax is a massive subject, and is beyond the scope of this manual.
+The official GNU documentation for the {\tt sed} command is heavy reading, but
 there are many more accessible tutorials on the web.}\index{regular
-expressions} For example:
+expressions} In the following example, the first instance of the letter {\tt s} in
+the string variable {\tt twister} is replaced with the letters {\tt th}:
 
 \begin{verbatim}
-twister="seven silver soda syphons"
-twister =~ s/s/th/
-print twister
+pyxplot> twister="seven silver soda syphons"
+pyxplot> twister =~ s/s/th/
+pyxplot> print twister
+theven silver soda syphons
 \end{verbatim}
 
 Note that only the {\tt s} (substitute) command of {\tt sed} is implemented in
@@ -97,18 +157,25 @@ above example, for example:
 twister =~ s@s@th@
 \end{verbatim}
 
-\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, for example:
+\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, as in the
+following example, where the {\tt g} flag is used to perform a global
+search-and-replace of all instances of the letter {\tt s} with the letters {\tt
+th}:
 
 \begin{verbatim}
-twister =~ s@s@th@g
+pyxplot> twister="seven silver soda syphons"
+pyxplot> twister =~ s/s/th/g
+pyxplot> print twister
+theven thilver thoda thyphonth
 \end{verbatim}
 
 \noindent Table~\ref{tab:re_flags} lists all of the regular expression flags
 recognised by the =$\sim$ operator.
 
 \begin{table}
-\framebox[\textwidth]{\footnotesize
-\begin{tabular}{p{5mm}p{10.5cm}}
+{\footnotesize
+\begin{tabular}{|>{\columncolor{LightGrey}}p{5mm}>{\columncolor{LightGrey}}p{10.5cm}|}
+\hline
 {\tt g} & Replace {\it all} matches of the pattern; by default, only the first match is replaced. \\
 {\tt i} & Perform case-insensitive matching, such that expressions like {\tt [A-Z]} will match lowercase letters, too. \\
 {\tt l} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the current locale. \\
@@ -116,6 +183,7 @@ recognised by the =$\sim$ operator.
 {\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
 {\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
 {\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through to the end of the line are ignored. \\
+\hline
 \end{tabular}}
 \caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
 \label{tab:re_flags}

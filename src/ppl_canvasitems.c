@@ -650,6 +650,48 @@ int directive_move(Dict *command)
   return 0;
  }
 
+// Implementation of the swap command.
+int directive_swap(Dict *command)
+ {
+  int           *item1, *item2;
+  canvas_item  **ptr1, **ptr2, *temp;
+  unsigned char *unsuccessful_ops;
+
+  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+
+  // Read the ID numbers of the items to be swapped
+  DictLookup(command, "item1", NULL, (void *)&item1);
+  DictLookup(command, "item2", NULL, (void *)&item2);
+
+  // Seek the first item to be swapped
+  ptr1 = &canvas_items->first;
+  while ((*ptr1!=NULL)&&((*ptr1)->id!=*item1)) ptr1=&((*ptr1)->next);
+  if (*ptr1==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *item1); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+
+  // Seek the second item to be swapped
+  ptr2 = &canvas_items->first;
+  while ((*ptr2!=NULL)&&((*ptr2)->id!=*item2)) ptr2=&((*ptr2)->next);
+  if (*ptr2==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *item2); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+
+  // Do swap
+  (*ptr1)->id = *item2;
+  (*ptr2)->id = *item1;
+  temp = *ptr1;
+  *ptr1 = *ptr2;
+  *ptr2 = temp;
+  temp = (*ptr1)->next;
+  (*ptr1)->next = (*ptr2)->next;
+  (*ptr2)->next = temp;
+
+  // Redisplay the canvas as required
+  if (settings_term_current.display == SW_ONOFF_ON)
+   {
+    unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
+    canvas_draw(unsuccessful_ops);
+   }
+  return 0;
+ }
+
 // Implementation of the arrow command.
 int directive_arrow(Dict *command, int interactive)
  {

@@ -454,6 +454,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_interpolate(command,INTERP_SPLINE);
   else if (strcmp(directive, "subroutine")==0)
    return directive_subroutine(command, IterLevel);
+  else if (strcmp(directive, "swap")==0)
+   return directive_swap(command);
   else if (strcmp(directive, "tabulate")==0)
    return directive_tabulate(command, in);
   else if (strcmp(directive, "text")==0)

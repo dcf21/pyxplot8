@@ -616,6 +616,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
          } else {
           argf.s = ppl_units_NumericDisplay(&argtemp, 0, 0, 0);
          }
+        FormatToken[k-i] = 's';
         if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s); // Print a string variable
         if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.s);
         if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.s);

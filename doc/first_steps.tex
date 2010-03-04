@@ -196,8 +196,9 @@ PyXPlot, a complete list of which can be found in
 Table~\ref{tab:operators_table}.\index{functions!pre-defined}\index{operators}
 
 \begin{table}
-\framebox[\textwidth]{
-\begin{tabular}{lll}
+\begin{center}
+\begin{tabular}{|>{\columncolor{LightGrey}}l>{\columncolor{LightGrey}}l>{\columncolor{LightGrey}}l|}
+\hline
 {\bf Symbol} & {\bf Description} & {\bf Operator Associativity} \\
 \hline
 {\tt **} & Algebraic exponentiation & right \\
@@ -233,7 +234,9 @@ Table~\ref{tab:operators_table}.\index{functions!pre-defined}\index{operators}
 {\tt and} & Logical and & left \\
 \hline
 {\tt or} & Logical or & left \\
-\end{tabular}}
+\hline
+\end{tabular}
+\end{center}
 \caption{A list of mathematical operators which PyXPlot recognises, in order of
 descending precedence. Items separated by horizontal rules are of differing
 precedence; those not separated by horizontal rules are of equivalent
@@ -246,16 +249,6 @@ example, the expression {\tt x**y**z} is evaluated as {\tt (x**(y**z))}.}
 \example{ex:introduction}{An example}{
 Here, we have an example.
 }
-
-\noindent To unset a variable or function once it has been set, the following
-syntax should be
-used:\index{variables!unsetting}\index{functions!unsetting}\index{unsetting
-variables}
-
-\begin{verbatim}
-a =
-f(x) =
-\end{verbatim}
 
 \section{Comments}
 
@@ -279,13 +272,11 @@ each line of it with a backslash character, whereupon the following line will
 be appended to it.
 
 \section{Printing Text}
-\label{sec:string_subs_op}
 
 PyXPlot's \indcmdt{print} can be used to display strings and the results of
 calculations on the terminal. In the following examples, we show both the
 commands typed by the user, which are preceded by PyXPlot prompts {\tt
 pyxplot>}, and the text returned by PyXPlot:
-
 \begin{verbatim}
 pyxplot> a=2
 pyxplot> print "Hello World!"
@@ -293,7 +284,9 @@ Hello World!
 pyxplot> print a
 2
 \end{verbatim}
-
+Multiple items can be displayed one-after-another on a single line by
+separating them with commas. The following example displays the values of the
+variable {\tt a} and the function {\tt f(a)} in the middle of a text string:
 \begin{verbatim}
 pyxplot> f(x) = x**2
 pyxplot> a=3
@@ -301,14 +294,17 @@ pyxplot> print "The value of ",a," squared is ",f(a),"."
 The value of 3 squared is 9.
 \end{verbatim}
 
-\noindent Values may also be substituted into strings using the {\tt \%}
-operator\index{\% operator@{\tt \%} operator}, which works in a similar fashion
-to Python's string substitution operator\index{string operators!substitution} or
-the {\tt printf} command in C.  The list of values to be substituted into the
-string should be a ()-bracketed list\footnote{Unlike in Python, the brackets
-are obligatory; {\tt '\%d'\%2} is {\it not} valid in PyXPlot, and should be
-written as {\tt '\%d'\%(2)}.}:
-
+A similar effect is often achieved more neatly using the string substitution
+operator, {\tt \%}\index{\% operator@{\tt \%} operator}\index{string
+operators!substitution}.  The operator is preceeded by a format string, in
+which the places where numbers and strings should be substituted are marked by
+tokens such as {\tt \%e} and {\tt \%s}. The substitution operator is followed
+by a bracketed list of the quantities which are to be substituted into the
+format string. This behaviour is similar to that of the Python programming
+language's \% operator\footnote{Unlike in Python, the brackets are obligatory;
+{\tt '\%d'\%2} is {\it not} valid in PyXPlot, and should be written as {\tt
+'\%d'\%(2)}.}, and of the {\tt printf} command in C.  The following examples
+demonstrate the use of this operator:
 \begin{verbatim}
 pyxplot> print "The value of %d squared is %d."%(a,f(a))
 The value of 3 squared is 9.
@@ -316,16 +312,9 @@ pyxplot> print "The %s of f(%f) is %d."%("value",sqrt(2),f(sqrt(2)))
 The value of f(1.414214) is 2.
 \end{verbatim}
 
-As in C, {\tt \%d} means that in integer should be printed, {\tt \%f} means
-that a floating point number should be printed, and {\tt \%e} means that a
-floating point number should be printed in scientific format. {\tt \%s} has a
-slightly different meaning in PyXPlot from in C: it can be used either to
-substitute a string, or to substitute a floating point number in whatever
-format PyXPlot deems most appropriate. As in C, {\tt \%16f} means that a
-floating point number should be displayed in a column of width 16 characters.
-{\tt \%-16f} is similar, but means that the number should be left-justified,
-and {\tt \%.2f} means that the number should be displayed accurate to two
-decimal places.
+The detailed behaviour of the string substitution operator, and a full list of
+the substitution tokens which it accepts, are given in
+Section~\ref{sec:stringsubop}.
 
 \section{Axis Labels and Titles}
 \label{sec:latex_incompatibility}
@@ -433,7 +422,7 @@ Table~\ref{tab:show_keywords}.
 
 \begin{table}
 \begin{center}
-\begin{tabular}{|lp{9cm}|}
+\begin{tabular}{|>{\columncolor{LightGrey}}l>{\columncolor{LightGrey}}p{9cm}|}
 \hline
 {\bf Query} & {\bf Description} \\ \hline
 {\tt functions} & Lists all currently defined mathematical functions, both those which are built into PyXPlot, and those which the user has defined.\\

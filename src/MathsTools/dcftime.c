@@ -429,12 +429,12 @@ void dcftime_julianday(value *in1, value *in2, value *in3, value *in4, value *in
   char *FunctionDescription = "time_julianday(year,month,day,hour,min,sec)";
   CHECK_6NOTNAN;
   CHECK_6INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function's first input (year) must be an integer");
-  CHECK_NEEDINT(in2, "function's second input (month) must be an integer");
-  CHECK_NEEDINT(in3, "function's third input (day) must be an integer");
-  CHECK_NEEDINT(in4, "function's fourth input (hours) must be an integer");
-  CHECK_NEEDINT(in5, "function's fifth input (minutes) must be an integer");
-  CHECK_NEEDINT(in6, "function's sixth input (seconds) must be an integer");
+  CHECK_NEEDSINT(in1, "function's first input (year) must be an integer");
+  CHECK_NEEDINT (in2, "function's second input (month) must be an integer");
+  CHECK_NEEDINT (in3, "function's third input (day) must be an integer");
+  CHECK_NEEDINT (in4, "function's fourth input (hours) must be an integer");
+  CHECK_NEEDINT (in5, "function's fifth input (minutes) must be an integer");
+  CHECK_NEEDINT (in6, "function's sixth input (seconds) must be an integer");
   IF_6COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = JulianDay((int)in1->real, (int)in2->real, (int)in3->real, (int)in4->real, (int)in5->real, (int)in6->real, status, errtext); }
   ENDIF

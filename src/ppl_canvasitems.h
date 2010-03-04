@@ -100,6 +100,7 @@ int directive_list    ();
 int directive_delete  (Dict *command);
 int directive_undelete(Dict *command);
 int directive_move    (Dict *command);
+int directive_swap    (Dict *command);
 int directive_arrow   (Dict *command, int interactive);
 int directive_box     (Dict *command, int interactive);
 int directive_circle  (Dict *command, int interactive);
