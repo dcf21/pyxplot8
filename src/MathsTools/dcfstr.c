@@ -113,6 +113,7 @@ void dcfstr_strrange(char *in, int inlen, value *output, unsigned char DollarAll
   END_INPUT_STRING;
   output->string = InString;
   if (start >= strlen(InString)) { output->string[0]='\0'; return; }
+  if ((start>0)&&(end==0)) { end=strlen(InString); }
   for (i=0,j=start; (InString[j]!='\0')&&(j<end);i++,j++) InString[i]=InString[j];
   InString[i]='\0';
   return;

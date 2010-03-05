@@ -253,6 +253,7 @@ canvases:
 \item Encapsulated postscript images (the \indcmdt{eps}).
 \item Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} formats (the \indcmdt{image}).
 \item Lines (the \indcmdt{line}).
+\item Piecharts (the \indcmdt{piechart}).
 \item Points labelled by crosses and other symbols (the \indcmdt{point}).
 \item Text labels (the \indcmdt{text}).
 \end{itemize}
@@ -750,6 +751,25 @@ The resulting diagram is shown below:
 \subsection{The {\tt point} Command}
 \label{sec:point}
 
+The \indcmdt{point} places a single point on a multiplot canvases, in the same
+style which would be used when plotting a dataset on a graph with the {\tt
+points} plotting style. It is useful for marking significant points on
+technical diagrams with crosses or other motifs.
+
+The \indcmdt{point} that the position of the point to be marked be specified
+after the {\tt at} modifier. A text label to be attached next to the point may
+optionally be specified using the same {\tt label} modifier as taken by the
+{\tt plot} command. A {\tt with} modifier may then be supplied, followed by any
+of the style modifiers: {\tt colour}, {\tt pointlinewidth}, {\tt pointsize},
+{\tt pointtype}, {\tt style}.
+
+The following example labels the origin as such:
+\begin{verbatim}
+set texthalign left
+set textvalign centre
+point at 0,0 label "The Origin" with ps 2
+\end{verbatim}
+
 \subsection{The {\tt ellipse} Command}
 \label{sec:ellipse}
 
@@ -850,6 +870,44 @@ The resulting diagram is shown below:
 \subsection{The {\tt piechart} Command}
 \label{sec:piechart}
 
+The \indcmdt{piechart} produces piecharts based upon single columns of data
+read from \datafile s, which are taken to indicate the sizes of the pie wedges.
+Immediately after the {\tt piechart} keyword, the file (or indeed, function)
+from which the data is to be taken should be specified; any of the modifiers
+taken by the {\tt plot} command -- i.e.\ {\tt using}, {\tt index}, etc.\ -- may
+be used to specify which data from this \datafile should be used. The {\tt
+label} modifier should be used to specify how a name for each pie wedge should
+be drawn from the \datafile, and has a similar syntax to the equivalent
+modifier in the {\tt plot} command, except that the label string may be
+prefixed by a keyword to specify how the pie wedge labels should be positioned.
+Four options are available:
+
+\noindent
+\begin{itemize}
+\item {\tt auto} -- specifies that the {\tt inside} positioning mode should be used on wide pie wedges, and the {\tt outside} positioning mode should be used on narrow pie wedges. {\bf [default]}
+\item {\tt key} -- specifies that all of the labels should be arranged in a vertical list to the right-hand side of the piechart.
+\item {\tt inside} -- specifies that the labels should be placed within the pie wedges themselves.
+\item {\tt outside} -- specifies that the labels should be arranged around the circumference of the pie chart.
+\end{itemize}
+
+Having specified a name for each wedge using the {\tt label} modifier, the {\tt
+format} modifier determines the final text which is associated with each wedge.
+
+The {\tt with} modifier may be followed by the keywords {\tt colour}, {\tt
+linewidth}, {\tt style}, which all apply to the lines drawn around the
+circumference of the piechart and between its wedges. The fill colour of the
+wedges themselves are taken sequentially from the current palette, as set by
+the {\tt set palette} command. Note that PyXPlot's default palette is optimised
+more for producing plots with datasets in different and distinct colours than
+for producing piecharts in asthetically pleasing shades, where a little more
+subtly may be desirable. A suitable call to the {\tt set palette} command is
+highly recommended before the \indcmdt{piechart} is used.
+
+As with the {\tt plot} command, the position and size of the piechart are
+governed by the {\tt set origin} and {\tt set size} commands. The former
+determines where the centre of the piechart is positioned; the latter
+determines its diameter.
+
 \example{ex:piechart}{A piechart of the composition of the Universe}{
 It is the beginning of many a news story about cosmology. Astronomers tell us
 that of the material which makes up the Universe, only 4\% is in the form of
@@ -874,7 +932,13 @@ piecharts of the composition of the Universe:
 \nlscf
 \centerline{\includegraphics{examples/eps/ex_piechart.eps}}
 \nlfcf
-bar
+Below, we show the change produced by replacing the line\vspace{2mm}\newline
+\noindent{\tt piechart '--' using \$1 label key "\%s"\%(\$2)}\vspace{2mm}\newline
+with\vspace{2mm}\newline
+\noindent{\tt piechart '--' using \$1 label auto "\%s"\%(\$2)}\vspace{2mm}\newline
+Note that the labels on the piechart are placed either within the pie, in the
+cases of large wedges, and around the edge of the pie for those wedges which
+are too narrow for this.
 \nlscf
 \centerline{\includegraphics{examples/eps/ex_piechart2.eps}}
 }

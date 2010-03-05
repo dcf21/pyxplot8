@@ -189,6 +189,33 @@ recognised by the =$\sim$ operator.
 \label{tab:re_flags}
 \end{table}
 
+\subsection{String Manipulation Functions}
+
+The following functions are provided for performing simple manipulations upon
+strings:
+
+\noindent
+\begin{itemize}
+\item {\tt strlen(s)}\indfun{strlen($s$)} returns the integer length of the string variable {\tt s}. An error is returned if {\tt s} is not a string variable.
+\item {\tt strlower(s)}\indfun{strlower($s$)} returns a version of the string {\tt s} in which all uppercase alphabetical characters are converted to lowercase characters.
+\item {\tt strrange(s,i,j)}\indfun{strrange($s,i,j$)} returns a slice of the string $s$, containing only the $i$th through until the $j$th characters of the string. If either $i$ or $j$ are negative, they are counted from the end of the string; for example, $-1$ refers to the last character of the string.
+\item {\tt strupper(s)}\indfun{strupper($s$)} returns a version of the string {\tt s} in which all lowercase alphabetical characters are converted to uppercase characters.
+\end{itemize}
+
+\noindent
+The following simple examples demonstrate the use of these functions:
+\begin{verbatim}
+pyxplot> x="It was the best of times, it was the worst of times"
+pyxplot> print strlen(x)
+51
+pyxplot> print strrange(x,0,24)
+It was the best of times
+pyxplot> print strrange(x,-25,0)
+it was the worst of times
+pyxplot> print strupper(x)
+IT WAS THE BEST OF TIMES, IT WAS THE WORST OF TIMES
+\end{verbatim}
+
 \section{Conditionals}
 
 The {\tt if} statement\indcmd{if} can be used to conditionally execute a series
