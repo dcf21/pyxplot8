@@ -131,3 +131,14 @@ void eps_core_BoundingBox(EPSComm *x, double xpos, double ypos, double lw)
   return;
  }
 
+// Update plot item bounding box
+void eps_core_PlotBoundingBox(EPSComm *x, double xpos, double ypos, double lw)
+ {
+  if (x->current->PlotLeftMargin   > (xpos-lw/2)) x->current->PlotLeftMargin   = (xpos-lw/2);
+  if (x->current->PlotRightMargin  < (xpos+lw/2)) x->current->PlotRightMargin  = (xpos+lw/2);
+  if (x->current->PlotBottomMargin > (ypos-lw/2)) x->current->PlotBottomMargin = (ypos-lw/2);
+  if (x->current->PlotTopMargin    < (ypos+lw/2)) x->current->PlotTopMargin    = (ypos+lw/2);
+  eps_core_BoundingBox(x, xpos, ypos, lw);
+  return;
+ }
+

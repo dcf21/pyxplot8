@@ -272,9 +272,10 @@ void GraphLegend_Render(EPSComm *x, double width, double height)
      case SW_KEYPOS_BR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
      case SW_KEYPOS_BM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
      case SW_KEYPOS_BL:      xoff =                                 LEGEND_MARGIN; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
-     case SW_KEYPOS_ABOVE:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff = height   + AttainedHeight  + LEGEND_MARGIN; break;
-     case SW_KEYPOS_BELOW:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =                            - LEGEND_MARGIN; break;
-     case SW_KEYPOS_OUTSIDE: xoff = width                         + LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN; break;
+     case SW_KEYPOS_ABOVE:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =            AttainedHeight  + LEGEND_MARGIN + x->current->PlotTopMargin    - x->current->settings.OriginY.real*M_TO_PS; break;
+     case SW_KEYPOS_BELOW:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =                            - LEGEND_MARGIN + x->current->PlotBottomMargin - x->current->settings.OriginY.real*M_TO_PS; break;
+     case SW_KEYPOS_OUTSIDE: xoff =                                 LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN;
+                             xoff+= x->current->PlotRightMargin - x->current->settings.OriginX.real*M_TO_PS; break;
     }
 
   // Translate legend to desired place on canvas (3D case)

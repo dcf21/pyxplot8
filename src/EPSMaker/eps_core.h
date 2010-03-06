@@ -31,6 +31,7 @@ void eps_core_SwitchTo_FillColour  (EPSComm *x);
 void eps_core_SwitchFrom_FillColour(EPSComm *x);
 void eps_core_SetLinewidth         (EPSComm *x, double lw, int lt, double offset);
 void eps_core_BoundingBox          (EPSComm *x, double xpos, double ypos, double lw);
+void eps_core_PlotBoundingBox      (EPSComm *x, double xpos, double ypos, double lw);
 
 #endif
 

@@ -63,14 +63,14 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
     if (!Yx)
      {
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", left, *ypos, right, *ypos);
-      eps_core_BoundingBox(x, left , *ypos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-      eps_core_BoundingBox(x, right, *ypos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+      eps_core_PlotBoundingBox(x, left , *ypos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+      eps_core_PlotBoundingBox(x, right, *ypos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
      }
     else
      {
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", *ypos, left, *ypos, right);
-      eps_core_BoundingBox(x, *ypos, left , EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-      eps_core_BoundingBox(x, *ypos, right, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+      eps_core_PlotBoundingBox(x, *ypos, left , EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+      eps_core_PlotBoundingBox(x, *ypos, right, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
      }
 
     // Paint axis ticks
@@ -103,14 +103,14 @@ void eps_plot_2d_axispaint(EPSComm *x, settings_axis *a, const unsigned char Yx,
           if (!Yx)
            {
             fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", lrpos, udpos1, lrpos, udpos2);
-            eps_core_BoundingBox(x, lrpos, udpos1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-            eps_core_BoundingBox(x, lrpos, udpos2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_PlotBoundingBox(x, lrpos, udpos1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_PlotBoundingBox(x, lrpos, udpos2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
            }
           else
            {
             fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", udpos1, lrpos, udpos2, lrpos);
-            eps_core_BoundingBox(x, udpos1, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-            eps_core_BoundingBox(x, udpos2, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_PlotBoundingBox(x, udpos1, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_PlotBoundingBox(x, udpos2, lrpos, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
            }
 
           // Paint the axis labels
@@ -191,6 +191,12 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   // 2D flat axes
   else
    {
+    x->current->PlotLeftMargin   = origin_x;
+    x->current->PlotRightMargin  = origin_x+width;
+    x->current->PlotTopMargin    = origin_y+height;
+    x->current->PlotBottomMargin = origin_y;
+
+
     for (j=0; j<2; j++)
      {
       Naxes[0] = Naxes[1] = 0;

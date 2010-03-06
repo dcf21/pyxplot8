@@ -83,6 +83,7 @@ typedef struct canvas_item {
  canvas_plotrange *plotranges;
  canvas_plotdesc  *plotitems;
  DataTable       **plotdata; // used at plot time
+ double            PlotLeftMargin, PlotRightMargin, PlotTopMargin, PlotBottomMargin;
  int               FirstTextID, AxesTextID, TitleTextID, LegendTextID, SetLabelTextID, *DatasetTextID;
 } canvas_item;
 
