@@ -33,6 +33,8 @@
 #define EPS_BASE_AXES_MINTICKLEN   ( 0.000848528137 ) /* 0.0012 divided by sqrt(2) */
 #define EPS_BASE_AXES_SEPARATION   ( 0.008          )
 #define EPS_BASE_AXES_TEXTGAP      ( 0.003          )
+#define EPS_BASE_GRID_MAJLINEWIDTH ( 1.0            )
+#define EPS_BASE_GRID_MINLINEWIDTH ( 0.5            )
 
 // Copies of the values actually used by the eps generation routines, which may have been scaled relative to their baselines
 #ifndef _PPL_EPS_SETTINGS_C
@@ -47,6 +49,8 @@ extern double EPS_AXES_MAJTICKLEN;
 extern double EPS_AXES_MINTICKLEN;
 extern double EPS_AXES_SEPARATION;   
 extern double EPS_AXES_TEXTGAP;
+extern double EPS_GRID_MAJLINEWIDTH;
+extern double EPS_GRID_MINLINEWIDTH;
 #endif
 
 #endif

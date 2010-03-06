@@ -132,6 +132,7 @@ configuration, and provides a useful index to all of the settings which are
 available. In subsequent sections, we describe the effect of each setting in
 detail.
 
+%Projection = Flat
 \begin{verbatim}
 [settings]
 Aspect = 1.0
@@ -156,8 +157,8 @@ Grid = Off
 GridAxisX = 1
 GridAxisY = 1
 GridAxisZ = 1
-GridMajColour = Grey60
-GridMinColour = Grey90
+GridMajColour = Grey70
+GridMinColour = Grey85
 Key = On
 KeyColumns = 0
 KeyPos = Top Right
@@ -178,7 +179,6 @@ PaperName = a4
 PaperWidth = 210
 PointLineWidth = 1.0
 PointSize = 1.0
-Projection = Flat
 Samples = 250
 TermAntiAlias = On
 TermEnlarge = Off
@@ -217,6 +217,8 @@ Axes_MajTickLen = 1.0
 Axes_MinTickLen = 1.0
 Axes_Separation = 1.0
 Axes_TextGap = 1.0
+Grid_MajLineWidth = 1.0
+Grid_MinLineWidth = 0.5
 Baseline_LineWidth = 1.0
 Baseline_PointSize = 1.0
 
@@ -521,12 +523,12 @@ filters, see Section~\ref{sec:filters}.
 
                Sets the sizes of points on plots, as a multiple of their normal sizes.
                \\
-{\tt Projection} & {\bf Possible values:} {\tt gnomonic}, {\tt flat}.
-
-               {\bf Analogous set command:} \indcmdts{set projection}
-
-               Sets the projection used on graphs. Flat projection is useful for most purposes, but gnomonic projection is useful for representing curved spaces on flat pieces of paper, when drawing world maps, for example.
-               \\
+%{\tt Projection} & {\bf Possible values:} {\tt gnomonic}, {\tt flat}.
+%
+%               {\bf Analogous set command:} \indcmdts{set projection}
+%
+%               Sets the projection used on graphs. Flat projection is useful for most purposes, but gnomonic projection is useful for representing curved spaces on flat pieces of paper, when drawing world maps, for example.
+%               \\
 {\tt Samples} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} \indcmdts{set samples}
@@ -689,6 +691,14 @@ filters, see Section~\ref{sec:filters}.
 {\tt Axes\_TextGap} & {\bf Possible values:} Any floating-point number.
 
                Sets the separation between axes and the text labels which are associated with them. A value of 1.0 corresponds to PyXPlot's default spacing of $3\,\mathrm{mm}$; other values differ from this multiplicatively.
+               \\
+{\tt Grid\_MajLineWidth} & {\bf Possible values:} Any floating-point number.
+
+               Sets the line width used to draw major gridlines (default $1.0$).
+               \\
+{\tt Grid\_MinLineWidth} & {\bf Possible values:} Any floating-point number.
+
+               Sets the line width used to draw minor gridlines (default $0.5$).
                \\
 {\tt Baseline\_LineWidth} & {\bf Possible values:} Any floating-point number.
 

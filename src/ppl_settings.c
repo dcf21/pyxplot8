@@ -151,7 +151,7 @@ void ppl_settings_makedefault()
   settings_graph_default.GridMajColourR= 0;
   settings_graph_default.GridMajColourG= 0;
   settings_graph_default.GridMajColourB= 0;
-  settings_graph_default.GridMinColour = COLOUR_GREY90;
+  settings_graph_default.GridMinColour = COLOUR_GREY85;
   settings_graph_default.GridMinColourR= 0;
   settings_graph_default.GridMinColourG= 0;
   settings_graph_default.GridMinColourB= 0;

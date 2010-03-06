@@ -1009,15 +1009,15 @@ void directive_set(Dict *command)
     strncpy(settings_term_current.LatexPreamble, settings_term_default.LatexPreamble, FNAME_LENGTH-4);
     settings_term_current.LatexPreamble[FNAME_LENGTH-4]='\0';
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"projection")==0)) /* set projection */
-   {
-    DictLookup(command,"projection",NULL,(void **)&tempstr);
-    sg->projection = FetchSettingByName(tempstr, SW_PROJ_INT, SW_PROJ_STR);
-   }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"projection")==0)) /* unset projection */
-   {
-    sg->projection = settings_graph_default.projection;
-   }
+//  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"projection")==0)) /* set projection */
+//   {
+//    DictLookup(command,"projection",NULL,(void **)&tempstr);
+//    sg->projection = FetchSettingByName(tempstr, SW_PROJ_INT, SW_PROJ_STR);
+//   }
+//  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"projection")==0)) /* unset projection */
+//   {
+//    sg->projection = settings_graph_default.projection;
+//   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     DictLookup(command,"samples",NULL,(void **)&tempint);
@@ -2167,12 +2167,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "preamble", buf, (strcmp(settings_term_default.LatexPreamble,settings_term_current.LatexPreamble)==0), "Configuration options sent to the LaTeX typesetting system");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "projection", 1)>=0))
-   {
-    sprintf(buf, "%s", *(char **)FetchSettingName(settings_graph_current.projection, SW_PROJ_INT, (void *)SW_PROJ_STR, sizeof(char *)));
-    directive_show3(out+i, ItemSet, 0, interactive, "projection", buf, (settings_graph_default.projection==settings_graph_current.projection), "The projection used when representing (x,y) data on a graph");
-    i += strlen(out+i) ; p=1;
-   }
+//  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "projection", 1)>=0))
+//   {
+//    sprintf(buf, "%s", *(char **)FetchSettingName(settings_graph_current.projection, SW_PROJ_INT, (void *)SW_PROJ_STR, sizeof(char *)));
+//    directive_show3(out+i, ItemSet, 0, interactive, "projection", buf, (settings_graph_default.projection==settings_graph_current.projection), "The projection used when representing (x,y) data on a graph");
+//    i += strlen(out+i) ; p=1;
+//   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "samples",1)>=0))
    {
     sprintf(buf, "%d", sg->samples);

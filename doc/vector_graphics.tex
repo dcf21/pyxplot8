@@ -872,14 +872,26 @@ The resulting diagram is shown below:
 
 The \indcmdt{piechart} produces piecharts based upon single columns of data
 read from \datafile s, which are taken to indicate the sizes of the pie wedges.
+The \indcmdt{piechart} has the following syntax:
+\begin{verbatim}
+piechart ('<filename>'|<function>)
+     [using <using specifier>]
+     [select <select specifier>]
+     [index <index specifier>]
+     [every <every specifier>]
+     [label <auto|key|inside|outside> <label>]
+     [format <format string>]
+     [with <style> [<style modifier> ... ] ]
+\end{verbatim}
+
 Immediately after the {\tt piechart} keyword, the file (or indeed, function)
 from which the data is to be taken should be specified; any of the modifiers
 taken by the {\tt plot} command -- i.e.\ {\tt using}, {\tt index}, etc.\ -- may
 be used to specify which data from this \datafile should be used. The {\tt
 label} modifier should be used to specify how a name for each pie wedge should
 be drawn from the \datafile, and has a similar syntax to the equivalent
-modifier in the {\tt plot} command, except that the label string may be
-prefixed by a keyword to specify how the pie wedge labels should be positioned.
+modifier in the {\tt plot} command, except that the name string may be
+prefixed by a keyword to specify how the pie wedge names should be positioned.
 Four options are available:
 
 \noindent
@@ -891,7 +903,17 @@ Four options are available:
 \end{itemize}
 
 Having specified a name for each wedge using the {\tt label} modifier, the {\tt
-format} modifier determines the final text which is associated with each wedge.
+format} modifier determines the final text which is printed along side each
+wedge.  For example, a wedge with name `Europe' might be labelled as `27\%
+Europe', applying the default format string:
+\begin{verbatim}
+"%.1d\%% %s"%(percentage,label)
+\end{verbatim}
+Three variables may be used in format strings: {\tt label} contains the name of
+the wedge as specified by the {\tt label} modifier, {\tt percentage} contains
+the numerical percentage size of the wedge, and {\tt wedgesize} contains the
+absolute unnormalised size of the wedge, as read from the input \datafile,
+before the sizes were renormalised to sum to 100\%.
 
 The {\tt with} modifier may be followed by the keywords {\tt colour}, {\tt
 linewidth}, {\tt style}, which all apply to the lines drawn around the

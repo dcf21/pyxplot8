@@ -40,6 +40,7 @@
 #include "eps_plot.h"
 #include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_gridlines.h"
 #include "eps_plot_labelsarrows.h"
 #include "eps_plot_legend.h"
 #include "eps_plot_linkedaxes.h"
@@ -480,6 +481,7 @@ void eps_plot_RenderEPS(EPSComm *x)
    fprintf(x->epsbuffer, "gsave\nnewpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nclip newpath\n",origin_x,origin_y,origin_x+width,origin_y,origin_x+width,origin_y+height,origin_x,origin_y+height);
 
   // Render gridlines
+  eps_plot_gridlines(x, origin_x, origin_y, width, height);
 
   // Activate three-dimensional buffer if graph is 3D
   if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);

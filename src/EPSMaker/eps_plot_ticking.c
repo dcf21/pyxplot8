@@ -298,8 +298,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
         {
          axis->MTickListPositions[j] = eps_plot_axis_GetPosition( axis->MTickList[i] , axis, xrn, 0);
          if ( (!gsl_finite(axis->MTickListPositions[j])) || (axis->MTickListPositions[j]<0.0) || (axis->MTickListPositions[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
-         if      (axis->TickStrs[i][0]!='\01') axis->TickListStrings[j] = axis->TickStrs[i];
-         else                                  axis->TickListStrings[j] = "";
+         if      (axis->MTickStrs[i][0]!='\01') axis->MTickListStrings[j] = axis->MTickStrs[i];
+         else                                   axis->MTickListStrings[j] = "";
          j++;
         }
       axis->MTickListStrings[j] = NULL; // null terminate list
