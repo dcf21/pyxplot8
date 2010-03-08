@@ -32,8 +32,10 @@ operating systems.
 
 PyXPlot works on most UNIX-like operating systems. We have tested it under
 Linux, Solaris\index{Solaris} and MacOS~X\index{MacOS X}, and believe that it
-should work on other similar POSIX systems. It requires that the following
-software packages (not included) be installed:\index{system requirements}
+should work on other similar POSIX systems. We regret that it is not available
+for Microsoft Windows, and have no plans for porting it at this time. It
+requires that the following software packages (not included) be
+installed:\index{system requirements}
 
 \vspace{0.5cm}
 \begin{itemize}
@@ -61,7 +63,7 @@ reinstalled to take advantage of their presence.
 \begin{itemize}
 \item cfitsio -- required in order to plot \datafile s in FITS format.
 \item Ghostview (or {\tt ggv}) \index{Ghostview} -- required in order for PyXPlot to display plots live on the screen; PyXPlot remains able to generate image files on disk without it.
-\item gunzip \index{gunzip} -- required in order to plot compressed data files in {\tt .gz} format.
+\item gunzip \index{gunzip} -- required in order to plot compressed \datafile s in {\tt .gz} format.
 \item The Gnu Readline Library (version 5+) \index{readline} -- required in order to provide tab completion and command histories in PyXPlot's interactive command-line interface.
 \item wget \index{wget} -- required in order to plot data files directly from the internet.
 \end{itemize}
@@ -99,12 +101,15 @@ which is a very substantial upgrade to version~0.7.x. Many of the features
 described in this manual are not available in previous versions.
 
 Under Debian and Ubuntu Linux, version~0.8.0 may be manually installed by
-downloading the file {\tt pyxplot\_0.8.0.deb} from the PyXPlot website and
-typing:
+downloading the appropriate {\tt .deb} file for your distribution from the
+PyXPlot website and typing:
 
 \begin{verbatim}
-dpkg -i pyxplot_0.8.0.deb
+dpkg -i <filename>.deb
 \end{verbatim}
+
+Users of other distributions should use the {\tt .tar.gz} archives available
+from the PyXPlot website as described below.
 
 \subsection{Installation as User}
 
