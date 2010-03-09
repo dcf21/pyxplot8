@@ -1,10 +1,9 @@
 % CALCULATIONS.TEX
 %
-% The documentation in this file is part of PyXPlot
-% <http://www.pyxplot.org.uk>
+% The documentation in this file is part of PyXPlot <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-%               2009-2010 Ross Church
+% Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk> 2009-2010 Ross
+% Church
 %
 % $Id$
 %
@@ -25,89 +24,76 @@
 
 The previous chapter described how PyXPlot can be used to plot data directly
 from \datafile s onto graphs. Often, however, calculations need to be performed
-on data before it is plotted, and so in this chapter we describe the
-mathematical environment which PyXPlot provides for manipulating and performing
-calculations. For simplicity, most of the examples in this chapter perform
-single calculations on the values of variables, displaying the results using
-the {\tt print} command, essentially using PyXPlot as a desktop calculator; we
-will show in subsequent chapters examples of the use of PyXPlot's mathematical
-environment to produce plots.
+on data before it is plotted. This chapter describes the mathematical
+environment which PyXPlot provides for performing calculations either upon
+single numerical values or upon whole datasets.  For simplicity, most of the
+examples in this chapter will act upon single numerical values, displaying the
+results using the {\tt print} command, thus using PyXPlot essentially as a
+desktop calculator. In subsequent chapters, more examples will be given of the
+use of PyXPlot's mathematical environment to analyse whole datasets and produce
+plots.
 
 \section{Variables}
 
 Variables can be assigned to hold numerical values using syntax of the form:
 
-\begin{verbatim}
-a = 5.2 * sqrt(64)
-\end{verbatim}
+\begin{verbatim} a = 5.2 * sqrt(64) \end{verbatim}
 
 \noindent which may optionally be written as:\indcmd{let}
 
-\begin{verbatim}
-let a = 5.2 * sqrt(64)
-\end{verbatim}
+\begin{verbatim} let a = 5.2 * sqrt(64) \end{verbatim}
 
 \noindent Numerical variables can subsequently be used by name in mathematical
 expressions, as in the example:
 
-\begin{verbatim}
-print a / sqrt(64)
-\end{verbatim}
+\begin{verbatim} print a / sqrt(64) \end{verbatim}
 
-\noindent A variable can subsequently be undefined to have no value using
-syntax of the form:
+\noindent Having been defined, variables can later be undefined -- set to have
+no value -- using syntax of the form:
 
-\begin{verbatim}
-a=
-\end{verbatim}
+\begin{verbatim} a = \end{verbatim}
 
-A list of all variables which are currently defined can be obtained by typing
-{\tt show variables}\indcmd{show variables}. By default quite an extensive list
-is returned, as many physical constants are defined by default in PyXPlot. In
-Section~\ref{sect:stringvars}, we will see that variables can also be set to
+A list of all of the variables which are currently defined can be obtained by
+typing {\tt show variables}\indcmd{show variables}. By default, an extensive
+list is returned, as many physical constants are pre-defined by PyXPlot. In
+Section~\ref{sec:stringvars}, we will see that variables can also be set to
 hold string values -- i.e.\ to hold pieces of text -- and that such variables
-can have great power in allowing the user to autogenerate titles and labels for
-graphs.
+can have great power in allowing the user to auto-generate titles and labels
+for graphs.
 
-\section{Physical Constants}
-\label{sec:constants}
-\index{physical constants}\index{constants}
+\section{Physical Constants} \label{sec:constants} \index{physical
+constants}\index{constants}
 
-A wide range of mathematical and physical constants are defined by default in
-PyXPlot. A complete list can be obtained by typing {\tt show variables} or by
+A wide range of mathematical and physical constants are pre-defined by default.
+A complete list of these can be obtained by typing {\tt show variables} or by
 consulting Chapter~\ref{ch:constants}. Some of these, for example, {\tt e},
 {\tt pi} and {\tt GoldenRatio} are standard mathematical constants, the last of
 these being the default aspect ratio of plots produced by PyXPlot. Many of the
 others are physical constants, which are prefixed with {\tt phy\_} to minimise
 clashes between their names and those of variables which the user may wish to
 define.  Nonetheless, pre-defined constants are no different from any other
-variables in PyXPlot, and the user can freely redefine them without this being
+variables in PyXPlot, and the user can freely re-define them without this being
 an error.
 
 Most of the pre-defined physical constants are not dimensionless quantities,
 and make use of PyXPlot's native ability to keep track of the physical units of
-quantities and to convert between different unit systems -- for example,
+quantities and to convert them between different unit systems -- for example,
 between inchs and centimetres.  This will be explained in more detail in
 Section~\ref{sec:units}.
 
-\section{Functions}
-\label{sec:functions}
+\section{Functions} \label{sec:functions}
 
 A large number of standard functions are pre-defined within PyXPlot's
-mathematical environment, ranging from trigonometric functions, to very
-specialised functions, for example to evaluate the phase of the Moon on any
-given day or the size of the Universe in the $\Uplambda_\mathrm{CDM}$
-cosmological model. A complete list of these can be obtained by typing {\tt
-show functions}\indcmd{show functions}, or by consulting
+mathematical environment, ranging from trigonometric functions to very
+specialised functions such as the phase of the Moon on any given day or the
+size of the Universe in the $\Uplambda_\mathrm{CDM}$ cosmological model. A
+complete list of these can be obtained by typing {\tt show
+functions}\indcmd{show functions} or by consulting
 Chapter~\ref{ch:function_list}. In addition, the user can define his own
-functions using a similar syntax to that used to declare new variables, as in
-the examples:
+functions to equal any algebraic expressions using a similar syntax to that
+used to declare new variables, as in the examples:
 
-\begin{verbatim}
-f()    = pi
-f(x)   = x*sin(x)
-f(x,y) = x*y
-\end{verbatim}
+\begin{verbatim} f()    = pi f(x)   = x*sin(x) f(x,y) = x*y \end{verbatim}
 
 A list of all of the user-defined functions which have been set can be found at
 the end of the output of the \indcmdt{show functions}, or can be obtained
@@ -115,40 +101,40 @@ without the list of system-defined functions by typing {\tt show
 userfunctions}\indcmd{show userfunctions}. Unlike in the case of pre-defined
 variables, system-defined functions may not be over-written; trying to define a
 function with the name {\tt sin(x)}, for example, will result in an error.
-
 Once defined, user-defined functions can be undefined by typing, for example:
 
-\begin{verbatim}
-f() =
-\end{verbatim}
+\begin{verbatim} f() = \end{verbatim}
 
 Where the logic required to define a particular function is greater than can be
 contained in a single algebraic expression, a subroutine should be used (see
-Section~\ref{sec:subroutines}); these allow an arbitrary numbers of PyXPlot
-code to be executed whenever a function is evaluated.
+Section~\ref{sec:subroutines}); these allow an arbitrary numbers of lines of
+PyXPlot code to be executed whenever a function is evaluated.
 
-\subsection{Spliced Functions}
-\index{function splicing}
-\index{splicing functions}
+\subsection{Spliced Functions} \index{function splicing} \index{splicing
+functions}
 
-Functions can be given definitions which are declared to be valid only within a
-certain range of argument space, or given multiple definitions which are valid
-in different parts of argument space. We term this {\it function splicing},
-since multiple algebraic definitions of a functions are being spliced at the
-boundaries between the variouss regimes.  The following example would define a
-function which is only valid within the range $-2<x<2$:\footnote{The syntax
-{\tt [-2:2]} can also be written {\tt [-2 to 2]}.}
+The definitions of functions can be declared to be valid only within a certain
+domain of argument space, allowing for error-checking when models are evaluated
+outside their domain of applicability. Furthermore, functions can be given
+multiple definitions which are specified to be valid in different parts of
+argument space. We term this {\it function splicing}, since multiple algebraic
+definitions for a functions are spliced together at the boundaries between
+their various domains.  The following example would define a function which is
+only valid within the range
+$-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$:\footnote{The syntax {\tt
+[-pi/2:pi/2]} can also be written {\tt [-pi/2 to pi/2]}.}
 
 \begin{verbatim}
 f(x)[-pi/2:pi/2] = cos(x)
 \end{verbatim}
 
 \noindent Attempts to evaluate this function outside of the range in which it
-was defined would return an error, that the function is not defined at the
-requested ordinate value. So, if the above function were to be plotted, no line
-would be drawn outside of the range $-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$. A
-similar effect could also have been acheieved using the {\tt select} keyword;
-see Section~\ref{sec:select_modifier}. Commonly, however, the desired behaviour
+is defined would return an error that the function is not defined at the
+requested ordinate value. Thus, if the above function were to be plotted, no
+line would be drawn outside of the range
+$-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$. A similar effect could also have been
+achieved using the {\tt select} keyword (see
+Section~\ref{sec:select_modifier}). Sometimes, however, the desired behaviour
 is rather that the function should be zero outside of some region of parameter
 space where it has a finite value. This can be achieved as in the following
 example:
@@ -164,24 +150,24 @@ f(x)[-pi/2:pi/2] = cos(x)
 \includegraphics[width=8cm]{examples/eps/ex_intro_func_splice.eps}
 \end{center}
 
-\noindent In this example, we have made use of the fact that if there is an
-overlap in the valid argument space for multiple definitions, then later
-declarations take precedence. The definition that the function equals zero is
-valid everywhere, but is overridden in the region
+\noindent To produce this function, we have made use of the fact that if there
+is an overlap in the domains of validity of multiple definitions of a function,
+then later declarations are guaranteed take precedence. The definition that the
+function equals zero is valid everywhere, but is overridden in the region
 $-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$ by the second function definition.
 
 Where functions have been spliced together, the {\tt show functions} command
 will show all of the definitions of the spliced function, together with the
 regions of parameter space in which they are used. This is indicated using the
-same syntax as is used for defining spliced functions, such that the output can
+same syntax that is used for defining spliced functions, such that the output can
 be stored and pasted into a future PyXPlot session to redefine exactly the same
 spliced function.
 
 When a function takes more than one argument, multiple ranges can be specified,
 one for each argument. Any of the limits can be left blank if there is no
-upper- or lower-limit upon the value of a particular argument. In the following
-example, the function {\tt f(a,b,c)} would only be defined when all of {\tt a},
-{\tt b} and {\tt c} were in the range $-1 \to 1$:
+upper- or lower-limit upon the value of that particular argument. In the
+following example, the function {\tt f(a,b,c)} would only be defined when all
+of {\tt a}, {\tt b} and {\tt c} were in the range $-1 \to 1$:
 
 \begin{verbatim}
 f(a,b,c)[-1:1][-1:1][-1:1] = a+b+c
@@ -198,35 +184,36 @@ f(x)[0:] = 1
 \end{verbatim}
 
 \example{ex:funcsplice2}{Modelling a physics problem using a spliced function}{
-In this example we use a spliced function to model a simple physics problem.  A
-light bead is free to move from side to side between two walls which are placed
-at $x=-2l$ and $x=2l$. It is connected to each wall by a light elastic string
-of natural length $l$, which applies a force $k\Updelta x$ when extended by an
-amount $\Updelta x$, but which applies no force when slack. What is the force
-on the bead as a function of its horizontal position $x$?
-\nlnp
+\noindent{\bf Question}\newline\noindent
+A light bead is free to move from side to side between two walls which are
+placed at $x=-2l$ and $x=2l$. It is connected to each wall by a light elastic
+string of natural length $l$, which applies a force $k\Updelta x$ when extended
+by an amount $\Updelta x$, but which applies no force when slack. What is the
+total horizontal force on the bead as a function of its horizontal position $x$?
+\nlscf
+\noindent{\bf Answer}\newline\noindent
 This system has three distinct regimes. In the region $-l<x<l$, both strings
 are under tension. When $x<-l$, the left-hand string is slack, and only the
 right-hand string exerts a force. When $x>l$, the converse is true: only the
 left-hand string exerts a force. The case $|x|>2l$ is not possible, as the bead
-would be penetrate the hard walls. It is left as an exercise for the reader to
-use Hooke's Law to solve this problem, but in summary, the force on the bead
-can be defined in PyXPlot using the expressions:
+would have to penetrate the hard walls. It is left as an exercise for the
+reader to use Hooke's Law to derive the following expression, but in summary,
+the force on the bead can be defined in PyXPlot as:
 \nlscf
 \noindent {\tt F(x)[-2*l~:-~~l]~= -k*(x+l)}\newline
 \noindent {\tt F(x)[-~~l~:~~~l]~= -2*k*x}\newline
 \noindent {\tt F(x)[~~~l~:~2*l]~= -k*(x+l)}
-\nlfcf
-where it is necessary to first define a value for {\tt l} and {\tt k}. Plotting
-these functions yields the result:
+\nlscf
+\noindent where it is necessary to first define a value for {\tt l} and {\tt
+k}. Plotting these functions yields the result:
 \nlscf
 \begin{center}
 \includegraphics[width=\textwidth]{examples/eps/ex_funcsplice2.eps}
 \end{center}
 \nlscf
 Attempting to plot this function with an $x$-axis which extends outside of the
-range of values of $x$ for which $F(x)$ is defined will result in error
-messages being returned that the function could not be evaluated at all
+range of values of $x$ for which $F(x)$ is defined, as above, will result in
+error messages being returned that the function could not be evaluated at all
 ordinate values. These can be suppressed by typing (see
 Section~\ref{sec:num_errs}):
 \newline\noindent {\tt set numeric errors quiet}
@@ -236,11 +223,12 @@ Section~\ref{sec:num_errs}):
 The Fibonacci numbers are defined to be the sequence of numbers in which each
 member is the sum of its two immediate predecessors, and the first three
 members of the sequence are ${0,1,1}$. Thus, the sequence runs
-${0,1,1,2,3,5,8,13,21,34,55,...}$. In this example, we use of function splicing
-to calculate the Fibonacci sequence in an iterative and highly inefficient way,
-by hard-coding the first three members of the sequence, and then using the
-knowledge that all of the subsequent members of the sequence are the sums of
-their two immediate predecessors:
+${0,1,1,2,3,5,8,13,21,34,55,...}$. In this example, we use function splicing to
+calculate the Fibonacci sequence in an iterative and highly inefficient way,
+hard-coding the first three members of the sequence and then using the
+knowledge that all of the subsequent members are the sums of their two
+immediate predecessors:
+
 \nlscf
 \noindent {\tt f(x)     = 0.0}\newline
 \noindent {\tt f(x)[1:] = 1.0}\newline
@@ -287,8 +275,8 @@ formula returns complex numbers for non-integer values of $x$.
 
 By default, an error message is returned whenever calculations return values
 which are infinite, as in the case of {\tt 1/0}, or when functions are
-evaluated outside the range of parameter space in which they are defined, as in
-the case of {\tt besseli(-1,1)}.  Sometimes this behaviour is desirable: it
+evaluated outside the domain of parameter space in which they are defined, as
+in the case of {\tt besseli(-1,1)}.  Sometimes this behaviour is desirable: it
 flags up to the user that a calculation has gone wrong, and exactly what the
 problem is.  At other times, however, these error messages can be undesirable
 and may lead you to miss more genuine and serious errors buried in their midst.
@@ -309,10 +297,8 @@ x = besseli(-1,1)
 
 \noindent fail silently, and variables which contain non-finite numeric results
 are displayed as {\tt NaN}\index{NaN}, which stands for {\it Not a
-Number}\index{not a number}.
-
-The issuing of explicit errors may subsequently be re-enabled by typing
-\indcmd{set numeric errors explicit}
+Number}\index{not a number}.  The issuing of explicit errors may subsequently
+be re-enabled by typing \indcmd{set numeric errors explicit}
 
 \begin{verbatim}
 set numeric errors explicit
@@ -349,7 +335,7 @@ set numeric complex
 set numeric real
 \end{verbatim}
 
-Once complex arithmetic is enabled, many of PyXPlot's built in mathematical
+Once complex arithmetic is enabled, many of PyXPlot's built-in mathematical
 functions accept complex input arguments, including the logarithm function, all
 of the trigonometric functions, and the exponential function.  A complete list
 of functions which accept complex inputs can be found in
@@ -378,7 +364,7 @@ $\sqrt{-1}$, thus allowing him to use any other letter, e.g.\ {\tt j}, to
 represent the imaginary component of a number.
 
 Several built-in functions are provided for performing manipulations on complex
-numbers. the \indfunt{Re(z)} and \indfunt{Im(z)} functions return respectively
+numbers. The \indfunt{Re(z)} and \indfunt{Im(z)} functions return respectively
 the real and imaginary parts of a complex number $z$, the \indfunt{arg(z)}
 function returns the complex argument of $z$, and the \indfunt{abs(z)} function
 returns the modulus of $z$.  The \indfunt{conjugate(z)} command returns the
@@ -386,11 +372,14 @@ complex conjugate of $z$. The following lines of code demonstrate the use of
 these functions:
 
 \begin{verbatim}
-set numeric complex
-x=0.5
-print Re(exp(i*x))
-print cos(x)        # This equals the above
-print arg(exp(i*x)) # This equals x
+pyxplot> set numeric complex
+pyxplot> x=0.5
+pyxplot> print Re(exp(i*x))
+0.87758256
+pyxplot> print cos(x)        # This equals the above
+0.87758256
+pyxplot> print arg(exp(i*x)) # This equals x
+0.5 rad
 \end{verbatim}
 
 \section{Working with Physical Units}
@@ -398,12 +387,12 @@ print arg(exp(i*x)) # This equals x
 \index{physical units}\index{units}
 
 PyXPlot has extensive facilities for handling data with a range of physical
-units.  These features also make it a powerful desktop tool for converting
-quantities between different imperial and metric units, and for doing simple
-back-of-the-envelope calculations where numbers are substituted into equations
-and you want to know what the dimensions of the quantity you've calculated are.
+units. These features make it a powerful desktop tool for converting
+measurements between different systems of units -- for example, between
+imperial and metric units -- and for doing simple back-of-the-envelope
+calculations.
 
-All numeric variables in PyXPlot have not only a magnitude, but also a
+All numerical variables in PyXPlot have not only a magnitude, but also a
 physical unit associated with them. In the case a pure number such as~2, the
 quantity is said to be dimensionless: it has no physical unit. The special
 function \indfunt{unit()} is used to specify the physical unit associated with a
@@ -435,19 +424,21 @@ and
 \begin{displaymath}
 x = \exp(a+i\theta).
 \end{displaymath}
-However, it also has some disadvantages: some interesting quantities are
-measured per unit angle or per unit solid angle, and the SI system offers no
-way to dimensionally distinguish these from one another or from quantities with
-no angular dependence.
+However, it also has some disadvantages: some interesting quantities such as
+radiative fluxes per steradian are measured per unit angle or per unit solid
+angle, and the SI system offers no way to dimensionally distinguish these from
+one another or from quantities with no angular dependence.
 
+\phantom{xxx}
 On balance, we have decided that it is more useful if PyXPlot {\it does}
-consider the radian to be a base unit, so that it can understand quantities
-such as radiative fluxes measured per steradian. The unfortunate consequence of
-this is that first equation above to be rewritten as:
+consider the radian to be a base unit, so that it can distinguish such
+quantities. The unfortunate consequence of this is that first equation above to
+be rewritten as:
 \begin{displaymath}
 d=\left(\frac{\theta}{2\pi\,\mathrm{rad}}\right) r
 \end{displaymath}
 
+\phantom{xxx}
 As compensation, the $\exp()$ function and all of the trigonometric functions
 accept either quantities with dimensions of angles, or dimensionless numbers as
 inputs. The second equation above might need some modification, however, since
@@ -455,7 +446,7 @@ it is not possible to add a dimensionless number to an angle.
 }
 
 Compound units such as miles per hour, which is defined in terms of two other
-units, can be used thus
+units, can be used thus:
 
 \begin{verbatim}
 print 2*unit(miles/hour)
