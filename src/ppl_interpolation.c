@@ -70,6 +70,8 @@ int directive_interpolate(Dict *command, int mode)
   List      *UsingList=NULL, *EveryList=NULL;
   FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   value      v, FirstEntries[2];
+  int        NxRequired;
+  char      *SplineTypeName;
   SplineDescriptor *desc;
 
   List         *RangeList;
@@ -116,11 +118,11 @@ RANGES_DONE:
 
   continuity = DATAFILE_CONTINUOUS;
 
-  if      (mode == INTERP_LINEAR) SplineType = gsl_interp_linear;
-  else if (mode == INTERP_LOGLIN) SplineType = gsl_interp_linear;
-  else if (mode == INTERP_SPLINE) SplineType = gsl_interp_cspline;
-  else if (mode == INTERP_AKIMA ) SplineType = gsl_interp_akima;
-  else if (mode == INTERP_POLYN ) SplineType = gsl_interp_polynomial;
+  if      (mode == INTERP_LINEAR) { SplineType = gsl_interp_linear;     NxRequired = 2; }
+  else if (mode == INTERP_LOGLIN) { SplineType = gsl_interp_linear;     NxRequired = 2; }
+  else if (mode == INTERP_SPLINE) { SplineType = gsl_interp_cspline;    NxRequired = 3; }
+  else if (mode == INTERP_AKIMA ) { SplineType = gsl_interp_akima;      NxRequired = 5; }
+  else if (mode == INTERP_POLYN ) { SplineType = gsl_interp_polynomial; NxRequired = 3; }
   else                            { ppl_error(ERR_INTERNAL, "interpolate command requested to perform unknown type of interpolation."); return 1; }
 
   // Check that the function we're about to replace isn't a system function
@@ -203,8 +205,16 @@ RANGES_DONE:
     k++;
    }
 
+  // Fetch string name of interpolation type
+  if      (mode == INTERP_LINEAR) SplineTypeName="Linear";
+  else if (mode == INTERP_LOGLIN) SplineTypeName="Power-law";
+  else if (mode == INTERP_SPLINE) SplineTypeName="Cubic spline";
+  else if (mode == INTERP_AKIMA ) SplineTypeName="Akima spline";
+  else if (mode == INTERP_POLYN ) SplineTypeName="Polynomial";
+  else                            { ppl_error(ERR_INTERNAL, "interpolate command requested to perform unknown type of interpolation."); return 1; }
+
   // Check that we have at least three points to interpolate
-  if (k<3) { ppl_error(ERR_NUMERIC, "Interpolation is only possible on data sets with members at at least three distinct values of x."); return 1; }
+  if (k<NxRequired) { sprintf(temp_err_string,"%s interpolation is only possible on data sets with members at at least %d distinct values of x.",SplineTypeName,NxRequired); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
 
   // Create GSL interpolation object
   SplineObj = gsl_spline_alloc(SplineType, k);
@@ -224,13 +234,7 @@ RANGES_DONE:
   desc->filename    = (char *)lt_malloc_incontext(strlen(filename)+1, 0);
   if (desc->filename == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
   strcpy(desc->filename, filename);
-
-  if      (mode == INTERP_LINEAR) desc->SplineType="Linear";
-  else if (mode == INTERP_LOGLIN) desc->SplineType="Power-law";
-  else if (mode == INTERP_SPLINE) desc->SplineType="Cubic spline";
-  else if (mode == INTERP_AKIMA ) desc->SplineType="Akima spline";
-  else if (mode == INTERP_POLYN ) desc->SplineType="Polynomial";
-  else                            { ppl_error(ERR_INTERNAL, "interpolate command requested to perform unknown type of interpolation."); return 1; }
+  desc->SplineType=SplineTypeName;
 
   // Make a new function descriptor
   FuncPtr2 = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor), 0);

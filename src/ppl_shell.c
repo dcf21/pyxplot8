@@ -318,6 +318,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    }
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
+  else if (strcmp(directive, "akima")==0)
+   return directive_interpolate(command,INTERP_AKIMA);
   else if ( (strcmp(directive, "arrow")==0) || (strcmp(directive, "line")==0) )
    directive_arrow(command, interactive);
   else if (strcmp(directive, "box")==0)
