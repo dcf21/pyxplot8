@@ -128,7 +128,106 @@ void dcfstr_strupper(char *in, int inlen, value *output, unsigned char DollarAll
   return;
  }
 
-void dcfstr_conditional(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
+
+void dcfstr_conditionalS(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
  {
+  char *bs,*cs;
+  int i=0, j, fail;
+  value tempval,a,b,c;
+
+
+#define CONDITIONAL_GET_INPUT_STRING(START, InString) \
+  fail=0; \
+  if (!START) \
+   { \
+    if (in[i] != ',') \
+     { \
+      if (in[i] ==')') { *status = i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; } \
+      else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; } \
+     } \
+    i++; \
+   } \
+  *status=-1; \
+  ppl_units_zero(output); \
+  inlen--; /* Make inlen point to last character */ \
+  while ((in[i]!='\0')&&(in[i]<=' ')) i++; /* Strip spaces off front */ \
+ \
+  /* Fetch input string */ \
+  j=-1; \
+  InString = lt_malloc(LSTR_LENGTH); \
+  ppl_GetQuotedString(in+i, InString, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1); \
+  if (*status >= 0) { (*status) += i; fail=1; } \
+  else \
+   { \
+    i+=j; \
+    while ((in[i]>'\0')&&(in[i]<=' ')) i++; \
+   }
+
+#define CONDITIONAL_GET_INPUT_VALUE(START) \
+  fail=0; \
+  if (!START) \
+   { \
+    if (in[i] != ',') \
+     { \
+      if (in[i] ==')') { *status = i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; } \
+      else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; } \
+     } \
+    i++; \
+   } \
+  j=-1; \
+  ppl_EvaluateAlgebra(in+i, &tempval, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1); \
+  if (*status >= 0) { (*status) += i; fail=1; } \
+  else \
+   { \
+    i+=j; \
+    while ((in[i]>'\0')&&(in[i]<=' ')) i++; \
+   }
+
+  CONDITIONAL_GET_INPUT_VALUE(1);
+  if (fail) return;
+  a = tempval;
+
+  CONDITIONAL_GET_INPUT_STRING(0,bs);
+  if (fail) return;
+  ppl_units_zero(&b);
+  b.string = bs;
+
+  CONDITIONAL_GET_INPUT_STRING(0,cs);
+  if (fail) return;
+  ppl_units_zero(&c);
+  c.string = cs;
+
+  END_INPUT_STRING;
+
+  if (hypot(a.real,a.imag)>1e-250) *output=b;
+  else                             *output=c;
+
+  return;
+ }
+
+
+void dcfstr_conditionalN(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
+ {
+  int i=0, j, fail;
+  value tempval,a,b,c;
+
+  CONDITIONAL_GET_INPUT_VALUE(1);
+  if (fail) return;
+  a = tempval;
+
+  CONDITIONAL_GET_INPUT_VALUE(0);
+  if (fail) return;
+  b = tempval;
+
+  CONDITIONAL_GET_INPUT_VALUE(0);
+  if (fail) return;
+  c = tempval;
+
+  END_INPUT_STRING;
+
+  if (hypot(a.real,a.imag)>1e-250) *output=b;
+  else                             *output=c;
+
+  return;
  }
 

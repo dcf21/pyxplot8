@@ -96,7 +96,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_chisqPDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqPDF    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 PDF}@<@1,@2@>", "chisqPDF(x,nu) returns the probability desity at x in a chi-squared distribution with nu degrees of freedom"};
   FunctionDescriptor fd_chisqCDF      = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDF    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 CDF}@<@1,@2@>", "chisqCDF(x,nu) returns the cumulative probability desity at x in a chi-squared distribution with nu degrees of freedom"};
   FunctionDescriptor fd_chisqCDFi     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_chisqCDFi   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\chi^2 CDFi}@<@1,@2@>", "chisqCDFi(P,nu) returns the point x at which the cumulative probability desity in a chi-squared distribution with nu degrees of freedom is P"};
-  FunctionDescriptor fd_conditional   = { PPL_USERSPACE_SYSTEM , 0 ,-1 , (void *)&dcfstr_conditional  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{conditional}@<@0@>", "conditional(a,b,c) returns b if a is true, and c otherwise"};
+  FunctionDescriptor fd_conditionalN  = { PPL_USERSPACE_SYSTEM , 0 ,-1 , (void *)&dcfstr_conditionalN , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{conditionalN}@<@0@>", "conditionalN(a,b,c) returns b if a is true, and c otherwise. b and c should be numerical values"};
+  FunctionDescriptor fd_conditionalS  = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfstr_conditionalS , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{conditionalS}@<@0@>", "conditionalS(a,b,c) returns b if a is true, and c otherwise. b and c should be strings"};
   FunctionDescriptor fd_conjugate     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_conjugate   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{conjugate}@<@1@>", "conjugate(z) returns the complex conjugate of z"};
   FunctionDescriptor fd_cos           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cos         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cos}@<@1@>", "cos(x) returns the cosine of x. If x is dimensionless, it is assumed to be measured in radians"};
   FunctionDescriptor fd_cosh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_cosh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{cosh}@<@1@>", "cosh(x) returns the hyperbolic cosine of x. x may either be a dimensionless number or may have units of angle"};
@@ -350,7 +351,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqPDF"       , (void *)&fd_chisqPDF    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqCDF"       , (void *)&fd_chisqCDF    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "chisqCDFi"      , (void *)&fd_chisqCDFi   , sizeof(FunctionDescriptor), DATATYPE_VOID);
-  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "conditional"    , (void *)&fd_conditional , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "conditionalN"   , (void *)&fd_conditionalN, sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "conditionalS"   , (void *)&fd_conditionalS, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "conjugate"      , (void *)&fd_conjugate   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cos"            , (void *)&fd_cos         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "cosh"           , (void *)&fd_cosh        , sizeof(FunctionDescriptor), DATATYPE_VOID);

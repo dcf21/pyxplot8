@@ -29,6 +29,7 @@ void dcfstr_strlower(char *in, int inlen, value *output, unsigned char DollarAll
 void dcfstr_strrange(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 void dcfstr_strupper(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 
-void dcfstr_conditional(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
+void dcfstr_conditionalS(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
+void dcfstr_conditionalN(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 
 #endif
