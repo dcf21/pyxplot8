@@ -128,3 +128,7 @@ void dcfstr_strupper(char *in, int inlen, value *output, unsigned char DollarAll
   return;
  }
 
+void dcfstr_conditional(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
+ {
+ }
+

@@ -29,63 +29,74 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_linestyles.eps"
 
 # Main body of figure script
-set width 11.0
-set size ratio 1.0
-set axis x invisible
-set axis y invisible
-set nokey
+set multiplot
+set nodisplay
 set texthalign left
 set textvalign centre
-set pointsize 1
-set linewidth 2
 
-sepx =  3.0
-sepy = -0.5
-gap  =  0.5
+for i=0 to 29
+ {
+  y = -(i%10) * unit(1*cm)
+  x = floor(i/10) * unit(4*cm)
+  point x,y with pt i+1
+  if (i<10) { ; name = "Point type \phantom{0}%d"%(i+1)
+  } else    { ; name = "Point type %d"%(i+1) ; }
+  text name at x+unit(5*mm),y
+ }
+set display
+refresh
 
-set label 101 'Point type \phantom{0}1' at gap+sepx*0 , sepy* 0
-set label 102 'Point type \phantom{0}2' at gap+sepx*0 , sepy* 1
-set label 103 'Point type \phantom{0}3' at gap+sepx*0 , sepy* 2
-set label 104 'Point type \phantom{0}4' at gap+sepx*0 , sepy* 3
-set label 105 'Point type \phantom{0}5' at gap+sepx*0 , sepy* 4
-set label 106 'Point type \phantom{0}6' at gap+sepx*0 , sepy* 5
-set label 107 'Point type \phantom{0}7' at gap+sepx*0 , sepy* 6
-set label 108 'Point type \phantom{0}8' at gap+sepx*0 , sepy* 7
-set label 109 'Point type \phantom{0}9' at gap+sepx*0 , sepy* 8
-set label 110 'Point type 10'           at gap+sepx*0 , sepy* 9
-set label 111 'Point type 11'           at gap+sepx*0 , sepy*10
-set label 112 'Point type 12'           at gap+sepx*0 , sepy*11
-set label 113 'Point type 13'           at gap+sepx*0 , sepy*12
+# Set output destination
+set output "examples/eps/ex_linestyles2.eps"
 
-set label 201 'Line type \phantom{0}1' at gap+sepx*1 , sepy*0
-set label 202 'Line type \phantom{0}2' at gap+sepx*1 , sepy*1
-set label 203 'Line type \phantom{0}3' at gap+sepx*1 , sepy*2
-set label 204 'Line type \phantom{0}4' at gap+sepx*1 , sepy*3
-set label 205 'Line type \phantom{0}5' at gap+sepx*1 , sepy*4
-set label 206 'Line type \phantom{0}6' at gap+sepx*1 , sepy*5
-set label 207 'Line type \phantom{0}7' at gap+sepx*1 , sepy*6
-set label 208 'Line type \phantom{0}8' at gap+sepx*1 , sepy*7
-set label 209 'Line type \phantom{0}9' at gap+sepx*1 , sepy*7
+# Main body of figure script
+set multiplot
+set nodisplay
 
-plot [-1:5][-6.5:0.5] 'examples/ex_linestyles.dat' i 0 u ($1+0*sepx):($2+ 0*sepy) w p pt  1, \
-   '' i 0 u ($1+0*sepx):($2+ 1*sepy) w p pt  2, \
-   '' i 0 u ($1+0*sepx):($2+ 2*sepy) w p pt  3, \
-   '' i 0 u ($1+0*sepx):($2+ 3*sepy) w p pt  4, \
-   '' i 0 u ($1+0*sepx):($2+ 4*sepy) w p pt  5, \
-   '' i 0 u ($1+0*sepx):($2+ 5*sepy) w p pt  6, \
-   '' i 0 u ($1+0*sepx):($2+ 6*sepy) w p pt  7, \
-   '' i 0 u ($1+0*sepx):($2+ 7*sepy) w p pt  8, \
-   '' i 0 u ($1+0*sepx):($2+ 8*sepy) w p pt  9, \
-   '' i 0 u ($1+0*sepx):($2+ 9*sepy) w p pt 10, \
-   '' i 0 u ($1+0*sepx):($2+10*sepy) w p pt 11, \
-   '' i 0 u ($1+0*sepx):($2+11*sepy) w p pt 12, \
-   '' i 0 u ($1+0*sepx):($2+12*sepy) w p pt 13, \
-   '' i 1 u ($1+1*sepx):($2+ 0*sepy) w l lt  1, \
-   '' i 1 u ($1+1*sepx):($2+ 1*sepy) w l lt  2, \
-   '' i 1 u ($1+1*sepx):($2+ 2*sepy) w l lt  3, \
-   '' i 1 u ($1+1*sepx):($2+ 3*sepy) w l lt  4, \
-   '' i 1 u ($1+1*sepx):($2+ 4*sepy) w l lt  5, \
-   '' i 1 u ($1+1*sepx):($2+ 5*sepy) w l lt  6, \
-   '' i 1 u ($1+1*sepx):($2+ 6*sepy) w l lt  7, \
-   '' i 1 u ($1+1*sepx):($2+ 7*sepy) w l lt  8
+text 'Line width 1' at unit( 1.25*cm),unit(cm) hal c val c
+text 'Line width 2' at unit( 6.75*cm),unit(cm) hal c val c
+text 'Line width 4' at unit(10.25*cm),unit(cm) hal c val c
+
+for i=0 to 9
+ {
+  y = -i * unit(1*cm)
+  x = unit(0*cm)
+  line from x+unit(0.0*cm),y to x+unit( 2.5*cm),y with lw 1 lt i+1
+  line from x+unit(5.5*cm),y to x+unit( 8.0*cm),y with lw 2 lt i+1
+  line from x+unit(9.0*cm),y to x+unit(11.5*cm),y with lw 4 lt i+1
+  if (i<10) { ; name = "Line type \phantom{0}%d"%(i+1)
+  } else    { ; name = "Line type %d"%(i+1) ; }
+  text name at x+unit(3.0*cm),y
+ }
+set display
+refresh
+
+# Set output destination
+set output "examples/eps/ex_linestyles3.eps"
+
+# Main body of figure script
+set multiplot
+set nodisplay
+set axis x invisible
+set axis y invisible
+set xrange [-1:1]
+set yrange [-1:1]
+set width 0.01*unit(cm)
+set noclip
+set nokey
+
+box from unit(-2.5*cm),unit(3.0*cm) to unit(13*cm),unit(-21.5*cm)
+
+for i=0 to 9
+ {
+  y = -(i%5) * unit(4.7*cm)
+  x = floor(i/5) * unit(7.6cm)
+  set origin x,y
+  plot 'examples/ex_linestyles.dat' with stars pt i+1
+  if (i<10) { ; name = "Star type \phantom{0}%d"%(i+1)
+  } else    { ; name = "Star type %d"%(i+1) ; }
+  text name at x+unit(2.4*cm),y
+ }
+set display
+refresh
 

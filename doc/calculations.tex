@@ -413,6 +413,7 @@ print 2*unit(s)/unit(hr)
 
 \boxout{A note on the use of the radian is a base unit in PyXPlot.}{box:angles}{
 \index{units!angle}\index{angles, handling of}
+\setlength{\parindent}{0.5in}
 By convention, the SI system of units does not have a base unit of angle:
 instead, the radian is considered to be a dimensionless unit.  There are some
 strong mathematical reasons why this makes sense, since it makes it possible to
@@ -429,7 +430,6 @@ radiative fluxes per steradian are measured per unit angle or per unit solid
 angle, and the SI system offers no way to dimensionally distinguish these from
 one another or from quantities with no angular dependence.
 
-\phantom{xxx}
 On balance, we have decided that it is more useful if PyXPlot {\it does}
 consider the radian to be a base unit, so that it can distinguish such
 quantities. The unfortunate consequence of this is that first equation above to
@@ -438,7 +438,6 @@ be rewritten as:
 d=\left(\frac{\theta}{2\pi\,\mathrm{rad}}\right) r
 \end{displaymath}
 
-\phantom{xxx}
 As compensation, the $\exp()$ function and all of the trigonometric functions
 accept either quantities with dimensions of angles, or dimensionless numbers as
 inputs. The second equation above might need some modification, however, since
@@ -468,18 +467,19 @@ same character is used for the binary exclusive or operator in PyXPlot's normal
 arithmetic.}, as in
 
 \begin{verbatim}
-a = 2*unit(m**2)
-print "An area of %f square feet"%(a/unit(ft**2))
+pyxplot> a = 2*unit(m**2)
+pyxplot> print "An area of %f square feet"%(a/unit(ft**2))
+An area of 21.527821 square feet
 \end{verbatim}
 
-\noindent As these examples also demonstrate, units may be refered to either by
-their abbreviated or full names, and either in their singular or plural forms.
-A complete list of all of the units which PyXPlot recognises by default,
-together with all of their recognised names can be found in
-Appendix~\ref{ch:unit_list}.
+\noindent As these examples also demonstrate, units may be referred to by either
+their abbreviated or full names, and each of these may be used in either their
+singular or plural forms.  A complete list of all of the units which PyXPlot
+recognises by default, together with all of their recognised names can be found
+in Appendix~\ref{ch:unit_list}.
 
-SI units may also be preceded with SI prefixes\index{units!SI prefixes}, for
-example:
+SI units may also be preceded with SI prefixes\index{units!SI prefixes}, as in
+the examples:
 
 \begin{verbatim}
 a = 2*unit(um)
@@ -493,25 +493,25 @@ dimensionally correct and would return an error because the first term in the
 sum has dimensions of velocity, meanwhile the second term is a length:
 \index{units!dimensional analysis}
 
-\begin{verbatim}
-a = 2*unit(m)
-b = 4*unit(s)
+\begin{dontdo}
+a = 2*unit(m)\newline
+b = 4*unit(s)\newline
 print a/b + a
-\end{verbatim}
+\end{dontdo}
 
 \noindent PyXPlot continues to throw an error in this case, even when explicit
 numerical errors are turned off with the \indcmdt{set numeric errors quiet},
 since it is deemed a serious error: the above expression would never be correct
 for any values of {\tt a} and {\tt b} given their dimensions.
 
-As a quick perusal of Appendix~\ref{ch:unit_list} will show, a large number of
-units are pre-defined in PyXPlot by default. However, the need may occasionally
-arise to define new units. It is not possible to do this from an interactive
-PyXPlot terminal, but it is possible to do so from a configuration script which
-PyXPlot runs upon start-up. This will be discussed in
-Chapter~\ref{ch:configuration}, where we shall also see that new base units can
-also be defined. Just as the Pluto mass can be defined as a new measure of
-mass, so the potato can be defined as a new measure of number of vegetables.
+A large number of units are pre-defined in PyXPlot by default, a complete list
+of which can be found in Appendix~\ref{ch:unit_list}.  However, the need may
+occasionally arise to define new units. It is not possible to do this from an
+interactive PyXPlot terminal, but it is possible to do so from a configuration
+script which PyXPlot runs upon start-up. Such configuration scripts will be
+discussed in Chapter~\ref{ch:configuration}. New units may either be derived
+from existing SI units, alternative measures of existing quantities, or
+entirely new base units such as numbers of CPU cycles or man-hours of labour.
 
 \subsection{Converting between different Temperature Scales}
 \index{temperature conversions}\index{units!temperature}
@@ -526,11 +526,12 @@ the following two questions:
 \item How many degrees Kelvin corresponds to a temperature of $20^\circ$C?
 \item How many degrees Kelvin corresponds to a temperature {\it rise} of $20^\circ$C?
 \end{itemize}
-The answers to these two questions are 293\,K and 20\,K respectively: we see
-that although we are converting from $20^\circ$C in both cases, the
-corresponding number of Kelvin depends upon whether we are talking about an
-{\it absolute} temperature or a {\it relative} temperature. A heat capacity of
-1\,J/$^\circ$C equals 1\,J/K, even though $1^\circ$C does not equal 1\,K.
+The answers to these two questions are 293\,K and 20\,K respectively: although
+we are converting from $20^\circ$C in both cases, the corresponding number of
+Kelvin depends upon whether we are talking about an {\it absolute} temperature
+or a {\it relative} temperature. A heat capacity of 1\,J/$^\circ$C equals
+1\,J/K, even though a temperature of $1^\circ$C does not equal a temperature of
+1\,K.
 
 The cause of this problem, and the reason why it rarely affects any physical
 units other than temperatures is that there exists such a thing as absolute
@@ -542,13 +543,12 @@ another origin. But they might expect it to be able to convert temperatures
 between Celsius and Fahrenheit, even though the problem of doing so is
 equivalent.
 
-Times are occasionally expressed as absolute quantities: the year 1453, for
-example, implicitly corresponds to 1453 years since the Christian epoch.
-Similar problems would arise in trying to convert such a year into the Muslim
-calendar, which counts from the year {\footnotesize AD}\,622, to those of
-encountered in converting between temperature scales.\footnote{PyXPlot can,
-incidentally, make this conversion, as will be seen in
-Section~\ref{sec:time_series}.}
+Times are occasionally expressed as absolute quantities: the year
+{\footnotesize AD}\,1453, for example, implicitly corresponds to a period of
+1453 years after the Christian epoch, and so similar problems would arise in
+trying to convert such a year into the Muslim calendar, which counts from the
+year {\footnotesize AD}\,622.\footnote{PyXPlot can, incidentally, make this
+conversion, as will be seen in Section~\ref{sec:time_series}.}
 
 As PyXPlot cannot distinguish between absolute and relative temperatures, it
 takes a safe approach of performing algebra consistently with any unit of
@@ -697,7 +697,11 @@ The latter two examples are particularly useful when working with spectral
 densities (powers per unit frequency) or torques (forces multiplied by
 distances). Unfortunately, both of these units are dimensionally equal to
 powers, and so are displayed by PyXPlot in Joules by default. The above
-statement overrides such behaviour.
+statement overrides such behaviour. Having set a particular unit to be
+preferred, this can be unset as in the following example:
+\begin{verbatim}
+set unit nopreferred parsec
+\end{verbatim}
 
 By default, units are displayed in their abbreviated forms, for example {\tt A}
 instead of {\tt amperes} and {\tt W} instead of {\tt watts}. Furthermore, SI
@@ -719,7 +723,7 @@ set unit display noprefix
 
 \subsection{Changing the Accuracy to which Numbers are Displayed}
 
-By default, when a number is displayed, it is printed accurate to eight
+By default, when numbers are displayed, they are printed accurate to eight
 significant figures, although fewer figures may actually be displayed if the
 final digits are zeros or nines.
 
@@ -747,16 +751,20 @@ which numbers are displayed; on occasion an extra figure may be displayed.
 
 Alternatively, the string substitution operator, described in
 Section~\ref{sec:stringsubop} may be used to specify how a number should be
-displayed on a one-by-one basis, for example:
+displayed on a one-by-one basis, as in the examples:
 
-\begin{verbatim}
-print "%d"  %(pi) # Print the integer part of pi
-print "%.5f"%(pi) # Print pi in non-scientific format, to
-                  #   5 decimal places
-print "%.5e"%(pi) # Print pi in scientific format, to
-                  #   5 decimal places
-print "%s"  %(pi) # Print pi as normal
-\end{verbatim}
+\vspace{3mm}
+{\footnotesize
+\noindent{\tt pyxplot>~print~"\%d"~~\%(pi)~\#~Print~the~integer~part~of~pi}\newline
+\noindent{\tt 3}\newline
+\noindent{\tt pyxplot>~print~"\%.5f"\%(pi)~\#~Print~pi~in~non-scientific~format,~to~5~d.p.}\newline
+\noindent{\tt 3.14159}\newline
+\noindent{\tt pyxplot>~print~"\%.5e"\%(pi)~\#~Print~pi~in~scientific~format,~to~5~d.p.}\newline
+\noindent{\tt 3.14159e+00}\newline
+\noindent{\tt pyxplot>~print~"\%s"~~\%(pi)~\#~Print~pi~as~normal}\newline
+\noindent{\tt 3.1415927}\vspace{3mm}
+}
+
 
 \subsection{Creating Pastable Text}
 \label{sec:pastable}
@@ -795,9 +803,9 @@ pasted into another PyXPlot calculation. The final case produces a string of
 
 \index{differentiation}\index{integration} Two special functions,
 \indfunt{int\_dx()} and \indfunt{diff\_dx()}, may be used to numerically
-integrate or differentiate an algebraic expressions.  In each case, the letter
+integrate or differentiate algebraic expressions.  In each case, the letter
 {\tt x} is the dummy variable which is to be used in the integration or
-differentiation, and may be replaced by any valid variable name of up to
+differentiation and may be replaced by any valid variable name of up to
 16~characters in length.
 
 The function {\tt int\_dx()} takes three parameters -- firstly the expression
@@ -811,13 +819,13 @@ plot int_dt('sin(t)',0,x)
 \end{verbatim} 
 
 The function {\tt diff\_dx()} takes two obligatory parameters plus one further
-optional parameters. The first is the expression to be differentiated, which,
+optional parameter. The first is the expression to be differentiated, which,
 as above, may optionally placed in quotes for clarity. This should be followed
-by the numerical value $x$ of the dummy variable at the point where the given
+by the numerical value $x$ of the dummy variable at the point where the
 expression is to be differentiated. This value may have any physical
 dimensions, and may be a complex number if complex arithmetic is enabled. The
 final, optional, parameter to the {\tt diff\_dx()} function is an approximate
-step size which indicates the range of argument values over which PyXPlot
+step size, which indicates the range of argument values over which PyXPlot
 should take samples to determine the gradient. If no value is supplied, a value
 of $10^{-6}x$ is used, replaced by $10^{-6}$ if $x=0$.  The following example
 would evaluate the differential of the function $\cos(x)$ with respect to $x$
@@ -829,7 +837,7 @@ print diff\_dx('cos(x)', 1.0)
 
 When complex arithmetic is enabled, PyXPlot checks that the function being
 differentiated satisfies the Cauchy-Riemann equations, and returns an error if
-it does not to indicate that it is not differentiable.  The following is an
+it does not, to indicate that it is not differentiable.  The following is an
 example of a function which is not differentiable, and which throws an error
 because the Cauchy-Riemann equations are not satisfied:
 
@@ -839,9 +847,9 @@ print diff\_dx(Re(sin(x)),1)
 \end{dontdo}
 
 Advanced users may be interested to know that \indfunt{int\_dx()} function is
-implemented using the {\tt gsl\_integration\_qags()} function of the Gnu
-Scientific Library\index{GSL}, and the \indfunt{diff\_dx()} function is
-implemented using the {\tt gsl\_deriv\_central()} function of the same library.
+implemented using the {\tt gsl\_\-integration\_\-qags()} function of the Gnu
+Scientific Library\index{GSL} (GSL), and the \indfunt{diff\_dx()} function is
+implemented using the {\tt gsl\_\-deriv\_\-central()} function of the same library.
 Any caveats which apply to the use of these routines also apply to PyXPlot's
 numerical calculus routines.
 
@@ -943,7 +951,7 @@ pyxplot> print Im(x)/pi
 The \indcmd{minimise}\indcmd{maximise} {\tt minimise} and {\tt maximise}
 commands can be used to find the minima or maxima of algebraic expressions. In
 each case, a single algebraic expression should be supplied for optimisation,
-together with a comma-separated list of the variables which is should be
+together with a comma-separated list of the variables which it should be
 optimised with respect to. In the following example, a minimum of the
 sinusoidal function $\cos(x)$ is sought:
 
@@ -1039,8 +1047,8 @@ Astronomers usually get around such issues by expressing dates and times as
 Julian Day (JD) numbers\index{Julian Day numbers}, which count the number of
 days ellapsed since noon on 1st~January 4713\,{\footnotesize BC} in the Julian
 Calendar. The time of day is represented as the fractional part of the Julian
-Day number. For example, midnight in 1st~January 2000 (Gregorian calendar) was
-$2451544.5$, and noon on the same day was $2451545.0$.
+Day number. For example, midnight on 1st~January 2000 (Gregorian calendar) was
+JD~$2451544.5$, and noon on the same day was JD~$2451545.0$.
 
 PyXPlot provides a range of pre-defined functions, all prefixed {\tt time\_}
 for converting between calendar dates and Julian Day numbers. The function {\tt
@@ -1053,14 +1061,14 @@ minutes (0--59), and the number of seconds (0--59). To enter dates before
 1\,{\footnotesize BC}, $-1$ should be passed to indicate the year
 2\,{\footnotesize BC}, and so forth.
 \begin{verbatim}
-pyxplot> time_juliandate(2000,1,1,0,0,0)
+pyxplot> time_juliandate(2000,1,1,0,0,0.0)
 2451544.5
 \end{verbatim}
 
 By default, the {\tt time\_juliandate()} function makes a transition from the
 Julian calendar to the Gregorian calendar at midnight on 14th~September 1752
 (Gregorian calendar), when Britain and the British Empire switched calendars.
-Thus, inputed dates between 2nd~September and 14th~September 1752 return
+Thus, inputted dates between 2nd~September and 14th~September 1752 return
 errors, since they days never occured in the British calendar. This behaviour
 may be changed using the \indcmdt{set calendar}, which offers a choice of nine
 different calendars listed in Table~\ref{tab:calendars}.
@@ -1107,8 +1115,8 @@ dates, the function {\tt time\_string()}\indfun{time\_\-string({\it JD},\-{\it
 format})} should be used, which takes two inputs, the second of which is
 optional. The first is the Julian Day number to be converted, and the second is
 a string which controls the format of the output.  If no format string is
-provided, then the format\newline
-\noindent {\tt "\%a \%Y \%b \%d \%H:\%M:\%S"}\newline
+provided, then the format\vspace{3mm}\newline
+\noindent {\tt "\%a \%Y \%b \%d \%H:\%M:\%S"}\vspace{3mm}\newline
 \noindent is used.  Table~\ref{tab:time_string_subs} lists the tokens which are
 substituted for various parts of the date. The following examples demonstrate
 the use of the {\tt time\_string()} function for three dates:
@@ -1153,10 +1161,10 @@ pyxplot> print time_string(2451544.5+50, "%d %B %Y")
 15 Dhu l-Qa'da 1420
 \end{verbatim}
 
-Several functions are provided for returning the various parts of the calendar
-date associated with any given Julian Day number. All of these functions, with
-the exception of {\tt time\_\-dayweekname()} and {\tt time\_\-monthname()} take
-a single input, which should be a Julian Day number:
+Several functions are provided for numerically returning the various parts of
+the calendar date associated with any given Julian Day number. All of these
+functions, with the exception of {\tt time\_\-dayweekname()} and {\tt
+time\_\-monthname()} take a single input, which should be a Julian Day number:
 
 \noindent
 \setlength{\extrarowheight}{2mm}
@@ -1225,11 +1233,11 @@ the beginning of the experiment. The {\tt time\_diff()}
 function\indfun{time\_\-diff({\it JD}$_1$,\-{\it JD}$_2$)} returns the time
 interval, with physical dimensions of time, between two Julian Day numbers.
 This function is actually very simple, and is entirely equivalent to the
-algebraic expression {\tt (y-x)*unit(day)}. In the following example, we
-demonstrate its use to calculate the time elapsed between the traditional date
-for the foundation of Rome by Romulus and Remus in 753\,{\footnotesize BC} and
-that of the deposition of the last Emperor of the Western Empire in
-{\footnotesize AD}\,476:
+algebraic expression {\tt (y-x)*unit(day)}. The following example, demonstrates
+its use to calculate the time elapsed between the traditional date for the
+foundation of Rome by Romulus and Remus in 753\,{\footnotesize BC} and that of
+the deposition of the last Emperor of the Western Empire in {\footnotesize
+AD}\,476:
 
 \begin{verbatim}
 pyxplot> x = time_julianday(-752,4,21,12,0,0)
@@ -1242,13 +1250,13 @@ pyxplot> print time_diff(x,y)/unit(year)
 
 The function {\tt time\_diff\_string()}\indfun{time\_\-diff\_\-string({\it
 JD}$_1$,\-{\it JD}$_2$,\-{\it format})} is similar, but returns a
-textual-representation of the time interval, and is useful for producing
+textual representation of the time interval, and is useful for producing
 textual axis labels representing the time elapsed since the beginning of an
 experiment. As with the {\tt time\_string()} function, it takes an optional
 third parameter which specifies the textual format in which the time interval
 should be represented. If no format is supplied, then the following verbose
-format is used:\newline
-\noindent {\tt "\%Y years \%d days \%h hours \%m minutes and \%s seconds"}\newline
+format is used:i\vspace{3mm}\newline
+\noindent {\tt "\%Y years \%d days \%h hours \%m minutes and \%s seconds"}\vspace{3mm}\newline
 Table~\ref{tab:time_diff_string_subs} lists the tokens which are substituted
 for various parts of the time interval. The following examples demonstrates the
 use of the function:

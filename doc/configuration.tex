@@ -24,9 +24,11 @@
 \chapter{Configuring PyXPlot}
 \label{ch:configuration}
 
-In previous chapters, we have encountered numerous configuration options within
-PyXPlot which can controlled using the \indcmdt{set}. There are times, however,
-when many plots are wanted in a homogeneous style, or when a single plot is
+\renewcommand{\arraystretch}{1.80}
+
+In Parts~I and~II, we encountered numerous configuration options within PyXPlot
+which can controlled using the \indcmdt{set}. There are times, however, when
+many plots are wanted in a homogeneous style, or when a single plot is
 repeatedly generated, when it is desirable to change the default set of
 configuration options with which PyXPlot starts up, in order to avoid having to
 repeated enter a large number of {\tt set} commands. In this chapter, we
@@ -45,11 +47,9 @@ found in the user's home directory. Configuration files are read only once,
 upon startup, and subsequent changes to the configuration files do not affect
 copies of PyXPlot which are already running.
 
-When settings are specified in configuration files, the specified values become
-the default configuration within subsequent PyXPlot sessions. This not only
-means that the settings have the particular values specified upon startup; it
-also means, for example, that these are the values to which the \indcmdt{unset}
-returns settings. Thus, whilst the command
+Changes to settings made in configuration files affect not only the values that
+these settings have upon startup; they also changes the values to which the
+\indcmdt{unset} returns settings. Thus, whilst the command
 \begin{verbatim}
 unset multiplot
 \end{verbatim}
@@ -79,9 +79,9 @@ any given file, and they may appear in any order:
 
 \begin{itemize}
 \item {\tt colours} -- contains a single setting {\tt palette}, which should be
-set to a comma-separated list of the sequence of colours in the palette used to
-plot datasets. The first will be called colour 1 in PyXPlot, the second colour
-2, etc. A list of recognised colour names is given in
+set to a comma-separated list of colours which should make up the palette used
+to plot datasets. The first will be called colour~1 in PyXPlot, the second
+colour~2, etc. A list of recognised colour names is given in
 Section~\ref{sec:colour_names}.
 \item {\tt filters} -- can be used to define input filters which should be used
 for certain file types (see Section~\ref{sec:filters}).
@@ -93,8 +93,8 @@ sinc(x) = sin(pi*x)/(pi*x)
 \item {\tt latex} -- contains a single setting {\tt preamble}, which is
 prefixed to the beginning of all \LaTeX\ text items, before the {\tt
 \textbackslash begin\{document\}} statement. It can be used to define custom
-\LaTeX\ macros, or to include packages using the {\tt \textbackslash
-includepackage\{\}} command.  The preamble can be changed using the
+\LaTeX\ macros or to include packages using the {\tt \textbackslash
+includepackage\{\}} command.  The preamble can be also changed using the
 \indcmdt{set preamble}.
 \item {\tt script} -- can contain a list of \indcmdt{set}s, using the same
 syntax which would be used to enter them at a PyXPlot command prompt. This
@@ -120,7 +120,7 @@ PyXPlot's mathematical environment.
 \begin{verbatim}
 variable = value
 \end{verbatim}
-Any variables defined in this section will be predefined in PyXPlot's
+Any variables defined in this section will be pre-defined in PyXPlot's
 mathematical environment upon startup.
 
 \end{itemize}
@@ -258,6 +258,8 @@ filters, see Section~\ref{sec:filters}.
 \subsection{The {\tt settings} section}
 \label{sec:configfile_settings}
 
+The {\tt settings} section can contain any of the following settings in any order:
+
 \begin{longtable}{p{3.4cm}p{9cm}}
 {\tt Aspect} & {\bf Possible values:} Any floating-point number.
 
@@ -351,7 +353,7 @@ filters, see Section~\ref{sec:filters}.
                \\
 {\tt DPI} & {\bf Possible values:} Any floating-point number.
 
-               {\bf Analogous set command:} \indcmdts{set dpi}
+               {\bf Analogous set command:} \indcmdts{set terminal dpi}
 
                Sets the sampling quality used, in dots per inch, when output is sent to a bitmapped terminal (the bmp, jpeg, gif, png and tif terminals).
                \\
@@ -659,6 +661,8 @@ filters, see Section~\ref{sec:filters}.
 
 \subsection{The {\tt styling} section}
 
+The {\tt styling} section can contain any of the following settings in any order:
+
 \begin{longtable}{p{3.4cm}p{9cm}}
 {\tt Arrow\_HeadAngle} & {\bf Possible values:} Any floating-point number.
 
@@ -713,6 +717,8 @@ filters, see Section~\ref{sec:filters}.
 \subsection{The {\tt terminal} section}
 \label{sec:configfile_terminal}
 
+The {\tt terminal} section can contain any of the following settings in any order:
+
 \begin{longtable}{p{3.4cm}p{9cm}}
 {\tt Colour} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
@@ -750,6 +756,8 @@ The colours recognised by the {\tt COLOUR\_XXX} configuration options above
 are: {\tt Red}, {\tt Green}, {\tt Amber}, {\tt Blue}, {\tt Purple}, {\tt
 Magenta}, {\tt Cyan}, {\tt White}, {\tt Normal}. The final option produces the
 default foreground colour of the terminal.
+
+\renewcommand{\arraystretch}{1.00}
 
 \subsection{The {\tt units} section}
 \label{sec:configfile_units}
@@ -798,16 +806,27 @@ insensitive.
 \vspace{5mm}\noindent
 \index{configuration file!colours}\index{colours!configuration file}
 {\tt
-GreenYellow, Yellow, Goldenrod, Dandelion, Apricot, Peach, Melon, YellowOrange, Orange, BurntOrange, Bittersweet, RedOrange, Mahogany, Maroon, BrickRed, Red, OrangeRed, RubineRed, WildStrawberry, Salmon, CarnationPink, Magenta, VioletRed, Rhodamine, Mulberry, RedViolet, Fuchsia, Lavender, Thistle, Orchid, DarkOrchid, Purple, Plum, Violet, RoyalPurple, BlueViolet, Periwinkle, CadetBlue, CornflowerBlue, MidnightBlue, NavyBlue, RoyalBlue, Blue, Cerulean, Cyan, ProcessBlue, SkyBlue, Turquoise, TealBlue, Aquamarine, BlueGreen, Emerald, JungleGreen, SeaGreen, Green, ForestGreen, PineGreen, LimeGreen, YellowGreen, SpringGreen, OliveGreen, RawSienna, Sepia, Brown, Tan, Gray, Grey, Black, White.
+GreenYellow, Yellow, Goldenrod, Dandelion, Apricot, Peach, Melon,\newline\noindent
+YellowOrange, Orange, BurntOrange, Bittersweet, RedOrange,\newline\noindent
+Mahogany, Maroon, BrickRed, Red, OrangeRed, RubineRed,\newline\noindent
+WildStrawberry, Salmon, CarnationPink, Magenta, VioletRed,\newline\noindent
+Rhodamine, Mulberry, RedViolet, Fuchsia, Lavender, Thistle,\newline\noindent
+Orchid, DarkOrchid, Purple, Plum, Violet, RoyalPurple,\newline\noindent
+BlueViolet, Periwinkle, CadetBlue, CornflowerBlue, MidnightBlue,\newline\noindent
+NavyBlue, RoyalBlue, Blue, Cerulean, Cyan, ProcessBlue, SkyBlue,\newline\noindent
+Turquoise, TealBlue, Aquamarine, BlueGreen, Emerald, JungleGreen,\newline\noindent
+SeaGreen, Green, ForestGreen, PineGreen, LimeGreen, YellowGreen,\newline\noindent
+SpringGreen, OliveGreen, RawSienna, Sepia, Brown, Tan, Gray,\newline\noindent
+Grey, Black, White.
 }
 
 \vspace{5mm}
 In addition, a scale of 100~shades of grey is available, ranging from {\tt
 grey00}, which is black, to {\tt grey99}, which is very nearly white.  The US
-spelling, {\tt gray}, is also accepted.
+spelling, {\tt gray??}, is also accepted.
 
 Arbitrary colours can be specified in the form {\tt rgb0:0:0}, where the
-colon-separated zeros should be replaced by integers in the range of 0 to 255
+colon-separated zeros should be replaced by integers in the range of~0 to~255
 to represent the red, green and blue components of the desired colour
 respectively.
 

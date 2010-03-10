@@ -275,9 +275,20 @@ set nokey # I'll have no key on _my_ plot
 \noindent In both cases, all of the characters following the hash character are
 ignored.
 
+\section{Splitting Long Commands}
+
 Long commands may be split over multiple lines in the script by terminating
 each line of it with a backslash character, whereupon the following line will
-be appended to it.
+be appended to it, as in the following example:
+
+\begin{verbatim}
+pyxplot> print  2 \
+.......>       +3
+5
+\end{verbatim}
+
+\noindent Such lines splits will be used extensively in this manual where
+command lines are longer than the width of the page.
 
 \section{Printing Text}
 
@@ -316,7 +327,8 @@ demonstrate the use of this operator:
 \begin{verbatim}
 pyxplot> print "The value of %d squared is %d."%(a,f(a))
 The value of 3 squared is 9.
-pyxplot> print "The %s of f(%f) is %d."%("value",sqrt(2),f(sqrt(2)))
+pyxplot> print "The %s of f(%f) is %d."%("value",sqrt(2), \
+.......>                                 f(sqrt(2)) )
 The value of f(1.414214) is 2.
 \end{verbatim}
 
@@ -383,6 +395,19 @@ produce the \LaTeX\ escape character used to produce the umlaut; the second is
 a PyXPlot escape character, used so that the~" character is not interpreted as
 delimiting the string. \index{escape characters}\index{quote
 characters}\index{special characters}
+
+The pre-defined \indfunt{texify()} function may provide some assistance in
+generating \LaTeX\ labels: it takes either an algebraic expression, or a string
+in quotes, and produces a \LaTeX\ representation of it, as in the following
+examples:
+
+\begin{verbatim}
+pyxplot> a=50
+pyxplot> print texify("A %d% increase"%(a))
+A 50\% increase
+pyxplot> print texify(sqrt(x**2+1))
+$\displaystyle \sqrt{x^{2}+1}$
+\end{verbatim}
 
 Having set labels and titles, they may be removed thus:
 
