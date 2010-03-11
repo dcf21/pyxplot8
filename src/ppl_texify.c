@@ -168,8 +168,8 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
     else if (in[i]=='#' ) { out[j++]='\\'; out[j++]=in[i]; }
     else if (in[i]=='^' ) { strcpy(out+j, "\\^{}"); j+=strlen(out+j); }
     else if (in[i]=='~' ) { strcpy(out+j, "$\\sim$"); j+=strlen(out+j); }
-    else if (in[i]=='<' ) { strcpy(out+j, "$\\lt$"); j+=strlen(out+j); }
-    else if (in[i]=='>' ) { strcpy(out+j, "$\\gt$"); j+=strlen(out+j); }
+    else if (in[i]=='<' ) { strcpy(out+j, "$<$"); j+=strlen(out+j); }
+    else if (in[i]=='>' ) { strcpy(out+j, "$>$"); j+=strlen(out+j); }
     else if (in[i]=='\"') { out[j++]=DoubleQuoteLevel?'\'':'`'; out[j++]=DoubleQuoteLevel?'\'':'`'; DoubleQuoteLevel=!DoubleQuoteLevel; }
     else                  { out[j++]=in[i]; }
    }
@@ -415,8 +415,8 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       out[outpos]='\0';
       if      ((in[i]=='a')&&(in[i+1]=='n')&&(in[i+2]=='d')) strcpy(out+outpos, "\\mathrm{and}");
       else if ((in[i]=='o')&&(in[i+1]=='r')                ) strcpy(out+outpos, "\\mathrm{or}");
-      else if ((in[i]=='<')&&(in[i+1]=='<')                ) strcpy(out+outpos, "\\lt\\lt ");
-      else if ((in[i]=='>')&&(in[i+1]=='>')                ) strcpy(out+outpos, "\\gt\\gt ");
+      else if ((in[i]=='<')&&(in[i+1]=='<')                ) strcpy(out+outpos, "<< ");
+      else if ((in[i]=='>')&&(in[i+1]=='>')                ) strcpy(out+outpos, ">> ");
       else if ((in[i]=='<')&&(in[i+1]=='=')                ) strcpy(out+outpos, "\\leq ");
       else if ((in[i]=='>')&&(in[i+1]=='=')                ) strcpy(out+outpos, "\\geq ");
       else if ((in[i]=='=')&&(in[i+1]=='=')                ) strcpy(out+outpos, "==");
@@ -441,8 +441,8 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       else if ((in[i]=='%')                                ) strcpy(out+outpos, "\\% ");
       else if ((in[i]=='&')                                ) strcpy(out+outpos, "\\& ");
       else if ((in[i]=='|')                                ) strcpy(out+outpos, "|");
-      else if ((in[i]=='<')                                ) strcpy(out+outpos, "\\lt ");
-      else if ((in[i]=='>')                                ) strcpy(out+outpos, "\\gt ");
+      else if ((in[i]=='<')                                ) strcpy(out+outpos, "< ");
+      else if ((in[i]=='>')                                ) strcpy(out+outpos, "> ");
       else if ((in[i]=='^')                                ) strcpy(out+outpos, "\\^{}");
       outpos += strlen(out+outpos);
       while (StatusRow[i]==7) i++; i--;
