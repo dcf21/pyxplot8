@@ -517,14 +517,14 @@ allowing the user to act upon loops other than the innermost one.
 \indfun{conditionalS($a,b,c$)}
 
 The pre-defined functions {\tt conditionalN()} and {\tt conditionalS()} provide
-a compact means of inserting conditional into numerical and string expressions
-respectively.  Each takes three arguments, the first of which is a truth
-criterion to be tested. If the criterion is true, then the function's second
-argument is returned as its output. Otherwise, the function's third argument is
-returned. This is similar to the behaviour of C's ternary {\tt ?:} operator.
-The {\tt conditionalN()} function should be passed two numerical expressions to
-select between, whilst the {\tt conditionalS()} function should be passed two
-string expressions, as the following examples demonstrate:
+a compact means of inserting conditional expressions into numerical and string
+expressions respectively.  Each takes three arguments, the first of which is a
+truth criterion to be tested. If the criterion is true, then the function's
+second argument is returned as its output. Otherwise, the function's third
+argument is returned. This is similar to the behaviour of C's ternary {\tt ?:}
+operator.  The {\tt conditionalN()} function should be passed two numerical
+expressions to select between, whilst the {\tt conditionalS()} function should
+be passed two string expressions, as the following examples demonstrate:
 
 {\footnotesize
 \noindent{\tt pyxplot> f(x) = conditionalN(x$>$0,x,0)}\newline
