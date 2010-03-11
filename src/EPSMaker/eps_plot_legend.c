@@ -190,8 +190,8 @@ void GraphLegend_Render(EPSComm *x, double width, double height)
     ab_top    = dviPage->textSizeBox[3];
     height1 = fabs(ab_top - ab_bottom) * AB_ENLARGE_FACTOR;
     height2 = fabs(bb_top - bb_bottom) * BB_ENLARGE_FACTOR;
-    pd->TitleFinal_height = (height2<height1) ? height2 : height1;
-    pd->TitleFinal_width  = (ab_right - ab_left) + MARGIN_HSIZE;
+    pd->TitleFinal_height = ((height2<height1) ? height2 : height1) * fs;
+    pd->TitleFinal_width  = ((ab_right - ab_left) + MARGIN_HSIZE  ) * fs;
     CombinedHeight += pd->TitleFinal_height;
     if (MinimumHeight < pd->TitleFinal_height) MinimumHeight = pd->TitleFinal_height;
     pageno++;

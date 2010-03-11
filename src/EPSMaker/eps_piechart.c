@@ -283,7 +283,7 @@ void eps_pie_RenderEPS(EPSComm *x)
     int ItemNo=0;
     double *TextWidth, *TextHeight, TotalHeight=0.0;
     double height1,height2,bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
-    double width_available, height_available, key_vpos=0.0;
+    double label_rpos, best_label_rpos, best_label_margin, min_margin, key_vpos=0.0;
     postscriptPage *dviPage;
 
     // Calculate dimensions of text items
@@ -307,8 +307,8 @@ void eps_pie_RenderEPS(EPSComm *x)
         ab_top    = dviPage->textSizeBox[3];
         height1   = fabs(ab_top - ab_bottom) * AB_ENLARGE_FACTOR;
         height2   = fabs(bb_top - bb_bottom) * BB_ENLARGE_FACTOR;
-        TextWidth [ItemNo] = (ab_right - ab_left) + MARGIN_HSIZE;
-        TextHeight[ItemNo] = (height2<height1) ? height2 : height1;
+        TextWidth [ItemNo] = ((ab_right - ab_left) + MARGIN_HSIZE  ) * x->current->settings.FontSize;
+        TextHeight[ItemNo] = ((height2<height1) ? height2 : height1) * x->current->settings.FontSize;
         TotalHeight += TextHeight[ItemNo];
         ItemNo++;
        }
@@ -326,18 +326,49 @@ void eps_pie_RenderEPS(EPSComm *x)
        {
         if ((blk->text[j]!=NULL)&&(blk->text[j][0]!='\0'))
          {
-          double a, X=2;
-          size             = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 2 * M_PI;
-          a                = angle+size/2;
-          width_available  = hypot(rad*pow(fabs(sin(a)),X) , size*rad/2*pow(fabs(cos(a)),X));
-          height_available = hypot(rad*pow(fabs(cos(a)),X) , size*rad/2*pow(fabs(sin(a)),X));
-          if ((x->current->ArrowType==SW_PIEKEYPOS_INSIDE) || ((x->current->ArrowType==SW_PIEKEYPOS_AUTO)&&(width_available>TextWidth[ItemNo])&&(height_available>TextHeight[ItemNo])))
+          int    ArrowType;
+          double a;
+          size             = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 2 * M_PI; // Angular size of wedge
+          a                = angle+size/2; // Central angle of wedge
+
+          // Test different radii where label can be placed
+          best_label_rpos   = 0.7;
+          best_label_margin = -1e10;
+          for (label_rpos=0.7; label_rpos>=0.3; label_rpos-=0.05)
+           {
+            double r,theta,t;
+            min_margin = 1e10;
+
+#define CHECK_POSITION(X,Y) \
+   r     = hypot(X,Y); \
+   theta = fmod(atan2(X,Y) - a, 2*M_PI); if (theta<-M_PI) theta+=2*M_PI; if (theta>M_PI) theta-=2*M_PI; \
+   t     = theta + size/2; \
+   if (t < min_margin) min_margin = t; \
+   t     = size/2 - theta; \
+   if (t < min_margin) min_margin = t; \
+   t     = r / rad; \
+   if (t < min_margin) min_margin = t; \
+   t     = (rad-r) / rad; \
+   if (t < min_margin) min_margin = t; \
+
+            CHECK_POSITION( rad*sin(a)*label_rpos-TextWidth[ItemNo]/2 , rad*cos(a)*label_rpos-TextHeight[ItemNo]/2 );
+            CHECK_POSITION( rad*sin(a)*label_rpos-TextWidth[ItemNo]/2 , rad*cos(a)*label_rpos+TextHeight[ItemNo]/2 );
+            CHECK_POSITION( rad*sin(a)*label_rpos+TextWidth[ItemNo]/2 , rad*cos(a)*label_rpos-TextHeight[ItemNo]/2 );
+            CHECK_POSITION( rad*sin(a)*label_rpos+TextWidth[ItemNo]/2 , rad*cos(a)*label_rpos+TextHeight[ItemNo]/2 );
+            if (min_margin>best_label_margin) { best_label_margin = min_margin; best_label_rpos = label_rpos; }
+           }
+
+          // Work out whether label will go inside, outside or in a key
+          ArrowType = x->current->ArrowType;
+          if (ArrowType==SW_PIEKEYPOS_AUTO) ArrowType = (best_label_margin<0.0) ? SW_PIEKEYPOS_OUTSIDE : SW_PIEKEYPOS_INSIDE;
+
+          if (ArrowType==SW_PIEKEYPOS_INSIDE)
            { // Labelling pie wedges inside pie
             int pageno = x->LaTeXpageno++;
             eps_core_SetColour(x, &ww_txt, 1);
-            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*2/3)/M_TO_PS, (ypos+rad*cos(a)*2/3)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_CENT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*best_label_rpos)/M_TO_PS, (ypos+rad*cos(a)*best_label_rpos)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_CENT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
            }
-          else if ((x->current->ArrowType==SW_PIEKEYPOS_OUTSIDE) || (x->current->ArrowType==SW_PIEKEYPOS_AUTO))
+          else if (ArrowType==SW_PIEKEYPOS_OUTSIDE)
            { // Labelling pie wedges around edge of pie
             int    hal, val, pageno = x->LaTeXpageno++;
             double vtop;
