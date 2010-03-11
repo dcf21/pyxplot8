@@ -26,21 +26,22 @@
 In this chapter we describe the facilities which PyXPlot has for automating
 repetitive tasks. We begin by introducing string variables, which can be useful
 for auto-generating titles and labels for graphs which are being produced in
-batch jobs. Then we discuss the loop constructs which make it possible to
-produce similar plots of many different \datafile s, or to perform calculations
-in an iterative fashion.  Finally, we introduce a simple framework which
-automatically re-executing PyXPlot scripts whenever they change, allowing plots
-to be automatically regenerated whenever the scripts used to produce them are
-modified.
+batch jobs. We then discuss the loop constructs which make it possible to run
+such batch jobs, producing similar plots of many different \datafile s or
+performs calculations in an iterative fashion. Finally, we turn to PyXPlot's
+interaction with the shell and filing system in which it operates, introducing
+a simple framework for automatically re-executing PyXPlot scripts whenever they
+change, allowing plots to be automatically regenerated whenever the scripts
+used to produce them are modified.
 
 \section{String Variables}
 \label{sec:stringvars}
 \index{variables!string}
 
-Variables may not only hold numerical quantities, but also strings of text.  In
+Variables may hold not only numerical quantities, but also strings of text.  In
 the course of this chapter, we will see several examples where string variables
 are used either to generate automatic labels for graphs plotted in batch jobs,
-or to read strings to text from columns of \datafile s. String variables can be
+or to read strings of text from columns of \datafile s. String variables can be
 assigned in a analogous manner to numeric variables, and can subsequently be
 used anywhere where a quoted string could have been used, as in the example:
 \begin{verbatim}
@@ -52,23 +53,24 @@ set title plotname
 \label{sec:stringsubop}
 
 Most string manipulations are performed using the string substitution operator,
-{\tt \%}\index{\% operator@{\tt \%} operator}. The operator is preceeded by a
-format string, in which the places where numbers and strings should be
-substituted are marked by tokens such as {\tt \%e} and {\tt \%s}. The
+{\tt \%}\index{\% operator@{\tt \%} operator}. This operator should be
+preceeded by a format string, such as {\tt x=\%f}, in which tokens such as {\tt
+\%f} mark places where numbers and strings should be substituted. The
 substitution operator is followed by a bracketed list of the quantities which
-are to be substituted into the format string. This behaviour is similar to that
-of the Python programming language's \% operator\footnote{Unlike in Python, the
-brackets are obligatory; {\tt '\%d'\%2} is {\it not} valid in PyXPlot, and
-should be written as {\tt '\%d'\%(2)}.}, and of the {\tt printf} command in C.
-For example, to concatenate the two strings contained in variables {\tt a} and
-{\tt b} into variable {\tt c} one would issue the command:\index{string
+should be substituted in place of these tokens in the format string. This
+behaviour is similar to that of the Python programming language's \%
+operator\footnote{Unlike in Python, the brackets are obligatory; {\tt '\%d'\%2}
+is {\it not} valid in PyXPlot, and should be written as {\tt '\%d'\%(2)}.} and
+of the {\tt printf} statement in C.  For example, to concatenate the two
+strings contained in the variables {\tt a} and {\tt b} into a single string
+variable {\tt c}, one would issue the command:\index{string
 operators!concatenation}
 \begin{verbatim}
 c = "%s%s"%(a,b)
 \end{verbatim}
 
-One common practical application of these string operators is to label plots
-with the title of the \datafile\ being plotted, as in:
+One example application of this operator would be to label plots with the title
+of the \datafile\ being plotted, as in:
 \begin{verbatim}
 filename="data_file.dat"
 title="A plot of the data in {\tt %s}."%(filename)
@@ -94,8 +96,8 @@ Table~\ref{tab:conversion_chars}. Note that where numerical quantities with
 physical units are provided, the physical units are not displayed unless the
 {\tt \%s} token is used. Although it is not an error to pass a quantity with
 physical units to, for example, the {\tt \%f} substitution token, it is good
-practice to divide the quantity by a suitable unit to make it dimensionless
-first, to be certain of what unit it will be displayed in.
+practice to divide the quantity by a suitable unit first to make it
+dimensionless, to be certain of what unit it will be displayed in.
 
 \begin{table}
 \begin{center}
@@ -106,7 +108,7 @@ first, to be certain of what unit it will be displayed in.
 {\tt d}, {\tt i}   & An integer value. \\
 {\tt e}, {\tt E}   & A floating-point value in scientific notation using either the character {\tt e} or {\tt E} to indicate exponentiation. \\
 {\tt f}            & A floating-point value without the use of scientific notation. \\
-{\tt g}, {\tt G}   & A floating-point value, either using scientific notation, if the exponent is greater than the precision or less than $4$, otherwise without the use of scientific notation. \\
+{\tt g}, {\tt G}   & A floating-point value, either using scientific notation, if the exponent is greater than the precision or less than $-4$, otherwise without the use of scientific notation. \\
 {\tt o}            & An integer value in octal (base~8). \\
 {\tt s}, {\tt S}, {\tt c} & A string, if a string is provided, or a numerical quantity, with units, if such is provided. \\
 {\tt x}, {\tt X}   & An integer value in hexidecimal (base~16). \\
@@ -157,10 +159,10 @@ above example, for example:
 twister =~ s@s@th@
 \end{verbatim}
 
-\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, as in the
-following example, where the {\tt g} flag is used to perform a global
-search-and-replace of all instances of the letter {\tt s} with the letters {\tt
-th}:
+\noindent Flags can be passed, as in {\tt sed} or {\tt perl}, to modify the
+precise behaviour of the regular expression. In the following example the {\tt
+g} flag is used to perform a global search-and-replace of all instances of the
+letter {\tt s} with the letters {\tt th}:
 
 \begin{verbatim}
 pyxplot> twister="seven silver soda syphons"
@@ -257,13 +259,13 @@ if False {
  }
 \end{verbatim}
 
-As in C, the block the commands which are to be executed if the conditional is
-true are enclosed in braces (i.e. {\tt \{~\}}).  There are, however, some rules
-about the arrangement of whitespace.  The block of commands must begin on a new
-line after the {\tt if} statement. The closing brace must be on a line by
-itself at the end of the block. Alternatively, semi-colons may, as always, be
-used in place of new lines. The opening brace may be placed either on the same
-line as the {\tt if} statement, or on the following line:
+As in C, the block of commands which are to be conditionally executed is
+enclosed in braces (i.e.\ {\tt \{~\}}).  There are, however, some rules about
+the arrangement of whitespace.  The block of commands must begin on a new line
+after the {\tt if} statement. The closing brace must be on a line by itself at
+the end of the block. Alternatively, semi-colons may, as always, be used in the
+place of new lines. The opening brace may be placed either on the same line as
+the {\tt if} statement, or on the following line:
 
 \begin{verbatim}
 if (x==0)
@@ -275,8 +277,8 @@ if (x==0) { ; print "x is zero" ; }
 \end{verbatim}
 
 After such an {\tt if} clause, it is possible to string together further
-conditions in {\tt else if} clauses, perhaps with a final {\tt else} clause.
-For example:
+conditions in {\tt else if} clauses, perhaps with a final {\tt else} clause, as
+in the example:
 
 \begin{verbatim}
 if (x==0)
@@ -294,7 +296,7 @@ conditional, {\tt x==0}, is true. If this script block is not executed, the
 second conditional, {\tt x>0}, is then tested. If this is true, then the second
 script block is executed.  The final script block, following the {\tt else}, is
 executed if none of the preceeding conditionals have been true. Any number of
-{\tt else if} statements can be chained after one another, and a final {\tt
+{\tt else if} statements can be chained one after another, and a final {\tt
 else} statement can always be optionally supplied. The {\tt else} and {\tt else
 if} statements must always be placed on the same line as the closing brace of
 the preceeding script block.
@@ -311,8 +313,8 @@ else           { ; print "x is negative" ; }
 
 \section{For Loops}
 
-For loops may used to execute a series of commands multiple times. PyXPlot's
-\indcmdt{for} command has the syntax:
+For loops may be used to execute a series of commands multiple times. PyXPlot's
+\indcmdt{for} has the syntax:
 
 \begin{verbatim}
 for <variable> = <start> to <end> {step <step>} {loopname <name>}
@@ -329,9 +331,8 @@ negative, then {\tt end} is required to be less than {\tt start}. A step size
 of zero is considered to be an error.  The iterator variable can have any
 physical dimensions, so long as {\tt start}, {\tt end} and {\tt step} all have
 the same dimensions, but the iterator variable must always be a real number. If
-no step size is given then a step size of unity is assumed.
-
-As an example, the following script would print the numbers 0, 2, 4, 6 and 8:
+no step size is given then a step size of unity is assumed.  As an example, the
+following script would print the numbers 0, 2, 4, 6 and 8:
 
 \begin{verbatim}
 for x = 0 to 10 step 2
@@ -353,7 +354,7 @@ will be introduced in Section~\ref{sec:breakcontinue}.
 
 Foreach loops may be used to run a script block once for each item in a list.
 The list may either take the form of an explicit bracketed comma-separated list
-of items, or the form of a filename wildcard, as in the examples:
+of items, or the form of one or more filename wildcards, as in the examples:
 
 \begin{verbatim}
 foreach x in (-1,pi,10)
@@ -386,12 +387,13 @@ characters in the search string are alphanumeric, but optional otherwise. Since
 both of the wildcard characters {\tt *} and {\tt ?} are non-alphanumeric, the
 quotes are compulsory in most useful cases.  An error is returned if there are
 no files in the present directory which match the supplied wildcard. The
-following example would produce plots of all of the \datafile
-s in the current directory as {\tt eps} files with matching filenames:
+following example would produce plots of all of the \datafile s in the current
+directory with filenames {\tt foo\_*.dat} or {\tt bar\_*.dat} as {\tt eps}
+files with matching filenames:
 
 \begin{verbatim}
 set terminal eps
-foreach x in "*.dat"
+foreach x in "foo_*.dat" "bar_*.dat"
  {
   outfilename =  x
   outfilename =~ s/dat/eps/
@@ -419,7 +421,7 @@ foreach datum i,j,name in "data.dat" using 1:2:"%s"%($3)
 \end{verbatim}
 
 The \indcmdt{foreach datum} is followed by a comma-separated list of the
-variable(s) which are to be read from the \datafile on each iteration of the
+variable(s) which are to be read from the \datafile\ on each iteration of the
 loop. The {\tt using} modifier specifies the columns or rows of data which are
 to be used to set the values of each variable. In this example, the third
 variable, {\tt name}, is set using a quoted string, indicating that it will be
@@ -428,8 +430,8 @@ set to equal whatever string of text is found in the third column of the
 
 \section{While and Do Loops}
 
-The \indcmdt{while} command may be used to continue running a script block
-until some stopping criterion is met. Two types of while loop are supported:
+The \indcmdt{while} may be used to continue running a script block until some
+stopping criterion is met. Two types of while loop are supported:
 
 \begin{verbatim}
 while <criterion> {loopname <name>}
@@ -445,13 +447,13 @@ do {loopname <name>}
 \indcmd{do}
 
 In the former case, the enclosed script block is executed repeatedly, and the
-algebraic expression supplied to the \indcmdt{while} command is tested
-immediately before each repetition. If it tests false, then the loop finishs.
-The latter case is very similar, except that the supplied algebraic expression
-is tested immediately {\it after} each repetition. Thus, the former example may
-never actually execute the supplied script block if the looping criterion tests
-false upon the first iteration, but the latter example is always guaranteed to
-run its script block at least once.
+algebraic expression supplied to the \indcmdt{while} is tested immediately
+before each repetition. If it tests false, then the loop finishes.  The latter
+case is very similar, except that the supplied algebraic expression is tested
+immediately {\it after} each repetition. Thus, the former example may never
+actually execute the supplied script block if the looping criterion tests false
+upon the first iteration, but the latter example is always guaranteed to run
+its script block at least once.
 
 The following example would continue looping indefinitely until stopped by the
 user, since the value {\tt 1} is considered to be true:
@@ -473,9 +475,9 @@ structures to interrupt their iteration. The {\tt break} statement terminates
 execution of the smallest loop currently being executed, and PyXPlot resumes
 execution at the next statement after the closing brace which marks the end of
 that loop structure. The {\tt continue} statement terminates execution of the
-{\tt current iteration} of the smallest loop currently being executed, and
+{\it current iteration} of the smallest loop currently being executed, and
 execution proceeds with the next iteration of that loop, as demonstrated by the
-following pair of examples.
+following pair of examples:
 
 \begin{verbatim}
 pyxplot> for i=0 to 4 {
@@ -495,11 +497,9 @@ for... > }
 
 Note that if several loops are nested, the {\tt break} and {\tt continue}
 statements only act upon the innermost loop. If either statement is encountered
-outside of a loop structure, an error results.
-
-Optionally, the {\tt for}, {\tt foreach}, {\tt do} and {\tt while}, may be
-supplied with a name for the loop, prefixed by the word {\tt loopname}, as in
-the examples:
+outside of a loop structure, an error results. Optionally, the {\tt for}, {\tt
+foreach}, {\tt do} and {\tt while}, may be supplied with a name for the loop,
+prefixed by the word {\tt loopname}, as in the examples:
 
 \begin{verbatim}
 for i=0 to 4 loopname iloop
@@ -508,9 +508,32 @@ foreach i in "*.dat" loopname DatafileLoop
 ...
 \end{verbatim}
 
-When loops are given names, the {\tt break} and {\tt continue} statements may
-be followed by the name of the loop to be broken out of, allowing the user to
-act upon loops other than the innermost one.
+\noindent When loops are given such names, the {\tt break} and {\tt continue}
+statements may be followed by the name of the loop to be broken out of,
+allowing the user to act upon loops other than the innermost one.
+
+\section{Conditional Functions}
+\indfun{conditionalN($a,b,c$)}
+\indfun{conditionalS($a,b,c$)}
+
+The pre-defined functions {\tt conditionalN()} and {\tt conditionalS()} provide
+a compact means of inserting conditional into numerical and string expressions
+respectively.  Each takes three arguments, the first of which is a truth
+criterion to be tested. If the criterion is true, then the function's second
+argument is returned as its output. Otherwise, the function's third argument is
+returned. This is similar to the behaviour of C's ternary {\tt ?:} operator.
+The {\tt conditionalN()} function should be passed two numerical expressions to
+select between, whilst the {\tt conditionalS()} function should be passed two
+string expressions, as the following examples demonstrate:
+
+{\footnotesize
+\noindent{\tt pyxplot> f(x) = conditionalN(x$>$0,x,0)}\newline
+\noindent{\tt pyxplot> print "\%s \%s \%s \%s \%s"\%(f(-2),f(-1),f(0),f(1),f(2))}\newline
+\noindent{\tt 0 0 0 1 2}\newline
+\noindent{\tt pyxplot> x = 2}\newline
+\noindent{\tt pyxplot> print "x is \%s"\%(conditionalS(x$>$0,"positive","negative"))}\newline
+\noindent{\tt x is positive}\newline
+}
 
 \section{Subroutines}
 \indcmd{subroutine}
@@ -531,7 +554,7 @@ subroutine <name>(<variable1>,...)
  }
 \end{verbatim}
 Where {\tt name} is the name of the subroutine, {\tt variable1} is an argument
-taken by the subroutine, and the value given to the {\tt return} statement is
+taken by the subroutine, and the value passed to the {\tt return} statement is
 the value returned to the caller. Once the {\tt return} statement is reached,
 execution of the subroutine is terminated. The following two examples would
 produce entirely equivalent results:
@@ -580,7 +603,8 @@ terminal="eps"
 exec "set terminal %s"%(terminal)
 \end{verbatim}
 
-It can also be used to write obfuscated PyXPlot scripts.
+\noindent It can also be used to write obfuscated PyXPlot scripts, and should
+be minimised wherever possible.
 
 \section{Shell Commands}
 
@@ -629,7 +653,7 @@ directory of the shell in which the single command is executed:
 !cd ..
 \end{dontdo}
 
-PyXPlot has its own \indcmdt{cd} for this purpose, as well as its own
+\noindent PyXPlot has its own \indcmdt{cd} for this purpose, as well as its own
 \indcmdt{pwd}:
 
 \begin{dodo}
