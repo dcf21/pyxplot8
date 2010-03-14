@@ -63,7 +63,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
   while (1) // loop over as many iterations of linkage as may be necessary
    {
     if (IterDepth++ > 100) return;
-    if (!(source->linked && (source->MinUsedSet || source->MaxUsedSet))) { break; } // proceed only if axis is linked and has usage information
+    if (!(source->linked && (source->MinUsedSet || source->MaxUsedSet || source->DataUnitSet))) { break; } // proceed only if axis is linked and has usage information
     if (source->LinkedAxisCanvasID <= 0)
      { item = x->current; } // Linked to an axis on the same graph
     else // Linked to an axis on a different canvas item
@@ -75,17 +75,24 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
     if      (source->LinkedAxisToXYZ == 0) target = item->XAxes + source->LinkedAxisToNum;
     else if (source->LinkedAxisToXYZ == 1) target = item->YAxes + source->LinkedAxisToNum;
     else                                   target = item->ZAxes + source->LinkedAxisToNum;
-    if ((target->MinUsedSet || target->MaxUsedSet) && (!ppl_units_DimEqual(&target->DataUnit , &source->DataUnit)))
+    if (source->linkusing != NULL)
      {
-      sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but axes have data plotted against them with conflicting physical units. The former has units of <%s> whilst the latter has units of <%s>.","xyz"[xyz],axis_n,x->current->id,"xyz"[source->LinkedAxisToXYZ],source->LinkedAxisToNum,source->LinkedAxisCanvasID,ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,0,0),ppl_units_GetUnitStr(&source->DataUnit,NULL,NULL,1,0));
-      ppl_warning(ERR_GENERAL, temp_err_string);
-      break;
+      // Insert fitting code here
      }
     else
      {
-      if ((!target->MinUsedSet) || (target->MinUsed > source->MinUsed)) { target->MinUsed=source->MinUsed; target->MinUsedSet=1; }
-      if ((!target->MaxUsedSet) || (target->MaxUsed < source->MaxUsed)) { target->MaxUsed=source->MaxUsed; target->MaxUsedSet=1; }
-      target->DataUnit = source->DataUnit;
+      if ((target->DataUnitSet && source->DataUnitSet) && (!ppl_units_DimEqual(&target->DataUnit , &source->DataUnit)))
+       {
+        sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but axes have data plotted against them with conflicting physical units. The former has units of <%s> whilst the latter has units of <%s>.","xyz"[xyz],axis_n,x->current->id,"xyz"[source->LinkedAxisToXYZ],source->LinkedAxisToNum,source->LinkedAxisCanvasID,ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,0,0),ppl_units_GetUnitStr(&source->DataUnit,NULL,NULL,1,0));
+        ppl_warning(ERR_GENERAL, temp_err_string);
+        break;
+       }
+      else
+       {
+        if ((source->MinUsedSet) && ((!target->MinUsedSet) || (target->MinUsed > source->MinUsed))) { target->MinUsed=source->MinUsed; target->MinUsedSet=1; }
+        if ((source->MaxUsedSet) && ((!target->MaxUsedSet) || (target->MaxUsed < source->MaxUsed))) { target->MaxUsed=source->MaxUsed; target->MaxUsedSet=1; }
+        if (source->DataUnitSet) { target->DataUnit = source->DataUnit; target->DataUnitSet = 1; }
+       }
      }
     source = target;
    }
@@ -116,8 +123,8 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
     else if (j==2) axes = x->current->ZAxes;
     for (i=0; i<MAX_AXES; i++)
      {
-      if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i); if (*x->status) return; }
-      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, (j==1)?height:width, x->current->settings.AxisUnitStyle, NULL, NULL, 0, 0); if (*x->status) return; }
+      if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i, 1); if (*x->status) return; }
+      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, (j==1)?height:width, x->current->settings.AxisUnitStyle); if (*x->status) return; }
      }
    }
   return;
@@ -129,20 +136,14 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
 
 void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis_n)
  {
-  double *HardMin, *HardMax, width, height;
-  unsigned char HardAutoMin, HardAutoMax; // Set for "plot [:*]", where * says we must autoscale, even if there's a preexisting maximum set for the axis
-
-  HardAutoMin = axis->HardAutoMinSet;
-  HardAutoMax = axis->HardAutoMaxSet;
-  HardMin     = axis->HardMinSet ? &axis->HardMin : NULL;
-  HardMax     = axis->HardMaxSet ? &axis->HardMax : NULL;
+  double width, height;
 
   // Work out lengths of x and y axes
   width    = x->current->settings.width.real;
   if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
   else                                                height = width * x->current->settings.aspect;
 
-  eps_plot_ticking(axis, xyz, axis_n, x->current->id, (xyz==1)?height:width, x->current->settings.AxisUnitStyle, HardMin, HardMax, HardAutoMin, HardAutoMax);
+  eps_plot_ticking(axis, xyz, axis_n, x->current->id, (xyz==1)?height:width, x->current->settings.AxisUnitStyle);
   return;
  }
 
@@ -152,10 +153,10 @@ void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis
 // intermediate levels of the hierarchy before calling
 // eps_plot_DecideAxisRange().
 
-void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xyz, int axis_n)
+void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xyz, int axis_n, int mode)
  {
-  int            IterDepth, target_xyz, target_axis_n;
-  settings_axis *source, *source2, *target, *target2;
+  int            IterDepth, target_xyz, target_axis_n, source_xyz, OriginalMode=mode;
+  settings_axis *source, *target, *target2;
   canvas_item   *item;
   
   // Propagate MinUsed and MaxUsed variables along links
@@ -165,7 +166,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
   target_axis_n = axis_n;
   while (1) // loop over as many iterations of linkage as may be necessary to find MinFinal and MaxFinal at the bottom
    {
-    if (IterDepth++ > 100) return;
+    if (IterDepth++ > 100) break;
     if ((!target->linked) || target->RangeFinalised) { break; } // proceed only if axis is linked
     if (target->LinkedAxisCanvasID <= 0)
      { item = x->current; } // Linked to an axis on the same graph
@@ -173,7 +174,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
      {
       item = x->itemlist->first;
       while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
-      if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { if (IterDepth==1) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyz"[xyz],axis_n,x->current->id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
+      if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyz"[xyz],axis_n,x->current->id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
      }
     if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
     else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
@@ -183,38 +184,89 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
     target_axis_n = target->LinkedAxisToNum;
     target        = target2;
    }
-  if (!target->RangeFinalised) eps_plot_DecideAxisRange(x, target, target_xyz, target_axis_n);
-  if (*x->status) return;
-  IterDepth = 0;
-  source = axis;
-  while (1) // loop over as many iterations of linkage as may be necessary
+  if ((mode==1) && (!target->RangeFinalised)) { eps_plot_DecideAxisRange(x, target, target_xyz, target_axis_n); if (*x->status) return; }
+  IterDepth -= 2;
+  source     = target;
+  source_xyz = target_xyz;
+  target     = axis;
+  for ( ; IterDepth>=0 ; IterDepth--) // loop over as many iterations of linkage as may be necessary
    {
-    if (IterDepth++ > 100) return;
-    if (source->RangeFinalised) { break; }
-    if (!source->linked) { break; } // proceed only if axis is linked
-    source->MinFinal = target->MinFinal;
-    source->MaxFinal = target->MaxFinal;
-    if (source->linkusing != NULL) eps_plot_LinkedAxisLinkUsing(source, target, target_xyz);
-    else                           { source->DataUnit = target->DataUnit; source->DataUnitSet = target->DataUnitSet; source->AxisValueTurnings = target->AxisValueTurnings; source->AxisLinearInterpolation = target->AxisLinearInterpolation; source->AxisTurnings = target->AxisTurnings; }
-    source->RangeFinalised = 1;
-    if (source->LinkedAxisCanvasID <= 0)
-     { item = x->current; } // Linked to an axis on the same graph
-    else // Linked to an axis on a different canvas item
+    int k;
+    target = axis;
+    for (k=0; k<IterDepth; k++)
      {
-      item = x->itemlist->first;
-      while ((item != NULL) && (item->id)<source->LinkedAxisCanvasID) item=item->next;
-      if ((item == NULL) || (item->id != source->LinkedAxisCanvasID)) { break; }
+      if (target->LinkedAxisCanvasID <= 0)
+       { item = x->current; } // Linked to an axis on the same graph
+      else // Linked to an axis on a different canvas item
+       {
+        item = x->itemlist->first;
+        while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
+        if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { break; }
+       }
+      if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
+      else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
+      else                                   target2 = item->ZAxes + target->LinkedAxisToNum;
+      target        = target2;
      }
-    if      (source->LinkedAxisToXYZ == 0) source2 = item->XAxes + source->LinkedAxisToNum;
-    else if (source->LinkedAxisToXYZ == 1) source2 = item->YAxes + source->LinkedAxisToNum;
-    else                                   source2 = item->ZAxes + source->LinkedAxisToNum;
-    if (source->DataUnitSet && source2->DataUnitSet && (!ppl_units_DimEqual(&source->DataUnit , &source2->DataUnit))) break; // If axes are dimensionally incompatible, stop
-    source = source2;
+
+    if (target->RangeFinalised) { break; }
+    if (!target->linked) { break; } // proceed only if axis is linked
+    if ((OriginalMode==0)&&(target->Mode0BackPropagated)) continue;
+    target->Mode0BackPropagated = 1;
+    if (mode==0) // MODE 0: Propagate HardMin, HardMax, HardUnit
+     {
+      if (target->linkusing != NULL)
+       {
+        if (source->HardMinSet && source->HardMaxSet)
+         {
+          source->MinFinal    = source->HardMin;
+          source->MaxFinal    = source->HardMax;
+          source->DataUnit    = source->HardUnit;
+          source->DataUnitSet = 1;
+          mode=1;
+         }
+        else
+         {
+          target->HardMinSet = target->HardMaxSet = target->HardUnitSet = 0;
+         }
+       }
+      else
+       {
+        target->HardMinSet     = source->HardMinSet;
+        target->HardMin        = source->HardMin;
+        target->HardMaxSet     = source->HardMaxSet;
+        target->HardMax        = source->HardMax;
+        target->HardUnitSet    = source->HardUnitSet;
+        target->HardUnit       = source->HardUnit;
+        target->HardAutoMinSet = source->HardAutoMinSet;
+        target->HardAutoMaxSet = source->HardAutoMaxSet;
+       }
+     }
+    if (mode==1) // MODE 1: Propagate finalised ranges
+     {
+      target->MinFinal = source->MinFinal;
+      target->MaxFinal = source->MaxFinal;
+      if (target->linkusing != NULL)
+       {
+        if (eps_plot_LinkedAxisLinkUsing(target, source, source_xyz)) break;
+       }
+      else
+       {
+        if (target->DataUnitSet && source->DataUnitSet && (!ppl_units_DimEqual(&target->DataUnit , &source->DataUnit))) break; // If axes are dimensionally incompatible, stop
+        target->DataUnit = source->DataUnit;
+        target->DataUnitSet = source->DataUnitSet;
+        target->AxisValueTurnings = source->AxisValueTurnings;
+        target->AxisLinearInterpolation = source->AxisLinearInterpolation;
+        target->AxisTurnings = source->AxisTurnings;
+       }
+      target->RangeFinalised = 1;
+     }
+    source = target;
    }
   return;
  }
 
-void eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz)
+int eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz)
  {
   int i,j=-1,k=-1,l,xrn=0;
   int oldsgn=-10,newsgn;
@@ -243,7 +295,7 @@ void eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz
   out->AxisValueTurnings       = 0;
   out->AxisTurnings            = (int *)lt_malloc((AXISLINEARINTERPOLATION_NPOINTS+2) * sizeof(int));
 
-  if ((out->AxisLinearInterpolation==NULL)||(out->AxisTurnings==NULL)) return;
+  if ((out->AxisLinearInterpolation==NULL)||(out->AxisTurnings==NULL)) goto FAIL;
   out->AxisTurnings[xrn++] = 0;
 
   for (l=0; l<AXISLINEARINTERPOLATION_NPOINTS; l++) // Loop over samples we are going to take from axis linkage function
@@ -282,12 +334,12 @@ void eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz
   *VarVal = DummyTemp;
   out->AxisTurnings[xrn--] = AXISLINEARINTERPOLATION_NPOINTS-1;
   out->AxisValueTurnings = xrn;
-  return;
+  return 0;
 
 FAIL:
   out->AxisLinearInterpolation = NULL;
   out->AxisValueTurnings       = 0;
   out->AxisTurnings            = NULL;
-  return;
+  return 1;
  }
 

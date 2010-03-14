@@ -172,6 +172,7 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
 
 // UpdateUsage... assert that axis X should be dimensionally compatible with unit Y
 #define UUAU(XYZ,XYZN,X,Y) \
+ if ((X->HardUnitSet) && (!ppl_units_DimEqual(&X->HardUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> as compared to range of axis, which has units of <%s>.", "xyz"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&X->HardUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&(Y),NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; } \
  if ((X->DataUnitSet) && (!ppl_units_DimEqual(&X->DataUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> and <%s>.", "xyz"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&X->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&(Y),NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; } \
  if (!X->DataUnitSet) \
   { \
@@ -728,7 +729,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     } \
 
     if (a[yn]->DataUnitSet && (!ppl_units_DimEqual(&sg->BoxFrom, &a[yn]->DataUnit))) { sprintf(temp_err_string, "Data with units of <%s> plotted as boxes/steps when BoxFrom is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[yn]->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&sg->BoxFrom,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); }
-    else if (a[xn]->DataUnitSet && (sg->BoxWidth.real>DBL_MIN) && (!ppl_units_DimEqual(&sg->BoxWidth, &a[xn]->DataUnit))) { sprintf(temp_err_string, "Data with ordinate units of <%s> plotted as boxes/steps when BoxWidth is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[xn]->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&sg->BoxWidth,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); }
+    else if (a[xn]->DataUnitSet && (sg->BoxWidth.real>0.0) && (!ppl_units_DimEqual(&sg->BoxWidth, &a[xn]->DataUnit))) { sprintf(temp_err_string, "Data with ordinate units of <%s> plotted as boxes/steps when BoxWidth is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[xn]->DataUnit,NULL,NULL,0,0),  ppl_units_GetUnitStr(&sg->BoxWidth,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); }
     else
      {
       unsigned char logaxis = (a[xn]->log==SW_BOOL_TRUE);

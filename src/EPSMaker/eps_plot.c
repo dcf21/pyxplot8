@@ -192,7 +192,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   axissets[1] = x->current->YAxes;
   axissets[2] = x->current->ZAxes;
 
-  // First clear all range information from all axes
+  // First clear all range information from all axes.
+  // Also, transfer range information from [Min,Max,unit] to [HardMin,HardMax,HardUnit].
   for (j=0; j<3; j++)
    {
     axes = axissets[j];
@@ -200,11 +201,17 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
      {
       axes[i].AxisValueTurnings = 0;
       axes[i].AxisLinearInterpolation = NULL;
-      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = axes[i].FinalActive = 0;
+      axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = 0;
+      axes[i].FinalActive = axes[i].enabled;
       axes[i].MinUsed    = axes[i].MaxUsed    = axes[i].MinFinal = axes[i].MaxFinal = 0.0;
-      axes[i].HardMin    = axes[i].HardMax    = 0.0;
-      axes[i].HardMinSet = axes[i].HardMaxSet = 0;
+      axes[i].HardMin    = axes[i].min;
+      axes[i].HardMax    = axes[i].max;
+      axes[i].HardMinSet = (axes[i].MinSet==SW_BOOL_TRUE);
+      axes[i].HardMaxSet = (axes[i].MaxSet==SW_BOOL_TRUE);
+      axes[i].HardUnit   = axes[i].unit;
+      axes[i].HardUnitSet= (axes[i].MinSet==SW_BOOL_TRUE) || (axes->MaxSet==SW_BOOL_TRUE);
       axes[i].HardAutoMinSet = axes[i].HardAutoMaxSet = 0;
+      axes[i].Mode0BackPropagated = 0;
       axes[i].OrdinateRasterLen = 0;
       axes[i].OrdinateRaster = NULL;
       axes[i].FinalAxisLabel = NULL;
@@ -228,21 +235,27 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     axis   = &axissets[xyz][axis_n];
 
     // Check if we have partial range which conflicts with units of range of axis
-    if ((pr->MinSet && (!pr->MaxSet)) && (axis->MaxSet==SW_BOOL_TRUE) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-    if (((!pr->MinSet) && pr->MaxSet) && (axis->MinSet==SW_BOOL_TRUE) && (!ppl_units_DimEqual(&axis->unit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-    if (((axis->MinSet==SW_BOOL_TRUE) || (axis->MaxSet==SW_BOOL_TRUE)) && (axis->DataUnitSet) && (!ppl_units_DimEqual(&axis->unit, &axis->DataUnit))) { sprintf(temp_err_string, "The range specified for axis %c%d has conflicting units with the data plotting on that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+    if ((pr->MinSet && (!pr->MaxSet)) && axis->HardMaxSet && (!pr->AutoMaxSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+    if (((!pr->MinSet) && pr->MaxSet) && axis->HardMinSet && (!pr->AutoMinSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
 
     // Read information about axis range out of list of ranges supplied to the plot command, ready to pass to eps_plot_ticking
-    if (pr->AutoMinSet) { axis->HardAutoMinSet = 1; }
-    if (pr->AutoMaxSet) { axis->HardAutoMaxSet = 1; }
     if (pr->MinSet)     { axis->HardMinSet = 1; axis->HardMin = pr->min; }
     if (pr->MaxSet)     { axis->HardMaxSet = 1; axis->HardMax = pr->max; }
+    if (pr->AutoMinSet) { axis->HardAutoMinSet = 1; axis->HardMinSet = 0; }
+    if (pr->AutoMaxSet) { axis->HardAutoMaxSet = 1; axis->HardMaxSet = 0; }
 
-    // Update axis->DataUnit to be the canonical reference for the units of the axis
-    if      (pr->MinSet || pr->MaxSet)                                     { axis->DataUnitSet=1; axis->DataUnit=pr  ->unit; }
-    else if ((axis->MinSet==SW_BOOL_TRUE) || (axis->MaxSet==SW_BOOL_TRUE)) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
+    // Update axis->HardUnit to be the canonical reference for the units of the range specified for this axis
+    if (pr->MinSet || pr->MaxSet) { axis->HardUnitSet=1; axis->HardUnit=pr->unit; }
+    if ((!axis->HardMinSet) && (!axis->HardMaxSet)) { axis->HardUnitSet=0; }
 
     pr=pr->next; k++;
+   }
+
+  // Proprogate range information to linked axes
+  for (j=0; j<3; j++)
+   {
+    axes = axissets[j];
+    for (i=0; i<MAX_AXES; i++) eps_plot_LinkedAxisForwardPropagate(x, axes+i, j, i, 0);
    }
 
   // Count number of datasets which we are plotting
@@ -357,7 +370,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       // Fix range of ordinate axis
-      eps_plot_LinkedAxisForwardPropagate(x, OrdinateAxis, pd->axis1xyz, pd->axis1);
+      eps_plot_LinkedAxisForwardPropagate(x, OrdinateAxis, pd->axis1xyz, pd->axis1, 1);
       if (*x->status) return;
 
       // Make ordinate raster if we don't already have one

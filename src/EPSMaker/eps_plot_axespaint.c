@@ -30,9 +30,11 @@
 #include "ppl_setting_types.h"
 #include "ppl_units_fns.h"
 
+#include "eps_arrow.h"
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_plot_axespaint.h"
+#include "eps_plot_canvas.h"
 #include "eps_settings.h"
 
 void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
@@ -50,7 +52,7 @@ void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
   return;
  }
 
-void eps_plot_axispaint(EPSComm *x, settings_axis *a, const unsigned char Lr, const double x1, const double y1, const double x2, const double y2, double *OutputWidth, const unsigned char PrintLabels)
+void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const unsigned char Lr, const double x1, const double y1, const double x2, const double y2, double *OutputWidth, const unsigned char PrintLabels)
  {
   int    i, l;
   double TickMaxHeight = 0.0, height, width, theta_axis;
@@ -62,9 +64,10 @@ void eps_plot_axispaint(EPSComm *x, settings_axis *a, const unsigned char Lr, co
   // Draw line of axis
   IF_NOT_INVISIBLE
    {
-    fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", x1, y1, x2, y2);
-    eps_core_PlotBoundingBox(x, x1, y1, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-    eps_core_PlotBoundingBox(x, x2, y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+    if      (a->ArrowType == SW_AXISDISP_NOARR) eps_primitive_arrow(x, SW_ARROWTYPE_NOHEAD, x1, y1, x2, y2, ww);
+    else if (a->ArrowType == SW_AXISDISP_ARROW) eps_primitive_arrow(x, SW_ARROWTYPE_HEAD  , x1, y1, x2, y2, ww);
+    else if (a->ArrowType == SW_AXISDISP_TWOAR) eps_primitive_arrow(x, SW_ARROWTYPE_TWOWAY, x1, y1, x2, y2, ww);
+    else if (a->ArrowType == SW_AXISDISP_BACKA) eps_primitive_arrow(x, SW_ARROWTYPE_HEAD  , x2, y2, x1, y1, ww);
 
     theta_axis = atan2(x2-x1,y2-y1);
     if (!gsl_finite(theta_axis)) theta_axis=0.0;
@@ -170,6 +173,8 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   with_words_zero(&ww,0);
   if (x->current->settings.AxesColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.AxesColour; }
   else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.AxesColourR; ww.colourG = x->current->settings.AxesColourG; ww.colourB = x->current->settings.AxesColourB; }
+  ww.linewidth = EPS_AXES_LINEWIDTH; ww.USElinewidth = 1;
+  ww.linetype  = 1;                  ww.USElinetype  = 1;
   eps_core_SetColour(x, &ww, 1);
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
 
@@ -202,23 +207,40 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       for (i=0; i<MAX_AXES; i++)
        if ((axes[i].FinalActive) && (!axes[i].invisible))
         {
-         if ((axes[i].MirrorType == SW_AXISMIRROR_AUTO) && (FirstAutoMirror[axes[i].topbottom]<0)) FirstAutoMirror[axes[i].topbottom] = i;
-
-         if ((!axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
+         if (axes[i].atzero)
           {
-           double BotPosInc;
-           if (j==0) eps_plot_axispaint(x, axes+i, 0, origin_x, BotPos, origin_x+width, BotPos, &BotPosInc, (!axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on bottom
-           else      eps_plot_axispaint(x, axes+i, 1, BotPos, origin_y, BotPos, origin_y+height, &BotPosInc, (!axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on left
-           BotPos -= BotPosInc;
-           Naxes[0]++;
+           int xrn;
+           double ypos, dummy;
+           for (xrn=0; xrn<=axes[i].AxisValueTurnings; xrn++)
+            {
+             ypos = eps_plot_axis_GetPosition(0.0, &axes[i], xrn, 0);
+             if (gsl_finite(ypos))
+              {
+               if (j==0) { ypos = origin_y+ypos*height; eps_plot_axispaint(x, &ww, axes+i, 0, origin_x, ypos    , origin_x+width, ypos           , &dummy, 1); }
+               else      { ypos = origin_x+ypos*width ; eps_plot_axispaint(x, &ww, axes+i, 1, ypos    , origin_y, ypos          , origin_y+height, &dummy, 1); }
+              }
+            }
           }
-         if (( axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
+         else // axis is notatzero... i.e. it is either at top or bottom of graph
           {
-           double TopPosInc;
-           if (j==0) eps_plot_axispaint(x, axes+i, 1, origin_x, TopPos, origin_x+width, TopPos, &TopPosInc, ( axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on top
-           else      eps_plot_axispaint(x, axes+i, 0, TopPos, origin_y, TopPos, origin_y+height, &TopPosInc, ( axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on right
-           TopPos += TopPosInc;
-           Naxes[1]++;
+           if ((axes[i].MirrorType == SW_AXISMIRROR_AUTO) && (FirstAutoMirror[axes[i].topbottom]<0)) FirstAutoMirror[axes[i].topbottom] = i;
+
+           if ((!axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
+            {
+             double BotPosInc;
+             if (j==0) eps_plot_axispaint(x, &ww, axes+i, 0, origin_x, BotPos, origin_x+width, BotPos, &BotPosInc, (!axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on bottom
+             else      eps_plot_axispaint(x, &ww, axes+i, 1, BotPos, origin_y, BotPos, origin_y+height, &BotPosInc, (!axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on left
+             BotPos -= BotPosInc;
+             Naxes[0]++;
+            }
+           if (( axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
+            {
+             double TopPosInc;
+             if (j==0) eps_plot_axispaint(x, &ww, axes+i, 1, origin_x, TopPos, origin_x+width, TopPos, &TopPosInc, ( axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on top
+             else      eps_plot_axispaint(x, &ww, axes+i, 0, TopPos, origin_y, TopPos, origin_y+height, &TopPosInc, ( axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR)); // Axis on right
+             TopPos += TopPosInc;
+             Naxes[1]++;
+            }
           }
         }
 
@@ -227,8 +249,8 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
        {
         double BotPosInc;
         i = FirstAutoMirror[1];
-        if (j==0) eps_plot_axispaint(x, axes+i, 0, origin_x, BotPos, origin_x+width, BotPos , &BotPosInc, 0); // Axis on bottom
-        else      eps_plot_axispaint(x, axes+i, 1, BotPos, origin_y, BotPos, origin_y+height, &BotPosInc, 0); // Axis on left
+        if (j==0) eps_plot_axispaint(x, &ww, axes+i, 0, origin_x, BotPos, origin_x+width, BotPos , &BotPosInc, 0); // Axis on bottom
+        else      eps_plot_axispaint(x, &ww, axes+i, 1, BotPos, origin_y, BotPos, origin_y+height, &BotPosInc, 0); // Axis on left
         BotPos -= BotPosInc;
         Naxes[0]++;
        }
@@ -238,8 +260,8 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
        {
         double TopPosInc;
         i = FirstAutoMirror[0];
-        if (j==0) eps_plot_axispaint(x, axes+i, 1, origin_x, TopPos, origin_x+width, TopPos , &TopPosInc, 0); // Axis on top
-        else      eps_plot_axispaint(x, axes+i, 0, TopPos, origin_y, TopPos, origin_y+height, &TopPosInc, 0); // Axis on right
+        if (j==0) eps_plot_axispaint(x, &ww, axes+i, 1, origin_x, TopPos, origin_x+width, TopPos , &TopPosInc, 0); // Axis on top
+        else      eps_plot_axispaint(x, &ww, axes+i, 0, TopPos, origin_y, TopPos, origin_y+height, &TopPosInc, 0); // Axis on right
         TopPos += TopPosInc;
         Naxes[0]++;
        }

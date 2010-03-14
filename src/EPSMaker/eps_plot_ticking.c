@@ -41,7 +41,7 @@
 #include "eps_plot_canvas.h"
 #include "eps_plot_ticking.h"
 
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle, const double *HardMin, const double *HardMax, unsigned char HardAutoMin, unsigned char HardAutoMax)
+void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle)
  {
   int i,j,MajMin,N,xrn;
   const double logmin = 1e-10;
@@ -50,7 +50,6 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   value CentralValue;
   unsigned char AutoTicks[2] = {0,0};
 
-  axis->FinalActive = axis->FinalActive || axis->enabled || (HardMin!=NULL) || (HardMax!=NULL) || (HardAutoMin) || (HardAutoMax);
   if (!axis->FinalActive) { axis->RangeFinalised = 0; return; } // Axis is not in use
 
   // First of all, work out what axis range to use
@@ -59,17 +58,15 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     // Work out axis range
     unsigned char MinSet=1;
 
-    if       (HardMin != NULL)                               axis->MinFinal = *HardMin;
-    else if ((axis->MinSet==SW_BOOL_TRUE) && (!HardAutoMin)) axis->MinFinal = axis->min;
-    else if  (axis->MinUsedSet)                              axis->MinFinal = axis->MinUsed;
-    else                                                     MinSet = 0;
+    if       (axis->HardMinSet) axis->MinFinal = axis->HardMin;
+    else if  (axis->MinUsedSet) axis->MinFinal = axis->MinUsed;
+    else                        MinSet = 0;
 
-    if       (HardMax != NULL)                               axis->MaxFinal = *HardMax;
-    else if ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax)) axis->MaxFinal = axis->max;
-    else if  (axis->MaxUsedSet)                              axis->MaxFinal = axis->MaxUsed;
-    else if  (MinSet)                                        axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? axis->MinFinal * 100
-                                                                                                          : axis->MinFinal +  20;
-    else                                                     axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? 10.0 : 10.0;
+    if       (axis->HardMaxSet) axis->MaxFinal = axis->HardMax;
+    else if  (axis->MaxUsedSet) axis->MaxFinal = axis->MaxUsed;
+    else if  (MinSet)           axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? axis->MinFinal * 100
+                                                                             : axis->MinFinal +  20;
+    else                        axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? 10.0 : 10.0;
 
     // Check that log axes do not venture too close to zero
     if ((axis->log == SW_BOOL_TRUE) && (axis->MaxFinal <= 1e-200)) { axis->MaxFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
@@ -79,9 +76,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     // If there's no spread of data on the axis, make a spread up
     if ( (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MinFinal)) || (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MaxFinal)) )
      {
-      if (   ((HardMin != NULL) || ((axis->MinSet==SW_BOOL_TRUE) && (!HardAutoMin)))
-          && ((HardMax != NULL) || ((axis->MaxSet==SW_BOOL_TRUE) && (!HardAutoMax))) )
-       { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
+      if (axis->HardMinSet && axis->HardMaxSet) { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
       if (axis->log != SW_BOOL_TRUE)
        {
         axis->MinFinal -= max(1.0,1e-3*fabs(axis->MinFinal));
@@ -99,8 +94,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   // Finalise the physical unit to be associated with data on this axis
   if (!axis->DataUnitSet)
    {
-    if ((axis->MinSet==SW_BOOL_TRUE) || (axis->MaxSet==SW_BOOL_TRUE)) { axis->DataUnitSet=1; axis->DataUnit=axis->unit; }
-    else ppl_units_zero(&axis->DataUnit);
+    if (axis->HardMinSet || axis->HardMaxSet) { axis->DataUnitSet=1; axis->DataUnit=axis->HardUnit; }
+    else                                      { ppl_units_zero(&axis->DataUnit); }
    }
   CentralValue = axis->DataUnit;
   CentralValue.FlagComplex = 0;
@@ -129,8 +124,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     min_prelim /= UnitMultiplier;
     max_prelim /= UnitMultiplier;
 
-    if (gsl_finite(min_prelim) && (HardMin == NULL) && (axis->MinSet!=SW_BOOL_TRUE) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MinFinal = min_prelim;
-    if (gsl_finite(max_prelim) && (HardMax == NULL) && (axis->MaxSet!=SW_BOOL_TRUE) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MaxFinal = max_prelim;
+    if (gsl_finite(min_prelim) && (!axis->HardMinSet) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MinFinal = min_prelim;
+    if (gsl_finite(max_prelim) && (!axis->HardMaxSet) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MaxFinal = max_prelim;
 
     // Print out debugging report
     if (DEBUG)

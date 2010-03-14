@@ -34,6 +34,9 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
+// Where along this axis, in the range 0 (left) to 1 (right) should the value
+// xin go? xrn = Region Number for interpolated axes which do not have
+// monotonically increasing ordinate values.
 double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn, unsigned char AllowOffBounds)
  {
   int imin, imax, i;
@@ -62,6 +65,7 @@ double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn, unsigne
   else                       return log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
  }
 
+// What is the value of this axis at point xin, in the range 0 (left) to 1 (right)?
 double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
  {
   if (xa->AxisLinearInterpolation != NULL) // Axis is linearly interpolated
@@ -75,6 +79,7 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
   else                       return xa->MinFinal * pow(xa->MaxFinal / xa->MinFinal , xin); // ... or logarithmic
  }
 
+// Query whether the value xin occurs within the range of this axis
 int eps_plot_axis_InRange(settings_axis *xa, double xin)
  {
   int xrn, swapI, xminset=0, xmaxset=0;
@@ -86,14 +91,12 @@ int eps_plot_axis_InRange(settings_axis *xa, double xin)
     return 0;
    }
 
-  if (xa->HardMinSet)           { xminset=1; xmin=xa->HardMin; }
-  if (xa->HardMaxSet)           { xmaxset=1; xmax=xa->HardMax; }
-  if (xa->MinSet==SW_BOOL_TRUE) { xminset=1; xmin=xa->min; }
-  if (xa->MaxSet==SW_BOOL_TRUE) { xmaxset=1; xmax=xa->max; }
-  if (xa->HardAutoMinSet)       { xminset=0; }
-  if (xa->HardAutoMaxSet)       { xmaxset=0; }
+  if (xa->HardMinSet)     { xminset=1; xmin=xa->HardMin; }
+  if (xa->HardMaxSet)     { xmaxset=1; xmax=xa->HardMax; }
+  if (xa->HardAutoMinSet) { xminset=0; }
+  if (xa->HardAutoMaxSet) { xmaxset=0; }
 
-  if (xa->RangeReversed)         { swapI=xminset; xminset=xmaxset; xmaxset=swapI; swapD=xmin; xmin=xmax; xmax=swapD; }
+  if (xa->RangeReversed)  { swapI=xminset; xminset=xmaxset; xmaxset=swapI; swapD=xmin; xmin=xmax; xmax=swapD; }
 
   if (xminset && xmaxset) return (((xin>=xmin)&&(xin<=xmax))||((xin<=xmin)&&(xin>=xmax)));
   if (xminset           ) return (xin>xmin);
