@@ -24,6 +24,9 @@
 
 #include "ListTools/lt_dict.h"
 
+double optimise_RealToLog(double in, int iter, double *norm);
+double optimise_LogToReal(double in, int iter, double *norm);
+
 void directive_solve   (Dict *command);
 void directive_minimise(Dict *command);
 void directive_maximise(Dict *command);

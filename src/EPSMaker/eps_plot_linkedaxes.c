@@ -33,6 +33,7 @@
 
 #include "MathsTools/dcfmath.h"
 
+#include "ppl_eqnsolve.h"
 #include "ppl_error.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
@@ -56,11 +57,15 @@
 
 void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz, int axis_n)
  {
-  int            IterDepth;
+  int            IterDepth, source_xyz, source_num, source_CID;
   settings_axis *target;
   canvas_item   *item;
 
   if (DEBUG) { sprintf(temp_err_string, "Back-propagating axis usage for axis %c%d on plot %d", "xyz"[xyz], axis_n, x->current->id); }
+  source_xyz = xyz;
+  source_num = axis_n;
+  source_CID = x->current->id;
+  item       = x->current;
 
   // Propagating MinUsed and MaxUsed variables along links between axes
   IterDepth = 0;
@@ -69,7 +74,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
     if (IterDepth++ > 100) return;
     if (!(source->linked && (source->MinUsedSet || source->MaxUsedSet || source->DataUnitSet))) { break; } // proceed only if axis is linked and has usage information
     if (source->LinkedAxisCanvasID <= 0)
-     { item = x->current; } // Linked to an axis on the same graph
+     { } // Linked to an axis on the same graph; do not change item
     else // Linked to an axis on a different canvas item
      {
       item = x->itemlist->first;
@@ -81,8 +86,8 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
     else                                   target = item->ZAxes + source->LinkedAxisToNum;
     if (source->linkusing != NULL)
      {
-      eps_plot_LinkUsingBackPropagate(x, source->MinUsed, target, source->LinkedAxisToXYZ, source);
-      eps_plot_LinkUsingBackPropagate(x, source->MaxUsed, target, source->LinkedAxisToXYZ, source);
+      eps_plot_LinkUsingBackPropagate(x, source->MinUsed, target, source->LinkedAxisToXYZ, source->LinkedAxisToNum, item->id, source, source_xyz, source_num, source_CID);
+      eps_plot_LinkUsingBackPropagate(x, source->MaxUsed, target, source->LinkedAxisToXYZ, source->LinkedAxisToNum, item->id, source, source_xyz, source_num, source_CID);
      }
     else
      {
@@ -99,7 +104,10 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
         if (source->DataUnitSet) { target->DataUnit = source->DataUnit; target->DataUnitSet = 1; }
        }
      }
-    source = target;
+    source     = target;
+    source_xyz = source->LinkedAxisToXYZ;
+    source_num = source->LinkedAxisToNum;
+    source_CID = item->id;
    }
   return;
  }
@@ -169,12 +177,14 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
   target        = axis;
   target_xyz    = xyz;
   target_axis_n = axis_n;
+  item          = x->current;
+
   while (1) // loop over as many iterations of linkage as may be necessary to find MinFinal and MaxFinal at the bottom
    {
     if (IterDepth++ > 100) break;
     if ((!target->linked) || target->RangeFinalised) { break; } // proceed only if axis is linked
     if (target->LinkedAxisCanvasID <= 0)
-     { item = x->current; } // Linked to an axis on the same graph
+     { } // Linked to an axis on the same graph; do not change item
     else // Linked to an axis on a different canvas item
      {
       item = x->itemlist->first;
@@ -354,7 +364,8 @@ typedef struct LAUComm {
  char         *expr;
  char         *VarName;
  value        *VarValue;
- int           GoneNaN, mode;
+ int           GoneNaN, mode, iter2;
+ double        norm;
  value         target;
  int          *errpos;
  char          errtext[LSTR_LENGTH];
@@ -369,8 +380,8 @@ double eps_plot_LAUSlave(const gsl_vector *x, void *params)
   LAUComm *data = (LAUComm *)params;
 
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had a serious error... so don't do any more work
-  if (data->mode==0) data->VarValue->real                   = gsl_vector_get(x, 0);
-  else               data->VarValue->exponent[data->mode-1] = gsl_vector_get(x, 0);
+  if (data->mode==0) data->VarValue->real                   = optimise_LogToReal(gsl_vector_get(x, 0) , data->iter2 , &data->norm);
+  else               data->VarValue->exponent[data->mode-1] = optimise_LogToReal(gsl_vector_get(x, 0) , data->iter2 , &data->norm);
 
   data->VarValue->dimensionless=0;
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (ppl_units_DblEqual(data->VarValue->exponent[i], 0) == 0) { data->VarValue->dimensionless=0; break; }
@@ -379,8 +390,8 @@ double eps_plot_LAUSlave(const gsl_vector *x, void *params)
   // If a numerical error happened; ignore it for now, but return NAN
   if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s=%s: %s", data->VarName, ppl_units_NumericDisplay(data->VarValue,0,0,0), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
-  if (data->mode==0) return fabs( data->target.real                   - OutValue.real                   );
-  else               return fabs( data->target.exponent[data->mode-1] - OutValue.exponent[data->mode-1] );
+  if (data->mode==0) return log(fabs( data->target.real                   - OutValue.real                   ));
+  else               return log(fabs( data->target.exponent[data->mode-1] - OutValue.exponent[data->mode-1] ));
  }
 
 void eps_plot_LAUFitter(LAUComm *commlink)
@@ -404,8 +415,10 @@ void eps_plot_LAUFitter(LAUComm *commlink)
   do
    {
     iter2++;
+    if (commlink->mode!=0) iter2=999;
+    commlink->iter2 = iter2;
     sizelast2 = size;
-    gsl_vector_set(x , 0, (commlink->mode==0) ? commlink->VarValue->real : 1.0);
+    gsl_vector_set(x , 0, optimise_RealToLog( (commlink->mode==0) ? commlink->VarValue->real : 1.0 , iter2, &commlink->norm));
     gsl_vector_set(ss, 0, (fabs(gsl_vector_get(x,i))>1e-6) ? 0.1 * (gsl_vector_get(x,0)) : 0.1);
     s = gsl_multimin_fminimizer_alloc (T, fn.n);
     gsl_multimin_fminimizer_set (s, &fn, x, ss);
@@ -418,20 +431,18 @@ void eps_plot_LAUFitter(LAUComm *commlink)
     do
      {
       iter++;
-      for (i=0; i<4; i++)
-       {
-        status = gsl_multimin_fminimizer_iterate(s);
-        if (status) break;
-       }
+      for (i=0; i<4; i++) { status = gsl_multimin_fminimizer_iterate(s); if (status) break; } // Run optimiser four times for good luck
       if (status) break;
       sizelast = size;
-      size     = gsl_multimin_fminimizer_minimum(s);
+      size     = gsl_multimin_fminimizer_minimum(s); // Do this ten times, or up to 50, until fit stops improving
      }
     while ((iter < 10) || ((size < sizelast) && (iter < 50))); // Iterate 10 times, and then see whether size carries on getting smaller
 
-    if (commlink->mode==0) commlink->VarValue->real                       = gsl_vector_get(s->x, 0);
-    else                   commlink->VarValue->exponent[commlink->mode-1] = gsl_vector_get(s->x, 0);  
+    // Read off best-fit value from s->x
+    if (commlink->mode==0) commlink->VarValue->real                       = optimise_LogToReal(gsl_vector_get(s->x, 0), iter2, &commlink->norm);
+    else                   commlink->VarValue->exponent[commlink->mode-1] = optimise_LogToReal(gsl_vector_get(s->x, 0), iter2, &commlink->norm);
     gsl_multimin_fminimizer_free(s);
+    if (iter2==999) { iter2=2; break; }
    }
   while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
 
@@ -442,17 +453,17 @@ void eps_plot_LAUFitter(LAUComm *commlink)
   return;
  }
 
-void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *target, int xyz, settings_axis *source)
+void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *target, int target_xyz, int target_n, int target_canvasID, settings_axis *source, int source_xyz, int source_n, int source_canvasID)
  {
   LAUComm commlink;
   int     errpos = -1;
   char   *VarName;
   value   DummyTemp, *VarVal;
-  if      (xyz==0) VarName = "x";
-  else if (xyz==1) VarName = "y";
-  else             VarName = "z";
+  if      (target_xyz==0) VarName = "x";
+  else if (target_xyz==1) VarName = "y";
+  else                    VarName = "z";
 
-  // Look up variable in user space and get pointer to its value
+  // Look up xyz dummy variable in user space and get pointer to its value
   DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
   if (VarVal!=NULL)
    {
@@ -466,6 +477,7 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
     DummyTemp.modified = 2;
    }
 
+  // Set up commlink structure to use in minimiser
   commlink.expr        = source->linkusing;
   commlink.VarName     = VarName;
   commlink.VarValue    = VarVal;
@@ -476,6 +488,7 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
   commlink.WarningPos  = -1;
   commlink.errtext[0]  = commlink.warntext[0] = '\0';
 
+  // First run minimiser to get numerical value of xyz. Then fit each dimension in turn.
   ppl_units_zero(VarVal); VarVal->real = 1.0;
   for (commlink.mode=0; commlink.mode<UNITS_MAX_BASEUNITS+1; commlink.mode++)
    {
@@ -483,13 +496,16 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
     if ((errpos>=0) || (commlink.WarningPos>=0)) break;
    }
 
-  if      (commlink.WarningPos>=0) ppl_warning(ERR_PREFORMED, commlink.warntext);
-  else if (errpos             >=0) ppl_warning(ERR_PREFORMED, commlink.errtext );
-
-  if ((errpos<0) && (commlink.WarningPos<0))
+  // If there was a problem, throw a warning and proceed no further
+  if ((commlink.WarningPos>=0) || (errpos>=0))
+   {
+    sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Recommend setting an explicit range for axis %c%d of plot %d.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, target_xyz, target_n, target_canvasID);
+    ppl_warning(ERR_GENERAL, temp_err_string);
+   }
+  else
    {
     int i;
-    VarVal->dimensionless=1;
+    VarVal->dimensionless=1; // Cycle through powers of final value of xyz dummy value making things which are nearly ints into ints.
     for (i=0; i<UNITS_MAX_BASEUNITS; i++)
      {
       if      (fabs(floor(VarVal->exponent[i]) - VarVal->exponent[i]) < 1e-12) VarVal->exponent[i] = floor(VarVal->exponent[i]);
@@ -503,3 +519,4 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
   *VarVal = DummyTemp;
   return;
  }
+

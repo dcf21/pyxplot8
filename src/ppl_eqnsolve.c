@@ -29,9 +29,12 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_multimin.h>
 
+#include "MathsTools/dcfmath.h"
+
 #include "StringTools/str_constants.h"
 
 #include "ppl_constants.h"
+#include "ppl_eqnsolve.h"
 #include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
@@ -39,12 +42,39 @@
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
 
+// Functions which we use to optimise in a log-log type space to help when
+// solutions are many orders of magnitude different from initial guess
+double optimise_RealToLog(double in, int iter, double *norm)
+ {
+  double a=-2;
+
+  if (iter >= 3) { *norm = max(1e-200, fabs(in)); return in/(*norm); }
+  if (iter >=2) a = -500;
+
+  if (in >= exp(a)) return log(in);
+  else              return 2*a - log(2*exp(a)-in);
+ }
+
+double optimise_LogToReal(double in, int iter, double *norm)
+ {
+  double a=-2;
+
+  if (iter >=3) return in*(*norm);
+  if (iter >=2) a = -500;
+
+  if (in >= a) return exp(in);
+  else         return 2*exp(a)-exp(2*a-in);
+ }
+
+// Structure used to communicate between top-level optimiser, and the
+// evaluation slave called by GSL
 typedef struct MMComm {
  char         *expr1  [EQNSOLVE_MAXDIMS];
  char         *expr2  [EQNSOLVE_MAXDIMS];
  char         *fitvarname[EQNSOLVE_MAXDIMS]; // Name of nth fit variable
  value        *fitvar    [EQNSOLVE_MAXDIMS];
- int           Nfitvars , Nexprs , GoneNaN;
+ double        norm      [EQNSOLVE_MAXDIMS];
+ int           Nfitvars , Nexprs , GoneNaN, iter2;
  double        sign;
  value         first  [EQNSOLVE_MAXDIMS];
  unsigned char IsFirst[EQNSOLVE_MAXDIMS];
@@ -81,12 +111,21 @@ double MultiMinSlave(const gsl_vector *x, void *params)
 
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had a serious error... so don't do any more work
 
-  if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) for (i=0; i<data->Nfitvars; i++)   data->fitvar[i]->real = gsl_vector_get(x, i);
-  else                                                      for (i=0; i<data->Nfitvars; i++) { data->fitvar[i]->real = gsl_vector_get(x,2*i);
-                                                                                               data->fitvar[i]->imag = gsl_vector_get(x,2*i+1);
-                                            data->fitvar[i]->FlagComplex = !ppl_units_DblEqual(data->fitvar[i]->imag, 0);
-                                            if (!data->fitvar[i]->FlagComplex) data->fitvar[i]->imag=0.0; // Enforce that real numbers have positive zero imaginary components
-                                           }
+  if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
+   {
+    for (i=0; i<data->Nfitvars; i++)
+      data->fitvar[i]->real = optimise_LogToReal( gsl_vector_get(x, i) , data->iter2, &data->norm[i] );
+   }
+  else
+   {
+    for (i=0; i<data->Nfitvars; i++)
+     {
+      data->fitvar[i]->real        = optimise_LogToReal( gsl_vector_get(x,2*i  ) , data->iter2, &data->norm[2*i  ] );
+      data->fitvar[i]->imag        = optimise_LogToReal( gsl_vector_get(x,2*i+1) , data->iter2, &data->norm[2*i+1] );
+      data->fitvar[i]->FlagComplex = !ppl_units_DblEqual(data->fitvar[i]->imag, 0);
+      if (!data->fitvar[i]->FlagComplex) data->fitvar[i]->imag=0.0; // Enforce that real numbers have positive zero imaginary components
+     }
+   }
 
   for (i=0; i<data->Nexprs; i++)
    {
@@ -106,8 +145,10 @@ double MultiMinSlave(const gsl_vector *x, void *params)
         sprintf(data->errtext, "The two sides of the equation which is being solved are not dimensionally compatible. The left side has dimensions of <%s> while the right side has dimensions of <%s>.",ppl_units_GetUnitStr(&output1, NULL, NULL, 0, 0),ppl_units_GetUnitStr(&output2, NULL, NULL, 1, 0));
         return GSL_NAN;
        }
-      accumulator += pow(output1.real - output2.real , 2); // Minimise sum of square deviations of many equations
-      accumulator += pow(output1.imag - output2.imag , 2);
+
+#define TWINLOG(X) ((X>1e-200) ? log(X) : (2*log(1e-200) - log(2e-200-X)))
+      accumulator += pow(TWINLOG(output1.real) - TWINLOG(output2.real) , 2); // Minimise sum of square deviations of many equations
+      accumulator += pow(TWINLOG(output1.imag) - TWINLOG(output2.imag) , 2);
       squareroot = 1;
      } else {
       if (data->IsFirst[i])
@@ -153,10 +194,23 @@ void MultiMinIterate(MMComm *commlink)
   do
    {
     iter2++;
+    commlink->iter2 = iter2;
     sizelast2 = size;
 
-    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)for(i=0;i<commlink->Nfitvars;i++) gsl_vector_set(x,  i,commlink->fitvar[i]->real);
-    else                                                     for(i=0;i<commlink->Nfitvars;i++){gsl_vector_set(x,2*i,commlink->fitvar[i]->real); gsl_vector_set(x,2*i+1,commlink->fitvar[i]->imag); }
+    // Transfer starting guess values from fitting variables into gsl_vector x
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
+     {
+      for (i=0; i<commlink->Nfitvars; i++)
+        gsl_vector_set(x,  i  ,optimise_RealToLog(commlink->fitvar[i]->real , iter2, &commlink->norm[  i  ]));
+     }
+    else
+     {
+      for (i=0; i<commlink->Nfitvars; i++)
+       {
+        gsl_vector_set(x,2*i  ,optimise_RealToLog(commlink->fitvar[i]->real , iter2, &commlink->norm[2*i  ]));
+        gsl_vector_set(x,2*i+1,optimise_RealToLog(commlink->fitvar[i]->imag , iter2, &commlink->norm[2*i+1]));
+       }
+     }
 
     for (i=0; i<Nparams; i++)
      {
@@ -176,27 +230,35 @@ void MultiMinIterate(MMComm *commlink)
     do 
      {
       iter++;
-      for (i=0; i<2+Nparams*2; i++) // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
-       {
-        status = gsl_multimin_fminimizer_iterate(s);
-        if (status) break;
-       }
+      // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time
+      for (i=0; i<2+Nparams*2; i++) { status = gsl_multimin_fminimizer_iterate(s); if (status) break; }
       if (status) break;
       sizelast = size;
       size     = gsl_multimin_fminimizer_minimum(s);
      }
     while ((iter < 10) || ((size < sizelast) && (iter < 50))); // Iterate 10 times, and then see whether size carries on getting smaller
 
-    gsl_multimin_fminimizer_free(s);
+    // Transfer best-fit values from s->x into fitting variables
+    if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)
+     {
+      for (i=0; i<commlink->Nfitvars; i++)
+        commlink->fitvar[i]->real = optimise_LogToReal(gsl_vector_get(s->x,  i  ) , iter2, &commlink->norm[  i  ]);
+     }
+    else
+     {
+      for (i=0; i<commlink->Nfitvars; i++)
+       {
+        commlink->fitvar[i]->real = optimise_LogToReal(gsl_vector_get(s->x,2*i  ) , iter2, &commlink->norm[2*i  ]);
+        commlink->fitvar[i]->imag = optimise_LogToReal(gsl_vector_get(s->x,2*i+1) , iter2, &commlink->norm[2*i+1]);
+       }
+     }
 
+    gsl_multimin_fminimizer_free(s);
    }
   while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
 
   if (iter2>=20) status=1;
-
   if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); }
-  sizelast = MultiMinSlave(x,(void *)commlink);
-
   gsl_vector_free(x);
   gsl_vector_free(ss);
   return;
