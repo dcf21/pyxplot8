@@ -24,6 +24,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_multimin.h>
+
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_list.h"
 
@@ -77,7 +81,8 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
     else                                   target = item->ZAxes + source->LinkedAxisToNum;
     if (source->linkusing != NULL)
      {
-      // Insert fitting code here
+      eps_plot_LinkUsingBackPropagate(x, source->MinUsed, target, source->LinkedAxisToXYZ, source);
+      eps_plot_LinkUsingBackPropagate(x, source->MaxUsed, target, source->LinkedAxisToXYZ, source);
      }
     else
      {
@@ -343,3 +348,158 @@ FAIL:
   return 1;
  }
 
+// Routines for the back propagation of usage information along non-linear links
+
+typedef struct LAUComm {
+ char         *expr;
+ char         *VarName;
+ value        *VarValue;
+ int           GoneNaN, mode;
+ value         target;
+ int          *errpos;
+ char          errtext[LSTR_LENGTH];
+ int           WarningPos; // One final algebra error is allowed to produce a warning
+ char          warntext[LSTR_LENGTH];
+ } LAUComm;
+
+double eps_plot_LAUSlave(const gsl_vector *x, void *params)
+ {
+  int      i;
+  value    OutValue;
+  LAUComm *data = (LAUComm *)params;
+
+  if (*(data->errpos)>=0) return GSL_NAN; // We've previously had a serious error... so don't do any more work
+  if (data->mode==0) data->VarValue->real                   = gsl_vector_get(x, 0);
+  else               data->VarValue->exponent[data->mode-1] = gsl_vector_get(x, 0);
+
+  data->VarValue->dimensionless=0;
+  for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (ppl_units_DblEqual(data->VarValue->exponent[i], 0) == 0) { data->VarValue->dimensionless=0; break; }
+  ppl_EvaluateAlgebra(data->expr, &OutValue, 0, NULL, 0, data->errpos, data->errtext, 0);
+
+  // If a numerical error happened; ignore it for now, but return NAN
+  if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s=%s: %s", data->VarName, ppl_units_NumericDisplay(data->VarValue,0,0,0), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
+
+  if (data->mode==0) return fabs( data->target.real                   - OutValue.real                   );
+  else               return fabs( data->target.exponent[data->mode-1] - OutValue.exponent[data->mode-1] );
+ }
+
+void eps_plot_LAUFitter(LAUComm *commlink)
+ {
+  size_t                              iter = 0,iter2 = 0;
+  int                                 i, status=0;
+  double                              size=0,sizelast=0,sizelast2=0,testval;
+  const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex; // We don't use nmsimplex2 here because it was new in gsl 1.12
+  gsl_multimin_fminimizer            *s;
+  gsl_vector                         *x, *ss;
+  gsl_multimin_function               fn;
+
+  fn.n = 1;
+  fn.f = &eps_plot_LAUSlave;
+  fn.params = (void *)commlink;
+
+  x  = gsl_vector_alloc( 1 );
+  ss = gsl_vector_alloc( 1 );
+
+  iter2=0;
+  do
+   {
+    iter2++;
+    sizelast2 = size;
+    gsl_vector_set(x , 0, (commlink->mode==0) ? commlink->VarValue->real : 1.0);
+    gsl_vector_set(ss, 0, (fabs(gsl_vector_get(x,i))>1e-6) ? 0.1 * (gsl_vector_get(x,0)) : 0.1);
+    s = gsl_multimin_fminimizer_alloc (T, fn.n);
+    gsl_multimin_fminimizer_set (s, &fn, x, ss);
+
+    // If initial value we are giving the minimiser produces an algebraic error, it's not worth continuing
+    testval = eps_plot_LAUSlave(x,(void *)commlink);
+    if (commlink->WarningPos>=0) { *(commlink->errpos) = commlink->WarningPos; commlink->WarningPos=-1; sprintf(commlink->errtext, "%s", commlink->warntext); return; }
+    iter              = 0;
+    commlink->GoneNaN = 0;
+    do
+     {
+      iter++;
+      for (i=0; i<4; i++)
+       {
+        status = gsl_multimin_fminimizer_iterate(s);
+        if (status) break;
+       }
+      if (status) break;
+      sizelast = size;
+      size     = gsl_multimin_fminimizer_minimum(s);
+     }
+    while ((iter < 10) || ((size < sizelast) && (iter < 50))); // Iterate 10 times, and then see whether size carries on getting smaller
+
+    if (commlink->mode==0) commlink->VarValue->real                       = gsl_vector_get(s->x, 0);
+    else                   commlink->VarValue->exponent[commlink->mode-1] = gsl_vector_get(s->x, 0);  
+    gsl_multimin_fminimizer_free(s);
+   }
+  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
+
+  if (iter2>=20) status=1;
+  if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); }
+  gsl_vector_free(x);
+  gsl_vector_free(ss);
+  return;
+ }
+
+void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *target, int xyz, settings_axis *source)
+ {
+  LAUComm commlink;
+  int     errpos = -1;
+  char   *VarName;
+  value   DummyTemp, *VarVal;
+  if      (xyz==0) VarName = "x";
+  else if (xyz==1) VarName = "y";
+  else             VarName = "z";
+
+  // Look up variable in user space and get pointer to its value
+  DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
+  if (VarVal!=NULL)
+   {
+    DummyTemp = *VarVal;
+   }
+  else
+   {
+    ppl_units_zero(&DummyTemp);
+    DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
+    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
+    DummyTemp.modified = 2;
+   }
+
+  commlink.expr        = source->linkusing;
+  commlink.VarName     = VarName;
+  commlink.VarValue    = VarVal;
+  commlink.GoneNaN     = commlink.mode = 0;
+  commlink.target      = source->DataUnit;
+  commlink.target.real = val;
+  commlink.errpos      = &errpos;
+  commlink.WarningPos  = -1;
+  commlink.errtext[0]  = commlink.warntext[0] = '\0';
+
+  ppl_units_zero(VarVal); VarVal->real = 1.0;
+  for (commlink.mode=0; commlink.mode<UNITS_MAX_BASEUNITS+1; commlink.mode++)
+   {
+    eps_plot_LAUFitter(&commlink);
+    if ((errpos>=0) || (commlink.WarningPos>=0)) break;
+   }
+
+  if      (commlink.WarningPos>=0) ppl_warning(ERR_PREFORMED, commlink.warntext);
+  else if (errpos             >=0) ppl_warning(ERR_PREFORMED, commlink.errtext );
+
+  if ((errpos<0) && (commlink.WarningPos<0))
+   {
+    int i;
+    VarVal->dimensionless=1;
+    for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+     {
+      if      (fabs(floor(VarVal->exponent[i]) - VarVal->exponent[i]) < 1e-12) VarVal->exponent[i] = floor(VarVal->exponent[i]);
+      else if (fabs(ceil (VarVal->exponent[i]) - VarVal->exponent[i]) < 1e-12) VarVal->exponent[i] = ceil (VarVal->exponent[i]);
+      if (VarVal->exponent[i] != 0) VarVal->dimensionless=0;
+     }
+    printf("... %s\n", ppl_units_NumericDisplay(VarVal,0,0,0));
+   }
+
+  // Restore original value of x (or y/z)
+  *VarVal = DummyTemp;
+  return;
+ }

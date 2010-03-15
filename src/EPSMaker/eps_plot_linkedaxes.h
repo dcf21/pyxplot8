@@ -31,5 +31,7 @@ int  eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz
 void eps_plot_DecideAxisRange(EPSComm *x, settings_axis *axis, int xyz, int axis_n);
 void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xyz, int axis_n, int mode);
 
+void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *target, int xyz, settings_axis *source);
+
 #endif
 
