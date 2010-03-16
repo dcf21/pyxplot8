@@ -390,8 +390,9 @@ double eps_plot_LAUSlave(const gsl_vector *x, void *params)
   // If a numerical error happened; ignore it for now, but return NAN
   if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s=%s: %s", data->VarName, ppl_units_NumericDisplay(data->VarValue,0,0,0), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
-  if (data->mode==0) return log(fabs( data->target.real                   - OutValue.real                   ));
-  else               return log(fabs( data->target.exponent[data->mode-1] - OutValue.exponent[data->mode-1] ));
+#define TWINLOG(X) ((X>1e-200) ? log(X) : (2*log(1e-200) - log(2e-200-X)))
+  if (data->mode==0) return pow( TWINLOG(data->target.real                  ) - TWINLOG(OutValue.real                   ) ,2);
+  else               return pow( TWINLOG(data->target.exponent[data->mode-1]) - TWINLOG(OutValue.exponent[data->mode-1] ) ,2);
  }
 
 void eps_plot_LAUFitter(LAUComm *commlink)
@@ -512,7 +513,34 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
       else if (fabs(ceil (VarVal->exponent[i]) - VarVal->exponent[i]) < 1e-12) VarVal->exponent[i] = ceil (VarVal->exponent[i]);
       if (VarVal->exponent[i] != 0) VarVal->dimensionless=0;
      }
-    printf("... %s\n", ppl_units_NumericDisplay(VarVal,0,0,0));
+
+    // Check that dimension of propagated value fits with existing unit of axis
+    if      ((target->HardUnitSet) && (!ppl_units_DimEqual(&target->HardUnit, VarVal)))
+     {
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has a range set with units of <%s>.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,0), target_xyz, target_n, target_canvasID, ppl_units_GetUnitStr(&target->HardUnit,NULL,NULL,1,0));
+      ppl_warning(ERR_GENERAL, temp_err_string);
+     }
+    else if ((target->DataUnitSet) && (!ppl_units_DimEqual(&target->DataUnit, VarVal)))
+     {
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has data plotted against it with units of <%s>.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,0), target_xyz, target_n, target_canvasID, ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,1,0));
+      ppl_warning(ERR_GENERAL, temp_err_string);
+     }
+    else if (VarVal->FlagComplex)
+     {
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Axis usage was a complex number.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing);
+      ppl_warning(ERR_GENERAL, temp_err_string);
+     }
+    else if (!gsl_finite(VarVal->real))
+     {
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Axis usage was a non-finite number.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing);
+      ppl_warning(ERR_GENERAL, temp_err_string);
+     }
+    else
+     {
+      if ((!target->MinUsedSet) || (target->MinUsed > VarVal->real)) { target->MinUsed=VarVal->real; target->MinUsedSet=1; }
+      if ((!target->MaxUsedSet) || (target->MaxUsed < VarVal->real)) { target->MaxUsed=VarVal->real; target->MaxUsedSet=1; }
+      if (source->DataUnitSet) { target->DataUnit = *VarVal; target->DataUnitSet = 1; }
+     }
    }
 
   // Restore original value of x (or y/z)
