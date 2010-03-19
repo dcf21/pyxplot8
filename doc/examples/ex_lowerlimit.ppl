@@ -1,0 +1,160 @@
+# EX_LOWERLIMIT.PPL
+#
+# The code in this file is part of PyXPlot
+# <http://www.pyxplot.org.uk>
+#
+# Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+#               2009-2010 Ross Church
+#
+# $Id$
+#
+# PyXPlot is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# You should have received a copy of the GNU General Public License along with
+# PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# ----------------------------------------------------------------------------
+
+# This script produces a figure for the PyXPlot Users' Guide
+
+# Call common initialisation script
+reset
+load "examples/fig_init.ppl"
+
+# Set output destination
+set output "examples/eps/ex_lowerlimit.eps"
+
+# Main body of figure script
+set axis x invisible
+set axis y invisible
+set nokey
+set noclip
+set width 1
+plot [-1:1][-1:1] '--' with lowerlimits
+0 0
+END
+
+# Set output destination
+set output "examples/eps/ex_upperlimit.eps"
+
+# Main body of figure script
+set axis x invisible
+set axis y invisible
+set width 1
+plot [-1:1][-1:1] '--' with upperlimits
+0 0
+END
+
+# Set output destination
+set output "examples/eps/ex_plotstyletab.eps"
+
+# Main body of figure script
+set preamble '\usepackage{wasysym}'
+set multiplot
+set texthalign centre
+set textvalign centre
+text "{\bf Plot Styles}" at -2,32/7*0.4*9+1.5
+set axis x2 mirror top
+set width 9
+set size ratio 32/7*0.4
+set x2label "{\bf Style Modifiers}"
+set x2range[0.2:7.3]
+set x2tics ("{\tt colour}" 1, "{\tt fillcolour}" 2, "{\tt linetype}" 3, "{\tt linewidth}" 4, "{\tt pointlinewidth}" 5, "{\tt pointsize}" 6, "{\tt pointtype}" 7)
+set x2format auto rotate 30
+set axis y visible mirror left
+set yrange[32.6:0.4]
+set ytics ( \
+"{\tt arrows\_head}" 1, \
+"{\tt arrows\_nohead}" 2, \
+"{\tt arrows\_twohead}" 3, \
+"{\tt boxes}" 4, \
+"{\tt dots}" 5, \
+"{\tt FilledRegion}" 6, \
+"{\tt fsteps}" 7, \
+"{\tt histeps}" 8, \
+"{\tt impulses}" 9, \
+"{\tt lines}" 10, \
+"{\tt LinesPoints}" 11, \
+"{\tt LowerLimits}" 12, \
+"{\tt points}" 13, \
+"{\tt stars}" 14, \
+"{\tt steps}" 15, \
+"{\tt UpperLimits}" 16, \
+"{\tt wboxes}" 17, \
+"{\tt XErrorBars}" 18, \
+"{\tt XErrorRange}" 19, \
+"{\tt XYErrorBars}" 20, \
+"{\tt XYErrorRange}" 21, \
+"{\tt XYZErrorBars}" 22, \
+"{\tt XYZErrorRange}" 23, \
+"{\tt XZErrorBars}" 24, \
+"{\tt XZErrorRange}" 25, \
+"{\tt YErrorBars}" 26, \
+"{\tt YErrorRange}" 27, \
+"{\tt YErrorShaded}" 28, \
+"{\tt YZErrorBars}" 29, \
+"{\tt YZErrorRange}" 30, \
+"{\tt ZErrorBars}" 31, \
+"{\tt ZErrorRange}" 32 \
+)
+set grid
+set grid x2y1
+set nogrid x1
+set gridmajcol grey80
+set gridmincol null
+
+yes = "\CIRCLE"
+no  = "\Circle"
+
+i=1
+foreach datum a,b,c,d,e,f,g in '--'
+ {
+  set label 10*i+1 conditionalS(a,yes,no) at second 1, first i
+  set label 10*i+2 conditionalS(b,yes,no) at second 2, first i
+  set label 10*i+3 conditionalS(c,yes,no) at second 3, first i
+  set label 10*i+4 conditionalS(d,yes,no) at second 4, first i
+  set label 10*i+5 conditionalS(e,yes,no) at second 5, first i
+  set label 10*i+6 conditionalS(f,yes,no) at second 6, first i
+  set label 10*i+7 conditionalS(g,yes,no) at second 7, first i
+  i=i+1
+ }
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 1 1 1 0 0 0
+1 0 0 0 0 1 0
+1 1 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 1 1 1
+1 0 0 0 1 1 0
+1 0 0 0 1 1 1
+1 0 0 0 1 1 1
+1 0 1 1 0 0 0
+1 0 0 0 1 1 0
+1 1 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 1 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+1 0 1 1 0 0 0
+END
+
+plot
+

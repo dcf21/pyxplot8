@@ -24,83 +24,78 @@
 \chapter{Advanced Plotting}
 \label{ch:plotting}
 
-In this chapter, we explore the various options of the {\tt plot} command.
+In Chapter~\ref{ch:first_steps}, a brief overview of the \indcmdt{plot} was
+given. This chapter provides a more systematic definition how the appearance of
+plots can be configured. In the following chapter, we describe how to produce
+graphical output in a range of image formats, and then in
+Chapter~\ref{ch:vector_graphics} we turn to describe how to produce galleries
+of multiple plots side-by-side, together with more sophisticated vector
+graphics.
 
-\section{A Tour of PyXPlot's Plot Styles}
+\section{PyXPlot's Plot Styles}
 
-We begin by reviewing the various plot styles which are available in PyXPlot.
-Two of these we have already met: {\tt lines}, which draws straight lines
-between \datapoint s, and {\tt points}, which does not connect \datapoint s.
+In Chapter~\ref{ch:first_steps}, we met a few of the styles in which PyXPlot
+can plot data -- either drawing discrete \datapoint s, connecting \datapoint s
+with lines, or representing \datapoint s with errorbars.  In this section, we
+provide an exhaustive list of all of PyXPlot's {\it plot styles}.
 
 \subsection{Lines and Points}
 
-The following are PyXPlot's most basic plot styles\footnote{This is not an
-exhaustive list; see Section~\ref{sec:list_of_plotstyles}.}:
+The following is a list of PyXPlot's simplest plot styles, all of which take as
+input two columns of data, representing the $x$- and $y$-coordinates of the
+positions of each point:
 \begin{itemize}
 \item \indpst{dots} -- places a small dot at each datum.
-\item \indpst{points} -- places a marker symbol at each datum.
 \item \indpst{lines} -- connects adjacent \datapoint s with straight lines.
 \item \indpst{linespoints} -- a combination of both lines and points.
+\item \indpst{lowerlimits} -- places a lower-limit sign (\includegraphics{examples/eps/ex_lowerlimit.eps}) at each datum.\index{lower-limit datapoints}
+\item \indpst{points} -- places a marker symbol at each datum.
+\item \indpst{stars} -- similar to {\tt points}, but uses a different set of marker symbols, based upon the stars drawn in Johann Bayer's highly ornate star atlas {\tt Uranometria} of 1603.
+\item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit.eps}) at each datum.\index{upper-limit datapoints}
 \end{itemize}
 
-When using the \indpst{points}, \indpst{linespoints} and \indpst{dots} plot
-styles, the size of the plotted points or dots can be varied by using the
-\indmodt{pointsize} modifier. For example,
+Various modifiers may be used to affect the exact appearance of the output
+which each plot style produces:
+\begin{itemize}
+\item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}, or as an RGB colour in the form {\tt rgb1:2:3}, where the integers should be in the range~0 to~255. May also be spelt {\tt color}.\index{colours!setting for datasets}
+\item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
+\item \indmodt{linetype} -- used to select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
+\item \indmodt{linewidth} -- used to select the width of line, where~1 represent the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
+\item \indmodt{pointlinewidth} -- used to select the width of line, where~1 represent the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
+\item \indmodt{pointsize} -- used to select the size of drawn points, where~1 represent the default size. May be abbreviated {\tt ps}.
+\item \indmodt{pointtype} -- used to select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
+\end{itemize}
+
+These modifiers should all be placed after the {\tt with} keyword in the {\tt
+plot} command, as in the following examples:
 
 \begin{verbatim}
-set samples 25
-plot sin(x) with dots pointsize 10
+plot 'datafile' using 1:2 with points pointsize 2
+plot 'datafile' using 1:2 with lines colour red linewidth 2
+plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
 \end{verbatim}
 
-\noindent would represent data with large dots. The default value of this
-setting is $1.0$. The width of lines can similarly be controlled with the
-\indmodt{linewidth} modifier, and the width of the lines used to draw point
-symbols can be controlled with the \indmodt{pointlinewidth} modifier. For
-example:
+\noindent Not all of the modifiers apply to all of PyXPlot's plot styles. Where
+modifiers are applied to plot styles for which they have no defined effect,
+this is not an error, but the modifier has no effect.
+Table~\ref{tab:style_modifiers} lists which modifiers effect which plot styles,
+including, for completeness, all of PyXPlot's plot styles.
 
+\begin{table}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}
+\caption{A list of which style modifiers affect which plot styles.}
+\label{tab:style_modifiers}
+\end{table}
+
+In addition to setting these parameters on a per-dataset basis, the {\tt 
+linewidth}, {\tt pointlinewidth} and {\tt pointsize} modifiers can have their
+default values changed as in the following examples:
 \begin{verbatim}
-set samples 25
-plot sin(x) with points pointlinewidth 2
-\end{verbatim}
-
-\noindent In addition to setting these parameters on a per-plot basis, their
-default values can also be changed. The command:
-
-\begin{verbatim}
+set linewidth 1
 set pointlinewidth 2
+set pointsize 3
 \end{verbatim}
 
-\noindent would set the default line width used when drawing \datapoint s. Both
-here, and in the {\tt plot} command, the abbreviation {\tt plw} is valid.
-
-\subsection{Upper- and Lower-Limit Data Points}
-
-The plot styles {\tt upperlimits} and {\tt lowerlimits} may be used to plot
-\datapoint s using the standard upper- and lower-limit
-symbols.\index{lower-limit datapoints}\index{upper-limit datapoints}:
-
-\begin{verbatim}
-plot 'upperlimits.dat' with upperlimits
-plot 'lowerlimits.dat' with lowerlimits
-\end{verbatim}
-
-\subsection{Drawing Arrows}
-
-Data may be represented as arrows connecting two points on a plot by using the
-\indpst{arrows} plot style.  This takes four columns of data -- $x_1$, $y_1$,
-$x_2$ and $y_2$ -- and for each \datapoint\ draws an arrow from the point
-$(x_1,y_1)$ to the point $(x_2,y_2)$.  Three different kinds of arrows can be
-drawn: ones with normal arrow heads, ones with no arrow heads, which just
-appear as lines, and ones with arrow heads on both ends. The syntax to obtain
-these varieties is:
-
-\begin{verbatim}
-plot 'data.dat' with arrows_head
-plot 'data.dat' with arrows_nohead
-plot 'data.dat' with arrows_twohead
-\end{verbatim}
-
-The syntax {\tt with arrows} is a shorthand for {\tt with arrows\_head}.
 
 \subsection{Error Bars}
 \index{errorbars}\label{sec:errorbars}
@@ -195,14 +190,12 @@ the spread of values of $f(x)$, but find that this itself changed depending
 upon the range of the $x$-axis. In this case, the user should have used the
 {\tt parametric} plot option.
 
-\section{Barcharts and Histograms}
+\subsection{Barcharts and Histograms}
 \label{sec:barcharts}\index{bar charts}
 \index{steps plot style@{\tt steps} plot style}
 \index{fsteps plot style@{\tt fsteps} plot style}
 \index{histeps plot style@{\tt histeps} plot style}
 \index{impulses plot style@{\tt impulses} plot style}
-
-\subsection{Basic Operation}
 
 Bar charts and histograms can be produced using the \indpst{boxes} plot style:
 
@@ -289,7 +282,7 @@ filled bars.
 Finally, the \indpst{impulses} plot style produces bars of zero width; see
 Figure~\ref{fig:ex_barchart1}(c) for an example.
 
-\subsection{Stacked Bar Charts}
+\subsubsection{Stacked Bar Charts}
 
 If several \datapoint s are supplied to the \indpst{boxes} or \indpst{wboxes}
 plot styles at a common $x$-co-ordinate, then the bars are stacked one above
@@ -327,21 +320,26 @@ specify the left-most edges of the steps. The \indpst{histeps} plot style works
 rather like the {\tt boxes} plot style; the interfaces between the steps occur
 at the horizontal midpoints between the \datapoint s.
 
-\section{Colour Plotting}
+\subsection{Drawing Arrows}
 
-\index{colours!setting for datasets} In the {\tt with} clause of the plot
-command, the modifier {\tt colour}, which can be abbreviated to
-`{\tt c}', can be used to manually select the colour in which each dataset
-is to be plotted. It should be followed either by an integer, to set a colour
-from the present palette, or by a colour name. A list of valid colour names is
-given in Section~\ref{sec:colour_names}. For example:
+Data may be represented as arrows connecting two points on a plot by using the
+\indpst{arrows} plot style.  This takes four columns of data -- $x_1$, $y_1$,
+$x_2$ and $y_2$ -- and for each \datapoint\ draws an arrow from the point
+$(x_1,y_1)$ to the point $(x_2,y_2)$.  Three different kinds of arrows can be
+drawn: ones with normal arrow heads, ones with no arrow heads, which just
+appear as lines, and ones with arrow heads on both ends. The syntax to obtain
+these varieties is:
 
 \begin{verbatim}
-plot sin(x) with c 5
-plot sin(x) with colour blue
+plot 'data.dat' with arrows_head
+plot 'data.dat' with arrows_nohead
+plot 'data.dat' with arrows_twohead
 \end{verbatim}
 
-\noindent The {\tt colour} modifier can also be used when defining linestyles.
+The syntax {\tt with arrows} is a shorthand for {\tt with arrows\_head}.
+
+\section{The Palette}
+\label{sec:palette}
 
 \index{palette}\index{colours!setting the palette} PyXPlot has a palette of
 colours which it assigns sequentially to datasets when colours are not manually
