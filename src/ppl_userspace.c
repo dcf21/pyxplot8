@@ -371,7 +371,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
   int  pos      = start;
   int  outpos   = 0;
   value *VarData = NULL;
-  int  pos2, CommaPositions[MAX_STR_FORMAT_ITEMS], NFormatItems;
+  int  pos2, pos3, CommaPositions[MAX_STR_FORMAT_ITEMS], NFormatItems;
   int  i,j,k,l,NArgs,ArgCount,RequiredArgs;
   char AllowedFormats[] = "cdieEfgGosSxX%"; // These tokens are allowed after a % format specifier
 
@@ -556,7 +556,9 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
   StrBracketMatch(in+pos, CommaPositions, &NFormatItems, &pos2, MAX_STR_FORMAT_ITEMS);
   if (pos2<0) { *errpos = pos; strcpy(errtext, "Syntax Error: Mismatched bracket"); return; }
   if (NFormatItems>=MAX_STR_FORMAT_ITEMS) { *errpos = pos; strcpy(errtext, "Overflow Error: Too many string formatting arguments"); return; }
-  if ((end!=NULL)&&(*end>0)&&(pos+pos2<*end))
+  pos3=pos2+1;
+  while ((in[pos+pos3]<=' ') && (in[pos+pos3]!='\0')) pos3++;
+  if ((end!=NULL)&&(*end>0)&&(pos+pos3<*end))
        { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
 
   // We have now read in a format string, and a bracketed list of format arguments

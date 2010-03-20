@@ -424,6 +424,7 @@ void directive_set(Dict *command)
      {
       sg->grid = SW_ONOFF_ON;
      } else {
+      sg->grid = SW_ONOFF_ON;
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
        {   

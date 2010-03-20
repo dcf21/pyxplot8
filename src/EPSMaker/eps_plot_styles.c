@@ -452,6 +452,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     else if (style == SW_STYLE_STARS) final_pointsize *= 12.0 ; // Stars are BIG
     last_colstr=NULL;
 
+    blk = data->first;
     while (blk != NULL)
      {
       for (j=0; j<blk->BlockPosition; j++)

@@ -54,7 +54,7 @@ positions of each point:
 \item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit.eps}) at each datum.\index{upper-limit datapoints}
 \end{itemize}
 
-Various modifiers may be used to affect the exact appearance of the output
+Various modifiers may be used to alter the exact appearance of the output
 which each plot style produces:
 \begin{itemize}
 \item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}, or as an RGB colour in the form {\tt rgb1:2:3}, where the integers should be in the range~0 to~255. May also be spelt {\tt color}.\index{colours!setting for datasets}
@@ -75,11 +75,12 @@ plot 'datafile' using 1:2 with lines colour red linewidth 2
 plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
 \end{verbatim}
 
-\noindent Not all of the modifiers apply to all of PyXPlot's plot styles. Where
-modifiers are applied to plot styles for which they have no defined effect,
-this is not an error, but the modifier has no effect.
-Table~\ref{tab:style_modifiers} lists which modifiers effect which plot styles,
-including, for completeness, all of PyXPlot's plot styles.
+\noindent Not all of the modifiers above are applicable to all of PyXPlot's
+plot styles. Where modifiers are applied to plot styles for which they have no
+defined effect, this is not an error, but the modifier has no effect.
+Table~\ref{tab:style_modifiers} lists which modifiers act upon which plot
+styles, including, for completeness, those plot styles which will be introduced
+later in this chapter.
 
 \begin{table}
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}
@@ -87,108 +88,76 @@ including, for completeness, all of PyXPlot's plot styles.
 \label{tab:style_modifiers}
 \end{table}
 
-In addition to setting these parameters on a per-dataset basis, the {\tt 
-linewidth}, {\tt pointlinewidth} and {\tt pointsize} modifiers can have their
-default values changed as in the following examples:
+In addition to setting these parameters on a per-dataset basis, the {\tt
+linewidth}, {\tt pointlinewidth} and {\tt pointsize} settings can also have
+their default values changed as in the following examples:
 \begin{verbatim}
 set linewidth 1
 set pointlinewidth 2
 set pointsize 3
 \end{verbatim}
-
+In each case, the normal default values of these settings are~1. The default
+values of the {\tt colour}, {\tt linetype} and {\tt pointtype} settings depend
+upon whether the current graphic output device is set to produce colour or
+monochrome output (see Chapter~\ref{sec:set_terminal}). In the former case
+(colour output), the colours of each of the comma-separated datasets plotted on
+a graph are drawn sequentially from the currently-selected palette (see
+Section~\ref{sec:palette}), all lines are drawn as solid lines ({\tt
+line\-type~1}), and the symbols used to draw each dataset are drawn
+sequentially from PyXPlot's available point types. In the latter case
+(monochrome output), all datasets are plotted in black, and both the line types
+and point types used to draw each dataset are drawn sequentially from PyXPlot's
+available options:
+\begin{verbatim}
+set terminal colour
+plot [][6:0] 1 with lp, 2 with lp, 3 w lp, 4 w lp, 5 w lp
+set terminal monochrome
+replot
+\end{verbatim}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_col_vs_mono.eps}}
 
 \subsection{Error Bars}
 \index{errorbars}\label{sec:errorbars}
 
-Points may be drawn with error bars either by specifying the size of the error
-bar together with its centre point, in the fashion $5\pm2$, or by specifying a
-minimum to maximum range for the error bar, in the fashion $5^{+2}_{-3}$. The
-former is achieved using the syntax:
+The following pair of plot styles allow datapoints to be plotted with errorbars
+indicating the uncertainties in either their vertical or horizontal positions.
+They both take as input three columns of data, the first two of which represent
+the $x$- and $y$-coordinates of the positions of each point, and the last of
+which represents the uncertainty in either the $x$- and $y$-coordinate.
+\begin{itemize}
+\item \indpst{yerrorbars}
+\item \indpst{xerrorbars}
+\end{itemize}
+The plot style \indpst{errorbars} is an alias for \indpst{yerrorbars}.
+Additionally, the following plot style allows datapoints to be plotted with
+both horizontal and vertical errorbars:
+\begin{itemize}
+\item \indpst{xyerrorbars}
+\end{itemize}
+This plot style takes four columns of data as input, the first two of which
+represent the $x$- and $y$-coordinates of the positions of each point, the
+third of which gives the uncertainty in the $x$-coordinate, and the last of
+which gives the uncertainty in the $y$-coordinate.
 
-\begin{verbatim}
-plot 'data.dat' with yerrorbars
-\end{verbatim}
+Each of the plot styles listed above has a corresponding partner which takes
+minimum and maximum limit in place of each uncertainty, equivalent to writing
+$5^{+2}_{-3}$ instead of $5\pm2$, except that the limits of~2 and~7 should be
+given in place of $5-3$ and $5+2$:
+\begin{itemize}
+\item \indpst{xerrorrange} -- takes four columns of data.
+\item \indpst{yerrorrange} -- takes four columns of data.
+\item \indpst{xyerrorrange} -- takes six columns of data.
+\end{itemize}
+The plot style \indpst{errorrange} is an alias of \indpst{yerrorrange}.
 
-\noindent which takes three columns of data: these are the $x$- and
-$y$-coordinates of the centre point about which the error bar is to be placed,
-and the magnitude of the error bar along the $y$-axis. The latter is achieved
-using the syntax:
+Corresponding plot styles also exist to plot data with errorbars along the
+$z$-axes of three-dimensional plots\footnote{These plot styles are currently
+present for future expansion purposes only, as PyXPlot~0.8.0 cannot produce
+three-dimensional plots.}: {\tt zerrorbars}, {\tt zerrorrange}, {\tt
+xzerrorbars}, {\tt xzerrorrange}, {\tt yzerrorbars}, {\tt yzerrorrange}, {\tt
+xyzerrorbars}, {\tt xyzerrorrange}.
 
-\begin{verbatim}
-plot 'data.dat' with yerrorrange
-\end{verbatim}
-
-\noindent which takes four columns of data: these are the $x$- and
-$y$-coordinates of the centre point about which the error bar is to be placed,
-the position of the bottom of the error bar along the $y$-axis, and the
-position of the top of the error bar along the $y$-axis.
-
-Similar plot styles exist with the letter {\tt y} replaced with the letter {\tt
-x} to produce error bars along the $x$-axis. The plot styles {\tt xyerrorbars}
-and {\tt xyerrorrange} simultaneously produce horizontal and vertical error
-bars -- the former takes four columns of data and draws the sizes of the
-horizontal and vertical error bars from the third and fourth data columns
-respectively, meanwhile the latter takes six columns of data and draws the
-horizontal minimum, horizontal maximum, vertical minimum and vertical maximum
-from columns $4$--$6$ respectively.
-
-The plot styles {\tt errorbars} and {\tt errorrange} are shorthands for {\tt
-yerrorbars} and {\tt yerrorrange} respectively. For clarity, a complete list of
-the errorbar plot styles available in the $xy$-plane in PyXPlot is given below:
-
-\begin{longtable}{p{2.5cm}p{7.5cm}}
-\indpst{yerrorbars} & Vertical errorbars; size drawn from the third data column. \\
-\indpst{xerrorbars} & Horizontal errorbars; size drawn from the third data column. \\
-\indpst{xyerrorbars} & Horizontal and vertical errorbars; sizes drawn from the third and fourth data columns respectively.\\
-\indpst{errorbars} & Shorthand for {\tt yerrorbars}. \\
-\indpst{yerrorrange} & Vertical errorbars; minimum drawn from the third data column, maximum from the fourth.\\
-\indpst{xerrorrange} & Horizontal errorbars; minimum drawn from the third data column, maximum from the fourth.\\
-\indpst{xyerrorrange} & Horizontal and vertical errorbars; horizontal minimum drawn from the third data column and maximum from the fourth; vertical minimum drawn from the fifth and maximum from the sixth.\\
-\indpst{errorrange} & Shorthand for {\tt yerrorrange}. \\
-\end{longtable}
-
-Corresponding plot styles exist for producing error bars on any combination of
-the $x$-, $y$- and $z$-axes of three-dimensional plots.
-
-\subsection{Plotting Functions with Errorbars, Arrows, or More}
-
-The use of plot styles such as {\tt errorbars} when plotting functions, as
-opposed to \datafile s, often requires more than one function to be supplied.
-For example, whilst the syntax
-
-\begin{verbatim}
-plot sin(x) with lines
-\end{verbatim}
-
-\noindent is sufficient for the {\tt lines} plot style, which only takes two
-columns of data -- in this case, $x$ and $\sin(x)$ -- it is not sufficient for
-the {\tt yerrorbars} plot style which takes three columns of data. In such
-cases, the syntax
-
-\begin{verbatim}
-plot f(x):g(x) with yerrorbars
-\end{verbatim}
-
-\noindent is used. In this case, two functions are supplied, separated by a
-colon; plotting proceeds as if a \datafile\ had been supplied, containing
-values of $x$ in column~1, values of $f(x)$ in column~2, and values of $g(x)$
-in column~3. In this example, $g(x)$ provides the uncertainty in the value of
-$f(x)$.  The {\tt using} modifier may also be used in combination with such
-syntax, as in
-
-\begin{verbatim}
-plot f(x):g(x) using 2:3
-\end{verbatim}
-
-\noindent though this example is not sensible. $g(x)$ would be plotted on the
-$y$-axis, against $f(x)$ on the $x$-axis. However, this is unlikely to be
-sensible because the range of values of $x$ substituting into these expressions
-would correspond to the range of the plot's horizontal axis. The result might
-be particularly unexpected if the above were attempted with an autoscaling
-horizontal axis -- PyXPlot would find itself autoscaling the $x$-axis range to
-the spread of values of $f(x)$, but find that this itself changed depending
-upon the range of the $x$-axis. In this case, the user should have used the
-{\tt parametric} plot option.
+\subsection{Shaded Regions}
 
 \subsection{Barcharts and Histograms}
 \label{sec:barcharts}\index{bar charts}
@@ -320,7 +289,7 @@ specify the left-most edges of the steps. The \indpst{histeps} plot style works
 rather like the {\tt boxes} plot style; the interfaces between the steps occur
 at the horizontal midpoints between the \datapoint s.
 
-\subsection{Drawing Arrows}
+\subsection{Arrows}
 
 Data may be represented as arrows connecting two points on a plot by using the
 \indpst{arrows} plot style.  This takes four columns of data -- $x_1$, $y_1$,
@@ -374,7 +343,78 @@ subsequent {\tt plot} statement, this style can be recalled as follows:
 plot sin(x) with style 2
 \end{verbatim}
 
-\section{Keys and Legends}\index{keys}\index{legends}
+\section{Plotting Many Files at Once}
+
+\index{globbing}\index{wildcards}\index{datafiles!globbing}
+
+PyXPlot allows the wildcards {\tt *} and {\tt ?} to be used in the filenames of
+\datafile s supplied to the \indcmdt{plot}.  For example, the following would
+plot all \datafile s in the current directory with a {\tt .dat} suffix, using
+the same plot options:
+
+\begin{verbatim}
+plot '*.dat' with linewidth 2
+\end{verbatim}
+
+\noindent In the legend, full filenames are displayed, allowing the \datafile s
+to be distinguished. If the user supplies a blank filename, the last used
+\datafile\ is used again, for example:
+
+\begin{verbatim}
+plot 'data.dat' using 1:2, '' using 2:3
+\end{verbatim}
+
+\noindent or even:
+
+\begin{verbatim}
+plot '*.dat' using 1:2, '' using 2:3
+\end{verbatim}
+
+The {\tt *} and {\tt ?} wildcards can be used in a similar fashion in the
+\indcmdt{load}.
+
+\section{Function Plotting Revisited}
+
+The use of plot styles such as {\tt errorbars} when plotting functions, as
+opposed to \datafile s, often requires more than one function to be supplied.
+For example, whilst the syntax
+
+\begin{verbatim}
+plot sin(x) with lines
+\end{verbatim}
+
+\noindent is sufficient for the {\tt lines} plot style, which only takes two
+columns of data -- in this case, $x$ and $\sin(x)$ -- it is not sufficient for
+the {\tt yerrorbars} plot style which takes three columns of data. In such
+cases, the syntax
+
+\begin{verbatim}
+plot f(x):g(x) with yerrorbars
+\end{verbatim}
+
+\noindent is used. In this case, two functions are supplied, separated by a
+colon; plotting proceeds as if a \datafile\ had been supplied, containing
+values of $x$ in column~1, values of $f(x)$ in column~2, and values of $g(x)$
+in column~3. In this example, $g(x)$ provides the uncertainty in the value of
+$f(x)$.  The {\tt using} modifier may also be used in combination with such
+syntax, as in
+
+\begin{verbatim}
+plot f(x):g(x) using 2:3
+\end{verbatim}
+
+\noindent though this example is not sensible. $g(x)$ would be plotted on the
+$y$-axis, against $f(x)$ on the $x$-axis. However, this is unlikely to be
+sensible because the range of values of $x$ substituting into these expressions
+would correspond to the range of the plot's horizontal axis. The result might
+be particularly unexpected if the above were attempted with an autoscaling
+horizontal axis -- PyXPlot would find itself autoscaling the $x$-axis range to
+the spread of values of $f(x)$, but find that this itself changed depending
+upon the range of the $x$-axis. In this case, the user should have used the
+{\tt parametric} plot option.
+
+\section{Graph Legends}
+\index{keys}\index{legends}
 \label{sec:legends}
 
 By default, plots are displayed with legends in their top-right corners. The
@@ -439,36 +479,6 @@ website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.
 \nlscf
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_legends.eps}}
 }
-
-\section{Plotting Many Files at Once}
-
-\index{globbing}\index{wildcards}\index{datafiles!globbing}
-
-PyXPlot allows the wildcards {\tt *} and {\tt ?} to be used in the filenames of
-\datafile s supplied to the \indcmdt{plot}.  For example, the following would
-plot all \datafile s in the current directory with a {\tt .dat} suffix, using
-the same plot options:
-
-\begin{verbatim}
-plot '*.dat' with linewidth 2
-\end{verbatim}
-
-\noindent In the legend, full filenames are displayed, allowing the \datafile s
-to be distinguished. If the user supplies a blank filename, the last used
-\datafile\ is used again, for example:
-
-\begin{verbatim}
-plot 'data.dat' using 1:2, '' using 2:3
-\end{verbatim}
-
-\noindent or even:
-
-\begin{verbatim}
-plot '*.dat' using 1:2, '' using 2:3
-\end{verbatim}
-
-The {\tt *} and {\tt ?} wildcards can be used in a similar fashion in the
-\indcmdt{load}.
 
 \section{Plotting Parametric Functions}
 

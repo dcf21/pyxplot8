@@ -40,6 +40,7 @@
 
 #include "eps_plot_canvas.h"
 #include "eps_plot_ticking.h"
+#include "eps_plot_ticking_auto.h"
 
 void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle)
  {
@@ -282,27 +283,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
      }
 
     // Do automatic ticking as required
-    if (AutoTicks[1])
-     {
-      N = 1 + length/tick_sep_major; // Estimate how many ticks we want
-      if (N<  3) N=  3;
-      if (N>100) N=100;
-
-      axis->TickListPositions = (double  *)lt_malloc((N+1) * sizeof(double));
-      axis->TickListStrings   = (char   **)lt_malloc((N+1) * sizeof(char *));
-      if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
-      for (i=0; i<N; i++)
-       {
-        double x;
-        x = ((double)i)/(N-1);
-        axis->TickListPositions[i] = x;
-        x = eps_plot_axis_InvGetPosition(x, axis);
-        if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase);
-        else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz);
-        if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
-       }
-      axis->TickListStrings[i] = NULL; // null terminate list
-     }
+    if (AutoTicks[1]) eps_plot_ticking_auto(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
 
     // Set flag to show that we have finalised the ticking of this axis
     axis->TickListFinalised = 1;
