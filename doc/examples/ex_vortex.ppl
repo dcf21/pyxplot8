@@ -1,4 +1,4 @@
-# EX_FITTING.DAT
+# EX_VORTEX.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -19,16 +19,23 @@
 
 # ----------------------------------------------------------------------------
 
-# This data produces a figure for the PyXPlot Users' Guide
+# This script produces a figure for the PyXPlot Users' Guide
 
-    0.314159          1
-    0.942478          1
-    1.570796          1
-    2.199115          1
-    2.827433          1
-    3.455752         -1
-    4.084070         -1
-    4.712389         -1
-    5.340708         -1
-    5.969026         -1
+# Call common initialisation script
+reset
+load "examples/fig_init.ppl"
+
+# Set output destination
+set output "examples/eps/ex_vortex.eps"
+
+# Main body of figure script
+set size square
+set width 9
+set nokey
+set xlabel 'x'
+set ylabel 'y'
+set trange [0:2*pi]
+plot \
+ 'examples/ex_vortex.dat' u 1:2:($1+$3):($2+$4) w arrows, \
+ parametric 4*sin(t):4*cos(t) w lt 2 col black
 

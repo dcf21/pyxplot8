@@ -1166,29 +1166,26 @@ the calendar date associated with any given Julian Day number. All of these
 functions, with the exception of {\tt time\_\-dayweekname()} and {\tt
 time\_\-monthname()} take a single input, which should be a Julian Day number:
 
-\noindent
-\setlength{\extrarowheight}{2mm}
-\begin{longtable}{p{4cm}p{7.3cm}}
+\begin{itemize}
+\item {\tt time\_daymonth()}     -- returns the day of the calendar month.
 \indfun{time\_\-daymonth({\it JD})}
-{\tt time\_daymonth()    }\dotfill & returns the day of the calendar month. \\
+\item {\tt time\_dayweekname()}  -- takes two arguments, the first of which should be a Julian Day number, and the second of which should be a number $l$ indicating the number of characters to return. Returns the name, truncated to $l$ characters, of the day of the week. If $l<1$, the full name is returned.
 \indfun{time\_\-dayweekname({\it JD})}
-{\tt time\_dayweekname() }\dotfill & takes two arguments, the first of which should be a Julian Day number, and the second of which should be a number $l$ indicating the number of characters to return. Returns the name, truncated to $l$ characters, of the day of the week. If $l<1$, the full name is returned. \\
+\item {\tt time\_dayweeknum()}   -- returns the number (1=Monday--7=Sunday) of the day of the week.
 \indfun{time\_\-dayweeknum({\it JD})}
-{\tt time\_dayweeknum()  }\dotfill & returns the number (1=Monday--7=Sunday) of the day of the week. \\
+\item {\tt time\_hour()}         -- returns the hour of the day.
 \indfun{time\_\-hour({\it JD})}
-{\tt time\_hour()        }\dotfill & returns the hour of the day. \\
+\item {\tt time\_min()}          -- returns the minutes component of the time.
 \indfun{time\_\-min({\it JD})}
-{\tt time\_min()         }\dotfill & returns the minutes component of the time. \\
+\item {\tt time\_monthname()}    -- takes two arguments, the first of which should be a Julian Day number, and the second of which should be a number $l$ indicating the number of characters to return. Returns the name, truncated to $l$ characters, of the calendar month. If $l<1$, the full name is returned.
 \indfun{time\_\-monthname({\it JD})}
-{\tt time\_monthname()   }\dotfill & takes two arguments, the first of which should be a Julian Day number, and the second of which should be a number $l$ indicating the number of characters to return. Returns the name, truncated to $l$ characters, of the calendar month. If $l<1$, the full name is returned. \\
+\item {\tt time\_monthnum()}     -- returns the number (1-12) of the calendar month.
 \indfun{time\_\-monthnum({\it JD})}
-{\tt time\_monthnum()    }\dotfill & returns the number (1-12) of the calendar month. \\
+\item {\tt time\_sec()}          -- returns the seconds component of the time.
 \indfun{time\_\-sec({\it JD})}
-{\tt time\_sec()         }\dotfill & returns the seconds component of the time. \\
+\item {\tt time\_year()}         -- returns the calendar year number.
 \indfun{time\_\-year({\it JD})}
-{\tt time\_year()        }\dotfill & returns the calendar year number. \\
-\end{longtable}
-\setlength{\extrarowheight}{0mm}
+\end{itemize}
 
 Optionally, the \indcmdt{set calendar} can be used to set different calendars
 to use when reading calendar dates in and converting them to Julian Day

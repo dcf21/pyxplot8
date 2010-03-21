@@ -159,12 +159,15 @@ xyzerrorbars}, {\tt xyzerrorrange}.
 
 \subsection{Shaded Regions}
 
+The following plot styles allow regions of graphs to be shaded with colour:
+\begin{itemize}
+\item \indpst{yerrorshaded}
+\item \indpst{shadedregion}
+\end{itemize}
+
 \subsection{Barcharts and Histograms}
-\label{sec:barcharts}\index{bar charts}
-\index{steps plot style@{\tt steps} plot style}
-\index{fsteps plot style@{\tt fsteps} plot style}
-\index{histeps plot style@{\tt histeps} plot style}
-\index{impulses plot style@{\tt impulses} plot style}
+\label{sec:barcharts}
+\index{bar charts}
 
 Bar charts and histograms can be produced using the \indpst{boxes} plot style:
 
@@ -271,41 +274,70 @@ is used to plot the upper bar.
 
 \subsection{Steps}
 
-The plot styles met so far plot data as solid bars, with left, right and top
-sides all drawn. Data may also be plotted with {\it steps}, with the left and
-right sides of each bar omitted. Some examples are shown in
-Figures~\ref{fig:ex_barchart1}(d), (e) and (f).  As is illustrated in these
-panels, three flavours of steps are available:
-
-\begin{verbatim}
-plot 'data.dat' with steps
-plot 'data.dat' with fsteps
-plot 'data.dat' with histeps
-\end{verbatim}
-
-\noindent When using the \indpst{steps} plot style, the \datapoint s specify the
-right-most edges of each step. When using the \indpst{fsteps} plot style, they
-specify the left-most edges of the steps. The \indpst{histeps} plot style works
-rather like the {\tt boxes} plot style; the interfaces between the steps occur
-at the horizontal midpoints between the \datapoint s.
+The following plot styles allow data to be plotted with a series of horizontal
+steps associated with each supplied \datapoint:
+\begin{itemize}
+\item \indpst{steps}
+\item \indpst{fsteps}
+\item \indpst{histeps}
+\end{itemize}
+Like the {\tt points} plot style, each of these styles take only two columns of
+data as input, containing the $x$- and $y$-coordinates of each \datapoint.  An
+example of their appearance  is shown in Figures~\ref{fig:ex_barchart1}(d), (e)
+and (f); for clarity, the positions of each of the supplied \datapoint s are
+marked by red crosses.  These plot styles differ in their placement of the
+edges of each of the horizontal steps.  The \indpst{steps} plot style places
+the right-most edge of each step on the \datapoint\ it represents.  The
+\indpst{fsteps} plot style places the left-most edge of each step on the
+\datapoint\ it represents.  The \indpst{histeps} plot style centres each step
+upon the \datapoint\ it represents.
 
 \subsection{Arrows}
 
-Data may be represented as arrows connecting two points on a plot by using the
-\indpst{arrows} plot style.  This takes four columns of data -- $x_1$, $y_1$,
-$x_2$ and $y_2$ -- and for each \datapoint\ draws an arrow from the point
-$(x_1,y_1)$ to the point $(x_2,y_2)$.  Three different kinds of arrows can be
-drawn: ones with normal arrow heads, ones with no arrow heads, which just
-appear as lines, and ones with arrow heads on both ends. The syntax to obtain
-these varieties is:
+The following plot styles allow arrows or lines to be drawn on graphs with
+positions dictated by a series of \datapoint s:
+\begin{itemize}
+\item \indpst{arrows\_head}
+\item \indpst{arrows\_nohead}
+\item \indpst{arrows\_twohead}
+\end{itemize}
+The plot style of \indpst{arrows} is an alias for \indpst{arrows\_head}.  Each
+of these plot styles take four columns of data -- $x_1$, $y_1$, $x_2$ and $y_2$
+-- and each \datapoint\ results in an arrow being drawn from the point
+$(x_1,y_1)$ to the point $(x_2,y_2)$. The three plot styles differ in the kinds
+of arrows that they draw. \indpst{arrows\_head} draws an arrow head at the
+point $(x_2,y_2)$; \indpst{arrows\_nohead} draws a simple line without arrow
+heads on either end; \indpst{arrows\_twohead} draws arrow heads on both ends of
+the arrow.
 
-\begin{verbatim}
-plot 'data.dat' with arrows_head
-plot 'data.dat' with arrows_nohead
-plot 'data.dat' with arrows_twohead
-\end{verbatim}
-
-The syntax {\tt with arrows} is a shorthand for {\tt with arrows\_head}.
+\example{ex:vortex}{A diagram of fluid flow around a vortex}{
+blah
+\nlscf
+\noindent{\tt set size square}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set xlabel 'x'}\newline
+\noindent{\tt set ylabel 'y'}\newline
+\noindent{\tt set trange [0:2*pi]}\newline
+\noindent{\tt plot $\backslash$}\newline
+\noindent{\tt \phantom{x}'data' u 1:2:(\$1+\$3):(\$2+\$4) w arrows, $\backslash$}\newline
+\noindent{\tt \phantom{x}parametric 4*sin(t):4*cos(t) w lt 2 col black}
+\nlscf
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex.eps}}
+The data used in this figure was produced using the following python script:
+\nlscf
+\noindent{\tt from math import *}\newline
+\noindent{\tt for i in range(-19,20,2):}\newline
+\noindent{\tt \phantom{x}for j in range(-19,20,2):}\newline
+\noindent{\tt \phantom{xx}x = float(i)/2}\newline
+\noindent{\tt \phantom{xx}y = float(j)/2}\newline
+\noindent{\tt \phantom{xx}r = sqrt(x**2 + y**2) / 4}\newline
+\noindent{\tt \phantom{xx}theta = atan2(y,x)}\newline
+\noindent{\tt \phantom{xx}if (r $<$ 1.0): v = 1.3*r}\newline
+\noindent{\tt \phantom{xx}else        : v = 1.3/r}\newline
+\noindent{\tt \phantom{xx}vy = v *  cos(theta)}\newline
+\noindent{\tt \phantom{xx}vx = v * -sin(theta)}\newline
+\noindent{\tt \phantom{xx}print "\%7.3f \%7.3f \%7.3f \%7.3f"\%(x,y,vx,vy)}
+}
 
 \section{The Palette}
 \label{sec:palette}

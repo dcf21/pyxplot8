@@ -428,6 +428,37 @@ variable, {\tt name}, is set using a quoted string, indicating that it will be
 set to equal whatever string of text is found in the third column of the
 \datafile.
 
+\example{ex:meansd}{Calculating the Mean and Standard Deviation of Data}{
+The following PyXPlot script calculates the mean and standard deviation of a
+set of \datapoint s using the \indcmdt{foreach datum}:
+\nlscf
+\noindent{\tt N\_data = 0}\newline
+\noindent{\tt sum\_x  = 0}\newline
+\noindent{\tt sum\_x2 = 0}\newline
+\\
+\noindent{\tt foreach datum x in '--'}\newline
+\noindent{\tt \phantom{x}\{}\newline
+\noindent{\tt \phantom{xx}N\_data = N\_data + 1}\newline
+\noindent{\tt \phantom{xx}sum\_x  = sum\_x  + x}\newline
+\noindent{\tt \phantom{xx}sum\_x2 = sum\_x2 + x**2}\newline
+\noindent{\tt \phantom{x}\}}\newline
+\noindent{\tt 1.3}\newline
+\noindent{\tt 1.2}\newline
+\noindent{\tt 1.5}\newline
+\noindent{\tt 1.1}\newline
+\noindent{\tt 1.3}\newline
+\noindent{\tt END}\newline
+\\
+\noindent{\tt mean = sum\_x / N\_data}\newline
+\noindent{\tt SD   = sqrt(sum\_x2 / N\_data - mean**2)}\newline
+\\
+\noindent{\tt print "Mean = \%s"\%(mean)}\newline
+\noindent{\tt print "SD   = \%s"\%(SD)}
+\nlscf
+\noindent For the data supplied, a mean of $1.28$ and a standard deviation of
+$0.133$ are returned.
+}
+
 \section{While and Do Loops}
 
 The \indcmdt{while} may be used to continue running a script block until some
@@ -526,6 +557,7 @@ operator.  The {\tt conditionalN()} function should be passed two numerical
 expressions to select between, whilst the {\tt conditionalS()} function should
 be passed two string expressions, as the following examples demonstrate:
 
+\vspace{2mm}
 {\footnotesize
 \noindent{\tt pyxplot> f(x) = conditionalN(x$>$0,x,0)}\newline
 \noindent{\tt pyxplot> print "\%s \%s \%s \%s \%s"\%(f(-2),f(-1),f(0),f(1),f(2))}\newline

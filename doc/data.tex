@@ -623,23 +623,26 @@ bins into which the data were sorted.
 PyXPlot has a range of mathematical functions which draw random samples from a
 variety of probability distibutions. These are:
 
-\vspace{2mm}
-\noindent
-\begin{tabular}{p{4.5cm}p{7.5cm}}
-{\tt random()}\dotfill & returns a random real number between 0 and~1. \\
-{\tt random\_binomial($p,n$)}\dotfill & returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$. \\
-{\tt random\_chisq($\mu$)}\dotfill & returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom. \\
-{\tt random\_gaussian($\sigma$)}\dotfill & returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero. \\
-{\tt random\_lognormal($\zeta,\sigma$)}\dotfill & returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$. \\
-{\tt random\_poisson($n$)}\dotfill & returns a random integer from a Poisson distribution with mean $n$. \\
-\end{tabular}
-\vspace{2mm}
+\begin{itemize}
+\item {\tt random()} -- returns a random real number between 0 and~1.
+\indfun{random()}
+\item {\tt random\_binomial($p,n$)} -- returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$.
+\indfun{random\_\-binomial($p,n$)}
+\item {\tt random\_chisq($\mu$)} -- returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom.
+\indfun{random\_\-chisq($\mu$)}
+\item {\tt random\_gaussian($\sigma$)} -- returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero.
+\indfun{random\_\-gaussian($\sigma$)}
+\item {\tt random\_lognormal($\zeta,\sigma$)} -- returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$.
+\indfun{random\_\-lognormal($\zeta,\sigma$)}
+\item {\tt random\_poisson($n$)} -- returns a random integer from a Poisson distribution with mean $n$.
+\indfun{random\_\-poisson($n$)}
+\end{itemize}
 
 \noindent These functions all rely upon a common underlying random-number
 generator, whose seed may be set using the \indcmdt{set seed}, which should be
 followed by any integer.
 
-\example{ex:random}{Using random numbers to estimate the value of $\pi$.}{
+\example{ex:random}{Using random numbers to estimate the value of $\pi$}{
 PyXPlot's functions for generating random numbers are most commonly used for
 adding noise to artificially-generated data. In this example, however, we use
 them to implement a rather inefficient algorithm for estimating the value of
@@ -668,7 +671,7 @@ counting how many lie within the unit circle.
 \noindent {\tt \phantom{xx}n = n + (hypot(i,j)<1) }\newline
 \noindent {\tt \} }\newline
 \noindent {\tt }\newline
-\noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }\newline
+\noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }
 \nlfcf
 On the author's machine, this script returns a value of $3.1352$ when executed
 using the random samples which are returned immediately after starting PyXPlot.
@@ -700,7 +703,7 @@ diagram:
 \noindent {\tt \phantom{x}\}}\newline
 \noindent {\tt set display ; refresh}\newline
 \noindent {\tt }\newline
-\noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }\newline
+\noindent {\tt print "pi=\%s"\%(n / Nsamples * 4) }
 \nlscf
 The graphical output from this script is shown below. The number of datapoints
 has been reduced to {\tt Nsamples}$=500$ for clarity:
