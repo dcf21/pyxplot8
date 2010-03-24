@@ -31,6 +31,7 @@
 
 #include "ppl_canvasdraw.h"
 #include "ppl_datafile.h"
+#include "ppl_datafile_rasters.h"
 #include "ppl_error.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
@@ -313,8 +314,11 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         if (DEBUG) { sprintf(temp_err_string, "Reading data from file '%s' for dataset %d in plot item %d", pd->filename, i+1, x->current->id); ppl_log(temp_err_string); }
         DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        } else {
+        double *special_raster = ordinate_raster;
+        int     Nsamples       = x->current->settings.samples;
+        DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "t", NULL, NULL, &special_raster, &Nsamples);
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+        DataFile_FromFunctions(special_raster, 1, Nsamples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, errbuffer); x->current->plotdata[i]=NULL; }
       else
@@ -349,6 +353,8 @@ void eps_plot_SampleFunctions(EPSComm *x)
   Dict            *tempdict;
   char             errbuffer[LSTR_LENGTH];
   double          *OrdinateRaster;
+  double          *SpecialRaster;
+  int              Nsamples;
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
@@ -413,7 +419,10 @@ void eps_plot_SampleFunctions(EPSComm *x)
       if (DEBUG) { sprintf(temp_err_string, "Reading data from functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
 
       // Get data from functions
-      DataFile_FromFunctions(OrdinateRaster, 0, OrdinateRasterLen, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+      SpecialRaster = OrdinateRaster;
+      Nsamples      = OrdinateRasterLen;
+      DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
+      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage

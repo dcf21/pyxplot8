@@ -38,6 +38,7 @@
 #include "ListTools/lt_dict.h"
 
 #include "ppl_datafile.h"
+#include "ppl_datafile_rasters.h"
 #include "ppl_error.h"
 #include "ppl_glob.h"
 #include "ppl_passwd.h"
@@ -403,6 +404,13 @@ int directive_tabulate(Dict *command, char *line)
       else            LinearRaster     (ordinate_raster, raster_min, raster_max, NumberOfSamples);
 
       // Read data from supplied functions
+      if (spacing == NULL)
+       {
+        DataFile_FromFunctions_CheckSpecialRaster(fnlist, k, FlagParametric?"t":"x",
+                          ((!FlagParametric) && (min[0]!=NULL)) ? &raster_min : NULL,
+                          ((!FlagParametric) && (max[0]!=NULL)) ? &raster_max : NULL,
+                          &ordinate_raster, &NumberOfSamples);
+       }
       DataFile_FromFunctions(ordinate_raster, FlagParametric,
                              NumberOfSamples, (FlagParametric ? &settings_graph_current.Tmin : &raster_units),
                              &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);

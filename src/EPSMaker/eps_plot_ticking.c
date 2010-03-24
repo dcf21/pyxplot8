@@ -156,7 +156,10 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   // Secondly, decide what ticks to place on this axis
   if (!axis->TickListFinalised)
    {
+    int OutContext;
     double tick_sep_major , tick_sep_minor;
+
+    OutContext = lt_GetMemContext();
 
     // Work out optimal tick separation
     if (xyz!=1)
@@ -210,8 +213,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
            if ( (!gsl_finite((*TickListPositions)[j])) || ((*TickListPositions)[j]<0.0) || ((*TickListPositions)[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
            if      (TickStrs[i][0]!='\xFF')    (*TickListStrings)[j] = TickStrs[i];
            else if (MajMin==0)                 (*TickListStrings)[j] = "";
-           else if (axis->format == NULL)        TickLabelAutoGen(&(*TickListStrings)[j] , TickList[i] * UnitMultiplier , axis->LogBase);
-           else                                  TickLabelFromFormat(&(*TickListStrings)[j], axis->format, TickList[i], &axis->DataUnit, xyz);
+           else if (axis->format == NULL)        TickLabelAutoGen(&(*TickListStrings)[j], TickList[i] * UnitMultiplier, axis->LogBase , OutContext);
+           else                                  TickLabelFromFormat(&(*TickListStrings)[j], axis->format, TickList[i], &axis->DataUnit, xyz, OutContext);
            j++;
           }
         (*TickListStrings)[j] = NULL; // null terminate list
@@ -267,8 +270,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
             (*TickListPositions)[j] = eps_plot_axis_GetPosition(tmp, axis, xrn, 0);
             if ( (!gsl_finite((*TickListPositions)[j])) || ((*TickListPositions)[j]<0.0) || ((*TickListPositions)[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
             if      (MajMin==0)            (*TickListStrings)[j] = "";
-            else if (axis->format == NULL) TickLabelAutoGen(&(*TickListStrings)[j] , tmp * UnitMultiplier , axis->LogBase);
-            else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, xyz);
+            else if (axis->format == NULL) TickLabelAutoGen(&(*TickListStrings)[j], tmp * UnitMultiplier, axis->LogBase, OutContext);
+            else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, xyz, OutContext);
             if ((*TickListStrings)[j]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
             j++;
             if (axis->log == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
@@ -292,7 +295,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   return;
  }
 
-void TickLabelAutoGen(char **output, double x, double log_base)
+void TickLabelAutoGen(char **output, double x, double log_base, int OutContext)
  {
   int    SF = settings_term_current.SignificantFigures;
   double ApproxMargin;
@@ -311,13 +314,13 @@ void TickLabelAutoGen(char **output, double x, double log_base)
     if (ppl_units_DblApprox(m,1,pow(10,-SF+1))) sprintf(temp_err_string,"%s%d^{%s}",sgn?"-":"",(int)log_base,NumericDisplay(e,0,SF,1));
     else                                        sprintf(temp_err_string,"%s%s\\times %d^{%s}",sgn?"-":"",NumericDisplay(m,0,SF,1),(int)log_base,NumericDisplay(e,1,SF,1));
    }
-  *output = (char *)lt_malloc(strlen(temp_err_string)+3);
+  *output = (char *)lt_malloc_incontext(strlen(temp_err_string)+3, OutContext);
   if ((*output)==NULL) return;
   sprintf(*output,"$%s$",temp_err_string);
   return;
  }
 
-void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit, int xyz)
+void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit, int xyz, int OutContext)
  {
   int i,j=-1,k=-1;
   char *VarName, tmp_string[LSTR_LENGTH], err_string[LSTR_LENGTH];
@@ -354,7 +357,7 @@ void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit,
   ppl_GetQuotedString(FormatStr, tmp_string, 0, &j, 0, &k, err_string, 1);
   if (k>=0) { sprintf(temp_err_string, "Error encountered whilst using format string: %s",FormatStr); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, err_string); sprintf(tmp_string, "{\\bf ?}"); }
   if (j< i) { sprintf(temp_err_string, "Error encountered whilst using format string: %s",FormatStr); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Unexpected trailing matter."); sprintf(tmp_string, "{\\bf ?}"); }
-  *output = (char *)lt_malloc(strlen(tmp_string)+3);
+  *output = (char *)lt_malloc_incontext(strlen(tmp_string)+3, OutContext);
   if ((*output)==NULL) return;
   sprintf(*output,"%s",tmp_string);
 

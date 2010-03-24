@@ -1,4 +1,4 @@
-// eps_plot_ticking.h
+// ppl_datafile_rasters.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,15 +19,10 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_PLOT_TICKING_H
-#define _PPL_EPS_PLOT_TICKING_H 1
+#ifndef _PPL_DATAFILE_RASTERS_H
+#define _PPL_DATAFILE_RASTERS_H 1
 
-#include "ppl_settings.h"
-#include "ppl_units.h"
-
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle);
-void TickLabelAutoGen(char **output, double x, double log_base, int OutContext);
-void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit, int xyz, int OutContext);
+void DataFile_FromFunctions_CheckSpecialRaster(char **fnlist, int fnlist_len, char *DummyVar, double *min, double *max, double **OrdinateRaster, int *RasterLen);
 
 #endif
 

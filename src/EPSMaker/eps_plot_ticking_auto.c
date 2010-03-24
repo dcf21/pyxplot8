@@ -44,24 +44,29 @@
 #include "eps_plot_ticking.h"
 #include "eps_plot_ticking_auto.h"
 
-#define MAX_ARGS 32
-#define STEP_DUPLICITY 100
-#define MAX_TICKS_PER_INTERVAL 10
-#define MAX_FACTORS 32
+#define MAX_ARGS 32 /* Maximum number of substitution arguments in 'set format' which we analyse */
+#define STEP_DUPLICITY 100 /* Controls how many steps we divide axis into, multiplied by max number of ticks which fit on axis */
+#define MAX_TICKS_PER_INTERVAL 10 /* Maximum number of ticks which we file in any interval */
+#define MAX_FACTORS 32 /* Maximum number of factors of LogBase which we consider */
+#define FACTOR_MULTIPLY 10.0 /* Factorise 10*LogBase, so that 0.00,0.25,0.50,0.75,1.00 is a valid factorisation */
+#define NOT_THROW 9999 /* Value we put in DivOfThrow when a tick isn't dividing throw (to get sorting right) */
 
+// Structure used for storing information about a substitution argument in 'set format'
 typedef struct ArgumentInfo {
  int      id, score, NValueChanges, Throw, FactorsThrow[MAX_FACTORS], NFactorsThrow;
  unsigned char StringArg, ContinuousArg, MinValueSet, MaxValueSet, vetoed;
- double   MinValue, MaxValue;
- double  *NumericValues;
+ double   MinValue, MaxValue; // Work out range of values which this argument takes (aka the 'throw')
+ double  *NumericValues; // Raster of values sampled along axis
  char   **StringValues;
 } ArgumentInfo;
 
+// Structure used when sorting a list of ints according to some double-precision 'score'
 typedef struct ArgLeagueTableEntry {
  int id;
  double score;
 } ArgLeagueTableEntry;
 
+// Structure used for storing information about a potential tick which we might put on the axis
 typedef struct PotentialTick {
  int ArgNo; // The argument whose changing is marked by this tick
  int DivOfThrow; // This tick divides up throw of argument in one of its factors
@@ -69,8 +74,10 @@ typedef struct PotentialTick {
  int DivOfOoM; // Order of magnitude is being split up into factors of log base
  int IntervalNum; // Number of the interval in which this tick lies
  double TargetValue; // Target value of argument where this tick should be placed
+ int OrderPosition; // Position of this tick in TickOrder
 } PotentialTick;
 
+// Compare two ArgumentInfo structures; used by qsort
 int compare_arg(const void *x, const void *y)
  {
   const ArgumentInfo *xai, *yai;
@@ -93,6 +100,7 @@ int compare_arg(const void *x, const void *y)
   return 0;
  }
 
+// Compare two ArgLeagueTableEntry structures; used by qsort
 int compare_ArgLeagueEntry(const void *x, const void *y)
  {
   const ArgLeagueTableEntry *xalte, *yalte;
@@ -103,6 +111,7 @@ int compare_ArgLeagueEntry(const void *x, const void *y)
   return 0;
  }
 
+// Compare two PotentialTick structures; used by qsort
 int compare_PotentialTicks(const void *x, const void *y)
  {
   const PotentialTick *xpt, *ypt;
@@ -119,6 +128,7 @@ int compare_PotentialTicks(const void *x, const void *y)
   return 0;
  }
 
+// Return up to a maximum of MaxFactors factors of in. Factors are returned to array out.
 static void factorise(int in, int *out, int MaxFactors, int *NFactors)
  {
   int i,j=0,N=sqrt(in);
@@ -128,6 +138,151 @@ static void factorise(int in, int *out, int MaxFactors, int *NFactors)
   return;
  }
 
+// Add a tick scheme to a list of accepted ticks
+void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const int NIntervals, const int ArgNo, const int DivOfThrow, const int OoM, const int DivOfOoM, const unsigned char *TicksAcceptedIn, unsigned char *TicksAcceptedOut, const unsigned char MAJORminor, const double AxisLength, const double TickSepMin, unsigned char *FLAGacceptable, int *NTicksOut)
+ {
+  int i, j, id, imin=-1, imax=-1;
+  *NTicksOut      = 0;
+  *FLAGacceptable = 1;
+  for (i=0; i<NPotTicks; i++)
+   {
+    TicksAcceptedOut[i] = (TicksAcceptedIn == NULL) ? 0 : TicksAcceptedIn[i];
+    id = TickOrder[i].id;
+    if (    (PotTickList[id].ArgNo      == ArgNo     )
+         && (PotTickList[id].DivOfThrow == DivOfThrow)
+         && (PotTickList[id].OoM        == OoM       )
+         && (PotTickList[id].DivOfOoM   == DivOfOoM  )
+         && (MAJORminor || (TicksAcceptedOut[i]==0)) )
+     {
+      TicksAcceptedOut[i] = MAJORminor ? 1 : 2;
+      if ((imin<0) || (imin>PotTickList[id].IntervalNum)) imin = PotTickList[id].IntervalNum;
+      if ((imax<0) || (imax<PotTickList[id].IntervalNum)) imax = PotTickList[id].IntervalNum;
+     }
+    if (TicksAcceptedOut[i] != 0) (*NTicksOut)++;
+    if (MAJORminor && (TicksAcceptedOut[i]==1)) // Check that no two major ticks are too close together
+     {
+      for (j=i-1; j>=0; j--)
+       if (TicksAcceptedOut[j]==1)
+        {
+         double gap = fabs(PotTickList[id].IntervalNum - PotTickList[TickOrder[j].id].IntervalNum) * AxisLength / (NIntervals-1);
+         if (gap < TickSepMin) *FLAGacceptable = 0; // Gap between this tick and that to our left is too small
+         break;
+        }
+     }
+   }
+  if (!MAJORminor) // Check that minor ticks don't exceed maximum allowed density
+   {
+    int Nnewticks=0;
+    for (i=0; i<NPotTicks; i++)
+     {
+      id = PotTickList[ TickOrder[i].id ].IntervalNum;
+      if ((TicksAcceptedOut[i] != 0) && (id>=imin) && (id<=imax)) Nnewticks++;
+     }
+    *FLAGacceptable = (unsigned char)(AxisLength*(imax-imin)/(NIntervals-1)/Nnewticks > TickSepMin);
+   }
+  return;
+ }
+
+// Take a list of accepted ticks and convert these into a final TickList to associate with axis
+static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double UnitMultiplier, value *VarVal, const int NIntervals, char *format, const int start, const int *CommaPositions, const ArgumentInfo *args, const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const unsigned char *TicksAccepted, int OutContext)
+ {
+  int    i, jMAJ, jMIN, k, l, Nmajor=0, Nminor=0;
+  double axispos, x;
+  value  DummyVal;
+
+  // Count number of accepted ticks
+  for (i=0; i<NPotTicks; i++)
+   {
+    if      (TicksAccepted[i]==1) Nmajor++;
+    else if (TicksAccepted[i]==2) Nminor++;
+   }
+
+  // Malloc list of accepted ticks
+  axis-> TickListPositions = (double  *)lt_malloc_incontext((Nmajor+1) * sizeof(double), OutContext);
+  axis-> TickListStrings   = (char   **)lt_malloc_incontext((Nmajor+1) * sizeof(char *), OutContext);
+  axis->MTickListPositions = (double  *)lt_malloc_incontext((Nminor+1) * sizeof(double), OutContext);
+  axis->MTickListStrings   = (char   **)lt_malloc_incontext((Nminor+1) * sizeof(char *), OutContext);
+  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL) || (axis->MTickListPositions==NULL) || (axis->MTickListStrings==NULL)) goto FAIL;
+  axis->TickListStrings[Nmajor] = axis->MTickListStrings[Nminor] = NULL; // null terminate lists
+
+  // Make ticks
+  for (i=jMAJ=jMIN=0; i<NPotTicks; i++)
+   if (TicksAccepted[i]>0)
+    {
+     const PotentialTick *tick;
+     const ArgumentInfo  *arg;
+     double axispos_min, axispos_max, axispos_mid;
+     unsigned char DiscreteMoveMin, SlopePositive;
+
+     // Find precise location of tick
+     tick          = &PotTickList[ TickOrder[i].id ];
+     arg           = &args[ tick->ArgNo ];
+     axispos_min   = ((double)tick->IntervalNum - 1.0)/(NIntervals-1);
+     axispos_max   = ((double)tick->IntervalNum      )/(NIntervals-1);
+     SlopePositive = (arg->NumericValues[tick->IntervalNum] >= arg->NumericValues[tick->IntervalNum-1]);
+
+     while ((axispos_max - axispos_min) > 1e-15*axispos_max)
+      {
+       axispos_mid = (axispos_min+axispos_max)/2;
+       VarVal->real = eps_plot_axis_InvGetPosition(axispos_mid, axis) * UnitMultiplier;
+
+       k=l=-1;
+       if (arg->StringArg) // Evaluate argument at midpoint of the interval we know it to be in
+        {
+         ppl_GetQuotedString(format+start+CommaPositions[tick->ArgNo]+1, temp_err_string, 0, &k, 0, &l, temp_err_string, 1);
+         if (l>=0) temp_err_string[0]='\0';
+         DiscreteMoveMin = (strcmp(temp_err_string, arg->StringValues[tick->IntervalNum-1])==0);
+        }
+       else
+        {
+         ppl_EvaluateAlgebra(format+start+CommaPositions[tick->ArgNo]+1, &DummyVal, 0, &k, 0, &l, temp_err_string, 1);
+         if (l>=0) DummyVal.real = GSL_NAN;
+         DiscreteMoveMin = (DummyVal.real == arg->NumericValues[tick->IntervalNum-1]);
+        }
+
+       // Decide whether to pick left half of interval or right half
+       if (!arg->ContinuousArg)
+        {
+         if (DiscreteMoveMin) axispos_min = axispos_mid;
+         else                 axispos_max = axispos_mid;
+        }
+       else
+        {
+         if (SlopePositive ^ (DummyVal.real >= tick->TargetValue)) axispos_min = axispos_mid;
+         else                                                      axispos_max = axispos_mid;
+        }
+      }
+     axispos = (axispos_min+axispos_max)/2;
+     x       = eps_plot_axis_InvGetPosition(axispos, axis);
+
+     // File this tick
+     if (TicksAccepted[i]==1) // Major tick, with label
+      {
+       axis->TickListPositions[jMAJ] = axispos;
+       if (axis->format == NULL) TickLabelAutoGen   (&axis->TickListStrings[jMAJ], x * UnitMultiplier, axis->LogBase, OutContext);
+       else                      TickLabelFromFormat(&axis->TickListStrings[jMAJ], axis->format, x, &axis->DataUnit, xyz, OutContext);
+       if (axis->TickListStrings[jMAJ]==NULL) goto FAIL;
+       jMAJ++;
+      }
+     else if (TicksAccepted[i]==2) // Minor tick, without label
+      {
+       axis->MTickListPositions[jMIN] = axispos;
+       axis->MTickListStrings  [jMIN] = "";
+       jMIN++;
+      }
+    }
+
+  return 0;
+
+FAIL:
+  axis-> TickListPositions = NULL;
+  axis-> TickListStrings   = NULL;
+  axis->MTickListPositions = NULL;
+  axis->MTickListStrings   = NULL;
+  return 1;
+ }
+
+// Main entry point for automatic ticking of axes
 void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, unsigned char *AutoTicks, double length, double tick_sep_major, double tick_sep_minor)
  {
   int    i, j, k, l, start, N, NArgs, OutContext, ContextRough=-1, CommaPositions[MAX_ARGS+2], NFactorsLogBase, LogBase;
@@ -136,9 +291,10 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   char  *format, VarName[2]="\0\0", FormatTemp[32], QuoteType, *DummyStr;
   value  CentralValue, *VarVal=NULL, DummyTemp, DummyVal;
   ArgumentInfo *args;
-  ArgLeagueTableEntry *ArgLeagueTable;
+  ArgLeagueTableEntry *ArgLeagueTable, *TickOrder;
   PotentialTick *PotTickList;
-  int NPotTicks, NPotTicksThis;
+  int NPotTicks, NPotTicksMax;
+  unsigned char *TicksAccepted, *TicksAcceptedNew;
 
   N_STEPS = (2 + length/tick_sep_major) * STEP_DUPLICITY; // Number of intervals into which we divide axis
 
@@ -221,7 +377,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
    }
   for (j=0; j<N_STEPS; j++)
    {
-    VarVal->real = eps_plot_axis_InvGetPosition(j/(N_STEPS-1.0), axis);
+    VarVal->real = eps_plot_axis_InvGetPosition(j/(N_STEPS-1.0), axis) * UnitMultiplier;
     for (i=0; i<NArgs; i++)
      {
       k=l=-1;
@@ -249,7 +405,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     args[i].vetoed        = (!args[i].ContinuousArg) && (args[i].NValueChanges>N_STEPS/STEP_DUPLICITY); // Discrete argument changes too fast to be useful
    }
 
-  // Work out throw of each argument
+  // Work out throw of each argument (i.e. the spread of values that it takes)
   for (i=0; i<NArgs; i++)
    {
     double throw;
@@ -259,12 +415,12 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     if ((throw>1e6) || (args[i].MinValue < INT_MIN+10) || (args[i].MaxValue > INT_MAX-10)) args[i].Throw = 0.0;
     else                                                                                   args[i].Throw = throw;
     args[i].MinValue = floor(args[i].MinValue);
-    factorise(args[i].Throw, args[i].FactorsThrow, MAX_FACTORS, &args[i].NFactorsThrow);
+    factorise(args[i].Throw*FACTOR_MULTIPLY, args[i].FactorsThrow, MAX_FACTORS, &args[i].NFactorsThrow);
    }
 
-  // Work out factors of log base of axis
+  // Work out factors of log base of axis. Multiply by FACTOR_MULTIPLY so that ten divides by four.
   LogBase = (axis->log == SW_BOOL_TRUE) ? axis->LogBase : 10;
-  factorise(LogBase, FactorsLogBase, MAX_FACTORS, &NFactorsLogBase);
+  factorise(LogBase*FACTOR_MULTIPLY, FactorsLogBase, MAX_FACTORS, &NFactorsLogBase);
 
   // Compile scores of how fast each continuous argument moves
   for (j=1; j<N_STEPS; j++)
@@ -282,10 +438,24 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   qsort((void *)args, NArgs, sizeof(ArgumentInfo), compare_arg);
 
   // Malloc table of potential ticks
-  NPotTicks   = 0;
-  PotTickList = (PotentialTick *)lt_malloc(NArgs * N_STEPS * MAX_TICKS_PER_INTERVAL * sizeof(PotentialTick));
+  NPotTicks    = 0;
+  NPotTicksMax = NArgs * N_STEPS * MAX_TICKS_PER_INTERVAL;
+  PotTickList  = (PotentialTick *)lt_malloc(NPotTicksMax * sizeof(PotentialTick));
 
   // Generate list of potential ticks
+
+#define ADDTICK(A,B,C,D,E,F) \
+   if (NPotTicks<NPotTicksMax) \
+    { \
+     PotTickList[NPotTicks].ArgNo       = A; \
+     PotTickList[NPotTicks].DivOfThrow  = B; \
+     PotTickList[NPotTicks].OoM         = C; \
+     PotTickList[NPotTicks].DivOfOoM    = D; \
+     PotTickList[NPotTicks].TargetValue = E; \
+     PotTickList[NPotTicks].IntervalNum = F; \
+     NPotTicks++; \
+    }
+
   for (j=1; j<N_STEPS; j++)
    {
     for (i=0; i<NArgs; i++)
@@ -296,39 +466,60 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
          if (   (( args[i].StringArg) && (strcmp(args[i].StringValues[j],args[i].StringValues[j-1])!=0))
              || ((!args[i].StringArg) && (args[i].NumericValues[j]!=args[i].NumericValues[j-1]))         )
           {
-           PotTickList[NPotTicks].ArgNo = i;
-           PotTickList[NPotTicks].DivOfThrow = PotTickList[NPotTicks].OoM = PotTickList[NPotTicks].DivOfOoM = 0;
-           PotTickList[NPotTicks].TargetValue = 0.0;
-           PotTickList[NPotTicks].IntervalNum = j;
-           NPotTicks++;
+           ADDTICK(i, 0, 0, 0, 0.0, j);
           }
         }
        else // Continuous arguments... study where they change OoM
         {
-         NPotTicksThis = 0;
-
          // Ticks which mark factors of throw
          for (k=0; k<args[i].NFactorsThrow; k++)
           {
-           int n,m;
-           if (NPotTicksThis>=MAX_TICKS_PER_INTERVAL) break;
-           n = floor((args[i].NumericValues[j-1] - args[i].MinValue) / args[i].FactorsThrow[k]);
-           m = floor((args[i].NumericValues[j  ] - args[i].MinValue) / args[i].FactorsThrow[k]);
-           if (n!=m)
-            {
-             PotTickList[NPotTicks].ArgNo       = i;
-             PotTickList[NPotTicks].DivOfThrow  = k;
-             PotTickList[NPotTicks].OoM = PotTickList[NPotTicks].DivOfOoM = 0;
-             PotTickList[NPotTicks].TargetValue = args[i].MinValue + ((n>m)?n:m) * args[i].FactorsThrow[k];
-             PotTickList[NPotTicks].IntervalNum = j;
-             NPotTicks++;
-             NPotTicksThis++;
-            }
+           int n,m; double nd;
+           if (NPotTicks>=NPotTicksMax) break;
+           nd = (args[i].NumericValues[j-1] - args[i].MinValue) * FACTOR_MULTIPLY / args[i].FactorsThrow[k];
+           n = floor(nd + 0.5);
+           if ((j==1) && (fabs(nd-n)<1e-12)) // A tick should go on the left extreme of the axis
+            { ADDTICK(i,k,0,0,(args[i].MinValue + n/FACTOR_MULTIPLY*args[i].FactorsThrow[k]),j); }
+           n = floor((args[i].NumericValues[j-1] - args[i].MinValue) * FACTOR_MULTIPLY / args[i].FactorsThrow[k]);
+           m = floor((args[i].NumericValues[j  ] - args[i].MinValue) * FACTOR_MULTIPLY / args[i].FactorsThrow[k]);
+           if (n!=m) { ADDTICK(i,k,0,0,(args[i].MinValue + ((n>m)?n:m) / FACTOR_MULTIPLY * args[i].FactorsThrow[k]),j); }
           }
 
          // Ticks which mark the changes of the Nth significant digit
+         {
+          const double xn     = args[i].NumericValues[j-1];
+          const double yn     = args[i].NumericValues[j  ];
+          const double OoM_n  = log(fabs(args[i].NumericValues[j-1])) / log(LogBase);
+          const double OoM_m  = log(fabs(args[i].NumericValues[j  ])) / log(LogBase);
+          const int    Nsteps = fabs(log(1e-15) / log(LogBase));
+          unsigned char SearchForLeftExtreme = (j==1);
+          double OoM;
+          int    n;
+          OoM = floor(max(OoM_n , OoM_m));
+          for (n=0; n<Nsteps; n++)
+           {
+            double divisor = pow(LogBase , OoM-n);
+            // Should a tick go on the left extreme of the axis?
+            if ((gsl_finite(divisor)) && SearchForLeftExtreme && (fabs(floor(xn/divisor+0.5)-xn/divisor)<1e-12))
+             {
+              int priority = 0;
+              if (n==0) { priority = -1; if (fabs(floor(xn/divisor))<2) priority = -2; }
+              ADDTICK(i,NOT_THROW,OoM-n,priority,(floor(xn/divisor+0.5)*divisor),j);
+              SearchForLeftExtreme = 0;
+             }
+            if ((gsl_finite(divisor)) && (floor(xn/divisor) != floor(yn/divisor)))
+             {
+              int priority = 0;
+              if (n==0) { priority = -1; if ((floor(xn/divisor)==0) || (floor(xn/divisor)==-1) || (floor(yn/divisor)==0) || (floor(xn/divisor)==-1)) priority = -2; }
+              ADDTICK(i,NOT_THROW,OoM-n,priority,(floor(max(xn,yn)/divisor)*divisor),j);
+              break;
+             }
+           }
 
-         // Ticks which mark the passing of fractions of the Nth significant digit
+          // Ticks which mark the passing of fractions of the Nth significant digit
+          {
+          }
+         }
 
         }
       }
@@ -337,16 +528,57 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   // Sort list of potential ticks
   qsort((void *)PotTickList, NPotTicks, sizeof(PotentialTick), compare_PotentialTicks);
 
-//printf("\n%d\n",NArgs);
-//for (i=0; i<NArgs; i++) printf("-- %d %d %d %d %d %d %d\n",i,(int)args[i].id,(int)args[i].score,(int)args[i].StringArg,(int)args[i].ContinuousArg,(int)args[i].vetoed,args[i].NValueChanges);
-//printf("\n%d\n",NPotTicks);
-//for (i=0; i<NPotTicks; i++) printf("## %d %d %d %d %d %e\n",PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue);
+  // Create look-up table of ticks in order of position along axis
+  TickOrder = (ArgLeagueTableEntry *)lt_malloc(NPotTicks * sizeof(ArgLeagueTableEntry));
+  if (TickOrder==NULL) goto FAIL;
+  for (i=0; i<NPotTicks; i++)
+   {
+    TickOrder[i].id    =  i;
+    TickOrder[i].score = -PotTickList[i].IntervalNum;
+   }
+  qsort((void *)TickOrder, NPotTicks, sizeof(ArgLeagueTableEntry), compare_ArgLeagueEntry);
+  for (i=0; i<NPotTicks; i++) PotTickList[ TickOrder[i].id ].OrderPosition = i;
+
+  // Make arrays for noting which ticks have been accepted
+  TicksAccepted    = (unsigned char *)lt_malloc(NPotTicks);
+  TicksAcceptedNew = (unsigned char *)lt_malloc(NPotTicks);
+  for (i=0; i<NPotTicks; i++) TicksAccepted   [i] = 0;
+  for (i=0; i<NPotTicks; i++) TicksAcceptedNew[i] = 0;
+
+  // Start investigating which tick schemes to accept
+  for (i=0; i<NArgs; i++)
+   {
+    unsigned char acceptable;
+    int           N;
+
+    // Option 1: Divide throw
+    for (k=0; k<args[i].NFactorsThrow; k++)
+     {
+      acceptable=1;
+      AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNew, 1, length, tick_sep_major, &acceptable, &N);
+      if (acceptable) break;
+     }
+
+    // Divide log base
+
+    // Update TicksAccepted
+    for (i=0; i<NPotTicks; i++) TicksAccepted[i] = TicksAcceptedNew[i];
+   }
+
+  // Debugging lines
+//if (VarName[0]!='z')
+// {
+//  printf("\n%s -- NArgs = %d\n",VarName,NArgs);
+//  for (i=0; i<NArgs; i++) printf("-- %d %d %d %d %d %d %d\n",i,(int)args[i].id,(int)args[i].score,(int)args[i].StringArg,(int)args[i].ContinuousArg,(int)args[i].vetoed,args[i].NValueChanges);
+//  printf("\n%d\n",NPotTicks);
+//  for (i=0; ((i<NPotTicks)&&(i<64)); i++) printf("## %3d %3d %4d %3d %3d %3d %e\n",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue);
+// }
+
+  // Finalise list of ticks
+  AutoTickListFinalise(axis, xyz, UnitMultiplier, VarVal, N_STEPS, format, start, CommaPositions, args, PotTickList, NPotTicks, TickOrder, TicksAccepted, OutContext);
+  goto CLEANUP;
 
 FAIL:
-
-  // Delete rough workspace
-  if (ContextRough>0) lt_AscendOutOfContext(ContextRough);
-  ContextRough=-1;
 
   // A very simple way of putting ticks on axes when clever logic fails
   N = 1 + length/tick_sep_major; // Estimate how many ticks we want
@@ -355,20 +587,20 @@ FAIL:
   
   axis->TickListPositions = (double  *)lt_malloc_incontext((N+1) * sizeof(double), OutContext);
   axis->TickListStrings   = (char   **)lt_malloc_incontext((N+1) * sizeof(char *), OutContext);
-  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
+  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
   for (i=0; i<N; i++)
    {
     double x;
     x = ((double)i)/(N-1);
     axis->TickListPositions[i] = x;
     x = eps_plot_axis_InvGetPosition(x, axis);
-    if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase);
-    else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz);
-    if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; return; }
+    if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase, OutContext);
+    else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz, OutContext);
+    if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
    } 
   axis->TickListStrings[i] = NULL; // null terminate list
 
-//CLEANUP:
+CLEANUP:
   // Restore original value of x (or y/z)
   if (VarVal!=NULL) *VarVal = DummyTemp;
 
