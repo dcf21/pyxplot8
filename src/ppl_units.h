@@ -55,4 +55,14 @@ typedef struct value
   double        exponent[UNITS_MAX_BASEUNITS];
  } value;
 
+typedef struct PreferredUnit
+ {
+  int    NUnits;
+  int    UnitID[UNITS_MAX_BASEUNITS];
+  int    prefix[UNITS_MAX_BASEUNITS];
+  double exponent[UNITS_MAX_BASEUNITS];
+  value  value;
+  unsigned char modified;
+ } PreferredUnit;
+
 #endif

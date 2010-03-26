@@ -36,6 +36,7 @@
 #include "MathsTools/dcftime.h"
 
 #include "ListTools/lt_memory.h"
+#include "ListTools/lt_list.h"
 
 #include "ppl_error.h"
 #include "ppl_texify.h"
@@ -452,6 +453,8 @@ void ppl_units_init()
 
   ppl_unit_database = (unit *)lt_malloc(UNITS_MAX*sizeof(unit));
   if (ppl_unit_database == NULL) { ppl_fatal(__FILE__,__LINE__,"Out of memory error whilst trying to malloc units database."); exit(1); }
+
+  ppl_unit_PreferredUnits = ListInit();
 
   // Set up database of known units
   for (i=0;i<UNITS_MAX;i++)

@@ -22,6 +22,8 @@
 #ifndef _PPL_UNITS_FNS_H
 #define _PPL_UNITS_FNS_H 1
 
+#include "ListTools/lt_list.h"
+
 #include "ppl_units.h"
 
 #ifndef _PPL_UNITS_C
@@ -35,6 +37,8 @@ extern double TempTypeOffset    [];
 extern unit  *ppl_unit_database;
 extern int    ppl_unit_pos;
 extern int    ppl_baseunit_pos;
+extern List  *ppl_unit_PreferredUnits;
+extern List  *ppl_unit_PreferredUnits_default;
 #endif
 
 value *ppl_units_zero          (value *in);
@@ -43,6 +47,8 @@ char  *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs);
 char  *ppl_units_GetUnitStr    (const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
 int __inline__ UnitNameCmp     (const char *in, const char *unit, const unsigned char CaseSensitive);
 void   ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext);
+
+void   MakePreferredUnit(PreferredUnit **output, char *instr, int OutputContext, int *errpos, char *errtext);
 
 void   ppl_units_init();
 

@@ -28,6 +28,7 @@
 
 #include "StringTools/asciidouble.h"
 
+#include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
 #include "ListTools/lt_list.h"
 
@@ -1472,6 +1473,39 @@ void directive_set(Dict *command)
     DictLookup(command,"scheme"  , NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.UnitScheme          = FetchSettingByName(tempstr, SW_UNITSCH_INT, SW_UNITSCH_STR);
 
+    DictLookup(command,"preferred_unit"  , NULL,(void **)&tempstr2);
+    DictLookup(command,"unpreferred_unit", NULL,(void **)&tempstr3);
+    if ((tempstr2!=NULL) || (tempstr3!=NULL))
+     {
+      char *buf = (char *)lt_malloc(LSTR_LENGTH);
+      PreferredUnit *pu, *pui;
+      if (buf==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); }
+      else
+       for (i=0; i<2; i++)
+        {
+         ListIterator *listiter;
+         if (i==0) tempstr=tempstr2;
+         else      tempstr=tempstr3;
+         if (tempstr == NULL) continue;
+         MakePreferredUnit(&pu, tempstr, 0, &errpos, buf);
+
+         // Remove any preferred unit which is dimensionally equal to new preferred unit
+         listiter = ListIterateInit(ppl_unit_PreferredUnits);
+         while (listiter != NULL)
+          {
+           pui = (PreferredUnit *)listiter->data;
+           listiter = ListIterate(listiter, NULL);
+           if (ppl_units_DimEqual(&pui->value , &pu->value) && (pui->value.TempType == pu->value.TempType))
+            {
+             ListRemovePtr(ppl_unit_PreferredUnits, (void *)pui );
+            }
+          }
+
+         // Add new preferred unit
+         if (i==0) ListAppendPtrCpy((void *)ppl_unit_PreferredUnits, pu, sizeof(PreferredUnit), DATATYPE_VOID);
+        }
+     }
+
     DictLookup(command,"prefered_units,",NULL,(void **)&templist);
     listiter = ListIterateInit(templist);
     while (listiter != NULL)
@@ -1544,10 +1578,15 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit")==0)) /* unset unit */
    {
+    double temp;
     settings_term_current.UnitDisplayAbbrev   = settings_term_default.UnitDisplayAbbrev;
     settings_term_current.UnitDisplayPrefix   = settings_term_default.UnitDisplayPrefix;
     settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
     for (i=0; i<ppl_unit_pos; i++) ppl_unit_database[i].UserSel = 0;
+    temp = lt_GetMemContext();
+    _lt_SetMemContext(0);
+    ppl_unit_PreferredUnits = ListCopy(ppl_unit_PreferredUnits_default, 1);
+    _lt_SetMemContext(temp);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_display")==0)) /* unset unit display */
    {
@@ -1557,6 +1596,14 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_scheme")==0)) /* unset unit scheme */
    {
     settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_preferred")==0)) /* unset unit preferred */
+   {
+    double temp;
+    temp = lt_GetMemContext();
+    _lt_SetMemContext(0);
+    ppl_unit_PreferredUnits = ListCopy(ppl_unit_PreferredUnits_default, 1);
+    _lt_SetMemContext(temp);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_of")==0)) /* unset unit of */
    {
@@ -2291,6 +2338,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "units", 1)>=0))
    {
+    ListIterator *listiter;
+
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "unit display abbreviated", buf, (settings_term_default.UnitDisplayAbbrev==settings_term_current.UnitDisplayAbbrev), "Selects whether units are displayed in abbreviated form ('m' vs. 'metres')");
     i += strlen(out+i) ; p=1;
@@ -2307,6 +2356,28 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       else                                                        sprintf(buf2, "%s%s", SIprefixes_full  [ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameFs);
       directive_show3(out+i, ItemSet, 0, interactive, buf, buf2, 0, "Selects a user-prefered unit for a particular quantity");
       i += strlen(out+i) ; p=1;
+     }
+
+    // show preferred units
+    listiter = ListIterateInit(ppl_unit_PreferredUnits);
+    while (listiter != NULL)
+     {
+      int pbuf=0, ppu;
+      PreferredUnit *pu = (PreferredUnit *)listiter->data;
+      buf[0]='\0';
+      for (ppu=0; ppu<pu->NUnits; ppu++)
+       {
+        if (ppu>0) sprintf(buf+pbuf, "*");
+        pbuf+=strlen(buf+pbuf);
+        if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON) sprintf(buf+pbuf, "%s%s", (pu->prefix[ppu]>=1)?SIprefixes_abbrev[ pu->prefix[ppu] ]:"", ppl_unit_database[ pu->UnitID[ppu] ].nameAs);
+        else                                                        sprintf(buf+pbuf, "%s%s", (pu->prefix[ppu]>=1)?SIprefixes_full  [ pu->prefix[ppu] ]:"", ppl_unit_database[ pu->UnitID[ppu] ].nameFs);
+        pbuf+=strlen(buf+pbuf);
+        if (pu->exponent[ppu]!=1) sprintf(buf+pbuf, "**%s", (char *)NumericDisplay(pu->exponent[ppu],0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
+        pbuf+=strlen(buf+pbuf);
+       }
+      directive_show3(out+i, ItemSet, 0, interactive, "unit preferred", buf, !pu->modified, "Specifies a user-preferred physical unit");
+      i += strlen(out+i) ; p=1;
+      listiter = ListIterate(listiter, NULL);
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))

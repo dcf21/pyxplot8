@@ -40,11 +40,15 @@
 #include "ppl_setting_types.h"
 #include "ppl_units.h"
 
+#include "ListTools/lt_memory.h"
+
 #include "StringTools/asciidouble.h"
 
 unit *ppl_unit_database;
 int   ppl_unit_pos = 0;
 int   ppl_baseunit_pos = UNIT_FIRSTUSER;
+List *ppl_unit_PreferredUnits;
+List *ppl_unit_PreferredUnits_default;
 
 char *SIprefixes_full  [] = {"yocto","zepto","atto","femto","pico","nano","micro","milli","","kilo","mega","giga","tera","peta","exa","zetta","yotta"};
 char *SIprefixes_abbrev[] = {"y","z","a","f","p","n","u","m","","k","M","G","T","P","E","Z","Y"};
@@ -280,35 +284,59 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
   double        ExpMax;
   int           pos=0, OutputPos=0;
   int           i, j, k, l, found, first;
+  ListIterator *listiter;
+  PreferredUnit *pu;
 
   if (typeable==0) typeable = settings_term_current.NumDisplay;
 
   if      (N==0) output = outputA;
   else if (N==1) output = outputB;
   else           output = outputC;
-
-  if (in->dimensionless != 0)
-   {
-    output[0]='\0';
-    if (NumberOutReal != NULL) *NumberOutReal = in->real;
-    if (NumberOutImag != NULL) *NumberOutImag = in->imag;
-    return output;
-   }
-
   residual = *in;
 
-  // Find a list of units which multiply together to match dimensions of quantity to display
-  while (1)
+  // Check whether input value is dimensionally equal to any preferred units
+  listiter = ListIterateInit(ppl_unit_PreferredUnits);
+  while (listiter != NULL)
    {
-    if (pos>=UNITS_MAX_BASEUNITS) { ppl_error(ERR_INTERNAL, "Overflow whilst trying to display a unit."); break; }
-    ppl_units_FindOptimalNextUnit(&residual, pos==0, UnitList + pos, UnitPow + pos);
-    UnitDisp[pos] = 0;
-    if (ppl_units_DblEqual(UnitPow[pos],0)!=0) break;
-    pos++;
+    pu = (PreferredUnit *)listiter->data;
+    if (ppl_units_DimEqual(&pu->value , in) && (in->TempType == pu->value.TempType)) break; // Preferred unit matches dimensions
+    listiter = ListIterate(listiter, NULL);
    }
 
-  // Go through list of units and fix prefixes / unit choice to minimise displayed number
-  ppl_units_PrefixFix(&residual, UnitList, UnitPow, UnitPref, pos);
+  if (listiter != NULL) // Found a preferred unit to use
+   {
+    for (i=0; i<pu->NUnits; i++)
+     {
+      UnitList[i] = ppl_unit_database + pu->UnitID[i];
+      UnitPow [i] = pu->exponent[i];
+      UnitPref[i] = (pu->prefix[i]>=0) ? pu->prefix[i]-8 : 0;
+      UnitDisp[i] = 0;
+     }
+    pos = pu->NUnits;
+   }
+  else // Not using a preferred unit
+   {
+    if (in->dimensionless != 0)
+     {
+      output[0]='\0';
+      if (NumberOutReal != NULL) *NumberOutReal = in->real;
+      if (NumberOutImag != NULL) *NumberOutImag = in->imag;
+      return output;
+     }
+
+    // Find a list of units which multiply together to match dimensions of quantity to display
+    while (1)
+     {
+      if (pos>=UNITS_MAX_BASEUNITS) { ppl_error(ERR_INTERNAL, "Overflow whilst trying to display a unit."); break; }
+      ppl_units_FindOptimalNextUnit(&residual, pos==0, UnitList + pos, UnitPow + pos);
+      UnitDisp[pos] = 0;
+      if (ppl_units_DblEqual(UnitPow[pos],0)!=0) break;
+      pos++;
+     }
+
+    // Go through list of units and fix prefixes / unit choice to minimise displayed number
+    ppl_units_PrefixFix(&residual, UnitList, UnitPow, UnitPref, pos);
+   }
 
   // Display units one by one
   first = 1;
@@ -495,6 +523,95 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
   for (k=0; k<UNITS_MAX_BASEUNITS; k++) if (ppl_units_DblEqual(out->exponent[k], 0) == 0) j=0;
   out->dimensionless = j;
   if (end != NULL) *end=i;
+  return;
+ }
+
+// Function for making preferred unit structures
+void MakePreferredUnit(PreferredUnit **output, char *instr, int OutputContext, int *errpos, char *errtext)
+ {
+  int end, outpos, PrefixOut, i, j, k, l, m, p;
+  double power=1.0, powerneg=1.0;
+  value UnitVal;
+
+  *output = NULL;
+  *errpos = -1;
+  end = strlen(instr);
+  ppl_units_StringEvaluate(instr, &UnitVal, &end, errpos, errtext);
+  if (*errpos>=0) return; // Error in parsing unit expression
+  *output = (PreferredUnit *)lt_malloc(sizeof(PreferredUnit));
+  if (*output==NULL) { errpos=0; sprintf(errtext, "Out of memory."); }
+  (*output)->value = UnitVal;
+  (*output)->modified = 1;
+
+  // Read list of units from preferred unit string
+  outpos=i=0;
+  while ((powerneg!=0.0) && (outpos<UNITS_MAX_BASEUNITS))
+   {
+    PrefixOut=-1;
+    p=0;
+    while ((instr[i]<=' ')&&(instr[i]!='\0')) i++;
+    for (j=0; j<ppl_unit_pos; j++)
+     {
+      if      ((k = UnitNameCmp(instr+i, ppl_unit_database[j].nameAp,1))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].nameAs,1))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].nameFp,0))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].nameFs,0))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].nameFp,0))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].alt1  ,0))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].alt2  ,0))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].alt3  ,0))!=0) p=1;
+      else if ((k = UnitNameCmp(instr+i, ppl_unit_database[j].alt4  ,0))!=0) p=1;
+      else
+       {
+        for (l=ppl_unit_database[j].MinPrefix/3+8; l<=ppl_unit_database[j].MaxPrefix/3+8; l++)
+         {
+          if (l==8) continue;
+          for (k=0; ((SIprefixes_full[l][k]!='\0') && (toupper(SIprefixes_full[l][k])==toupper(instr[i+k]))); k++);
+          if (SIprefixes_full[l][k]=='\0')
+           {
+            if      ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].nameFp,0))!=0) { p=1; k+=m; PrefixOut=l; break; }
+            else if ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].nameFs,0))!=0) { p=1; k+=m; PrefixOut=l; break; }
+            else if ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].alt1  ,0))!=0) { p=1; k+=m; PrefixOut=l; break; }
+            else if ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].alt2  ,0))!=0) { p=1; k+=m; PrefixOut=l; break; }
+            else if ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].alt3  ,0))!=0) { p=1; k+=m; PrefixOut=l; break; }
+            else if ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].alt4  ,0))!=0) { p=1; k+=m; PrefixOut=l; break; }
+           }
+          for (k=0; ((SIprefixes_abbrev[l][k]!='\0') && (SIprefixes_abbrev[l][k]==instr[i+k])); k++);
+          if (SIprefixes_abbrev[l][k]=='\0')
+           {
+            if      ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].nameAp,1))!=0) { p=1; k+=m; PrefixOut=l; break; }
+            else if ((m = UnitNameCmp(instr+i+k, ppl_unit_database[j].nameAs,1))!=0) { p=1; k+=m; PrefixOut=l; break; }
+           }
+         }
+       }
+      if (p==0) continue;
+      i+=k;
+      while ((instr[i]<=' ')&&(instr[i]!='\0')) i++;
+      if (((instr[i]=='^') && (i++,1)) || (((instr[i]=='*') && (instr[i+1]=='*')) && (i+=2,1)))
+       {
+        power = GetFloat(instr+i,&k);
+        if (k<=0) { *errpos=i; strcpy(errtext, "Syntax Error: Was expecting a numerical constant here."); return; }
+        i+=k;
+        while ((instr[i]<=' ')&&(instr[i]!='\0')) i++;
+       }
+      (*output)->UnitID  [outpos] = j;
+      (*output)->prefix  [outpos] = PrefixOut;
+      (*output)->exponent[outpos] = power*powerneg;
+      outpos++;
+      power = 1.0;
+      if      (instr[i]=='*') { powerneg= 1.0; i++; }
+      else if (instr[i]=='/') { powerneg=-1.0; i++; }
+      else                    { powerneg= 0.0;      }
+      break;
+     }
+    if (p==0)
+     {
+      if ((instr[i]==')') || (instr[i]=='\0'))  { powerneg=0.0; }
+      else                                      { *errpos=i; strcpy(errtext, "No such unit."); return; }
+     }
+   }
+
+  (*output)->NUnits = outpos;
   return;
  }
 

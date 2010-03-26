@@ -29,6 +29,7 @@
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
 
+#include "ListTools/lt_memory.h"
 #include "ListTools/lt_dict.h"
 
 #include "MathsTools/dcfmath.h"
@@ -398,6 +399,23 @@ void ppl_settings_readconfig()
   arrow_list_copy(&arrow_list, &arrow_list_default);
   label_list_destroy(&label_list);
   label_list_copy(&label_list, &label_list_default);
+
+  // Copy List of Preferred Units
+  {
+   int temp;
+   ListIterator *listiter;
+   listiter = ListIterateInit(ppl_unit_PreferredUnits);
+   while (listiter != NULL)
+    {
+     ((PreferredUnit *)listiter->data)->modified = 0;
+     listiter = ListIterate(listiter, NULL);
+    }
+   temp = lt_GetMemContext();
+   _lt_SetMemContext(0);
+   ppl_unit_PreferredUnits_default = ListCopy(ppl_unit_PreferredUnits, 1);
+   _lt_SetMemContext(temp);
+  }
+
   return;
  }
 
