@@ -274,9 +274,9 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
 // Main entry point for printing units
 char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
  {
-  static char outputA[LSTR_LENGTH], outputB[LSTR_LENGTH], outputC[LSTR_LENGTH];
-  char  *output,*temp;
-  value  residual;
+  static char   outputA[LSTR_LENGTH], outputB[LSTR_LENGTH], outputC[LSTR_LENGTH];
+  char         *output,*temp;
+  value         residual=*in;
   unit         *UnitList[UNITS_MAX_BASEUNITS];
   double        UnitPow [UNITS_MAX_BASEUNITS];
   int           UnitPref[UNITS_MAX_BASEUNITS];
@@ -292,7 +292,6 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
   if      (N==0) output = outputA;
   else if (N==1) output = outputB;
   else           output = outputC;
-  residual = *in;
 
   // Check whether input value is dimensionally equal to any preferred units
   listiter = ListIterateInit(ppl_unit_PreferredUnits);
@@ -313,6 +312,10 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
       UnitDisp[i] = 0;
      }
     pos = pu->NUnits;
+    residual.real /= pu->value.real;
+    residual.imag /= pu->value.real;
+    for (i=0; i<UNITS_MAX_BASEUNITS; i++) residual.exponent[i]=0;
+    residual.dimensionless = 1;
    }
   else // Not using a preferred unit
    {
