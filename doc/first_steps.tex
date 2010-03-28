@@ -589,6 +589,8 @@ $e$ & Plot only up to the $e\,$th line within each block. \\
 $f$ & Plot only up to the $f\,$th block within each index block. \\
 \end{longtable}
 
+\newpage %% FUDGE!!
+
 \noindent Any or all of these values can be omitted, and so the following would
 both be valid statements:
 
@@ -600,11 +602,38 @@ plot 'data.dat' index 1 every ::3
 \noindent The first would plot only every other \datapoint\ from every third
 data block; the second from the third line onwards within each data block.
 
-\newpage %%% FUDGE!
-
-\example{ex:datafile}{An example}{
+\example{ex:datafile}{A Hertzsprung-Russell Diagram}{
 Here, we have an example of plotting a datafile.
 }
+
+\section{Plotting Many \Datafile s at Once}
+
+\index{globbing}\index{wildcards}\index{datafiles!globbing}
+
+The wildcards {\tt *} and {\tt ?} may be used in filenames supplied to the
+\indcmdt{plot} to plot many \datafile s at once. The following, for example,
+would plot all \datafile s in the current directory with a {\tt .dat} suffix,
+using the same plot options:
+
+\begin{verbatim}
+plot '*.dat' with linewidth 2
+\end{verbatim}
+
+\noindent In the graph's legend, full filenames are displayed, allowing the
+\datafile s to be distinguished.
+
+If a blank filename is supplied to the \indcmdt{plot}, the last used \datafile\
+is used again, as in the example:
+
+\begin{verbatim}
+plot 'data.dat' using 1:2, '' using 2:3
+\end{verbatim}
+
+\noindent This can even be used with wildcards, as in the following example:
+
+\begin{verbatim}
+plot '*.dat' using 1:2, '' using 2:3
+\end{verbatim}
 
 \subsection{Horizontally arranged \Datafile s}
 

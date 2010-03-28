@@ -87,7 +87,7 @@ later in this chapter.
 
 \begin{table}
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}
-\caption{A list of which style modifiers affect which plot styles.}
+\caption{A list of the plot styles affected by each style modifiers.}
 \label{tab:style_modifiers}
 \end{table}
 
@@ -167,6 +167,26 @@ The following plot styles allow regions of graphs to be shaded with colour:
 \item \indpst{yerrorshaded}
 \item \indpst{shadedregion}
 \end{itemize}
+
+Both of these plot styles fill specified regions of graphs with the selected
+{\tt fillcolour} and draw a line around the boundary of the region with the
+selected {\tt colour}, {\tt linetype} and {\tt linewidth}. They differ in the
+format in which they expect the input data to be arranged. The
+\indpst{yerrorshaded} plot style expects data to be arranged in the same format
+as the \indpst{yerrorrange} plot style, specifying the $x$- and $y$-coordinates
+of a series of \datapoint s in the first two columns, together with the minimum
+and maximum extremes of the vertical errorbar on each \datapoint in the third
+and fourth columns. The region contained between the upper and lower limits of
+the error bars is filled with colour; the $y$-coordinate specified in the
+second column is unused. This plot style provides easy conversion between plots
+drawn with errorbars and with shaded error regions. Note that the \datapoint s
+must be sorted in order of either increasing or decreasing $x$-coordinate for
+sensible behaviour.
+
+The \indpst{shadedregion} plot style takes only two columns of input data,
+specifying the $x$- and $y$-coordinates of a series of \datapoint s which are
+to be joined in a join-the-dots fashion. At the end of each dataset, the drawn
+path is closed and filled.
 
 \subsection{Barcharts and Histograms}
 \label{sec:barcharts}
@@ -314,19 +334,12 @@ heads on either end; \indpst{arrows\_twohead} draws arrow heads on both ends of
 the arrow.
 
 \example{ex:vortex}{A diagram of fluid flow around a vortex}{
-blah
-\nlscf
-\noindent{\tt set size square}\newline
-\noindent{\tt set nokey}\newline
-\noindent{\tt set xlabel 'x'}\newline
-\noindent{\tt set ylabel 'y'}\newline
-\noindent{\tt set trange [0:2*pi]}\newline
-\noindent{\tt plot $\backslash$}\newline
-\noindent{\tt \phantom{x}'data' u 1:2:(\$1+\$3):(\$2+\$4) w arrows, $\backslash$}\newline
-\noindent{\tt \phantom{x}parametric 4*sin(t):4*cos(t) w lt 2 col black}
-\nlscf
-\centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex.eps}}
-The data used in this figure was produced using the following python script:
+In this example we produce a velocity map of fluid circulating in a vortex. For
+simplicity, we assume that the fluid in the core of the vortex, at radii $r<1$,
+is undergoing solid body rotation with velocity $v\propto r$, and that the
+fluid outside this core is behaving as a free vortex with velocity $v\propto
+1/r$. First of all, we use a simple python script to generate a \datafile with
+the four columns:
 \nlscf
 \noindent{\tt from math import *}\newline
 \noindent{\tt for i in range(-19,20,2):}\newline
@@ -340,6 +353,19 @@ The data used in this figure was produced using the following python script:
 \noindent{\tt \phantom{xx}vy = v *  cos(theta)}\newline
 \noindent{\tt \phantom{xx}vx = v * -sin(theta)}\newline
 \noindent{\tt \phantom{xx}print "\%7.3f \%7.3f \%7.3f \%7.3f"\%(x,y,vx,vy)}
+\nlscf
+This data can then be plotted using the following PyXPlot script:
+\nlscf
+\noindent{\tt set size square}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set xlabel 'x'}\newline
+\noindent{\tt set ylabel 'y'}\newline
+\noindent{\tt set trange [0:2*pi]}\newline
+\noindent{\tt plot $\backslash$}\newline
+\noindent{\tt \phantom{x}'data' u 1:2:(\$1+\$3):(\$2+\$4) w arrows, $\backslash$}\newline
+\noindent{\tt \phantom{x}parametric 4*sin(t):4*cos(t) w lt 2 col black}
+\nlscf
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex.eps}}
 }
 
 \section{The Palette}
@@ -377,36 +403,6 @@ subsequent {\tt plot} statement, this style can be recalled as follows:
 \begin{verbatim}
 plot sin(x) with style 2
 \end{verbatim}
-
-\section{Plotting Many Files at Once}
-
-\index{globbing}\index{wildcards}\index{datafiles!globbing}
-
-PyXPlot allows the wildcards {\tt *} and {\tt ?} to be used in the filenames of
-\datafile s supplied to the \indcmdt{plot}.  For example, the following would
-plot all \datafile s in the current directory with a {\tt .dat} suffix, using
-the same plot options:
-
-\begin{verbatim}
-plot '*.dat' with linewidth 2
-\end{verbatim}
-
-\noindent In the legend, full filenames are displayed, allowing the \datafile s
-to be distinguished. If the user supplies a blank filename, the last used
-\datafile\ is used again, for example:
-
-\begin{verbatim}
-plot 'data.dat' using 1:2, '' using 2:3
-\end{verbatim}
-
-\noindent or even:
-
-\begin{verbatim}
-plot '*.dat' using 1:2, '' using 2:3
-\end{verbatim}
-
-The {\tt *} and {\tt ?} wildcards can be used in a similar fashion in the
-\indcmdt{load}.
 
 \section{Function Plotting Revisited}
 

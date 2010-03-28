@@ -954,8 +954,8 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
       ItemsOnLine = 0; hadwhitespace = 1; hadcomma = 0;
       for (i=0; linebuffer[i]!='\0'; i++)
        {
-        if      (linebuffer[i]<=' ') {  hadwhitespace = 1; }
-        else if (linebuffer[i]==',') { ColumnData[ItemsOnLine++]=linebuffer+i+1; hadwhitespace = hadcomma = 1; }
+        if      (linebuffer[i]<=' ') { hadwhitespace = 1; }
+        else if (linebuffer[i]==',') { int j; for (j=i+1;((linebuffer[j]<=' ')&&(linebuffer[j]!='\0'));j++); ColumnData[ItemsOnLine++]=linebuffer+j; hadwhitespace = hadcomma = 1; }
         else                         { if (hadwhitespace && !hadcomma) { ColumnData[ItemsOnLine++]=linebuffer+i; } hadwhitespace = hadcomma = 0; }
         if (ItemsOnLine==MAX_DATACOLS) break; // Don't allow ColumnData array to overflow
        }
