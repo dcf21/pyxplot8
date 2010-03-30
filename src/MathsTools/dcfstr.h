@@ -24,6 +24,7 @@
 
 #include "ppl_units.h"
 
+void dcfstr_strcmp  (char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 void dcfstr_strlen  (char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 void dcfstr_strlower(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 void dcfstr_strrange(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);

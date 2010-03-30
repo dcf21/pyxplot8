@@ -160,6 +160,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_sinc          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinc        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinc}@<@1@>", "sinc(x) returns the function sin(pi*x)/(pi*x). If x is dimensionless, it is assumed to be measured in radians. The output is dimensionless."};
   FunctionDescriptor fd_sinh          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sinh        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{sinh}@<@1@>", "sinh(x) returns the hyperbolic sine of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_sqrt          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_sqrt        , NULL, NULL, NULL, NULL, NULL, NULL, "\\sqrt{@1}", "sqrt(x) returns the square root of x"};
+  FunctionDescriptor fd_strcmp        = { PPL_USERSPACE_SYSTEM , 0 ,-1 , (void *)&dcfstr_strcmp       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strcmp}@<@0@>", "strcmp(s1,s2) returns zero if the strings s1 and s2 are the same, one if s1 should be placed after s2 in alphabetical sequence, minus one if s1 should be placed before s2 in alphabetical sequence"};
   FunctionDescriptor fd_strlen        = { PPL_USERSPACE_SYSTEM , 0 ,-1 , (void *)&dcfstr_strlen       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strlen}@<@0@>", "strlen(s) returns the length of the string s"};
   FunctionDescriptor fd_strlower      = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfstr_strlower     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strlower}@<@0@>", "strlower(s) converts all letters in the string s into lowercase"};
   FunctionDescriptor fd_strrange      = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcfstr_strrange     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{strrange}@<@0@>", "strrange(s,start,end) returns a slice of the string s"};
@@ -415,6 +416,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sinc"           , (void *)&fd_sinc        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sinh"           , (void *)&fd_sinh        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "sqrt"           , (void *)&fd_sqrt        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strcmp"         , (void *)&fd_strcmp      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strlen"         , (void *)&fd_strlen      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strlower"       , (void *)&fd_strlower    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "strrange"       , (void *)&fd_strrange    , sizeof(FunctionDescriptor), DATATYPE_VOID);

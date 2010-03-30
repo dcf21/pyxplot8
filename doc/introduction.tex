@@ -36,8 +36,8 @@ of different styles, appropriate for inclusion in reports, talks or academic
 journals.
 
 As well as being a graph-plotting package, PyXPlot also has facilities for
-fitting best-fit curves to data, for numerically solving simple systems of
-equations, and for converting \datafile s between different formats.  Its
+fitting mathematical functions to data, for numerically solving simple systems
+of equations, and for converting \datafile s between different formats.  Its
 mathematical environment can interpolate datasets, integrate and differentiate
 them, and take Fourier transforms.  PyXPlot's ability to keep track of the
 physical units in which data are expressed, and to convert data between
@@ -60,16 +60,15 @@ This manual aims to serve both as a tutorial guide to PyXPlot, and also as a
 reference manual. Part~I provides a step-by-step tutorial and overview of
 PyXPlot's features, including numerous worked examples. Part~II provides a more
 detailed survey of PyXPlot's plotting and vector graphics commands. Part~III
-provides a alphabetical reference guide to all of PyXPlot's commands, together
-with similar indices of its mathematical functions and plotting options.
-Finally, the appendices provide information which is likely to be of more
-specialist interest.
+provides alphabetical reference guides to all of PyXPlot's commands,
+mathematical functions and plotting options.  Finally, the appendices provide
+information which is likely to be of more specialist interest.
 
 Broadly speaking, Chapter~\ref{ch:first_steps} covers those commands which are
-common between the PyXPlot and \gnuplot, and past \gnuplot\ users may find that
-they can skim rather briefly over this chapter. An approximate list of those
-features of \gnuplot\ which are either not-supported, or which are
-substantially different, in PyXPlot can be found in
+common between PyXPlot and \gnuplot, and those experiences in working with
+\gnuplot\ may find that they can skim rather briefly over this chapter. An
+approximate list of those features of \gnuplot\ which are either not supported,
+or which are substantially different, in PyXPlot can be found in
 Appendix~\ref{ch:gnuplot_diffs}.
 
 \section{A Whirlwind Tour}
@@ -103,12 +102,12 @@ plot 'datafile.dat'
 \end{verbatim}
 
 \noindent There are many commands which allow you to configure the appearance
-of the plots produced by the \indcmdt{plot}, or to select which data items from
-a \datafile are plotted; these will be discussed at length in
+of the plots produced by the \indcmdt{plot}, or to select which data from a
+\datafile\ are plotted; these will be discussed at length in
 Chapters~\ref{ch:first_steps} and~\ref{ch:plotting}.
 
 PyXPlot has extensive facilities for converting \datafile s between different
-physical units -- for example, you can tell it that a column of a \datafile
+physical units -- for example, you can tell it that a column of a \datafile\
 represents lengths measured in inches, and request it to plot those lengths on
 a graph in millimetres. These facilities can also be applied to numerical
 quantities entered by the user.  For example, you can define a variable which
@@ -145,9 +144,8 @@ results in a way which can be pasted into future PyXPlot sessions -- {\tt
 
 PyXPlot can perform algebra on complex as well as real numbers. By default,
 evaluation of {\tt sqrt(-1)} throws an error, as the emergence of complex
-numbers is in many common circumstances an indication that a calculation has
-gone wrong.  Complex arithmetic can be enabled by typing\indcmd{set numerics
-complex}
+numbers is often an indication that a calculation has gone wrong.  Complex
+arithmetic can be enabled by typing\indcmd{set numerics complex}
 
 \begin{verbatim}
 set numerics complex

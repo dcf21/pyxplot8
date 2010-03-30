@@ -85,6 +85,28 @@
     return; \
    }
 
+void dcfstr_strcmp (char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
+ {
+  char *InString2;
+  GET_INPUT_STRING;
+  if (in[i] != ',')
+   {
+    if (in[i] ==')') { *status = i; strcpy(errtext,"Syntax Error: Too few arguments supplied to function."); return; }
+    else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; }
+   }
+  i++;
+  while ((in[i]!='\0')&&(in[i]<=' ')) i++; /* Strip spaces off front */ 
+  /* Fetch second input string */
+  j=-1; 
+  InString2 = lt_malloc(LSTR_LENGTH);
+  ppl_GetQuotedString(in+i, InString2, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
+  if (*status >= 0) { (*status) += i; return; } 
+  i+=j; 
+  while ((in[i]>'\0')&&(in[i]<=' ')) i++;
+  END_INPUT_STRING;
+  output->real = strcmp(InString, InString2);
+  return;
+ }
 
 void dcfstr_strlen  (char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
  {

@@ -140,10 +140,11 @@ static void factorise(int in, int *out, int MaxFactors, int *NFactors)
  }
 
 // Add a tick scheme to a list of accepted ticks
-void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const int NIntervals, const int ArgNo, const int DivOfThrow, const int OoM, const int DivOfOoM, const unsigned char *TicksAcceptedIn, unsigned char *TicksAcceptedOut, const unsigned char MAJORminor, const double AxisLength, const double TickSepMin, unsigned char *FLAGacceptable, int *NTicksOut)
+void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const int NIntervals, const int ArgNo, const int DivOfThrow, const int OoM, const int DivOfOoM, const unsigned char *TicksAcceptedIn, unsigned char *TicksAcceptedOut, const unsigned char MAJORminor, const double AxisLength, const double TickSepMin, unsigned char *FLAGacceptable, int *NTicksOutMajor, int *NTicksOutMinor)
  {
   int i, j, id, imin=-1, imax=-1;
-  *NTicksOut      = 0;
+  *NTicksOutMajor = 0;
+  *NTicksOutMinor = 0;
   *FLAGacceptable = 1;
   for (i=0; i<NPotTicks; i++)
    {
@@ -159,7 +160,8 @@ void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks, const 
       if ((imin<0) || (imin>PotTickList[id].IntervalNum)) imin = PotTickList[id].IntervalNum;
       if ((imax<0) || (imax<PotTickList[id].IntervalNum)) imax = PotTickList[id].IntervalNum;
      }
-    if (TicksAcceptedOut[i] != 0) (*NTicksOut)++;
+    if (TicksAcceptedOut[i] == 1) (*NTicksOutMajor)++;
+    if (TicksAcceptedOut[i] == 2) (*NTicksOutMinor)++;
     if (MAJORminor && (TicksAcceptedOut[i]==1)) // Check that no two major ticks are too close together
      {
       for (j=i-1; j>=0; j--)
@@ -212,6 +214,7 @@ static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double
     {
      const PotentialTick *tick;
      const ArgumentInfo  *arg;
+     int    count_steps=0;
      double axispos_min, axispos_max, axispos_mid;
      unsigned char DiscreteMoveMin, SlopePositive;
 
@@ -222,7 +225,7 @@ static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double
      axispos_max   = ((double)tick->IntervalNum      )/(NIntervals-1);
      SlopePositive = (arg->NumericValues[tick->IntervalNum] >= arg->NumericValues[tick->IntervalNum-1]);
 
-     while ((axispos_max - axispos_min) > 1e-15*axispos_max)
+     while (count_steps<200)
       {
        axispos_mid = (axispos_min+axispos_max)/2;
        VarVal->real = eps_plot_axis_InvGetPosition(axispos_mid, axis) * UnitMultiplier;
@@ -252,6 +255,8 @@ static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double
          if (SlopePositive ^ (DummyVal.real >= tick->TargetValue)) axispos_min = axispos_mid;
          else                                                      axispos_max = axispos_mid;
         }
+       if (axispos_max == axispos_min) break;
+       count_steps++;
       }
      axispos = (axispos_min+axispos_max)/2;
      x       = eps_plot_axis_InvGetPosition(axispos, axis);
@@ -496,7 +501,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
               || ((args[i].NumericValues[j-1]> 0)&&(args[i].NumericValues[j]< 0))
             )
          {
-          ADDTICK(i,NOT_THROW,INT_MAX,-3,0.0,j); // Zero should be marked in this interval
+          ADDTICK(i,NOT_THROW,INT_MAX,-10,0.0,j); // Zero should be marked in this interval
          }
          else if ((args[i].NumericValues[j-1]!=0)||(args[i].NumericValues[j]!=0))
          {
@@ -506,7 +511,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
           const double OoM_m  = log(fabs(args[i].NumericValues[j  ])) / log(LogBase);
           const int    Nsteps = fabs(log(1e-15) / log(LogBase));
           double OoM;
-          int    n;
+          int    n,m;
           if      (!gsl_finite(OoM_n)) OoM = floor(OoM_m);
           else if (!gsl_finite(OoM_m)) OoM = floor(OoM_n);
           else                         OoM = floor(max(OoM_n , OoM_m));
@@ -520,7 +525,13 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
               if ((gsl_finite(divisor)) && (fabs(floor(xn/divisor+0.5)-xn/divisor)<1e-12))
                {
                 int priority = 0;
-                if (n==0) { priority = -1; if (fabs(floor(xn/divisor+0.5))<2) priority = -2; }
+                if (n==0)
+                 {
+                  priority = -1; // Marking 0.1 is more important than marking 1.1
+                  if      (fabs(floor(xn/divisor+0.5))< 2) priority = -3; // Marking 0.1 is more important than marking 0.3
+                  else if (fabs(floor(xn/divisor+0.5))==2) priority = -2; // Marking 0.2 and 0.5 alone is allowable on log axes
+                  else if (fabs(floor(xn/divisor+0.5))==5) priority = -2;
+                 }
                 if ((!args[i].OoM_RangeSet)||(OoM-n<args[i].OoM_min)) args[i].OoM_min = OoM-n;
                 if ((!args[i].OoM_RangeSet)||(OoM-n>args[i].OoM_max)) args[i].OoM_max = OoM-n;
                 args[i].OoM_RangeSet = 1;
@@ -535,8 +546,15 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
             double divisor = pow(LogBase , OoM-n);
             if ((gsl_finite(divisor)) && (floor(xn/divisor) != floor(yn/divisor)))
              {
+              double zn = fabs(xn)>fabs(yn)?xn:yn;
               int priority = 0;
-              if (n==0) { priority = -1; if ((floor(xn/divisor)==0) || (floor(xn/divisor)==-1) || (floor(yn/divisor)==0) || (floor(xn/divisor)==-1)) priority = -2; }
+              if (n==0)
+               {
+                priority = -1; // Marking 0.1 is more important than marking 1.1
+                if      (floor(fabs(zn/divisor)+0.5)< 2) priority = -3; // Marking 0.1 is more important than marking 0.3
+                else if (floor(fabs(zn/divisor)+0.5)==2) priority = -2; // Marking 0.2 and 0.5 alone is allowable on log axes
+                else if (floor(fabs(zn/divisor)+0.5)==5) priority = -2;
+               }
               if ((!args[i].OoM_RangeSet)||(OoM-n<args[i].OoM_min)) args[i].OoM_min = OoM-n;
               if ((!args[i].OoM_RangeSet)||(OoM-n>args[i].OoM_max)) args[i].OoM_max = OoM-n;
               args[i].OoM_RangeSet = 1;
@@ -546,8 +564,29 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
            }
 
           // Ticks which mark the passing of fractions of the Nth significant digit
-          {
-          }
+          if (n<Nsteps)
+           for (m=n-1; ((j==1)||m>=n-2) && (args[i].OoM_RangeSet && ((OoM-m)<=args[i].OoM_max+1)); m--)
+            {
+             double divisor = pow(LogBase , OoM-m-1);
+             int    o;
+             if (gsl_finite(divisor))
+             for (o=0; o<NFactorsLogBase; o++)
+              {
+               double xnfd     = xn/divisor * FACTOR_MULTIPLY / FactorsLogBase[o];
+               double ynfd     = yn/divisor * FACTOR_MULTIPLY / FactorsLogBase[o];
+               int    xnf      = floor(xnfd);
+               int    ynf      = floor(ynfd);
+               int    priority = (xn/divisor == 0) ? 0 : -1;
+               if (xnf != ynf)
+                {
+                 ADDTICK(i,NOT_THROW,OoM-m,2*(o+1)+priority,((xnf>ynf)?xnf:ynf)*divisor/FACTOR_MULTIPLY*FactorsLogBase[o],j);
+                }
+               else if ((j==1) && (fabs(floor(xnfd+0.5)-xnfd)<1e-12))
+                {
+                 ADDTICK(i,NOT_THROW,OoM-m,2*(o+1)+priority,floor(xnfd+0.5)*divisor/FACTOR_MULTIPLY*FactorsLogBase[o],j);
+                }
+              }
+            }
          }
 
         }
@@ -593,31 +632,31 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
 
      if (!args[i].ContinuousArg) // Discrete arguments... note everywhere where they change
       {
-       int Nticks;
+       int NTicksMajor, NTicksMinor;
 
        // Try marking discrete changes to arguments with major ticks
        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, 0, 0, 0, TicksAccepted, TicksAcceptedNew,
-                     1, length, tick_sep_major, &acceptable, &Nticks);
+                     1, length, tick_sep_major, &acceptable, &NTicksMajor, &NTicksMinor);
        if (acceptable)
         {
-         if (DEBUG) { sprintf(temp_err_string, "Accepted major ticks to mark changes of argument %d (now %d ticks).", i, Nticks); ppl_log(temp_err_string); }
+         if (DEBUG) { sprintf(temp_err_string, "Accepted major ticks to mark changes of argument %d (now %d ticks).", i, NTicksMajor); ppl_log(temp_err_string); }
          memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); // Update TicksAccepted
          continue;
         }
 
        // Try marking discrete changes to arguments with minor ticks
        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, 0, 0, 0, TicksAccepted, TicksAcceptedNew,
-                     0, length, tick_sep_minor, &acceptable, &Nticks);
+                     0, length, tick_sep_minor, &acceptable, &NTicksMajor, &NTicksMinor);
        if (acceptable)
         {
-         if (DEBUG) { sprintf(temp_err_string, "Accepted minor ticks to mark changes of argument %d (now %d ticks).", i, Nticks); ppl_log(temp_err_string); }
+         if (DEBUG) { sprintf(temp_err_string, "Accepted minor ticks to mark changes of argument %d (now %d ticks).", i, NTicksMajor); ppl_log(temp_err_string); }
          memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); // Update TicksAccepted
          continue; 
         } 
       }
      else // Continuous arguments are more complicated
       {
-       int ThrowFactors_Nticks=-1, ThrowFactors_FactNum=-1;
+       int dummy, ThrowFactors_Nticks=-1, ThrowFactors_FactNum=-1;
        int Divide_LogBase_Nticks=-1, Nticks_new, Nticks_new_accepted, Nticks_new_prev, l;
        unsigned char MAJORminor;
 
@@ -626,7 +665,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
         {
          acceptable=1;
          AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNew,
-                       1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks);
+                       1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &dummy);
          if (acceptable) { ThrowFactors_FactNum =  k; break; }
          else            { ThrowFactors_Nticks  = -1; }
         }
@@ -643,12 +682,12 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
            Nticks_new_accepted=-1;
            MAJORminor = 1;
            if (k==args[i].OoM_max)
-              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -3, TicksAcceptedNew, TicksAcceptedNew,
-                            1, length, tick_sep_major, &acceptable, &Nticks_new); // Must zero, if present, with highest OoM
-           for (l=-2; l<=0; l++)
+              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -10, TicksAcceptedNew, TicksAcceptedNew,
+                            1, length, tick_sep_major, &acceptable, &Nticks_new, &dummy); // Must have zero, if present, with highest OoM
+           for (l=-3; l<=0; l++)
             {
              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, l, TicksAcceptedNew, TicksAcceptedNew2,
-                           MAJORminor, length, MAJORminor ? tick_sep_major : tick_sep_minor, &acceptable, &Nticks_new);
+                           MAJORminor, length, MAJORminor ? tick_sep_major : tick_sep_minor, &acceptable, &Nticks_new, &dummy);
              if (DEBUG) { sprintf(temp_err_string, "OoM %3d Priority %2d %s %s (Nticks: %d).",k,l,MAJORminor?"major":"minor",acceptable?"pass":"fail",Nticks_new); ppl_log(temp_err_string); }
              if (acceptable) { Nticks_new_accepted=Nticks_new; memcpy(TicksAcceptedNew, TicksAcceptedNew2, NPotTicks); }
              else            { if (MAJORminor) { MAJORminor=0; l--; continue; } else { break; } }
@@ -668,7 +707,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
           {
            acceptable=1;
            AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, ThrowFactors_FactNum, 0, 0, TicksAccepted, TicksAcceptedNew,
-                         1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks);
+                         1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &dummy);
            if (acceptable) memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); // Update TicksAccepted
 
            // Try other factors of throw for minor ticks
@@ -677,7 +716,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
              {
               acceptable=1;
               AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNew,
-                            0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks);
+                            0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &dummy);
               if (acceptable) { memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); break; }
              }
           }

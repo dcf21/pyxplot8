@@ -72,8 +72,7 @@ these being the default aspect ratio of plots produced by PyXPlot. Many of the
 others are physical constants, which are prefixed with {\tt phy\_} to minimise
 clashes between their names and those of variables which the user may wish to
 define.  Nonetheless, pre-defined constants are no different from any other
-variables in PyXPlot, and the user can freely re-define them without this being
-an error.
+variables in PyXPlot, and the user can freely re-define them.
 
 Most of the pre-defined physical constants are not dimensionless quantities,
 and make use of PyXPlot's native ability to keep track of the physical units of
@@ -93,7 +92,11 @@ Chapter~\ref{ch:function_list}. In addition, the user can define his own
 functions to equal any algebraic expressions using a similar syntax to that
 used to declare new variables, as in the examples:
 
-\begin{verbatim} f()    = pi f(x)   = x*sin(x) f(x,y) = x*y \end{verbatim}
+\begin{verbatim}
+f()    = pi
+g(x)   = x*sin(x)
+h(x,y) = x*y
+\end{verbatim}
 
 A list of all of the user-defined functions which have been set can be found at
 the end of the output of the \indcmdt{show functions}, or can be obtained
@@ -103,7 +106,9 @@ variables, system-defined functions may not be over-written; trying to define a
 function with the name {\tt sin(x)}, for example, will result in an error.
 Once defined, user-defined functions can be undefined by typing, for example:
 
-\begin{verbatim} f() = \end{verbatim}
+\begin{verbatim}
+f() =
+\end{verbatim}
 
 Where the logic required to define a particular function is greater than can be
 contained in a single algebraic expression, a subroutine should be used (see
@@ -125,7 +130,7 @@ $-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$:\footnote{The syntax {\tt
 [-pi/2:pi/2]} can also be written {\tt [-pi/2 to pi/2]}.}
 
 \begin{verbatim}
-f(x)[-pi/2:pi/2] = cos(x)
+truncated_cos(x)[-pi/2:pi/2] = cos(x)
 \end{verbatim}
 
 \noindent Attempts to evaluate this function outside of the range in which it

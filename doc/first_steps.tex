@@ -43,17 +43,16 @@ which commands can be typed will appear. PyXPlot can be exited either by typing
 \indcmdts{exit}, \indcmdts{quit}, or by pressing CTRL-D. Various switches can
 be specified on the shell command line to modify PyXPlot's behaviour; these are
 listed in Box~\ref{box:CommandSwitches}.  Of especial interest may be the
-switches {\tt -c} and {\tt -v}, which change between the use of
+switches {\tt -c} and {\tt -m}, which change between the use of
 colour-highlighted (default) and non-coloured text.
 
 Typing commands into interactive terminals will probably be a sufficient way to
 drive PyXPlot to begin with, but as you begin to plot increasingly complicated
 graphs, the number of commands required to set them up will grow. You are
-likely to find that it soon becomes preferable, instead of typing these
-commands into an interactive session every time you want to use them, to store
-them in text files called scripts. Once such a script has been written, it can
-be executed automatically by PyXPlot by passing the filename of the command
-script to it on the shell command line, for example:\index{command-line syntax}
+likely to find that it soon becomes preferable to store these commands in text
+files called scripts.  Once such a script has been written, it can be executed
+automatically by passing the filename of the command script to PyXPlot on the
+shell command line, for example:\index{command-line syntax}
 
 \begin{verbatim}
 pyxplot foo.ppl
@@ -75,12 +74,12 @@ modify its behaviour:\index{command line syntax}
 }
 
 \noindent In this case, PyXPlot would execute all of the commands in the file
-{\tt foo.ppl} and then exit immediately afterwards. By convention, we choose to
-suffix the filenames of PyXPlot command scripts with {\tt .ppl}. This is not
-strictly necessary, but allows PyXPlot scripts to be easily distinguished from
-other text files in a filing system. The filenames of several command scripts
-may be passed to PyXPlot on a single command line, indicating that they should
-be executed in sequence:
+{\tt foo.ppl} and then exit. By convention, we choose to suffix the filenames
+of PyXPlot command scripts with {\tt .ppl}. This is not strictly necessary, but
+allows PyXPlot scripts to be easily distinguished from other text files in a
+filing system. The filenames of several command scripts may be passed to
+PyXPlot on a single command line, indicating that they should be executed in
+sequence:
 
 \begin{verbatim}
 pyxplot foo1.ppl foo2.ppl foo3.ppl
@@ -93,7 +92,7 @@ this.  PyXPlot can be passed the magic filename {\tt --} on the command line,
 as in the example
 
 \begin{verbatim}
-pyxplot foo1.ppl - foo2.ppl
+pyxplot foo1.ppl -- foo2.ppl
 \end{verbatim}
 
 \noindent where the {\tt --} represents an interactive session which
@@ -112,9 +111,9 @@ pyxplot> load 'foo.ppl'
 \noindent This example would have the same effect as typing the contents of the
 file {\tt foo.ppl} into the present interactive terminal.
 
-Usually a text editor is used to produce PyXPlot command scripts, but the
-\indcmdt{save} may also assist. This stores a history of the commands which
-have been typed into the present interactive session to file.
+The \indcmdt{save} may assist in producing PyXPlot command scripts: it stores a
+history of the commands which have been typed into the present interactive
+session to file.
 
 \boxout{The storage of command histories in PyXPlot.}{box:CommandHistory}{
 When PyXPlot is used interactively, its command-line environment is based upon
@@ -124,15 +123,15 @@ history is stored in his homespace in a history file called {\tt
 .pyxplot\_history}; this file is used by PyXPlot to remember command histories
 between sessions. PyXPlot's \indcmdt{save} allows the user to save to a text
 file a list of the commands which have been typed into the present session; it
-has the following syntax:
+has the following syntax:\vspace{3mm}
 
-\noindent {\tt save 'output\_filename.ppl' }
+\noindent {\tt save 'output\_filename.ppl' }\vspace{3mm}
 
 The related \indcmdt{history} outputs to the terminal a history of all of the
 commands which have been typed into this and previous interactive sessions. The
 total history can stretch to several hundred lines long, in which case it can
 be useful to follow the \indcmdt{history} by an optional number, in which case
-it displays the last $n$ commands, e.g.:
+it displays the last $n$ commands, e.g.:\vspace{3mm}
 
 \noindent {\tt history 20 }
 }
@@ -805,14 +804,15 @@ terminal should be selected:
 set terminal x11
 \end{verbatim}
 
-For more details of the \indcmdt{set terminal}, including how to produce gif
-and png images with transparent backgrounds, see
-Chapter~\ref{ch:image_formats}.
-
-We finally note that, after changing terminals, the \indcmdt{replot} is
-especially useful; if no arguments are supplied, it simply repeats the last
-{\tt plot} command, producing a copy of the last plot to have been produced in
-the newly-selected graphical format.
+After changing terminals, the \indcmdt{refresh}\footnote{The {\tt refresh}
+command is very similar in effect to issuing the {\tt replot} command with no
+arguments. The latter simply repeats the last {\tt plot} command. We will see
+in Chapter~\ref{ch:vector_graphics} that the {\tt refresh} command is to be
+preferred in the current context because it is more generally applicable to
+vector graphics as well as to graphs.} is especially useful; it reproduces  the
+last plot to have been generated in the newly-selected graphical format.  For
+more details of the \indcmdt{set terminal}, including how to produce gif and
+png images with transparent backgrounds, see Chapter~\ref{ch:image_formats}.
 
 \section{Setting the Size of Output}
 
@@ -924,7 +924,7 @@ first specified range applies to the $x$-axis, and the second to the
 $y$-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
 further ranges are specified, they apply to the $x2$-axis, then the $y2$-axis,
 and so forth.} In the following example, the first three cylindrical Bessel
-functions are plotting in the range $0<x<10$:
+functions are plotted in the range $0<x<10$:
 
 \begin{verbatim}
 plot [0:10][-0.5:1] besselJ(0,x), besselJ(1,x), besselJ(2,x)
