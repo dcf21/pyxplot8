@@ -673,6 +673,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
          acceptable=1;
          AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNew,
                        1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &dummy);
+         if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/FACTOR_MULTIPLY,ThrowFactors_Nticks,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
          if (acceptable) { ThrowFactors_FactNum =  k; break; }
          else            { ThrowFactors_Nticks  = -1; }
         }
