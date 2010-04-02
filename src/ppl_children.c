@@ -242,13 +242,13 @@ void CSPProcessCommand(char *in)
     if (GhostView_pid > 1)
      {
       if (DEBUG) { sprintf(temp_err_string, "Received gv_singlewindow request. Putting into existing window with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
-      sprintf(cmd, "cp -f %s %s", in+1, GhostView_Fname);
+      sprintf(cmd, "cp -f %s %s", in+2, GhostView_Fname);
       if (system(cmd) != 0) if (DEBUG) { ppl_log("Failed to copy postscript document into existing gv_singlewindow session.");}
      }
     else
      {
       if (DEBUG) ppl_log("Received gv_singlewindow request. Making a new window for it.");
-      strcpy(GhostView_Fname, in+1);
+      strcpy(GhostView_Fname, in+2);
       GhostView_pid = CSPForkNewGv(in+1, GhostViews);
      }
    }
@@ -267,10 +267,22 @@ void CSPProcessCommand(char *in)
 
 int CSPForkNewGv(char *fname, List *gv_list)
  {
-  int pid;
-  char WatchText[16];
+  int pid, viewer;
+  char WatchText[16], *ViewerApp;
   sigset_t sigs;
-  
+
+  viewer = SW_VIEWER_GV + (fname[0]-'M');
+  fname++;
+
+  switch (viewer)
+   {
+    case SW_VIEWER_GV    : ViewerApp = GHOSTVIEW_COMMAND; break;
+    case SW_VIEWER_GGV   : ViewerApp = GGV_COMMAND; break;
+    case SW_VIEWER_EVINCE: ViewerApp = EVINCE_COMMAND; break;
+    case SW_VIEWER_OKULAR: ViewerApp = OKULAR_COMMAND; break;
+    default              : return 0;
+   }
+
   sigemptyset(&sigs);
   sigaddset(&sigs,SIGCHLD);
   sigprocmask(SIG_BLOCK, &sigs, NULL);
@@ -296,8 +308,12 @@ int CSPForkNewGv(char *fname, List *gv_list)
       close(PipeCSP2MAIN[1]);
      }
     if (setpgid( getpid() , getpid() )) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
-    sprintf(WatchText, "%s%s", GHOSTVIEW_OPT, "watch");
-    if (execlp(GHOSTVIEW_COMMAND, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute ghostview returned error code."); // Execute GhostView
+    sprintf(WatchText, "%s%s", (viewer == SW_VIEWER_GGV)?"--":GHOSTVIEW_OPT, "watch");
+    if (   (((viewer == SW_VIEWER_GV) || (viewer == SW_VIEWER_GGV))
+               && (execlp(ViewerApp, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0))
+        || (((viewer != SW_VIEWER_GV) && (viewer != SW_VIEWER_GGV))
+               && (execlp(ViewerApp, GHOSTVIEW_COMMAND, fname, NULL)!=0)) 
+       )     if (DEBUG) ppl_log("Attempt to execute ghostview returned error code."); // Execute GhostView
     sprintf(temp_err_string, "Execution of ghostview using binary '%s' failed; has it been reinstalled since pyxplot was installed?", GHOSTVIEW_COMMAND);
     ppl_error(ERR_GENERAL, temp_err_string); // execlp call should not return
     exit(1);

@@ -202,14 +202,19 @@ int main(int argc, char **argv)
 
     // Set default terminal
     EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
+    if      (strcmp(GHOSTVIEW_COMMAND, "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GV;
+    else if (strcmp(GGV_COMMAND      , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GGV;
+    else if (strcmp(EVINCE_COMMAND   , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_EVINCE;
+    else if (strcmp(OKULAR_COMMAND   , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_OKULAR;
+    else                                                 settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_NULL;
     if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) ||
                                                   (EnvDisplay==NULL) ||
                                                   (EnvDisplay[0]=='\0') ||
-                                                  (strcmp(GHOSTVIEW_COMMAND, "/bin/false")==0) ||
+                                                  (settings_term_default.viewer == SW_VIEWER_NULL) ||
                                                   (isatty(STDIN_FILENO) != 1)))
      {
       if (DEBUG) ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");
-      settings_term_default.TermType = SW_TERMTYPE_EPS;
+      settings_term_current.TermType = settings_term_default.TermType = SW_TERMTYPE_EPS;
      }
 
     // Scan commandline and process all script files we have been given

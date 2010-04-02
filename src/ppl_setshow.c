@@ -1659,6 +1659,23 @@ void directive_set(Dict *command)
     sg->XYview.real = settings_graph_default.XYview.real;
     sg->YZview.real = settings_graph_default.YZview.real;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"viewer")==0)) /* set viewer */
+   {
+    DictLookup(command,"viewer",NULL,(void **)&tempstr);
+    if      ((strcmp(tempstr,"gv"    )==0) && (strcmp(GHOSTVIEW_COMMAND,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_GV;
+    else if ((strcmp(tempstr,"ggv"   )==0) && (strcmp(GGV_COMMAND      ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_GGV;
+    else if ((strcmp(tempstr,"evince")==0) && (strcmp(EVINCE_COMMAND   ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_EVINCE;
+    else if ((strcmp(tempstr,"okular")==0) && (strcmp(OKULAR_COMMAND   ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_OKULAR;
+    else
+     {
+      sprintf(temp_err_string,"Could not set current viewer to %s since this program was not installed when PyXPlot was installed.",tempstr);
+      ppl_error(ERR_GENERAL,temp_err_string);
+     }
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"viewer")==0)) /* unset viewer */
+   {
+    settings_term_current.viewer = settings_term_default.viewer;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
@@ -2392,7 +2409,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "view", buf, (settings_graph_default.XYview.real==sg->XYview.real)&&(settings_graph_default.YZview.real==sg->YZview.real), "The rotation angle of 3d graphs");
     i += strlen(out+i) ; p=1;
    }
-
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "viewer", 1)>=0))
+   {
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.viewer, SW_VIEWER_INT, (void *)SW_VIEWER_STR, sizeof(char *)));
+    directive_show3(out+i, ItemSet, 0, interactive, "viewer", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the postscript viewer used by the X11 terminals");
+    i += strlen(out+i) ; p=1;
+   }
 
   // Show axes
   l=0;

@@ -291,7 +291,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         else if (termtype==SW_TERMTYPE_X11M) CSPCommand = 1;
         else if (termtype==SW_TERMTYPE_X11P) CSPCommand = 2;
        }
-      sprintf(temp_err_string, "%d%s\n", CSPCommand, comm.EPSFilename);
+      sprintf(temp_err_string, "%d%c%s\n", CSPCommand, (char)(settings_term_current.viewer-SW_VIEWER_GV+(int)'M'), comm.EPSFilename);
       SendCommandToCSP(temp_err_string);
      }
    }

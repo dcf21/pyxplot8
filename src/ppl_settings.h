@@ -38,7 +38,7 @@ typedef struct with_words {
  } with_words;
 
 typedef struct settings_terminal {
- int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplay, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev;
+ int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplay, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev, viewer;
  double dpi;
  unsigned char BinOriginAuto, BinWidthAuto;
  value  BinOrigin, BinWidth, PaperHeight, PaperWidth;
