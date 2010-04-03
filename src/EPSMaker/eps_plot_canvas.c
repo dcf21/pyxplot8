@@ -73,6 +73,7 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
     int    i = floor(xin * (AXISLINEARINTERPOLATION_NPOINTS-1));
     double x = xin * (AXISLINEARINTERPOLATION_NPOINTS-1) - i;
     if (i>=AXISLINEARINTERPOLATION_NPOINTS-1) return xa->AxisLinearInterpolation[AXISLINEARINTERPOLATION_NPOINTS-1];
+    if (i<                                 0) return xa->AxisLinearInterpolation[0];
     return xa->AxisLinearInterpolation[i]*(1-x) + xa->AxisLinearInterpolation[i+1]*x;
    }
   if (xa->log!=SW_BOOL_TRUE) return xa->MinFinal + xin * (xa->MaxFinal - xa->MinFinal); // Either linear...

@@ -165,12 +165,12 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     if (xyz!=1)
      {
       tick_sep_major = 0.025;
-      tick_sep_minor = 0.008;
+      tick_sep_minor = 0.004;
      }
     else
      {
       tick_sep_major = 0.015;
-      tick_sep_minor = 0.008;
+      tick_sep_minor = 0.004;
      }
 
     // Finalise the label to be placed on the axis, quoting a physical unit as necessary

@@ -283,6 +283,15 @@ int CSPForkNewGv(char *fname, List *gv_list)
     default              : return 0;
    }
 
+  if (access(ViewerApp, F_OK) != 0)
+   {
+    FILE *f = fdopen(PipeCSP2MAIN[1], "w");
+    if (f==NULL) return 0;
+    fprintf(f, "Could not launch viewer application '%s' because this application does not appear to be installed.\n", *(char **)FetchSettingName(viewer, SW_VIEWER_INT, (void *)SW_VIEWER_STR, sizeof(char *)));
+    fclose(f);
+    return 0;
+   }
+
   sigemptyset(&sigs);
   sigaddset(&sigs,SIGCHLD);
   sigprocmask(SIG_BLOCK, &sigs, NULL);
