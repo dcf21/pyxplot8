@@ -35,12 +35,120 @@ output in a range of image formats (Chapter~\ref{ch:image_formats}) and how to
 produce galleries of multiple plots side-by-side together with more
 sophisticated vector graphics (Chapter~\ref{ch:vector_graphics}).
 
+\section{The {\tt with} modifier}
+
+Chapter~\ref{ch:first_steps} provided an overview of the syntax of the
+\indcmdt{plot}, including the {\tt every}, {\tt index}, {\tt select} and {\tt
+using} modifiers which can be used to control {\tt which} data, read from a
+\datafile or sampled from a function, should be plotted. The {\tt with}
+modifier controls {\tt how} data should be plotted. For example, the statement
+\begin{verbatim}
+plot "data.dat" index 1 using 4:5 with lines
+\end{verbatim}
+specifies that data should be plotted using lines connecting each \datapoint to
+its neighbours. More generally, the {\tt with} modifier can be followed by a
+range of settings which fine-tune the manner in which the data are displayed;
+for example, the statement
+\begin{verbatim}
+plot "data.dat" with lines linewidth 2.0
+\end{verbatim}
+would use twice the default width of line.
+
+In the following section, a complete list of all of PyXPlot's plot styles --
+i.e.\ all of the words which may be used in place of {\tt lines} -- will be
+given. In this section, we list all of the modifiers such as {\tt line\-width}
+which may be used to alter the exact appearance of these plot styles, which are
+as follows:
+\begin{itemize}
+\item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}, or as an RGB colour in the form {\tt rgb1:2:3}, where the integers should be in the range~0 to~255. May also be spelt {\tt color}.\index{colours!setting for datasets}
+\item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
+\item \indmodt{linetype} -- used to select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
+\item \indmodt{linewidth} -- used to select the width of line, where~1 represent the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
+\item \indmodt{pointlinewidth} -- used to select the width of line, where~1 represent the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
+\item \indmodt{pointsize} -- used to select the size of drawn points, where~1 represent the default size. May be abbreviated {\tt ps}.
+\item \indmodt{pointtype} -- used to select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
+\end{itemize}
+
+Any number of these modifiers may be placed sequentially after the {\tt with}
+keyword, as in the following examples:
+
+\begin{verbatim}
+plot 'datafile' using 1:2 with points pointsize 2
+plot 'datafile' using 1:2 with lines colour red linewidth 2
+plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
+\end{verbatim}
+
+\noindent Not all of these modifiers are applicable to all of PyXPlot's plot
+styles. For example, the {\tt line\-width} modifier has no effect on plot
+styles which do not draw lines between datapoints. Where modifiers are applied
+to plot styles for which they have no defined effect, the modifier has no
+effect, but no error results.  Table~\ref{tab:style_modifiers} lists which
+modifiers act upon which plot styles.
+
+\begin{table}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}
+\caption{A list of the plot styles affected by each style modifiers.}
+\label{tab:style_modifiers}
+\end{table}
+
+\subsection{The Palette}
+\label{sec:palette}
+
+\index{palette}\index{colours!setting the palette} As indicated above, colours
+may be referred to either specifically by name or RGB components, or by their
+numbers in the current palette. By default, PyXPlot's palette contains a series
+of visually distinctive colours which are insofar as possible are also
+distinctive to users with most common forms of colour blindness. The current
+palette may be queried using the \indcmdt{show palette}, and changed using the
+\indcmdt{set palette}, which takes a comma-separated list of colours, as in the
+example:
+
+\begin{verbatim}
+set palette BrickRed, LimeGreen, CadetBlue
+\end{verbatim}
+
+\noindent The palette is treated as a cyclic list, and so in the above example,
+colour number~4 would map to {\tt BrickRed}, as would colour number~0. A list
+of all of the named colours which PyXPlot recognises is given in
+Section~\ref{sec:colour_names}. The default palette which PyXPlot uses upon
+startup may be changed by setting up a configuration file, as described in
+Chapter~\ref{ch:configuration}.
+
+\subsection{Default Settings}
+
+In addition to setting these parameters on a per-dataset basis, the {\tt
+linewidth}, {\tt pointlinewidth} and {\tt pointsize} settings can also have
+their default values changed for all datasets as in the following examples:
+\begin{verbatim}
+set linewidth 1
+set pointlinewidth 2
+set pointsize 3
+plot "datafile"
+\end{verbatim}
+In each case, the normal default values of these settings are~1. The default
+values of the {\tt colour}, {\tt linetype} and {\tt pointtype} settings depend
+upon whether the current graphic output device is set to produce colour or
+monochrome output (see Chapter~\ref{sec:set_terminal}). In the former case
+(colour output), the colours of each of the comma-separated datasets plotted on
+a graph are drawn sequentially from the currently-selected palette, all lines
+are drawn as solid lines ({\tt line\-type~1}), and the symbols used to draw
+each dataset are drawn sequentially from PyXPlot's available point types. In
+the latter case (monochrome output), all datasets are plotted in black, and
+both the line types and point types used to draw each dataset are drawn
+sequentially from PyXPlot's available options. The following simple example
+demonstrates this:
+\begin{verbatim}
+set terminal colour
+plot [][6:0] 1 with lp, 2 with lp, 3 w lp, 4 w lp, 5 w lp
+set terminal monochrome
+replot
+\end{verbatim}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_col_vs_mono.eps}}
+
 \section{PyXPlot's Plot Styles}
 
-In Chapter~\ref{ch:first_steps}, we met a few of the styles in which PyXPlot
-can plot data -- either drawing discrete \datapoint s, connecting \datapoint s
-with lines, or representing \datapoint s with errorbars.  In this section, we
-provide an exhaustive list of all of PyXPlot's {\it plot styles}.
+This section provides an exhaustive list of all of PyXPlot's {\it plot styles},
+which we place into a series of groups for clarity.
 
 \subsection{Lines and Points}
 
@@ -57,83 +165,21 @@ positions of each point:
 \item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit.eps}) at each datum.\index{upper-limit datapoints}
 \end{itemize}
 
-Various modifiers may be used to alter the exact appearance of the output
-which each plot style produces:
-\begin{itemize}
-\item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}, or as an RGB colour in the form {\tt rgb1:2:3}, where the integers should be in the range~0 to~255. May also be spelt {\tt color}.\index{colours!setting for datasets}
-\item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
-\item \indmodt{linetype} -- used to select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
-\item \indmodt{linewidth} -- used to select the width of line, where~1 represent the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
-\item \indmodt{pointlinewidth} -- used to select the width of line, where~1 represent the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
-\item \indmodt{pointsize} -- used to select the size of drawn points, where~1 represent the default size. May be abbreviated {\tt ps}.
-\item \indmodt{pointtype} -- used to select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
-\end{itemize}
-
-These modifiers should all be placed after the {\tt with} keyword in the {\tt
-plot} command, as in the following examples:
-
-\begin{verbatim}
-plot 'datafile' using 1:2 with points pointsize 2
-plot 'datafile' using 1:2 with lines colour red linewidth 2
-plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
-\end{verbatim}
-
-\noindent Not all of the modifiers above are applicable to all of PyXPlot's
-plot styles. Where modifiers are applied to plot styles for which they have no
-defined effect, this is not an error, but the modifier has no effect.
-Table~\ref{tab:style_modifiers} lists which modifiers act upon which plot
-styles, including, for completeness, those plot styles which will be introduced
-later in this chapter.
-
-\begin{table}
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}
-\caption{A list of the plot styles affected by each style modifiers.}
-\label{tab:style_modifiers}
-\end{table}
-
-In addition to setting these parameters on a per-dataset basis, the {\tt
-linewidth}, {\tt pointlinewidth} and {\tt pointsize} settings can also have
-their default values changed as in the following examples:
-\begin{verbatim}
-set linewidth 1
-set pointlinewidth 2
-set pointsize 3
-\end{verbatim}
-In each case, the normal default values of these settings are~1. The default
-values of the {\tt colour}, {\tt linetype} and {\tt pointtype} settings depend
-upon whether the current graphic output device is set to produce colour or
-monochrome output (see Chapter~\ref{sec:set_terminal}). In the former case
-(colour output), the colours of each of the comma-separated datasets plotted on
-a graph are drawn sequentially from the currently-selected palette (see
-Section~\ref{sec:palette}), all lines are drawn as solid lines ({\tt
-line\-type~1}), and the symbols used to draw each dataset are drawn
-sequentially from PyXPlot's available point types. In the latter case
-(monochrome output), all datasets are plotted in black, and both the line types
-and point types used to draw each dataset are drawn sequentially from PyXPlot's
-available options:
-\begin{verbatim}
-set terminal colour
-plot [][6:0] 1 with lp, 2 with lp, 3 w lp, 4 w lp, 5 w lp
-set terminal monochrome
-replot
-\end{verbatim}
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_col_vs_mono.eps}}
-
 \subsection{Error Bars}
 \index{errorbars}\label{sec:errorbars}
 
 The following pair of plot styles allow datapoints to be plotted with errorbars
-indicating the uncertainties in either their vertical or horizontal positions.
-They both take as input three columns of data, the first two of which represent
-the $x$- and $y$-coordinates of the positions of each point, and the last of
-which represents the uncertainty in either the $x$- and $y$-coordinate.
+indicating the uncertainties in either their vertical or horizontal positions:
 \begin{itemize}
 \item \indpst{yerrorbars}
 \item \indpst{xerrorbars}
 \end{itemize}
-The plot style \indpst{errorbars} is an alias for \indpst{yerrorbars}.
-Additionally, the following plot style allows datapoints to be plotted with
-both horizontal and vertical errorbars:
+Both of these plot styles take three columns of input data, the first two of
+which represent the $x$- and $y$-coordinates of the positions of each point,
+and the last of which represents the uncertainty in either the $x$- and
+$y$-coordinate.  The plot style \indpst{errorbars} is an alias for
+\indpst{yerrorbars}.  Additionally, the following plot style allows datapoints
+to be plotted with both horizontal and vertical errorbars:
 \begin{itemize}
 \item \indpst{xyerrorbars}
 \end{itemize}
@@ -368,24 +414,6 @@ This data can then be plotted using the following PyXPlot script:
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex.eps}}
 }
 
-\section{The Palette}
-\label{sec:palette}
-
-\index{palette}\index{colours!setting the palette} PyXPlot has a palette of
-colours which it assigns sequentially to datasets when colours are not manually
-assigned. This is also the palette to which integers passed to {\tt set colour}
-refer -- the {\tt 5} above, for example. The sequence of colours which make up
-the palette may be set using the \indcmdt{set palette}, which takes a
-comma-separated list of colours, for example:
-
-\begin{verbatim}
-set palette BrickRed, LimeGreen, CadetBlue
-\end{verbatim}
-
-\noindent Another way of setting the palette, in a configuration file, is
-described in Chapter~\ref{ch:configuration}; a list of valid colour names is
-given in Section~\ref{sec:colour_names}.
-
 \section{The {\tt style} Keyword}
 
 At times, the string of style keywords placed after the {\tt with} modifier in
@@ -404,7 +432,7 @@ subsequent {\tt plot} statement, this style can be recalled as follows:
 plot sin(x) with style 2
 \end{verbatim}
 
-\section{Function Plotting Revisited}
+\section{Plotting Functions in Exotic Styles}
 
 The use of plot styles such as {\tt errorbars} when plotting functions, as
 opposed to \datafile s, often requires more than one function to be supplied.
@@ -442,7 +470,15 @@ be particularly unexpected if the above were attempted with an autoscaling
 horizontal axis -- PyXPlot would find itself autoscaling the $x$-axis range to
 the spread of values of $f(x)$, but find that this itself changed depending
 upon the range of the $x$-axis. In this case, the user should have used the
-{\tt parametric} plot option.
+{\tt parametric} plot option described in the next section.
+
+\section{Plotting Parametric Functions}
+
+Parametric functions may be plotted by placing the keyword {\tt parametric}
+before the list of functions to be plotted, as in the example:
+\begin{verbatim}
+plot parametric sin(t):cos(t)
+\end{verbatim}
 
 \section{Graph Legends}
 \index{keys}\index{legends}
@@ -510,8 +546,6 @@ website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.
 \nlscf
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_legends.eps}}
 }
-
-\section{Plotting Parametric Functions}
 
 \section{Configuring Axes}
 \label{sec:multiple_axes}

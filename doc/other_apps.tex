@@ -23,26 +23,25 @@
 
 \chapter{Other Applications of PyXPlot}
 
-In this chapter, we present a short cookbook, describing a few applications
-which we have found for PyXPlot which are not directly related to the plotting
-of graphs.
+In this chapter we present a short cookbook describing a few common yet
+miscellaneous tasks for which PyXPlot may prove useful.
 
 \section{Conversion of JPEG Images to Postscript}
 \index{jpeg images}
 
-Users of the \LaTeX\ typesetting system will have experienced frustration if
-they have ever tried to incorporate bitmap images -- for example, those in jpeg
-format -- into \LaTeX\ documents. Whilst \LaTeX's {\tt includegraphics} command
-allows for the easy incorporation of encapsulated postscript images into
-documents, bitmap images must be converted into postscript before they can be
-imported. ImageMagick\index{ImageMagick}'s {\tt convert} command can perform
-such a conversion, but it does not produce efficient postscript, and the
-resulting postscript file sizes are often excessively large. PyXPlot's
-\indcmdt{jpeg} can perform much more efficient conversion:
+The need to convert bitmap images -- for example, those in jpeg format -- into
+postscript representations is commonly encountered by users of the \LaTeX\
+typesetting system, since \LaTeX's {\tt includegraphics} command can only
+incorporate encapsulated postscript images into documents.  A small number of
+graphics packages provide facilities for making such conversions, including
+ImageMagick\index{ImageMagick}'s {\tt convert} command, but these almost
+invariable produce excessively large postscript files on account of their
+failure to use postscript's native facilities for image compression. PyXPlot's
+\indcmdt{image} can in many cases perform much more efficient conversion:
 
 \begin{verbatim}
 set output image.eps
-jpeg 'image.jpg' width 10
+image 'image.jpg' width 10
 \end{verbatim}
 
 \section{Inserting Equations in Powerpoint Presentations}
@@ -50,24 +49,24 @@ jpeg 'image.jpg' width 10
 
 The two tools most commonly used for presenting talks\index{presentations} --
 Microsoft {\it Powerpoint}\index{Microsoft Powerpoint} and
-OpenOffice\index{OpenOffice} {\it Impress} -- have no facility for importing
-text rendered in \LaTeX\ into slides. This is a frustration for those who work
-in mathematical disciplines, where it is necessary for talks to include
-equations. More generally, it is a frustration for anyone who works in a field
-with notation which makes use of non-standard characters. {\it Powerpoint} does
+OpenOffice\index{OpenOffice} {\it Impress} -- have limited facilities for importing
+text rendered in \LaTeX\ into slides. {\it Powerpoint} does
 include its own {\it Equation Editor}, but its output is considerably less
-professional than that produced by \LaTeX.
+professional than that produced by \LaTeX.  This can prove a frustration for
+anyone who works in a field with notation which makes use of non-standard
+characters, but especially for those who work in mathematical and
+equation-centric disciplines.
 
 It is possible to import graphic images into {\it Powerpoint}, but it cannot
-read images in postscript format, the format in which \LaTeX\ produces its
-output.
-
-PyXPlot's {\tt gif} and {\tt png} terminals provide a fix for this problem, as
-the following example demonstrates:
+read images in postscript format, the format in which \LaTeX\ usually produces
+its output.  PyXPlot's {\tt gif} and {\tt png} terminals provide a fix for this
+problem, as the following example demonstrates:
 
 \begin{verbatim}
-set term transparent noantialias gif ; set dpi 300
-set output 'equation.gif' ; set multiplot
+set term transparent noantialias gif
+set term dpi 300
+set output 'equation.gif'
+set multiplot
 
 # Render the Planck blackbody formula in LaTeX
 set textcolour yellow
