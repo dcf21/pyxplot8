@@ -1,3 +1,33 @@
+2010 ??? ??: PyXPlot 0.8.0
+	- The handling of large datafiles has been streamlined to require around an
+	  order-of-magnitude less time and memory.
+	- PyXPlot's commandline interface now supports tab completion.
+	- PyXPlot's mathematical environment has been extended to handle complex
+	  numbers and quantities with physical units.
+	- The range of mathematical functions built into PyXPlot has been massively
+	  extended.
+	- The solve command has been added to allow the solution of systems of
+	  equations.
+	- The maximise and minimise commands have been added to allow searches for
+	  local extrema of functions.
+	- New plot styles -- filledregion and yerrorshaded -- have been added for
+	  plotting filled error regions.
+	- Parametric function plotting has been implemented.
+	- Several commands, e.g. box, circle, ellipse, etc., have been added to
+	  allow vector graphics to be produced in PyXPlot's multiplot environment.
+	- The jpeg command has been extended to allow the incorporation of bmp, gif
+	  and png images onto multiplot canvases as well as jpeg images. The command
+     has been renamed image in recognition of its wider applicability. Image
+     transparency is supported in gif and png images.
+	- The spline command, now renamed the interpolate command, has been extended
+	  up provide many types of interpolation between datapoints.
+	- An fft command has been added for performing Fourier transforms on data.
+	- A wide range of conditional and flow control structures have been added to
+	  PyXPlot's command language -- these are the do, for, foreach, if and while
+     commands and the conditionalS and conditionalN mathematical functions.
+	- The show command has been reworked to produce pastable output.
+	- The configuration of linked axes has been entirely redesigned.
+	- Many minor bugs have been fixed.
 2009 Nov 17: PyXPlot 0.7.1
    - Bug fix to the xyerrorrange plot style.
    - Bug fix to the exec command.

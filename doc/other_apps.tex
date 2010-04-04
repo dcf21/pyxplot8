@@ -189,9 +189,7 @@ chmod 755 compile make_slides
 \subsection{Writing A Short Example Talk}
 
 The infrastructure is now completely set up, and you are ready to start
-designing slides. As an example, we will now design a short talk which might be
-presented to by the Principal Conductor of the {\it International Feline
-Chamber Chorus}.
+designing slides. We will now design an example talk with three slides.
 
 \begin{enumerate}
 \item Run the script {\tt compile} and leave it running in the background.
@@ -204,15 +202,15 @@ set output 'slides/0001.gif'
 load 'scripts/slide_init'
 
 text '\parbox[t]{10cm}{\center \LARGE \bf \
-  An Experiment in the Training \\ \
-  of Cats to Sing Bach Chorales \
+  A Tutorial in the use of PyXPlot \\ \
+  to present Talks \
 } ' at x*50, y*75
-text '\Large \bf Sir Archibald Dribbles' at x*50, y*45
+text '\Large \bf Prof A.N.\ Other' at x*50, y*45
 text '\parbox[t]{9cm}{\center \
-  Principal Conductor, \\ \
-  International Feline Chamber Chorus \
+  Director, \\ \
+  Atlantis Island University \
 } ' at x*50, y*38
-text 'Annual Lecture, 1st January 2008' at x*50, y*22
+text 'Annual Lecture, 1st January 2010' at x*50, y*22
 
 load 'scripts/slide_finish'
 \end{verbatim}
@@ -228,20 +226,16 @@ load 'scripts/slide_init'
 
 text '\Large \textbf{Talk Overview}' at x*50, y*92
 text "\parbox[t]{9cm}{\begin{itemize} \
- \item Teaching cats to use their head voices. \
- \item The Suzuki Method, as adapted to cats. \
- \item Case Study I: {\it Wachet auf, das Katzenfutter \
-                          ist angerichtet!}, BWV~140. \
- \item Rhythmical Devices: Synchronised Purring. \
- \item Case Study II: {\it Was eine Katze will, das \
-                           g'scheh' allzeit}, BWV~92. \
+ \item Setting up the Infrastructure. \
+ \item Writing a Short Example Talk. \
+ \item Delivering your Talk. \
  \item Conclusion. \
  \end{itemize} \
 } " at x*50 , y*60
 
 set textcol cyan
 text '{\bf With thanks to my collaborator, \
-           Pebbles Poofslop.}' at x*50,y*15
+           Prof Y.E.\ Tanother.}' at x*50,y*15
 
 load 'scripts/slide_finish'
 \end{verbatim}
