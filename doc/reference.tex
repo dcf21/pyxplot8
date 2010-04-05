@@ -68,6 +68,25 @@ set xlabel '`ls`'
 
 \section{arc}\indcmd{arc}
 
+\begin{verbatim}
+arc at <x>, <y> radius <r> from <start> to <finish> [with <option> ... ]
+\end{verbatim}
+
+Arcs (curves with constant radius of curvature, that is, segments of circles)
+may be drawn on a multiplot using the arc command.  The {\tt at} modifier
+specifies the co-ordinates of the centre of curvature, from which all points on
+the arc are the distance given following the {\tt radius} modifier.  The angles
+{\tt start} and {\tt finish}, measured clockwise from the vertical, control
+where the arc begins and finishes.  For example, the command
+
+\begin{verbatim}
+arc at 0,0 radius 2 from 90 to 270
+\end{verbatim}
+
+\noindent would draw a semi-circle below the $x$-axis, centred on the origin
+with radius two.  The usual with modifiers for lines may be passed; if the {\tt
+fillcolour} modifier is specified then the arc will be filled to form a
+pie-chart slice.
 
 \section{arrow}\indcmd{arrow}
 
@@ -105,6 +124,28 @@ subsequently with the {\tt delete} and {\tt undelete} commands respectively.
 
 \section{box}\indcmd{box}
 
+\begin{verbatim}
+box at <x>, <y> width <w> height <h> [rotate <r>] [with <option> ... ]
+box from <x1>, <y1> to <x2>, <y2> [rotate <r>] [with <option> ... ]
+\end{verbatim}
+
+There are two different ways to use the {\tt box} command to specify boxes that
+are to be drawn onto a multi-plot.  In the first syntax, the co-ordinates of one
+corner of the box are specified, along with the width and height.  If both width
+and height are positive then the co-ordinates are taken to be those of the
+bottom left-hand corner of the box.  If a rotation angle is specified then the
+box is rotated about the specified corner.  The {\tt with} options allows line
+and fill types to be specified.
+
+\noindent The second syntax allows two pairs of co-ordinates to be specified.
+PyXPlot will then draw a rectangular box with opposing corners at the specified
+locations.  If an angle is specified the box will be rotated about its centre.
+Hence the following two commands both draw a square box centred on the origin:
+
+\begin{verbatim}
+box from -1, -1 to 1,1
+box at 1, -1 width -2 height 2
+\end{verbatim}
 
 \section{break}\indcmd{break}
 
@@ -147,6 +188,21 @@ cd foo
 
 \section{circle}\indcmd{circle}
 
+\begin{verbatim}
+circle at <x>, <y> radius <r> [with <option> ... ]
+\end{verbatim}
+
+The {\tt circle} command allows circles to be added to a multiplot.  The
+co-ordinates of the circle's centre and its radius are specified.  Additional
+options may be passed following the {\tt with} modifier that change the line and
+fill types.  For example
+
+\begin{verbatim}
+circle at 2,2 radius 1 with colour red fillcolour blue
+\end{verbatim}
+
+\noindent would draw a red circle filled in blue centred 2 cm above and to the
+right of the origin, with unit radius.
 
 \section{clear}\indcmd{clear}
 
@@ -850,6 +906,15 @@ even be any plots; there might perhaps only be textual items and arrows.
 
 \section{point}\indcmd{point}
 
+\begin{verbatim}
+point at <x>, <y> [label <string>] [with <option> ... ]
+\end{verbatim}
+
+The {\tt point} command places a point on the plot at the specified
+co-ordinates.  It is equivalent to plotting a \datafile\ continaing a single
+datum.  If an optional {\tt label} is specified then the text string provided is
+placed next to the point.  The {\tt with} modifier may be used to change the
+point type, colour, etc.
 
 \section{replot}\indcmd{replot}
 
