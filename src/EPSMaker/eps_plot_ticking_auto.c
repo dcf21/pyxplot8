@@ -155,6 +155,25 @@ static void CountTicks(const unsigned char *TicksAcceptedIn, const int NPotTicks
   return;
  }
 
+// Print a ticking scheme for debugging purposes
+static void TickScheme_sprintf(char *out, const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const unsigned char *TicksAccepted, const unsigned char DisplayType)
+ {
+  int i=0,j=0,k=0;
+  out[j++]='(';
+  for (i=0; i<NPotTicks; i++)
+   if (TicksAccepted[i] == DisplayType)
+    {
+     if (k!=0) out[j++]=',';
+     sprintf(out+j,"%g",PotTickList[ TickOrder[i].id ].TargetValue);
+     j+=strlen(out+j);
+     k++;
+    }
+  out[j++]=')';
+  out[j++]='.';
+  out[j++]='\0';
+  return;
+ }
+
 // Add a tick scheme to a list of accepted ticks
 static void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const int NIntervals, const int ArgNo, const int DivOfThrow, const int OoM, const int DivOfOoM, const unsigned char *TicksAcceptedIn, unsigned char *TicksAcceptedOut, const unsigned char MAJORminor, const double AxisLength, const double TickSepMin, unsigned char *FLAGacceptable, int *NTicksOutMajor, int *NTicksOutMinor)
  {
@@ -320,7 +339,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   ArgLeagueTableEntry *ArgLeagueTable, *TickOrder;
   PotentialTick *PotTickList;
   int NPotTicks, NPotTicksMax;
-  unsigned char *TicksAccepted, *TicksAcceptedNew, *TicksAcceptedNew2A, *TicksAcceptedNew2B, *TicksAcceptedRough;
+  unsigned char *TicksAccepted, *TicksAcceptedNew, *TicksAcceptedNewTF, *TicksAcceptedNew2B, *TicksAcceptedRough, *TicksAcceptedRough2;
 
   N_STEPS = (2 + length/tick_sep_major) * STEP_DUPLICITY; // Number of intervals into which we divide axis
 
@@ -643,17 +662,14 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
    }
 
   // Make arrays for noting which ticks have been accepted
-  TicksAccepted      = (unsigned char *)lt_malloc(NPotTicks);
-  TicksAcceptedNew   = (unsigned char *)lt_malloc(NPotTicks);
-  TicksAcceptedNew2A = (unsigned char *)lt_malloc(NPotTicks);
-  TicksAcceptedNew2B = (unsigned char *)lt_malloc(NPotTicks);
-  TicksAcceptedRough = (unsigned char *)lt_malloc(NPotTicks);
-  if ((TicksAccepted==NULL)||(TicksAcceptedNew==NULL)||(TicksAcceptedNew2A==NULL)||(TicksAcceptedNew2B==NULL)||(TicksAcceptedRough==NULL)) goto FAIL;
-  for (i=0; i<NPotTicks; i++) TicksAccepted     [i] = 0;
-  for (i=0; i<NPotTicks; i++) TicksAcceptedNew  [i] = 0;
-  for (i=0; i<NPotTicks; i++) TicksAcceptedNew2A[i] = 0;
-  for (i=0; i<NPotTicks; i++) TicksAcceptedNew2B[i] = 0;
-  for (i=0; i<NPotTicks; i++) TicksAcceptedRough[i] = 0;
+  TicksAccepted       = (unsigned char *)lt_malloc(NPotTicks);
+  TicksAcceptedNew    = (unsigned char *)lt_malloc(NPotTicks);
+  TicksAcceptedNewTF  = (unsigned char *)lt_malloc(NPotTicks);
+  TicksAcceptedNew2B  = (unsigned char *)lt_malloc(NPotTicks);
+  TicksAcceptedRough  = (unsigned char *)lt_malloc(NPotTicks);
+  TicksAcceptedRough2 = (unsigned char *)lt_malloc(NPotTicks);
+  if ((TicksAccepted==NULL)||(TicksAcceptedNew==NULL)||(TicksAcceptedNewTF==NULL)||(TicksAcceptedNew2B==NULL)||(TicksAcceptedRough==NULL)||(TicksAcceptedRough2==NULL)) goto FAIL;
+  for (i=0; i<NPotTicks; i++) TicksAccepted[i] = 0;
 
   // Start investigating which tick schemes to accept
   for (i=0; i<NArgs; i++)
@@ -688,8 +704,10 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
      else // Continuous arguments are more complicated
       {
        int ThrowFactors_Nticks=-1, ThrowFactors_Nticks_minor, ThrowFactors_FactNum=-1;
-       int Divide_LogBase_Nticks=-1, Nticks_new, Nticks_new_minor, Nticks_new_accepted, Nticks_new_accepted_minor;
-       int Nticks_new_prev, Nticks_new_prev_minor, Nticks_2B=-1, Nticks_2B_minor=-1;
+       int Divide_LogBase_Nticks=-1, Divide_LogBase_Nticks_minor=-1;
+       int Nticks_new, Nticks_new_minor, Nticks_new_accepted, Nticks_new_accepted_minor;
+       int Nticks_new_prev, Nticks_new_prev_minor, Nticks_2B, Nticks_2B_minor;
+       int Nticks_2B_best=-1, Nticks_2B_minor_best=-1;
        int l, l2, l3, l4, l_final;
        int NMajorTicksIn, NMinorTicksIn;
        unsigned char MAJORminor;
@@ -698,12 +716,22 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
        for (k=0; k<args[i].NFactorsThrow; k++)
         {
          acceptable = 1;
-         AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNew,
+         AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNewTF,
                        1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
          if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/FACTOR_MULTIPLY,ThrowFactors_Nticks,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
          if (acceptable) { ThrowFactors_FactNum =  k; break; }
-         else            { ThrowFactors_Nticks  = -1; }
+         else            { ThrowFactors_FactNum = -1; ThrowFactors_Nticks  = -1; }
         }
+
+       // Minor ticks: Try other factors of throw
+       for (k=0; k<ThrowFactors_FactNum; k++)
+        if ((args[i].FactorsThrow[ThrowFactors_FactNum] % args[i].FactorsThrow[k])==0)
+         {
+          acceptable=1;
+          AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAcceptedNewTF, TicksAcceptedRough,
+                        0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
+          if (acceptable) { memcpy(TicksAcceptedNewTF, TicksAcceptedRough, NPotTicks); break; }
+         }
 
        // Option 2: Divide log base
        if (DEBUG) { sprintf(temp_err_string, "Checking for ticks which divide OoMs %g to %g [i.e. %d to %d].",pow(LogBase,args[i].OoM_max),pow(LogBase,args[i].OoM_min),args[i].OoM_max,args[i].OoM_min); ppl_log(temp_err_string); }
@@ -714,35 +742,6 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
          Nticks_new_prev_minor = -1;
          for (k=args[i].OoM_max+1; k>=args[i].OoM_min; k--)
           {
-           // Option 2A: Add 1, 1-2-5, or 1-2-3-4...
-           acceptable = 1;
-           Nticks_new_accepted       = Nticks_new_prev;
-           Nticks_new_accepted_minor = Nticks_new_prev_minor;
-           MAJORminor = 1;
-           if (k==args[i].OoM_max+1)
-              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -10, TicksAcceptedNew, TicksAcceptedNew2A,
-                            1, length, tick_sep_major, &acceptable, &Nticks_new, &Nticks_new_minor); // Must have zero, if present, with highest OoM
-           if ((k!=args[i].OoM_max+1) || (!acceptable))
-              memcpy(TicksAcceptedNew2A, TicksAcceptedNew, NPotTicks);
-           acceptable = 1;
-           for (l=-3; l<=0; l++)
-            {
-             AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, l, TicksAcceptedNew2A, TicksAcceptedRough,
-                           MAJORminor, length, MAJORminor ? tick_sep_major : tick_sep_minor, &acceptable, &Nticks_new, &Nticks_new_minor);
-             if (DEBUG) { sprintf(temp_err_string, "OoM %g Priority %2d produces %d %s ticks [%s].",pow(LogBase,k),l,Nticks_new,MAJORminor?"major":"minor",acceptable?"pass":"fail"); ppl_log(temp_err_string); }
-             if (acceptable) { Nticks_new_accepted=Nticks_new; Nticks_new_accepted_minor=Nticks_new_minor; memcpy(TicksAcceptedNew2A, TicksAcceptedRough, NPotTicks); }
-             else            { if (MAJORminor) { MAJORminor=0; l--; continue; } else { break; } }
-            }
-           // If option 2B on last OoM produced more ticks than option 2A on this run... go with last option 2B
-           if (DEBUG) { sprintf(temp_err_string, "Option 2A -- %d major ticks and %d minor ticks. Option 2B -- %d major ticks and %d minor ticks.", Nticks_new_accepted, Nticks_new_accepted_minor, Nticks_2B, Nticks_2B_minor); ppl_log(temp_err_string); }
-           if ((Nticks_2B > 0) && ((Nticks_2B > Nticks_new_accepted) || ((Nticks_2B == Nticks_new_accepted) && (Nticks_2B_minor > Nticks_new_accepted_minor))))
-            {
-             if (DEBUG) ppl_log("Option 2B accepted.");
-             memcpy(TicksAcceptedNew, TicksAcceptedNew2B, NPotTicks);
-             Nticks_new_prev       = Nticks_new_accepted       = Nticks_2B;
-             Nticks_new_prev_minor = Nticks_new_accepted_minor = Nticks_2B_minor;
-             break;
-            }
            // Option 2B: Divide 10 into factor intervals
            Nticks_2B       = -1;
            Nticks_2B_minor = -1;
@@ -752,8 +751,8 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
              if (Nticks_2B>=0) break;
              l_final = l;
              acceptable=1;
-             if (!l2)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1)-1, TicksAcceptedNew, TicksAcceptedNew2B, 1, length, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
-             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1), l2?TicksAcceptedNew:TicksAcceptedNew2B, TicksAcceptedNew2B, 1, length, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (!l2)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1)-1, TicksAcceptedNew, TicksAcceptedRough, 1, length, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1), l2?TicksAcceptedNew:TicksAcceptedRough, TicksAcceptedRough, 1, length, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
              if (DEBUG) { sprintf(temp_err_string, "Dividing OoM %g into intervals of %g produces %d major ticks [%s%s].",pow(LogBase,k),FactorsLogBase[l ]/FACTOR_MULTIPLY*pow(LogBase,k-1),Nticks_2B,acceptable?"pass":"fail",(Nticks_2B<=NMajorTicksIn)?"; no new ticks":""); ppl_log(temp_err_string); }
              if ((!acceptable) || (Nticks_2B<=NMajorTicksIn)) { Nticks_2B=-1; Nticks_2B_minor=-1; }
             }
@@ -768,50 +767,97 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
                continue; // Minor ticks must mark common factors of log base and major tick interval
               }
              acceptable=1;
-             if (!l4)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1)-1, TicksAcceptedNew2B, TicksAcceptedRough, 0, length, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
-             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1), l4?TicksAcceptedNew2B:TicksAcceptedRough, TicksAcceptedRough, 0, length, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (!l4)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1)-1, TicksAcceptedRough, TicksAcceptedRough2, 0, length, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1), l4?TicksAcceptedRough:TicksAcceptedRough2, TicksAcceptedRough2, 0, length, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
              if (DEBUG) { sprintf(temp_err_string, "Dividing OoM %g into intervals of %g produces %d minor ticks [%s%s].",pow(LogBase,k),FactorsLogBase[l3]/FACTOR_MULTIPLY*pow(LogBase,k-1),Nticks_2B_minor,acceptable?"pass":"fail",(Nticks_2B_minor<=NMinorTicksIn)?"; no new ticks":""); ppl_log(temp_err_string); }
              if (!acceptable) Nticks_2B_minor = NMinorTicksIn;
             }
-           if (Nticks_2B_minor>NMinorTicksIn) memcpy(TicksAcceptedNew2B, TicksAcceptedRough, NPotTicks);
-           // Adopt option 2A
-           memcpy(TicksAcceptedNew, TicksAcceptedNew2A, NPotTicks);
-           if ((k<args[i].OoM_max) && (Nticks_new_accepted==Nticks_new_prev) && (Nticks_new_accepted_minor==Nticks_new_prev_minor) && (Nticks_2B<=Nticks_new_accepted) && (Nticks_2B_minor<=Nticks_new_accepted_minor)) { if (DEBUG) ppl_log("Making no progress."); break; }
+           if (Nticks_2B_minor>NMinorTicksIn) memcpy(TicksAcceptedRough, TicksAcceptedRough2, NPotTicks);
+
+           // Check whether this option 2B is better than previous option 2Bs
+           if ( (Nticks_2B > Nticks_2B_best) || ((Nticks_2B == Nticks_2B_best) && (Nticks_2B_minor > Nticks_2B_minor_best)) )
+            {
+             memcpy(TicksAcceptedNew2B, TicksAcceptedRough, NPotTicks);
+             Nticks_2B_best       = Nticks_2B;
+             Nticks_2B_minor_best = Nticks_2B_minor;
+            }
+
+           // Option 2A: Add 1, 1-2-5, or 1-2-3-4...
+           acceptable = 1;
+           Nticks_new_accepted       = Nticks_new_prev;
+           Nticks_new_accepted_minor = Nticks_new_prev_minor;
+           MAJORminor = 1;
+           if (k==args[i].OoM_max+1)
+              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -10, TicksAcceptedNew, TicksAcceptedRough,
+                            1, length, tick_sep_major, &acceptable, &Nticks_new, &Nticks_new_minor); // Must have zero, if present, with highest OoM
+           if ((k!=args[i].OoM_max+1) || (!acceptable))
+              memcpy(TicksAcceptedRough, TicksAcceptedNew, NPotTicks);
+           acceptable = 1;
+           for (l=-3; l<=0; l++)
+            {
+             AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, l, TicksAcceptedNew, TicksAcceptedRough,
+                           MAJORminor, length, MAJORminor ? tick_sep_major : tick_sep_minor, &acceptable, &Nticks_new, &Nticks_new_minor);
+             if (DEBUG) { sprintf(temp_err_string, "OoM %g Priority %2d produces %d %s ticks [%s].",pow(LogBase,k),l,Nticks_new,MAJORminor?"major":"minor",acceptable?"pass":"fail"); ppl_log(temp_err_string); }
+             if (acceptable) { Nticks_new_accepted=Nticks_new; Nticks_new_accepted_minor=Nticks_new_minor; memcpy(TicksAcceptedNew, TicksAcceptedRough, NPotTicks); }
+             else            { if (MAJORminor) { MAJORminor=0; l--; continue; } else { break; } }
+            }
+
+           // Print results of options 2A and 2B
+           if (DEBUG)
+            {
+             sprintf(temp_err_string, "Option 2A -- %d major ticks and %d minor ticks. Option 2B -- %d major ticks and %d minor ticks.", Nticks_new_accepted, Nticks_new_accepted_minor, Nticks_2B_best, Nticks_2B_minor_best);
+             ppl_log(temp_err_string);
+             sprintf(temp_err_string, "Option 2A Major: ");
+             TickScheme_sprintf(temp_err_string+strlen(temp_err_string), PotTickList, NPotTicks, TickOrder, TicksAcceptedNew,1);
+             ppl_log(temp_err_string);
+             sprintf(temp_err_string, "Option 2A Minor: ");
+             TickScheme_sprintf(temp_err_string+strlen(temp_err_string), PotTickList, NPotTicks, TickOrder, TicksAcceptedNew,1);
+             ppl_log(temp_err_string);
+             sprintf(temp_err_string, "Option 2B Major: ");
+             TickScheme_sprintf(temp_err_string+strlen(temp_err_string), PotTickList, NPotTicks, TickOrder, TicksAcceptedNew2B,1);
+             ppl_log(temp_err_string);
+             sprintf(temp_err_string, "Option 2B Minor: ");
+             TickScheme_sprintf(temp_err_string+strlen(temp_err_string), PotTickList, NPotTicks, TickOrder, TicksAcceptedNew2B,2);
+             ppl_log(temp_err_string);
+            }
+
+           // If not making progress, abort
+           if ((k<args[i].OoM_max) && (Nticks_new_accepted==Nticks_new_prev) && (Nticks_new_accepted_minor==Nticks_new_prev_minor) && (Nticks_2B<=Nticks_new_accepted) && (Nticks_2B_minor<=Nticks_new_accepted_minor)) { if (DEBUG) ppl_log("Making no further progress."); break; }
            Nticks_new_prev       = Nticks_new_accepted;
            Nticks_new_prev_minor = Nticks_new_accepted_minor;
           }
-         Divide_LogBase_Nticks = Nticks_new_prev;
+         Divide_LogBase_Nticks       = Nticks_new_prev;
+         Divide_LogBase_Nticks_minor = Nticks_new_prev_minor;
         }
 
        // Choose which option produced best result
-       if (DEBUG) { sprintf(temp_err_string,"Dividing by factors of throw produced %d major ticks.", ThrowFactors_Nticks); ppl_log(temp_err_string); }
-       if (DEBUG) { sprintf(temp_err_string,"Dividing by factors of log base produced %d major ticks.", Divide_LogBase_Nticks); ppl_log(temp_err_string); }
-       if (ThrowFactors_Nticks > Divide_LogBase_Nticks)
-        {
-         if (ThrowFactors_Nticks > 0) // Mark factors of throw of argument
-          {
-           acceptable=1;
-           AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, ThrowFactors_FactNum, 0, 0, TicksAccepted, TicksAcceptedNew,
-                         1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
-           if (acceptable) memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); // Update TicksAccepted
+       if (DEBUG) { sprintf(temp_err_string,"Dividing by factors of throw produced %d major ticks (%d minor ticks).", ThrowFactors_Nticks, ThrowFactors_Nticks_minor); ppl_log(temp_err_string); }
+       if (DEBUG) { sprintf(temp_err_string,"Dividing by factors of log base produced %d major ticks (%d minor ticks).", Divide_LogBase_Nticks, Divide_LogBase_Nticks_minor); ppl_log(temp_err_string); }
+       if (DEBUG) { sprintf(temp_err_string,"Option 2B produced %d major ticks (%d minor ticks).", Nticks_2B_best, Nticks_2B_minor_best); ppl_log(temp_err_string); }
 
-           // Try other factors of throw for minor ticks
-           for (k=0; k<ThrowFactors_FactNum; k++)
-            if ((args[i].FactorsThrow[ThrowFactors_FactNum] % args[i].FactorsThrow[k])==0)
-             {
-              acceptable=1;
-              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNew,
-                            0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
-              if (acceptable) { memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); break; }
-             }
-          }
+       // Compare option 2A and option 2B
+       if ((Nticks_2B_best > Divide_LogBase_Nticks) || ((Nticks_2B_best == Divide_LogBase_Nticks) && (Nticks_2B_minor_best > Divide_LogBase_Nticks_minor)))
+        {
+         if (DEBUG) ppl_log("Option 2B accepted over 2A.");
+         memcpy(TicksAcceptedNew, TicksAcceptedNew2B, NPotTicks);
+         Divide_LogBase_Nticks       = Nticks_2B_best;
+         Divide_LogBase_Nticks_minor = Nticks_2B_minor_best;
         }
        else
         {
-         if (Divide_LogBase_Nticks > 0) // Mark places where argument is a significant round number
-          {
-           memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks);
-          }
+         if (DEBUG) ppl_log("Option 2A accepted over 2B.");
+        }
+
+       // Factors of throw are best tick scheme
+       if ((ThrowFactors_Nticks > Divide_LogBase_Nticks) || ((ThrowFactors_Nticks == Divide_LogBase_Nticks) && (ThrowFactors_Nticks_minor > Divide_LogBase_Nticks_minor)))
+        {
+         if (DEBUG) ppl_log("Factors of throw accepted over option 2.");
+         if (ThrowFactors_Nticks > 0) memcpy(TicksAccepted, TicksAcceptedNewTF, NPotTicks);
+        }
+       else
+        {
+         if (DEBUG) ppl_log("Option 2 accepted over factors of throw.");
+         if (Divide_LogBase_Nticks > 0) memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks);
         }
       }
     }
