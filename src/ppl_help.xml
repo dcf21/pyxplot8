@@ -213,6 +213,9 @@ Note that back-quotes cannot be used inside quote characters, and so the followi
 set xlabel '`ls`'
 
   </pling>
+  <arc>
+
+  </arc>
   <arrow>
 
 arrow [from] \labx\rab, \laby\rab [to] \labx\rab, \laby\rab [with \laboption\rab ... ]
@@ -225,9 +228,30 @@ The arrow command may be followed by the with keyword to specify the style of th
 
 arrow from x1,y1 to x2,y2 with twohead linetype 2 colour blue
 
-Arrows receive unique multiplot identification numbers which count sequentially from one, and which are output to the terminal after the arrow command is called. By reference to these numbers, they can be deleted and undeleted subsequently with the delete and undelete commands respectively. 
+The arrow command has a twin, the line command, which has the same syntax, but uses the default arrow style of nohead, producing a short line segment. Arrows receive unique multiplot identification numbers which count sequentially from one, and which are output to the terminal after the arrow command is called. By reference to these numbers, they can be deleted and undeleted subsequently with the delete and undelete commands respectively. 
 
   </arrow>
+  <box>
+
+  </box>
+  <break>
+
+break
+
+The break command breaks out of a do, while, for or foreach loop. Execution resumes at the statement following the end of the loop. For example, the following example would only print the numbers 1 and 2: 
+
+for i = 1 to 10
+{
+   print i
+   if (i==2)
+   {
+      break
+   }
+}
+
+The break command can only be used within a loop. It should not be followed by any parameters. 
+
+  </break>
   <cd>
 
 cd \labdirectory\rab
@@ -237,6 +261,9 @@ PyXPlot's cd command is very similar to the shell cd command; it changes the cur
 cd foo
 
   </cd>
+  <circle>
+
+  </circle>
   <clear>
 
 clear
@@ -244,6 +271,24 @@ clear
 In multiplot mode, the clear command removes all current plots, arrows and text objects from the working page. In single plot mode it is not especially useful; it removes the current plot to leave a blank page. The clear command should not be followed by any parameters. 
 
   </clear>
+  <continue>
+
+continue
+
+The continue command is used within for, foreach, do and while loops. It causes PyXPlot to skip the remainder of the current iteration of the loop, in an analogous manner to the continue statement in the C language. For example, the following programme will not print the number `2': 
+
+for i = 0 to 5
+{
+   if (i==2)
+   {
+      continue
+   }
+   print i
+}
+
+The continue command may only be used in a loop. It does not take any parameters. 
+
+  </continue>
   <delete>
 
 delete \labplot number\rab, ...
@@ -255,24 +300,34 @@ delete 1,2,3
 would remove item numbers 1, 2 and 3. Having been deleted, multiplot items can be restored using the undelete command. 
 
   </delete>
-  <edit>
+  <do>
 
-edit \labplot number\rab
+do {
+  [ ... commands ... ]
+} while ( \labcondition\rab )
 
-The edit command is part of the multiplot environment; it allows one to modify the properties of any plot on a multiplot. The desired plot should be identified using the reference number which it was given when it was created using the plot command; it would have been displayed on the terminal at that time. For example, consider the following command sequence: 
+The do command sets up a loop, in a similar manner to the while command. PyXPlot executes the block of commands in the body of the loop, then checks the condition given in the while clause at the end. If the condition is true, the loop executes again. Hence the contents of a do loop are <emph>
+a
+</emph>lways executed at least once. The following example prints the numbers 1, 2 and 3: 
 
-edit 1
-set textcolour red
-replot
+i=1
+do
+{
+   print i
+   i = i + 1
+} while (i \lab 4)
 
-Here, the edit command is used to select the plot with reference number1. The set textcolour red command which follows then changes the settings of this plot, taking effect when the replot command is called. The edit command also has the effect of resetting all of PyXPlot's plot settings to those used to produce the chosen plot, and so in conjunction with the show command, can be used to inspect as well as modify the settings of any plot on a multiplot page. For example: 
+Note that there must always be a newline following the opening brace after the do command command, and the while clause must always be on the same line as the closing brace. 
 
-edit 1
-show textcolour
+  </do>
+  <ellipse>
 
-would show the text colour used in plot 1. Having issued the edit command, no further command needs to be issued to return to a state of adding plots to a multiplot rather than editing the existing plots; simply call the plot command rather than the replot command to do this. 
+  </ellipse>
+  <else>
 
-  </edit>
+The else command statement is described in the entry for the if statement, of which it forms part. 
+
+  </else>
   <eps>
 
 eps '\labfilename\rab' [at \labx\rab, \laby\rab] [rotate \labangle\rab] [width \labwidth\rab]
@@ -300,20 +355,55 @@ exit
 The exit command can be used to quit PyXPlot. If multiple command files, or a mixture of command files and interactive sessions, were specified on PyXPlot's command line, then PyXPlot moves onto the next command-line item after receiving the exit command. PyXPlot may also be quit be pressing CTRL-D or via the quit command. In interactive mode, CTRL-C terminates the current command, if one is running. When running a script, CTRL-C terminates execution of it. 
 
   </exit>
+  <fft>
+
+  </fft>
   <fit>
 
-fit [\labrange specifier\rab ...] \labfunction\rab '\labdatafile\rab'
+fit [\labrange specifier\rab ...] \labfunction\rab [withouterrors] '\labdatafile\rab'
     [index \labindex specifier\rab] [using \labusing specifier\rab]
     via \labvariable\rab[, \labvariable\rab, ...]
 
-The fit command may be used to fit functional forms to data in files. A simple example might be: 
+The fit command allows the user to fit arbitrary functional forms to datapoints read from files. This may be used to produce best-fit lines, or may be used to determine the gradient and other mathematical properties of datasets, by looking at the parameters used to make the functional form fit the data. The following simple example fits a straight line to data in a file called data.dat: 
 
 f(x) = a*x+b
-fit f(x) 'data.dat' index 1 using 2:3 via a,b
+fit f() 'data.dat' index 1 using 2:3 via a,b
 
-The coefficients to be varied are listed after the via keyword; the modifiers index, every and using have the same meanings as in the plot command. This is useful for producing best-fit lines and also has applications for estimating the gradients of datasets. The syntax is essentially identical to that used by Gnuplot.
+The first line specifies the functional form which is to be used. The coefficients within this function which are to be varied during the fitting process are listed after the keyword via in the fit command. The modifiers index, every, select and using have the same meanings as in the plot command. As the fit works, it displays statistics including the best-fit values of each of the fitting parameters, the uncertainties in each of them, and the covariance matrix. These can be useful for analysing the security of the fit achieved, but calculating the uncertainties in the best-fit parameters and the covariance matrix can be time consuming, especially when many parameters are being fitted simultaneously. The optional word withouterrors can be included immediately before the filename of the datafile to be fitted to substantially speed up cases where this information is not required.
 
   </fit>
+  <for>
+
+for \labvariable\rab = \labstart\rab to \labend\rab [step \labstep\rab] {
+   \lab ... commands ... \rab
+}
+
+The for command command carries out a set of commands with a specified variable taking a different value each time. In PyXPlot's implementation the value of the variable increases by a fixed value step each time, which may be negative and is equal to unity if not specified. The end value is not included in the squence. The following example prints the squares of the first five natural numbers: 
+
+for i = 1 to 6 {
+   print i**2
+}
+
+  </for>
+  <foreach>
+
+foreach \labvariable\rab in [ \labfilename expression\rab | ( \laba\rab, [\labb\rab, ....] ) ] {
+   \lab ... commands ... \rab
+}
+
+The foreach command has two uses. The first is to take a set of filename, their names produced by expansion of a user-provided expression, and run a set of commands with a variable set to each filename. For example, to plot the data in the set of files whose names end with .dat: 
+
+foreach file in *.dat {
+   plot file with lines
+}
+
+The second form of the command takes a list of values provided by the user and runs a block of commands with the specified variable set equal to each value in turn. For example, to plot normal distributions of three different widths: 
+
+foreach sigma in (1, 2, 3) {
+   replot 1/sigma*exp(-x**2/(2*sigma**2))
+}
+
+  </foreach>
   <help>
 
 help [\labtopic\rab [\labsub-topic\rab ... ] ]
@@ -326,22 +416,22 @@ provides information on PyXPlot's commands. Some topics have sub-topics; these a
 
 help commands help
 
-Information is arranged with general information about PyXPlot under the heading about and information about PyXPlot's commands under commands. Information about the format that input data files should take can be found under datafile. Other categories are self-explanatory. To exit any help page, press the q key. 
+Information is arranged with general information about PyXPlot under the heading about and information about PyXPlot's commands under commands. Information about the format that input datafiles should take can be found under datafile. Other categories are self-explanatory. To exit any help page, press the q key. 
 
   </help>
   <histogram>
 
-histogram [range specification] \labfunction name\rab '\labdatafile\rab' 
+histogram [range specification] \labfunction name\rab '\labdatafile\rab'
      [using \labusing specifier\rab] [select \labselect specifier\rab]
      [index \labindex specifier\rab] [every \labevery specifier\rab]
      [binwidth \labbin width\rab] [binorigin \labbin origin\rab]
      [bins (x1, x2, ...)]
 
-The histogram command takes a data file and counts the number of points in various bins, producing a function the area under which is equal to the number of points for each bin. The width and starting position of the bins can be specified using the binwidth and binorigin modifiers, or a user-supplied set of bins can be used with the bins modifier. For example: 
+The histogram command takes a datafile and counts the number of points in various bins, producing a function the area under which is equal to the number of points for each bin. The width and starting position of the bins can be specified using the binwidth and binorigin modifiers, or a user-supplied set of bins can be used with the bins modifier. For example: 
 
 histogram f() 'output.dat' u 2 binwidth 2
 
-produces a function f(), which contains the data in the second column of the output.dat file binned into bins of width 2. A range specifier can be used to restrict the set of data in the data file that is to be binned; for example: 
+produces a function f(), which contains the data in the second column of the output.dat file binned into bins of width 2. A range specifier can be used to restrict the set of data in the datafile that is to be binned; for example: 
 
 histogram [0:10] f() 'data.dat' bins (0,1,3,6,10)
 
@@ -355,14 +445,60 @@ history [\labN\rab]
 The history command outputs the current command-line history to the terminal. The optional parameter, N, if supplied, causes only the first N lines to be printed. 
 
   </history>
+  <if>
+
+if ( \labcriterion\rab ) {
+   \lab ... commands ... \rab
+} [ else [if ( \labcriterion\rab ) ] {
+   \lab ... further commands ... \rab
+} ... ]
+
+The if command command allows conditional execution of commands. If the criterion is satisfied then the list of commands are executed. It is also possible to have one or more subsequent else if command statements, which have their own criteria which are only considered if the first criterion is not true. Finally, an else command statement precedes a set of commands that are only executed if none of the preceding statements are true. For example: 
+
+if (x==2) {
+   print "x is two!"
+} else if (x==3) {
+   print "x is three!"
+} else if (x\rab3) {
+   print "x is greater than three!"
+} else {
+   x=2
+   print "x didn't used to be two, but it is now!"
+}
+
+  </if>
+  <ifft>
+
+  </ifft>
+  <image>
+
+image '\labfilename\rab' [at \labx\rab, \laby\rab] [rotate \labangle\rab] [width \labwidth\rab]
+                   [height \labheight\rab]
+
+The image command inserts a graphical image into the current multiplot from a file in disk. The graphical image may be in bitmap (.bmp), gif (.gif), jpeg (.jpg) or png (.png) formats; the file type is automatically detected. The at modifier can be used to specify where the bottom-left corner of the image should be placed; if it is not, then the image is placed at the origin. The rotate modifier can be used to rotate the image by any angle, measured in degrees counter-clockwise. The width or height modifiers can be used to specify the width or height with which the image should be rendered; both should be specified in centimetres. If neither is specified then the image will be rendered with the native dimensions specified within the metadata present in the image file (if any). If both are specified, then the aspect ratio of the image is changed. The image command is often useful in multiplot mode, allowing images to be combined with plots, text labels, etc. 
+
+  </image>
+  <interpolate>
+
+interpolate ( linear | loglinear | polynomial | spline )
+       [\labrange specification\rab] \labfunction name\rab '\labfilename\rab'
+       [index \labindex specification\rab] [every \labevery specification\rab]
+       [using \labusing specification\rab]
+       [smooth \labsmoothing\rab]
+
+The interpolate command generates a special function which interpolates a set of data points supplied from a datafile. Four types of interpolation are available; linear, log-linear, polynomial and spline. Log-linear interpolation is equivalent to linear interpolation in a log-log space. For example: 
+
+interpolate spline f() 'data.1'
+
+would create a function f(x) that is a spline fit to the data in the file data.1. The using modifier, if present, should supply two columns (or rows) to act as the range and domain of the function. By default, the interpolate command uses the first two columns of a datafile in a manner analogous to the plot command. The index, every and using modifiers can be used in the same way as in the plot command to select which parts of the datafile should be used; see the datafile section for more details. Note that trying to interpolate multi-valued functions will not, in general, produce useful results. 
+
+  </interpolate>
   <jpeg>
 
-jpeg '\labfilename\rab' [at \labx\rab, \laby\rab] [rotate \labangle\rab] [width \labwidth\rab]
-                  [height \labheight\rab]
-
-The jpeg command inserts an image into the current multiplot from a jpeg file in disk. The at modifier can be used to specify where the bottom-left corner of the image should be placed; if it is not, then the image is placed at the origin. The rotate modifier can be used to rotate the image by any angle, measured in degrees counter-clockwise. The width or height modifiers can be used to specify the width or height with which the image should be rendered; both should be specified in centimetres. If neither is specified then the image will be rendered with the native dimensions specified within the jpeg file (if any). The jpeg command is often useful in multiplot mode, allowing images to be combined with plots, text labels, etc. 
-
   </jpeg>
+  <let>
+
+  </let>
   <list>
 
 list
@@ -370,12 +506,12 @@ list
 The list command outputs a listing of all of the items on a multiplot, giving their reference numbers and the commands used to produce them. For example: 
 
 pyxplot\rab list
-#  ID | Command 
-    0   plot f(x) 
-d   1   text 'Figure 1: A plot of f(x)' 
-    2   text 'Figure 1: A plot of $f(x)$' 
+#  ID | Command
+    0   plot f(x)
+d   1   text 'Figure 1: A plot of f(x)'
+    2   text 'Figure 1: A plot of $f(x)$'
 
-# Items marked 'd' are deleted 
+# Items marked 'd' are deleted
 
 In this example, the user has plotted a graph of f(x), and added a caption to it. The ID column lists the reference numbers of each multiplot item. Item 1 has been deleted, and this is indicated by the d to the left of its reference number. 
 
@@ -393,6 +529,24 @@ would have the same effect as typing the contents of the file foo into the prese
 load '*.script'
 
   </load>
+  <maximise>
+
+maximise \labexpression\rab via \labvariable\rab [, variable ...]
+
+The maximise command command takes a user-supplied expression and finds its maximum value obtained by varying the specified variable. More than one variable may be varied for functions of multiple variables. In the following example x ends up being set to -2: 
+
+maximise exp(-(x+2)**2) via x
+
+  </maximise>
+  <minimise>
+
+minimise \labexpression\rab via \labvariable\rab [, variable ...]
+
+The minimise command command takes a user-supplied expression and finds its minimum value obtained by varying the specified variable. More than one variable may be varied for functions of multiple variables. In the following example x ends up being set to -3 and y to -1: 
+
+minimise (x+3)**2 + (y+1)**2 via x, y
+
+  </minimise>
   <move>
 
 move \labplot number\rab to \labx\rab, \laby\rab
@@ -411,6 +565,7 @@ plot [\labrange specifier\rab ...] ('\labfilename\rab'|\labfunction\rab)
      [select \labselect specifier\rab]
      [index \labindex specifier\rab]
      [every \labevery specifier\rab]
+     [title \labtitle\rab]
      [with \labstyle\rab [\labstyle modifier\rab ... ] ]
 
 The plot command is the main workhorse command of PyXPlot, which is used to produce all plots. For example to plot the sine function: 
@@ -421,22 +576,29 @@ Ranges for the axes of a graph can be specified by placing them in square bracke
 
 plot [-pi:pi] sin(x)
 
-which would plot the function sin(x) between -pi and pi. Data files may also be plotted as well as functions, in which case the filename of the data file to be plotted should be enclosed in apostrophes. An example of this syntax would be: 
+which would plot the function sin(x) between -pi and pi. Datafiles may also be plotted as well as functions, in which case the filename of the datafile to be plotted should be enclosed in apostrophes. An example of this syntax would be: 
 
 plot 'data.dat' with points
 
-which would plot the file called data.dat.  Multiple datasets can be plotted on a single graph by listing them with commas separating them: 
+which would plot the file called data.dat. Multiple datasets can be plotted on a single graph by listing them with commas separating them: 
 
 plot sin(x) with colour blue, cos(x) with linetype 2
 
 
    <axes>
 
-In plots which have multiple parallel axes - for example, an x-axis along its lower edge and an x2-axis along its upper edge - the pair of axes against which data should be plotted should be specified using the modifier axes following the name of the function or data file to be plotted, for example: 
+In plots which have multiple parallel axes - for example, an x-axis along its lower edge and an x2-axis along its upper edge - the pair of axes against which data should be plotted should be specified using the modifier axes following the name of the function or datafile to be plotted, for example: 
 
 plot sin(x) axes x2y1
 
    </axes>
+   <title>
+
+By default PyXPlot generates its own entry in the key for each set of data plotted. The user can over-ride this default setting by using the title setting. For example, to create an axis label with tasteful LaTeX equation-mode rendering of the function being plotted: 
+
+plot sin(x) title '$\sin(x)$'
+
+   </title>
    <with>
 
 The style in which data should be plotted may be specified following the modifier with, with the following syntax: 
@@ -447,8 +609,8 @@ plot sin(x) with points
 
 linetype - specifies the line type (e.g. dotted) used by the lines plot style.  \\
 linewidth - specifies the width of line, in pt, used by the lines plot style.  \\
-pointsize - specifies the size of data points, relative to the default size, used by the points plot style.  \\
-pointlinewidth - as above, but specifies the linewidth, in pt (1&amp;#8201;pt = 1/72&amp;#8201;inch), used to render the crosses, circles, etc, used to mark data points.  \\
+pointsize - specifies the size of datapoints, relative to the default size, used by the points plot style.  \\
+pointlinewidth - as above, but specifies the linewidth, in pt (1&amp;#8201;pt = 1/72&amp;#8201;inch), used to render the crosses, circles, etc, used to mark datapoints.  \\
 linestyle - this can be used in conjunction with the set linestyle command to save default plot styles.  \\
 colour - specifies the colour used to plot the dataset, either by one of the recognised colour names or by an integer, to use one from the current palette.  \\
 fillcolour - relevant to the boxes and wboxes plot styles, specifies a colour with which bar charts should be filled.  \\
@@ -486,6 +648,11 @@ quit
 The quit command can be used to exit PyXPlot. See exit for more details. 
 
   </quit>
+  <rectangle>
+
+See box. 
+
+  </rectangle>
   <refresh>
 
 refresh
@@ -493,17 +660,20 @@ refresh
 The refresh command produces an exact copy of the latest display. This can be useful, for example, after changing the terminal type, to produce a second copy of a plot in a different graphic format. It differs from the replot command in that it doesn't replot anything; use of the set command since the previous plot command has no effect on the output. The refresh command is also especially useful in the multiplot environment: it can be used to produce second copies of multiplot pages where there need not necessarily even be any plots; there might perhaps only be textual items and arrows. 
 
   </refresh>
+  <point>
+
+  </point>
   <replot>
 
 replot [\labplot number\rab]
 
-In single plot mode, the replot command causes the most recent plot command to be re-run. This can be useful to replot a data file which has changed in the meantime, but also to change some aspect of a plot within PyXPlot itself. Uses of the set command between the original plot command and the calling of the replot command are applied to the new plot. For example: 
+In single plot mode, the replot command causes the most recent plot command to be re-run. This can be useful to replot a datafile which has changed in the meantime, but also to change some aspect of a plot within PyXPlot itself. Uses of the set command between the original plot command and the calling of the replot command are applied to the new plot. For example: 
 
 plot sin(x)
 set textcolour red
 replot
 
-In multiplot mode, the replot command acts by default upon the last plot item which was added to the multiplot page, and causes that to be replotted. It is possible to change this behaviour by first calling the edit command, in which case any given plot within a multiplot can be modified and replotted. Specifying a function or data file after the replot command causes that function or data file to be added to the plot. The syntax here is the same as for the plot command. For example: 
+In multiplot mode, the replot command acts by default upon the last plot item which was added to the multiplot page, and causes that to be replotted. It is possible to change this behaviour by first calling the edit command, in which case any given plot within a multiplot can be modified and replotted. Specifying a function or datafile after the replot command causes that function or datafile to be added to the plot. The syntax here is the same as for the plot command. For example: 
 
 replot sin(x) axes x2y1 with linespoints
 
@@ -541,7 +711,7 @@ would sets the default point size to 2. The basic syntax always follows that abo
 set key###|#Set option ON#\\
 set nokey#|#Set option OFF
 
-More details of the functions of each individual setting can be found in the subsections below, which forms a complete list of the recognised setting keywords. The reader should also see the show command, which can be used to display the current values of settings, and the unset command, which returns settings to their default values. 
+More details of the functions of each individual setting can be found in the subsections below, which forms a complete list of the recognised setting keywords. The reader should also see the show command, which can be used to display the current values of settings, and the unset command, which returns settings to their default values.
    <arrow>
 
 set arrow \labarrow number\rab from [\labco-ordinate\rab] \labx\rab,
@@ -569,7 +739,7 @@ set arrow 2 from first 0, second 2.5 to axis3 0,
    </arrow>
    <autoscale>
 
-set autoscale \labaxis\rab[\labaxis\rab... ] 
+set autoscale \labaxis\rab[\labaxis\rab... ]
 
 The autoscale setting causes PyXPlot to choose the scaling for an axis automatically based on the data and/or functions to be plotted against it. As an example of the syntax: 
 
@@ -622,6 +792,9 @@ unset axis x2x4x5
 In the special cases of unset axis x1 or unset axis y1, these axes cannot be deleted; a plot must have at least one x- and one y-axis. Instead, the unset axis command restores these axes to their default configurations, removing any set titles or ranges that they might have been given. 
 
    </axis>
+   <axisunitstyle>
+
+   </axisunitstyle>
    <backup>
 
 set backup
@@ -680,6 +853,12 @@ set boxwidth -2
 would set all of the bars to have differing widths, centred upon their specified x-positions, such that their interfaces occur at the horizontal midpoints between them. 
 
    </boxwidth>
+   <calendar>
+
+   </calendar>
+   <clip>
+
+   </clip>
    <data_style>
 
 See set style data. 
@@ -691,23 +870,15 @@ set [no]display
 
 By default, whenever an item is added to a multiplot, or an existing item moved or replotted, the whole multiplot is replotted to show the change. This can be a time-consuming process on large and complex multiplots. For this reason, the set nodisplay command is provided, which stops PyXPlot from producing any output. The set display command can subsequently be issued to return to normal behaviour. This can be especially useful in scripts which produce large multiplots. There is no point in producing output at each step in the construction of a large multiplot, and so a great speed increase can be achieved by wrapping the script with: 
 
-set nodisplay 
-[...prepare large multiplot...] 
-set display 
+set nodisplay
+[...prepare large multiplot...]
+set display
 refresh
 
    </display>
-   <dpi>
+   <filter>
 
-set dpi \labvalue\rab
-
-When PyXPlot is set to produce bitmapped graphics output, using the gif, jpg or png terminals (see the set terminal command), the dpi setting changes the number of dots per inch with which these graphics files are produced. That is to say, it changes the image resolution of these file formats: 
-
-set dpi 100
-
-sets the output to a resolution of 100 dots per inch. Higher dpi values yield better quality images, but larger file sizes. 
-
-   </dpi>
+   </filter>
    <fontsize>
 
 set fontsize \labvalue\rab
@@ -768,9 +939,7 @@ The gridmincolour setting changes the colour that is used to plot the gridlines 
 
 set gridmincolour purple
 
-would cause the minor grid lines to be drawn in purple. 
-
-See also the set gridmajcolour command. 
+would cause the minor grid lines to be drawn in purple. See also the set gridmajcolour command. 
 
    </gridmincolour>
    <key>
@@ -844,19 +1013,6 @@ set label 3 'A purple label' 0, 0 with colour purple
 will place a purple label at the origin. 
 
    </label>
-   <linestyle>
-
-set linestyle \labstyle number\rab \labstyle specifier\rab ...
-
-At times, the string of style keywords following the with modifier in plot commands can grow rather unwieldily long. For clarity, frequently used plot styles can be stored as linestyles; this is true of styles involving points as well as lines. The syntax for setting a line style is: 
-
-set linestyle 2 points pointtype 3
-
-where the 2 is the identification number of the line style. In a subsequent plot statement, this line style can be recalled as follows: 
-
-plot sin(x) with linestyle 2
-
-   </linestyle>
    <linewidth>
 
 set linewidth \labvalue\rab
@@ -921,6 +1077,11 @@ See set xtics.
 See set xtics. 
 
    </mytics>
+   <mztics>
+
+See set ztics. 
+
+   </mztics>
    <noarrow>
 
 set noarrow [\labarrow number\rab]
@@ -948,6 +1109,11 @@ The set noaxis command is equivalent to the unset axis command. It should be fol
 See backup. 
 
    </nobackup>
+   <noclip>
+
+See clip. 
+
+   </noclip>
    <nodisplay>
 
 See display. 
@@ -984,24 +1150,13 @@ set nolabel 2
 where the tag 2 here is the identification number given to the label to be removed when it was initially set using the set label command. 
 
    </nolabel>
-   <nolinestyle>
-
-set nolinestyle \labstyle number\rab
-
-The nolinestyle setting deletes a line style. For example, the command: 
-
-set nolinestyle 3
-
-would delete the third line style, if defined. See the command set linestyle for more details. 
-
-   </nolinestyle>
    <nologscale>
 
 set nologscale [\labaxis\rab ... ]
 
 The logscale setting causes an axis to be laid out with logarithmically, rather than linearly, spaced intervals. Conversely, the nologscale setting is used to restore linear scaling. For example, issuing the command: 
 
-set nolog 
+set nolog
 
 would cause all of the axes of a plot to be scaled linearly. Alternatively only one, or a selection of axes, can be set to scale linearly as follows: 
 
@@ -1017,6 +1172,17 @@ set nomultiplot
 Issuing the command set nomultiplot places PyXPlot into single plotting mode. See above for a detailed discussion of PyXPlot's multiplot and single plot modes. Broadly speaking, single plot mode is used to produce single graphs on their own; multiplot mode is used to produce galleries of many plots side-by-side. 
 
    </nomultiplot>
+   <nostyle>
+
+set nostyle \labstyle number\rab
+
+The nostyle setting deletes a plot style. For example, the command: 
+
+set nostyle 3
+
+would delete the third plot style, if defined. See the command set style for more details. 
+
+   </nostyle>
    <notitle>
 
 set notitle
@@ -1036,6 +1202,14 @@ This command causes graphs to be produced with no tick marks along their x-axes.
 Similar to the set noxtics command, but acts on the y-axis. 
 
    </noytics>
+   <noztics>
+
+Similar to the set noxtics command, but acts on the z-axis. 
+
+   </noztics>
+   <numerics>
+
+   </numerics>
    <origin>
 
 set origin \labx\rab, \laby\rab
@@ -1223,7 +1397,7 @@ The following named papersizes are recognised:
 
 set pointlinewidth \labvalue\rab
 
-The pointlinewidth setting changes the width of the lines that are used to plot data points. For instance: 
+The pointlinewidth setting changes the width of the lines that are used to plot datapoints. For instance: 
 
 set pointlinewidth 20
 
@@ -1248,6 +1422,9 @@ set preamble \labtext\rab
 The preamble setting changes the preamble that is prepended to each item of text rendered using LaTeX. This allows, for example, different packages to be loaded by default and user-defined macros to be set up. 
 
    </preamble>
+   <projection>
+
+   </projection>
    <samples>
 
 set samples \labvalue\rab
@@ -1259,6 +1436,9 @@ set samples 100
 causes 100 points to be evaluated. Increasing this value will cause functions to be plotted more smoothly, but also more slowly, and the postscript files generated will also be larger. When functions are plotted with the points plot style, this setting controls the number of points plotted. 
 
    </samples>
+   <seed>
+
+   </seed>
    <size>
 
 set size (\labwidth\rab|ratio \labratio\rab|noratio|square)
@@ -1302,6 +1482,19 @@ sets PyXPlot to produce square plots, i.e. with unit aspect ratio. Other aspect 
    </size>
    <style>
 
+set style \labstyle number\rab \labstyle specifier\rab ...
+
+At times, the string of style keywords following the with modifier in plot commands can grow rather unwieldily long. For clarity, frequently used plot styles can be stored as numbered plot styles. The syntax for setting a plot style is: 
+
+set style 2 points pointtype 3
+
+where the 2 is the identification number of the plot style. In a subsequent plot statement, this line style can be recalled as follows: 
+
+plot sin(x) with style 2
+
+   </style>
+   <style_data_--_style_function>
+
 set style { data | function } \labstyle modifier\rab ...
 
 The set style data command affects the default style with which data from files is plotted. Likewise the set style function command changes the default style with which functions are plotted. Any valid style modifier can be used. For example: 
@@ -1309,28 +1502,30 @@ The set style data command affects the default style with which data from files 
 set style data points
 set style function lines linestyle 1
 
-would cause data files to be plotted by default using points and functions using lines with the first defined line style. 
+would cause datafiles to be plotted by default using points and functions using lines with the first defined line style. 
 
-   </style>
+   </style_data_--_style_function>
    <terminal>
 
 set terminal \labterminal type\rab [\laboption\rab ... ]
 
 Syntax: 
 
-set terminal { X11_singlewindow | X11_multiwindow | X11_persist | 
-               postscript | eps | pdf | gif | png | jpg } 
-             { colour | color | monochrome } 
-             { portrait | landscape } 
-             { invert | noinvert } 
+set terminal { X11_SingleWindow | X11_MultiWindow | X11_Persist |
+               bmp | eps | gif | jpeg | pdf | png | postscript |
+               svg | tiff }
+             { colour | color | monochrome }
+             { dpi \labvalue\rab }
+             { portrait | landscape }
+             { invert | noinvert }
              { transparent | solid }
              { antialias | noantialias }
              { enlarge | noenlarge }
 
-The set terminal command controls the graphic format in which PyXPlot should output plots, for example setting whether it should output plots to files or display them in a window on the screen. Various options can also be set within many of the graphic formats which PyXPlot supports using this command. The following graphic formats are supported: X11_singlewindow, X11_multiwindow, X11_persist, postscript, eps, pdf, gif, jpeg, png. To select one of these formats, simply type the name of the desired format after the set terminal command. To obtain more details on each, see the subtopics below. The following settings, which can also be typed following the set terminal command, are used to change the options within some of these graphic formats: colour, monochrome, enhanced, noenhanced, portrait, landscape, invert, noinvert, transparent, solid, enlarge, noenlarge. Details of each of these can be found below. 
+The set terminal command controls the graphic format in which PyXPlot should output plots, for example setting whether it should output plots to files or display them in a window on the screen. Various options can also be set within many of the graphic formats which PyXPlot supports using this command. The following graphic formats are supported: X11_SingleWindow, X11_MultiWindow, X11_Persist, bmp, eps, gif, jpeg, pdf, png, postscript, svg[*], tiff. To select one of these formats, simply type the name of the desired format after the set terminal command. To obtain more details on each, see the subtopics below. The following settings, which can also be typed following the set terminal command, are used to change the options within some of these graphic formats: colour, monochrome, dpi, portrait, landscape, invert, noinvert, transparent, solid, enlarge, noenlarge. Details of each of these can be found below. 
     <antialias>
 
-The antialias terminal option causes plots produced with the bitmap (gif, jpg and png) terminals to be antialiased; this is the default behaviour. 
+The antialias terminal option causes plots produced with the bitmap (gif, jpg and png) terminals to be antialiased; this is the default behaviour. * -- The svg output terminal is experimental and may be unstable. It relies upon the use of the svg output device in Ghostscript, which may not be present on all systems.
 
     </antialias>
     <colour>
@@ -1343,6 +1538,15 @@ The colour terminal option causes plots to be produced in colour; this is the de
 The color terminal option is provided for the convenience of users unable to spell colour. 
 
     </color>
+    <dpi>
+
+When PyXPlot is set to produce bitmapped graphics output, using the bmp, gif, jpg or png terminals (see the set terminal command), the dpi setting changes the number of dots per inch with which these graphics files are produced. That is to say, it changes the image resolution of these file formats: 
+
+set terminal dpi 100
+
+sets the output to a resolution of 100 dots per inch. Higher dpi values yield better quality images, but larger file sizes. 
+
+    </dpi>
     <enlarge>
 
 The enlarge terminal option causes the complete plot to be enlarged or shrunk to fit the current paper size. 
@@ -1468,7 +1672,7 @@ set textvalign ( bottom | centre | top )
 
 The textvalign setting controls how text labels, placed on plots using the set label command, and upon multiplots using the text command, are justified vertically with respect to their specified positions. Three options are available: 
 
-set textvalign bottom 
+set textvalign bottom
 set textvalign centre
 set textvalign top
 
@@ -1486,6 +1690,12 @@ would cause a title `foo' to be displayed above a graph. The easiest way to remo
 unset title
 
    </title>
+   <trange>
+
+   </trange>
+   <unit>
+
+   </unit>
    <width>
 
 set width \labvalue\rab
@@ -1497,6 +1707,9 @@ set width 10
 sets output to be 10 centimetres in width. For the bitmap terminals (gif, jpg and png) this setting, in conjunction with the dpi setting, controls the number of pixels across the final image. 
 
    </width>
+   <xformat>
+
+   </xformat>
    <xlabel>
 
 set xlabel '\labtext\rab'
@@ -1511,7 +1724,7 @@ set x10label 'foo'
 
 would label the tenth x axis. Similarly, labels can be placed on y-axes as follows: 
 
-set ylabel '$y$' 
+set ylabel '$y$'
 set y2label 'foo'
 
    </xlabel>
@@ -1534,14 +1747,16 @@ set xrange [:10][*:*]
 would set the x-axis to have an upper limit of 10, but does not affect the lower limit; its range remains at its previous setting. The first y-axis is automatically scaled on both its upper and lower limits. 
 
    </xrange>
-   <xticdir>
+   <xticdir_REMOVE_ME>
+
+MERGE ME INTO XTICS 
 
 set (x|y)[\labaxisnumber\rab]ticdir (inward|outward|both)
 
 The xticdir setting can be used to set whether the ticks along the x-axis of a plot point inwards, towards the graph, as by default, or outwards, towards the numeric labels along the axis. They can also be set to point in both directions simultaneously. The syntax for this is as follows: 
 
-set xticdir inward 
-set xticdir outward 
+set xticdir inward
+set xticdir outward
 set xticdir both
 
 The same setting can also be made on higher numbered axes, by inserting their numbers after the `x', for example: 
@@ -1553,15 +1768,15 @@ Similarly, the `x' can be substituted with a `y' to set the directions of ticks 
 set yticdir inward
 set y10ticdir both
 
-   </xticdir>
+   </xticdir_REMOVE_ME>
    <xtics>
 
-set [m]x[\labaxisnumber\rab]tics 
-         [axis|border|inward|outward|both] 
-         [auto 
-          | [\labminimum\rab,] \labincrement[, \labmaximum\rab] 
-          | ( '\lablabel\rab' \labposition\rab ... ) 
-         ] 
+set [m]x[\labaxisnumber\rab]tics
+         [axis|border|inward|outward|both]
+         [auto
+          | [\labminimum\rab,] \labincrement[, \labmaximum\rab]
+          | ( '\lablabel\rab' \labposition\rab ... )
+         ]
 
 The xtics option specifies the positions of tick marks on the x-axis (similarly, ytics acts on the y-axis). One can specify: 
 
@@ -1593,16 +1808,26 @@ See xlabel.
 See xrange. 
 
    </yrange>
-   <yticdir>
-
-See xticdir. 
-
-   </yticdir>
    <ytics>
 
 See xtics. 
 
    </ytics>
+   <zlabel>
+
+See xlabel. 
+
+   </zlabel>
+   <zrange>
+
+See xrange. 
+
+   </zrange>
+   <ztics>
+
+See xtics. 
+
+   </ztics>
 
   </set>
   <show>
@@ -1617,19 +1842,22 @@ show pointsize
 will display the current default point size. Details of the various settings that can be shown can be found under the set command; any keyword which can follow the set command can also follow the show command. In addition, show all shows the configuration state of all aspects of PyXPlot. The command show settings shows all of PyXPlot's settings, as distinct from variables, functions and axes. show axes shows the configuration of all of PyXPlot's axes. show variables lists all of the currently defined variables. And finally, show functions lists all of the current user-defined functions. 
 
   </show>
+  <solve>
+
+  </solve>
   <spline>
 
-spline [\labrange specification\rab] \labfunction name\rab '\labfilename\rab' 
+spline [\labrange specification\rab] \labfunction name\rab '\labfilename\rab'
        [index \labindex specification\rab] [every \labevery specification\rab]
        [using \labusing specification\rab]
+       [smooth \labsmoothing\rab]
 
-The spline command fits a spline to a data file. A special function is created that represents the spline fit and can be used in the same way as any other user-defined function. For example: 
-
-spline f() 'data.1'
-
-would create a function f(x) that is a fit to the data in the file data.1. By default, the spline command uses the first two columns of a data file in a manner analogous to the plot command. The index, every and using modifiers can be used in the same way as in the plot command to select which parts of the data file should be used; see the datafile section for more details. Note that trying to generate splines of multi-valued functions will not, in general, produce useful results. 
+The spline command is an alias for the interpolate spline command. See the entry for the interpolate command for more details. 
 
   </spline>
+  <swap>
+
+  </swap>
   <tabulate>
 
 tabulate [\labrange specification\rab] ( \labexpression\rab | \labfilename\rab )
@@ -1637,12 +1865,12 @@ tabulate [\labrange specification\rab] ( \labexpression\rab | \labfilename\rab )
          [using \labusing specification\rab] [select \labselect specifier\rab]
          [with \laboutput format\rab]
 
-The tabulate commands produces a text file containing the values of a function at a set of points. For example, to produce a data file called sine.dat with the principal values of the sine function: 
+The tabulate commands produces a text file containing the values of a function at a set of points. For example, to produce a datafile called sine.dat with the principal values of the sine function: 
 
 set output 'sine.dat'
 tabulate [-pi:pi] sin(x)
 
-The tabulate command can also be used to select portions of data files. For example, to select the third, sixth and ninth columns of the data file data.dat, but only when the arcsine of the value in the fourth column is positive: 
+The tabulate command can also be used to select portions of datafiles. For example, to select the third, sixth and ninth columns of the datafile data.dat, but only when the arcsine of the value in the fourth column is positive: 
 
 set output 'filtered.dat'
 tabulate 'data.dat' u 3:6:9 select (asin($4)\rab0)
@@ -1655,19 +1883,20 @@ If there are not enough columns present in the supplied format statement it will
 
 tabulate [0:2*pi] sin(x):cos(x):tan(x) u 1:2:3:4
 
-The samples setting can be used to control the number of points that are inserted into the data file. If the x-axis is set to be logarithmic then the points at which the functions are evaluated are spaced logarithmically.
+The samples setting can be used to control the number of points that are inserted into the datafile. If the x-axis is set to be logarithmic then the points at which the functions are evaluated are spaced logarithmically. 
 
   </tabulate>
   <text>
 
-text '\labtext string\rab' [at \labx\rab, \laby\rab] [rotate \labangle\rab]
+text '\labtext string\rab' [at \labx\rab, \laby\rab] [rotate \labangle\rab] [gap \labgap\rab]
+     [halign \labalignment\rab] [valign \labalignment\rab]
      [with colour \labcolour\rab]
 
-The text command is used to add blocks of text to a multiplot. An example would be: 
+The text command is used to add strings of text to a multiplot. An example would be: 
 
 text 'Hello World!' at 0,2
 
-which would render the text `Hello World!' at position (0,2), measured in centimetres. The alignment of the text item with respect to this position can be set using the set texthalign and set textvalign commands. A rotation angle may optionally be specified after the keyword rotate to produce text rotated to any arbitrary angle, measured in degrees counter-clockwise. The following example would produce upward-running text: 
+which would render the text `Hello World!' at position (0,2), measured in centimetres. The alignment of the text item with respect to this position can be set using the set texthalign and set textvalign commands, or via the halign and valign modifiers supplied to the text command itself. A gap may be specified, which should either have dimensions of length, or be dimensionless, in which case it is interpreted as being measured in centimetres. If a gap is specified, then the text string is slightly displaced from the specified position, in the direction in which it is being aligned. A rotation angle may optionally be specified after the keyword rotate to produce text rotated to any arbitrary angle, measured in degrees counter-clockwise. The following example would produce upward-running text: 
 
 text 'Hello' at 1.5, 3.6 rotate 90
 
@@ -1697,9 +1926,27 @@ The unset command causes a setting that has been changed using the set command t
 
 unset linewidth
 
-returns the linewidth to its default value. The list of keywords which can follow the unset command are essentially the same as those which can follow the set command.  
+returns the linewidth to its default value. The list of keywords which can follow the unset command are essentially the same as those which can follow the set command. 
 
   </unset>
+  <while>
+
+while ( \labcondition\rab ) {
+   \lab ... commands ... \rab
+}
+
+The while command command causes a set of commands to be executed whilst the specified condition remains true. This allows loops to be written. For example, the following code prints out the low-valued Fibonacci numbers: 
+
+i = 1
+j = 1
+while (j \lab 50) {
+   print j
+   i = i + j
+   print i
+   j = j + i
+}
+
+  </while>
 
 </commands>
 
