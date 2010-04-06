@@ -658,7 +658,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     sprintf(temp_err_string,"Potential ticks for %s axis (NArgs = %d)",VarName,NArgs); ppl_log(temp_err_string);
     for (i=0; i<NArgs; i++) { sprintf(temp_err_string, "Argument %d: id %d score %d StringArg %d ContinuousArg %d Vetoed %d NValueChanges %d",i,(int)args[i].id,(int)args[i].score,(int)args[i].StringArg,(int)args[i].ContinuousArg,(int)args[i].vetoed,args[i].NValueChanges); ppl_log(temp_err_string); }
     sprintf(temp_err_string, "Number of potential ticks: %d", NPotTicks); ppl_log(temp_err_string);
-    for (i=0; ((i<NPotTicks)&&(i<64)); i++) { sprintf(temp_err_string, "Tick %4d: Arg %3d DivOfThrow %4d OoM %3d DivOfOoM %3d IntervalNum %3d TargetVal %e",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue); ppl_log(temp_err_string); }
+    for (i=0; ((i<NPotTicks)&&(i<500)); i++) { sprintf(temp_err_string, "Tick %4d: Arg %3d DivOfThrow %4d OoM %3d DivOfOoM %3d IntervalNum %3d TargetVal %e",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue); ppl_log(temp_err_string); }
    }
 
   // Make arrays for noting which ticks have been accepted
@@ -788,10 +788,12 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
            Nticks_new_accepted_minor = Nticks_new_prev_minor;
            MAJORminor = 1;
            if (k==args[i].OoM_max+1)
-              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -10, TicksAcceptedNew, TicksAcceptedRough,
-                            1, length, tick_sep_major, &acceptable, &Nticks_new, &Nticks_new_minor); // Must have zero, if present, with highest OoM
-           if ((k!=args[i].OoM_max+1) || (!acceptable))
-              memcpy(TicksAcceptedRough, TicksAcceptedNew, NPotTicks);
+            {
+             AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -10, TicksAcceptedNew, TicksAcceptedRough,
+                           1, length, tick_sep_major, &acceptable, &Nticks_new, &Nticks_new_minor); // Must have zero, if present, with highest OoM
+             if (acceptable) memcpy(TicksAcceptedNew, TicksAcceptedRough, NPotTicks);
+            }
+           memcpy(TicksAcceptedRough, TicksAcceptedNew, NPotTicks);
            acceptable = 1;
            for (l=-3; l<=0; l++)
             {
