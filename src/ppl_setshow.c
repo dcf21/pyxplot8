@@ -2344,7 +2344,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "trange", buf, (settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || ((j==1)&&(StrAutocomplete(word, "linearscale", 1)>=0)))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || (StrAutocomplete(word, "linearscale", 1)>=0))
    {
     if (sg->Tlog==SW_BOOL_TRUE) bufp = "logscale";
     else                        bufp = "nologscale";

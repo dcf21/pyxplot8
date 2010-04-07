@@ -227,15 +227,15 @@ void ppl_UserSpace_SetFunc(char *definition, int modified, int *status, char *er
     else if ((Nmiss==0) && (Noverlap==1)) // we should reduce the range of the function we overlap with
      {
       if      (LastOverlapType == 1) // Bring lower limit of old definition up above maximum for this new definition
-       { OldFuncIter->min[LastOverlapK].real = max[LastOverlapK].real; OldFuncIter->MinActive[LastOverlapK] = 1; }
+       { OldFuncIter->min[LastOverlapK] = max[LastOverlapK]; OldFuncIter->MinActive[LastOverlapK] = 1; }
       else if (LastOverlapType == 3) // Bring upper limit of old definition down below minimum for this new definition
-       { OldFuncIter->max[LastOverlapK].real = min[LastOverlapK].real; OldFuncIter->MaxActive[LastOverlapK] = 1; }
+       { OldFuncIter->max[LastOverlapK] = min[LastOverlapK]; OldFuncIter->MaxActive[LastOverlapK] = 1; }
       else
        {
         ppl_UserSpace_FuncDuplicate(OldFuncIter , modified); // Old definition is cut in two by the new definition; duplicate it.
-        OldFuncIter->max[LastOverlapK].real        = min[LastOverlapK].real;
+        OldFuncIter->max[LastOverlapK]             = min[LastOverlapK];
         OldFuncIter->MaxActive[LastOverlapK]       = 1;
-        OldFuncIter->next->min[LastOverlapK].real  = max[LastOverlapK].real;
+        OldFuncIter->next->min[LastOverlapK]       = max[LastOverlapK];
         OldFuncIter->next->MinActive[LastOverlapK] = 1;
        }
      }

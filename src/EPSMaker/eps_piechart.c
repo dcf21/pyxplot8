@@ -110,7 +110,7 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
     for (j=0; j<blk->BlockPosition; j++) { acc += fabs(blk->data_real[0 + Ncolumns*j].d); }
     blk=blk->next;
    }
-  if ((!gsl_finite(acc))||(acc<=0.0)) { sprintf(temp_err_string, "Sum of sizes of all pie wedges is not a finite number."); ppl_error(ERR_GENERAL,temp_err_string); x->current->plotdata[0]=NULL; }
+  if ((!gsl_finite(acc))||(acc<=0.0)) { sprintf(temp_err_string, "Sum of sizes of all pie wedges is not a finite number."); ppl_error(ERR_GENERAL,temp_err_string); x->current->plotdata[0]=NULL; *(x->status) = 1; }
   if (DEBUG) { sprintf(temp_err_string, "Sum of sizes of all pie wedges = %e", acc); ppl_log(temp_err_string); }
   pd->PieChart_total = acc;
   return;
@@ -127,6 +127,7 @@ void eps_pie_YieldUpText(EPSComm *x)
   value           *var_l      , *var_p     , *var_w;
 
   if ((pd=x->current->plotitems)==NULL) return;
+  if (x->current->plotdata[0]==NULL) return;
   x->current->FirstTextID = x->NTextItems;
 
   // Work out what format string to use
@@ -193,6 +194,7 @@ void eps_pie_RenderEPS(EPSComm *x)
   with_words       ww, ww_txt;
 
   if ((pd=x->current->plotitems)==NULL) return;
+  if (x->current->plotdata[0]==NULL) return;
   x->LaTeXpageno = x->current->FirstTextID;
 
   // Print label at top of postscript description of box
