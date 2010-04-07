@@ -358,6 +358,32 @@ When running a script, CTRL-C terminates execution of it.
 
 \section{fft}\indcmd{fft}
 
+\begin{verbatim}
+fft <range specifier> [<range specifier> ...] <function> 
+    of ( '<filename>' | function ) [ using <using specifier> ]
+
+ifft <range specifier> [<range specifier> ...] <function> 
+    of ( '<filename>' | function )[ using <using specifier> ]
+\end{verbatim}
+
+The {\tt fft} command calculates Fourier transforms of \datafile s or functions.
+Transforms can be calculated in multiple dimensions.  For each dimension of your
+function that you wish to transform a range specification must be provided, in
+the form
+
+\begin{verbatim}
+[ <minimum> : <maximum> : <step> ]
+\end{verbatim}
+
+After the range(s) a function name should be provided.  A function of this name
+will be generated to represent your transformed data.  Note that this function
+is in general complex: you can enable complex numerics with the {\tt set
+numerics complex} command.  You can use the {\tt using}, {\tt index}, {\tt
+every} and {\tt select} statements to specify how data will be selected from
+your function or \datafile\ in an analogous manner to the {\tt plot} command.
+
+The {\tt ifft} command calculates inverse Fourier transforms; it has the same
+syntax as the {\tt fft} command.
 
 \section{fit}\indcmd{fit}
 
@@ -393,7 +419,7 @@ covariance matrix. These can be useful for analysing the security of the fit
 achieved, but calculating the uncertainties in the best-fit parameters and the
 covariance matrix can be time consuming, especially when many parameters are
 being fitted simultaneously. The optional word {\tt withouterrors} can be
-included immediately before the filename of the \datafile to be fitted to
+included immediately before the filename of the \datafile\ to be fitted to
 substantially speed up cases where this information is not required.
 
 More details can be found in Section~\ref{sec:fit_command}.
@@ -560,6 +586,7 @@ if (x==2) {
 
 \section{ifft}\indcmd{ifft}
 
+See {\tt fft}.
 
 \section{image}\indcmd{image}
 
@@ -1159,6 +1186,16 @@ given.
 
 \subsection{axisunitstyle}\indcmd{set axisunitstyle}
 
+\begin{verbatim}
+set axisunitstyle ( bracketed | squarebracketed | ratio )
+\end{verbatim}
+
+The {\tt axisunitstyle} command controls the style with which the units of
+plotted quantities are indicated on plot axes. The {\tt bracketed} option causes
+the units to be placed in parentheses following the axis labels, whilst the {\tt
+squarebracketed} option using square brackets instead.  The {\tt ratio} option
+causes the units to follow the label as a divisor so as to leave the quantity
+dimensionless.
 
 \subsection{backup}\indcmd{set backup}
 
@@ -1261,8 +1298,25 @@ midpoints between them.
 
 \subsection{calendar}\indcmd{set calendar}
 
+\begin{verbatim}
+set calendar [ (input|output) ] <calendar name>
+\end{verbatim}
+
+The {\tt set calendar} command sets the calendar that PyXPlot uses internally to
+process dates.  PyXPlot understands two separate calendars: an input calendar
+for processing dates that the user reads in from files, and an output calendar
+that controls dates printed out or written to plots.  The available calendars
+are british, french, gregorian, jewish, muslim, russian, catholic, greek,
+hebrew, islamic and julian.
 
 \subsection{clip}\indcmd{set clip}
+
+\begin{verbatim}
+set clip
+\end{verbatim}
+
+The {\tt set clip} command causes PyXPlot to clip points that extend over the
+edge of the plot axes.
 
 
 \subsection{data style}\indcmd{set data style}
@@ -1298,6 +1352,24 @@ refresh
 
 \subsection{filter}\indcmd{set filter}
 
+\begin{verbatim}
+set filter "<file name specifier>" "<filter command>"
+\end{verbatim}
+
+The {\tt set filter} command allows filter programmes to be specified to allow
+PyXPlot to deal with file types that are not in its \datafile\ format.  Firstly
+the set of \datafile s that the filter should apply to must be specified;
+the standard wildcard characters * and ? may be used.  Then a filter programme
+should be specified, along with any necessary options.  This should take the
+name of the file to be filtered as the final option on its command line,
+immediately following any options specified above.  It should and provide a
+suitable PyXPlot data file on standard output for PyXPlot to read.  For example,
+to filter all files that end in ``.foo'' through the `defoo' filter using the
+--text option one would type:
+
+\begin{verbatim}
+set filter "*.foo" "/usr/local/bin/defoo --text"
+\end{verbatim}
 
 \subsection{fontsize}\indcmd{set fontsize}
 
@@ -1824,6 +1896,33 @@ Similar to the {\tt set noxtics} command, but acts on the $z$-axis.
 
 \subsection{numerics}\indcmd{set numerics}
 
+\begin{verbatim}
+set numerics [ ( complex | real ) ] [ errors ( explicit | quiet) ] 
+    [ display ( tex | natural | typeable) ] 
+    [ sigfig <precision> ]
+\end{verbatim}
+
+The {\tt set numerics} command allows various numerical options to be adjusted.
+
+The {\tt complex} option causes complex arithmetic to be carried out; the {\tt
+real} option causes all numbers to be real and any calculation that generates
+complex numbers will generate an error.  
+
+The {\tt errors} option controls how errors are communicated to the user.  The
+{\tt explicit} option causes an error message to be printed to the screen each
+time a calculation causes an error.  The {\tt quiet} option causes such
+calcluations to silently generate a {\tt nan} (not a number) result.  The {\tt
+nan} option is a synonym for {\tt quiet}.
+
+The {\tt display} option changes the output of numbers that are printed to the
+terminal.  Setting the option to {\tt typable} causes the numbers to be printed
+in a form suitable for pasting back into PyXPlot commands.  {\tt tex} setting
+causes \LaTeX-compatible output to be generated.  The {\tt natural} setting
+generates concise, readable output which has neither of the above properties.
+
+The {\tt sigfig} setting changes the number of significant figures to which
+numbers are displayed when printed out on the PyXPlot terminal.  Regardless of
+the value set, all calculations are carried out internally at double precision.
 
 \subsection{origin}\indcmd{set origin}
 
@@ -1964,6 +2063,13 @@ be loaded by default and user-defined macros to be set up.
 
 \subsection{projection}\indcmd{set projection}
 
+\begin{verbatim}
+set projection flat
+\end{verbatim}
+
+The {\tt set projection} command will change between different projections of
+plots in a future version of PyXPlot.  Currently only the {\tt flat} option is
+supported.
 
 \subsection{samples}\indcmd{set samples}
 
@@ -1988,6 +2094,13 @@ controls the number of points plotted.
 
 \subsection{seed}\indcmd{set seed}
 
+\begin{verbatim}
+set seed <value>
+\end{verbatim}
+
+The {\tt set seed} command allows the seed used to generate random numbers to be
+set.  This allows repeatable sequences of random numbers to be generated in
+order to calculate re-producable pseudo-random numbers to be generated.
 
 \subsection{size}\indcmd{set size}
 
@@ -2388,9 +2501,38 @@ unset title
 
 \subsection{trange}\indcmd{set trange}
 
+\begin{verbatim}
+set trange <range specifier>
+\end{verbatim}
+
+The {\tt set trange} command changes the range of the independent {\tt t}
+variable used for parametric plots.  For more details of the syntax of the range
+specifier, see the {\tt set xrange} command.
 
 \subsection{unit}\indcmd{set unit}
 
+\begin{verbatim}
+set unit [ of <dimension> <unit> ]
+         [ scheme <unit scheme> ]
+         [ preferred <unit> ]
+         [ nopreferred <unit> ]
+         [ display ( full | abbreviated ) ]
+\end{verbatim}
+
+The {\tt set unit} command controls how units are used to display numbers within
+PyXPlot.  To change the unit used to display a particular dimension of quantity
+the {\tt set unit of} form should be used.  For example, the following command
+will cause all lengths to be displayed in inches:
+
+\begin{verbatim}
+set unit of length inch
+\end{verbatim}
+
+The {\tt set unit preferred} command allows units that should be used
+preferentially to be specified; this generalises the {\tt set unit of} command
+to compound units.  Issuing {\tt set unit nopreferred} will undo this command.
+The {\tt set unit display} command specifies whether the full or abbreviated
+names of units should be displayed.
 
 \subsection{width}\indcmd{set width}
 
@@ -2445,7 +2587,7 @@ set y2label 'foo'
 \subsection{xrange}\indcmd{set xrange}
 
 \begin{verbatim}
-set x[<axisnumber>]range '<text>'
+set x[<axisnumber>]range <range specifier>
 \end{verbatim}
 
 The {\tt xrange} setting controls the range of values along the $x$-axes of

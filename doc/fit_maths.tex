@@ -42,7 +42,7 @@ number $n_\mathrm{d}$ of datapoints, each consisting of a set of values for
 each of the $n_\mathrm{x}$ parameters, and one for the value which we are
 seeking to make $f(\mathbf{x})$ match. I shall call of parameter values for the
 $i$th datapoint $\mathbf{x}_i$, and the corresponding value which we are trying
-to match $f_i$. The datafile may contain error estimates for the values $f_i$,
+to match $f_i$. The \datafile\ may contain error estimates for the values $f_i$,
 which I shall denote $\sigma_i$. If these are not supplied, then I shall
 consider these quantities to be unknown, and equal to some constant
 $\sigma_\mathrm{data}$.
@@ -53,7 +53,7 @@ listed after the {\tt via} statement in the {\tt fit} command. I shall
 call these coefficients $u_0$...$u_{n_\mathrm{u}-1}$, and refer to them
 collectively as $\mathbf{u}$.
 
-I model the values $f_i$ in the supplied datafile as being noisy
+I model the values $f_i$ in the supplied \datafile\ as being noisy
 Gaussian-distributed observations of the true function $f()$, and within this
 framework, seek to find that vector of values $\mathbf{u}$ which is most
 probable, given these observations. The probability of any given $\mathbf{u}$

@@ -40,7 +40,7 @@ sophisticated vector graphics (Chapter~\ref{ch:vector_graphics}).
 Chapter~\ref{ch:first_steps} provided an overview of the syntax of the
 \indcmdt{plot}, including the {\tt every}, {\tt index}, {\tt select} and {\tt
 using} modifiers which can be used to control {\tt which} data, read from a
-\datafile or sampled from a function, should be plotted. The {\tt with}
+\datafile\ or sampled from a function, should be plotted. The {\tt with}
 modifier controls {\tt how} data should be plotted. For example, the statement
 \begin{verbatim}
 plot "data.dat" index 1 using 4:5 with lines
@@ -384,7 +384,7 @@ In this example we produce a velocity map of fluid circulating in a vortex. For
 simplicity, we assume that the fluid in the core of the vortex, at radii $r<1$,
 is undergoing solid body rotation with velocity $v\propto r$, and that the
 fluid outside this core is behaving as a free vortex with velocity $v\propto
-1/r$. First of all, we use a simple python script to generate a \datafile with
+1/r$. First of all, we use a simple python script to generate a \datafile\ with
 the four columns:
 \nlscf
 \noindent{\tt from math import *}\newline

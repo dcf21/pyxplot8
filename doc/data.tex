@@ -51,8 +51,8 @@ set filter "http://*" "/usr/bin/wget -O -"
 \end{verbatim}
 
 Each filter takes the form of a program which is launched by PyXPlot whenever a
-\datafile with matching filename is read. The program is passed the filename of
-the \datafile as a command line argument immediately following any arguments
+\datafile\ with matching filename is read. The program is passed the filename of
+the \datafile\ as a command line argument immediately following any arguments
 specified in the filter's definition. It is then expected to output the data
 contained in the file to PyXPlot in plaintext format using its {\tt stdout}
 stream. Any errors which such a program returns to {\tt stderr} are passed to
@@ -78,14 +78,14 @@ plot '-' with lines
 \end{verbatim}
 
 This makes it possible to call PyXPlot from within another program and pass it
-data to plot without ever storing the data on disk. Whilst this has great
-power, the authors would urge caution in this practice, however.  Whilst it is
-often tempting to write programs which both perform calculations and plot the
-results immediately, this can make it difficult to replot graphs later. A few
-months after the event, when the need arises to replot the same data in a
-different form or in a different style, remembering how to use a sizeable
-program can prove tricky -- especially if the person struggling to do so is not
-you! But a simple \datafile\ is quite straightforward to plot time and again.
+data to plot without ever storing the data on disk. Whilst this facility has
+great power, the authors would urge caution in this practice.  Whilst it is
+tempting to write programs which both perform calculations and plot the results
+immediately, this can make it difficult to replot graphs later. A few months
+after the event, when the need arises to replot the same data in a different
+form or in a different style, remembering how to use a sizeable program can
+prove tricky -- especially if the person struggling to do so is not you! But a
+simple \datafile\ is quite straightforward to plot time and again.
 
 \section{Including Data within Command Scripts}
 
@@ -113,7 +113,7 @@ of plotting a series of \datapoint s onto a graph, it outputs them to \datafile
 s. This can be used to produce text files containing samples of functions, to
 rearrange/filter the columns in \datafile s, to change the units in which data
 is expressed in \datafile s, and so forth.  The following example would produce
-a \datafile called {\tt gamma.dat} containing a list of values of the gamma
+a \datafile\ called {\tt gamma.dat} containing a list of values of the gamma
 function:
 
 \begin{verbatim}
@@ -155,7 +155,7 @@ linearly.
 The \indmodt{select}, \indmodt{using} and \indmodt{every} modifiers operate in
 the same manner in the {\tt tabulate} command as in the {\tt plot} command.
 Thus, the following example would write out the third, sixth and ninth columns
-of the \datafile {\tt input.dat}, but only when the arcsine of the value in the
+of the \datafile\ {\tt input.dat}, but only when the arcsine of the value in the
 fourth column is positive:
 
 \begin{verbatim}
