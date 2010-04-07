@@ -194,7 +194,7 @@ fi
 # 13. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
 
 echo $ECHO_N "Checking for libreadline-dev   ............. $ECHO_C"
-if printf '#include <readline/readline.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
+if printf '#include <stdio.h>\n#include <readline/readline.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
 then
  echo "YES"
  echo "HAVE_READLINE=-D HAVE_READLINE=1" >> Makefile
