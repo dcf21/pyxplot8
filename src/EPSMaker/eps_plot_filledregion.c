@@ -290,6 +290,7 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
   double ct_y_m1, ct_y_c1, ct_x_m1, ct_x_c1, ct_y_m2, ct_y_c2, ct_x_m2, ct_x_c2, ct_xi, ct_yi;
   ListItem *ct_li;
   FilledRegionPoint *ct_pA, *ct_pB;
+  const EPSComm *x = fr->x; // Makes IF_NOT_INVISIBLE macro work
 
   l = fr->points->length;
   li = fr->points->first;
@@ -299,25 +300,31 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
   // Path never touches the edges of the clip region
   if (fr->Naxiscrossings < 1)
    {
-    for (i=0; i<l; i++)
+    IF_NOT_INVISIBLE
      {
-      p = (FilledRegionPoint *)(li->data);
-      PS_POINT(p->x, p->y);
-      li=li->next;
+      for (i=0; i<l; i++)
+       {
+        p = (FilledRegionPoint *)(li->data);
+        PS_POINT(p->x, p->y);
+        li=li->next;
+       }
+      fprintf(fr->x->epsbuffer, "closepath eofill\n");
      }
-    fprintf(fr->x->epsbuffer, "closepath eofill\n");
     eps_core_SwitchFrom_FillColour(fr->x);
     if (!StrokeOutline) return;
     eps_core_SetLinewidth(fr->x, linewidth, linetype, 0.0);
     li = fr->points->first;
     first_point=first_subpath=1;
-    for (i=0; i<l; i++)
+    IF_NOT_INVISIBLE
      {
-      p = (FilledRegionPoint *)(li->data);
-      PS_POINT(p->x, p->y);
-      li=li->next;
+      for (i=0; i<l; i++)
+       {
+        p = (FilledRegionPoint *)(li->data);
+        PS_POINT(p->x, p->y);
+        li=li->next;
+       }
+      fprintf(fr->x->epsbuffer, "closepath stroke\n");
      }
-    fprintf(fr->x->epsbuffer, "closepath stroke\n");
     return;
    }
 
@@ -405,12 +412,12 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
   qsort((void *)CrossPointList, j, sizeof(FilledRegionAxisCrossing), &frac_sorter);
 
   // Output path
-  OutputPath(fr, CrossPointList, "eofill");
+  IF_NOT_INVISIBLE OutputPath(fr, CrossPointList, "eofill");
   eps_core_SwitchFrom_FillColour(fr->x);
   if (!StrokeOutline) return;
   eps_core_SetLinewidth(fr->x, linewidth, linetype, 0.0);
   li = fr->points->first;
-  OutputPath(fr, CrossPointList, "stroke");
+  IF_NOT_INVISIBLE OutputPath(fr, CrossPointList, "stroke");
   return;
  }
 
