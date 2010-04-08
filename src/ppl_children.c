@@ -135,10 +135,10 @@ void CheckForGvOutput()
 
   pos = strlen(PipeOutputBuffer);
   if (read(PipeCSP2MAIN[0], PipeOutputBuffer+pos, LSTR_LENGTH-pos-5) > 0)
-   while (1)
+   while (PipeOutputBuffer[0]!='\0')
     {
      StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
-     if (linebuffer[0]=='\0') break;
+     if (linebuffer[0]=='\0') continue;
      if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
      if (strncmp(linebuffer, SED_COMMAND, strlen(SED_COMMAND))==0) ppl_error(ERR_GENERAL, "A problem was encounter with the supplied regular expression.");
      else ppl_error(ERR_GENERAL, linebuffer);

@@ -278,7 +278,7 @@ char  *StrRemoveCompleteLine(char *in, char *out)
   char *scan, *scan2, *scanout;
   scan = scan2 = in;
   scanout      = out;
-  while ((*scan != '\0') && (*scan != '\x0D') && (*scan != '\x0A')) scan++; // Find first carriage-return in text buffer
+  while ((*scan != '\0') && (*scan != '\n')) scan++; // Find first carriage-return in text buffer
   if (*scan != '\0') while (scan2<scan) *scanout++=*scan2++; // If one is found, copy up to this point into temporary string processing buffer
   *scanout = '\0';
   StrStrip(out, out); // Strip it, and then this is what we will return
@@ -286,7 +286,7 @@ char  *StrRemoveCompleteLine(char *in, char *out)
   if (*scan != '\0') // If we've taken a line out of the buffer, delete it from buffer
    {
     scan2 = in;
-    while ((*scan == '\x0D') || (*scan == '\x0A')) scan++; // Forward over carriage return
+    while (*scan == '\n') scan++; // Forward over carriage return
     while (*scan != '\0') *scan2++ = *scan++;
     *scan2 = '\0';
    }

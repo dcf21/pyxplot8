@@ -46,7 +46,7 @@
 
 #define MAX_ARGS 32 /* Maximum number of substitution arguments in 'set format' which we analyse */
 #define STEP_DUPLICITY 100 /* Controls how many steps we divide axis into, multiplied by max number of ticks which fit on axis */
-#define MAX_TICKS_PER_INTERVAL 10 /* Maximum number of ticks which we file in any interval */
+#define MAX_TICKS_PER_INTERVAL 20 /* Maximum number of ticks which we file in any interval */
 #define MAX_FACTORS 32 /* Maximum number of factors of LogBase which we consider */
 #define FACTOR_MULTIPLY 2.0 /* Factorise LogBase**2, so that 0.00,0.25,0.50,0.75,1.00 is a valid factorisation */
 #define NOT_THROW 9999 /* Value we put in DivOfThrow when a tick isn't dividing throw (to get sorting right) */
@@ -177,29 +177,53 @@ static void TickScheme_sprintf(char *out, const PotentialTick *PotTickList, cons
 // Add a tick scheme to a list of accepted ticks
 static void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const int NIntervals, const int ArgNo, const int DivOfThrow, const int OoM, const int DivOfOoM, const unsigned char *TicksAcceptedIn, unsigned char *TicksAcceptedOut, const unsigned char MAJORminor, const double AxisLength, const double TickSepMin, unsigned char *FLAGacceptable, int *NTicksOutMajor, int *NTicksOutMinor)
  {
-  int i, j, id, imin=-1, imax=-1;
+  int i, j, id, IntNum, abort, imin=-1, imax=-1;
   *NTicksOutMajor = 0;
   *NTicksOutMinor = 0;
   *FLAGacceptable = 1;
+
+  // Loop over all potential ticks to check whether they are to be added
   for (i=0; i<NPotTicks; i++)
    {
     TicksAcceptedOut[i] = (TicksAcceptedIn == NULL) ? 0 : TicksAcceptedIn[i];
     id = TickOrder[i].id;
-    if (    (PotTickList[id].ArgNo      == ArgNo     )
+    if (    (PotTickList[id].ArgNo      == ArgNo     ) // Test whether potential tick is in newly accepted scheme
          && (PotTickList[id].DivOfThrow == DivOfThrow)
          && (PotTickList[id].OoM        == OoM       )
          && (PotTickList[id].DivOfOoM   == DivOfOoM  )
          && (MAJORminor || (TicksAcceptedOut[i]==0)) )
      {
-      TicksAcceptedOut[i] = MAJORminor ? 1 : 2;
-      if ((imin<0) || (imin>PotTickList[id].IntervalNum)) imin = PotTickList[id].IntervalNum;
-      if ((imax<0) || (imax<PotTickList[id].IntervalNum)) imax = PotTickList[id].IntervalNum;
+      // Check for ticks accepted immediately to the left of this tick to make sure this point isn't already ticked
+      IntNum = PotTickList[id].IntervalNum;
+      abort  = 0;
+      for (j=i-1; ((j>=0)&&(PotTickList[TickOrder[j].id].IntervalNum>=IntNum-1)&&(PotTickList[TickOrder[j].id].IntervalNum<=IntNum+1)); j--)
+       if ((TicksAcceptedOut[j]>0) && (PotTickList[id].TargetValue == PotTickList[TickOrder[j].id].TargetValue))
+        {
+         if      (MAJORminor            ) TicksAcceptedOut[j]=0; // Major ticks overwrite minor ticks
+         else if (TicksAcceptedOut[j]==1) abort=1;               // Minor ticks don't overwrite major ticks
+         else if (TicksAcceptedOut[j]==2) TicksAcceptedOut[j]=0; // Minor ticks overwrite minor ticks
+        }
+      // Apply same tests to ticks accepted immediately to the right of this tick
+      for (j=i+1; ((j<NPotTicks)&&(PotTickList[TickOrder[j].id].IntervalNum>=IntNum-1)&&(PotTickList[TickOrder[j].id].IntervalNum<=IntNum+1)); j++)
+       if ((TicksAcceptedOut[j]>0) && (PotTickList[id].TargetValue == PotTickList[TickOrder[j].id].TargetValue))
+        {
+         if      (MAJORminor            ) TicksAcceptedOut[j]=0;
+         else if (TicksAcceptedOut[j]==1) abort=1;
+         else if (TicksAcceptedOut[j]==2) TicksAcceptedOut[j]=0;
+        }
+      // If above tests haven't cancelled this tick (minor tick trying to overwrite major tick), accept it
+      if (!abort)
+       {
+        TicksAcceptedOut[i] = MAJORminor ? 1 : 2;
+        if ((imin<0) || (imin>PotTickList[id].IntervalNum)) imin = PotTickList[id].IntervalNum; // Update span of this tick scheme
+        if ((imax<0) || (imax<PotTickList[id].IntervalNum)) imax = PotTickList[id].IntervalNum;
+       }
      }
-    if (TicksAcceptedOut[i] == 1) (*NTicksOutMajor)++;
+    if (TicksAcceptedOut[i] == 1) (*NTicksOutMajor)++; // Count how many ticks are accepted in the scheme that we are outputing
     if (TicksAcceptedOut[i] == 2) (*NTicksOutMinor)++;
     if (MAJORminor && (TicksAcceptedOut[i]==1)) // Check that no two major ticks are too close together
      {
-      for (j=i-1; j>=0; j--)
+      for (j=i-1; j>=0; j--) // Scan left for nearest accepted tick
        if (TicksAcceptedOut[j]==1)
         {
          double gap = fabs(PotTickList[id].IntervalNum - PotTickList[TickOrder[j].id].IntervalNum) * AxisLength / (NIntervals-1);
@@ -521,10 +545,20 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
         }
        else // Continuous arguments... study where they change OoM
         {
+         const double xn     = args[i].NumericValues[j-1];
+         const double yn     = args[i].NumericValues[j  ];
+         const double OoM_n  = log(fabs(args[i].NumericValues[j-1])) / log(LogBase);
+         const double OoM_m  = log(fabs(args[i].NumericValues[j  ])) / log(LogBase);
+         const int    Nsteps = fabs(log(1e-15) / log(LogBase));
+         double OoM, nd;
+         int    n,m,ZeroInInterval=0;
+         if      (!gsl_finite(OoM_n)) OoM = floor(OoM_m);
+         else if (!gsl_finite(OoM_m)) OoM = floor(OoM_n);
+         else                         OoM = floor(max(OoM_n , OoM_m));
+
          // Ticks which mark factors of throw
          for (k=0; k<args[i].NFactorsThrow; k++)
           {
-           int n,m; double nd;
            nd = (args[i].NumericValues[j-1] - args[i].MinValue) * pow(LogBase,FACTOR_MULTIPLY-1) / args[i].FactorsThrow[k];
            n = floor(nd + 0.5);
            if ((j==1) && (fabs(nd-n)<1e-12)) // A tick should go on the left extreme of the axis
@@ -542,20 +576,10 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
             )
          {
           ADDTICK(i,NOT_THROW,INT_MAX,-10,0.0,j); // Zero should be marked in this interval
+          ZeroInInterval = 1;
          }
          else if ((args[i].NumericValues[j-1]!=0)||(args[i].NumericValues[j]!=0))
          {
-          const double xn     = args[i].NumericValues[j-1];
-          const double yn     = args[i].NumericValues[j  ];
-          const double OoM_n  = log(fabs(args[i].NumericValues[j-1])) / log(LogBase);
-          const double OoM_m  = log(fabs(args[i].NumericValues[j  ])) / log(LogBase);
-          const int    Nsteps = fabs(log(1e-15) / log(LogBase));
-          double OoM;
-          int    n,m;
-          if      (!gsl_finite(OoM_n)) OoM = floor(OoM_m);
-          else if (!gsl_finite(OoM_m)) OoM = floor(OoM_n);
-          else                         OoM = floor(max(OoM_n , OoM_m));
-
           // Should a tick go on the left extreme of the axis?
           if (j==1)
            {
@@ -602,10 +626,12 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
               break;
              }
            }
+         }
 
-          // Ticks which mark the passing of fractions of the Nth significant digit
-          if (n<Nsteps)
-           for (m=n-1; ((j==1)||m>=n-2) && (args[i].OoM_RangeSet && ((OoM-m)<=args[i].OoM_max+1)); m--)
+         // Ticks which mark the passing of fractions of the Nth significant digit
+         if (ZeroInInterval) n=0;
+         if (n<Nsteps)
+           for (m=n; m>=n-((ZeroInInterval||(j==1))?Nsteps:3); m--)
             {
              double divisor = pow(LogBase , OoM-m);
              int    o;
@@ -617,10 +643,8 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
                int    xnf      = floor(xnfd);
                int    ynf      = floor(ynfd);
                int    priority = (floor(fabs(xn/divisor)) == 0) ? 0 : -1;
-//if ((xn<0.8)&&(yn>0.0)&&(OoM-m==2)&&(o=0)) printf("- %.1f %d %e\n",OoM-m,2*(o+1)+priority,((xnf>ynf)?xnf:ynf)*divisor/pow(LogBase,FACTOR_MULTIPLY)*FactorsLogBase[o]);
                if (xnf != ynf)
                 {
-//if (OoM-m==2) printf("+ %.1f %d %e\n",OoM-m,2*(o+1)+priority,((xnf>ynf)?xnf:ynf)*divisor/pow(LogBase,FACTOR_MULTIPLY)*FactorsLogBase[o]);
                  ADDTICK(i,NOT_THROW,OoM-m,2*(o+1)+priority,((xnf>ynf)?xnf:ynf)*divisor/pow(LogBase,FACTOR_MULTIPLY)*FactorsLogBase[o],j);
                 }
                else if ((j==1) && (fabs(floor(xnfd+0.5)-xnfd)<1e-12))
@@ -629,8 +653,6 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
                 }
               }
             }
-         }
-
         }
       }
    }
@@ -641,7 +663,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   if (NPotTicks > NPotTicksMax) NPotTicks = NPotTicksMax; // Overflow happened
 
   // Sort list of potential ticks
-  qsort((void *)PotTickList, NPotTicks, sizeof(PotentialTick), compare_PotentialTicks);
+  if (DEBUG) qsort((void *)PotTickList, NPotTicks, sizeof(PotentialTick), compare_PotentialTicks);
 
   // Create look-up table of ticks in order of position along axis
   TickOrder = (ArgLeagueTableEntry *)lt_malloc(NPotTicks * sizeof(ArgLeagueTableEntry));
@@ -651,7 +673,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     TickOrder[i].id    =  i;
     TickOrder[i].score = -PotTickList[i].IntervalNum;
    }
-  qsort((void *)TickOrder, NPotTicks, sizeof(ArgLeagueTableEntry), compare_ArgLeagueEntry);
+  if (DEBUG) qsort((void *)TickOrder, NPotTicks, sizeof(ArgLeagueTableEntry), compare_ArgLeagueEntry);
   for (i=0; i<NPotTicks; i++) PotTickList[ TickOrder[i].id ].OrderPosition = i;
 
   // Debugging lines
@@ -660,7 +682,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     sprintf(temp_err_string,"Potential ticks for %s axis (NArgs = %d)",VarName,NArgs); ppl_log(temp_err_string);
     for (i=0; i<NArgs; i++) { sprintf(temp_err_string, "Argument %d: id %d score %d StringArg %d ContinuousArg %d Vetoed %d NValueChanges %d",i,(int)args[i].id,(int)args[i].score,(int)args[i].StringArg,(int)args[i].ContinuousArg,(int)args[i].vetoed,args[i].NValueChanges); ppl_log(temp_err_string); }
     sprintf(temp_err_string, "Number of potential ticks: %d", NPotTicks); ppl_log(temp_err_string);
-    for (i=0; ((i<NPotTicks)&&(i<500)); i++) { sprintf(temp_err_string, "Tick %4d: Arg %3d DivOfThrow %4d OoM %3d DivOfOoM %3d IntervalNum %3d TargetVal %e",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue); ppl_log(temp_err_string); }
+    for (i=0; ((i<NPotTicks)&&(i<500)); i++) { sprintf(temp_err_string, "Tick %7d: Arg %3d DivOfThrow %4d OoM %10d DivOfOoM %3d IntervalNum %3d TargetVal %12.3e",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue); ppl_log(temp_err_string); }
    }
 
   // Make arrays for noting which ticks have been accepted
@@ -720,19 +742,23 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
          acceptable = 1;
          AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNewTF,
                        1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
-         if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/pow(LogBase,FACTOR_MULTIPLY-1),ThrowFactors_Nticks,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
+         if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d major ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/pow(LogBase,FACTOR_MULTIPLY-1),ThrowFactors_Nticks,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
          if (acceptable) { ThrowFactors_FactNum =  k; break; }
          else            { ThrowFactors_FactNum = -1; ThrowFactors_Nticks  = -1; }
         }
 
        // Minor ticks: Try other factors of throw
        for (k=0; k<ThrowFactors_FactNum; k++)
-        if ((args[i].FactorsThrow[ThrowFactors_FactNum] % args[i].FactorsThrow[k])==0)
-         {
-          acceptable=1;
-          AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAcceptedNewTF, TicksAcceptedRough,
-                        0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
-          if (acceptable) { memcpy(TicksAcceptedNewTF, TicksAcceptedRough, NPotTicks); break; }
+        {
+         if ((args[i].FactorsThrow[ThrowFactors_FactNum] % args[i].FactorsThrow[k])==0)
+          {
+           acceptable=1;
+           AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAcceptedNewTF, TicksAcceptedRough,
+                         0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
+         if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d minor ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/pow(LogBase,FACTOR_MULTIPLY-1),ThrowFactors_Nticks_minor,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
+           if (acceptable) { memcpy(TicksAcceptedNewTF, TicksAcceptedRough, NPotTicks); break; }
+          }
+         else if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f for minor ticks not allowed.",args[i].Throw,args[i].FactorsThrow[k]/pow(LogBase,FACTOR_MULTIPLY-1)); ppl_log(temp_err_string); }
          }
 
        // Option 2: Divide log base
@@ -758,7 +784,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
              if (DEBUG) { sprintf(temp_err_string, "Dividing OoM %g into intervals of %g produces %d major ticks [%s%s].",pow(LogBase,k),FactorsLogBase[l ]*pow(LogBase,k-FACTOR_MULTIPLY),Nticks_2B,acceptable?"pass":"fail",(Nticks_2B<=NMajorTicksIn)?"; no new ticks":""); ppl_log(temp_err_string); }
              if ((!acceptable) || (Nticks_2B<=NMajorTicksIn)) { Nticks_2B=-1; Nticks_2B_minor=-1; }
             }
-           if (Nticks_2B<=NMajorTicksIn) l_final = -1;
+           if (Nticks_2B<=NMajorTicksIn) { l_final = -1; memcpy(TicksAcceptedRough, TicksAcceptedNew, NPotTicks); }
            Nticks_2B_minor = NMinorTicksIn;
            for (l4=0; l4<2; l4++) for (l3=0; l3<NFactorsLogBase; l3++)
             {
