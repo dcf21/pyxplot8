@@ -1,4 +1,4 @@
-# EX_LEGENDS.PPL
+# EX_SPIROGRAPH.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,17 +26,17 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_legends.eps"
+set output "examples/eps/ex_spirograph.eps"
 
 # Main body of figure script
-set xrange [0:0.75]
-set yrange [0:0.75]
-set xlabel "$x$"
-set ylabel "$y$"
-set key below
-set keycolumns 2
-plot x        title "$x$"        , \
-     x*exp(x) title "$x \exp(x)$", \
-     sin(x)   title "$  \sin(x)$", \
-     x*cos(x) title "$x \cos(x)$"
+set nogrid
+set nokey
+
+r1 = 1.5
+r2 = 0.8
+set size square
+set trange[0:40*pi]
+set samples 2500
+plot parametric r1*sin(t) + r2*sin(t*(r1/r2)) : \
+                r1*cos(t) + r2*cos(t*(r1/r2))
 

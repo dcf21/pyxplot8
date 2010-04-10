@@ -165,6 +165,12 @@ positions of each point:
 \item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit.eps}) at each datum.\index{upper-limit datapoints}
 \end{itemize}
 
+\example{ex:hrdiagram}{A Hertzsprung-Russell Diagram}{
+foo
+\nlscf
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_hrdiagram.eps}}
+}
+
 \subsection{Error Bars}
 \index{errorbars}\label{sec:errorbars}
 
@@ -481,6 +487,12 @@ before the list of functions to be plotted, as in the example:
 plot parametric sin(t):cos(t)
 \end{verbatim}
 
+\example{ex:spirograph}{Generating spirograph patterns}{
+foo
+\nlscf
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_spirograph.eps}}
+}
+
 \section{Graph Legends}
 \index{keys}\index{legends}
 \label{sec:legends}
@@ -535,19 +547,6 @@ for example:
 set keycolumns 2
 \end{verbatim}
 
-\noindent An example of a plot with a two-column legend is given in
-Example~\ref{ex:legends}.
-
-\example{ex:legends}{A plot demonstrating the use of a two-column legend}{
-This plot shows how rapidly three functions, often approximated as
-$x$, deviate from that approximation.  Furthermore it is an example of a plot
-with a two-column legend, positioned below the plot using {\tt set key below}.
-The complete script used to produce the plot can be found on the PyXPlot
-website at \protect\url{http://www.pyxplot.org.uk/examples/Manual/07legends/}.
-\nlscf
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_legends.eps}}
-}
-
 \section{Configuring Axes}
 \label{sec:multiple_axes}
 
@@ -571,15 +570,7 @@ numbers of axes: the only constraint is that axis numbers must lie in the range
 1-512, though it is unlikely that there would ever be a practical purpose for
 so many axes.  As a rule, all odd-numbered $x$-axes appear below the plot, and
 even numbered $x$-axes above it; a similar rule applies for $y$-axes, to the
-left and to the right.  This is illustrated in Example~\ref{ex:multiaxes}.
-
-\example{ex:multiaxes}{The use of large numbers of axes}{
-A plot demonstrating the use of large numbers of axes. Odd-numbered
-$x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
-rule applies for $y$-axes, to the left and to the right.
-\nlscf
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_multiaxes.eps}}
-}
+left and to the right.
 
 As discussed in the previous chapter, the ranges of axes can be set either
 using the \indcmdt{set xrange}, or within the {\tt plot} command. The following
@@ -708,13 +699,15 @@ A plot illustrating some of the crossing points of the function
 $\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this
 plot are as given in the text.
 \nlscf
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_axistics.eps}}
+\centerline{\includegraphics[width=9cm]{examples/eps/ex_axistics.eps}}
 }
 
 Minor tick marks can be placed on axes with the \indcmdt{set mxtics}, which has
 the same syntax as above.
 
 \subsection{Configuring how Tick Marks are Labelled}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
 
 \section{Gridlines}
 
@@ -772,6 +765,20 @@ axescolour}, which has a syntax similar to that above, and sets the colour of
 the graph's axes.\label{sec:set_colours}
 
 \section{Linked Axes}
+
+\example{ex:multiaxes}{The use of large numbers of axes}{
+A plot demonstrating the use of large numbers of axes. Odd-numbered
+$x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
+rule applies for $y$-axes, to the left and to the right.
+\nlscf
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes.eps}}
+}
+
+\example{ex:cmbrtemp}{The temperature of the CMB as a function of redshift}{
+foo
+\nlscf
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_cmbrtemp.eps}}
+}
 
 \section{Adding Labels}
 
