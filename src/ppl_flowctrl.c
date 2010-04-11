@@ -202,7 +202,7 @@ int directive_do(Dict *command, int IterLevel)
     i=-1; j=-1;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
     if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
    }
   while ((!status) && ((!ppl_units_DblEqual(criterion_val.real,0.0)) || (!ppl_units_DblEqual(criterion_val.imag,0.0))));
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
@@ -253,7 +253,7 @@ int directive_while(Dict *command, int IterLevel)
     i=-1; j=-1; status=0;
     ppl_EvaluateAlgebra(criterion, &criterion_val, 0, &i, 0, &j, temp_err_string, 0);
     if (j>=0) { ppl_error(ERR_GENERAL, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
-    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
+    if (!criterion_val.dimensionless) { sprintf(temp_err_string,"while (...) criterion should be a dimensionless quantity, but instead has units of <%s>.",ppl_units_GetUnitStr(&criterion_val, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL; return 1; }
     if (ppl_units_DblEqual(criterion_val.real,0.0) && ppl_units_DblEqual(criterion_val.imag,0.0)) break;
     chainiter = chain;
     status = loop_execute(&chainiter, 1, 0, IterLevel);
@@ -302,8 +302,8 @@ int directive_for(Dict *command, int IterLevel)
     step_dummy.real = 1.0; // Step must have same units as start/end values. These are gauranteed by ppl_parser to be REAL.
    }
 
-  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(end, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 0), ppl_units_GetUnitStr(step, NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(end, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(step, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
 
   if (start->real < end->real) backwards=0;
   else                         backwards=1;
@@ -526,7 +526,7 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
      TempDict = (Dict *)ListIter->data;
      DictLookup(TempDict,"min",NULL,(void **)(min+j));
      DictLookup(TempDict,"max",NULL,(void **)(max+j));
-     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified for fitting variable %ld (%s) in the 'foreach ... in datafile' construct have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
+     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified for fitting variable %ld (%s) in the 'foreach ... in datafile' construct have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
      ListIter = ListIterate(ListIter, NULL);
     }
    if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the 'foreach ... in datafile' construct. %d ranges were supplied, even though only %ld variables are being read.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, temp_err_string); *status=1; return; }
@@ -539,11 +539,11 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
   for (j=0; j<i; j++)
    if ((min[j] != NULL) && (data->FirstEntries[j].string==NULL))
     {
-     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
+     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
     }
    else if ((max[j] != NULL) && (data->FirstEntries[j].string==NULL))
     {
-     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
+     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the 'foreach ... in datafile' construct for variable %ld (%s) have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(max[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *status=1; return; }
     }
 
   // Begin looping over input data

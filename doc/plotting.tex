@@ -166,7 +166,32 @@ positions of each point:
 \end{itemize}
 
 \example{ex:hrdiagram}{A Hertzsprung-Russell Diagram}{
+The Hertzsprung-Russell Diagram is.
+The Hipparcos catalogue can be downloaded for free from
+\url{ftp://cdsarc.u-strasbg.fr/pub/cats/I/239/hip_main.dat.gz};
+a description of the catalogue can be found at
+\url{http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/239}. In summary, though the data is arranged in a non-standard
+format which PyXPlot cannot read without a special input filter, the following Python script generates a text file
+with four columns containing the magnitudes, $B-V$ colours and parallaxes of the stars, together with the
+uncertainties in the parallaxes:
+\nlscf
+\noindent{\tt for line in open("hip\_main.dat"):}\newline
+\noindent{\tt \phantom{x}try:}\newline
+\noindent{\tt \phantom{xx}Vmag  = float(line[41:46])}\newline
+\noindent{\tt \phantom{xx}BVcol = float(line[245:251])}\newline
+\noindent{\tt \phantom{xx}parr  = float(line[79:86])}\newline
+\noindent{\tt \phantom{xx}parre = float(line[119:125])}\newline
+\noindent{\tt \phantom{xx}print "\%s,\%s,\%s,\%s"\%(Vmag, BVcol, parr, parre)}\newline
+\noindent{\tt \phantom{x}except ValueError: pass}
+\nlscf
 foo
+\nlscf
+\noindent{\tt set nokey}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt set xlabel '\$B-V\$ colour'}\newline
+\noindent{\tt set ylabel 'Absolute magnitude \$M\$'}\newline
+\noindent{\tt plot [-0.4:2][14:-4] 'hr\_data.dat' $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}w d ps 3}
 \nlscf
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_hrdiagram.eps}}
 }
@@ -244,20 +269,23 @@ path is closed and filled.
 \label{sec:barcharts}
 \index{bar charts}
 
-Bar charts and histograms can be produced using the \indpst{boxes} plot style:
+The following plot styles allow barcharts to be produced:
 
-\begin{verbatim}
-plot 'data.dat' with boxes
-\end{verbatim}
+\begin{itemize}
+\item \indpst{boxes}
+\item \indpst{impulses}
+\item \indpst{wboxes}
+\end{itemize}
 
-\noindent Horizontally, the interfaces between the bars are, by default, at the
-midpoints along the $x$-axis between the specified \datapoint s (see, for
-example, Figure~\ref{fig:ex_barchart2}a).  Alternatively, the widths of the
-bars may be set using the {\tt set boxwidth} command. In this case, all of
-the bars will be centred upon their specified $x$-co-ordinates, and have total
-widths equalling that specified in the \indcmdt{set boxwidth}. Consequently, there may be
-gaps between them, or they may overlap, as seen in
-Figure~\ref{fig:ex_barchart2}(b).
+\noindent These styles differ in where the horizontal interfaces between the
+bars are placed along the $x$-axis and how wide the bars are.  In the
+\indpst{boxes} plot style, the interfaces between the bars are at the midpoints
+between the specified \datapoint s by default (see, for example,
+Figure~\ref{fig:ex_barchart2}a).  Alternatively, the widths of the bars may be
+set using the {\tt set boxwidth} command. In this case, all of the bars will be
+centred upon their specified $x$-coordinates, and have total widths equalling
+that specified in the \indcmdt{set boxwidth}. Consequently, there may be gaps
+between them, or they may overlap, as seen in Figure~\ref{fig:ex_barchart2}(b).
 
 \begin{figure}
 \begin{center}
@@ -275,23 +303,19 @@ Having set a fixed box width, the default behaviour of scaling box widths
 automatically may be restored either with the {\tt unset boxwidth} command,
 or by setting the boxwidth to a negative width.
 
-As a third alternative, it is also possible to specify different widths for
-each bar manually, in an additional column of the input \datafile. To achieve
-this behaviour, the \indpst{wboxes} plot style should be used:
+In the \indpst{wboxes} plot style, the width of each bar is specified manually
+as an additional column of the input \datafile.  This plot style expects three
+columns of data to be provided: the $x$- and $y$-coordinates of each bar in the
+first two, and the width of the bars in the third.
+Figure~\ref{fig:ex_barchart2}(c) shows an example of this plot style in use.
 
-\begin{verbatim}
-plot 'data.dat' using 1:2:3 with wboxes
-\end{verbatim}
+Finally, in the \indpst{impulses} plot style, the bars all have zero width; see
+Figure~\ref{fig:ex_barchart1}(c) for an example.
 
-\noindent This plot style expects three columns of data to be provided: the
-$x$- and $y$-co-ordinates of each bar in the first two, and the width of the
-bars in the third.  Figure~\ref{fig:ex_barchart2}(c) shows an example of this
-plot style in use.
-
-By default, the bars originate from the line $y=0$, as is normal for a
-histogram. However, should it be desired for the bars to start from a different
-vertical point, this may be achieved by using the \indcmdt{set boxfrom},
-for example:
+In all of these plot styles, the bars originate from the line $y=0$ by default,
+as is normal for a histogram. However, should it be desired for the bars to
+start from a different vertical point, this may be achieved by using the
+\indcmdt{set boxfrom}, for example:
 
 \begin{verbatim}
 set boxfrom 5
@@ -326,13 +350,10 @@ plot 'data.dat' with boxes fc 4
 \noindent Figures~\ref{fig:ex_barchart2}(b) and (d) demonstrate the use of
 filled bars.
 
-Finally, the \indpst{impulses} plot style produces bars of zero width; see
-Figure~\ref{fig:ex_barchart1}(c) for an example.
-
 \subsubsection{Stacked Bar Charts}
 
-If several \datapoint s are supplied to the \indpst{boxes} or \indpst{wboxes}
-plot styles at a common $x$-co-ordinate, then the bars are stacked one above
+If multiple \datapoint s are supplied to the \indpst{boxes} or \indpst{wboxes}
+plot styles at a common $x$-coordinate, then the bars are stacked one above
 another into a stacked barchart. Consider the following \datafile:
 
 \begin{verbatim}
@@ -440,29 +461,27 @@ plot sin(x) with style 2
 
 \section{Plotting Functions in Exotic Styles}
 
-The use of plot styles such as {\tt errorbars} when plotting functions, as
-opposed to \datafile s, often requires more than one function to be supplied.
-For example, whilst the syntax
+The use of plot styles which take more than two columns of input data to plot
+functions requires more than one function to be supplied.  When functions are
+plotted with syntax such as
 
 \begin{verbatim}
 plot sin(x) with lines
 \end{verbatim}
 
-\noindent is sufficient for the {\tt lines} plot style, which only takes two
-columns of data -- in this case, $x$ and $\sin(x)$ -- it is not sufficient for
-the {\tt yerrorbars} plot style which takes three columns of data. In such
-cases, the syntax
+\noindent two columns of data are generated: the first contains values of $x$
+-- plotted against the horizontal axis -- and the second contains values of
+$\sin(x)$ -- plotted against the vertical axis. Syntax such as
 
 \begin{verbatim}
 plot f(x):g(x) with yerrorbars
 \end{verbatim}
 
-\noindent is used. In this case, two functions are supplied, separated by a
-colon; plotting proceeds as if a \datafile\ had been supplied, containing
-values of $x$ in column~1, values of $f(x)$ in column~2, and values of $g(x)$
-in column~3. In this example, $g(x)$ provides the uncertainty in the value of
-$f(x)$.  The {\tt using} modifier may also be used in combination with such
-syntax, as in
+\noindent generates three columns of data. As before, the first contains values
+of $x$. The second and third contain samples from the colon-separated functions
+$f(x)$ and $g(x)$. Specifically, in this example, $g(x)$ provides the
+uncertainty in the value of $f(x)$.  The {\tt using} modifier may also be used
+in combination with such syntax, as in
 
 \begin{verbatim}
 plot f(x):g(x) using 2:3
@@ -482,15 +501,42 @@ upon the range of the $x$-axis. In this case, the user should have used the
 \label{sec:parametric_plotting}
 
 Parametric functions may be plotted by placing the keyword {\tt parametric}
-before the list of functions to be plotted, as in the example:
+before the list of functions to be plotted, as in the following simple example
+which plots a circle:
 \begin{verbatim}
+set trange [0:2*pi]
 plot parametric sin(t):cos(t)
 \end{verbatim}
 
 \example{ex:spirograph}{Generating spirograph patterns}{
-foo
+Spirograph patterns are produced when a pen is tethered to the end of a rod
+which rotates at some angular speed $\omega_1$ about the end of another rod,
+which is itself rotating at angular speed $\omega_2$ about some fixed central
+point. Spirographs are commonly implemented mechanically as wheels within
+wheels -- epicycles within deferents, mathematically speaking -- but in this
+example we implement them using parametric functions
+\begin{eqnarray*}
+x & = & r_1 \sin(t) + r_2 \sin(t r_1 / r_2) \\
+y & = & r_1 \cos(t) + r_2 \cos(t r_1 / r_2) \\
+\end{eqnarray*}
+which are simply the sum of two circular motions. The complexity of the
+resulting spirograph pattern depends upon how rapidly the rods return to their
+starting configuration; if the two chosen angular speeds for the rods have a
+large lowest common multiple, then a highly complicated pattern will result. In
+the example below, we pick a ratio of $8:15$:
+\nlscf
+\noindent{\tt r1 = 1.5}\newline
+\noindent{\tt r2 = 0.8}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt set trange[0:40*pi]}\newline
+\noindent{\tt set samples 2500}\newline
+\noindent{\tt plot parametric r1*sin(t) + r2*sin(t*(r1/r2)) : $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxxxxxxxxxx}r1*cos(t) + r2*cos(t*(r1/r2))}
 \nlscf
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_spirograph.eps}}
+\nlscf
+Other ratios of {\tt r1}:{\tt r2} such as $7:19$ and $5:19$ also produce
+intricate patterns.
 }
 
 \section{Graph Legends}
@@ -528,7 +574,7 @@ The following recognised positioning keywords are self-explanatory:
 key outside the plot, on its right side. The words \indkeyt{below} and
 \indkeyt{above} place legends below and above the plot respectively.
 
-In addition, two positional offset co-ordinates may be specified after such
+In addition, two positional offset coordinates may be specified after such
 keywords -- the first value is assumed to be an $x$-offset, and the second a
 $y$-offset, both in units of centimetres. For example:
 
@@ -766,6 +812,25 @@ the graph's axes.\label{sec:set_colours}
 
 \section{Linked Axes}
 
+The axes of plots can be linked together, in such a way that they always share
+a common scale. This can be useful when placing plots next to one another,
+firstly, of course, if it is of intrinsic interest to ensure that they are on a
+common scale, but also because the two plots then do not both need their own
+axis labels, and space can be saved by one sharing the labels from the other.
+In PyXPlot, an axis which borrows its scale and labels from another is called a
+{\it linked axis}.
+
+Such axes are declared by setting the label of the linked axis to a magic
+string such as {\tt linkaxis 0}\label{sec:linked_axes}\index{axes!reserved
+labels}\index{magic axis labels}. This magic label would set the axis to borrow
+its scale from an axis from plot zero. The general syntax is `{\tt linkaxis}
+$n$ $m$', where $n$ and $m$ are two integers, separated by a comma or
+whitespace. The first, $n$, indicates the plot from which to borrow an axis;
+the second, $m$, indicates whether to borrow the scale of axis $x1$, $x2$,
+$x3$, etc. By default, $m=1$. The linking will fail, and a warning result, if
+an attempt is made to link to an axis which doesn't exist.
+
+
 \example{ex:multiaxes}{The use of large numbers of axes}{
 A plot demonstrating the use of large numbers of axes. Odd-numbered
 $x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
@@ -823,14 +888,14 @@ set arrow 1 from 0,0 to 1,1 with nohead \
 linetype 1 c blue
 \end{verbatim}
 
-The co-ordinates for the start and end points of the arrow can be specified in
-a range of co-ordinate systems. The co-ordinate system to be used should be
-specified immediately before the co-ordinate value. The default system,
+The coordinates for the start and end points of the arrow can be specified in
+a range of coordinate systems. The coordinate system to be used should be
+specified immediately before the coordinate value. The default system,
 \indcot{first} measures the graph using the $x$- and $y$-axes. The
 \indcot{second} system uses the $x2$- and $y2$-axes. The \indcot{screen} and
 \indcot{graph} systems both measure in centimetres from the origin of the
 graph. In the following example, we use these specifiers, and specify
-co-ordinates using variables rather than doing so explicitly:
+coordinates using variables rather than doing so explicitly:
 
 \begin{verbatim}
 x0 = 0.0
@@ -865,8 +930,8 @@ set nolabel 1
 unset label 1
 \end{verbatim}
 
-\noindent The positional co-ordinates for the text label, placed after the {\tt
-at} keyword, can be specified in any of the co-ordinate systems described for
+\noindent The positional coordinates for the text label, placed after the {\tt
+at} keyword, can be specified in any of the coordinate systems described for
 arrows above. A rotation angle may optionally be specified after the keyword
 \indkeyt{rotate}, to rotate text counter-clockwise by a given angle, measured
 in degrees. For example, the following would produce upward-running text:

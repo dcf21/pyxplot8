@@ -614,7 +614,7 @@ void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllo
 
   // Check that input is real
   if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_string() function can only act upon real times. The supplied Julian Day number is complex."); return; }
-  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_string() function can only act upon dimensionless times. The supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_string() function can only act upon dimensionless times. The supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,1,0)); return; }
 
   *status=0;
   InvJulianDay(JD1.real, &year, &month, &day, &hour, &min, &sec, status, errtext);
@@ -709,9 +709,9 @@ void dcftime_diff_string(char *in, int inlen, value *output, unsigned char Dolla
 
   // Check that inputs are real
   if (JD1.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The first supplied Julian Day number is complex."); return; }
-  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (!JD1.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The first supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,1,0)); return; }
   if (JD2.FlagComplex) { *status=0; strcpy(errtext,"The time_diff_string() function can only act upon real times. The second supplied Julian Day number is complex."); return; }
-  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,0)); return; }
+  if (!JD2.dimensionless) { *status=0; sprintf(errtext,"The time_diff_string() function can only act upon dimensionless times. The second supplied Julian Day number has units of <%s>.", ppl_units_GetUnitStr(&JD1,NULL,NULL,0,1,0)); return; }
 
   GapYears   = (JD2.real - JD1.real) / 365;
   GapDays    = (JD2.real - JD1.real);

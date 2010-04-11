@@ -67,7 +67,7 @@
   ppl_EvaluateAlgebra(in+i, &tempval, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1); \
   if (*status >= 0) { (*status) += i; return; } \
   if (tempval.FlagComplex) { *status=i; strcpy(errtext,"This input should be real, but is complex."); return; } \
-  if (!tempval.dimensionless) { *status=i; sprintf(errtext,"This input should be dimensionless, but has units of <%s>.", ppl_units_GetUnitStr(&tempval,NULL,NULL,0,0)); return; } \
+  if (!tempval.dimensionless) { *status=i; sprintf(errtext,"This input should be dimensionless, but has units of <%s>.", ppl_units_GetUnitStr(&tempval,NULL,NULL,0,1,0)); return; } \
   if (tempval.real < 0) { tempval.real += strlen(InString); } \
   if (tempval.real < 0) { tempval.real = 0; } \
   if (tempval.real > INT_MAX) { *status=i; strcpy(errtext,"This input is too large."); return; } \

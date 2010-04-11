@@ -63,11 +63,11 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
   for (j=0; j<Ncolumns; j++)
    if (min[j] != NULL)
     {
-     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %d in the tabulate command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %d in the tabulate command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     }
    else if (max[j] != NULL)
     {
-     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %d in the tabulate command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %d in the tabulate command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     }
 
   // Output a column units line
@@ -84,7 +84,7 @@ static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **
       data->FirstEntries[j].real = 1.0;
       data->FirstEntries[j].imag = 0.0;
       data->FirstEntries[j].FlagComplex = 0;
-      cptr = ppl_units_GetUnitStr(data->FirstEntries+j, multiplier+j, &tmpdbl, 0, SW_DISPLAY_T);
+      cptr = ppl_units_GetUnitStr(data->FirstEntries+j, multiplier+j, &tmpdbl, 0, 1, SW_DISPLAY_T);
       for (i=0; ((cptr[i]!='\0')&&(cptr[i]!='(')); i++);
       i++; // Fastforward over opening bracket
       for (   ; ((cptr[i]!='\0')&&(cptr[i]!=')')); i++) fprintf(output, "%c", cptr[i]);
@@ -246,7 +246,7 @@ int directive_tabulate(Dict *command, char *line)
      TempDict = (Dict *)ListIter->data;
      DictLookup(TempDict,"min",NULL,(void **)(min+j));
      DictLookup(TempDict,"max",NULL,(void **)(max+j));
-     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the tabulate command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); fclose(output); return 1; }
+     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the tabulate command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); fclose(output); return 1; }
      ListIter = ListIterate(ListIter, NULL);
     }
    if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the tabulate command. %d ranges were supplied, but only a maximum of %d are supported.", ListLen(RangeList), USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, temp_err_string); fclose(output); return 1; }
@@ -373,7 +373,7 @@ int directive_tabulate(Dict *command, char *line)
        {
         if (raster_log)
          {
-          if (!spacing->dimensionless) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for a logarithmic ordinate axis. The spacing should be a dimensionless multiplicative factor.", ppl_units_GetUnitStr(spacing,NULL,NULL,0,0)); fclose(output); return 1; }
+          if (!spacing->dimensionless) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for a logarithmic ordinate axis. The spacing should be a dimensionless multiplicative factor.", ppl_units_GetUnitStr(spacing,NULL,NULL,0,1,0)); fclose(output); return 1; }
           if ((spacing->real < 1e-200)||(spacing->real > 1e100)) { sprintf(temp_err_string, "The spacing specified to the tabulate command must be a positive multiplicative factor for logarithmic ordinate axes."); fclose(output); return 1; }
           SpacingDbl = spacing->real;
           if ((raster_max > raster_min) && (SpacingDbl < 1.0)) SpacingDbl = 1.0/SpacingDbl;
@@ -384,7 +384,7 @@ int directive_tabulate(Dict *command, char *line)
           raster_max = raster_min * pow(SpacingDbl, NumberOfSamplesDbl-1);
           NumberOfSamples = (int)NumberOfSamplesDbl;
          } else {
-          if (!ppl_units_DimEqual(&raster_units,spacing)) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for an ordinate axis which has units of <%s>,", ppl_units_GetUnitStr(spacing,NULL,NULL,0,0), ppl_units_GetUnitStr(&raster_units,NULL,NULL,1,0)); fclose(output); return 1; }
+          if (!ppl_units_DimEqual(&raster_units,spacing)) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for an ordinate axis which has units of <%s>,", ppl_units_GetUnitStr(spacing,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&raster_units,NULL,NULL,1,1,0)); fclose(output); return 1; }
           SpacingDbl = spacing->real;
           if ((raster_max > raster_min) && (SpacingDbl < 0.0)) SpacingDbl = -SpacingDbl;
           if ((raster_min > raster_max) && (SpacingDbl > 0.0)) SpacingDbl = -SpacingDbl;

@@ -457,7 +457,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
       *errpos = -1;
       ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, errpos, temp_err_string, 0);
       if (*errpos>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-      if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+      if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
       if ((valobj.real <= INT_MIN+5) || (valobj.real >= INT_MAX-5)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
       for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
       palette_index = ((int)valobj.real-1)%j;
@@ -480,7 +480,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
    } else if (tempval != NULL) { // Colour is specified by RGB components
 
 #define CHECK_REAL_DIMLESS \
-    if (!tempval->dimensionless) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+    if (!tempval->dimensionless) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
     if (tempval->imag>1e-6) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
 
     CHECK_REAL_DIMLESS;
@@ -555,7 +555,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
    if (!tempval->dimensionless) \
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (tempval->exponent[i] != (i==UNIT_LENGTH)) \
      { \
-      sprintf(temp_err_string, "Coordinates specified in the graph and page systems must have dimensions of length. Received coordinate with dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 0, 0)); \
+      sprintf(temp_err_string, "Coordinates specified in the graph and page systems must have dimensions of length. Received coordinate with dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 0, 1, 0)); \
       ppl_error(ERR_GENERAL, temp_err_string); return; \
      };
 
@@ -768,7 +768,7 @@ void arrow_print(arrow_object *in, char *out)
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
      if (VAR->exponent[i] != (i==UNIT_LENGTH)) \
       { \
-       sprintf(temp_err_string,"The gap size supplied to the 'set label' command must have dimensions of length. Supplied gap size input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,0)); \
+       sprintf(temp_err_string,"The gap size supplied to the 'set label' command must have dimensions of length. Supplied gap size input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
        ppl_error(ERR_NUMERIC, temp_err_string); \
        return; \
       } \
@@ -781,7 +781,7 @@ void arrow_print(arrow_object *in, char *out)
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
      if (VAR->exponent[i] != (i==UNIT_ANGLE)) \
       { \
-       sprintf(temp_err_string,"The rotation angle supplied to the 'set label' command must have dimensions of angle. Supplied input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,0)); \
+       sprintf(temp_err_string,"The rotation angle supplied to the 'set label' command must have dimensions of angle. Supplied input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
        ppl_error(ERR_NUMERIC, temp_err_string); \
        return; \
       } \

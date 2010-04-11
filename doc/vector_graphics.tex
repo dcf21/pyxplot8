@@ -222,23 +222,6 @@ act upon this most recent plot.
 
 \section{Linked Axes}
 
-The axes of plots can be linked together, in such a way that they always share
-a common scale. This can be useful when placing plots next to one another,
-firstly, of course, if it is of intrinsic interest to ensure that they are on a
-common scale, but also because the two plots then do not both need their own
-axis labels, and space can be saved by one sharing the labels from the other.
-In PyXPlot, an axis which borrows its scale and labels from another is called a
-{\it linked axis}.
-
-Such axes are declared by setting the label of the linked axis to a magic
-string such as {\tt linkaxis 0}\label{sec:linked_axes}\index{axes!reserved
-labels}\index{magic axis labels}. This magic label would set the axis to borrow
-its scale from an axis from plot zero. The general syntax is `{\tt linkaxis}
-$n$ $m$', where $n$ and $m$ are two integers, separated by a comma or
-whitespace. The first, $n$, indicates the plot from which to borrow an axis;
-the second, $m$, indicates whether to borrow the scale of axis $x1$, $x2$,
-$x3$, etc. By default, $m=1$. The linking will fail, and a warning result, if
-an attempt is made to link to an axis which doesn't exist.
 
 \section{Adding Other Vector Graphics Objects}
 
@@ -448,8 +431,8 @@ foo
 Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} format may be
 placed on multiplot canvases using the \indcmdt{image}\footnote{To maintain
 compatibility with historic versions of PyXPlot, the {\tt image} command may
-also be spelt {\tt jpeg}, with the identical syntax thereafter.}. This has
-syntax:
+also be spelt {\tt jpeg}, with the identical syntax thereafter.}. In its
+simplest form, this has the syntax:
 \begin{verbatim}
 image 'filename' at x,y width w
 \end{verbatim}
@@ -458,7 +441,16 @@ As an alternative to the \indkeyt{width} keyword the height of the image can be
 specified, using the analogous \indkeyt{height} keyword.  An optional angle can
 also be specified using the \indkeyt{rotate} keyword; this causes the included
 image to be rotated counter-clockwise by a specified angle, measured in
-degrees.
+degrees.  The keyword {\tt smooth} may optionally be supplied to cause the
+pixels of the image to be interpolated\footnote{Many commonly-used postscript
+display engines, including GhostScript, do not support this functionality.}.
+
+Images which include transparency are supported. The optional keyword {\tt
+notransparent} may be supplied to the \indcmdt{image} to cause transparent
+regions to be filled with the image's default background colour. Alternatively,
+the keyword {\tt transparent} may be followed by the name of an RGB colour in
+the form {\tt rgb<r>:<g>:<b>} to cause a particular colour to be converted to
+transparent.
 
 \subsection{The {\tt eps} Command}
 

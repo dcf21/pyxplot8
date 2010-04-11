@@ -159,7 +159,7 @@ double Lcdm_z_from_t(double t, double H, double OmegaM, double OmegaL)
  if (!(in2->dimensionless && in3->dimensionless)) \
    { \
     *status = 1; \
-    sprintf(errtext, "The %s function can only act upon dimensionless values for w_m and w_l. Supplied values have dimensions of <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in2, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in3, NULL, NULL, 1, 0)); \
+    sprintf(errtext, "The %s function can only act upon dimensionless values for w_m and w_l. Supplied values have dimensions of <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in2, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in3, NULL, NULL, 1, 1, 0)); \
     return; \
    } \
 
@@ -167,7 +167,7 @@ double Lcdm_z_from_t(double t, double H, double OmegaM, double OmegaL)
  if (!(in4->dimensionless)) \
    { \
     *status = 1; \
-    sprintf(errtext, "The %s function can only act upon dimensionless values for redshift. Supplied value has dimensions of <%s>.", FunctionDescription, ppl_units_GetUnitStr(in4, NULL, NULL, 0, 0)); \
+    sprintf(errtext, "The %s function can only act upon dimensionless values for redshift. Supplied value has dimensions of <%s>.", FunctionDescription, ppl_units_GetUnitStr(in4, NULL, NULL, 0, 1, 0)); \
     return; \
    } \
 

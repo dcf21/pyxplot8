@@ -44,7 +44,7 @@ extern List  *ppl_unit_PreferredUnits_default;
 value *ppl_units_zero          (value *in);
 char  *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs);
 
-char  *ppl_units_GetUnitStr    (const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable);
+char  *ppl_units_GetUnitStr    (const value *in, double *NumberOutReal, double *NumberOutImag, int N, int DivAllowed, int typeable);
 int __inline__ UnitNameCmp     (const char *in, const char *unit, const unsigned char CaseSensitive);
 void   ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char *errtext);
 

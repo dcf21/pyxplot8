@@ -582,7 +582,7 @@ int directive_undelete(Dict *command)
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
      if (VAR->exponent[i] != (i==UNIT_LENGTH)) \
       { \
-       sprintf(temp_err_string,"The position supplied to the '%s' command must have dimensions of length. Supplied %s input has units of <%s>.",CMD,NAME,ppl_units_GetUnitStr(VAR,NULL,NULL,1,0)); \
+       sprintf(temp_err_string,"The position supplied to the '%s' command must have dimensions of length. Supplied %s input has units of <%s>.",CMD,NAME,ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
        ppl_error(ERR_NUMERIC, temp_err_string); \
        return 1; \
       } \
@@ -595,7 +595,7 @@ int directive_undelete(Dict *command)
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
      if (VAR->exponent[i] != (i==UNIT_ANGLE)) \
       { \
-       sprintf(temp_err_string,"The rotation angle supplied to the '%s' command must have dimensions of angle. Supplied input has units of <%s>.",CMD,ppl_units_GetUnitStr(VAR,NULL,NULL,1,0)); \
+       sprintf(temp_err_string,"The rotation angle supplied to the '%s' command must have dimensions of angle. Supplied input has units of <%s>.",CMD,ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
        ppl_error(ERR_NUMERIC, temp_err_string); \
        return 1; \
       } \
@@ -1493,9 +1493,9 @@ int directive_plot(Dict *command, int interactive, int replot)
     DictLookup(TempDict,"max"    ,NULL,(void **)&max);
     DictLookup(TempDict,"minauto",NULL,(void **)&MinAuto);
     DictLookup(TempDict,"maxauto",NULL,(void **)&MaxAuto);
-    if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,0), ppl_units_GetUnitStr(max,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(max,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if (MinAuto!=NULL) { (*RangePtr)->AutoMinSet=1; (*RangePtr)->MinSet=0; (*RangePtr)->min=0.0; }
     if (MaxAuto!=NULL) { (*RangePtr)->AutoMaxSet=1; (*RangePtr)->MaxSet=0; (*RangePtr)->max=0.0; }
     if (min    !=NULL) { (*RangePtr)->AutoMinSet=0; (*RangePtr)->MinSet=1; (*RangePtr)->min=min->real; (*RangePtr)->unit=*min; (*RangePtr)->unit.real=1.0; }

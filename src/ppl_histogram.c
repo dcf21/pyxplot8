@@ -85,7 +85,7 @@ int directive_histogram(Dict *command)
 
   DictLookup(command,"min",NULL,(void **)&xmin);
   DictLookup(command,"max",NULL,(void **)&xmax);
-  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
 
   continuity = DATAFILE_CONTINUOUS;
 
@@ -106,11 +106,11 @@ int directive_histogram(Dict *command)
   FirstEntry = data->FirstEntries[0];
   if      (xmin != NULL)
    {
-    if (!ppl_units_DimEqual(xmin,&FirstEntry)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(xmin,&FirstEntry)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
   else if (xmax != NULL)
    {
-    if (!ppl_units_DimEqual(xmax,&FirstEntry)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(xmax,&FirstEntry)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
 
   // Transfer data from multiple data tables into a single vector
@@ -180,7 +180,7 @@ int directive_histogram(Dict *command)
      {
       tempdict = (Dict *)listiter->data;
       DictLookup(tempdict,"x",NULL,(void **)&tempval1);
-      if (!ppl_units_DimEqual(&FirstEntry,tempval1)) { sprintf(temp_err_string, "The supplied bin boundary at x=%s has conflicting physical dimensions with the data supplied, which has units of <%s>. Ignoring this bin boundary.", ppl_units_GetUnitStr(tempval1,NULL,NULL,0,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,0)); ppl_warning(ERR_NUMERIC, temp_err_string); }
+      if (!ppl_units_DimEqual(&FirstEntry,tempval1)) { sprintf(temp_err_string, "The supplied bin boundary at x=%s has conflicting physical dimensions with the data supplied, which has units of <%s>. Ignoring this bin boundary.", ppl_units_GetUnitStr(tempval1,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,1,0)); ppl_warning(ERR_NUMERIC, temp_err_string); }
       else { output->bins[j++] = tempval1->real; }
       listiter = ListIterate(listiter, NULL);
      }
@@ -193,9 +193,9 @@ int directive_histogram(Dict *command)
     else                  BinWidth  = &(settings_term_current.BinWidth);
     if (tempval2 != NULL) { BinOrigin = tempval2;                           BinOriginSet = 1;                                    }
     else                  { BinOrigin = &(settings_term_current.BinOrigin); BinOriginSet = !settings_term_current.BinOriginAuto; }
-    if ((!logaxis) && (!ppl_units_DimEqual(&FirstEntry,BinWidth))) { sprintf(temp_err_string, "The bin width supplied to the histogram command has conflicting physical dimensions with the data supplied. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(BinWidth,NULL,NULL,0,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if ((logaxis) && (BinWidth->dimensionless==0)) { sprintf(temp_err_string, "For logarithmically spaced bins, the multiplicative spacing between bins must be dimensionless. The supplied spacing has units of <%s>.", ppl_units_GetUnitStr(BinWidth,NULL,NULL,0,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if ((BinOriginSet) && (!ppl_units_DimEqual(&FirstEntry,BinOrigin))) { sprintf(temp_err_string, "The bin origin supplied to the histogram command has conflicting physical dimensions with the data supplied. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(BinOrigin,NULL,NULL,0,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((!logaxis) && (!ppl_units_DimEqual(&FirstEntry,BinWidth))) { sprintf(temp_err_string, "The bin width supplied to the histogram command has conflicting physical dimensions with the data supplied. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(BinWidth,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((logaxis) && (BinWidth->dimensionless==0)) { sprintf(temp_err_string, "For logarithmically spaced bins, the multiplicative spacing between bins must be dimensionless. The supplied spacing has units of <%s>.", ppl_units_GetUnitStr(BinWidth,NULL,NULL,0,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((BinOriginSet) && (!ppl_units_DimEqual(&FirstEntry,BinOrigin))) { sprintf(temp_err_string, "The bin origin supplied to the histogram command has conflicting physical dimensions with the data supplied. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(BinOrigin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if ((logaxis) && (BinWidth->real <= 1.0)) { sprintf(temp_err_string, "For logarithmically spaced bins, the multiplicative spacing between bins must be greater than 1.0. Value supplied was %s.", ppl_units_NumericDisplay(BinWidth,0,0,0)); return 1; }
     if (BinWidth->real <= 0.0) { sprintf(temp_err_string, "The bin width supplied to the histogram command must be greater than zero. Value supplied was %s.", ppl_units_NumericDisplay(BinWidth,0,0,0)); return 1; }
     if ((logaxis) && (BinOriginSet) && (BinOrigin->real <= 0.0)) { sprintf(temp_err_string, "For logarithmically spaced bins, the specified bin origin must be greater than zero. Value supplied was %s.", ppl_units_NumericDisplay(BinOrigin,0,0,0)); return 1; }
@@ -286,7 +286,7 @@ void ppl_histogram_evaluate(char *FuncName, HistogramDescriptor *desc, value *in
 
   if (!ppl_units_DimEqual(in, &desc->unit))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->unit, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 0)); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->unit, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 1, 0)); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
     *status=1;
     return;

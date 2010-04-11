@@ -93,7 +93,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
      {
       if ((target->DataUnitSet && source->DataUnitSet) && (!ppl_units_DimEqual(&target->DataUnit , &source->DataUnit)))
        {
-        sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but axes have data plotted against them with conflicting physical units. The former has units of <%s> whilst the latter has units of <%s>.","xyz"[xyz],axis_n,x->current->id,"xyz"[source->LinkedAxisToXYZ],source->LinkedAxisToNum,source->LinkedAxisCanvasID,ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,0,0),ppl_units_GetUnitStr(&source->DataUnit,NULL,NULL,1,0));
+        sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but axes have data plotted against them with conflicting physical units. The former has units of <%s> whilst the latter has units of <%s>.","xyz"[xyz],axis_n,x->current->id,"xyz"[source->LinkedAxisToXYZ],source->LinkedAxisToNum,source->LinkedAxisCanvasID,ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,0,1,0),ppl_units_GetUnitStr(&source->DataUnit,NULL,NULL,1,1,0));
         ppl_warning(ERR_GENERAL, temp_err_string);
         break;
        }
@@ -334,7 +334,7 @@ int eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz)
     if (OutVal.FlagComplex) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Received a complex number; axes must have strictly real values at all points."); goto FAIL; }
     if (!gsl_finite(OutVal.real)) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Expression returned non-finite result."); goto FAIL; }
     if (!out->DataUnitSet) { out->DataUnit = OutVal; out->DataUnitSet = 1; }
-    if (!ppl_units_DimEqual(&out->DataUnit,&OutVal))  { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); sprintf(temp_err_string, "Axis linkage function produces axis values with dimensions of <%s> whilst data plotted on this axis has dimensions of <%s>.", ppl_units_GetUnitStr(&OutVal,NULL,NULL,0,0), ppl_units_GetUnitStr(&out->DataUnit,NULL,NULL,1,0)); ppl_error(ERR_GENERAL, temp_err_string); goto FAIL; }
+    if (!ppl_units_DimEqual(&out->DataUnit,&OutVal))  { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); sprintf(temp_err_string, "Axis linkage function produces axis values with dimensions of <%s> whilst data plotted on this axis has dimensions of <%s>.", ppl_units_GetUnitStr(&OutVal,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&out->DataUnit,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, temp_err_string); goto FAIL; }
     out->AxisLinearInterpolation[l] = OutVal.real;
     if (l>0) // Check for turning points
      {
@@ -517,12 +517,12 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
     // Check that dimension of propagated value fits with existing unit of axis
     if      ((target->HardUnitSet) && (!ppl_units_DimEqual(&target->HardUnit, VarVal)))
      {
-      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has a range set with units of <%s>.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,0), target_xyz, target_n, target_canvasID, ppl_units_GetUnitStr(&target->HardUnit,NULL,NULL,1,0));
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has a range set with units of <%s>.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,1,0), target_xyz, target_n, target_canvasID, ppl_units_GetUnitStr(&target->HardUnit,NULL,NULL,1,1,0));
       ppl_warning(ERR_GENERAL, temp_err_string);
      }
     else if ((target->DataUnitSet) && (!ppl_units_DimEqual(&target->DataUnit, VarVal)))
      {
-      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has data plotted against it with units of <%s>.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,0), target_xyz, target_n, target_canvasID, ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,1,0));
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has data plotted against it with units of <%s>.", source_xyz, source_n, source_canvasID, target_xyz, target_n, target_canvasID, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,1,0), target_xyz, target_n, target_canvasID, ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,1,1,0));
       ppl_warning(ERR_GENERAL, temp_err_string);
      }
     else if (VarVal->FlagComplex)

@@ -99,8 +99,8 @@ int directive_fft(Dict *command)
     DictLookup(TempDict,"max" ,NULL,(void **)(max +Ndims));
     DictLookup(TempDict,"step",NULL,(void **)(step+Ndims));
 
-    if (!ppl_units_DimEqual(min[Ndims],max [Ndims])) { sprintf(temp_err_string, "The minimum and maximum specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>."  , Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,0), ppl_units_GetUnitStr(max [Ndims],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if (!ppl_units_DimEqual(min[Ndims],step[Ndims])) { sprintf(temp_err_string, "The minimum and step size specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,0), ppl_units_GetUnitStr(step[Ndims],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(min[Ndims],max [Ndims])) { sprintf(temp_err_string, "The minimum and maximum specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>."  , Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max [Ndims],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(min[Ndims],step[Ndims])) { sprintf(temp_err_string, "The minimum and step size specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(step[Ndims],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if (min[Ndims]->real >= max[Ndims]->real) { sprintf(temp_err_string, "The maximum ordinate value supplied for dimension %d to the fft command is not greater than the minimum ordinate value, which it must be.", Ndims+1); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     if (step[Ndims]->real <= 0.0) { sprintf(temp_err_string, "The ordinate step size supplied for dimension %d to the fft command is not positive and non-zero, which it must be.", Ndims+1); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     TempDbl = 1.0 + floor((max[Ndims]->real-min[Ndims]->real) / step[Ndims]->real + 0.5); // Add one because this is a fencepost problem
@@ -179,7 +179,7 @@ int directive_fft(Dict *command)
     for (i=0; i<Ndims; i++)
      if (!ppl_units_DimEqual(min[i], &data->FirstEntries[i]))
       {
-       sprintf(temp_err_string, "Data in column %d of the data table supplied to the fft command has conflicting units with range %d: the former has units of <%s> while the latter has units of <%s>.", i+1, i+1, ppl_units_GetUnitStr(min[i],NULL,NULL,0,0), ppl_units_GetUnitStr(&data->FirstEntries[i],NULL,NULL,1,0));
+       sprintf(temp_err_string, "Data in column %d of the data table supplied to the fft command has conflicting units with range %d: the former has units of <%s> while the latter has units of <%s>.", i+1, i+1, ppl_units_GetUnitStr(min[i],NULL,NULL,0,1,0), ppl_units_GetUnitStr(&data->FirstEntries[i],NULL,NULL,1,1,0));
        ppl_error(ERR_NUMERIC, temp_err_string);
        return 1;
       }
@@ -187,7 +187,7 @@ int directive_fft(Dict *command)
     // Read unit of f(x) in final column of data table
     FirstVal = data->FirstEntries[Ndims];
     FirstVal.real=1.0; FirstVal.imag=0.0; FirstVal.FlagComplex=0;
-    if (!ppl_units_DimEqual(&data->FirstEntries[Ndims], &data->FirstEntries[Ndims+1])) { sprintf(temp_err_string, "Data in columns %d and %d of the data table supplied to the fft command have conflicting units of <%s> and <%s> respectively. These represent the real and imaginary components of an input sample, and must have the same units.", Ndims+1, Ndims+2, ppl_units_GetUnitStr(&data->FirstEntries[Ndims],NULL,NULL,0,0), ppl_units_GetUnitStr(&data->FirstEntries[Ndims+1],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(&data->FirstEntries[Ndims], &data->FirstEntries[Ndims+1])) { sprintf(temp_err_string, "Data in columns %d and %d of the data table supplied to the fft command have conflicting units of <%s> and <%s> respectively. These represent the real and imaginary components of an input sample, and must have the same units.", Ndims+1, Ndims+2, ppl_units_GetUnitStr(&data->FirstEntries[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(&data->FirstEntries[Ndims+1],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
 
     // Loop through data table
     blk = data->first; j=0;
@@ -255,7 +255,7 @@ int directive_fft(Dict *command)
       ppl_EvaluateAlgebra(scratchpad, &x, 0, NULL, 0, &status, errtext, 0);
       if ((status>=0)||(!gsl_finite(x.real))||(!gsl_finite(x.imag))) { sprintf(temp_err_string, "Could not evaluate input function at position %s(", infunc); j=strlen(temp_err_string); for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+j,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); j+=strlen(temp_err_string+j); } sprintf(temp_err_string+j-(Ndims>0),")"); ppl_error(ERR_NUMERIC, temp_err_string); return 1; } // Evaluation of algebra failed
       if (i==0) { FirstVal=x; FirstVal.real=1.0; FirstVal.imag=0.0; FirstVal.FlagComplex=0; }
-      else if (!ppl_units_DimEqual(&x, &FirstVal)) { sprintf(temp_err_string, "The supplied function to FFT does not produce values with consistent units; has produced values with units of <%s> and of <%s>.", ppl_units_GetUnitStr(&FirstVal,NULL,NULL,0,0), ppl_units_GetUnitStr(&x,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+      else if (!ppl_units_DimEqual(&x, &FirstVal)) { sprintf(temp_err_string, "The supplied function to FFT does not produce values with consistent units; has produced values with units of <%s> and of <%s>.", ppl_units_GetUnitStr(&FirstVal,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&x,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
       (*WindowType)(&x, Ndims, Npos, Nsteps); // Apply window function to data
       #ifdef HAVE_FFTW3
       datagrid[i][0] = x.real; datagrid[i][1] = x.imag;
@@ -372,7 +372,7 @@ void ppl_fft_evaluate(char *FuncName, FFTDescriptor *desc, value *in, value *out
    {
     if (!ppl_units_DimEqual(in+i, &desc->invrange[i]))
      {
-      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects argument %d to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, i+1, ppl_units_GetUnitStr(&desc->invrange[i], NULL, NULL, 0, 0), ppl_units_GetUnitStr(in+i, NULL, NULL, 1, 0)); }
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects argument %d to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, i+1, ppl_units_GetUnitStr(&desc->invrange[i], NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in+i, NULL, NULL, 1, 1, 0)); }
       else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
       *status=1;
       return;

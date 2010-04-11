@@ -457,7 +457,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           { 
-           sprintf(temp_err_string, "The horizontal offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           sprintf(temp_err_string, "The horizontal offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -473,7 +473,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The vertical offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           sprintf(temp_err_string, "The vertical offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -853,7 +853,7 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval->exponent[i] != (i==UNIT_LENGTH))
         {
-         sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+         sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
          ppl_error(ERR_NUMERIC, temp_err_string);
          return;
         }
@@ -864,7 +864,7 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval2->exponent[i] != (i==UNIT_LENGTH))
         {
-         sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+         sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
          ppl_error(ERR_NUMERIC, temp_err_string);
          return;
         }
@@ -950,7 +950,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));  
+           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));  
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -961,7 +961,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval2->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -1048,7 +1048,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           sprintf(temp_err_string, "The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -1208,9 +1208,9 @@ void directive_set(Dict *command)
         if (tempval != NULL) /* start , increment , end */ \
          { \
           if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
-          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
  \
           if (tempval  != NULL) { tempaxis->TickMin  = tempval->real;       tempaxis->TickMinSet  = 1; } \
           else                  { tempaxis->TickMin  = tempaxis2->TickMin;  tempaxis->TickMinSet  = 0; } \
@@ -1235,7 +1235,7 @@ void directive_set(Dict *command)
             listiter = ListIterate(listiter, NULL); \
             DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
             DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
-            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             tempaxis->TickList[k] = tempval->real; \
             if (tempstr==NULL) tempstr="\xFF"; \
             tempaxis->TickStrs[k] = (char *)malloc(strlen(tempstr)+1); \
@@ -1266,9 +1266,9 @@ void directive_set(Dict *command)
         if (tempval != NULL) /* start , increment , end */ \
          { \
           if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
-          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
  \
           if (tempval  != NULL) { tempaxis->MTickMin  = tempval->real;        tempaxis->MTickMinSet  = 1; } \
           else                  { tempaxis->MTickMin  = tempaxis2->MTickMin;  tempaxis->MTickMinSet  = 0; } \
@@ -1293,7 +1293,7 @@ void directive_set(Dict *command)
             listiter = ListIterate(listiter, NULL); \
             DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
             DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
-            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             tempaxis->MTickList[k] = tempval->real; \
             if (tempstr==NULL) tempstr="\xFF"; \
             tempaxis->MTickStrs[k] = (char *)malloc(strlen(tempstr)+1); \
@@ -1398,7 +1398,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+           sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -1412,7 +1412,7 @@ void directive_set(Dict *command)
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval2->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+           sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, temp_err_string);
            return;
           }
@@ -1632,7 +1632,7 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval->exponent[i] != (i==UNIT_ANGLE))
         {
-         sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+         sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
          ppl_error(ERR_NUMERIC, temp_err_string);
          return;
         }
@@ -1643,7 +1643,7 @@ void directive_set(Dict *command)
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval2->exponent[i] != (i==UNIT_ANGLE))
         {
-         sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 0));
+         sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
          ppl_error(ERR_NUMERIC, temp_err_string);
          return;
         }
@@ -1707,7 +1707,7 @@ void directive_set(Dict *command)
           for (i=0; i<UNITS_MAX_BASEUNITS; i++)
            if (tempval->exponent[i] != (i==UNIT_ANGLE))
             {
-             sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+             sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
              ppl_error(ERR_SYNTAX, temp_err_string);
              return;
             }
@@ -1769,7 +1769,7 @@ void directive_set(Dict *command)
             for (i=0; i<UNITS_MAX_BASEUNITS; i++)
              if (tempval->exponent[i] != (i==UNIT_ANGLE))
               {
-               sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 0));
+               sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
                ppl_error(ERR_SYNTAX, temp_err_string);
                return;
               }

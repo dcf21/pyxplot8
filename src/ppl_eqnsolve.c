@@ -142,7 +142,7 @@ double MultiMinSlave(const gsl_vector *x, void *params)
       if (!ppl_units_DimEqual(&output1, &output2))
        {
         *(data->errpos)=0;
-        sprintf(data->errtext, "The two sides of the equation which is being solved are not dimensionally compatible. The left side has dimensions of <%s> while the right side has dimensions of <%s>.",ppl_units_GetUnitStr(&output1, NULL, NULL, 0, 0),ppl_units_GetUnitStr(&output2, NULL, NULL, 1, 0));
+        sprintf(data->errtext, "The two sides of the equation which is being solved are not dimensionally compatible. The left side has dimensions of <%s> while the right side has dimensions of <%s>.",ppl_units_GetUnitStr(&output1, NULL, NULL, 0, 1, 0),ppl_units_GetUnitStr(&output2, NULL, NULL, 1, 1, 0));
         return GSL_NAN;
        }
 

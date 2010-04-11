@@ -147,7 +147,7 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
  }
 
 #define WWCUID(X) \
- if (!FirstValues[i].dimensionless) { sprintf(temp_err_string, "The expression specified for the %s should have been dimensionless, but instead had units of <%s>. Cannot plot this dataset.", X, ppl_units_GetUnitStr(FirstValues+i, NULL, NULL, 0, 0)); ppl_error(ERR_NUMERIC,temp_err_string); return 1; } \
+ if (!FirstValues[i].dimensionless) { sprintf(temp_err_string, "The expression specified for the %s should have been dimensionless, but instead had units of <%s>. Cannot plot this dataset.", X, ppl_units_GetUnitStr(FirstValues+i, NULL, NULL, 0, 1, 0)); ppl_error(ERR_NUMERIC,temp_err_string); return 1; } \
  i--; \
  if (i<0) i=0;
 
@@ -236,8 +236,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     axis   = &axissets[xyz][axis_n];
 
     // Check if we have partial range which conflicts with units of range of axis
-    if ((pr->MinSet && (!pr->MaxSet)) && axis->HardMaxSet && (!pr->AutoMaxSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-    if (((!pr->MinSet) && pr->MaxSet) && axis->HardMinSet && (!pr->AutoMinSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+    if ((pr->MinSet && (!pr->MaxSet)) && axis->HardMaxSet && (!pr->AutoMaxSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+    if (((!pr->MinSet) && pr->MaxSet) && axis->HardMinSet && (!pr->AutoMinSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
 
     // Read information about axis range out of list of ranges supplied to the plot command, ready to pass to eps_plot_ticking
     if (pr->MinSet)     { axis->HardMinSet = 1; axis->HardMin = pr->min; }

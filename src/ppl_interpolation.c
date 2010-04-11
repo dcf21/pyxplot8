@@ -104,13 +104,13 @@ int directive_interpolate(Dict *command, int mode)
   TempDict = (Dict *)ListIter->data;
   DictLookup(TempDict,"min",NULL,(void **)&xmin);
   DictLookup(TempDict,"max",NULL,(void **)&xmax);
-  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
   ListIter = ListIterate(ListIter, NULL);
   if (ListIter == NULL) goto RANGES_DONE;
   TempDict = (Dict *)ListIter->data;
   DictLookup(TempDict,"min",NULL,(void **)&ymin);
   DictLookup(TempDict,"max",NULL,(void **)&ymax);
-  if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
   ListIter = ListIterate(ListIter, NULL);
   if (ListIter != NULL) { ppl_error(ERR_SYNTAX, "Too many ranges have been supplied to the interpolate command. Only two are allowed: one for each ordinate."); return 1; }
 
@@ -157,19 +157,19 @@ RANGES_DONE:
   // Check that the FirstEntries above have the same units as any supplied ranges
   if      (xmin != NULL)
    {
-    if (!ppl_units_DimEqual(xmin,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(xmin,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
   else if (xmax != NULL)
    {
-    if (!ppl_units_DimEqual(xmax,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(xmax,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
   if      (ymin != NULL)
    {
-    if (!ppl_units_DimEqual(ymin,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(ymin,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
   else if (ymax != NULL)
    {
-    if (!ppl_units_DimEqual(ymax,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymax,NULL,NULL,0,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(ymax,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
    }
 
   // Free original data table which is no longer needed
@@ -271,7 +271,7 @@ void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, valu
 
   if (!ppl_units_DimEqual(in, &desc->UnitX))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 0)); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 1, 0)); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
     *status=1;
     return;

@@ -69,12 +69,13 @@ set xlabel '`ls`'
 \section{arc}\indcmd{arc}
 
 \begin{verbatim}
-arc at <x>, <y> radius <r> from <start> to <finish> [with <option> ... ]
+arc at <x>, <y> radius <r> from <start> to <finish>
+    [with <option> ... ]
 \end{verbatim}
 
 Arcs (curves with constant radius of curvature, that is, segments of circles)
 may be drawn on a multiplot using the arc command.  The {\tt at} modifier
-specifies the co-ordinates of the centre of curvature, from which all points on
+specifies the coordinates of the centre of curvature, from which all points on
 the arc are the distance given following the {\tt radius} modifier.  The angles
 {\tt start} and {\tt finish}, measured clockwise from the vertical, control
 where the arc begins and finishes.  For example, the command
@@ -95,18 +96,12 @@ arrow [from] <x>, <y> [to] <x>, <y> [with <option> ... ]
 \end{verbatim}
 
 Arrows may be placed on multiplot pages independently of any plots using the
-{\tt arrow} command, which has the syntax:
-
-\begin{verbatim}
-arrow from x1,y1 to x2,y2
-\end{verbatim}
-
-The {\tt arrow} command may be followed by the \indmodt{with} keyword to
-specify the style of the arrow. The style keywords which are accepted are
-\indkeyt{nohead}, \indkeyt{head} (default) or \indkeyt{twohead}, in addition to
-keywords such as \indkeyt{colour}, \indkeyt{linewidth} or \indkeyt{linetype},
-which have the same syntax and meaning as in the {\tt plot} command. An example
-would be:
+{\tt arrow} command. The style of the arrows produced may be specified by
+following the \indmodt{with} keyword with one of the style keywords
+\indkeyt{nohead}, \indkeyt{head} (default) or \indkeyt{twohead}. In addition,
+keywords such as \indkeyt{colour}, \indkeyt{linewidth} and \indkeyt{linetype}
+have the same syntax and meaning after the \indmodt{with} keyword as in the
+{\tt plot} command. An example would be:
 
 \begin{verbatim}
 arrow from x1,y1 to x2,y2 with twohead linetype 2 colour blue
@@ -125,19 +120,22 @@ subsequently with the {\tt delete} and {\tt undelete} commands respectively.
 \section{box}\indcmd{box}
 
 \begin{verbatim}
-box at <x>, <y> width <w> height <h> [rotate <r>] [with <option> ... ]
-box from <x1>, <y1> to <x2>, <y2> [rotate <r>] [with <option> ... ]
+box at <x>, <y> width <w> height <h> [rotate <r>]
+    [with <option> ... ]
+
+box from <x1>, <y1> to <x2>, <y2> [rotate <r>]
+    [with <option> ... ]
 \end{verbatim}
 
 There are two different ways to use the {\tt box} command to specify boxes that
-are to be drawn onto a multi-plot.  In the first syntax, the co-ordinates of one
+are to be drawn onto a multiplot.  In the first syntax, the coordinates of one
 corner of the box are specified, along with the width and height.  If both width
-and height are positive then the co-ordinates are taken to be those of the
+and height are positive then the coordinates are taken to be those of the
 bottom left-hand corner of the box.  If a rotation angle is specified then the
 box is rotated about the specified corner.  The {\tt with} options allows line
 and fill types to be specified.
 
-\noindent The second syntax allows two pairs of co-ordinates to be specified.
+\noindent The second syntax allows two pairs of coordinates to be specified.
 PyXPlot will then draw a rectangular box with opposing corners at the specified
 locations.  If an angle is specified the box will be rotated about its centre.
 Hence the following two commands both draw a square box centred on the origin:
@@ -193,7 +191,7 @@ circle at <x>, <y> radius <r> [with <option> ... ]
 \end{verbatim}
 
 The {\tt circle} command allows circles to be added to a multiplot.  The
-co-ordinates of the circle's centre and its radius are specified.  Additional
+coordinates of the circle's centre and its radius are specified.  Additional
 options may be passed following the {\tt with} modifier that change the line and
 fill types.  For example
 
@@ -295,6 +293,51 @@ closing brace.
 
 
 \section{ellipse}\indcmd{ellipse}
+
+Ellipses may be placed on multiplot canvases using \indcmdt{ellipse}. The shape
+of the ellipse may be specified in many different ways, by specifying
+
+\begin{enumerate}[(i)]
+\item the position of two corners of the smallest rectangle which can enclose
+the ellipse when its major axis is horizontal, together with an optional
+counter-clockwise rotation angle, applied about the centre of the ellipse.
+For example:
+
+\begin{verbatim}
+ellipse from 0,0 to 4,1 rot 70
+\end{verbatim}
+
+\item the position of both the centre and one of the foci of the ellipse,
+together with any one of the following pieces of information: the major axis
+length, the semi-major axis length, the minor axis length, the semi-minor axis
+length, the eccentricity, the latus rectum, or the semi-latus rectum.  For
+example:
+
+\begin{verbatim}
+ellipse focus 0,0 centre 2,2 majoraxis 4
+ellipse focus 0,0 centre 2,2 minoraxis 4
+ellipse focus 0,0 centre 2,2 ecc 0.5
+ellipse focus 0,0 centre 2,2 LatusRectum 6
+ellipse focus 0,0 centre 2,2 slr 3
+\end{verbatim}
+
+\item the position of either the centre or one of the foci of the ellipse,
+together with any two of the following pieces of information: the major axis
+length, the semi-major axis length, the minor axis length, the semi-minor axis
+length, the eccentricity, the latus rectum, or the semi-latus rectum. An
+optional counter-clockwise rotation angle may also be specified, applied about
+either the centre or one of the foci of the ellipse, whichever is specified. If
+no rotation angle is given, then the major axis of the ellipse is horizontal.
+For example:
+
+\begin{verbatim}
+ellipse centre 0,0 majoraxis 4 minoraxis 4
+\end{verbatim}
+\end{enumerate}
+
+The line type, line width, and colour of line with which the outlines of
+ellipses are drawn may be specified as in the {\tt box} and {\tt circle}
+commands above. Likewise, ellipses may be filled in the same manner.
 
 
 \section{else}\indcmd{else}
@@ -588,11 +631,13 @@ if (x==2) {
 
 See {\tt fft}.
 
+
 \section{image}\indcmd{image}
 
 \begin{verbatim}
 image '<filename>' [at <x>, <y>] [rotate <angle>] [width <width>]
-                   [height <height>]
+                   [height <height>] [smooth] [notransparent]
+                   [transparent rgb<r>:<g>:<b>]
 \end{verbatim}
 
 The {\tt image} command inserts a graphical image into the current multiplot
@@ -606,9 +651,20 @@ image by any angle, measured in degrees counter-clockwise.  The {\tt width} or
 the image should be rendered; both should be specified in centimetres. If
 neither is specified then the image will be rendered with the native dimensions
 specified within the metadata present in the image file (if any). If both are
-specified, then the aspect ratio of the image is changed. The {\tt image}
-command is often useful in multiplot mode, allowing images to be combined with
-plots, text labels, etc.
+specified, then the aspect ratio of the image is changed.
+
+The keyword {\tt smooth} may optionally be supplied to cause the pixels of the
+image to be interpolated\footnote{Many commonly-used postscript display
+engines, including GhostScript, do not support this functionality.}.  Images
+which include transparency are supported. The optional keyword {\tt
+notransparent} may be supplied to the \indcmdt{image} to cause transparent
+regions to be filled with the image's default background colour. Alternatively,
+the keyword {\tt transparent} may be followed by the name of an RGB colour in
+the form {\tt rgb<r>:<g>:<b>} to cause a particular colour to be converted to
+transparent.
+
+The {\tt image} command is often useful in multiplot mode, allowing images to
+be combined with plots, text labels, etc.
 
 
 \section{interpolate}\indcmd{interpolate}
@@ -645,8 +701,16 @@ produce useful results.
 
 \section{jpeg}\indcmd{jpeg}
 
+See {\tt image}.
+
 
 \section{let}\indcmd{let}
+
+\begin{verbatim}
+let <varname> = <value>
+\end{verbatim}
+
+The {\tt let} command sets the variable {\tt varname} to equal {\tt value}.
 
 
 \section{list}\indcmd{list}
@@ -938,7 +1002,7 @@ point at <x>, <y> [label <string>] [with <option> ... ]
 \end{verbatim}
 
 The {\tt point} command places a point on the plot at the specified
-co-ordinates.  It is equivalent to plotting a \datafile\ continaing a single
+coordinates.  It is equivalent to plotting a \datafile\ continaing a single
 datum.  If an optional {\tt label} is specified then the text string provided is
 placed next to the point.  The {\tt with} modifier may be used to change the
 point type, colour, etc.
@@ -1042,13 +1106,13 @@ commonly used settings can be saved into a configuration file.
 \subsection{arrow}\indcmd{set arrow}
 
 \begin{verbatim}
-set arrow <arrow number> from [<co-ordinate>] <x>,
-          [<co-ordinate>] <y> to [<co-ordinate>] <x>,
-          [<co-ordinate>] <y> [with <modifier> ]
+set arrow <arrow number> from [<coordinate>] <x>,
+          [<coordinate>] <y> to [<coordinate>] <x>,
+          [<coordinate>] <y> [with <modifier> ]
 \end{verbatim}
 
 \begin{verbatim}
-<co-ordinate> = ( first | second | screen | graph |
+<coordinate> = ( first | second | screen | graph |
                   axis<axisnumber>                  )
 \end{verbatim}
 
@@ -1062,16 +1126,16 @@ set arrow 1 from 0,0 to 1,1
 \noindent which would cause an arrow to be drawn between the points $(0,0)$ and $(1,1)$, as
 measured on the $x$ and $y$ axes.  The tag {\tt 1} immediately following the {\tt
 arrow} keyword is an identification number, and allows the arrow to be removed
-later with the {\tt unset arrow} command.  By default the co-ordinates are
+later with the {\tt unset arrow} command.  By default the coordinates are
 measured relative to the first $x$- and $y$-axes, but can be specified in a range
-of co-ordinate systems. These are specified as follows:
+of coordinate systems. These are specified as follows:
 
 \begin{verbatim}
 set arrow 1 from first 0, second 0 to axis3 1, axis4 1
 \end{verbatim}
 
-As can be seen, the name of the desired co-ordinate system precedes the position
-value in that co-ordinate system. The co-ordinate system {\tt first}, the default,
+As can be seen, the name of the desired coordinate system precedes the position
+value in that coordinate system. The coordinate system {\tt first}, the default,
 measures the graph using the $x$- and $y$-axes. {\tt second} uses the $x2$- and
 $y2$-axes.  {\tt screen} and {\tt graph} both measure in centimetres from the
 origin of the graph.  The syntax {\tt axisn} may also be
@@ -1549,15 +1613,15 @@ set keycolumns 3
 \subsection{label}\indcmd{set label}
 
 \begin{verbatim}
-set label <label number> '<text>' [<co-ordinate>] <x>,
-                                  [<co-ordinate>] <y>
+set label <label number> '<text>' [<coordinate>] <x>,
+                                  [<coordinate>] <y>
                                   [rotate <angle>]
                                   [with colour <colour>]
 \end{verbatim}
 
 \begin{verbatim}
-<co-ordinate> = ( first | second | screen | graph |
-                  axis<axisnumber>                  )
+<coordinate> = ( first | second | screen | graph |
+                 axis<axisnumber>                  )
 \end{verbatim}
 
 The {\tt set label} command can be used to place text labels onto a plot.  For
@@ -1567,20 +1631,20 @@ example:
 set label 1 'Hello' 0, 0
 \end{verbatim}
 
-\noindent would place the word `Hello' at plot co-ordinates $(0,0)$, as measured on the $x$-
+\noindent would place the word `Hello' at plot coordinates $(0,0)$, as measured on the $x$-
 and $y$-axes.  The tag {\tt 1} immediately following the {\tt label} keyword is an
 identification number, and allows the label to be removed later with the {\tt
-unset label} command.  By default the position co-ordinates of the label are
+unset label} command.  By default the position coordinates of the label are
 measured relative to the first $x$- and $y$-axes, but can be specified in a
-range of co-ordinate systems. These are specified as follows:
+range of coordinate systems. These are specified as follows:
 
 \begin{verbatim}
 set label 1 'Hello' first 0, second 0
 \end{verbatim}
 
-As can be seen, the name of the desired co-ordinate system precedes the position
-value in that co-ordinate system. Following \gnuplot's nomenclature, the
-co-ordinate system {\tt first} the default, measures the graph using the $x$- and
+As can be seen, the name of the desired coordinate system precedes the position
+value in that coordinate system. Following \gnuplot's nomenclature, the
+coordinate system {\tt first} the default, measures the graph using the $x$- and
 $y$-axes. {\tt second} uses the $x2$- and $y2$-axes.  {\tt screen} and {\tt
 graph} both measure in centimetres from the origin of the graph.  The syntax
 {\tt axisn} may also be used, to use the $n$ th $x$- or $y$-axis; for example,
@@ -2763,6 +2827,87 @@ current user-defined functions.
 
 \section{solve}\indcmd{solve}
 
+\begin{verbatim}
+solve <equation1> [, ...] via <variable1> [, ...]
+\end{verbatim}
+
+The \indcmdt{solve} can be used to solve simple systems of one or more
+equations numerically. It takes as its arguments a comma-separated list of the
+equations which are to be solved, and a comma-separated list of the variables
+which are to be solved for. The latter should be prefixed by the word {\tt
+via}, to separate it from the list of equations.
+
+Note that the time taken by the solver dramatically increases with the number
+of variables which are simultaneously solved for, meanwhile the accuracy
+achieved simultaneously decreases. The following example solves a simple pair
+of simultaneous equations of two variables:
+
+\begin{verbatim}
+pyxplot> solve x+y=10, x-y=3 via x,y
+pyxplot> print x
+6.5
+pyxplot> print y
+3.5
+\end{verbatim}
+
+\noindent No output is returned to the terminal if the numerical solver
+succeeds, otherwise an error message is displayed. If any of the fitting
+variables are already defined prior to the \indcmdt{solve} being called, their
+values are used as initial guesses, otherwise an initial guess of unity for
+each fitting variable is assumed. Thus, the same \indcmdt{solve} returns two
+different values in the following two cases:
+
+\begin{verbatim}
+pyxplot> x= # Undefine x
+pyxplot> solve cos(x)=0 via x
+pyxplot> print x/pi
+0.5
+pyxplot> x=10
+pyxplot> solve cos(x)=0 via x
+pyxplot> print x/pi
+3.5
+\end{verbatim}
+
+\noindent In cases where any of the variables being solved for are not
+dimensionless, it is essential that an initial guess with appropriate units be
+supplied, otherwise the solver will try and fail to solve the system of
+equations using dimensionless values:
+
+\begin{verbatim}
+x = unit(m)\newline
+y = 5*unit(km)\newline
+solve x=y via x
+\end{verbatim}
+
+The {\tt solve} command works by minimising the squares of the residuals of all
+of the equations supplied, and so even when no exact solution can be found, the
+best compromise is returned. The following example has no solution -- a system
+of three equations with two variables is over-constrained -- but PyXPlot
+nonetheless finds a compromise solution:
+
+\begin{verbatim}
+pyxplot> solve x+y=10, x-y=3, 2*x+y=16 via x,y
+pyxplot> print x
+6.3571429
+pyxplot> print y
+3.4285714
+\end{verbatim}
+
+When complex arithmetic is enabled, the {\tt solve} command allows each of the
+variables being fitted to take any value in the complex plane, and thus the
+number of dimensions of the fitting problem is effectively doubled -- the real
+and imaginary components of each variable are solved for separately -- as in
+the following example:
+
+\begin{verbatim}
+pyxplot> set numerics complex
+pyxplot> solve exp(x)=e*i via x
+pyxplot> print Re(x)
+1
+pyxplot> print Im(x)/pi
+0.5
+\end{verbatim}
+
 
 \section{spline}\indcmd{spline}
 
@@ -2778,6 +2923,27 @@ See the entry for the {\tt interpolate} command for more details.
 
 
 \section{swap}\indcmd{swap}
+
+\begin{verbatim}
+swap <item1> <item2>
+\end{verbatim}
+
+Items on multiplot are drawn in order of increasing identification number, and
+thus items with low identification numbers are drawn first, at the back of the
+multiplot, and items with higher identification numbers are later, towards the
+front of the multiplot. When new items are added, they are given higher
+identification numbers than previous items, and appear at the front of the
+multiplot.
+
+If this ordering is not the desired ordering, then the {\tt swap} command may
+be used to rearrange items. It simply takes two multiplot items, and swaps
+their identification numbers and hence positions in the ordered sequence in
+which the items on the multiplot are drawn. Thus, if, for example, the corner
+of item~3 disappears behind the corner of item~5, when the converse effect is
+actually desired, the following command should be issued:
+\begin{verbatim}
+swap 3 5
+\end{verbatim}
 
 
 \section{tabulate}\indcmd{tabulate}

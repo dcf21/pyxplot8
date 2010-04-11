@@ -58,7 +58,7 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
      else                                 { XA = NULL; XOUT = 0.0; } \
      if (XA != NULL) \
       { \
-       if (XA->DataUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->DataUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with the axes used. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 0), ppl_units_GetUnitStr(&(XA->DataUnit), NULL, NULL, 1, 0)); ppl_error(ERR_NUMERIC,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
+       if (XA->DataUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->DataUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with the axes used. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(XA->DataUnit), NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
        else if (!XA->DataUnitSet) { XA=NULL; XOUT=0.5; } \
       }
 

@@ -108,7 +108,7 @@
   if (!(in->dimensionless)) \
    { \
     *status = 1; \
-    sprintf(errtext, "The %s function can only act upon dimensionless inputs. Supplied input has dimensions of <%s>.", FunctionDescription, ppl_units_GetUnitStr(in, NULL, NULL, 1, 0)); \
+    sprintf(errtext, "The %s function can only act upon dimensionless inputs. Supplied input has dimensions of <%s>.", FunctionDescription, ppl_units_GetUnitStr(in, NULL, NULL, 1, 1, 0)); \
     return; \
    } \
  }
@@ -118,7 +118,7 @@
   if (!(in1->dimensionless && in2->dimensionless)) \
    { \
     *status = 1; \
-    sprintf(errtext, "The %s function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in1, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 0)); \
+    sprintf(errtext, "The %s function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in1, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 1, 0)); \
     return; \
    } \
  }
@@ -128,7 +128,7 @@
   if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless)) \
    { \
     *status = 1; \
-    sprintf(errtext, "The %s function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s>, <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in1, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 0), ppl_units_GetUnitStr(in3, NULL, NULL, 2, 0)); \
+    sprintf(errtext, "The %s function can only act upon dimensionless inputs. Supplied inputs have dimensions of <%s>, <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in1, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 1, 0), ppl_units_GetUnitStr(in3, NULL, NULL, 2, 1, 0)); \
     return; \
    } \
  }
@@ -159,7 +159,7 @@
   if ((!(in1->dimensionless && in2->dimensionless)) && (!(ppl_units_DimEqual(in1, in2)))) \
    { \
     *status = 1; \
-    sprintf(errtext, "The %s function can only act upon inputs with matching dimensions. Supplied inputs have dimensions of <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in1, NULL, NULL, 0, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 0)); \
+    sprintf(errtext, "The %s function can only act upon inputs with matching dimensions. Supplied inputs have dimensions of <%s> and <%s>.", FunctionDescription, ppl_units_GetUnitStr(in1, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 1, 0)); \
     return; \
    } \
  }
@@ -171,7 +171,7 @@
     if ((X)->exponent[i] != UNITN*(i==UNIT)) \
      { \
       *status = 1; \
-      sprintf(errtext, "The %s argument to the %s function must be %s. Supplied input has dimensions of <%s>.", DESCRIPTION, FunctionDescription, UNITNAME, ppl_units_GetUnitStr((X), NULL, NULL, 1, 0)); \
+      sprintf(errtext, "The %s argument to the %s function must be %s. Supplied input has dimensions of <%s>.", DESCRIPTION, FunctionDescription, UNITNAME, ppl_units_GetUnitStr((X), NULL, NULL, 1, 1, 0)); \
       return; \
      } \
  } \

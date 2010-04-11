@@ -121,7 +121,7 @@ static double FitResidual(FitComm *p)
     sprintf(p->ScratchPad+i, ")");
     ppl_EvaluateAlgebra(p->ScratchPad, &x, 0, NULL, 0, &errpos, p->errtext, 0);
     if (errpos>=0) return GSL_NAN; // Evaluation of algebra failed
-    if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,0)); return GSL_NAN; }
+    if (!ppl_units_DimEqual(&x, p->FirstVals+p->NArgs)) { sprintf(p->errtext, "The supplied function to fit produces a value which is dimensionally incompatible with its target value. The function produces a result with dimensions of <%s>, while its target value has dimensions of <%s>.", ppl_units_GetUnitStr(&x,NULL,NULL,0,1,0), ppl_units_GetUnitStr(p->FirstVals+p->NArgs,NULL,NULL,1,1,0)); return GSL_NAN; }
     residual = pow(x.real - p->DataTable[j*p->NExpect+k] , 2) + pow(x.imag , 2); // Calculate squared deviation of function result from desired result
     if (p->FlagYErrorBars) residual /= 2 * pow(p->DataTable[j*p->NExpect+k+1] , 2); // Divide square residual by 2 sigma squared.
     else                   residual /= 2 * pow(p->SigmaData                   , 2);
@@ -401,7 +401,7 @@ int directive_fit(Dict *command)
      TempDict = (Dict *)ListIter->data;
      DictLookup(TempDict,"min",NULL,(void **)(min+j));
      DictLookup(TempDict,"max",NULL,(void **)(max+j));
-     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
      ListIter = ListIterate(ListIter, NULL);
     }
    if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the fit command. %d ranges were supplied, but only a maximum of %ld were expected.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, temp_err_string); return 1; }
@@ -419,11 +419,11 @@ int directive_fit(Dict *command)
   for (j=0; j<NExpect; j++)
    if (min[j] != NULL)
     {
-     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     }
    else if (max[j] != NULL)
     {
-     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
     }
 
   // Work out how many data points we have within the specified ranges
@@ -628,14 +628,14 @@ int directive_fit(Dict *command)
   ppl_report("\n# Summary:\n# --------\n");
   for (i=0; i<DataComm.NFitVars; i++)
    {
-    cptr      = ppl_units_GetUnitStr(outval[i], &tmp1, &tmp2, 0, 0); // Work out what unit the best-fit value is best displayed in
+    cptr      = ppl_units_GetUnitStr(outval[i], &tmp1, &tmp2, 0, 1, 0); // Work out what unit the best-fit value is best displayed in
     if      (fabs(outval[i]->real)>1e-200) tmp3 = tmp1 / outval[i]->real; // Set tmp3 to be the multiplicative size of this unit relative to its SI counterpart
     else if (fabs(outval[i]->imag)>1e-200) tmp3 = tmp2 / outval[i]->imag; // Can't do this if magnitude of best-fit value is zero, though...
     else
      {
       DummyTemp = *(outval[i]);
       DummyTemp.real = 1.0; DummyTemp.imag = 0.0; DummyTemp.FlagComplex = 0; // If best-fit value is zero, use the unit we would use for unity instead.
-      cptr = ppl_units_GetUnitStr(&DummyTemp, &tmp1, &tmp2, 0, 0);
+      cptr = ppl_units_GetUnitStr(&DummyTemp, &tmp1, &tmp2, 0, 1, 0);
       tmp3 = tmp1;
      }
     ppl_units_zero(&DummyTemp);

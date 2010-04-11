@@ -88,7 +88,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs)
   if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) return NumericDisplay(GSL_NAN, N, NSigFigs, (typeable==SW_DISPLAY_L));
 
   if (typeable==0) typeable = settings_term_current.NumDisplay;
-  unitstr = ppl_units_GetUnitStr(in, &NumberOutReal, &NumberOutImag, N, typeable);
+  unitstr = ppl_units_GetUnitStr(in, &NumberOutReal, &NumberOutImag, N, 1, typeable);
 
   if (((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex!=0)) || (!gsl_finite(NumberOutReal)) || (!gsl_finite(NumberOutImag)))
    {
@@ -272,7 +272,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
  }
 
 // Main entry point for printing units
-char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *NumberOutImag, int N, int typeable)
+char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *NumberOutImag, int N, int DivAllowed, int typeable)
  {
   static char   outputA[LSTR_LENGTH], outputB[LSTR_LENGTH], outputC[LSTR_LENGTH];
   char         *output,*temp;
@@ -351,8 +351,10 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
     if ((typeable==SW_DISPLAY_T) && first) { strcpy(output+OutputPos, "*unit("); OutputPos+=strlen(output+OutputPos); }
     if (!first) // Print * or /
      {
-      if ((UnitPow[j] > 0) || (ppl_units_DblEqual(UnitPow[j],0))) { if (typeable==SW_DISPLAY_L) { output[OutputPos++] = '\\'; output[OutputPos++] = ','; }  else output[OutputPos++] = '*'; }
-      else                                                        { output[OutputPos++] = '/'; }
+      if ((!DivAllowed) || (UnitPow[j] > 0) || (ppl_units_DblEqual(UnitPow[j],0)))
+          { if (typeable==SW_DISPLAY_L) { output[OutputPos++] = '\\'; output[OutputPos++] = ','; }  else output[OutputPos++] = '*'; }
+      else
+          { output[OutputPos++] = '/'; }
      }
     if (typeable==SW_DISPLAY_L) { strcpy(output+OutputPos, "\\mathrm{"); OutputPos+=strlen(output+OutputPos); }
     if (UnitPref[j] != 0) // Print SI prefix
@@ -396,12 +398,12 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
      }
     OutputPos+=strlen(output+OutputPos);
     if (typeable==SW_DISPLAY_L) { output[OutputPos++]='}'; }
-    if ( (first && (!ppl_units_DblEqual(UnitPow[j],1))) || ((!first) && (!ppl_units_DblEqual(fabs(UnitPow[j]),1))) ) // Print power
+    if ( ((first||(!DivAllowed)) && (!ppl_units_DblEqual(UnitPow[j],1))) || (((!first)||DivAllowed) && (!ppl_units_DblEqual(fabs(UnitPow[j]),1))) ) // Print power
      {
       if (typeable==SW_DISPLAY_L) { output[OutputPos++]='^'; output[OutputPos++]='{'; }
       else                        { output[OutputPos++]='*'; output[OutputPos++]='*'; }
-      if (first) sprintf(output+OutputPos, "%s", NumericDisplay(     UnitPow[j] , N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
-      else       sprintf(output+OutputPos, "%s", NumericDisplay(fabs(UnitPow[j]), N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
+      if ((first)||(!DivAllowed)) sprintf(output+OutputPos, "%s", NumericDisplay(     UnitPow[j] , N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
+      else                        sprintf(output+OutputPos, "%s", NumericDisplay(fabs(UnitPow[j]), N, settings_term_current.SignificantFigures, (typeable==SW_DISPLAY_L)));
       OutputPos+=strlen(output+OutputPos);
       if (typeable==SW_DISPLAY_L) { output[OutputPos++]='}'; }
      }

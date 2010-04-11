@@ -118,7 +118,7 @@ void MAKE_INLINE ppl_units_pow (const value *a, const value *b, value *o, int *s
   if (b->dimensionless == 0)
    {
     if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
-    else { sprintf(errtext, "Exponent should be dimensionless, but instead has dimensions of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 0, 0)); *status = 1; return; }
+    else { sprintf(errtext, "Exponent should be dimensionless, but instead has dimensions of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 0, 1, 0)); *status = 1; return; }
    }
 
   if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) // Real pow()
@@ -137,7 +137,7 @@ void MAKE_INLINE ppl_units_pow (const value *a, const value *b, value *o, int *s
     if ((a->dimensionless == 0) && (b->FlagComplex))
      {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
-      else { sprintf(errtext, "Raising quantities with physical units to complex powers produces quantities with complex physical dimensions, which is forbidden. The operand in question has dimensions of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0)); *status = 1; return; }
+      else { sprintf(errtext, "Raising quantities with physical units to complex powers produces quantities with complex physical dimensions, which is forbidden. The operand in question has dimensions of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0)); *status = 1; return; }
      }
     else
      {
@@ -202,7 +202,7 @@ void MAKE_INLINE ppl_units_mult(const value *a, const value *b, value *o, int *s
       breal = breal + TempTypeOffset[b->TempType] - TempTypeOffset[a->TempType]; // Imaginary part needs to conversion... multiplication already done.
      }
     else
-     {*status = 1; sprintf(errtext, "Attempt to multiply quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before multiplication is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) );}
+     {*status = 1; sprintf(errtext, "Attempt to multiply quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before multiplication is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) );}
    }
 
   // If one or other input has temperature dependence, we need to propagate which unit of temperature is being used.
@@ -267,7 +267,7 @@ void MAKE_INLINE ppl_units_div (const value *a, const value *b, value *o, int *s
       breal = breal + TempTypeOffset[b->TempType] - TempTypeOffset[a->TempType]; // Imaginary part needs to conversion... multiplication already done.
      }
     else
-     {*status = 1; sprintf(errtext, "Attempt to divide quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before division is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) );}
+     {*status = 1; sprintf(errtext, "Attempt to divide quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before division is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) );}
    }
 
   // If one or other input has temperature dependence, we need to propagate which unit of temperature is being used.
@@ -334,16 +334,16 @@ void MAKE_INLINE ppl_units_add (const value *a, const value *b, value *o, int *s
     if (ppl_units_DimEqual(a, b) == 0)
      {
       if (a->dimensionless)
-       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
       else if (b->dimensionless)
-       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0) ); }
+       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0) ); }
       else
-       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+       { sprintf(errtext, "Attempt to add quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
       *status = 1; return;
      }
    }
   if (!TempTypeMatch(a->TempType, b->TempType))
-   { *status = 1; sprintf(errtext, "Attempt to add quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before addition is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+   { *status = 1; sprintf(errtext, "Attempt to add quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before addition is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
   if (a->FlagComplex || b->FlagComplex)
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
@@ -363,16 +363,16 @@ void MAKE_INLINE ppl_units_sub (const value *a, const value *b, value *o, int *s
     if (ppl_units_DimEqual(a, b) == 0)
      {
       if (a->dimensionless)
-       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
       else if (b->dimensionless)
-       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0) ); }
+       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0) ); }
       else
-       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+       { sprintf(errtext, "Attempt to subtract quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
       *status = 1; return;
      }
    }
   if (!TempTypeMatch(a->TempType, b->TempType))
-   { *status = 1; sprintf(errtext, "Attempt to subtract quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before subtraction is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+   { *status = 1; sprintf(errtext, "Attempt to subtract quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before subtraction is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
   if (a->FlagComplex || b->FlagComplex)
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
@@ -392,16 +392,16 @@ void MAKE_INLINE ppl_units_mod (const value *a, const value *b, value *o, int *s
     if (ppl_units_DimEqual(a, b) == 0)
      {
       if (a->dimensionless)
-       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand is dimensionless, while right operand has units of <%s>.", ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
       else if (b->dimensionless)
-       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0) ); }
+       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand has units of <%s>, while right operand is dimensionless.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0) ); }
       else
-       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+       { sprintf(errtext, "Attempt to apply mod operator to quantities with conflicting dimensions: left operand has units of <%s>, while right operand has units of <%s>.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
       *status = 1; return;
      }
    }
   if (!TempTypeMatch(a->TempType, b->TempType))
-   { *status = 1; sprintf(errtext, "Attempt to apply mod operator to quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before the use of the mod operator is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 0) ); }
+   { *status = 1; sprintf(errtext, "Attempt to apply mod operator to quantities with different temperature units: left operand has units of <%s>, while right operand has units of <%s>. These must be explicitly cast onto the same temperature scale before the use of the mod operator is allowed. Type 'help units temperatures' for more details.", ppl_units_GetUnitStr(a, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(b, NULL, NULL, 1, 1, 0) ); }
   if (a->FlagComplex || b->FlagComplex)
    {
     if (settings_term_current.ComplexNumbers == SW_ONOFF_OFF) { o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
