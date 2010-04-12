@@ -544,25 +544,25 @@ intricate patterns.
 \label{sec:legends}
 
 By default, plots are displayed with legends in their top-right corners. The
-textual description of each dataset is drawn by default from the command used
+textual description of each dataset is auto-generated from the command used
 to plot it. Alternatively, the user may specify his own description for each
 dataset by following the {\tt plot} command with the \indmodt{title} modifier,
-as follows:
+as in the following examples:
 
 \begin{verbatim}
 plot sin(x) title 'A sine wave'
 plot cos(x) title ''
 \end{verbatim}
 
-In the lower case, a blank title is specified, in which case PyXPlot makes no
-entry for the dataset in the legend. This is useful if it is desired to place
-some but not all datasets into the legend of a plot.  Alternatively, the
+In the latter case a blank title is specified, which indicates to PyXPlot that
+no entry should be made for the dataset in the legend. This allows for legends
+which contain only a subset of the datasets on a plot. Alternatively, the
 production of the legend can be completely turned off for all datasets using
-the command \indcmdts{set nokey}. The opposite effect can be achieved by the
-\indcmdt{set key}.
+the command \indcmdts{set nokey}. Having issued this command, the production of
+keys can be resumed using the \indcmdt{set key}.
 
-The \indcmdt{set key} command can also be used to dictate where on the plot the
-legend should be placed, using a syntax along the lines of:
+The \indcmdt{set key} can also be used to dictate how legends should be
+positioned on graphs, using a syntax along the lines of:
 
 \begin{verbatim}
 set key top right
@@ -570,33 +570,62 @@ set key top right
 
 The following recognised positioning keywords are self-explanatory:
 \indkeyt{top}, \indkeyt{bottom}, \indkeyt{left}, \indkeyt{right},
-\indkeyt{xcentre} and \indkeyt{ycentre}. The word \indkeyt{outside} places the
-key outside the plot, on its right side. The words \indkeyt{below} and
-\indkeyt{above} place legends below and above the plot respectively.
+\indkeyt{xcentre} and \indkeyt{ycentre}. Any single instance of the
+\indcmdt{set key} can be followed by one horizontal alignment keyword and one
+vertical alignment keyword; these keywords also affect the justification of the
+legend -- for example, the keyword \indkeyt{left} aligns the legend with its
+left edge against the left edge of the plot.
 
-In addition, two positional offset coordinates may be specified after such
-keywords -- the first value is assumed to be an $x$-offset, and the second a
-$y$-offset, both in units of centimetres. For example:
+Alternatively, the position of the legend can be indicated using one of the
+keywords \indkeyt{outside}, \indkeyt{below} or \indkeyt{above}. These cannot be
+combined with the horizontal and vertical alignment keywords above, and are
+used to indicate that the legend should be placed, respectively, outside the
+plot on its right side, centred beneath the plot, and centred above the plot.
+
+Two positional offset coordinates may be specified any of the named positions
+listed above -- the first value is assumed to be a horizontal offset and the
+second a vertical offset. Either may have units of length, or, if they are
+dimensionless, are assumed to be measured in centimetres, as the following
+examples demonstrate:
 
 \begin{verbatim}
 set key bottom left 0.0 -2
+set key top xcentre 2*unit(mm),2*unit(mm)
 \end{verbatim}
 
-\noindent would display a key below the bottom left corner of the graph.
-
-By default, entries in the key are placed in a single vertical list. They can
-instead be arranged into a number of columns by means of the \indcmdt{set
-keycolumns}. This should be followed by the integer number of desired columns,
-for example:
+By default, entries in the legend are automatically sorted into an appropriate
+number of columns. The number of columns to be used, can, instead, be
+stipulated using the \indcmdt{set keycolumns}. This should be followed by
+either the integer number of desired columns, or by the keyword {\tt auto} to
+indicate that the default behaviour of automatic formatting should be resumed:
 
 \begin{verbatim}
 set keycolumns 2
+set keycolumns auto
 \end{verbatim}
 
 \section{Configuring Axes}
 \label{sec:multiple_axes}
 
-By default, plots have only one $x$-axis and one $y$-axis. Further parallel
+By default, plots have only one horizontal $x$-axis and one vertical $y$-axis.
+Additional axes can be added parallel to these, which are referred to as the
+{\tt x2} axis, the {\tt x3} axis, and so forth up to a maximum of {\tt x127}.
+Such axes are automatically generated when statements such as the following are
+issued:
+
+\begin{verbatim}
+set x3label 'A second horizontal axis'
+\end{verbatim}
+
+Alternatively, such axes can be explicitly created using the \indcmdt{set
+axis}, as in the example:
+
+\begin{verbatim}
+set axis x3
+\end{verbatim}
+
+CUT
+
 axes can be added and configured via statements such as:\index{axes
 modifier@{\tt axes} modifier}\indcmd{set axis}
 

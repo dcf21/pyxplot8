@@ -174,7 +174,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
      }
 
     // Finalise the label to be placed on the axis, quoting a physical unit as necessary
-    if (axis->DataUnit.dimensionless) { axis->FinalAxisLabel = axis->label; } // No units to append
+    if ((axis->DataUnit.dimensionless) || (axis->format != NULL))
+     { axis->FinalAxisLabel = axis->label; } // No units to append
     else
      {
       i = 1024;
@@ -311,6 +312,7 @@ void TickLabelAutoGen(char **output, double x, double log_base, int OutContext)
     if (x<0) { sgn=1; x=-x; }
     e = floor(log(x)/log(log_base));
     m = x / pow(log_base,e);
+    if (fabs(m-log_base)<ApproxMargin) { e++; m=1; } // Avoid 10 x 10^2
     if (ppl_units_DblApprox(m,1,pow(10,-SF+1))) sprintf(temp_err_string,"%s%d^{%s}",sgn?"-":"",(int)log_base,NumericDisplay(e,0,SF,1));
     else                                        sprintf(temp_err_string,"%s%s\\times %d^{%s}",sgn?"-":"",NumericDisplay(m,0,SF,1),(int)log_base,NumericDisplay(e,1,SF,1));
    }
