@@ -500,30 +500,62 @@ upon the range of the $x$-axis. In this case, the user should have used the
 \section{Plotting Parametric Functions}
 \label{sec:parametric_plotting}
 
-Parametric functions may be plotted by placing the keyword {\tt parametric}
-before the list of functions to be plotted, as in the following simple example
-which plots a circle:
+Parametric functions are functions expressed in forms such as
+\begin{eqnarray*}
+x & = & r \sin(t)  \\
+y & = & r \cos(t) ,\\
+\end{eqnarray*}
+where separate expression are supplied for the horizontal and vertical
+positions which correspond to the value of the function as a function of some
+free parameter $t$. The above example is a parametric representation of a
+circle of radius $r$. Before PyXPlot can usefully plot parametric functions, it
+is generally necessary to stipulate the range of values of $t$ over which the
+function should be sampled. This may be done using the \indcmdt{set trange}, as
+in the example
 \begin{verbatim}
-set trange [0:2*pi]
+set trange [unit(0*rad):unit(2*pi*rad)]
+\end{verbatim}
+By default, values in the range $0\leq t\leq1$ are used. Note that the
+\indcmdt{set trange} differs from other commands for setting axis ranges in
+that auto-scaling is not an allowed behaviour; an explicit range {\it must} be
+specified for $t$.
+
+Having set an appropriate range for $t$, parametric functions may be plotted by
+placing the keyword {\tt parametric} before the list of functions to be
+plotted, as in the following simple example which plots a circle:
+\begin{verbatim}
+set trange [unit(0*rev):unit(1*rev)]
 plot parametric sin(t):cos(t)
 \end{verbatim}
+The only difference between parametric function plotting and ordinary function
+plotting -- other than the change of dummy variable from {\tt x} to {\tt t} --
+is that one fewer column of data is generated. Thus, whilst
+\begin{verbatim}
+plot f(x)
+\end{verbatim}
+generates two columns of data, with values of $x$ in the first column,
+\begin{verbatim}
+plot parametric f(t)
+\end{verbatim}
+generates only one column of data.
 
 \example{ex:spirograph}{Generating spirograph patterns}{
 Spirograph patterns are produced when a pen is tethered to the end of a rod
 which rotates at some angular speed $\omega_1$ about the end of another rod,
-which is itself rotating at angular speed $\omega_2$ about some fixed central
+which is itself rotating at some angular speed $\omega_2$ about a fixed central
 point. Spirographs are commonly implemented mechanically as wheels within
 wheels -- epicycles within deferents, mathematically speaking -- but in this
-example we implement them using parametric functions
+example we implement them using the parametric functions
 \begin{eqnarray*}
 x & = & r_1 \sin(t) + r_2 \sin(t r_1 / r_2) \\
 y & = & r_1 \cos(t) + r_2 \cos(t r_1 / r_2) \\
 \end{eqnarray*}
-which are simply the sum of two circular motions. The complexity of the
-resulting spirograph pattern depends upon how rapidly the rods return to their
-starting configuration; if the two chosen angular speeds for the rods have a
-large lowest common multiple, then a highly complicated pattern will result. In
-the example below, we pick a ratio of $8:15$:
+which are simply the sum of two circular motions with angular velocities
+inversely proportional to their radii. The complexity of the resulting
+spirograph pattern depends upon how rapidly the rods return to their starting
+configuration; if the two chosen angular speeds for the rods have a large
+lowest common multiple, then a highly complicated pattern will result. In the
+example below, we pick a ratio of $8:15$:
 \nlscf
 \noindent{\tt r1 = 1.5}\newline
 \noindent{\tt r2 = 0.8}\newline
@@ -608,72 +640,42 @@ set keycolumns auto
 \label{sec:multiple_axes}
 
 By default, plots have only one horizontal $x$-axis and one vertical $y$-axis.
-Additional axes can be added parallel to these, which are referred to as the
-{\tt x2} axis, the {\tt x3} axis, and so forth up to a maximum of {\tt x127}.
-Such axes are automatically generated when statements such as the following are
-issued:
+Additional axes may be added parallel to these, which are referred to as, for
+example, the {\tt x2} axis, the {\tt x3} axis, and so forth up to a maximum of
+{\tt x127}.  In keeping with this nomenclature, the first axis in each
+direction can be referred to interchangably as, for example, {\tt x} or {\tt
+x1}, or as {\tt y} or {\tt y1}.  Further axes are automatically generated when
+statements such as the following are issued:
 
 \begin{verbatim}
 set x3label 'A second horizontal axis'
 \end{verbatim}
 
-Alternatively, such axes can be explicitly created using the \indcmdt{set
-axis}, as in the example:
+\noindent Such axes may alternatively be created explicitly using the
+\indcmdt{set axis}, as in the example
 
 \begin{verbatim}
 set axis x3
 \end{verbatim}
 
-CUT
-
-axes can be added and configured via statements such as:\index{axes
-modifier@{\tt axes} modifier}\indcmd{set axis}
-
-\begin{verbatim}
-set x3label 'foo'
-plot sin(x) axes x3y1
-set axis x3
-\end{verbatim}
-
-\noindent In the top statement, a further horizontal axis, called the
-$x3$-axis, is implicitly created by giving it a label. In the next, the {\tt
-axes} modifier is used to tell the {\tt plot} command to plot data using the
-horizontal $x3$-axis and the vertical $y$-axis. Here again, the axis would be
-implicitly created if it didn't already exist.  In the third statement, an
-$x3$-axis is explicitly created.  PyXPlot allows plots to have very large
-numbers of axes: the only constraint is that axis numbers must lie in the range
-1-512, though it is unlikely that there would ever be a practical purpose for
-so many axes.  As a rule, all odd-numbered $x$-axes appear below the plot, and
-even numbered $x$-axes above it; a similar rule applies for $y$-axes, to the
-left and to the right.
-
-As discussed in the previous chapter, the ranges of axes can be set either
-using the \indcmdt{set xrange}, or within the {\tt plot} command. The following
-two statements would set equivalent ranges for the $x3$-axis:
-
-\begin{verbatim}
-set x3range [-2:2]
-plot [:][:][:][:][-2:2] sin(x) axes x3y1
-\end{verbatim}
-
-\noindent As usual, the first two ranges specified in the {\tt plot} command
-apply to the $x$- and $y$-axes. The next pair apply to the $x2$- and $y2$-axes,
-and so forth.
-
-\index{axes!removal}\index{removing axes}\index{hidden axes} Having made axes
-with the above commands, they may subsequently be removed using the
-\indcmdt{unset axis} as follows:
+\noindent or removed explicitly using the \indcmdt{unset axis}, as in the
+example
 
 \begin{verbatim}
 unset axis x3
-unset axis x3x5y3 y7
 \end{verbatim}
 
-\noindent The top statement, for example, would remove axis $x3$. The command
-{\tt unset axis} on its own, with no axes specified, returns all axes to
-their default configuration.  The special case of {\tt unset axis x1} does
-not remove the first $x$-axis -- it cannot be removed -- but instead returns it
-to its default configuration.
+\noindent The first axes {\tt x1} and {\tt y1} -- and {\tt z1} on
+three-dimensional plots -- are unique in that they cannot be removed; all plots
+must have at least one axis in each perpendicular direction.  Thus, the command
+{\tt unset axis x1} does not remove this first axis, but merely returns it to
+its default configuration. In either case, multiple axes can be created or
+removed in a single statement, as in the examples
+
+\begin{verbatim}
+unset axis x3x5x6 y2
+set axis x2y2
+\end{verbatim}
 
 It should be noted that if the following two commands are typed in succession,
 the second may not entirely negate the first:
@@ -687,39 +689,13 @@ unset x3label 'foo'
 implicitly created one. This would need to be removed with the {\tt unset axis
 x3} command if it was not desired.
 
-A subtly different task is that of removing labels from axes, or setting axes
-not to display. To achieve this, a number of special axis labels are used.
-Labelling an axis \indkeyt{nolabels} has the effect that no title or numerical
-labels are placed upon it. Labelling it \indkeyt{nolabelstics} is stronger
-still; this removes all tick marks from it as well (similar in effect to the
-{\tt set noxtics} command; see below).  Finally, labelling it
-\indkeyt{invisible} makes an axis completely invisible.
+\subsection{Specifying the Positioning of Axes}
 
-Labels may be placed on such axes, by suffixing the magic keywords above with a
-colon and the desired title. For example:
+\subsection{Configuring the Appearance of Axes}
 
-\begin{verbatim}
-set xlabel 'nolabels:Time'
-\end{verbatim}
+\subsection{Selecting which Axes to Plot Against}
 
-\noindent would produce an $x$-axis with no numeric labels, but a label of
-`Time'.
-
-In the unlikely event of wanting to label a normal axis with one of these magic
-words\index{axes!reserved labels}\index{magic axis labels}, this may be
-achieved by prefixing the magic word with a space. There is one further magic
-axis label, {\tt linkaxis}, which will be described in
-Section~\ref{sec:linked_axes}.
-
-The ticks of axes can be configured to point either inward, towards the plot,
-as is the default, or outward towards the axis labels, or in both directions.
-This is achieved using the {\tt set xticdir} command, for example:
-
-\begin{verbatim}
-set xticdir inward
-set y2ticdir outward
-set x2ticdir both
-\end{verbatim}
+\subsection{Specifying where Ticks should appear along axes}
 
 The position of ticks along each axis can be configured with the \indcmdt{set
 xtics}. The appearance of ticks along any axis can be turned off with the
@@ -784,6 +760,41 @@ the same syntax as above.
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
 
+\subsection{Linked Axes}
+
+The axes of plots can be linked together, in such a way that they always share
+a common scale. This can be useful when placing plots next to one another,
+firstly, of course, if it is of intrinsic interest to ensure that they are on a
+common scale, but also because the two plots then do not both need their own
+axis labels, and space can be saved by one sharing the labels from the other.
+In PyXPlot, an axis which borrows its scale and labels from another is called a
+{\it linked axis}.
+
+Such axes are declared by setting the label of the linked axis to a magic
+string such as {\tt linkaxis 0}\label{sec:linked_axes}\index{axes!reserved
+labels}\index{magic axis labels}. This magic label would set the axis to borrow
+its scale from an axis from plot zero. The general syntax is `{\tt linkaxis}
+$n$ $m$', where $n$ and $m$ are two integers, separated by a comma or
+whitespace. The first, $n$, indicates the plot from which to borrow an axis;
+the second, $m$, indicates whether to borrow the scale of axis $x1$, $x2$,
+$x3$, etc. By default, $m=1$. The linking will fail, and a warning result, if
+an attempt is made to link to an axis which doesn't exist.
+
+
+\example{ex:multiaxes}{The use of large numbers of axes}{
+A plot demonstrating the use of large numbers of axes. Odd-numbered
+$x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
+rule applies for $y$-axes, to the left and to the right.
+\nlscf
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes.eps}}
+}
+
+\example{ex:cmbrtemp}{The temperature of the CMB as a function of redshift}{
+foo
+\nlscf
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_cmbrtemp.eps}}
+}
+
 \section{Gridlines}
 
 Gridlines may be placed on a plot and subsequently removed via the statements:
@@ -839,47 +850,17 @@ A related command\index{axes!colour}\index{colours!axes} is \indcmdts{set
 axescolour}, which has a syntax similar to that above, and sets the colour of
 the graph's axes.\label{sec:set_colours}
 
-\section{Linked Axes}
+\section{Labelling Graphs}
 
-The axes of plots can be linked together, in such a way that they always share
-a common scale. This can be useful when placing plots next to one another,
-firstly, of course, if it is of intrinsic interest to ensure that they are on a
-common scale, but also because the two plots then do not both need their own
-axis labels, and space can be saved by one sharing the labels from the other.
-In PyXPlot, an axis which borrows its scale and labels from another is called a
-{\it linked axis}.
-
-Such axes are declared by setting the label of the linked axis to a magic
-string such as {\tt linkaxis 0}\label{sec:linked_axes}\index{axes!reserved
-labels}\index{magic axis labels}. This magic label would set the axis to borrow
-its scale from an axis from plot zero. The general syntax is `{\tt linkaxis}
-$n$ $m$', where $n$ and $m$ are two integers, separated by a comma or
-whitespace. The first, $n$, indicates the plot from which to borrow an axis;
-the second, $m$, indicates whether to borrow the scale of axis $x1$, $x2$,
-$x3$, etc. By default, $m=1$. The linking will fail, and a warning result, if
-an attempt is made to link to an axis which doesn't exist.
-
-
-\example{ex:multiaxes}{The use of large numbers of axes}{
-A plot demonstrating the use of large numbers of axes. Odd-numbered
-$x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
-rule applies for $y$-axes, to the left and to the right.
-\nlscf
-\centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes.eps}}
-}
-
-\example{ex:cmbrtemp}{The temperature of the CMB as a function of redshift}{
-foo
-\nlscf
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_cmbrtemp.eps}}
-}
-
-\section{Adding Labels}
+The \indcmdt{set arrow} and \indcmdt{set label}s allow arrows and text labels
+to be added to graphs to label significant points or to add simple vector
+graphics to them.
 
 \subsection{Arrows}
 
-\label{sec:set_arrow}\index{arrows} Arrows may be placed on plots using the
-\indcmdt{set arrow}. A simple example would be:
+\label{sec:set_arrow}\index{arrows} The \indcmdt{set arrow} may be used to add
+draw arrows on top of graphs; its syntax is illustrated by the following simple
+example:
 
 \begin{verbatim}
 set arrow 1 from 0,0 to 1,1
@@ -887,30 +868,32 @@ set arrow 1 from 0,0 to 1,1
 
 \noindent The number {\tt 1} immediately following \indcmdts{set arrow}
 specifies an identification number for the arrow, allowing it to be
-subsequently removed via the command:
+subsequently removed via the command
 
 \begin{verbatim}
 unset arrow 1
 \end{verbatim}
 
-\noindent or equivalently, via:\indcmd{set noarrow}
+\noindent or equivalently, via\indcmd{set noarrow}
 
 \begin{verbatim}
 set noarrow 1
 \end{verbatim}
 
-The {\tt set arrow} command can be followed by the keyword {\tt with} to
-specify the style of the arrow. For example, the keywords \indkeyt{nohead},
-\indkeyt{head} and \indkeyt{twohead}, placed after the keyword {\tt with}, can
-be used to generate arrows with no arrow heads, normal arrow heads, or two
-arrow heads.  \indkeyt{twoway} is an alias for \indkeyt{twohead}.  For example:
+\noindent or to be replaced with a different arrow by issuing a new command of
+the form {\tt set arrow 1~...}.  The {\tt set arrow} command may be followed by
+the keyword {\tt with} to specify the style of the arrow. The keywords
+\indkeyt{nohead}, \indkeyt{head} and \indkeyt{twohead}, placed after the
+keyword {\tt with}, can be used to generate arrows with no arrow heads, normal
+arrow heads, or with two arrow heads.  \indkeyt{twoway} is an alias for
+\indkeyt{twohead}, as in the following example:
 
 \begin{verbatim}
-set arrow 1 from 0,0 to 1,1 with nohead
+set arrow 1 from 0,0 to 1,1 with twoway
 \end{verbatim}
 
 \noindent Line types and colours can also be specified after the keyword {\tt
-with}:
+with}, as in the example:
 
 \begin{verbatim}
 set arrow 1 from 0,0 to 1,1 with nohead \
