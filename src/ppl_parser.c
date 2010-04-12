@@ -681,7 +681,7 @@ NO_TAB_COMPLETION:
            {
             if (MatchVal._val.dimensionless == 0)
              {
-              sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of <%s>.", ppl_units_GetUnitStr(&MatchVal._val,NULL,NULL,0,0));
+              sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of <%s>.", ppl_units_GetUnitStr(&MatchVal._val,NULL,NULL,0,1,0));
               *AlgebraLinepos = *linepos;
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
@@ -768,7 +768,7 @@ NO_TAB_COMPLETION:
          {
           if ((strcmp(node->MatchString, "%fi")!=0) && (strcmp(node->MatchString, "%fu")!=0) && (MatchVal._val.dimensionless == 0))
            {
-            sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of <%s>.", ppl_units_GetUnitStr(&MatchVal._val,NULL,NULL,0,0));
+            sprintf(AlgebraError, "This value should have been dimensionless, but instead has units of <%s>.", ppl_units_GetUnitStr(&MatchVal._val,NULL,NULL,0,1,0));
             *AlgebraLinepos = *linepos;
             *success        = 0;
            }
