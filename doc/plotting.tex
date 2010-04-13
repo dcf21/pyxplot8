@@ -772,14 +772,20 @@ size between ticks. If two values are specified, then the first is taken to be
 {\tt <minimum>}. In the case of logarithmic axes, {\tt <increment>} is applied
 as a multiplicative step size.
 
-Alternatively, if a bracketed list of tick labels and tick positions are
+Alternatively, if a bracketed list of quoted tick labels and tick positions are
 provided, then ticks can be placed on an axis individually and each given its
-own textual label. The keyword \indkeyt{autofreq} overrides any manual
-selection of ticks which may have been placed on an axis and resumes the
-automatic placement of ticks along the axis. The \indcmdt{show xtics} command,
-together with its companions such as {\tt show x2tics} and {\tt show ytics},
-may be used to query the current ticking options. The \indcmdt{set noxtics} may
-be used to stipulate that no ticks should appear along a particular axis:
+own textual label. The quoted tick labels may be omitted, in which case they
+are automatically generated:
+\begin{verbatim}
+set xtics ("a" 1, "b" 2, "c" 3)
+set xtics (1,2,3)
+\end{verbatim}
+The keyword \indkeyt{autofreq} overrides any manual selection of ticks which
+may have been placed on an axis and resumes the automatic placement of ticks
+along the axis. The \indcmdt{show xtics} command, together with its companions
+such as {\tt show x2tics} and {\tt show ytics}, may be used to query the
+current ticking options. The \indcmdt{set noxtics} may be used to stipulate
+that no ticks should appear along a particular axis:
 
 \begin{verbatim}
 set noxtics
@@ -814,7 +820,74 @@ at all.
 
 \subsection{Configuring how Tick Marks are Labelled}
 
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
+By default, major ticks are labelled with representations of the ordinate
+values at each point, each accurate to the number of significant figures
+specified using the \indcmdt{set numerics sigfig}. These labels may appear as
+decimals, such as $3.142$, in scientific notion, as in $3\times10^8$, or, on
+logarithmic axes where a base has been specified for the logarithms using
+syntax such as \footnote{Note that the {\tt x} axis must be referred to as {\tt
+x1} here to distinguish this statement from {\tt set log x2}.}
+\begin{verbatim}
+set log x1 2
+\end{verbatim}
+in a format such as $1.5\times2^8$.
+
+The \indcmdt{set xformat} -- together with its companions such as {\tt set
+yformat}\footnote{There is no {\tt set mxformat} command since minor axis ticks
+are never labelled unless labels are explicitly provided for them using the
+syntax {\tt set mxtics (...)}.} -- may be used to specify a format for the axis
+labels to take, as demonstrated by the following pair of examples:
+\begin{verbatim}
+set xformat "%.2f"%(x)
+set yformat "%s$^\prime$"%(y/unit(feet))
+\end{verbatim}
+The first example specifies that ordinate values should be displayed to two
+decimal places along the $x$-axis; the second specifies that distances should
+be displayed in feet along the $y$-axis. Note that the dummy variable used to
+represent the ordinate value is {\tt x}, {\tt y} or {\tt z} depending upon the
+direction of the axis, but that the dummy variable used in the {\tt set
+x2format} command is still {\tt x}. The following pair of examples both have
+the equivalent effect of returning the {\tt x2}-axis to its default system of
+tick labels:
+\begin{verbatim}
+set x2format auto
+set x2format "%s"%(x)
+\end{verbatim}
+
+The following example specifies that ordinate values should be displayed as
+multiples of $\pi$:
+\begin{verbatim}
+set xformat "%s$\pi$"%(x/pi)
+plot [-pi:2*pi] sin(x)
+\end{verbatim}
+
+\noindent\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
+
+Note that PyXPlot intelligently changes the positions where it places the ticks
+along the axis to reflect significant points in the chosen labelling system.
+
+\subsubsection{Changing the Slant of Axis Labels}
+
+The \indcmdt{set xformat} and its companions may also be followed by keywords
+which control the angle at which tick labels are drawn. By default, all tick
+labels are written horizontally, a behaviour which may be reproduced by issuing
+the command:
+\begin{verbatim}
+set xformat horizontal
+\end{verbatim}
+Alternatively, tick labels may be set to be written vertically, by issuing the command
+\begin{verbatim}
+set xformat vertical
+\end{verbatim}
+or to be written at any clockwise rotation angle from the horizontal using commands of the form
+\begin{verbatim}
+set xformat rotate unit(10*deg)
+\end{verbatim}
+
+Axis labels may also be made to appear at arbitrary rotations using commands such as
+\begin{verbatim}
+set xlabel "I'm upside down" rotate unit(0.5*revolution)
+\end{verbatim}
 
 \subsection{Linked Axes}
 \label{sec:linked_axes}
