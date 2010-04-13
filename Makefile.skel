@@ -160,11 +160,11 @@ $(LOCAL_BINDIR)/install/pyxplot_fitshelper: $(FITSHELP_OBJECTS_INSTALL)
 # Make time helper
 #
 
-$(LOCAL_BINDIR)/pyxplot_timehelper:
+$(LOCAL_BINDIR)/pyxplot_timehelper: $(LOCAL_SRCDIR)/Helpers/pyxplot_timehelper.sh
 	mkdir -p $(LOCAL_BINDIR)
 	cp $(LOCAL_SRCDIR)/Helpers/pyxplot_timehelper.sh $@
 
-$(LOCAL_BINDIR)/install/pyxplot_timehelper:
+$(LOCAL_BINDIR)/install/pyxplot_timehelper: $(LOCAL_SRCDIR)/Helpers/pyxplot_timehelper.sh
 	mkdir -p $(LOCAL_BINDIR)/install
 	cp $(LOCAL_SRCDIR)/Helpers/pyxplot_timehelper.sh $@
 

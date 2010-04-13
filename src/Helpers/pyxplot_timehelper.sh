@@ -31,7 +31,7 @@ if test "$1" != ""
    then
     if test "$2" = ""
      then
-      cat $1 | sed -e 's/:/ /g' -e 's:/: :g' -e 's/[Mm]on\(day\)\?/ 1 /g' -e 's/[Tt]ue\(s\(day\)\?\)\?/ 2 /g' -e 's/[Ww]ed\(nesday\)\?/ 3 /g' -e 's/[Tt]hu\(r\(s\(day\)\?\)\?\)\?/ 4 /g' -e 's/[Ff]ri\(day\)\?/ 5 /g' -e 's/[Ss]at\(urday\)\?/ 6 /g' -e 's/[Ss]un\(day\)\?/ 7 /g' -e 's/[Jj]an\(uary\)\?/ 1 /g' -e 's/[Ff]eb\(ruary\)\?/ 2 /g' -e 's/[Mm]ar\(ch\)\?/ 3 /g' -e 's/[Aa]pr\(il\)\?/ 4 /g' -e 's/[Mm]ay/ 5 /g' -e 's/[Jj]une\?/ 6 /g' -e 's/[Jj]uly\?/ 7 /g' -e 's/[Aa]ug\(ust\)\?/ 8 /g' -e 's/[Ss]ep\(t\(ember\)\?\)\?/ 9 /g' -e 's/[Oo]ct\(ober\)\?/ 10 /g' -e 's/[Nn]ov\(ember\)\?/ 11 /g' -e 's/[Dd]ec\(ember\)\?/ 12 /g'
+      cat $1 | sed -e 's/:/ /g' -e 's:/: :g' -e 's/[Mm]on\(day\)\?/ 1 /g' -e 's/[Tt]ue\(s\(day\)\?\)\?/ 2 /g' -e 's/[Ww]ed\(nesday\)\?/ 3 /g' -e 's/[Tt]hu\(r\(s\(day\)\?\)\?\)\?/ 4 /g' -e 's/[Ff]ri\(day\)\?/ 5 /g' -e 's/[Ss]at\(urday\)\?/ 6 /g' -e 's/[Ss]un\(day\)\?/ 7 /g' -e 's/[Jj]an\(uary\)\?/ 1 /g' -e 's/[Ff]eb\(ruary\)\?/ 2 /g' -e 's/[Mm]ar\(ch\)\?/ 3 /g' -e 's/[Aa]pr\(il\)\?/ 4 /g' -e 's/[Mm]ay/ 5 /g' -e 's/[Jj]une\?/ 6 /g' -e 's/[Jj]uly\?/ 7 /g' -e 's/[Aa]ug\(ust\)\?/ 8 /g' -e 's/[Ss]ep\(t\(ember\)\?\)\?/ 9 /g' -e 's/[Oo]ct\(ober\)\?/ 10 /g' -e 's/[Nn]ov\(ember\)\?/ 11 /g' -e 's/[Dd]ec\(ember\)\?/ 12 /g' -e 's/\[/ [ /g' -e 's/\]/ ] /g'
      else
       echo "pyxplot_timehelper should be passed the name of only one file to process on the commandline." >&2
     fi
