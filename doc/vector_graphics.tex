@@ -127,10 +127,20 @@ which sets the width of item~3 to be $10\,\mathrm{cm}$:
 \begin{verbatim}
 set item 3 width 10*unit(cm)
 \end{verbatim}
-
 After making such changes, the \indcmdt{refresh} is useful: it produces a new
 graphical image of the current multiplot to reflect any settings which have
-been changed. A common use of the \indcmdt{refresh} is to produce multiple
+been changed. The following example would produce a pair of plots, and then
+change the colour of the text on the first plot:
+\begin{verbatim}
+set multiplot
+plot f(x)
+set origin 10,0
+plot g(x)
+set item 1 textcolour red
+refresh
+\end{verbatim}
+
+Another common use of the \indcmdt{refresh} is to produce multiple
 copies of an image in different graphical formats. For example, having just
 developed a multiplot canvas interactively in the {\tt X11\_singlewindow},
 copies can be produced as {\tt eps} and {\tt jpeg} images using the following
@@ -185,43 +195,34 @@ set display
 refresh
 \end{verbatim}
 
-\section{Producing Galleries of Plots}
+\section{Linked Axes and Galleries of Plots}
 
 \section{The {\tt replot} Command Revisited}
 
 In multiplot mode, the \indcmdt{replot} can be used to modify the last plot
 added to the page. For example, the following would change the title of the
-latest plot to `foo', and add a plot of $\cos(x)$ to it:
+latest plot to `foo', and add a plot of the function $g(x)$ to it:
 
 \begin{verbatim}
 set title 'foo'
 replot cos(x)
 \end{verbatim}
 
-Additionally, it is possible to modify any plot on the page, by first selecting
-it with the \indcmdt{edit}. Subsequently, the \indcmdt{replot} will act upon
-the selected plot. The following example would produce two plots, and then
-change the colour of the text on the first:
+Additionally, it is possible to modify any plot on the page by adding an {\tt
+item} modifier to the {\tt replot} statement to specify which plot should be
+replotted.  The following example would produce two plots, and then add an
+additional function to the first plot:
 
 \begin{verbatim}
 set multiplot
-plot sin(x)
+plot f(x)
 set origin 10,0
-plot cos(x)
-edit 0        # Select the first plot ...
-set textcolour red
-replot        # ... and replot it.
+plot g(x)
+replot item 1 h(x)
 \end{verbatim}
 
-The \indcmdt{edit} can also be used to view the settings which are applied to
-any plot on the multiplot page -- after executing {\tt edit~0}, the
-\indcmdt{show} will show the settings applied to plot zero.
-
-When a new plot is added to the page, the \indcmdt{replot} always switches to
-act upon this most recent plot.
-
-\section{Linked Axes}
-
+If no {\tt item} number is specified, then the \indcmdt{replot} acts by default
+upon the most recent plot to have been added to the multiplot canvas.
 
 \section{Adding Other Vector Graphics Objects}
 

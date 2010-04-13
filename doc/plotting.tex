@@ -689,78 +689,135 @@ unset x3label 'foo'
 implicitly created one. This would need to be removed with the {\tt unset axis
 x3} command if it was not desired.
 
+\subsection{Selecting which Axes to Plot Against}
+
 \subsection{Specifying the Positioning of Axes}
+
+By default, the {\tt x1} axis is placed along the bottom of graphs and the {\tt
+y1} axis is placed up the left-hand side of graphs. On three-dimensional plots,
+the {\tt z1} axis is placed at the front of the graph. The second set of axes
+are placed opposite to the first: the {\tt x2}, {\tt y2} and {\tt z2} axes are
+placed respectively along the top, right and back sides of graphs.
+Higher-numbered axes are placed alongside the {\tt x1}, {\tt y1} and {\tt z1}
+axes.
+
+However, the position of any axis can be explicitly set using syntax of the
+form:
+\begin{verbatim}
+set axis x top
+set axis y right
+set axis z back
+\end{verbatim}
+Horizontal axes can be set to appear either at the {\tt top} or {\tt bottom};
+vertical axes can be set to appear either at the {\tt left} or {\tt right}; and
+$z$-axes can be set to appear either at the {\tt front} or {\tt back}.
 
 \subsection{Configuring the Appearance of Axes}
 
-\subsection{Selecting which Axes to Plot Against}
+The \indcmdt{set axis} also accepts the following keywords alongside the
+positioning keywords listed above, which specify how the axis should appear:
+\begin{itemize}
+\item {\tt arrow} -- Specifies that an arrowhead should be drawn on the right/top end of the axis. [{\bf Not default}].
+\item {\tt atzero} -- Specifies that rather than being placed along an edge of the plot, the axis should mark the lines where the perpendicular axes {\tt x1}, {\tt y1} and/or {\tt z1} are zero. [{\bf Not default}].
+\item {\tt automirrored} -- Specifies that an automatic decision should be made between the behaviour of {\tt mirrored} and {\tt nomirrored}. If there are no axes on the opposite side of the graph, a mirror axis is produced. If there are already axes on the opposite side of the graph, no mirror axis is produced. [{\bf Default}].
+\item {\tt fullmirrored} -- Similar to {\tt mirrored}. Specifies that this axis should have a corresponding twin placed on the opposite side of the graph with mirroring ticks and labelling. [{\bf Not default}; see {\tt automirrored}].
+\item {\tt invisible} -- Specifies that the axis should not be drawn; data can still be plotted against it, but the axis is unseen. See Example~\ref{ex:australia} for a plot where all of the axes are invisible.
+\item {\tt linked} -- Specifies that the axis should be linked to another axis; see Section~\ref{sec:linked_axes}.
+\item {\tt mirrored} -- Specifies that this axis should have a corresponding twin placed on the opposite side of the graph with mirroring ticks but with no labels on the ticks. [{\bf Not default}; see {\tt automirrored}].
+\item {\tt noarrow} -- Specifies that no arrowheads should be drawn on the ends of the axis. [{\bf Default}].
+\item {\tt nomirrored} -- Specifies that this axis should not have any corresponding twins. [{\bf Not default}; see {\tt automirrored}].
+\item {\tt notatzero} -- Opposite of {\tt atzero}; the axis should be placed along an edge of the plot. [{\bf Default}].
+\item {\tt notlinked} -- Specifies that the axis should no longer be linked to any other; see Section~\ref{sec:linked_axes}. [{\bf Default}].
+\item {\tt reversearrow} -- Specifies that an arrowhead should be drawn on the left/bottom end of the axis. [{\bf Not default}].
+\item {\tt twowayarrow} -- Specifies that arrowheadsshould be drawn on both ends of the axis. [{\bf Not default}].
+\item {\tt visible} -- Specifies that the axis should be displayed; opposite of {\tt invisible}. [{\bf Default}].
+\end{itemize}
 
 \subsection{Specifying where Ticks should appear along axes}
 
-The position of ticks along each axis can be configured with the \indcmdt{set
-xtics}. The appearance of ticks along any axis can be turned off with the
-\indcmdt{set noxtics}. The syntax for these is given below:
+By default, PyXPlot places a series of tick marks at significant points along
+each axis, with the most significant points being labelled.  Labelled tick
+marks are termed {\it major} ticks, and unlabelled tick marks are termed {\it
+minor} ticks.  The position and appearance of the major ticks along the {\tt
+x}-axis can be configured with the \indcmdt{set xtics}, which has the following
+syntax:
 
 \begin{verbatim}
 set xtics { axis | border | inward | outward | both }
           {  autofreq
            | <increment>
-           | <minimum>, <increment> { , <maximum> }
+           | { <minimum>, } <increment> { , <maximum> }
            | (     {"label"} <position>
                { , {"label"} <position> } .... )
           }
+\end{verbatim}
+
+The corresponding command {\tt set mxtics}, which has the same syntax as above,
+configures the appearance of the minor ticks along the {\tt x}-axis. Analogous
+commands such as {\tt set ytics} and {\tt set mx2tics} configure the major and
+minor ticks along other axes.
+
+The keywords \indkeyt{inward}, \indkeyt{outward} and \indkeyt{both} are used to
+configure how the ticks appear -- whether they point inward, towards the plot,
+as is default, or outwards towards the axis labels, or in both directions.  The
+keyword \indkeyt{axis} is an alias for \indkeyt{inward}, and \indkeyt{border}
+an alias for \indkeyt{outward}.
+
+The remaining options are used to configure where along the axis ticks are
+placed. If a series of comma-separated values {\tt <minimum>, <increment>,
+<maximum>} are specified, then ticks are placed at evenly spaced intervals
+between the specified limits. The {\tt <minimum>} and {\tt <maximum>} values
+are optional; if only one value is specified then it is taken to be the step
+size between ticks. If two values are specified, then the first is taken to be
+{\tt <minimum>}. In the case of logarithmic axes, {\tt <increment>} is applied
+as a multiplicative step size.
+
+Alternatively, if a bracketed list of tick labels and tick positions are
+provided, then ticks can be placed on an axis individually and each given its
+own textual label. The keyword \indkeyt{autofreq} overrides any manual
+selection of ticks which may have been placed on an axis and resumes the
+automatic placement of ticks along the axis. The \indcmdt{show xtics} command,
+together with its companions such as {\tt show x2tics} and {\tt show ytics},
+may be used to query the current ticking options. The \indcmdt{set noxtics} may
+be used to stipulate that no ticks should appear along a particular axis:
+
+\begin{verbatim}
 set noxtics
 show xtics
 \end{verbatim}
 
-The keywords \indkeyt{inward}, \indkeyt{outward} and \indkeyt{both} alter the
-directions of the ticks, and have the same effect as in the \indcmdt{set
-xticdir}. The keyword \indkeyt{axis} is an alias for \indkeyt{inward}, and
-\indkeyt{border} an alias for \indkeyt{outward}; both are provided for
-compatibility with \gnuplot. If the keyword \indkeyt{autofreq} is given, the
-automatic placement of ticks along the axis is restored.
-
-If {\tt <minimum>, <increment>, <maximum>} are specified, then ticks are
-placed at evenly spaced intervals between the specified limits. In the case of
-logarithmic axes, {\tt <increment>} is applied multiplicatively.
-
-Alternatively, the final form allows ticks to be placed on an axis
-individually, and each given its own textual label.
-
-The following example sets the $x1$-axis to have tick marks at
-$x=0.05$, $0.1$, $0.2$ and $0.4$.  The $x2$-axis has symbolically labelled tics at
+\example{ex:axistics}{A plot of the function $\exp(x)\sin(1/x)$}{
+In this example we produce a plot illustrating some of the crossing points of
+the function $\exp(x)\sin(1/x)$.  We set the $x$-axis to have tick marks at
+$x=0.05$, $0.1$, $0.2$ and $0.4$.  The $x2$-axis has custom labelled ticks at
 $x=1/\pi, 2/\pi$, etc., pointing outwards from the plot.  The left-hand
 $y$-axis has tick marks placed automatically whereas the $y2$-axis has no tics
-at all.  The overall effect is shown in Example~\ref{ex:axistics}.
-
-\begin{verbatim}
-set log x1x2
-set grid x2
-set xtics 0.05, 2, 0.4
-set x2tics border \
-     ("$\frac{1}{\pi}$" 1/pi,      "$\frac{1}{2\pi}$" 1/(2*pi), \
-      "$\frac{1}{3\pi}$" 1/(3*pi), "$\frac{1}{4\pi}$" 1/(4*pi), \
-      "$\frac{1}{5\pi}$" 1/(5*pi), "$\frac{1}{6\pi}$" 1/(6*pi))
-set ytics autofreq
-set noy2tics
-\end{verbatim}
-
-\example{ex:axistics}{A plot demonsrating the use of custom axis ticks}{
-A plot illustrating some of the crossing points of the function
-$\exp(x)\sin(1/x)$.  The commands used to set up ticking on the axes in this
-plot are as given in the text.
+at all.
+\nlscf
+\noindent{\tt set log x1x2}\newline
+\noindent{\tt set xrange [0.05:0.5]}\newline
+\noindent{\tt set axis x2 top linked x}\newline
+\noindent{\tt set xtics 0.05, 2, 0.4}\newline
+\noindent{\tt set x2tics border $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}("\$$\backslash$frac\{1\}\{$\backslash$pi\}\$" 1/pi,      "\$$\backslash$frac\{1\}\{2$\backslash$pi\}\$" 1/(2*pi), $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxx}"\$$\backslash$frac\{1\}\{3$\backslash$pi\}\$" 1/(3*pi), "\$$\backslash$frac\{1\}\{4$\backslash$pi\}\$" 1/(4*pi), $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxx}"\$$\backslash$frac\{1\}\{5$\backslash$pi\}\$" 1/(5*pi), "\$$\backslash$frac\{1\}\{6$\backslash$pi\}\$" 1/(6*pi))}\newline
+\noindent{\tt set nogrid x y}\newline
+\noindent{\tt set grid x2}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set xlabel '\$x\$'}\newline
+\noindent{\tt set ylabel '\$$\backslash$exp(x)$\backslash$sin(1/x)\$'}\newline
+\noindent{\tt plot exp(x)*sin(1/x), 0}
 \nlscf
 \centerline{\includegraphics[width=9cm]{examples/eps/ex_axistics.eps}}
 }
-
-Minor tick marks can be placed on axes with the \indcmdt{set mxtics}, which has
-the same syntax as above.
 
 \subsection{Configuring how Tick Marks are Labelled}
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
 
 \subsection{Linked Axes}
+\label{sec:linked_axes}
 
 The axes of plots can be linked together, in such a way that they always share
 a common scale. This can be useful when placing plots next to one another,
