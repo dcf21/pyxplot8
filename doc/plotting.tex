@@ -184,14 +184,19 @@ uncertainties in the parallaxes:
 \noindent{\tt \phantom{xx}print "\%s,\%s,\%s,\%s"\%(Vmag, BVcol, parr, parre)}\newline
 \noindent{\tt \phantom{x}except ValueError: pass}
 \nlscf
-foo
+The resultant four columns of data can then be plotted in the {\tt dots} style
+using the following PyXPlot script. Because the catalogue is very large, and
+many of the parallax datapoints in it have large errorbars producing large
+uncertainties in their vertical positions on the plot, we use the {\tt select}
+statement to pick out those datapoints with parallax signal-to-noise ratios of
+better than~20.
 \nlscf
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size square}\newline
 \noindent{\tt set xlabel '\$B-V\$ colour'}\newline
 \noindent{\tt set ylabel 'Absolute magnitude \$M\$'}\newline
 \noindent{\tt plot [-0.4:2][14:-4] 'hr\_data.dat' $\backslash$}\newline
-\noindent{\tt \phantom{xxxxx}w d ps 3}
+\noindent{\tt \phantom{xxxxx}select (\$4/\$3<0.05) with dots ps 3}
 \nlscf
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_hrdiagram.eps}}
 }
@@ -892,35 +897,96 @@ set xlabel "I'm upside down" rotate unit(0.5*revolution)
 \subsection{Linked Axes}
 \label{sec:linked_axes}
 
-The axes of plots can be linked together, in such a way that they always share
-a common scale. This can be useful when placing plots next to one another,
-firstly, of course, if it is of intrinsic interest to ensure that they are on a
-common scale, but also because the two plots then do not both need their own
-axis labels, and space can be saved by one sharing the labels from the other.
-In PyXPlot, an axis which borrows its scale and labels from another is called a
-{\it linked axis}.
+Often it may be desired that multiple axes on a graph share a common range, or
+be related to one another by some algebraic expression. For example, a plot
+with wavelength $\lambda$ of light as one axis may usefully also have parallel
+axes showing frequency of light $\nu=c/\lambda$ or photon energy
+$E=hc/\lambda$. The following example sets the {\tt x2} axis to share a common
+range with the {\tt x} axis:
+\begin{verbatim}
+set axis x2 linked x
+\end{verbatim}
+An algebraic relationship between two axes may be set by stating the algebraic
+relationship after the keyword {\tt using}, as in the following example which
+implement the formulae shown above for the frequency and energy of photons of
+light as a function of their wavelength:
+\begin{verbatim}
+set xrange [200*unit(nm):unit(800*nm)]
+set axis x2 linked x1 using phy\_c/x
+set axis x3 linked x2 using phy\_h*x
+\end{verbatim}
+As in the {\tt set xformat} command, a dummy variable of {\tt x}, {\tt y} or
+{\tt z} is used in the linkage expression depending upon the direction of the
+axis being linked to, but a dummy variable of {\tt x} is still used when
+linking to, for example, the {\tt x2} axis.
 
-Such axes are declared by setting the label of the linked axis to a magic
-string such as {\tt linkaxis 0}\label{sec:linked_axes}\index{axes!reserved
-labels}\index{magic axis labels}. This magic label would set the axis to borrow
-its scale from an axis from plot zero. The general syntax is `{\tt linkaxis}
-$n$ $m$', where $n$ and $m$ are two integers, separated by a comma or
-whitespace. The first, $n$, indicates the plot from which to borrow an axis;
-the second, $m$, indicates whether to borrow the scale of axis $x1$, $x2$,
-$x3$, etc. By default, $m=1$. The linking will fail, and a warning result, if
-an attempt is made to link to an axis which doesn't exist.
+As these examples demonstrate, the functions used to link axes need not be
+linear. In fact, axes with any arbitrary mapping between distance and ordinate
+value can be produced by linked in a non-linear fashion to another linear axis,
+which, if desired, can then be hidden using the {\tt set axis invisible}
+command. Multi-valued mappings are also permitted. Any data plotted against the
+following {\tt x2}-axis for a suitable range of {\tt x}-axis
+\begin{verbatim}
+set axis x2 linked x1 using x**2
+\end{verbatim}
+would appear twice, symmetrically on either side of $x=0$.
 
-
-\example{ex:multiaxes}{The use of large numbers of axes}{
-A plot demonstrating the use of large numbers of axes. Odd-numbered
-$x$-axes appear below the plot, and even numbered $x$-axes above it; a similar
-rule applies for $y$-axes, to the left and to the right.
+\example{ex:multiaxes}{A plot of many blackbodies demonstrating the use of linked axes}{
+In this example we produce a plot of blackbody spectra for five different
+temperatures $T$, using the Planck formula
+\begin{displaymath}
+B_\nu(\nu,T)=\left(\frac{2h^3}{c^2}\right)\frac{\nu^3}{\exp(h\nu/kT)-1}
+\end{displaymath}
+which is evaluated in PyXPlot by the system-defined mathematical function {\tt
+Bv(nu,T)}. We use the axis linkage commands listed as an example in the text of
+Section~\ref{sec:linked_axes} to produce three parallel horizontal axes showing
+wavelength of light, frequency of light and photon energy.
+\nlscf
+\noindent{\tt set numeric display latex}\newline
+\noindent{\tt set log x y}\newline
+\noindent{\tt set key bottom right}\newline
+\noindent{\tt set ylabel "Flux density / W/Hz/m\$\^{}2\$/sterad"}\newline
+\noindent{\tt set x1label "Wavelength"}\newline
+\noindent{\tt set x2label "Frequency"~~~~~; set unit of frequency Hz}\newline
+\noindent{\tt set x3label "Photon Energy" ; set unit of energy eV}\newline
+\noindent{\tt set axis x2 linked x1 using phy\_c/x}\newline
+\noindent{\tt set axis x3 linked x2 using phy\_h*x}\newline
+\\
+\noindent{\tt bb(wlen,T) = Bv(phy\_c/wlen,T)/unit(W/Hz/m\^{}2/sterad)}\newline
+\\
+\noindent{\tt plot [80*unit(nm):unit(mm)][1e-20:] $\backslash$}\newline
+\noindent{\tt \phantom{xx}bb(x,~~30) title "\$T=~~30\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xx}bb(x, 100) title "\$T= 100\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xx}bb(x, 300) title "\$T= 300\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xx}bb(x,1000) title "\$T=1000\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xx}bb(x,3000) title "\$T=3000\$$\backslash$,K"}
 \nlscf
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes.eps}}
 }
 
-\example{ex:cmbrtemp}{The temperature of the CMB as a function of redshift}{
-foo
+\example{ex:cmbrtemp}{A plot of the temperature of the CMB as a function of redshift demonstrating non-linear axis linkage}{
+In this example we produce a plot of the temperature of the cosmic microwave
+background radiation (CMBR) as a function of time $t$ since the Big Bang, on
+the {\tt x}-axis, and equivalently as a function of redshift $z$, on the {\tt
+x2}-axis.  The specialist cosmology function
+\indfunt{ast\_\-Lcdm\_\-z($t$,\-$H_0$,\-$\Omega_\mathrm{M}$,\-$\Omega_\Uplambda$)}
+is used to make the highly non-linear conversion between time $t$ and redshift
+$z$, adopting some standard values for the cosmological parameters $H_0$,
+$\Omega_\mathrm{M}$ and $\Omega_\Uplambda$. Because the temperature of the CMBR
+is easiest expressed as a function of redshift as $T=2.73\,\mathrm{K}/(1+z)$,
+we plot is using this function against axis {\tt x2}.
+\nlscf
+\noindent{\tt h0 = 70}\newline
+\noindent{\tt omega\_m = 0.27}\newline
+\noindent{\tt omega\_l = 0.73}\newline
+\noindent{\tt age = ast\_Lcdm\_age(h0,omega\_m,omega\_l)}\newline
+\noindent{\tt set xrange [0.01*age:0.99*age]}\newline
+\noindent{\tt set unit of time Gyr}\newline
+\noindent{\tt set axis x2 linked x using ast\_Lcdm\_z(age-x,h0,omega\_m,omega\_l)}\newline
+\noindent{\tt set xlabel "Time since Big Bang \$t\$"}\newline
+\noindent{\tt set ylabel "CMB Temperature \$T\$"}\newline
+\noindent{\tt set x2label "Redshift \$z\$"}\newline
+\noindent{\tt plot unit(2.73*K)*(1+x) axes x2y1}
 \nlscf
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_cmbrtemp.eps}}
 }
