@@ -1257,7 +1257,7 @@ textual axis labels representing the time elapsed since the beginning of an
 experiment. As with the {\tt time\_string()} function, it takes an optional
 third parameter which specifies the textual format in which the time interval
 should be represented. If no format is supplied, then the following verbose
-format is used:i\vspace{3mm}\newline
+format is used:\vspace{3mm}\newline
 \noindent {\tt "\%Y years \%d days \%h hours \%m minutes and \%s seconds"}\vspace{3mm}\newline
 Table~\ref{tab:time_diff_string_subs} lists the tokens which are substituted
 for various parts of the time interval. The following examples demonstrates the
@@ -1295,7 +1295,48 @@ pyxplot> print time_diff_string(x,y,"$%Y^\mathrm{y}%d^\mathrm{d}$")
 $1229^\mathrm{y}78^\mathrm{d}$
 \end{verbatim}
 
-\example{ex:timeseries}{An example}{
-In this example,.
+\example{ex:timeseries}{A plot of the rate of downloads on an Apache webserver}{
+In this example, we use PyXPlot's facilities for handling dates and times to
+produce a plot of the rate of downloads from an Apache webserver based upon the
+download log which it stores in the file {\tt /var/log/apache2/access.log}.
+This file contain a lines of the form for each page or file requested from the
+webserver:
+\vspace{3mm}\newline\noindent{\tt\footnotesize 127.0.0.1 - - [14/Apr/2010:16:05:36 +0100] "GET / HTTP/1.1" 200 2623 "-" "Mozilla/5.0 (X11; U; Linux x86\_64; en-GB; rv:1.9.1.9) Gecko/20100402 Ubuntu/9.10 (karmic) Firefox/3.5.9"}\vspace{3mm}\newline
+However, PyXPlot's default input filter for {\tt .log} files (see Section~\ref{sec:filters}) manipulates the dates in strings such as these into the form
+\vspace{3mm}\newline\noindent{\tt\footnotesize 127.0.0.1 - -~~[~14~~4~~2010~16~05~36~+0100~]~~"GET~~~HTTP 1.1" 200 2623 "-" "Mozilla 5.0 (X11; U; Linux x86\_64; en-GB; rv 1.9.1.9) Gecko 20100402 Ubuntu 9.10 (karmic) Firefox 3.5.9"}\vspace{3mm}\newline
+such that the day, month, year, hour, minute and second components of the date
+are contained in the 5th to 10th white-space-separated columns respectively.
+In the script below, the {\tt time\_\-julianday()} is then used to convert
+these components into Julian Days, and the \indcmdt{histogram} (see
+Section~\ref{sec:histogram}) is used to sort each of the web accesses recorded
+in the Apache logfile into hour-sized bins.  Because this may be a
+time-consuming process for large logfiles on busy servers, we use the
+\indcmdt{tabulate} (see Section~\ref{sec:tabulate}) to store this data into a
+temporary datafile on disk before deciding how to plot it:
+\nlscf
+\noindent{\tt set output 'apache.dat'}\newline
+\noindent{\tt histogram f() '/var/log/apache2/access.log' $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx} using time\_julianday(\$7,\$6,\$5,\$8,\$9,\$10) binwidth 1/24}\newline
+\noindent{\tt tabulate f(x) with format "\%16f \%16f"}
+\nlscf
+Having stored our histogram to the file {\tt apache.dat}, we
+now plot the resulting histogram, labelling the horizontal axis with the days
+of the week.  The commands used to achieve this will be introduced in
+Chapter~\ref{ch:plotting}. Note that the major axis ticks along the horizontal
+axis are placed not at integer Julian Days, which fall at midday on each day,
+but at ---$.5$, which falls at midnight on each day. Minor axis ticks are
+placed along the axis every quarter day, i.e.\ every six hours.
+\nlscf
+\noindent{\tt set xlabel 'Day'}\newline
+\noindent{\tt set ylabel 'Rate of downloads per day'}\newline
+\noindent{\tt set xtics 0.5, 1}\newline
+\noindent{\tt set mxtics 0.5, 0.25}\newline
+\noindent{\tt set xformat "\%s"\%(time\_dayweekname(x,0)) rotate unit(30*deg)}\newline
+\noindent{\tt plot "apache.txt" with lines}
+\nlscf
+The plot below shows the graph which results on a moderately busy webserver
+which hosts, among many other sites, the PyXPlot website:
+\nlscf
+\centerline{\includegraphics[width=\textwidth]{figures/ex_apachelog.eps}}
 }
 
