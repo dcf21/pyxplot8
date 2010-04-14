@@ -197,6 +197,73 @@ refresh
 
 \section{Linked Axes and Galleries of Plots}
 
+In the previous chapter (Section~\ref{sec:linked_axes}), linked axes were
+introduced as a mechanism by which several axes on a single plot could be set
+to have the same range, or to be algebraically related to one another. Another
+common use for them is to make several plots on a multiplot canvas share common
+axes. Just as the following statement links two axes on a single plot to one
+another
+\begin{verbatim}
+set axis x2 linked x
+\end{verbatim}
+axes on the current plot can be linked to those of previous plots which are
+already on the multiplot canvas using syntax of the form:
+\begin{verbatim}
+set axis x2 linked item 2 x
+\end{verbatim}
+
+A common reason for doing this is to produce galleries of side-by-side plots.
+The following series of commands would produce a $2\times2$ grid of plots, with
+axes only labelled along the bottom and left sides of the grid:
+
+\vspace{3mm}
+{\footnotesize
+\noindent{\tt set multiplot}\newline
+\noindent{\tt set nodisplay}\newline
+\noindent{\tt width=5.4}\newline
+}\\{\footnotesize
+\noindent{\tt set width width}\newline
+\noindent{\tt set xrange [0:23.999]}\newline
+\noindent{\tt set yrange [0:0.11]}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set texthalign left}\newline
+\noindent{\tt set textvalign centre}\newline
+}\\{\footnotesize
+\noindent{\tt \# Plot 1 (bottom left)}\newline
+\noindent{\tt set xlabel "\$x\$"}\newline
+\noindent{\tt set ylabel ""}\newline
+\noindent{\tt set label 1 "(c) fsteps" at graph width*0.03 , graph width*gold\_ratio*0.9}\newline
+\noindent{\tt plot "examples/ex\_barchart1.dat" with fsteps, "" with points}\newline
+}\\{\footnotesize
+\noindent{\tt set axis x linked item 1 x}\newline
+\noindent{\tt set axis y linked item 1 y}\newline
+}\\{\footnotesize
+\noindent{\tt \# Plot 2 (bottom right)}\newline
+\noindent{\tt set origin 1*width, 0*width*gold\_ratio}\newline
+\noindent{\tt set yformat ""}\newline
+\noindent{\tt set label 1 "(d) histeps" at graph width*0.03 , graph width*gold\_ratio*0.9}\newline
+\noindent{\tt plot "examples/ex\_barchart1.dat" with histeps, "" with points}\newline
+}\\{\footnotesize
+\noindent{\tt \# Plot 3 (top left)}\newline
+\noindent{\tt set origin 0*width, 1*width*gold\_ratio}\newline
+\noindent{\tt set xformat "" ; set xlabel ""}\newline
+\noindent{\tt unset yformat ; set ylabel texify(poissonPDF(x,18))}\newline
+\noindent{\tt set label 1 "(a) impulses" at graph width*0.03 , graph width*gold\_ratio*0.9}\newline
+\noindent{\tt plot "examples/ex\_barchart1.dat" with impulses, "" with points}\newline
+}\\{\footnotesize
+\noindent{\tt \# Plot 4 (top right)}\newline
+\noindent{\tt set origin 1*width, 1*width*gold\_ratio}\newline
+\noindent{\tt set yformat "" ; set ylabel ""}\newline
+\noindent{\tt set label 1 "(b) steps" at graph width*0.03 , graph width*gold\_ratio*0.9}\newline
+\noindent{\tt plot "examples/ex\_barchart1.dat" with steps, "" with points}\newline
+}\\{\footnotesize
+\noindent{\tt \# Now that we are finished preparing multiplot, turn display on}\newline
+\noindent{\tt set display}\newline
+\noindent{\tt refresh}
+\vspace{3mm}
+
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_gallery.eps}}
+
 \section{The {\tt replot} Command Revisited}
 
 In multiplot mode, the \indcmdt{replot} can be used to modify the last plot

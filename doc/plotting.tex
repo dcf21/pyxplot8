@@ -696,6 +696,22 @@ x3} command if it was not desired.
 
 \subsection{Selecting which Axes to Plot Against}
 
+The axes against which data are plotted can be selected by passing the {\tt
+axes} modifier to the {\tt plot} command. By default, data is plotted against
+the first horizontal axis and the first vertical axis. In the following {\tt
+plot} command the second horizontal axis and the third vertical axis would be
+used:
+\begin{verbatim}
+plot f(x) axes x2y3
+\end{verbatim}
+It is also possible to plot data using a vertical axis as the abscissa axis
+using syntax such as:
+\begin{verbatim}
+plot f(x) axes y3x2
+\end{verbatim}
+Similar syntax is used when plotting three-dimensional graphs, except that
+three axes should be specified.
+
 \subsection{Specifying the Positioning of Axes}
 
 By default, the {\tt x1} axis is placed along the bottom of graphs and the {\tt
@@ -868,8 +884,27 @@ plot [-pi:2*pi] sin(x)
 
 \noindent\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
 
-Note that PyXPlot intelligently changes the positions where it places the ticks
-along the axis to reflect significant points in the chosen labelling system.
+Note that where possible, PyXPlot intelligently changes the positions where it
+places the ticks along the axis to reflect significant points in the chosen
+labelling system.  The extent to which this is possible depends upon the format
+string supplied. It is generally easier when continuous-varying numerical
+values are substituted into strings, rather than discretely-varying values or
+strings. Thus, rather than
+\begin{dontdo}
+set xformat "%d"%(floor(x))
+\end{dontdo}
+the following is preferred
+\begin{dontdo}
+set xformat "%d"%(x)
+\end{dontdo}
+and rather than
+\begin{dontdo}
+set xformat "%s"%time_string(x)
+\end{dontdo}
+the following is preferred
+\begin{dontdo}
+set xformat "%d/%02d/%d"%(time_day(x),time_monthnum(x),time_daymonth(x))
+\end{dontdo}
 
 \subsubsection{Changing the Slant of Axis Labels}
 
@@ -930,6 +965,17 @@ following {\tt x2}-axis for a suitable range of {\tt x}-axis
 set axis x2 linked x1 using x**2
 \end{verbatim}
 would appear twice, symmetrically on either side of $x=0$.
+
+Insofar as is possible, linked axes autoscale intelligently when no range is
+set.  Thus, if the {\tt x2}-axis is linked to the {\tt x}-axis, and no range to
+set for the {\tt x}-axis, the {\tt x}-axis will autoscale to include all of the
+data plotted against both itself and the {\tt x2}-axis. Similarly, if the {\tt
+x2}-axis is linked to the {\tt x}-axis by means of some algebraic expression,
+the {\tt x}-axis will attempt to autoscale to include the data plotted against
+the {\tt x2}-axis, though in some cases -- especially with non-monotonic
+linking functions -- this may prove too difficult. Where PyXPlot detects that
+it has failed, a warning is issued recommending that a hard range be set for --
+in this example -- the {\tt x}-axis.
 
 \example{ex:multiaxes}{A plot of many blackbodies demonstrating the use of linked axes}{
 In this example we produce a plot of blackbody spectra for five different
@@ -1299,5 +1345,10 @@ downloaded from the PyXPlot website at
 
 % \section{Non-Flat Projections}
 
-% \section{Three-Dimensional Plotting}
+\section{Three-Dimensional Plotting}
+
+PyXPlot 0.8.0 has no facilities for three-dimensional plotting. The ability to
+configure axes such as {\tt z} and {\tt z2}, together with various references
+to three-dimensional plotting in this manual, are provided for future
+expansion only.
 
