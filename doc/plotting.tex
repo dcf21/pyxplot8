@@ -166,14 +166,30 @@ positions of each point:
 \end{itemize}
 
 \example{ex:hrdiagram}{A Hertzsprung-Russell Diagram}{
-The Hertzsprung-Russell Diagram is.
+Hertzsprung-Russell (HR) Diagrams are scatter-plots of the luminosities of
+stars plotted against their colour which reveal that most normal stars lie
+along a tight line called the main sequence, whilst unusual classes of stars --
+giants and dwarfs -- can be readily identified on account of their not lying
+along this main sequence. The principal difficulty in constructing accurate HR
+diagrams is that the luminosities $L$ of stars can only be calculated from
+their observed brightnesses $F$, using the relation $L=Fd^2$ if their distances
+$d$ are known. In this example, we construct an HR diagram using observations
+made by the European Space Agency's {\tt Hipparcos} spacecraft, which
+accurately measured the distances of over a million stars between 1989 and
+1993.
+\nlnp
 The Hipparcos catalogue can be downloaded for free from
-\url{ftp://cdsarc.u-strasbg.fr/pub/cats/I/239/hip_main.dat.gz};
-a description of the catalogue can be found at
-\url{http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/239}. In summary, though the data is arranged in a non-standard
-format which PyXPlot cannot read without a special input filter, the following Python script generates a text file
-with four columns containing the magnitudes, $B-V$ colours and parallaxes of the stars, together with the
-uncertainties in the parallaxes:
+\url{ftp://cdsarc.u-strasbg.fr/pub/cats/I/239/hip_main.dat.gz}; a description
+of the catalogue can be found at
+\url{http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/239}. In summary, though the data
+is arranged in a non-standard format which PyXPlot cannot read without a
+special input filter, the following Python script generates a text file with
+four columns containing the magnitudes $m$, $B-V$ colours and parallaxes $p$ of
+the stars, together with the uncertainties in the parallaxes. From these
+values, the absolute magnitudes $M$ of the stars -- a measure of their
+luminosities -- can be calculated using the expression
+$M=m+5\log_{10}\left(10^{2}p\right)$, where $p$ is measured in
+milli-arcseconds:
 \nlscf
 \noindent{\tt for line in open("hip\_main.dat"):}\newline
 \noindent{\tt \phantom{x}try:}\newline
@@ -196,7 +212,9 @@ better than~20.
 \noindent{\tt set xlabel '\$B-V\$ colour'}\newline
 \noindent{\tt set ylabel 'Absolute magnitude \$M\$'}\newline
 \noindent{\tt plot [-0.4:2][14:-4] 'hr\_data.dat' $\backslash$}\newline
-\noindent{\tt \phantom{xxxxx}select (\$4/\$3<0.05) with dots ps 3}
+\noindent{\tt \phantom{xxxxx}using \$2:(\$1+5*log10(1e2*\$3)) $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}select (\$4/\$3<0.05) $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}with dots ps 3}
 \nlscf
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_hrdiagram.eps}}
 }
