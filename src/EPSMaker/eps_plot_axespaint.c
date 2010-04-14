@@ -101,10 +101,13 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const unsi
           tic_x3 = tic_x1 + (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * (Lr ? -1.0 : 1.0) * sin(theta_axis + M_PI/2) * TLEN * M_TO_PS; // bottom of tick
           tic_y3 = tic_y1 + (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * (Lr ? -1.0 : 1.0) * cos(theta_axis + M_PI/2) * TLEN * M_TO_PS;
 
-          // Stroke the tick
-          fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
-          eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-          eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+          // Stroke the tick, unless it is at the end of an axis with an arrowhead
+          if (!( ((TLP[l]<1e-3)&&((a->ArrowType == SW_AXISDISP_BACKA)||(a->ArrowType == SW_AXISDISP_TWOAR))) || ((TLP[l]>0.999)&&((a->ArrowType == SW_AXISDISP_ARROW)||(a->ArrowType == SW_AXISDISP_TWOAR))) ))
+           {
+            fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
+            eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+           }
 
           // Paint the tick label
           if (PrintLabels && (TLS[l][0] != '\0'))
@@ -207,18 +210,28 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       for (i=0; i<MAX_AXES; i++)
        if ((axes[i].FinalActive) && (!axes[i].invisible))
         {
+         int pageno = x->LaTeXpageno;
          if (axes[i].atzero)
           {
+           settings_axis *PerpAxis = &(((j==0)?(x->current->YAxes):(x->current->XAxes))[1]); // Put axis at zero of either x- or y-axis
            int xrn;
-           double ypos, dummy;
-           for (xrn=0; xrn<=axes[i].AxisValueTurnings; xrn++)
+           double ypos=0.5, dummy;
+           if (PerpAxis->FinalActive)
             {
-             ypos = eps_plot_axis_GetPosition(0.0, &axes[i], xrn, 0);
-             if (gsl_finite(ypos))
+             for (xrn=0; xrn<=PerpAxis->AxisValueTurnings; xrn++) // Perhaps more than once if x- or y-axis is non-monotonic
               {
-               if (j==0) { ypos = origin_y+ypos*height; eps_plot_axispaint(x, &ww, axes+i, 0, origin_x, ypos    , origin_x+width, ypos           , &dummy, 1); }
-               else      { ypos = origin_x+ypos*width ; eps_plot_axispaint(x, &ww, axes+i, 1, ypos    , origin_y, ypos          , origin_y+height, &dummy, 1); }
+               ypos = eps_plot_axis_GetPosition(0.0, PerpAxis, xrn, 0);
+               if (gsl_finite(ypos))
+                {
+                 if (j==0) { ypos=origin_y+ypos*height; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, 0, origin_x, ypos    , origin_x+width, ypos           , &dummy, 1); }
+                 else      { ypos=origin_x+ypos*width ; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, 1, ypos    , origin_y, ypos          , origin_y+height, &dummy, 1); }
+                }
               }
+            }
+           else
+            {
+             if (j==0) { ypos=origin_y+ypos*height; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, 0, origin_x, ypos    , origin_x+width, ypos           , &dummy, 1); }
+             else      { ypos=origin_x+ypos*width ; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, 1, ypos    , origin_y, ypos          , origin_y+height, &dummy, 1); }
             }
           }
          else // axis is notatzero... i.e. it is either at top or bottom of graph
