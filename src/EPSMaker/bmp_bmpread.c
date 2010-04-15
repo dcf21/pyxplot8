@@ -90,9 +90,9 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
 
   if (DEBUG) { sprintf(temp_err_string, "Size %dx%d depth %d bits",width,height,depth); ppl_log(temp_err_string); }
 
+  rle=0;
   if (encode!=0)
    {
-    rle=0;
     if      ((encode==1)&&(depth== 8)) rle=8;
     else if ((encode==2)&&(depth== 4)) rle=4;
     else if ((encode!=3)||(depth!=16)) { ppl_error(ERR_FILE,"This Windows bitmap file has an invalid encoding"); return; }
