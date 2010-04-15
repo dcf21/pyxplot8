@@ -125,12 +125,37 @@ void eps_image_RenderEPS(EPSComm *x)
          break;
         }
      }
-    else if ((data.colour == BMP_COLOUR_RGB) || ((data.colour == BMP_COLOUR_GREY) && (x->current->TransColR==x->current->TransColG) && (x->current->TransColR==x->current->TransColB))) // RGB and greyscale
+    else if (data.colour == BMP_COLOUR_RGB) // RGB
      {
       data.trans    = transparency_buff;
       data.trans[0] = (unsigned char)x->current->TransColR;
       data.trans[1] = (unsigned char)x->current->TransColG;
       data.trans[2] = (unsigned char)x->current->TransColB;
+     }
+    else if ((data.colour == BMP_COLOUR_GREY) && (x->current->TransColR==x->current->TransColG) && (x->current->TransColR==x->current->TransColB)) // Greyscale
+     {
+      // THIS IS NOT RIGHT. DO NOT WANT 0,128 BUT 0,255. LOOK AT HOW MAGIC WORKS IN bmp_optimise:156
+
+      if      ((data.depth == 1) && ((x->current->TransColR & 0x7F)==0)) // Two-colour greyscale
+       {
+        data.trans    = transparency_buff;
+        data.trans[0] = (unsigned char)x->current->TransColR<<7;
+       }
+      else if ((data.depth == 2) && ((x->current->TransColR & 0x3F)==0)) // Four-colour greyscale
+       {
+        data.trans    = transparency_buff;
+        data.trans[0] = (unsigned char)x->current->TransColR<<6;
+       }
+      else if ((data.depth == 4) && ((x->current->TransColR & 0x0F)==0)) // Sixteen-colour greyscale
+       {
+        data.trans    = transparency_buff;
+        data.trans[0] = (unsigned char)x->current->TransColR<<4;
+       }
+      else // 256-colour greyscale
+       {
+        data.trans    = transparency_buff;
+        data.trans[0] = (unsigned char)x->current->TransColR;
+       }
      }
    }
 

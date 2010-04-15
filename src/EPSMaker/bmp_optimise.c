@@ -86,6 +86,16 @@ void bmp_colour_count(bitmap_data *image)
     p[i]=j;
    }
 
+  // Replace transparent colour with paletted colour
+  if (image->trans != NULL)
+   {
+    p = image->trans;
+    colour= (((int)p[3*i])<<16) + (((int)p[3*i+1])<<8) + p[3*i+2];
+    for (j=0; j<ncols; j++) if (colour == palette[j]) break;
+    if (j==ncols) image->trans=NULL; // Transparent colour not present in image
+    else          p[0]=j;
+   }
+
   // Set up image headers to show that it is now a paletted image
   image->data_len = size;
   image->depth    = 8;
@@ -102,8 +112,8 @@ void bmp_palette_check(bitmap_data *image)
   unsigned long size;
   unsigned char ncols;
 
-  if (image->depth != 8                 ) return;
   if (image->type  != BMP_COLOUR_PALETTE) return;
+  if (image->depth !=                  8) return;
 
   // Find highest used palette entry
   ncols = 0;
@@ -114,17 +124,19 @@ void bmp_palette_check(bitmap_data *image)
    {
     if (DEBUG) { sprintf(temp_err_string, "Palette length reduced from %d to %d", image->pal_len, 1+ncols); ppl_log(temp_err_string); }
     image->pal_len = 1+ncols;
+    if ((image->trans!=NULL)&&(image->trans[0]>ncols)) image->trans=NULL; // Transparent colour is not used in image
    }
   return;
  }
 
 void bmp_grey_check(bitmap_data *image)
  {
-  int           i,j,grey,depth,magic,test;
+  int           i,j,grey,depth=8,magic,test;
   unsigned int  ncols;
   unsigned long size;
 
   if (image->type != BMP_COLOUR_PALETTE) return;
+  if (image->depth!=                  8) return;
 
   ncols = image->pal_len;
   size  = image->data_len;
@@ -163,12 +175,11 @@ void bmp_grey_check(bitmap_data *image)
     if (test) // If so, we can reduce colour depth
      {
       for (i=0; i<ncols; i++) image->palette[3*i] /= magic;
-      image->depth = depth;
       if (DEBUG) { sprintf(temp_err_string,"Greyscale depth is %d bit",depth); ppl_log(temp_err_string); }
      } else { // We have a <=4 bit image, but cannot use a 4-bit greyscale representation. Give up and use palette!
       if (DEBUG) { sprintf(temp_err_string, "ncols=%d, but not %d bit greyscale\n", ncols, depth); ppl_log(temp_err_string); }
       return;
-    }
+     }
    }
 
   // See if palette is already ordered
@@ -178,20 +189,20 @@ void bmp_grey_check(bitmap_data *image)
    {
     if (DEBUG) ppl_log("Greyscale palette being reordered");
     for (i=0; i<size; i++) image->data[i] = image->palette[3*image->data[i]];
+    if (image->trans != NULL) image->trans[0] = image->palette[3*image->trans[0]]; // Reorder transparent colour as well
    }
 
   // Now we can ditch palette etc.
   image->palette = NULL;
+  if (depth <= 4)
+   {
+    image->pal_len = 1<<depth; // Fudge settings so that bmp_compact is happy
+    image->type    = BMP_COLOUR_PALETTE;
+    bmp_compact(image);
+   }
   image->type    = BMP_COLOUR_BMP;
   image->colour  = BMP_COLOUR_GREY;
   image->pal_len = 0;
-
-  if (image->depth <= 4)
-   {
-    image->pal_len = 1<<image->depth;
-    bmp_compact(image);
-    image->pal_len = 0;
-   }
   return;
  }
 
@@ -199,6 +210,10 @@ void bmp_compact(bitmap_data *image)
  {
   int ncols,i,j,height,width;
   unsigned char *p,*p2,ctmp;
+
+  if (image->type    != BMP_COLOUR_PALETTE) return;
+  if (image->depth   !=                  8) return;
+  if (image->pal_len >                  16) return;
 
   ncols  = image->pal_len;
   height = image->height;
@@ -226,7 +241,7 @@ void bmp_compact(bitmap_data *image)
    }
   else if (ncols<=4)
    {
-    if (DEBUG) ppl_log("Compacting to 2 bits / pixel");
+    if (DEBUG) ppl_log("Compacting to 2 bits per pixel");
     image->depth = 2;
     p = p2 = image->data;
     for (i=0; i<height; i++)
@@ -246,7 +261,7 @@ void bmp_compact(bitmap_data *image)
    }
   else if (ncols<=16)
    {
-    if (DEBUG) ppl_log("Compacting to 4 bits / pixel");
+    if (DEBUG) ppl_log("Compacting to 4 bits per pixel");
     image->depth = 4;
     p = p2 = image->data;
     for (i=0; i<height; i++)

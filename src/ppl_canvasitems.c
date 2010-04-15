@@ -1345,7 +1345,8 @@ int directive_text(Dict *command, int interactive)
 int directive_image(Dict *command, int interactive)
  {
   canvas_item *ptr;
-  int            i, id, *TransColR, *TransColG, *TransColB;
+  int            i, id;
+  value         *TransColR, *TransColG, *TransColB;
   value         *x, *y, *ang, *width, *height;
   unsigned char *unsuccessful_ops;
   char          *text, *fname, *smooth, *NoTransparency;
@@ -1368,6 +1369,13 @@ int directive_image(Dict *command, int interactive)
   if (width !=NULL) { ASSERT_LENGTH(width ,"eps","width" ); }
   if (height!=NULL) { ASSERT_LENGTH(height,"eps","height"); }
 
+  if ((TransColR!=NULL) && (!TransColR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+  if ((TransColR!=NULL) && (TransColR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+  if ((TransColG!=NULL) && (!TransColG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+  if ((TransColG!=NULL) && (TransColG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+  if ((TransColB!=NULL) && (!TransColB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+  if ((TransColB!=NULL) && (TransColB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+
   DictLookup(command, "filename", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
   if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
@@ -1384,10 +1392,10 @@ int directive_image(Dict *command, int interactive)
   if (NoTransparency != NULL) { ptr->NoTransparency = 1; } else { ptr->NoTransparency = 0; }
   if (TransColR      != NULL)
    {
-    ptr->CustomTransparency = 1;
-    ptr->TransColR = (*TransColR <= 0) ? 0 : ((*TransColR >= 255) ? 255 : *TransColR); // Make sure that colour component is in the range 0-255
-    ptr->TransColG = (*TransColG <= 0) ? 0 : ((*TransColG >= 255) ? 255 : *TransColG); // Make sure that colour component is in the range 0-255
-    ptr->TransColB = (*TransColB <= 0) ? 0 : ((*TransColB >= 255) ? 255 : *TransColB); // Make sure that colour component is in the range 0-255
+    ptr->CustomTransparency = 1; // Make sure that colour components are in the range 0-255
+    ptr->TransColR = (TransColR->real <= 0) ? 0 : ((TransColR->real >= 255) ? 255 : TransColR->real);
+    ptr->TransColG = (TransColG->real <= 0) ? 0 : ((TransColG->real >= 255) ? 255 : TransColG->real);
+    ptr->TransColB = (TransColB->real <= 0) ? 0 : ((TransColB->real >= 255) ? 255 : TransColB->real);
    } else { ptr->CustomTransparency = 0; }
   ptr->text      = text;
 

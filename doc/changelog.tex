@@ -45,13 +45,14 @@ use of a compiled language: especially when handling large \datafile s, PyXPlot
 \item The range of mathematical functions built into PyXPlot has been massively extended.
 \item The {\tt solve} command has been added to allow the solution of systems of equations.
 \item The {\tt maximise} and {\tt minimise} commands have been added to allow searches for local extrema of functions.
+\item An {\tt fft} command has been added for performing Fourier transforms on data.
 \item New plot styles -- {\tt filledregion} and {\tt yerrorshaded} -- have been added for plotting filled error regions.
 \item Parametric function plotting has been implemented.
 \item Several commands, e.g. {\tt box}, {\tt circle}, {\tt ellipse}, etc., have been added to allow vector graphics to be produced in PyXPlot's multiplot environment.
-\item The {\tt jpeg} command has been extended to allow the incorporation of {\tt bmp}, {\tt gif} and {\tt png} images onto multiplot canvases as well as {\tt jpeg} images. The command has been renamed {\tt image} in recognition of its wider applicability. Image transparency is supported in {\tt gif} and {\tt png} images.
+\item The {\tt jpeg} command has been generalised to allow the incorporation of not only {\tt jpeg} images, but also {\tt bmp}, {\tt gif} and {\tt png} images, onto multiplot canvases. The command has been renamed {\tt image} in recognition of its wider applicability. Image transparency is now supported in {\tt gif} and {\tt png} images.
 \item The {\tt spline} command, now renamed the {\tt interpolate} command, has been extended up provide many types of interpolation between datapoints.
-\item An {\tt fft} command has been added for performing Fourier transforms on data.
 \item A wide range of conditional and flow control structures have been added to PyXPlot's command language -- these are the {\tt do}, {\tt for}, {\tt foreach}, {\tt if} and {\tt while} commands and the {\tt cond\-ition\-alS} and {\tt con\-dition\-alN} mathematical functions.
+\item Input filters have been introduced as a mechanism by which datafiles in arbitrary formats can be read.
 \item The {\tt show} command has been reworked to produce pastable output.
 \item The configuration of linked axes has been entirely redesigned.
 \item Many minor bugs have been fixed.
