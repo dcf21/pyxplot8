@@ -1,0 +1,44 @@
+# EX_APACHELOG.PPL
+#
+# The code in this file is part of PyXPlot
+# <http://www.pyxplot.org.uk>
+#
+# Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
+#               2009-2010 Ross Church
+#
+# $Id$
+#
+# PyXPlot is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# You should have received a copy of the GNU General Public License along with
+# PyXPlot; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# ----------------------------------------------------------------------------
+
+# This script produces a figure for the PyXPlot Users' Guide
+
+# Call common initialisation script
+reset
+load "examples/fig_init.ppl"
+
+# Set output destination
+set output "examples/eps/ex_apachelog.eps"
+
+# Main body of figure script
+
+# set output 'apache.dat'
+# histogram f() '/var/log/apache2/access.log' using time_julianday($7,$6,$5,$8,$9,$10) binwidth 1/24
+# tabulate f(x) with format "%16f %16f"
+
+set width 10
+set xlabel 'Day'
+set ylabel 'Rate of downloads per day'
+set xtics 0.5, 1
+set mxtics 0.5, 0.25
+set xformat "%s"%(time_dayweekname(x,0)) rotate unit(30*deg)
+plot [2455284.9:2455290.9] "examples/ex_apachelog.dat" notitle with lines
+

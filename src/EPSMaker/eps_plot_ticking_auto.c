@@ -377,6 +377,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   VarName[0] = "xyz"[xyz];
   if (axis->format == NULL) { sprintf(FormatTemp, "\"%%s\"%%(%s)", VarName); format=FormatTemp; }
   else                      { format=axis->format; }
+  if ((format==FormatTemp) && (axis->AxisLinearInterpolation==NULL) && (axis->log==SW_BOOL_TRUE) && (log(axis->MaxFinal / axis->MinFinal) / log(axis->LogBase) > length / tick_sep_major)) { sprintf(FormatTemp, "\"%%s\"%%(logn(%s,%f))", VarName, axis->LogBase); }
   for (i=0; ((format[i]!='\0')&&(format[i]!='\'')&&(format[i]!='\"')); i++);
   QuoteType = format[i];
   if (QuoteType=='\0') goto FAIL;
