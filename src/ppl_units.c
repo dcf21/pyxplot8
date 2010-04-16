@@ -172,6 +172,12 @@ void ppl_units_FindOptimalNextUnit(value *in, unsigned char first, unit **best, 
         found     = 1;
        }
 
+      // A user-preferred unit always beats a non-user-preferred unit
+      if ( (score >= BestScore) && ( (ppl_unit_database[i].UserSel)) && (!((*best)->UserSel)) )
+       { *best = ppl_unit_database+i; *pow = power; BestScore = score; continue; }
+      if ( (score <= BestScore ) &&(!(ppl_unit_database[i].UserSel)) && ( ((*best)->UserSel)) )
+       continue;
+
       // A unit in the current scheme always beats one not in current scheme
       if (( UNIT_INSCHEME(ppl_unit_database[i])) && (!UNIT_INSCHEME(**best)))
         { *best = ppl_unit_database+i; *pow = power; BestScore = score; continue; }
@@ -221,7 +227,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
       NewValueImag = in->imag * pow(UnitList[i]->multiplier / ppl_unit_database[j].multiplier , UnitPow[i]);
       NewMagnitude = hypot(NewValueReal , NewValueImag);
 
-      // A user-preferred unit always beats a non-user preferred unit
+      // A user-preferred unit always beats a non-user-preferred unit
       if ( ( (ppl_unit_database[j].UserSel)) && (!(UnitList[i]->UserSel)) )
        { UnitList[i] = ppl_unit_database+j; in->real = NewValueReal; in->imag = NewValueImag; continue; }
       if ( (!(ppl_unit_database[j].UserSel)) && ( (UnitList[i]->UserSel)) )
