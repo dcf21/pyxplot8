@@ -131,7 +131,7 @@ void bmp_palette_check(bitmap_data *image)
 
 void bmp_grey_check(bitmap_data *image)
  {
-  int           i,j,grey,depth=8,magic,test;
+  int           i,grey,depth=8,magic,test;
   unsigned int  ncols;
   unsigned long size;
 
@@ -169,8 +169,7 @@ void bmp_grey_check(bitmap_data *image)
     test=1; // Test whether the colours we have are all evenly spaced between 0 and 255
     for (i=0; i<ncols; i++)
      {
-      j = (image->palette[3*i]*magic)&255;
-      if ((j!=0)&&(j!=1)&&(j!=255)) { test=0; break; }
+      if ((image->palette[3*i] % magic) != 0) { test=0; break; }
      }
     if (test) // If so, we can reduce colour depth
      {

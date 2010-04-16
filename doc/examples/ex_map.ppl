@@ -36,7 +36,6 @@ se width 20
 set nokey
 set axis x invisible
 set axis y invisible
-set nogrid
 
 # Labels for the states
 set label 1 '{\large \sf \slshape Western Australia}' 117, -28

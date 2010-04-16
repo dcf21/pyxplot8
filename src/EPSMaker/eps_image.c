@@ -134,27 +134,17 @@ void eps_image_RenderEPS(EPSComm *x)
      }
     else if ((data.colour == BMP_COLOUR_GREY) && (x->current->TransColR==x->current->TransColG) && (x->current->TransColR==x->current->TransColB)) // Greyscale
      {
-      // THIS IS NOT RIGHT. DO NOT WANT 0,128 BUT 0,255. LOOK AT HOW MAGIC WORKS IN bmp_optimise:156
+      int magic;
 
-      if      ((data.depth == 1) && ((x->current->TransColR & 0x7F)==0)) // Two-colour greyscale
+      if      (data.depth == 1) { magic=255   ; } //   2-colour greyscale
+      else if (data.depth == 2) { magic=255/ 3; } //   4-colour greyscale
+      else if (data.depth == 4) { magic=255/15; } //  16-colour greyscale
+      else                      { magic=  1   ; } // 256-colour greyscale
+
+      if ((x->current->TransColR % magic)==0)
        {
         data.trans    = transparency_buff;
-        data.trans[0] = (unsigned char)x->current->TransColR<<7;
-       }
-      else if ((data.depth == 2) && ((x->current->TransColR & 0x3F)==0)) // Four-colour greyscale
-       {
-        data.trans    = transparency_buff;
-        data.trans[0] = (unsigned char)x->current->TransColR<<6;
-       }
-      else if ((data.depth == 4) && ((x->current->TransColR & 0x0F)==0)) // Sixteen-colour greyscale
-       {
-        data.trans    = transparency_buff;
-        data.trans[0] = (unsigned char)x->current->TransColR<<4;
-       }
-      else // 256-colour greyscale
-       {
-        data.trans    = transparency_buff;
-        data.trans[0] = (unsigned char)x->current->TransColR;
+        data.trans[0] = (unsigned char)(x->current->TransColR / magic);
        }
      }
    }

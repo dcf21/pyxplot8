@@ -29,7 +29,6 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_cmbrtemp.eps"
 
 # Main body of figure script
-set nogrid
 set nokey
 set fontsize 1.5
 set width 16

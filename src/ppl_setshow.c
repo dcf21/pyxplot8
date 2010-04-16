@@ -423,8 +423,20 @@ void directive_set(Dict *command)
     DictLookup(command,"axes",NULL,(void **)&templist);
     if (ListLen(templist)==0)
      {
+      if (sg->grid != SW_ONOFF_ON)
+       {
+        for (i=0; i<MAX_AXES; i++) sg->GridAxisX[i] = settings_graph_default.GridAxisX[i];
+        for (i=0; i<MAX_AXES; i++) sg->GridAxisY[i] = settings_graph_default.GridAxisY[i];
+        for (i=0; i<MAX_AXES; i++) sg->GridAxisZ[i] = settings_graph_default.GridAxisZ[i];
+       }
       sg->grid = SW_ONOFF_ON;
      } else {
+      if (sg->grid != SW_ONOFF_ON)
+       {
+        for (i=0; i<MAX_AXES; i++) sg->GridAxisX[i] = 0;
+        for (i=0; i<MAX_AXES; i++) sg->GridAxisY[i] = 0;
+        for (i=0; i<MAX_AXES; i++) sg->GridAxisZ[i] = 0;
+       }
       sg->grid = SW_ONOFF_ON;
       listiter = ListIterateInit(templist);
       while (listiter != NULL)

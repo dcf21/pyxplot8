@@ -61,9 +61,7 @@ set ytics ( \
 "{\tt X11\_Persist}" 11, \
 "{\tt X11\_SingleWindow}" 12 \
 )
-set grid
 set grid x2y1
-set nogrid x1
 set gridmajcol grey80
 set gridmincol null
 

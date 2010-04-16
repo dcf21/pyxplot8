@@ -847,7 +847,6 @@ at all.
 \noindent{\tt \phantom{xxxxx}("\$$\backslash$frac\{1\}\{$\backslash$pi\}\$" 1/pi,      "\$$\backslash$frac\{1\}\{2$\backslash$pi\}\$" 1/(2*pi), $\backslash$}\newline
 \noindent{\tt \phantom{xxxxxx}"\$$\backslash$frac\{1\}\{3$\backslash$pi\}\$" 1/(3*pi), "\$$\backslash$frac\{1\}\{4$\backslash$pi\}\$" 1/(4*pi), $\backslash$}\newline
 \noindent{\tt \phantom{xxxxxx}"\$$\backslash$frac\{1\}\{5$\backslash$pi\}\$" 1/(5*pi), "\$$\backslash$frac\{1\}\{6$\backslash$pi\}\$" 1/(6*pi))}\newline
-\noindent{\tt set nogrid x y}\newline
 \noindent{\tt set grid x2}\newline
 \noindent{\tt set nokey}\newline
 \noindent{\tt set xlabel '\$x\$'}\newline
@@ -1091,7 +1090,7 @@ that direction.  Gridlines can subsequently be removed selectively from some
 axes via:
 
 \begin{verbatim}
-unset grid x2x3
+set nogrid x2x3
 \end{verbatim}
 
 The colours of gridlines\index{grid!colour}\index{colours!grid} can be

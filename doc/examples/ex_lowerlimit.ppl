@@ -101,9 +101,7 @@ set ytics ( \
 "{\tt ZErrorBars}" 31, \
 "{\tt ZErrorRange}" 32 \
 )
-set grid
 set grid x2y1
-set nogrid x1
 set gridmajcol grey80
 set gridmincol null
 

@@ -108,6 +108,7 @@ typedef struct settings_axis {
  int           AxisValueTurnings;
  double       *AxisLinearInterpolation;
  int          *AxisTurnings;
+ unsigned char CrossedAtZero;
  unsigned char MinUsedSet, MaxUsedSet, DataUnitSet, RangeFinalised, FinalActive;
  double        MinUsed, MaxUsed, MinFinal, MaxFinal, *OrdinateRaster;
  double        HardMin, HardMax; // Contains ranges set via plot [foo:bar]
