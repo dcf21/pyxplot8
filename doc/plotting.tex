@@ -562,7 +562,7 @@ plot parametric f(t)
 \end{verbatim}
 generates only one column of data.
 
-\example{ex:spirograph}{Generating spirograph patterns}{
+\example{ex:spirograph}{Spirograph patterns}{
 Spirograph patterns are produced when a pen is tethered to the end of a rod
 which rotates at some angular speed $\omega_1$ about the end of another rod,
 which is itself rotating at some angular speed $\omega_2$ about a fixed central
@@ -1347,13 +1347,53 @@ Princeton, 1998).
 \end{center}
 }
 
+\newpage
 \example{ex:australia}{A map of Australia}{
-A map of Australia, plotted using PyXPlot.  The data were obtained
-from \protect\url{http://www.maproom.psu.edu/dcw/} (for the coastal outlines
-and state boundaries) and \protect\url{http://en.wikipedia.org} (for the city
-locations). The data files and script used to produce this map can be
-downloaded from the PyXPlot website at
-\protect\url{http://www.pyxplot.org.uk/examples/Manual/08map/}.
+In this example, we use PyXPlot to plot a map of Australia, using a coastal
+outline obtained from \protect\url{http://www.maproom.psu.edu/dcw/}. We use the
+{\tt set label} command to label the states and major cities. The files {\tt
+ex\_\-map\_\-1.dat.gz} and {\tt ex\_\-map\_\-2.dat} can be found in the PyXPlot
+installation tarball in the directory {\tt doc/\-examples/}.
+\nlscf
+{\footnotesize
+\noindent{\tt set width 20}\newline
+}\\{\footnotesize
+\noindent{\tt \# We want a plot without axes or key}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set axis x invisible}\newline
+\noindent{\tt set axis y invisible}\newline
+}\\{\footnotesize
+\noindent{\tt \# Labels for the states}\newline
+\noindent{\tt set label 1 '\{$\backslash$large $\backslash$sf $\backslash$slshape Western Australia\}' 117, -28}\newline
+\noindent{\tt set label 2 '\{$\backslash$large $\backslash$sf $\backslash$slshape South Australia\}' 130, -29.5}\newline
+\noindent{\tt set label 3 '\{$\backslash$large $\backslash$sf $\backslash$slshape Northern Territory\}' 129.5, -20.5}\newline
+\noindent{\tt set label 4 '\{$\backslash$large $\backslash$sf $\backslash$slshape Queensland\}' 141,-24}\newline
+\noindent{\tt set label 5 '\{$\backslash$large $\backslash$sf $\backslash$slshape New South Wales\}' 142,-32.5}\newline
+\noindent{\tt set label 6 '\{$\backslash$large $\backslash$sf $\backslash$slshape Victoria\}' 139,-41}\newline
+\noindent{\tt set arrow 6 from 141,-40 to 142, -37 with nohead}\newline
+\noindent{\tt set label 7 '\{$\backslash$large $\backslash$sf $\backslash$slshape Tasmania\}' 149,-42}\newline
+\noindent{\tt set arrow 7 from 149, -41.5 to 146.5, -41.75 with nohead}\newline
+\noindent{\tt set label 8 '\{$\backslash$large $\backslash$sf $\backslash$slshape Capital Territory\}' 151,-37}\newline
+\noindent{\tt set arrow 8 from 151, -36.25 to 149, -36 with nohead}\newline
+}\\{\footnotesize
+\noindent{\tt \# Labels for the cities}\newline
+\noindent{\tt set label 10 '\{$\backslash$sf Perth\}' 116.5, -32.4}\newline
+\noindent{\tt set label 11 '\{$\backslash$sf Adelaide\}' 136, -38}\newline
+\noindent{\tt set arrow 11 from 137.5,-37.2 to 138.601, -34.929}\newline
+\noindent{\tt set label 12 '\{$\backslash$sf Darwin\}' 131, -13.5}\newline
+\noindent{\tt set label 13 '\{$\backslash$sf Brisbane\}' 149, -27.5}\newline
+\noindent{\tt set label 14 '\{$\backslash$sf Sydney\}' 151.5, -34.5}\newline
+\noindent{\tt set label 15 '\{$\backslash$sf Melbourne\}' 143, -37.3}\newline
+\noindent{\tt set label 16 '\{$\backslash$sf Hobart\}' 147.5, -44.25}\newline
+\noindent{\tt set label 17 '\{$\backslash$sf Canberra\}' 145, -35.25}\newline
+}\\{\footnotesize
+\noindent{\tt \# A big label saying "Australia"}\newline
+\noindent{\tt set label 20 '\{$\backslash$Huge $\backslash$sf $\backslash$slshape Australia\}' 117,-42}\newline
+}\\{\footnotesize
+\noindent{\tt \# Plot the coastline and cities}\newline
+\noindent{\tt plot [][-45:] 'ex\_map\_1.dat.gz' every ::1 with lines, $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}'ex\_map\_2.dat' with points pointtype 10 pointsize 2}
+}
 \nlscf
 \begin{center}
 \includegraphics[width=\textwidth]{examples/eps/ex_map.eps}

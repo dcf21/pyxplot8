@@ -32,7 +32,7 @@ set output "examples/eps/ex_map.eps"
 # Main body of figure script
 se width 20
 
-# We want a plot without axes, key or grid
+# We want a plot without axes or key
 set nokey
 set axis x invisible
 set axis y invisible

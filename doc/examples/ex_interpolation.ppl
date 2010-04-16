@@ -1,4 +1,4 @@
-# EX_FFT.PPL
+# EX_INTERPOLATION.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -26,17 +26,19 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_fft.eps"
+set output "examples/eps/ex_interpolation.eps"
 
 # Main body of figure script
-set numerics complex
-step(x) = tophat(x,0.5)
-fft [-1:1:0.01] f() of step()
-plot [-10:10] Re(f(x*1)) title texify(Re(f(x))), sinc(x)
+interpolate linear f_linear() "examples/ex_interpolation.dat"
+interpolate spline f_spline() "examples/ex_interpolation.dat"
+interpolate akima  f_akima () "examples/ex_interpolation.dat"
 
-# Set output destination
-set output "examples/eps/ex_fft2.eps"
-g(x) = f(x)**2
-ifft [-50:49.5:0.5] h(x) of g(x)
-plot [-2:2] Re(h(x))
+set key top left
+plot [0:4][-0.1:1.3] \
+   "examples/ex_interpolation.dat" using 1:($2+0.0) notitle with points pt 1, \
+   f_linear(x)+0.0 title "Linear", \
+   "examples/ex_interpolation.dat" using 1:($2+0.1) notitle with points pt 1, \
+   f_spline(x)+0.1 title "Spline", \
+   "examples/ex_interpolation.dat" using 1:($2+0.2) notitle with points pt 1, \
+   f_akima (x)+0.2 title "Akima"
 

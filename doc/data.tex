@@ -357,8 +357,38 @@ spline f() 'data1.dat'
 interpolate spline f() 'data1.dat'
 \end{verbatim}
 
-\example{ex:interpolation}{An example}{
-In this example,.
+\example{ex:interpolation}{A demonstration of the {\tt linear}, {\tt spline} and {\tt akima} modes of interpolation}{
+In this example, we demonstrate the {\tt linear}, {\tt spline} and {\tt akima}
+modes of interpolation using an example \datafile with non-smooth data
+generated using the {\tt tabulate} command (see Section~\ref{sec:tabulate}):
+\nlscf
+\noindent{\tt f(x) = 0}
+\noindent{\tt f(x)[0:1] = 0.5}
+\noindent{\tt f(x)[2:4] = cos((x-3)*pi/2)}
+\noindent{\tt set samples 20}
+\noindent{\tt tabulate [0:4] f(x)}
+\nlscf
+Having set three functions to interpolate this non-smooth data in different
+ways, we plot them with a vertical offset of~$0.1$ between them for clarity.
+The interpolated \datafile is plotted with points three times to show where
+each of the interpolation functions are pinned.
+\nlscf
+\noindent{\tt interpolate linear f\_linear() "data.dat"}\newline
+\noindent{\tt interpolate spline f\_spline() "data.dat"}\newline
+\noindent{\tt interpolate akima  f\_akima () "data.dat"}\newline
+\\
+\noindent{\tt set key top left}\newline
+\noindent{\tt plot [0:4][-0.1:1.3] $\backslash$}\newline
+\noindent{\tt \phantom{xxx}"data.dat" using 1:(\$2+0.0) notitle with points pt 1, $\backslash$}\newline
+\noindent{\tt \phantom{xxx}f\_linear(x)+0.0 title "Linear", $\backslash$}\newline
+\noindent{\tt \phantom{xxx}"data.dat" using 1:(\$2+0.1) notitle with points pt 1, $\backslash$}\newline
+\noindent{\tt \phantom{xxx}f\_spline(x)+0.1 title "Spline", $\backslash$}\newline
+\noindent{\tt \phantom{xxx}"data.dat" using 1:(\$2+0.2) notitle with points pt 1, $\backslash$}\newline
+\noindent{\tt \phantom{xxx}f\_akima (x)+0.2 title "Akima"}\newline
+\nlscf
+The resulting plot is shown below:
+\nlscf
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_interpolation.eps}}
 }
 
 \section{Fourier Transforms}

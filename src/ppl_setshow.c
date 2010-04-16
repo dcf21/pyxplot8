@@ -139,24 +139,53 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(setoption,"autoscale")==0)) /* set autoscale | unset autoscale */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
-    listiter = ListIterateInit(templist);
-    while (listiter != NULL)
+
+#define SET_AUTOSCALE_AXIS \
+ { \
+  if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; } \
+  else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; } \
+  else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; } \
+  if (set && ((!SetAll) || (tempaxis->enabled))) \
+   { \
+    tempaxis->enabled = 1; \
+    tempaxis->MinSet  = SW_BOOL_FALSE; \
+    tempaxis->MaxSet  = SW_BOOL_FALSE; \
+   } else { \
+    tempaxis->MinSet  = tempaxis2->MinSet; \
+    tempaxis->MaxSet  = tempaxis2->MaxSet; \
+   } \
+  tempaxis->min     = tempaxis2->min; \
+  tempaxis->max     = tempaxis2->max; \
+ }
+
+    if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
-      i = (int)GetFloat(tempstr+1,NULL);
-      if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+      unsigned char set = (directive[0]=='s'), SetAll;
+      DictLookup(command,"axes",NULL,(void **)&templist);
+      if ((templist != NULL) && (ListLen(templist)>0))
        {
-        if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
-        else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
-        else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-        tempaxis->enabled = 1;
-        tempaxis->MinSet  = SW_BOOL_FALSE;
-        tempaxis->MaxSet  = SW_BOOL_FALSE;
-        tempaxis->min     = tempaxis2->min;
-        tempaxis->max     = tempaxis2->max;
-        listiter = ListIterate(listiter, NULL);
+        SetAll=0;
+        listiter = ListIterateInit(templist);
+        while (listiter != NULL)
+         {
+          tempdict = (Dict *)listiter->data;
+          DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+          i = (int)GetFloat(tempstr+1,NULL);
+          SET_AUTOSCALE_AXIS;
+          listiter = ListIterate(listiter, NULL);
+         }
+       }
+      else
+       {
+        int i,j;
+        SetAll=1;
+        for (j=0; j<2; j++)
+         {
+          if      (j==1) tempstr="y";
+          else if (j==2) tempstr="z";
+          else           tempstr="x";
+          for (i=0; i<MAX_AXES; i++) SET_AUTOSCALE_AXIS;
+         }
        }
      }
    }
@@ -2549,7 +2578,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
        sprintf(temp1, "%c%drange", "xyz"[k], j);
        sprintf(temp2, "%crange"  , "xyz"[k]   );
-       if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
+       if (l || (StrAutocomplete(word, "autoscale", 1)>=0) || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
          AxisPtr->unit.real = AxisPtr->min;
          if (AxisPtr->MinSet==SW_BOOL_TRUE) bufp  = ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0);
