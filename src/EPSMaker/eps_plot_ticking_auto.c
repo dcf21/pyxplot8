@@ -182,10 +182,15 @@ static void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks,
   *NTicksOutMinor = 0;
   *FLAGacceptable = 1;
 
-  // Loop over all potential ticks to check whether they are to be added
+  // Initialise output data array
   for (i=0; i<NPotTicks; i++)
    {
     TicksAcceptedOut[i] = (TicksAcceptedIn == NULL) ? 0 : TicksAcceptedIn[i];
+   }
+
+  // Loop over all potential ticks to check whether they are to be added
+  for (i=0; i<NPotTicks; i++)
+   {
     id = TickOrder[i].id;
     if (    (PotTickList[id].ArgNo      == ArgNo     ) // Test whether potential tick is in newly accepted scheme
          && (PotTickList[id].DivOfThrow == DivOfThrow)

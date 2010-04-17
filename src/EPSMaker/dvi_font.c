@@ -56,6 +56,7 @@ int dviGetTFM(dviFontDetails *font)
   TFMfp = fopen(TFMpath, "r");
   if (TFMfp==NULL) { ppl_error(ERR_INTERNAL,"Could not open TFM file"); return 1; }
   font->tfm = dviReadTFM(TFMfp, &err);
+  fclose(TFMfp);
   if (err) return err;
 
   // Find the maximum height and depth of the font
@@ -136,18 +137,21 @@ int dviGetPfa(dviFontDetails *font, char *filename)
     // Make a filename for the destination pfa file
     // free(PFApath);
     PFApath = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
-    if (PFApath==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+    if (PFApath==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); fclose(fpin); return DVIE_MEMORY; }
     snprintf(PFApath, SSTR_LENGTH, "%s%s%s.pfa", settings_session_default.tempdir, PATHLINK, font->name);
     fpout = fopen(PFApath, "w");
     if (fpout == NULL)
      {
       snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot write to pfa file %s", PFApath);
       ppl_error(ERR_GENERAL,errStr);
+      fclose(fpin);
       return DVIE_ACCESS;
      }
     if ((err=pfb2pfa(fpin, fpout))!=0)
      {
       if (DEBUG) { snprintf(errStr, SSTR_LENGTH, "Fail in pfb2pfa: %d", err); ppl_log(errStr); }
+      fclose(fpin);
+      fclose(fpout);
       return err;
      }
     fclose(fpin);
@@ -184,6 +188,7 @@ char *psNameFromPFA(char *PFApath)
     buf[i]=c; i++;
    }
   buf[i]='\0';
+  fclose(fp);
 
   // Produce a malloced string with the name in and return it
   s = (char *)lt_malloc((i+1)*sizeof(char));

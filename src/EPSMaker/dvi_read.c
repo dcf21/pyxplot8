@@ -82,7 +82,7 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
     // Read the next operator from the dvi file
     if ((err=GetDVIOperator(&op, fp))!=0)
      {
-      if (err) { *status=err; return NULL; }
+      if (err) { *status=err; fclose(fp); return NULL; }
       else { continue; }
      }
 
@@ -92,7 +92,7 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
     if (!POST)
      {
       err = dviInterpretOperator(interpreter, &op);
-      if (err) { *status=err; return NULL; }
+      if (err) { *status=err; fclose(fp); return NULL; }
      }
     for (i=0; i<2; i++)
      {

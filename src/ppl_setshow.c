@@ -702,7 +702,6 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
    {
     settings_term_current.multiplot = SW_ONOFF_ON;
-    directive_clear();
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"multiplot")==0)) /* unset multiplot */
    {

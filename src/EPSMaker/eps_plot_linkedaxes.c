@@ -79,7 +79,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
      {
       item = x->itemlist->first;
       while ((item != NULL) && ((item->id)<source->LinkedAxisCanvasID)) item=item->next;
-      if ((item == NULL) || (item->id != source->LinkedAxisCanvasID)) { break; }
+      if ((item == NULL) || (item->id != source->LinkedAxisCanvasID) || (item->type != CANVAS_PLOT) || (item->XAxes==NULL) || (item->YAxes==NULL) || (item->ZAxes==NULL)) { break; }
      }
     if      (source->LinkedAxisToXYZ == 0) target = item->XAxes + source->LinkedAxisToNum;
     else if (source->LinkedAxisToXYZ == 1) target = item->YAxes + source->LinkedAxisToNum;
@@ -190,6 +190,8 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
       item = x->itemlist->first;
       while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
       if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyz"[xyz],axis_n,x->current->id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
+      if (item->type != CANVAS_PLOT) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but this canvas item is not a plot.","xyz"[xyz],axis_n,x->current->id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
+      if ((item->XAxes==NULL)||(item->YAxes==NULL)||(item->ZAxes==NULL)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but this item has NULL axes.","xyz"[xyz],axis_n,x->current->id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_INTERNAL, temp_err_string); } break; }
      }
     if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
     else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
@@ -216,7 +218,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
        {
         item = x->itemlist->first;
         while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
-        if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { break; }
+        if ((item == NULL) || (item->id != target->LinkedAxisCanvasID) || (item->type != CANVAS_PLOT) || (item->XAxes==NULL) || (item->YAxes==NULL) || (item->ZAxes==NULL)) { break; }
        }
       if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
       else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
