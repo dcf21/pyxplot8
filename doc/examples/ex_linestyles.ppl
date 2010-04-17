@@ -50,6 +50,7 @@ refresh
 set output "examples/eps/ex_linestyles2.eps"
 
 # Main body of figure script
+clear
 set multiplot
 set nodisplay
 
@@ -75,6 +76,7 @@ refresh
 set output "examples/eps/ex_linestyles3.eps"
 
 # Main body of figure script
+clear
 set multiplot
 set nodisplay
 set axis x invisible

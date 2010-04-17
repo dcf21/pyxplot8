@@ -55,6 +55,7 @@ set output "examples/eps/ex_plotstyletab.eps"
 # Main body of figure script
 set preamble '\usepackage{wasysym}'
 set multiplot
+clear
 set texthalign centre
 set textvalign centre
 text "{\bf Plot Styles}" at -2,32/7*0.4*9+1.5
