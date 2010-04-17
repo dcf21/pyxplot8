@@ -507,9 +507,14 @@ void canvas_CallLaTeX(EPSComm *x)
         sprintf(temp_err_string, "\nOffending input to LaTeX was:\n\n%s\n", SuspectTextItem->text); ppl_error(ERR_PREFORMED,temp_err_string);
        }
      }
-    else // Case 2: Error in another file which the user seems to have imported
+    else if ((ErrFilename[0]=='\0')&&(ErrMsg[0]=='\0')) // Case 2: Error encountered, but we didn't catch error message
      {
-      sprintf(temp_err_string, "LaTeX error encountered in imported file <%s> on line %d", ErrFilename, ErrLineNo);
+      sprintf(temp_err_string, "Unidentified LaTeX error encountered.");
+      ppl_error(ERR_GENERAL,temp_err_string);
+     }
+    else // Case 3: Error in another file which the user seems to have imported
+     {
+      sprintf(temp_err_string, "LaTeX error encountered in imported file <%s> on line %d.", ErrFilename, ErrLineNo);
       ppl_error(ERR_GENERAL,temp_err_string);
       sprintf(temp_err_string, "Error was: %s", ErrMsg);
       ppl_error(ERR_PREFORMED,temp_err_string);

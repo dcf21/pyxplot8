@@ -693,7 +693,14 @@ NO_TAB_COMPLETION:
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
              }
-            else if ((MatchVal._dbl>=INT_MAX)||(MatchVal._dbl>=MAX_AXES)||(!gsl_finite(MatchVal._dbl)))
+            else if (!gsl_finite(MatchVal._dbl))
+             {
+              sprintf(AlgebraError, "Axis numbers must be finite real integers in the range 1 - %d.",MAX_AXES-1);
+              *AlgebraLinepos = *linepos;
+              *match          = 1; // Fudge to make sure error is displayed
+              *success        = 0;
+             }
+            else if ((MatchVal._dbl>=INT_MAX)||(MatchVal._dbl>=MAX_AXES))
              {
               sprintf(AlgebraError, "A maximum of %d parallel axes are allowed; axis numbers greater than %d are not permitted.",MAX_AXES-1,MAX_AXES-1);
               *AlgebraLinepos = *linepos;
@@ -780,7 +787,13 @@ NO_TAB_COMPLETION:
            }
           else if (strcmp(node->MatchString, "%d")==0)
            {
-            if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX)||(!gsl_finite(MatchVal._dbl)))
+            if (!gsl_finite(MatchVal._dbl))
+             {
+              sprintf(AlgebraError, "This integer value is not finite and real.");
+              *AlgebraLinepos = *linepos;
+              *success        = 0;
+             }
+            else if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX))
              {
               sprintf(AlgebraError, "This integer value is too large.");
               *AlgebraLinepos = *linepos;

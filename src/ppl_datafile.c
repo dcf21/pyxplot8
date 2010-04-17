@@ -506,6 +506,7 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
        {
         COUNTEDERR1; ppl_warning(ERR_STACKED, errout); COUNTEDERR2;
         out->current->text[out->current->BlockPosition] = NULL;
+        LocalStatus=0;
        }
      }
     else
@@ -519,6 +520,7 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
       DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData_str, ColumnData_val, ItemsOnLine, filename, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, NumericOut, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
       if (LocalStatus) break;
       if (tempval.FlagComplex) { COUNTEDERR1; sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is complex.", filename, file_linenumber, UsingItems[i]); COUNTEDERR2; LocalStatus=1; break; }
+      if (!gsl_finite(tempval.real)) { COUNTEDERR1; sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is not finite.", filename, file_linenumber, UsingItems[i]); COUNTEDERR2; LocalStatus=1; break; }
       out->current->FileLine [i + out->current->BlockPosition * Ncolumns] = file_linenumber;
       if (NumericOut)
        {

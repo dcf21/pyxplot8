@@ -146,7 +146,7 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap
 
     if (theta_x != NULL) *theta_x = atan2( cos(sg->XYview.real) , sin(sg->XYview.real)*sin(sg->YZview.real) );
     if (theta_y != NULL) *theta_y = atan2( sin(sg->XYview.real) ,-cos(sg->XYview.real)*sin(sg->YZview.real) );
-    if (theta_y != NULL) *theta_y = 0.0;
+    if (theta_z != NULL) *theta_z = 0.0;
    }
   else // 2D plots
    {
@@ -156,6 +156,7 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap
 
     if (theta_x != NULL) *theta_x = M_PI/2;
     if (theta_y != NULL) *theta_y = 0.0;
+    if (theta_z != NULL) *theta_z = 0.0;
    }
 
   return;
