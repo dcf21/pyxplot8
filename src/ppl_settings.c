@@ -112,6 +112,7 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_term_default.PaperWidth));
   settings_term_default.PaperWidth.real     = 210.2241 / 1000;
   settings_term_default.PaperWidth.dimensionless = 0; settings_term_default.PaperWidth.exponent[UNIT_LENGTH] = 1;
+  settings_term_default.RandomSeed          = 0;
   settings_term_default.SignificantFigures  = 8;
   settings_term_default.TermAntiAlias       = SW_ONOFF_ON;
   settings_term_default.TermType            = SW_TERMTYPE_X11S;

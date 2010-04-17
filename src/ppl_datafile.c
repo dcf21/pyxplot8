@@ -744,17 +744,22 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     if (*status>0) return; // There was a problem launching coprocess or opening file
    }
 
+#define FCLOSE_FI \
+ { \
+  if ((!ReadFromCommandLine) && (filtered_input != stdin)) fclose(filtered_input); \
+ }
+
   // Keep a record of the memory context we're going to output into, and then make a scratchpad context
   ContextOutput = lt_GetMemContext();
   ContextRough  = lt_DescendIntoNewContext(); // Rough mallocs inside this subroutine happen in this context
   ContextRaw    = lt_DescendIntoNewContext(); // Raw data goes into here when plotting with rows
 
   *output = DataFile_NewDataTable(Ncolumns, ContextOutput, -1);
-  if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
+  if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
   if (UsingRowCol == DATAFILE_ROW)
    {
     RawDataTab = DataFile_NewRawDataTable(ContextRaw);
-    if (RawDataTab == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
+    if (RawDataTab == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
    }
 
   // Read input file, line by line
@@ -808,7 +813,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         cptr            = (char  *)lt_malloc_incontext(j-i+1                     , ContextRough); strcpy(cptr, linebuffer+i);
         ColumnHeadings  = (char **)lt_malloc_incontext(ItemsOnLine*sizeof(char *), ContextRough);
         NColumnHeadings = ItemsOnLine;
-        if ((cptr==NULL)||(ColumnHeadings==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        if ((cptr==NULL)||(ColumnHeadings==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=0; cptr[j]!='\0'; j++)
          {
@@ -835,7 +840,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         cptr            = (char  *)lt_malloc_incontext(j-i+1                     , ContextRough); strcpy(cptr, linebuffer+i);
         RowHeadings     = (char **)lt_malloc_incontext(ItemsOnLine*sizeof(char *), ContextRough);
         NRowHeadings    = ItemsOnLine;
-        if ((cptr==NULL)||(RowHeadings==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        if ((cptr==NULL)||(RowHeadings==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
         ItemsOnLine = 0; hadwhitespace = 1;
         for (j=0; cptr[j]!='\0'; j++)
          {
@@ -862,7 +867,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         cptr         = (char  *)lt_malloc_incontext(j-i+2                    , ContextRough); strncpy(cptr, linebuffer+i, j-i+2);
         ColumnUnits  = (value *)lt_malloc_incontext(ItemsOnLine*sizeof(value), ContextRough);
         NColumnUnits = ItemsOnLine;
-        if ((cptr==NULL)||(ColumnUnits==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        if ((cptr==NULL)||(ColumnUnits==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
         ItemsOnLine = 0; hadwhitespace = 1;
         for (k=0; cptr[k]!='\0'; k++)
          {
@@ -901,7 +906,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         cptr         = (char  *)lt_malloc_incontext(j-i+2                    , ContextRough); strncpy(cptr, linebuffer+i, j-i+2);
         RowUnits     = (value *)lt_malloc_incontext(ItemsOnLine*sizeof(value), ContextRough);
         NRowUnits    = ItemsOnLine;
-        if ((cptr==NULL)||(RowUnits==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; }
+        if ((cptr==NULL)||(RowUnits==NULL)) { strcpy(errout, "Out of memory."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
         ItemsOnLine = 0; hadwhitespace = 1;
         for (k=0; cptr[k]!='\0'; k++)
          {
@@ -940,12 +945,12 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     if (UsingRowCol == DATAFILE_ROW) // Store the whole line into a raw text spool
      {
       if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, filename, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout);
-      if (*status) return;
+      if (*status) { FCLOSE_FI; return; }
       cptr = RawDataTab->current->text[RawDataTab->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(linebuffer)+1, ContextRaw);
-      if (cptr==NULL) { strcpy(errout, "Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); return; }
+      if (cptr==NULL) { strcpy(errout, "Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
       strcpy(cptr, linebuffer);
       RawDataTab->current->FileLine[RawDataTab->current->BlockPosition] = file_linenumber;
-      if (DataFile_RawDataTable_AddRow(RawDataTab)) { strcpy(errout, "Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); return; }
+      if (DataFile_RawDataTable_AddRow(RawDataTab)) { strcpy(errout, "Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
       discontinuity = 0;
      }
     else if ((linenumber_stepcnt==0) && ((linefirst<0)||(linenumber_count>=linefirst)) && ((linelast<0)||(linenumber_count<=linelast)))
@@ -970,11 +975,14 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
        }
 
       DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, NULL, ItemsOnLine, UsingItems, Ncolumns, filename, file_linenumber, NULL, linenumber_count, block_count, index_number, DATAFILE_COL, "column", ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
-      if (*status) return;
+      if (*status) { FCLOSE_FI; return; }
      }
     linenumber_count++;
     linenumber_stepcnt = ((linenumber_stepcnt-1) % linestep);
    }
+
+  // Close input file
+  FCLOSE_FI;
 
   // If we are reading rows, go through all of the data that we've read and rotate it by 90 degrees
   if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, filename, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }

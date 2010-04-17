@@ -214,6 +214,7 @@ unset@3:directive { item@1 %d:editno } < pointlinewidth@6:set_option |  plw@3:se
 unset@3:directive { item@1 %d:editno } < pointsize@1:set_option | ps@2:set_option:pointsize > =\n\
 unset@3:directive { item@1 %d:editno } preamble@2:set_option =\n\
 unset@3:directive { item@1 %d:editno } samples@2:set_option =\n\
+unset@2:directive                      seed@2:set_option =\n\
 unset@3:directive:set { item@1 %d:editno } < axis@1:set_option:noaxis | noaxis@3:set_option > = [ %a:axis ]:axes\n\
 unset@3:directive { item@1 %d:editno } size@1:set_option =\n\
 unset@3:directive                      terminal@1:set_option =\n\

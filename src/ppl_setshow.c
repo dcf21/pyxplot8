@@ -37,6 +37,7 @@
 #include "EPSMaker/eps_colours.h"
 
 #include "ppl_canvasitems.h"
+#include "ppl_children.h"
 #include "ppl_constants.h"
 #include "ppl_error.h"
 #include "ppl_flowctrl.h"
@@ -951,13 +952,27 @@ void directive_set(Dict *command)
         if (j<0) { sprintf(temp_err_string, "The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
         else     { settings_palette_current[i++] = j; }
        } else {
-        DictLookup(tempdict,"colourR",NULL,(void **)&tempint);
-        settings_paletteR_current[i] = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
-        DictLookup(tempdict,"colourG",NULL,(void **)&tempint);
-        settings_paletteG_current[i] = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
-        DictLookup(tempdict,"colourB",NULL,(void **)&tempint);
-        settings_paletteB_current[i] = (*tempint <= 0) ? 0 : ((*tempint >= 255) ? 255 : *tempint); // Make sure that colour component is in the range 0-255
-        settings_palette_current[i++] = 0;
+        value *colR, *colG, *colB;
+        unsigned char fail=0;
+
+        DictLookup(tempdict,"colourR",NULL,(void **)&colR);
+        DictLookup(tempdict,"colourG",NULL,(void **)&colG);
+        DictLookup(tempdict,"colourB",NULL,(void **)&colB);
+
+        if ((!fail) && (colR!=NULL) && (!colR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+        if ((!fail) && (colR!=NULL) && (colR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+        if ((!fail) && (colG!=NULL) && (!colG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+        if ((!fail) && (colG!=NULL) && (colG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+        if ((!fail) && (colB!=NULL) && (!colB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+        if ((!fail) && (colB!=NULL) && (colB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+
+        if (!fail)
+         {
+          settings_paletteR_current[i] = (colR->real <= 0) ? 0 : ((colR->real >= 255) ? 255 : colR->real); // Make sure that colour component is in the range 0-255
+          settings_paletteG_current[i] = (colG->real <= 0) ? 0 : ((colG->real >= 255) ? 255 : colG->real); // Make sure that colour component is in the range 0-255
+          settings_paletteB_current[i] = (colB->real <= 0) ? 0 : ((colB->real >= 255) ? 255 : colB->real); // Make sure that colour component is in the range 0-255
+          settings_palette_current[i++] = 0;
+         }
        }
       listiter = ListIterate(listiter, NULL);
      }
@@ -1069,7 +1084,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     DictLookup(command,"samples",NULL,(void **)&tempint);
-    if (*tempint <= 2.0) { ppl_error(ERR_GENERAL, "Graphs cannot be constucted based on fewer than two samples."); return; }
+    if (*tempint < 2.0) { ppl_error(ERR_GENERAL, "Graphs cannot be constucted based on fewer than two samples."); return; }
     sg->samples = *tempint;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
@@ -1082,7 +1097,13 @@ void directive_set(Dict *command)
     if      (*tempdbl < LONG_MIN) li = LONG_MIN;
     else if (*tempdbl > LONG_MAX) li = LONG_MAX;
     else                          li = (long)(*tempdbl);
+    settings_term_current.RandomSeed = li;
     dcfmath_SetRandomSeed(li);
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"seed")==0)) /* unset seed */
+   {
+    settings_term_current.RandomSeed = settings_term_default.RandomSeed;
+    dcfmath_SetRandomSeed(settings_term_current.RandomSeed);
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
    {
@@ -1707,6 +1728,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"viewer")==0)) /* set viewer */
    {
+    int ViewerOld = settings_term_current.viewer;
     DictLookup(command,"viewer",NULL,(void **)&tempstr);
     if      ((strcmp(tempstr,"gv"    )==0) && (strcmp(GHOSTVIEW_COMMAND,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_GV;
     else if ((strcmp(tempstr,"ggv"   )==0) && (strcmp(GGV_COMMAND      ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_GGV;
@@ -1717,10 +1739,13 @@ void directive_set(Dict *command)
       sprintf(temp_err_string,"Could not set current viewer to %s since this program was not installed when PyXPlot was installed.",tempstr);
       ppl_error(ERR_GENERAL,temp_err_string);
      }
+    if (settings_term_current.viewer != ViewerOld) SendCommandToCSP("A"); // Clear away SingleWindow viewer
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"viewer")==0)) /* unset viewer */
    {
+    int ViewerOld = settings_term_current.viewer;
     settings_term_current.viewer = settings_term_default.viewer;
+    if (settings_term_current.viewer != ViewerOld) SendCommandToCSP("A"); // Clear away SingleWindow viewer
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
@@ -2288,6 +2313,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     sprintf(buf, "%d", sg->samples);
     directive_show3(out+i, ItemSet, 1, interactive, "samples", buf, (settings_graph_default.samples==sg->samples), "The number of samples taken when functions are plotted");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "seed",1)>=0))
+   {
+    sprintf(buf, "%ld", settings_term_current.RandomSeed);
+    directive_show3(out+i, ItemSet, 1, interactive, "seed", buf, (settings_term_default.RandomSeed==settings_term_current.RandomSeed), "The last seed set for the random number generator");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "size",1)>=0))

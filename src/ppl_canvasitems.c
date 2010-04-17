@@ -1369,12 +1369,12 @@ int directive_image(Dict *command, int interactive)
   if (width !=NULL) { ASSERT_LENGTH(width ,"eps","width" ); }
   if (height!=NULL) { ASSERT_LENGTH(height,"eps","height"); }
 
-  if ((TransColR!=NULL) && (!TransColR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
-  if ((TransColR!=NULL) && (TransColR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
-  if ((TransColG!=NULL) && (!TransColG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
-  if ((TransColG!=NULL) && (TransColG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
-  if ((TransColB!=NULL) && (!TransColB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
-  if ((TransColB!=NULL) && (TransColB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+  if ((TransColR!=NULL) && (!TransColR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if ((TransColR!=NULL) && (TransColR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if ((TransColG!=NULL) && (!TransColG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if ((TransColG!=NULL) && (TransColG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if ((TransColB!=NULL) && (!TransColB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if ((TransColB!=NULL) && (TransColB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
 
   DictLookup(command, "filename", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);

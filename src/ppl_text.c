@@ -142,6 +142,16 @@ Valid 'show' options are:\n\
 'units', 'userfunctions', 'variables'\n\
 \n\
 or any of the following set options:\n\
-%s", txt_valid_set_options);
+'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'data\n\
+style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
+'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale',\n\
+'linewidth', 'logscale', 'multiplot', 'numerics', 'origin', 'output',\n\
+'palette', 'papersize', 'pointlinewidth', 'pointsize', 'preamble',\n\
+'projection', 'samples', 'seed', 'size', 'size noratio', 'size ratio',\n\
+'size square', 'style', 'terminal', 'textcolour', 'texthalign', 'textvalign',\n\
+'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+");
 }
 
