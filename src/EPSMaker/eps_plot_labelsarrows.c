@@ -54,7 +54,7 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
      XOUT = XIN.real; \
      if      (SYSTEM == SW_SYSTEM_FIRST ) { XA = &(XAXES[1]); } \
      else if (SYSTEM == SW_SYSTEM_SECOND) { XA = &(XAXES[2]); } \
-     else if (SYSTEM == SW_SYSTEM_AXISN ) { XA = &(XAXES[AXISN]); } \
+     else if (SYSTEM == SW_SYSTEM_AXISN ) { if ((AXISN<0)||(AXISN>=MAX_AXES)) { XA = NULL; XOUT = 0.0; ppl_error(ERR_INTERNAL,"Axis number out of range"); } else { XA = &(XAXES[AXISN]); } } \
      else                                 { XA = NULL; XOUT = 0.0; } \
      if (XA != NULL) \
       { \

@@ -539,16 +539,35 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
 // -------------------------------------------
 
 #define arrow_add_get_system(X,Y) \
+ { \
   DictLookup(in,X "_system",NULL,(void **)&tempstr); \
   if (tempstr == NULL) Y = SW_SYSTEM_FIRST; \
-  else                 Y = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR);
+  else                 Y = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR); \
+ }
 
 #define arrow_add_get_axis(X,Y) \
+ { \
   DictLookup(in,X "_axis",NULL,(void **)&tempint); \
-  if (tempint == NULL) Y = 0; \
-  else                 Y = *tempint;
+  if   (tempint == NULL) Y = 0; \
+  else                   Y = *tempint; \
+ }
+
+#define arrow_add_check_axis(X) \
+ { \
+  DictLookup(in,X "_axis",NULL,(void **)&tempint); \
+  if (tempint != NULL) \
+   { \
+    if ((*tempint<0)||(*tempint>MAX_AXES)) \
+     { \
+      sprintf(temp_err_string, "Axis number %d is out of range; axis numbers must be in the range 0 - %d", *tempint, MAX_AXES-1); \
+      ppl_error(ERR_GENERAL,temp_err_string); \
+      return; \
+     } \
+   } \
+ }
 
 #define arrow_add_check_dimensions(X,Y) \
+ { \
   DictLookup(in,X,NULL,(void **)&tempval); \
   if (tempval == NULL) { tempval = &tempvalobj; ppl_units_zero(tempval); } \
   if ((Y == SW_SYSTEM_GRAPH) || (Y == SW_SYSTEM_PAGE)) \
@@ -557,14 +576,17 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
      { \
       sprintf(temp_err_string, "Coordinates specified in the graph and page systems must have dimensions of length. Received coordinate with dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 0, 1, 0)); \
       ppl_error(ERR_GENERAL, temp_err_string); return; \
-     };
+     } \
+ }
 
 #define arrow_add_copy_coordinate(X,Y,Z) \
+ { \
   DictLookup(in,X,NULL,(void **)&tempval); \
   if (tempval == NULL) { tempval = &tempvalobj; ppl_units_zero(tempval); } \
   if ((Y == SW_SYSTEM_GRAPH) || (Y == SW_SYSTEM_PAGE)) \
    if (tempval->dimensionless) { tempval->dimensionless=0; tempval->exponent[UNIT_LENGTH]=1; tempval->real /= 100; } \
-  Z = *tempval;
+  Z = *tempval; \
+ }
 
 void arrow_add(arrow_object **list, Dict *in)
  {
@@ -579,6 +601,9 @@ void arrow_add(arrow_object **list, Dict *in)
 
   arrow_add_check_dimensions("x0",system_x0); arrow_add_check_dimensions("y0",system_y0); arrow_add_check_dimensions("z0",system_z0);
   arrow_add_check_dimensions("x1",system_x1); arrow_add_check_dimensions("y1",system_y1); arrow_add_check_dimensions("z1",system_z1);
+
+  arrow_add_check_axis("x0"); arrow_add_check_axis("y0"); arrow_add_check_axis("z0");
+  arrow_add_check_axis("x1"); arrow_add_check_axis("y1"); arrow_add_check_axis("z1");
 
   DictLookup(in,"arrow_id",NULL,(void **)&tempint);
   while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
@@ -799,6 +824,8 @@ void label_add(label_object **list, Dict *in)
   arrow_add_get_system("x",system_x); arrow_add_get_system("y",system_y); arrow_add_get_system("z",system_z);
 
   arrow_add_check_dimensions("x",system_x); arrow_add_check_dimensions("y",system_y); arrow_add_check_dimensions("z",system_z);
+
+  arrow_add_check_axis("x"); arrow_add_check_axis("y"); arrow_add_check_axis("z");
 
   DictLookup(in,"label_text",NULL,(void **)&tempstr);
   label = (char *)malloc(strlen(tempstr)+1);

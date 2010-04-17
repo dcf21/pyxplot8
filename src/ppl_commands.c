@@ -35,6 +35,8 @@
 // List of commands recognised by PyXPlot
 
 // < plot@1:directive = { item@1 %d:editno } { \\3d@2:threedim } | replot@3:directive =
+// set@2:directive { item@1 %d:editno } projection@3:set_option = < flat@1:projection | gnomonic@1:projection >
+// unset@2:directive { item@1 %d:editno } projection@3:set_option =
 
 char ppl_commands[] = "\
 { < let@3 > } %v:varname \\=~@n:directive:var_set_regex = s@n %r:regex\n\
@@ -93,7 +95,7 @@ set@2:directive { item@1 %d:editno } < axescolour@5:set_option | axescolor@5:set
 set@2:directive { item@1 %d:editno } axis@1:set_option = [ %a:axis ]:axes ( < invisible@1:invisible | visible@1:visible > ~ < top@2:xorient:on | bottom@2:xorient:off | left@2:yorient:off | right@2:yorient:on | front@2:zorient:off | back@2:zorient:on > ~ < automirrored@2:mirror | mirrored@1:mirror | nomirrored@2:mirror | fullmirrored@2:mirror > ~ < atzero@2:atzero | notatzero@4:notatzero > ~ < arrow@2:axisdisp | noarrow@3:axisdisp | twowayarrow@2:axisdisp | reversearrow@2:axisdisp > ~ < notlinked@4:notlinked | linked@1:linked { item@1 %d:linktoid } %a:linkaxis { using@1 %e:usingexp } > )\n\
 set@2:directive { item@1 %d:editno } axisunitstyle@5:set_option = < bracketed@1:unitstyle | ratio@1:unitstyle | squarebracketed@1:unitstyle >\n\
 set@2:directive                      backup@1:set_option =\n\
-set@2:directive { item@1 %d:editno } bar@2:set_option = < large@1:bar_size:1 | small@1:bar_size:0 | %f:bar_size >\n\
+set@2:directive { item@1 %d:editno } bar@2:set_option = { < large@1:bar_size_large | small@1:bar_size_small | %f:bar_size > }\n\
 set@2:directive { item@1 %d:editno } binorigin@4:set_option = < %fu:bin_origin | auto@4:auto >\n\
 set@2:directive { item@1 %d:editno } binwidth@4:set_option = < %fu:bin_width | auto@4:auto >\n\
 set@2:directive { item@1 %d:editno } boxfrom@4:set_option = < %fu:box_from | auto@4:auto >\n\
@@ -136,7 +138,6 @@ set@2:directive                      papersize@3:set_option = < %q:paper_name | 
 set@2:directive { item@1 %d:editno } < pointlinewidth@6:set_option | plw@3:set_option:pointlinewidth > = %f:pointlinewidth\n\
 set@2:directive { item@1 %d:editno } < pointsize@1:set_option | ps@2:set_option:pointsize > = %f:pointsize\n\
 set@2:directive { item@1 %d:editno } preamble@2:set_option = < %q:preamble | %r:preamble >\n\
-set@2:directive { item@1 %d:editno } projection@3:set_option = < flat@1:projection | gnomonic@1:projection >\n\
 set@2:directive { item@1 %d:editno } samples@2:set_option = %d:samples\n\
 set@2:directive                      seed@2:set_option = %f:seed\n\
 set@2:directive { item@1 %d:editno } size@1:set_option = < %fu:width | ratio@1 %f:ratio | noratio@1:noratio | square@1:square >\n\
@@ -212,7 +213,6 @@ unset@3:directive                      papersize@3:set_option =\n\
 unset@3:directive { item@1 %d:editno } < pointlinewidth@6:set_option |  plw@3:set_option:pointlinewidth > =\n\
 unset@3:directive { item@1 %d:editno } < pointsize@1:set_option | ps@2:set_option:pointsize > =\n\
 unset@3:directive { item@1 %d:editno } preamble@2:set_option =\n\
-unset@2:directive { item@1 %d:editno } projection@3:set_option =\n\
 unset@3:directive { item@1 %d:editno } samples@2:set_option =\n\
 unset@3:directive:set { item@1 %d:editno } < axis@1:set_option:noaxis | noaxis@3:set_option > = [ %a:axis ]:axes\n\
 unset@3:directive { item@1 %d:editno } size@1:set_option =\n\

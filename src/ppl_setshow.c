@@ -299,8 +299,14 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"bar")==0)) /* set bar */
    {
-    DictLookup(command,"bar_size",NULL,(void **)&tempdbl);
-    sg->bar = *tempdbl;
+    DictLookup(command,"bar_size"      ,NULL,(void **)&tempdbl );
+    DictLookup(command,"bar_size_large",NULL,(void **)&tempstr );
+    DictLookup(command,"bar_size_small",NULL,(void **)&tempstr2);
+
+    if      (tempdbl  != NULL)  sg->bar = *tempdbl;
+    else if (tempstr  != NULL)  sg->bar = 1.0;
+    else if (tempstr2 != NULL)  sg->bar = 0.0;
+    else                        sg->bar = 1.0;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"bar")==0)) /* unset bar */
    {
@@ -1603,16 +1609,16 @@ void directive_set(Dict *command)
         if (i!=2)
          {
           if ((ppl_unit_database[j].quantity!=NULL) && (ppl_unit_database[j].quantity[0]!='\0'))
-           { sprintf(temp_err_string, "'%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_warning(ERR_GENERAL, temp_err_string); }
+           { sprintf(temp_err_string, "'%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_error(ERR_GENERAL, temp_err_string); }
           else
-           { sprintf(temp_err_string, "'%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
+           { sprintf(temp_err_string, "'%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_error(ERR_GENERAL, temp_err_string); }
          }
         ppl_unit_database[j].UserSel = 1;
         ppl_unit_database[j].UserSelPrefix = multiplier;
         pp=1;
        }
-      if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
-      if (p==0) { sprintf(temp_err_string, "No such unit as a '%s'.", tempstr2); ppl_warning(ERR_GENERAL, temp_err_string); }
+      if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_error(ERR_GENERAL, temp_err_string); }
+      if (p==0) { sprintf(temp_err_string, "No such unit as a '%s'.", tempstr2); ppl_error(ERR_GENERAL, temp_err_string); }
       listiter = ListIterate(listiter, NULL);
      }
 
@@ -1979,7 +1985,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
 
   out[0] = buf[0] = '\0';
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0) || (StrAutocomplete(word, "axescolor",1)>=0))
    {
     if (sg->AxesColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                  sprintf(buf, "rgb%d:%d:%d", sg->AxesColourR, sg->AxesColourG, sg->AxesColourB);
@@ -2151,14 +2157,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       i += strlen(out+i);
      }
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0) || (StrAutocomplete(word, "gridmajcolor",1)>=0))
    {
     if (sg->GridMajColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMajColourR, sg->GridMajColourG, sg->GridMajColourB);
     directive_show3(out+i, ItemSet, 1, interactive, "GridMajColour", buf, (settings_graph_default.GridMajColour == sg->GridMajColour), "The colour of the major gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmincolour",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmincolour",1)>=0) || (StrAutocomplete(word, "gridmincolor",1)>=0))
    {
     if (sg->GridMinColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMinColourR, sg->GridMinColourG, sg->GridMinColourB); 
@@ -2353,7 +2359,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "terminal transparent", buf, (settings_term_default.TermTransparent==settings_term_current.TermTransparent), "Selects whether gif and png output is transparent");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textcolour",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textcolour",1)>=0) || (StrAutocomplete(word, "textcolor",1)>=0))
    {
     if (sg->TextColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
     else                  sprintf(buf, "rgb%d:%d:%d", sg->TextColourR, sg->TextColourG, sg->TextColourB);
