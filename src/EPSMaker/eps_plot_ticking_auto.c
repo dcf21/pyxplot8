@@ -247,7 +247,7 @@ static void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks,
  }
 
 // Take a list of accepted ticks and convert these into a final TickList to associate with axis
-static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double UnitMultiplier, value *VarVal, const int NIntervals, char *format, const int start, const int *CommaPositions, const ArgumentInfo *args, const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const unsigned char *TicksAccepted, int OutContext)
+static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double UnitMultiplier, unsigned char *AutoTicks, value *VarVal, const int NIntervals, char *format, const int start, const int *CommaPositions, const ArgumentInfo *args, const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const unsigned char *TicksAccepted, int OutContext)
  {
   int    i, jMAJ, jMIN, k, l, Nmajor=0, Nminor=0;
   double axispos, x, x1, x2;
@@ -261,12 +261,23 @@ static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double
    }
 
   // Malloc list of accepted ticks
-  axis-> TickListPositions = (double  *)lt_malloc_incontext((Nmajor+1) * sizeof(double), OutContext);
-  axis-> TickListStrings   = (char   **)lt_malloc_incontext((Nmajor+1) * sizeof(char *), OutContext);
-  axis->MTickListPositions = (double  *)lt_malloc_incontext((Nminor+1) * sizeof(double), OutContext);
-  axis->MTickListStrings   = (char   **)lt_malloc_incontext((Nminor+1) * sizeof(char *), OutContext);
-  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL) || (axis->MTickListPositions==NULL) || (axis->MTickListStrings==NULL)) goto FAIL;
-  axis->TickListStrings[Nmajor] = axis->MTickListStrings[Nminor] = NULL; // null terminate lists
+  if (AutoTicks[1])
+   {
+    axis-> TickListPositions = (double  *)lt_malloc_incontext((Nmajor+1) * sizeof(double), OutContext);
+    axis-> TickListStrings   = (char   **)lt_malloc_incontext((Nmajor+1) * sizeof(char *), OutContext);
+   }
+  if (AutoTicks[0])
+   {
+    axis->MTickListPositions = (double  *)lt_malloc_incontext((Nminor+1) * sizeof(double), OutContext);
+    axis->MTickListStrings   = (char   **)lt_malloc_incontext((Nminor+1) * sizeof(char *), OutContext);
+   }
+  if (    ((AutoTicks[1]) && ((axis-> TickListPositions==NULL) || (axis-> TickListStrings==NULL)))
+       || ((AutoTicks[0]) && ((axis->MTickListPositions==NULL) || (axis->MTickListStrings==NULL)))
+     ) goto FAIL;
+
+  // NULL terminate lists
+  if (AutoTicks[1]) axis-> TickListStrings[Nmajor] = NULL;
+  if (AutoTicks[0]) axis->MTickListStrings[Nminor] = NULL;
 
   // Make ticks
   for (i=jMAJ=jMIN=0; i<NPotTicks; i++)
@@ -277,6 +288,10 @@ static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double
      int    count_steps=0;
      double axispos_min, axispos_max, axispos_mid;
      unsigned char DiscreteMoveMin, SlopePositive;
+
+     // If we're not doing automatic major/minor ticks, don't finalise these ticks
+     if ((TicksAccepted[i]==1) && (!AutoTicks[1])) continue;
+     if ((TicksAccepted[i]==2) && (!AutoTicks[0])) continue;
 
      // Find precise location of tick
      tick          = &PotTickList[ TickOrder[i].id ];
@@ -898,7 +913,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     }
 
   // Finalise list of ticks
-  AutoTickListFinalise(axis, xyz, UnitMultiplier, VarVal, N_STEPS, format, start, CommaPositions, args, PotTickList, NPotTicks, TickOrder, TicksAccepted, OutContext);
+  AutoTickListFinalise(axis, xyz, UnitMultiplier, AutoTicks, VarVal, N_STEPS, format, start, CommaPositions, args, PotTickList, NPotTicks, TickOrder, TicksAccepted, OutContext);
   goto CLEANUP;
 
 FAIL:
