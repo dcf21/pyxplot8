@@ -1904,8 +1904,8 @@ void directive_set(Dict *command)
       DictLookup(command,"max",NULL,(void **)&tempval2);
       if ((tempval == NULL) && (tempaxis->MinSet==SW_BOOL_TRUE)) { tempval = &valobj ; valobj = tempaxis->unit; valobj .real = tempaxis->min; }
       if ((tempval2== NULL) && (tempaxis->MaxSet==SW_BOOL_TRUE)) { tempval2= &valobj2; valobj2= tempaxis->unit; valobj2.real = tempaxis->max; }
-      if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite lower limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
-      if (!gsl_finite(tempval2->real)) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite upper limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
+      if ((tempval!=NULL)&&(!gsl_finite(tempval->real))) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite lower limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
+      if ((tempval2!=NULL)&&(!gsl_finite(tempval2->real))) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite upper limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
       if ((tempval!=NULL)&&(tempval2!=NULL)&&(!ppl_units_DimEqual(tempval,tempval2))) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set axis range with dimensionally incompatible minimum and maximum."); return; }
       // Write new values, having ensured that they're dimensionally compatible
       if (tempval != NULL) { tempaxis->min = tempval ->real; tempaxis->MinSet=SW_BOOL_TRUE; }
