@@ -55,13 +55,13 @@ void directive_seterror(Dict *command, int interactive)
   DictLookup(command,"set_option",NULL, (void **)&tempstr);
   if (tempstr != NULL)
    {
-    if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, temp_err_string); }
-    else              { sprintf(temp_err_string, txt_set                        , tempstr); ppl_error(ERR_PREFORMED, temp_err_string); }
+    if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); }
+    else              { sprintf(temp_err_string, txt_set                        , tempstr); ppl_error(ERR_PREFORMED, -1, -1, temp_err_string); }
    }
   else
    {
-    if (!interactive) { ppl_error(ERR_SYNTAX, "set command detected with no set option following it."); }
-    else              { ppl_error(ERR_PREFORMED, txt_set_noword); }
+    if (!interactive) { ppl_error(ERR_SYNTAX, -1, -1, "set command detected with no set option following it."); }
+    else              { ppl_error(ERR_PREFORMED, -1, -1, txt_set_noword); }
    }
  }
 
@@ -71,13 +71,13 @@ void directive_unseterror(Dict *command, int interactive)
   DictLookup(command,"set_option",NULL, (void **)&tempstr);
   if (tempstr != NULL)
    {
-    if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, temp_err_string); }
-    else              { sprintf(temp_err_string, txt_unset                      , tempstr); ppl_error(ERR_PREFORMED, temp_err_string); }
+    if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); }
+    else              { sprintf(temp_err_string, txt_unset                      , tempstr); ppl_error(ERR_PREFORMED, -1, -1, temp_err_string); }
    }
   else
    {
-    if (!interactive) { ppl_error(ERR_SYNTAX, "Unset command detected with no set option following it."); }
-    else              { ppl_error(ERR_PREFORMED, txt_unset_noword); }
+    if (!interactive) { ppl_error(ERR_SYNTAX, -1, -1, "Unset command detected with no set option following it."); }
+    else              { ppl_error(ERR_PREFORMED, -1, -1, txt_unset_noword); }
    }
  }
 
@@ -111,14 +111,14 @@ void directive_set(Dict *command)
    }
   else
    {
-    if ((*EditNo < 1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) {sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return;}
+    if ((*EditNo < 1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) {sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return;}
     ptr = canvas_items->first;
     for (i=1; i<*EditNo; i++)
      {
       if (ptr==NULL) break;
       ptr=ptr->next;
      }
-    if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
 
     sg = &(ptr->settings);
     al = &(ptr->arrow_list);
@@ -256,7 +256,7 @@ void directive_set(Dict *command)
         if (tempstr2 != NULL)
          {
           tempaxis->linkusing = (char *)malloc(strlen(tempstr2)+1);
-          if (tempaxis->linkusing == NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return; }
+          if (tempaxis->linkusing == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return; }
           strcpy(tempaxis->linkusing, tempstr2);
          }
         listiter = ListIterate(listiter, NULL);
@@ -304,6 +304,8 @@ void directive_set(Dict *command)
     DictLookup(command,"bar_size_large",NULL,(void **)&tempstr );
     DictLookup(command,"bar_size_small",NULL,(void **)&tempstr2);
 
+    if     ((tempdbl  != NULL) && (!gsl_finite(*tempdbl))) { ppl_error(ERR_NUMERIC, -1, -1, "The bar size specified in the 'set bar' command was not finite."); return; }
+
     if      (tempdbl  != NULL)  sg->bar = *tempdbl;
     else if (tempstr  != NULL)  sg->bar = 1.0;
     else if (tempstr2 != NULL)  sg->bar = 0.0;
@@ -321,6 +323,7 @@ void directive_set(Dict *command)
       settings_term_current.BinOriginAuto = 1;
      } else {
       DictLookup(command,"bin_origin",NULL,(void **)&tempval);
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The specified bin origin was not finite."); return; }
       settings_term_current.BinOrigin = *tempval;
       settings_term_current.BinOriginAuto = 0;
      }
@@ -338,7 +341,8 @@ void directive_set(Dict *command)
       settings_term_current.BinWidthAuto = 1;
      } else {
       DictLookup(command,"bin_width",NULL,(void **)&tempval);
-      if (tempval->real <= 0.0) { ppl_error(ERR_GENERAL, "Width of histogram bins must be greater than zero."); return; }
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The specified bin width was not finite."); return; }
+      if (tempval->real <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Width of histogram bins must be greater than zero."); return; }
       settings_term_current.BinWidth = *tempval;
       settings_term_current.BinWidthAuto = 0;
      }
@@ -356,6 +360,7 @@ void directive_set(Dict *command)
       sg->BoxFromAuto = 1;
      } else {
       DictLookup(command,"box_from",NULL,(void **)&tempval);
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set boxfrom' command was not finite."); return; }
       sg->BoxFrom = *tempval;
       sg->BoxFromAuto = 0;
      }
@@ -373,6 +378,7 @@ void directive_set(Dict *command)
       sg->BoxWidthAuto = 1;
      } else {
       DictLookup(command,"box_width",NULL,(void **)&tempval);
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The width supplied to the 'set boxwidth' command was not finite."); return; }
       sg->BoxWidth = *tempval;
       sg->BoxWidthAuto = 0;
      }
@@ -432,7 +438,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
    {
     DictLookup(command,"fontsize",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Font sizes are not allowed to be less than or equal to zero."); return; }
+    if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set fontsize' command was not finite."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Font sizes are not allowed to be less than or equal to zero."); return; }
     sg->FontSize = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"fontsize")==0)) /* unset fontsize */
@@ -506,11 +513,12 @@ void directive_set(Dict *command)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           { 
            sprintf(temp_err_string, "The horizontal offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        }
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The horizontal offset supplied to the 'set key' command was not finite."); return; }
       sg->KeyXOff.real = tempval->real;
      }
     DictLookup(command,"y_offset",NULL,(void **)&tempval); // Vertical offset
@@ -522,11 +530,12 @@ void directive_set(Dict *command)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
            sprintf(temp_err_string, "The vertical offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        }
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The vertical offset supplied to the 'set key' command was not finite."); return; }
       sg->KeyYOff.real = tempval->real;
      }
 
@@ -595,7 +604,7 @@ void directive_set(Dict *command)
     if (tempint == NULL) sg->KeyColumns = 0; // automatic columns
     else
      {
-      if (*tempint <= 0.0) { ppl_error(ERR_GENERAL, "Keys cannot have fewer than one columns."); return; }
+      if (*tempint <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Keys cannot have fewer than one columns."); return; }
       sg->KeyColumns = *tempint;
      }
    }
@@ -614,7 +623,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
    {
     DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Line widths are not allowed to be less than or equal to zero."); return; }
+    if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set linewidth' command was not finite."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Line widths are not allowed to be less than or equal to zero."); return; }
     sg->LineWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
@@ -861,8 +871,8 @@ void directive_set(Dict *command)
     DictLookup(command,"number_significant_figures", NULL,(void **)&tempint);
     if (tempint != NULL)
      {
-      if (*tempint <  1) { ppl_error(ERR_GENERAL, "Numbers cannot be displayed to fewer than one significant figure."); return; }
-      if (*tempint > 30) { ppl_error(ERR_GENERAL, "It is not sensible to try to display numbers to more than 30 significant figures. Calculations in PyXPlot are only accurate to double precision."); return; }
+      if (*tempint <  1) { ppl_error(ERR_GENERAL, -1, -1, "Numbers cannot be displayed to fewer than one significant figure."); return; }
+      if (*tempint > 30) { ppl_error(ERR_GENERAL, -1, -1, "It is not sensible to try to display numbers to more than 30 significant figures. Calculations in PyXPlot are only accurate to double precision."); return; }
       settings_term_current.SignificantFigures = *tempint;
      }
     DictLookup(command,"display", NULL,(void **)&tempstr);
@@ -901,22 +911,24 @@ void directive_set(Dict *command)
        if (tempval->exponent[i] != (i==UNIT_LENGTH))
         {
          sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-         ppl_error(ERR_NUMERIC, temp_err_string);
+         ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
          return;
         }
      }
     else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+    if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The coordinates supplied to the 'set origin' command was not finite."); return; }
     if (!(tempval2->dimensionless))
      {
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval2->exponent[i] != (i==UNIT_LENGTH))
         {
          sprintf(temp_err_string, "The position supplied to the 'set origin' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
-         ppl_error(ERR_NUMERIC, temp_err_string);
+         ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
          return;
         }
      }
     else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
+    if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The coordinates supplied to the 'set origin' command was not finite."); return; }
     sg->OriginX.real = tempval ->real;
     sg->OriginY.real = tempval2->real;
    }
@@ -959,12 +971,12 @@ void directive_set(Dict *command)
         DictLookup(tempdict,"colourG",NULL,(void **)&colG);
         DictLookup(tempdict,"colourB",NULL,(void **)&colB);
 
-        if ((!fail) && (colR!=NULL) && (!colR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
-        if ((!fail) && (colR!=NULL) && (colR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
-        if ((!fail) && (colG!=NULL) && (!colG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
-        if ((!fail) && (colG!=NULL) && (colG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
-        if ((!fail) && (colB!=NULL) && (!colB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
-        if ((!fail) && (colB!=NULL) && (colB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); fail=1; }
+        if ((!fail) && (colR!=NULL) && (!colR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
+        if ((!fail) && (colR!=NULL) && (colR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
+        if ((!fail) && (colG!=NULL) && (!colG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
+        if ((!fail) && (colG!=NULL) && (colG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
+        if ((!fail) && (colB!=NULL) && (!colB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
+        if ((!fail) && (colB!=NULL) && (colB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
 
         if (!fail)
          {
@@ -976,7 +988,7 @@ void directive_set(Dict *command)
        }
       listiter = ListIterate(listiter, NULL);
      }
-    if (i==0) { ppl_error(ERR_GENERAL, "The set palette command has been passed a palette which does not contain any colours."); return; }
+    if (i==0) { ppl_error(ERR_GENERAL, -1, -1, "The set palette command has been passed a palette which does not contain any colours."); return; }
     settings_palette_current[i] = -1;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"palette")==0)) /* unset palette */
@@ -1001,7 +1013,7 @@ void directive_set(Dict *command)
         settings_term_current.PaperWidth.real    = dbl2/1000;
         ppl_GetPaperName(settings_term_current.PaperName, &dbl1, &dbl2);
        } else {
-        sprintf(temp_err_string, "Unrecognised paper size '%s'.", tempstr); ppl_error(ERR_GENERAL, temp_err_string);
+        sprintf(temp_err_string, "Unrecognised paper size '%s'.", tempstr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
        }
      } else {
       DictLookup(command,"x_size",NULL,(void **)&tempval);
@@ -1012,22 +1024,24 @@ void directive_set(Dict *command)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
            sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));  
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        } 
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The size coordinates supplied to the 'set papersize' command was not finite."); return; }
       if (!(tempval2->dimensionless))
        {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval2->exponent[i] != (i==UNIT_LENGTH))
           {
            sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        }
       else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The size coordinates supplied to the 'set papersize' command was not finite."); return; }
       settings_term_current.PaperWidth .real = tempval ->real;
       settings_term_current.PaperHeight.real = tempval2->real;
       tempval ->real *= 1000; // Function below takes size input in mm
@@ -1044,7 +1058,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
    {
     DictLookup(command,"pointlinewidth",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Point line widths are not allowed to be less than or equal to zero."); return; }
+    if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointlinewidth' command was not finite."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point line widths are not allowed to be less than or equal to zero."); return; }
     sg->PointLineWidth = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
@@ -1054,7 +1069,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
    {
     DictLookup(command,"pointsize",NULL,(void **)&tempdbl);
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, "Point sizes are not allowed to be less than or equal to zero."); return; }
+    if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointsize' command was not finite."); return; }
+    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point sizes are not allowed to be less than or equal to zero."); return; }
     sg->PointSize = *tempdbl;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
@@ -1084,7 +1100,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     DictLookup(command,"samples",NULL,(void **)&tempint);
-    if (*tempint < 2.0) { ppl_error(ERR_GENERAL, "Graphs cannot be constucted based on fewer than two samples."); return; }
+    if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); return; }
     sg->samples = *tempint;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
@@ -1094,6 +1110,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"seed")==0)) /* set seed */
    {
     DictLookup(command,"seed",NULL,(void **)&tempdbl);
+    if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set seed' command was not finite."); return; }
     if      (*tempdbl < LONG_MIN) li = LONG_MIN;
     else if (*tempdbl > LONG_MAX) li = LONG_MAX;
     else                          li = (long)(*tempdbl);
@@ -1116,17 +1133,19 @@ void directive_set(Dict *command)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
            sprintf(temp_err_string, "The widths specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        }
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The width supplied to the 'set size' command was not finite."); return; }
       sg->width.real = tempval->real;
      }
     if (DictContains(command,"ratio"))
      {
       DictLookup(command,"ratio",NULL,(void **)&tempdbl);
-      if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, "The requested aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
+      if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The aspect ratio supplied to the 'set size' command was not finite."); return; }
+      if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
       sg->aspect = *tempdbl;
       sg->AutoAspect = SW_ONOFF_OFF;
      }
@@ -1159,7 +1178,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style_numbered")==0)) /* set style */
    {
     DictLookup(command,"style_set_number"   ,NULL,(void **)&tempint);
-    if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
     with_words_fromdict(command, &ww_temp1, 0);
     with_words_destroy (&(settings_plot_styles[*tempint]));
     with_words_copy    (&(settings_plot_styles[*tempint]), &ww_temp1);
@@ -1178,7 +1197,7 @@ void directive_set(Dict *command)
        {   
         tempdict = (Dict *)listiter->data;
         DictLookup(tempdict,"id",NULL,(void **)&tempint);
-        if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, temp_err_string); }
+        if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
         else
          {
           with_words_destroy(&(settings_plot_styles[*tempint]));
@@ -1199,8 +1218,9 @@ void directive_set(Dict *command)
     DictLookup(command,"dpi",NULL,(void **)&tempdbl);
     if (tempdbl != NULL)
      {
-      if (*tempdbl <= 2.0) { ppl_error(ERR_GENERAL, "Output image resolutions below two dots per inch are not supported."); }
-      else                 { settings_term_current.dpi = *tempdbl; }
+      if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The DPI resolution supplied to the 'set terminal' command was not finite."); }
+      else if (*tempdbl <= 2.0)  { ppl_error(ERR_GENERAL, -1, -1, "Output image resolutions below two dots per inch are not supported."); }
+      else                       { settings_term_current.dpi = *tempdbl; }
      }
     DictLookup(command,"enlarge",NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.TermEnlarge     = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
@@ -1275,9 +1295,12 @@ void directive_set(Dict *command)
         if (tempval != NULL) /* start , increment , end */ \
          { \
           if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
-          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval  != NULL) && (!gsl_finite(tempval->real))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval2 != NULL) && (!gsl_finite(tempval2->real))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval3 != NULL) && (!gsl_finite(tempval3->real))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
  \
           if (tempval  != NULL) { tempaxis->TickMin  = tempval->real;       tempaxis->TickMinSet  = 1; } \
           else                  { tempaxis->TickMin  = tempaxis2->TickMin;  tempaxis->TickMinSet  = 0; } \
@@ -1291,9 +1314,9 @@ void directive_set(Dict *command)
          } else if (templist != NULL) { /* list of tick marks */ \
           j = ListLen(templist); \
           tempaxis->TickList = (double *)malloc((j+1)*sizeof(double)); \
-          if (tempaxis->TickList == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          if (tempaxis->TickList == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; } \
           tempaxis->TickStrs = (char  **)malloc((j+1)*sizeof(char *)); \
-          if (tempaxis->TickStrs == NULL) { free(tempaxis->TickList); tempaxis->TickList=NULL; ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          if (tempaxis->TickStrs == NULL) { free(tempaxis->TickList); tempaxis->TickList=NULL; ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; } \
           listiter = ListIterateInit(templist); \
           k=0; \
           while (listiter != NULL) \
@@ -1302,11 +1325,12 @@ void directive_set(Dict *command)
             listiter = ListIterate(listiter, NULL); \
             DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
             DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
-            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this ordinate value is not finite.", ppl_units_NumericDisplay(tempval,0,0,0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             tempaxis->TickList[k] = tempval->real; \
             if (tempstr==NULL) tempstr="\xFF"; \
             tempaxis->TickStrs[k] = (char *)malloc(strlen(tempstr)+1); \
-            if (tempaxis->TickStrs[k] == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+            if (tempaxis->TickStrs[k] == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; } \
             strcpy(tempaxis->TickStrs[k], tempstr); \
             k++; \
            } \
@@ -1333,9 +1357,12 @@ void directive_set(Dict *command)
         if (tempval != NULL) /* start , increment , end */ \
          { \
           if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
-          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
-          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>"     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); } \
+          if      ((tempval  != NULL) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval2 != NULL) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval3 != NULL) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval  != NULL) && (!gsl_finite(tempval->real))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval2 != NULL) && (!gsl_finite(tempval2->real))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval3 != NULL) && (!gsl_finite(tempval3->real))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
  \
           if (tempval  != NULL) { tempaxis->MTickMin  = tempval->real;        tempaxis->MTickMinSet  = 1; } \
           else                  { tempaxis->MTickMin  = tempaxis2->MTickMin;  tempaxis->MTickMinSet  = 0; } \
@@ -1349,9 +1376,9 @@ void directive_set(Dict *command)
          } else if (templist != NULL) { /* list of tick marks */ \
           j = ListLen(templist); \
           tempaxis->MTickList = (double *)malloc((j+1)*sizeof(double)); \
-          if (tempaxis->MTickList == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          if (tempaxis->MTickList == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; } \
           tempaxis->MTickStrs = (char  **)malloc((j+1)*sizeof(char *)); \
-          if (tempaxis->MTickStrs == NULL) { free(tempaxis->MTickList); tempaxis->MTickList=NULL; ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+          if (tempaxis->MTickStrs == NULL) { free(tempaxis->MTickList); tempaxis->MTickList=NULL; ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; } \
           listiter = ListIterateInit(templist); \
           k=0; \
           while (listiter != NULL) \
@@ -1360,11 +1387,12 @@ void directive_set(Dict *command)
             listiter = ListIterate(listiter, NULL); \
             DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
             DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
-            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            if (!ppl_units_DimEqual(tempval, &tempaxis->unit)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
+            if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this ordinate value is not finite.", ppl_units_NumericDisplay(tempval,0,0,0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             tempaxis->MTickList[k] = tempval->real; \
             if (tempstr==NULL) tempstr="\xFF"; \
             tempaxis->MTickStrs[k] = (char *)malloc(strlen(tempstr)+1); \
-            if (tempaxis->MTickStrs[k] == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; } \
+            if (tempaxis->MTickStrs[k] == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; } \
             strcpy(tempaxis->MTickStrs[k], tempstr); \
             k++; \
            } \
@@ -1466,11 +1494,12 @@ void directive_set(Dict *command)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
            sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        }
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The offset coordinates supplied to the 'set title' command were not finite."); return; }
      }
     if (tempval2!= NULL) 
      { 
@@ -1480,11 +1509,12 @@ void directive_set(Dict *command)
          if (tempval2->exponent[i] != (i==UNIT_LENGTH))
           {
            sprintf(temp_err_string, "The offset position supplied to the 'set title' command must have dimensions of length. Supplied y input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
-           ppl_error(ERR_NUMERIC, temp_err_string);
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
        }
       else { tempval2->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The offset coordinates supplied to the 'set title' command were not finite."); return; }
      }
     if (tempval != NULL) sg->TitleXOff.real = tempval ->real;
     if (tempval2!= NULL) sg->TitleYOff.real = tempval2->real;
@@ -1520,7 +1550,9 @@ void directive_set(Dict *command)
     DictLookup(command,"max",NULL,(void **)&tempval2);
     if (tempval == NULL) tempval = &sg->Tmin;
     if (tempval2== NULL) tempval2= &sg->Tmax;
-    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
+    if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
+    if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
+    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
     sg->Tmin = *tempval;
     sg->Tmax = *tempval2;
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
@@ -1546,7 +1578,7 @@ void directive_set(Dict *command)
      {
       char *buf = (char *)lt_malloc(LSTR_LENGTH);
       PreferredUnit *pu, *pui;
-      if (buf==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); }
+      if (buf==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); }
       else
        for (i=0; i<2; i++)
         {
@@ -1629,16 +1661,16 @@ void directive_set(Dict *command)
         if (i!=2)
          {
           if ((ppl_unit_database[j].quantity!=NULL) && (ppl_unit_database[j].quantity[0]!='\0'))
-           { sprintf(temp_err_string, "'%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_error(ERR_GENERAL, temp_err_string); }
+           { sprintf(temp_err_string, "'%s' is not a unit of '%s', but of '%s'.", tempstr2, tempstr, ppl_unit_database[j].quantity); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
           else
-           { sprintf(temp_err_string, "'%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_error(ERR_GENERAL, temp_err_string); }
+           { sprintf(temp_err_string, "'%s' is not a unit of '%s'.", tempstr2, tempstr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
          }
         ppl_unit_database[j].UserSel = 1;
         ppl_unit_database[j].UserSelPrefix = multiplier;
         pp=1;
        }
-      if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_error(ERR_GENERAL, temp_err_string); }
-      if (p==0) { sprintf(temp_err_string, "No such unit as a '%s'.", tempstr2); ppl_error(ERR_GENERAL, temp_err_string); }
+      if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
+      if (p==0) { sprintf(temp_err_string, "No such unit as a '%s'.", tempstr2); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
       listiter = ListIterate(listiter, NULL);
      }
 
@@ -1700,22 +1732,24 @@ void directive_set(Dict *command)
        if (tempval->exponent[i] != (i==UNIT_ANGLE))
         {
          sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-         ppl_error(ERR_NUMERIC, temp_err_string);
+         ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
          return;
         }
      }
     else { tempval->real *= M_PI / 180.0; } // By default, dimensionless angles are in degrees
+    if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The viewing angles supplied to the 'set view' command were not finite."); return; }
     if (!(tempval2->dimensionless))
      {
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
        if (tempval2->exponent[i] != (i==UNIT_ANGLE))
         {
          sprintf(temp_err_string, "The rotation angle supplied to the 'set view' command must have dimensions of angle. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0));
-         ppl_error(ERR_NUMERIC, temp_err_string);
+         ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
          return;
         }
      }
     else { tempval2->real *= M_PI / 180.0; } // By default, dimensionless angles are in degrees
+    if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The viewing angles supplied to the 'set view' command were not finite."); return; }
     sg->XYview.real = fmod(tempval ->real , 2*M_PI);
     sg->YZview.real = fmod(tempval2->real , 2*M_PI);
     while (sg->XYview.real < 0.0) sg->XYview.real += 2*M_PI;
@@ -1737,7 +1771,7 @@ void directive_set(Dict *command)
     else
      {
       sprintf(temp_err_string,"Could not set current viewer to %s since this program was not installed when PyXPlot was installed.",tempstr);
-      ppl_error(ERR_GENERAL,temp_err_string);
+      ppl_error(ERR_GENERAL, -1, -1,temp_err_string);
      }
     if (settings_term_current.viewer != ViewerOld) SendCommandToCSP("A"); // Clear away SingleWindow viewer
    }
@@ -1757,29 +1791,30 @@ void directive_set(Dict *command)
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
       if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
-      DictLookup(command,"format_string",NULL,(void **)&tempstr);
-      if (tempstr != NULL)
+      DictLookup(command,"format_string",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
        {
-        tempaxis->format = (char *)malloc(strlen(tempstr)+1);
-        if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
-        strcpy(tempaxis->format , tempstr);
+        tempaxis->format = (char *)malloc(strlen(tempstr2)+1);
+        if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
+        strcpy(tempaxis->format , tempstr2);
        }
-      DictLookup(command,"orient",NULL,(void **)&tempstr);
-      if (tempstr != NULL)
+      DictLookup(command,"orient",NULL,(void **)&tempstr2);
+      if (tempstr2 != NULL)
        {
-        tempaxis->TickLabelRotation = FetchSettingByName(tempstr, SW_TICLABDIR_INT, SW_TICLABDIR_STR);
+        tempaxis->TickLabelRotation = FetchSettingByName(tempstr2, SW_TICLABDIR_INT, SW_TICLABDIR_STR);
         tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
        }
       DictLookup(command,"rotation",NULL,(void **)&tempval);
       if (tempval != NULL)
        {
+        if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set %sformat' command was not finite.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
         if (!(tempval->dimensionless))
          {
           for (i=0; i<UNITS_MAX_BASEUNITS; i++)
            if (tempval->exponent[i] != (i==UNIT_ANGLE))
             {
-             sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-             ppl_error(ERR_SYNTAX, temp_err_string);
+             sprintf(temp_err_string, "The rotation argument to the 'set %sformat' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
+             ppl_error(ERR_SYNTAX, -1, -1, temp_err_string);
              return;
             }
           tempaxis->TickLabelRotate = tempval->real;
@@ -1800,7 +1835,7 @@ void directive_set(Dict *command)
       if (tempaxis2->format != NULL)
        {
         tempaxis->format = (char *)malloc(strlen(tempaxis2->format)+1);
-        if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+        if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
         strcpy(tempaxis->format , tempaxis2->format);
        }
       tempaxis->TickLabelRotation = tempaxis2->TickLabelRotation;
@@ -1829,19 +1864,20 @@ void directive_set(Dict *command)
         if ((tempstr2!=NULL)&&(strlen(tempstr2)>0))
          {
           tempaxis->label = (char *)malloc(strlen(tempstr2)+1);
-          if (tempaxis->label == NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return; }
+          if (tempaxis->label == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return; }
           strcpy(tempaxis->label, tempstr2);
          }
         DictLookup(command,"rotation",NULL,(void **)&tempval);
         if (tempval!=NULL)
          {
+          if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set %slabel' command was not finite.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
           if (!(tempval->dimensionless))
            {
             for (i=0; i<UNITS_MAX_BASEUNITS; i++)
              if (tempval->exponent[i] != (i==UNIT_ANGLE))
               {
                sprintf(temp_err_string, "The rotation argument to the 'set %slabel' command must have dimensions of angle. Supplied input has dimensions of <%s>.", tempstr, ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
-               ppl_error(ERR_SYNTAX, temp_err_string);
+               ppl_error(ERR_SYNTAX, -1, -1, temp_err_string);
                return;
               }
             tempaxis->LabelRotate = tempval->real;
@@ -1868,7 +1904,9 @@ void directive_set(Dict *command)
       DictLookup(command,"max",NULL,(void **)&tempval2);
       if ((tempval == NULL) && (tempaxis->MinSet==SW_BOOL_TRUE)) { tempval = &valobj ; valobj = tempaxis->unit; valobj .real = tempaxis->min; }
       if ((tempval2== NULL) && (tempaxis->MaxSet==SW_BOOL_TRUE)) { tempval2= &valobj2; valobj2= tempaxis->unit; valobj2.real = tempaxis->max; }
-      if ((tempval!=NULL)&&(tempval2!=NULL)&&(!ppl_units_DimEqual(tempval,tempval2))) { ppl_error(ERR_NUMERIC, "Attempt to set axis range with dimensionally incompatible minimum and maximum."); return; }
+      if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite lower limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
+      if (!gsl_finite(tempval2->real)) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite upper limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
+      if ((tempval!=NULL)&&(tempval2!=NULL)&&(!ppl_units_DimEqual(tempval,tempval2))) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set axis range with dimensionally incompatible minimum and maximum."); return; }
       // Write new values, having ensured that they're dimensionally compatible
       if (tempval != NULL) { tempaxis->min = tempval ->real; tempaxis->MinSet=SW_BOOL_TRUE; }
       if (tempval2!= NULL) { tempaxis->max = tempval2->real; tempaxis->MaxSet=SW_BOOL_TRUE; }
@@ -1927,7 +1965,7 @@ void directive_set(Dict *command)
    }
   else
    {
-    ppl_error(ERR_INTERNAL, "PyXPlot's set command could not find handler for this set command.");
+    ppl_error(ERR_INTERNAL, -1, -1, "PyXPlot's set command could not find handler for this set command.");
    }
   return;
  }
@@ -2003,7 +2041,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
 
   if ((out==NULL)||(buf==NULL)||(buf2==NULL))
    {
-    ppl_error(ERR_MEMORY, "Out of memory whilst trying to allocate buffers in show command.");
+    ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst trying to allocate buffers in show command.");
     if (out!=NULL) free(out); if (buf!=NULL) free(buf); if (buf2!=NULL) free(buf2);
     return 1;
    }
@@ -2977,7 +3015,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
 
   // Show list of recognised units
-  if (StrAutocomplete(word, "units", 1)>=0)
+  if (StrAutocomplete(word, "units", 5)>=0)
    {
     SHOW_HIGHLIGHT(1);
     sprintf(out+i, "\n# Recognised Physical Units:\n\n"); i += strlen(out+i); p=1;
@@ -3053,14 +3091,14 @@ void directive_show(Dict *command, int interactive)
    }
   else
    {
-    if ((*EditNo<1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    if ((*EditNo<1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
     ptr = canvas_items->first;
     for (i=1; i<*EditNo; i++)
      {   
       if (ptr==NULL) break;
       ptr=ptr->next;
      }
-    if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, temp_err_string); return; }
+    if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
   
     sg = &(ptr->settings);
     al = &(ptr->arrow_list);
@@ -3071,7 +3109,7 @@ void directive_show(Dict *command, int interactive)
 
   DictLookup(command, "setting_list", NULL, (void **)&ShowList);
   if ((ShowList==NULL) || (ListLen(ShowList) == 0))
-   { ppl_error(ERR_PREFORMED, txt_show); }
+   { ppl_error(ERR_PREFORMED, -1, -1, txt_show); }
   else
    {
     if (interactive!=0) // On interactive sessions, highlight those settings which have been manually set by the user
@@ -3113,7 +3151,7 @@ void directive_show(Dict *command, int interactive)
         p = (directive_show2(ShowWord, ItemSet, interactive, sg, al, ll, xa, ya, za) || p);
        }
      }
-    if (p==0) { ppl_error(ERR_SYNTAX, "Invalid show option."); ppl_error(ERR_PREFORMED, txt_show); }
+    if (p==0) { ppl_error(ERR_SYNTAX, -1, -1, "Invalid show option."); ppl_error(ERR_PREFORMED, -1, -1, txt_show); }
    }
   return;
  }

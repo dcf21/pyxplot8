@@ -181,7 +181,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
       i = 1024;
       if (axis->label != NULL) i+=strlen(axis->label);
       axis->FinalAxisLabel = (char *)lt_malloc(i);
-      if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+      if (axis->FinalAxisLabel==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; }
       if      (AxisUnitStyle == SW_AXISUNITSTY_BRACKET) sprintf(axis->FinalAxisLabel, "%s ($%s$)", (axis->label != NULL)?axis->label:"", UnitString);
       else if (AxisUnitStyle == SW_AXISUNITSTY_RATIO)   sprintf(axis->FinalAxisLabel, "%s / $%s$", (axis->label != NULL)?axis->label:"", UnitString);
       else                                              sprintf(axis->FinalAxisLabel, "%s [$%s$]", (axis->label != NULL)?axis->label:"", UnitString);
@@ -206,7 +206,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
         for (N=0; TickStrs[N]!=NULL; N++); // Find length of list of ticks
         *TickListPositions = (double  *)lt_malloc((N+1) * (axis->AxisValueTurnings+1) * sizeof(double));
         *TickListStrings   = (char   **)lt_malloc((N+1) * (axis->AxisValueTurnings+1) * sizeof(char *));
-        if ((*TickListPositions==NULL) || (*TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
+        if ((*TickListPositions==NULL) || (*TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
         for (i=j=0; i<N; i++)
          for (xrn=0; xrn<=axis->AxisValueTurnings; xrn++)
           {
@@ -225,7 +225,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
         double TMin, TStep, TMax, tmp;
         *TickListPositions = (double  *)lt_malloc(102 * (axis->AxisValueTurnings+1) * sizeof(double));
         *TickListStrings   = (char   **)lt_malloc(102 * (axis->AxisValueTurnings+1) * sizeof(char *));
-        if ((*TickListPositions==NULL) || (*TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
+        if ((*TickListPositions==NULL) || (*TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
         TStep= TickStep;
         if (TStep<0) TStep=-TStep;
         if (axis->log == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
@@ -273,7 +273,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
             if      (MajMin==0)            (*TickListStrings)[j] = "";
             else if (axis->format == NULL) TickLabelAutoGen(&(*TickListStrings)[j], tmp * UnitMultiplier, axis->LogBase, OutContext);
             else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, xyz, OutContext);
-            if ((*TickListStrings)[j]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
+            if ((*TickListStrings)[j]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
             j++;
             if (axis->log == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
            }
@@ -357,8 +357,8 @@ void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit,
   while ((i>0)&&(FormatStr[i-1]<=' ')) i--;
   j = -1;
   ppl_GetQuotedString(FormatStr, tmp_string, 0, &j, 0, &k, err_string, 1);
-  if (k>=0) { sprintf(temp_err_string, "Error encountered whilst using format string: %s",FormatStr); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, err_string); sprintf(tmp_string, "{\\bf ?}"); }
-  if (j< i) { sprintf(temp_err_string, "Error encountered whilst using format string: %s",FormatStr); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Unexpected trailing matter."); sprintf(tmp_string, "{\\bf ?}"); }
+  if (k>=0) { sprintf(temp_err_string, "Error encountered whilst using format string: %s",FormatStr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); ppl_error(ERR_GENERAL, -1, -1, err_string); sprintf(tmp_string, "{\\bf ?}"); }
+  if (j< i) { sprintf(temp_err_string, "Error encountered whilst using format string: %s",FormatStr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); ppl_error(ERR_GENERAL, -1, -1, "Unexpected trailing matter."); sprintf(tmp_string, "{\\bf ?}"); }
   *output = (char *)lt_malloc_incontext(strlen(tmp_string)+3, OutContext);
   if ((*output)==NULL) return;
   sprintf(*output,"%s",tmp_string);

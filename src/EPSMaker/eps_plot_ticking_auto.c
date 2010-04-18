@@ -930,7 +930,7 @@ FAIL:
   
   axis->TickListPositions = (double  *)lt_malloc_incontext((N+1) * sizeof(double), OutContext);
   axis->TickListStrings   = (char   **)lt_malloc_incontext((N+1) * sizeof(char *), OutContext);
-  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
+  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
   for (i=0; i<N; i++)
    {
     double x;
@@ -939,7 +939,7 @@ FAIL:
     x = eps_plot_axis_InvGetPosition(x, axis);
     if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase, OutContext);
     else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz, OutContext);
-    if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
+    if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
    } 
   axis->TickListStrings[i] = NULL; // null terminate list
 

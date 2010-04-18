@@ -138,7 +138,7 @@ static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, in
     ptr->ZAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
     if ((ptr->XAxes==NULL)||(ptr->YAxes==NULL)||(ptr->ZAxes==NULL))
      {
-      ppl_error(ERR_MEMORY,"Out of memory");
+      ppl_error(ERR_MEMORY, -1, -1,"Out of memory");
       if (ptr->XAxes!=NULL) { free(ptr->XAxes); ptr->XAxes = NULL; }
       if (ptr->YAxes!=NULL) { free(ptr->YAxes); ptr->YAxes = NULL; }
       if (ptr->ZAxes!=NULL) { free(ptr->ZAxes); ptr->ZAxes = NULL; }
@@ -402,6 +402,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
      {
       if (pd_first) { pd_first=0; } else { output[i++]=','; }
       if (pd->parametric) { sprintf(output+i, " parametric"); i+=strlen(output+i); }
+      if (pd->TRangeSet)  { sprintf(output+i, " [%s:%s]", ppl_units_NumericDisplay(&pd->Tmin,0,0,0), ppl_units_NumericDisplay(&pd->Tmax,1,0,0)); i+=strlen(output+i); }
       if (!pd->function) { output[i++]=' '; StrEscapify(pd->filename, output+i); i+=strlen(output+i); } // Filename of datafile we are plotting
       else
        for (j=0; j<pd->NFunctions; j++) // Print out the list of functions which we are plotting
@@ -524,7 +525,7 @@ int directive_delete(Dict *command)
   int           *id;
   unsigned char *unsuccessful_ops;
 
-  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   DictLookup(command, "deleteno,", NULL, (void *)&DelList);
   ListIter = ListIterateInit(DelList);
@@ -553,7 +554,7 @@ int directive_undelete(Dict *command)
   unsigned char *unsuccessful_ops;
   canvas_item   *ptr;
 
-  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   DictLookup(command, "undeleteno,", NULL, (void *)&UndelList);
   ListIter = ListIterateInit(UndelList);
@@ -577,30 +578,46 @@ int directive_undelete(Dict *command)
  }
 
 #define ASSERT_LENGTH(VAR,CMD,NAME) \
+ { \
   if (!(VAR->dimensionless)) \
    { \
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
      if (VAR->exponent[i] != (i==UNIT_LENGTH)) \
       { \
        sprintf(temp_err_string,"The position supplied to the '%s' command must have dimensions of length. Supplied %s input has units of <%s>.",CMD,NAME,ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
-       ppl_error(ERR_NUMERIC, temp_err_string); \
+       ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); \
        return 1; \
       } \
    } \
-  else { VAR->real /= 100; } // By default, dimensionless positions are in centimetres
+  else { VAR->real /= 100; } /* By default, dimensionless positions are in centimetres */ \
+  if (!gsl_finite(VAR->real)) \
+   { \
+    sprintf(temp_err_string,"The position coordinates supplied to the '%s' command were not finite.",CMD); \
+    ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); \
+    return 1; \
+   } \
+ }
 
 #define ASSERT_ANGLE(VAR,CMD) \
+ { \
   if (!(VAR->dimensionless)) \
    { \
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) \
      if (VAR->exponent[i] != (i==UNIT_ANGLE)) \
       { \
        sprintf(temp_err_string,"The rotation angle supplied to the '%s' command must have dimensions of angle. Supplied input has units of <%s>.",CMD,ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
-       ppl_error(ERR_NUMERIC, temp_err_string); \
+       ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); \
        return 1; \
       } \
    } \
-  else { VAR->real *= M_PI/180.0; } // By default, dimensionless angles are in degrees
+  else { VAR->real *= M_PI/180.0; } /* By default, dimensionless angles are in degrees */ \
+  if (!gsl_finite(VAR->real)) \
+   { \
+    sprintf(temp_err_string,"The rotation angle supplied to the '%s' command was not finite.",CMD); \
+    ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); \
+    return 1; \
+   } \
+ }
 
 // Implementation of the move command.
 int directive_move(Dict *command)
@@ -611,7 +628,7 @@ int directive_move(Dict *command)
   canvas_item   *ptr;
   unsigned char *unsuccessful_ops;
 
-  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   DictLookup(command, "moveno"  , NULL, (void *)&moveno);
   DictLookup(command, "x"       , NULL, (void *)&x);
@@ -624,7 +641,7 @@ int directive_move(Dict *command)
 
   ptr = canvas_items->first;
   while ((ptr!=NULL)&&(ptr->id!=*moveno)) ptr=ptr->next;
-  if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *moveno); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (ptr==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *moveno); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
   rotatable = ((ptr->type!=CANVAS_ARROW)&&(ptr->type!=CANVAS_CIRC)&&(ptr->type!=CANVAS_PIE)&&(ptr->type!=CANVAS_PLOT)&&(ptr->type!=CANVAS_POINT));
   if ((ang != NULL) && (!rotatable)) { sprintf(temp_err_string, "It is not possible to rotate the specified multiplot item."); ppl_warning(ERR_GENERAL, temp_err_string); }
 
@@ -657,7 +674,7 @@ int directive_swap(Dict *command)
   canvas_item  **ptr1, **ptr2, *temp;
   unsigned char *unsuccessful_ops;
 
-  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (canvas_items==NULL) { sprintf(temp_err_string, "There are currently no items on the multiplot canvas."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   // Read the ID numbers of the items to be swapped
   DictLookup(command, "item1", NULL, (void *)&item1);
@@ -666,12 +683,12 @@ int directive_swap(Dict *command)
   // Seek the first item to be swapped
   ptr1 = &canvas_items->first;
   while ((*ptr1!=NULL)&&((*ptr1)->id!=*item1)) ptr1=&((*ptr1)->next);
-  if (*ptr1==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *item1); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (*ptr1==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *item1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   // Seek the second item to be swapped
   ptr2 = &canvas_items->first;
   while ((*ptr2!=NULL)&&((*ptr2)->id!=*item2)) ptr2=&((*ptr2)->next);
-  if (*ptr2==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *item2); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (*ptr2==NULL) { sprintf(temp_err_string, "There is no multiplot item with ID %d.", *item2); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   // Do swap
   (*ptr1)->id = *item2;
@@ -710,7 +727,7 @@ int directive_arrow(Dict *command, int interactive)
   ASSERT_LENGTH(x2,cmd,"x2"); ASSERT_LENGTH(y2,cmd,"y2");
 
   // Add this arrow to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_ARROW,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_ARROW,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real - x1->real;
@@ -730,7 +747,7 @@ int directive_arrow(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Arrow has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Arrow has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -761,11 +778,11 @@ int directive_box(Dict *command, int interactive)
 
   if ((x2 == NULL) && ((width==NULL)||(height==NULL))) // If box is specified in width/height format, both must be specified
    {
-    ppl_error(ERR_SYNTAX, "When a box is specified with given width and height, both width and height must be specified."); return 1;
+    ppl_error(ERR_SYNTAX, -1, -1, "When a box is specified with given width and height, both width and height must be specified."); return 1;
    }
 
   // Add this box to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_BOX,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_BOX,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   if (x2 != NULL) // Box is specified by two corners
@@ -791,7 +808,7 @@ int directive_box(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Arrow has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Box has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -820,7 +837,7 @@ int directive_circle(Dict *command, int interactive)
   if (a2 != NULL) { ASSERT_ANGLE(a2,cmd); }
 
   // Add this circle to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_CIRC,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
   ptr->xpos2 = x2->real;
@@ -835,7 +852,7 @@ int directive_circle(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Circle has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Circle has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -883,7 +900,7 @@ int directive_ellipse(Dict *command, int interactive)
   if (b2 != NULL) { ASSERT_LENGTH(b2 ,"ellipse","minoraxis");       e++; }
   if (a  != NULL) { ASSERT_LENGTH(a  ,"ellipse","semimajoraxis");   e++; }
   if (b  != NULL) { ASSERT_LENGTH(b  ,"ellipse","semiminoraxis");   e++; }
-  if (ecc!= NULL) {                                                 e++; if ((*ecc<0.0) || (*ecc>=1.0)) { ppl_error(ERR_NUMERIC, "Supplied eccentricity is not in the range 0 <= e < 1."); return 1; } }
+  if (ecc!= NULL) {                                                 e++; if ((*ecc<0.0) || (*ecc>=1.0)) { ppl_error(ERR_NUMERIC, -1, -1, "Supplied eccentricity is not in the range 0 <= e < 1."); return 1; } }
   if (slr!= NULL) { ASSERT_LENGTH(slr,"ellipse","semilatusrectum"); e++; }
   if (lr != NULL) { ASSERT_LENGTH(lr, "ellipse","latusrectum");     e++; }
 
@@ -894,7 +911,7 @@ int directive_ellipse(Dict *command, int interactive)
 
   // Check that we have been supplied an appropriate set of inputs
   if ( (x1==NULL) && (((p==2)&&((e!=1)||(r!=0))) || ((p<2)&&(e!=2))) )
-   { ppl_error(ERR_GENERAL, "Ellipse command has received an inappropriate set of inputs. Must specify either the position of both the centre and focus of the ellipse, and one further piece of information out of the major axis length, the minor axis length, the eccentricity or the semi-latus rectum, or the position of one of these two points, the rotation angle of the major axis of the ellipse, and two further pieces of information."); return 1; }
+   { ppl_error(ERR_GENERAL, -1, -1, "Ellipse command has received an inappropriate set of inputs. Must specify either the position of both the centre and focus of the ellipse, and one further piece of information out of the major axis length, the minor axis length, the eccentricity or the semi-latus rectum, or the position of one of these two points, the rotation angle of the major axis of the ellipse, and two further pieces of information."); return 1; }
 
   // Convert inputs such that we have the position of the centre of the ellipse and major/minor axes
   if (x1 != NULL) // User has specified two corners of the ellipse
@@ -915,7 +932,7 @@ int directive_ellipse(Dict *command, int interactive)
      {
       a_dbl   = fabs(a->real);
       ecc_dbl = hypot(xc->real - xf->real , yc->real - yf->real) / a_dbl;
-      if ((ecc_dbl < 0.0) || (ecc_dbl >= 1.0)) { ppl_error(ERR_NUMERIC, "Supplied semi-major axis length is shorter than the distance between the supplied focus and centre of the ellipse. No ellipse may have such parameters."); return 1; }
+      if ((ecc_dbl < 0.0) || (ecc_dbl >= 1.0)) { ppl_error(ERR_NUMERIC, -1, -1, "Supplied semi-major axis length is shorter than the distance between the supplied focus and centre of the ellipse. No ellipse may have such parameters."); return 1; }
       if (ppl_units_DblEqual(ecc_dbl,0.0)) { b_dbl = a_dbl; }
       else                                 { b_dbl = a_dbl * sqrt(1.0-pow(ecc_dbl,2)); }
      }
@@ -923,7 +940,7 @@ int directive_ellipse(Dict *command, int interactive)
      {
       b_dbl   = fabs(b->real);
       a_dbl   = hypot(hypot(xc->real - xf->real , yc->real - yf->real) , b_dbl);
-      if (b_dbl > a_dbl) { ppl_error(ERR_NUMERIC, "Supplied minor axis length is longer than the implied major axis length of the ellipse."); return 1; }
+      if (b_dbl > a_dbl) { ppl_error(ERR_NUMERIC, -1, -1, "Supplied minor axis length is longer than the implied major axis length of the ellipse."); return 1; }
       ecc_dbl = sqrt(1.0 - pow(b_dbl/a_dbl , 2.0));
      }
     else if (ecc != NULL) // eccentricity...
@@ -937,11 +954,11 @@ int directive_ellipse(Dict *command, int interactive)
      {
       ratio   = hypot(xc->real - xf->real , yc->real - yf->real) / slr->real;
       ecc_dbl = (sqrt(1+4*pow(ratio,2))-1.0) / (2*ratio);
-      if ((ecc_dbl<0.0) || (ecc_dbl>=1.0)) { ppl_error(ERR_NUMERIC, "Eccentricity implied for ellipse is not in the range 0 <= e < 1."); return 1; }
+      if ((ecc_dbl<0.0) || (ecc_dbl>=1.0)) { ppl_error(ERR_NUMERIC, -1, -1, "Eccentricity implied for ellipse is not in the range 0 <= e < 1."); return 1; }
       a_dbl   = hypot(xc->real - xf->real , yc->real - yf->real) / ecc_dbl;
       b_dbl   = a_dbl * sqrt(1.0 - pow(ecc_dbl,2.0));
      }
-    else { ppl_error(ERR_INTERNAL, "Flow control error in ellipse command."); return 1; }
+    else { ppl_error(ERR_INTERNAL, -1, -1, "Flow control error in ellipse command."); return 1; }
    }
   else // User has specified centre / focus of ellipse and two further pieces of information...
    {
@@ -949,7 +966,7 @@ int directive_ellipse(Dict *command, int interactive)
      {
       a_dbl   = fabs(a->real);
       b_dbl   = fabs(b->real);
-      if (b_dbl>a_dbl) { ppl_error(ERR_NUMERIC, "Supplied minor axis length is longer than the supplied major axis length of the ellipse."); return 1; }
+      if (b_dbl>a_dbl) { ppl_error(ERR_NUMERIC, -1, -1, "Supplied minor axis length is longer than the supplied major axis length of the ellipse."); return 1; }
       ecc_dbl = sqrt(1.0 - pow(b_dbl/a_dbl , 2.0));
      }
     else if ((a   != NULL) && (ecc != NULL)) // major axis and eccentricity...
@@ -961,7 +978,7 @@ int directive_ellipse(Dict *command, int interactive)
     else if ((a   != NULL) && (slr != NULL)) // major axis and SLR...
      {
       a_dbl   = fabs(a->real);
-      if (fabs(slr->real) > a_dbl) { ppl_error(ERR_NUMERIC, "Supplied semi-latus rectum is longer than the supplied semi-major axis length of the ellipse. No ellipse may have such parameters."); return 1; }
+      if (fabs(slr->real) > a_dbl) { ppl_error(ERR_NUMERIC, -1, -1, "Supplied semi-latus rectum is longer than the supplied semi-major axis length of the ellipse. No ellipse may have such parameters."); return 1; }
       ecc_dbl = sqrt(1.0 - fabs(slr->real) / a_dbl);
       b_dbl   = a_dbl * sqrt(1.0 - pow(ecc_dbl,2.0));
      }
@@ -974,7 +991,7 @@ int directive_ellipse(Dict *command, int interactive)
     else if ((b   != NULL) && (slr != NULL)) // minor axis and SLR...
      {
       b_dbl   = b->real;
-      if (fabs(slr->real) > b_dbl) { ppl_error(ERR_NUMERIC, "Supplied semi-latus rectum is longer than the supplied semi-minor axis length of the ellipse. No ellipse may have such parameters."); return 1; }
+      if (fabs(slr->real) > b_dbl) { ppl_error(ERR_NUMERIC, -1, -1, "Supplied semi-latus rectum is longer than the supplied semi-minor axis length of the ellipse. No ellipse may have such parameters."); return 1; }
       ecc_dbl = sqrt(1.0 - pow(fabs(slr->real) / b_dbl,2.0));
       a_dbl   = b_dbl / sqrt(1.0 - pow(ecc_dbl,2.0));
      }
@@ -984,7 +1001,7 @@ int directive_ellipse(Dict *command, int interactive)
       a_dbl   = fabs(slr->real) / (1.0 - pow(ecc_dbl,2.0));
       b_dbl   = a_dbl * sqrt(1.0 - pow(ecc_dbl,2.0));
      }
-    else { ppl_error(ERR_INTERNAL, "Flow control error in ellipse command."); return 1; }
+    else { ppl_error(ERR_INTERNAL, -1, -1, "Flow control error in ellipse command."); return 1; }
 
     if (xc != NULL) // User has specified the centre of the ellipse
      {
@@ -1004,7 +1021,7 @@ int directive_ellipse(Dict *command, int interactive)
    }
 
   // Add this ellipse to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_ELLPS,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_ELLPS,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
 
   // Add the exact parameterisation which we have been given to canvas item, so that "list" command prints it out in the form originally supplied
   ptr->x1set = ptr->xcset = ptr->xfset = ptr->aset = ptr->bset = ptr->eccset = ptr->slrset = 0;
@@ -1032,7 +1049,7 @@ int directive_ellipse(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Ellipse has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Ellipse has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -1063,10 +1080,10 @@ int directive_eps(Dict *command, int interactive)
 
   DictLookup(command, "filename", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
-  if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (text == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_EPS,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_EPS,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(text); return 1; }
 
   if (x     !=NULL) { ptr->xpos     = x     ->real; }                    else { ptr->xpos     = settings_graph_current.OriginX.real; }
   if (y     !=NULL) { ptr->ypos     = y     ->real; }                    else { ptr->ypos     = settings_graph_current.OriginY.real; }
@@ -1082,7 +1099,7 @@ int directive_eps(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("EPS image has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "EPS image has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -1100,7 +1117,7 @@ int directive_piechart(Dict *command, int interactive)
 
   unsigned char *unsuccessful_ops;
 
-  if (canvas_itemlist_add(command,CANVAS_PIE,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } // Do not copy axes and settings here, as we do it below
+  if (canvas_itemlist_add(command,CANVAS_PIE,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } // Do not copy axes and settings here, as we do it below
 
   ptr->settings = settings_graph_current; // Now copy graph settings
   with_words_copy(&ptr->settings.DataStyle , &settings_graph_current.DataStyle);
@@ -1108,7 +1125,7 @@ int directive_piechart(Dict *command, int interactive)
 
   // Malloc a structure to hold this plot item
   ptr->plotitems=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc));
-  if (ptr->plotitems == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (ptr->plotitems == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   memset((void *)(ptr->plotitems), 0, sizeof(canvas_plotdesc));
 
   // Store either filename of datafile, or the list of functions which we are plotting
@@ -1117,7 +1134,7 @@ int directive_piechart(Dict *command, int interactive)
    {
     ptr->plotitems->function = 0;
     ptr->plotitems->filename = (char *)malloc(strlen(tempstr)+1);
-    if (ptr->plotitems->filename == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (ptr->plotitems->filename == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     strcpy(ptr->plotitems->filename , tempstr);
    }
   else // We are plotting function(s)
@@ -1128,14 +1145,14 @@ int directive_piechart(Dict *command, int interactive)
     DictLookup(command, "expression_list:", NULL, (void **)&ExpressionList);
     j = ptr->plotitems->NFunctions = ListLen(ExpressionList);
     ptr->plotitems->functions = (char **)malloc(j * sizeof(char *));
-    if (ptr->plotitems->functions == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (ptr->plotitems->functions == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     ListIter2 = ListIterateInit(ExpressionList);
     for (i=0; i<j; i++)
      {
       TempDict2 = (Dict *)ListIter2->data;
       DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
       ptr->plotitems->functions[i] = (char *)malloc(strlen(tempstr)+1);
-      if (ptr->plotitems->functions[i] == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+      if (ptr->plotitems->functions[i] == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
       strcpy(ptr->plotitems->functions[i], tempstr);
       ListIter2 = ListIterate(ListIter2, NULL);
      }
@@ -1147,7 +1164,7 @@ int directive_piechart(Dict *command, int interactive)
   else
    {
     ptr->text = (char *)malloc(strlen(tempstr)+1);
-    if (ptr->text == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (ptr->text == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     strcpy(ptr->text, tempstr);
    }
 
@@ -1157,7 +1174,7 @@ int directive_piechart(Dict *command, int interactive)
   else
    {
     ptr->plotitems->label = (char *)malloc(strlen(tempstr)+1);
-    if (ptr->plotitems->label == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (ptr->plotitems->label == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     strcpy(ptr->plotitems->label, tempstr);
    }
 
@@ -1178,7 +1195,7 @@ int directive_piechart(Dict *command, int interactive)
   else
    {
     j = ptr->plotitems->EverySet = ListLen(EveryList);
-    if (j>6) { ppl_error(ERR_SYNTAX, "More than six items specified in every modifier -- final items are not valid syntax."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (j>6) { ppl_error(ERR_SYNTAX, -1, -1, "More than six items specified in every modifier -- final items are not valid syntax."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     ListIter2 = ListIterateInit(EveryList);
     for (i=0; i<j; i++)
      {
@@ -1196,7 +1213,7 @@ int directive_piechart(Dict *command, int interactive)
   else
    { 
     ptr->plotitems->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
-    if (ptr->plotitems->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (ptr->plotitems->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     strcpy(ptr->plotitems->SelectCriterion, SelectCrit);
    }
 
@@ -1215,7 +1232,7 @@ int directive_piechart(Dict *command, int interactive)
      }
     ptr->plotitems->NUsing = j;
     ptr->plotitems->UsingList = (char **)malloc(j * sizeof(char *));
-    if (ptr->plotitems->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+    if (ptr->plotitems->UsingList == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     ListIter2 = ListIterateInit(UsingList);
     for (i=0; i<j; i++)
      {
@@ -1223,7 +1240,7 @@ int directive_piechart(Dict *command, int interactive)
       DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
       if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
       ptr->plotitems->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
-      if (ptr->plotitems->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
+      if (ptr->plotitems->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
       strcpy(ptr->plotitems->UsingList[i], cptr2);
       ListIter2 = ListIterate(ListIter2, NULL);
      }
@@ -1238,7 +1255,7 @@ FinishedUsing:
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Plot has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Piechart has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -1261,7 +1278,7 @@ int directive_point(Dict *command, int interactive)
   ASSERT_LENGTH(y1,cmd,"y");
 
   // Add this point to the linked list which decribes the canvas
-  if (canvas_itemlist_add(command,CANVAS_POINT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_POINT,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   ptr->xpos  = x1->real;
   ptr->ypos  = y1->real;
 
@@ -1273,7 +1290,7 @@ int directive_point(Dict *command, int interactive)
   if (tempstr != NULL)
    {
     text = (char *)malloc(strlen(tempstr)+1);
-    if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+    if (text == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
     strcpy(text, tempstr);
     ptr->text = text;
    }
@@ -1284,7 +1301,7 @@ int directive_point(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Point has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Point has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -1311,10 +1328,10 @@ int directive_text(Dict *command, int interactive)
   // Read the string which we are to render
   DictLookup(command, "string", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
-  if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (text == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(text); return 1; }
 
   // Check for halign or valign modifiers
   DictLookup(command,"halign",NULL,(void **)&tempstr);
@@ -1336,7 +1353,7 @@ int directive_text(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Text item has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Text item has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -1369,19 +1386,19 @@ int directive_image(Dict *command, int interactive)
   if (width !=NULL) { ASSERT_LENGTH(width ,"eps","width" ); }
   if (height!=NULL) { ASSERT_LENGTH(height,"eps","height"); }
 
-  if ((TransColR!=NULL) && (!TransColR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  if ((TransColR!=NULL) && (TransColR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  if ((TransColG!=NULL) && (!TransColG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  if ((TransColG!=NULL) && (TransColG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  if ((TransColB!=NULL) && (!TransColB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-  if ((TransColB!=NULL) && (TransColB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if ((TransColR!=NULL) && (!TransColR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+  if ((TransColR!=NULL) && (TransColR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+  if ((TransColG!=NULL) && (!TransColG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+  if ((TransColG!=NULL) && (TransColG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+  if ((TransColB!=NULL) && (!TransColB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(TransColB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+  if ((TransColB!=NULL) && (TransColB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   DictLookup(command, "filename", NULL, (void *)&fname);
   text = (char *)malloc(strlen(fname)+1);
-  if (text == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; }
+  if (text == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   strcpy(text, fname);
 
-  if (canvas_itemlist_add(command,CANVAS_IMAGE,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); free(text); return 1; }
+  if (canvas_itemlist_add(command,CANVAS_IMAGE,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(text); return 1; }
 
   if (x     !=NULL) { ptr->xpos     = x     ->real; }                    else { ptr->xpos     = settings_graph_current.OriginX.real; }
   if (y     !=NULL) { ptr->ypos     = y     ->real; }                    else { ptr->ypos     = settings_graph_current.OriginY.real; }
@@ -1404,7 +1421,7 @@ int directive_image(Dict *command, int interactive)
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Bitmap image has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Bitmap image has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }
@@ -1420,7 +1437,7 @@ int directive_plot(Dict *command, int interactive, int replot)
   List          *RangeList, *PlotList, *ExpressionList, *UsingList, *EveryList;
   ListIterator  *ListIter, *ListIter2;
   Dict          *TempDict, *TempDict2;
-  value         *min, *max;
+  value         *min, *max, *tempval;
   canvas_plotrange **RangePtr;
   canvas_plotdesc  **PlotItemPtr;
   ppl_glob          *glob_handle;
@@ -1441,12 +1458,12 @@ int directive_plot(Dict *command, int interactive, int replot)
         ptr = ptr->next;
        }
      }
-    if (ptr==NULL) { ppl_error(ERR_GENERAL, "No plot found to replot."); return 1; }
+    if (ptr==NULL) { ppl_error(ERR_GENERAL, -1, -1, "No plot found to replot."); return 1; }
     id = *EditNo;
    }
   else // We are not replotting... create a new plot item
    {
-    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id,0)) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } // Do not copy axes and settings here, as we do it below
+    if (canvas_itemlist_add(command,CANVAS_PLOT,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } // Do not copy axes and settings here, as we do it below
    }
 
   ReplotFocus = id; // This graph is the one which we replot next time by default
@@ -1467,7 +1484,7 @@ int directive_plot(Dict *command, int interactive, int replot)
   ptr->ZAxes = (settings_axis *)malloc(MAX_AXES * sizeof(settings_axis));
   if ((ptr->XAxes==NULL)||(ptr->YAxes==NULL)||(ptr->ZAxes==NULL))
    {
-    ppl_error(ERR_MEMORY,"Out of memory");
+    ppl_error(ERR_MEMORY, -1, -1,"Out of memory");
     if (ptr->XAxes!=NULL) { free(ptr->XAxes); ptr->XAxes = NULL; }
     if (ptr->YAxes!=NULL) { free(ptr->YAxes); ptr->YAxes = NULL; }
     if (ptr->ZAxes!=NULL) { free(ptr->ZAxes); ptr->ZAxes = NULL; } 
@@ -1495,15 +1512,15 @@ int directive_plot(Dict *command, int interactive, int replot)
   i=0;
   while (ListIter != NULL)
    {
-    if (*RangePtr == NULL) { *RangePtr=(canvas_plotrange *)malloc(sizeof(canvas_plotrange)); if (*RangePtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } ppl_units_zero(&(*RangePtr)->unit); (*RangePtr)->min=(*RangePtr)->max=0.0; (*RangePtr)->MinSet=(*RangePtr)->MaxSet=(*RangePtr)->AutoMinSet=(*RangePtr)->AutoMaxSet=0; (*RangePtr)->next=NULL; }
+    if (*RangePtr == NULL) { *RangePtr=(canvas_plotrange *)malloc(sizeof(canvas_plotrange)); if (*RangePtr == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } ppl_units_zero(&(*RangePtr)->unit); (*RangePtr)->min=(*RangePtr)->max=0.0; (*RangePtr)->MinSet=(*RangePtr)->MaxSet=(*RangePtr)->AutoMinSet=(*RangePtr)->AutoMaxSet=0; (*RangePtr)->next=NULL; }
     TempDict = (Dict *)ListIter->data;
     DictLookup(TempDict,"min"    ,NULL,(void **)&min);
     DictLookup(TempDict,"max"    ,NULL,(void **)&max);
     DictLookup(TempDict,"minauto",NULL,(void **)&MinAuto);
     DictLookup(TempDict,"maxauto",NULL,(void **)&MaxAuto);
-    if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(max,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(max,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+    if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+    if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     if (MinAuto!=NULL) { (*RangePtr)->AutoMinSet=1; (*RangePtr)->MinSet=0; (*RangePtr)->min=0.0; }
     if (MaxAuto!=NULL) { (*RangePtr)->AutoMaxSet=1; (*RangePtr)->MaxSet=0; (*RangePtr)->max=0.0; }
     if (min    !=NULL) { (*RangePtr)->AutoMinSet=0; (*RangePtr)->MinSet=1; (*RangePtr)->min=min->real; (*RangePtr)->unit=*min; (*RangePtr)->unit.real=1.0; }
@@ -1539,7 +1556,7 @@ int directive_plot(Dict *command, int interactive, int replot)
         sprintf(temp_err_string, "The axes clause in the plot command is not allowed to contain any parallel axes. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
       if (temp_err_string[0]!='\0')
        {
-        ppl_error(ERR_NUMERIC, temp_err_string);
+        ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
         ListIter = ListIterate(ListIter, NULL);
         continue;
        }
@@ -1567,14 +1584,14 @@ int directive_plot(Dict *command, int interactive, int replot)
        }
 
       // Malloc a structure to hold this plot item
-      if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
+      if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
 
       // Enter details of datafile filename or functions into plotdesc structure
       if (PlottingDatafiles) // We are plotting a datafile
        {
         (*PlotItemPtr)->function = 0;
         (*PlotItemPtr)->filename = (char *)malloc(strlen(tempstr)+1);
-        if ((*PlotItemPtr)->filename == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if ((*PlotItemPtr)->filename == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         strcpy((*PlotItemPtr)->filename , tempstr);
        }
       else // We are plotting function(s)
@@ -1583,17 +1600,28 @@ int directive_plot(Dict *command, int interactive, int replot)
         (*PlotItemPtr)->filename = NULL;
         DictLookup(TempDict, "parametric", NULL, (void **)&tempstr);
         (*PlotItemPtr)->parametric = (tempstr!=NULL);
+        DictLookup(TempDict, "tmin", NULL, (void **)&tempval);
+        (*PlotItemPtr)->TRangeSet  = (tempval!=NULL);
+        if (tempval!=NULL) (*PlotItemPtr)->Tmin = *tempval;
+        DictLookup(TempDict, "tmax", NULL, (void **)&tempval);
+        if (tempval!=NULL)
+         {
+          (*PlotItemPtr)->Tmax = *tempval;
+          if      (!gsl_finite((*PlotItemPtr)->Tmin.real)) { sprintf(temp_err_string, "Lower limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
+          else if (!gsl_finite((*PlotItemPtr)->Tmax.real)) { sprintf(temp_err_string, "Upper limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
+          else if (!ppl_units_DimEqual(&(*PlotItemPtr)->Tmin, &(*PlotItemPtr)->Tmax)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter t have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(&(*PlotItemPtr)->Tmin, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(*PlotItemPtr)->Tmax, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
+         }
         DictLookup(TempDict, "expression_list:", NULL, (void **)&ExpressionList);
         j = (*PlotItemPtr)->NFunctions = ListLen(ExpressionList);
         (*PlotItemPtr)->functions = (char **)malloc(j * sizeof(char *));
-        if ((*PlotItemPtr)->functions == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if ((*PlotItemPtr)->functions == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         ListIter2 = ListIterateInit(ExpressionList);
         for (i=0; i<j; i++)
          {
           TempDict2 = (Dict *)ListIter2->data;
           DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
           (*PlotItemPtr)->functions[i] = (char *)malloc(strlen(tempstr)+1);
-          if ((*PlotItemPtr)->functions[i] == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+          if ((*PlotItemPtr)->functions[i] == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
           strcpy((*PlotItemPtr)->functions[i], tempstr);
           ListIter2 = ListIterate(ListIter2, NULL);
          }
@@ -1618,7 +1646,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       else
        {
         (*PlotItemPtr)->label = (char *)malloc(strlen(tempstr)+1);
-        if ((*PlotItemPtr)->label == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if ((*PlotItemPtr)->label == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         strcpy((*PlotItemPtr)->label, tempstr);
        }
 
@@ -1639,7 +1667,7 @@ int directive_plot(Dict *command, int interactive, int replot)
        {
         (*PlotItemPtr)->NoTitleSet = 0; (*PlotItemPtr)->TitleSet = 1;
         (*PlotItemPtr)->title = (char *)malloc(strlen(tempstr)+1);
-        if ((*PlotItemPtr)->title == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if ((*PlotItemPtr)->title == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         strcpy((*PlotItemPtr)->title, tempstr);
        }
 
@@ -1655,7 +1683,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       else
        {
         j = (*PlotItemPtr)->EverySet = ListLen(EveryList);
-        if (j>6) { ppl_error(ERR_SYNTAX, "More than six items specified in every modifier -- final items are not valid syntax."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if (j>6) { ppl_error(ERR_SYNTAX, -1, -1, "More than six items specified in every modifier -- final items are not valid syntax."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         ListIter2 = ListIterateInit(EveryList);
         for (i=0; i<j; i++)
          {        
@@ -1673,7 +1701,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       else
        {  
         (*PlotItemPtr)->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
-        if ((*PlotItemPtr)->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if ((*PlotItemPtr)->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         strcpy((*PlotItemPtr)->SelectCriterion, SelectCrit);
        }
 
@@ -1692,7 +1720,7 @@ int directive_plot(Dict *command, int interactive, int replot)
          }
         (*PlotItemPtr)->NUsing = j;
         (*PlotItemPtr)->UsingList = (char **)malloc(j * sizeof(char *));
-        if ((*PlotItemPtr)->UsingList == NULL) { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+        if ((*PlotItemPtr)->UsingList == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         ListIter2 = ListIterateInit(UsingList);
         for (i=0; i<j; i++)
          {
@@ -1700,7 +1728,7 @@ int directive_plot(Dict *command, int interactive, int replot)
           DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
           if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
           (*PlotItemPtr)->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
-          if ((*PlotItemPtr)->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+          if ((*PlotItemPtr)->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
           strcpy((*PlotItemPtr)->UsingList[i], cptr2);
           ListIter2 = ListIterate(ListIter2, NULL);
          }
@@ -1721,7 +1749,7 @@ FinishedUsing:
    {
     unsuccessful_ops = (unsigned char *)lt_malloc(MULTIPLOT_MAXINDEX);
     canvas_draw(unsuccessful_ops);
-    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, ("Plot has been removed from multiplot, because it generated an error.")); return 1; }
+    if (unsuccessful_ops[id]) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Plot has been removed from multiplot, because it generated an error."); return 1; }
    }
   return 0;
  }

@@ -37,7 +37,7 @@ extern char ppl_error_source[];
 extern char temp_err_string[];
 
 void ppl_error_setstreaminfo(int linenumber,char *filename);
-void ppl_error(int ErrType, char *msg);
+void ppl_error(int ErrType, int HighlightPos1, int HighlightPos2, char *msg);
 void ppl_fatal(char *file, int line, char *msg);
 void ppl_warning(int ErrType, char *msg);
 void ppl_report(char *msg);

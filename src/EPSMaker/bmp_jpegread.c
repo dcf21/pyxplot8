@@ -58,11 +58,11 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
 
   if (DEBUG) ppl_log("Beginning to decode JPEG image file");
 
-  if ((buff == NULL)||(header == NULL)) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if ((buff == NULL)||(header == NULL)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   fread(buff,3,1,jpeg);
   i=buff[0];
-  if (i<0xe0) { ppl_error(ERR_FILE, "In supplied JPEG image, first marker is not APPn. Aborting."); return; }
+  if (i<0xe0) { ppl_error(ERR_FILE, -1, -1, "In supplied JPEG image, first marker is not APPn. Aborting."); return; }
   len=buff[1]*256+buff[2]-2;
 
   fread(buff,len,1,jpeg);
@@ -120,7 +120,7 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
 
     if (((type&0xf0)==0xc0) && (type!=0xc4) && (type!=0xcc))
      {
-      if (comp) { ppl_error(ERR_FILE, "Cannot decode JPEG image file: it contains multiple images?"); return; }
+      if (comp) { ppl_error(ERR_FILE, -1, -1, "Cannot decode JPEG image file: it contains multiple images?"); return; }
       comp   = type;
       prec   = buff[0];
       height = 256*buff[1]+buff[2];
@@ -139,7 +139,7 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
       *(headp++) = type;
       *(headp++) = (len+2)>>8;
       *(headp++) = (len+2)&0xff;
-      if (headp+len>headendp) { ppl_error(ERR_FILE,"Header storage for JPEG image exhausted"); return; }
+      if (headp+len>headendp) { ppl_error(ERR_FILE, -1, -1,"Header storage for JPEG image exhausted"); return; }
       for (i=0; i<len; i++) *(headp++) = buff[i];
      }
     else if (DEBUG) ppl_log("Discarding section of JPEG image file");
@@ -156,15 +156,15 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
       if (DEBUG) ppl_log("Encoding: extended sequential, Huffman JPEG");
       break;
     case 0xc2:
-      ppl_error(ERR_FILE, "JPEG image detected to have progressive encoding, which PyXPlot does not support. Please convert to baseline JPEG and try again.");
+      ppl_error(ERR_FILE, -1, -1, "JPEG image detected to have progressive encoding, which PyXPlot does not support. Please convert to baseline JPEG and try again.");
       return;
     default:
       sprintf(temp_err_string, "JPEG image detected to have unsupported compression type SOF%d. Please convert to baseline JPEG and try again.",((int)comp)&0xf);
-      ppl_error(ERR_FILE, temp_err_string);
+      ppl_error(ERR_FILE, -1, -1, temp_err_string);
       return;
    }
 
-  if ((comps!=3) && (comps!=1)) { sprintf(temp_err_string,"JPEG image contains %d colour components; PyXPlot only supports JPEG images with one (greyscale) or three (RGB) components", comps); ppl_error(ERR_FILE, temp_err_string); return; }
+  if ((comps!=3) && (comps!=1)) { sprintf(temp_err_string,"JPEG image contains %d colour components; PyXPlot only supports JPEG images with one (greyscale) or three (RGB) components", comps); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
 
   if (comps ==3 )
    {
@@ -201,7 +201,7 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
    {
     chunk *= 2;
     p      = (unsigned char *)lt_malloc(chunk); // We didn't malloc enough memory, and lt_malloc can't realloc, so just have to malloc a new chunk :(
-    if (p == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    if (p == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; }
     memcpy(p, buff, chunk/2);
     buff = p;
     len  = chunk/2;

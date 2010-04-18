@@ -69,13 +69,13 @@ void eps_image_RenderEPS(EPSComm *x)
 
   // Open input data file
   infile = fopen(filename, "r");
-  if (infile==NULL) { sprintf(temp_err_string, "Could not open input file '%s'", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  if (infile==NULL) { sprintf(temp_err_string, "Could not open input file '%s'", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
 
   // Use magic to determine file type
   for (i=0; i<3; i++)
    {
     j = fgetc(infile);
-    if (j==EOF) { sprintf(temp_err_string, "Could not read any image data from the input file '%s'", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+    if (j==EOF) { sprintf(temp_err_string, "Could not read any image data from the input file '%s'", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
     buff[i] = (unsigned char)j;
    }
   if      ((buff[0]=='G' )&&(buff[1]=='I' )&&(buff[2]=='F' )) ImageType = SW_BITMAP_GIF;
@@ -85,7 +85,7 @@ void eps_image_RenderEPS(EPSComm *x)
   else
    {
     sprintf(temp_err_string, "Could not determine the file type of input file '%s'. The image command only supports bmp, gif, jpeg and png images. The supplied image does not appear to be in any of these formats.", filename);
-    ppl_error(ERR_FILE, temp_err_string);
+    ppl_error(ERR_FILE, -1, -1, temp_err_string);
     *(x->status) = 1;
     return;
    }
@@ -97,7 +97,7 @@ void eps_image_RenderEPS(EPSComm *x)
     case SW_BITMAP_GIF: bmp_gifread (infile , &data); break;
     case SW_BITMAP_JPG: bmp_jpegread(infile , &data); break;
     case SW_BITMAP_PNG: bmp_pngread (infile , &data); break;
-    default: ppl_error(ERR_INTERNAL, "Unrecognised image type"); *(x->status) = 1; return;
+    default: ppl_error(ERR_INTERNAL, -1, -1, "Unrecognised image type"); *(x->status) = 1; return;
    }
 
   // Check to see whether reading of data failed
@@ -157,7 +157,7 @@ void eps_image_RenderEPS(EPSComm *x)
     case BMP_ENCODING_FLATE:
       zlen   = data.data_len*1.01+12; // Nasty guess at size of buffer needed.
       imagez = (unsigned char *)lt_malloc(zlen);
-      if (imagez == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      if (imagez == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
       if (DEBUG) { ppl_log("Calling zlib to compress image data"); }
       j = compress2(imagez,&zlen,data.data,data.data_len,9); // Call zlib to do deflation
 
@@ -178,7 +178,7 @@ void eps_image_RenderEPS(EPSComm *x)
       data.data_len = zlen;
       break;
     default:
-      ppl_error(ERR_INTERNAL, "Unrecognised image compression type requested"); *(x->status) = 1; return;
+      ppl_error(ERR_INTERNAL, -1, -1, "Unrecognised image compression type requested"); *(x->status) = 1; return;
    }
 
   // Work out dimensions of image

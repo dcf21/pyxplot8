@@ -145,13 +145,13 @@ int dviInterpretOperator(dviInterpreterState *interp, DVIOperator *op)
    }
   else
    {
-    ppl_error(ERR_INTERNAL,"dvi interpreter found an illegal operator");
+    ppl_error(ERR_INTERNAL, -1, -1,"dvi interpreter found an illegal operator");
     return DVIE_CORRUPT;
    }
   if (func==NULL)
    {
     snprintf(errStr, SSTR_LENGTH, "Failed to find handler for dvi operator %d i=%d", op->op, i);
-    ppl_error(ERR_INTERNAL,errStr);
+    ppl_error(ERR_INTERNAL, -1, -1,errStr);
     return DVIE_CORRUPT;
    }
 
@@ -240,7 +240,7 @@ int dviInOpChar(dviInterpreterState *interp, DVIOperator *op)
   if (interp->currentString == NULL)
    {
     interp->currentString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
-    if (interp->currentString==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+    if (interp->currentString==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
     *(interp->currentString) = '\0';
     interp->currentStrlen = LSTR_LENGTH;
    }
@@ -248,7 +248,7 @@ int dviInOpChar(dviInterpreterState *interp, DVIOperator *op)
    {
     if ((err=dviTypeset(interp))!=0) return err;
     interp->currentString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
-    if (interp->currentString==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+    if (interp->currentString==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
     *(interp->currentString) = '\0';
     interp->currentStrlen = LSTR_LENGTH;
    }
@@ -383,7 +383,7 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   if (bb == NULL)
    {
     bb = (double *)lt_malloc(4*sizeof(double));
-    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    if (bb==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
     bb[0] = interp->state->h;
     bb[1] = interp->state->v;
     bb[2] = interp->state->h;
@@ -407,7 +407,7 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   // If we have not typeset anything then the box will be empty.
   if (bb == NULL) {
     bb = (double *)lt_malloc(4*sizeof(double));
-    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    if (bb==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
     bb[0] = interp->state->h;
     bb[1] = interp->state->v;
     bb[2] = interp->state->h;
@@ -447,7 +447,7 @@ int dviInOpPop(dviInterpreterState *interp, DVIOperator *op)
   new = (dviStackState *)ListPop(interp->stack);
   if (new == NULL)
    {
-    ppl_error(ERR_INTERNAL,"corrupt dvi file -- attempt to pop off empty stack");
+    ppl_error(ERR_INTERNAL, -1, -1,"corrupt dvi file -- attempt to pop off empty stack");
     return 1;
    }
   interp->state = new;
@@ -553,7 +553,7 @@ int dviInOpSpecial1234(dviInterpreterState *interp, DVIOperator *op)
   spesh = op->op - DVI_SPECIAL1234+1;
   interp->special = spesh;
   interp->spString = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
-  if (interp->spString==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+  if (interp->spString==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
   *(interp->spString) = '\0';
   if (DEBUG) { sprintf(temp_err_string, "DVI: dvi special: %d %lu %d", spesh, op->ul[0], (int)strlen(interp->spString)); ppl_log(temp_err_string); }
   // NOP
@@ -569,17 +569,17 @@ int dviInOpFntdef1234(dviInterpreterState *interp, DVIOperator *op)
   int i;
 
   font = (dviFontDetails *)lt_malloc(sizeof(dviFontDetails));
-  if (font==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (font==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   ListAppendPtr(interp->fonts, (void *)font, sizeof(dviFontDetails), 0, DATATYPE_VOID);
 
   // Populate with information from operator
   font->number = op->ul[0];
   font->area = (char *)lt_malloc((op->ul[4]+1)*sizeof(char));
-  if (font->area==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (font->area==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   for (i=0; i<op->ul[4]; i++) font->area[i] = op->s[0][i];
   font->area[op->ul[4]] = '\0';
   font->name = (char *)malloc((op->ul[5]+1)*sizeof(char));
-  if (font->name==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (font->name==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   for (i=0; i<op->ul[5]; i++) font->name[i] = op->s[0][op->ul[4]+i];
   font->name[op->ul[5]] = '\0';
   font->useSize = op->ul[2];
@@ -599,7 +599,7 @@ int dviInOpPre(dviInterpreterState *interp, DVIOperator *op)
   mag = op->ul[3];
   if (i != 2)
    {
-    ppl_error(ERR_INTERNAL,"Error interpreting dvi file: not dvi version 2");
+    ppl_error(ERR_INTERNAL, -1, -1,"Error interpreting dvi file: not dvi version 2");
     return 1;
    }
   // Convert mag, num and den into points (for ps)
@@ -755,7 +755,7 @@ int dviSpecialColourStackPush(dviInterpreterState *interp, char *psText)
   // Stick the string onto the stack
   len = strlen(psText)+1;
   s = (char *)lt_malloc(len*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   snprintf(s, len, "%s", psText);
   ListAppendPtr(interp->colStack, (void *)s, len, 0, DATATYPE_VOID);
 
@@ -773,24 +773,24 @@ dviInterpreterState *dviNewInterpreter()
  {
   dviInterpreterState *interp;
   interp = (dviInterpreterState *)lt_malloc(sizeof(dviInterpreterState));
-  if (interp==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
 
   // Initially the stack is empty
   interp->stack = ListInit();
-  if (interp->stack==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp->stack==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
   interp->output = (postscriptState *)lt_malloc(sizeof(postscriptState));
-  if (interp->output==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp->output==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
 
   // No postscript yet
   interp->output->pages = ListInit();
-  if (interp->output->pages==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp->output->pages==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
   interp->output->Npages = 0;
   interp->output->currentPage = NULL;
   interp->output->currentPosition = NULL;
 
   // Set default positional variables etc.
   interp->state = (dviStackState *)lt_malloc(sizeof(dviStackState));
-  if (interp->state==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp->state==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
   interp->state->h=0;
   interp->state->v=0;
   interp->state->w=0;
@@ -809,13 +809,13 @@ dviInterpreterState *dviNewInterpreter()
 
   // No fonts currently
   interp->fonts = ListInit();
-  if (interp->fonts==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp->fonts==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
 
   // Nothing special occuring
   interp->special = 0;  // Not in special mode
   interp->spString = NULL;
   interp->colStack = ListInit();
-  if (interp->colStack==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (interp->colStack==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
 
   // Make the big table of operators
   makeDviOpTable();
@@ -834,7 +834,7 @@ int dviDeleteInterpreter(dviInterpreterState *interp)
 
   // Delete anything on the stack
   interp->stack = ListInit();
-  if (interp->stack==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (interp->stack==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
 
   // Delete any remaining postscript output
   if (interp->output != NULL) dviDeletePostscriptState(interp->output);
@@ -863,13 +863,13 @@ postscriptPage *dviNewPostscriptPage()
  {
   postscriptPage *page;
   page = (postscriptPage *)lt_malloc(sizeof(postscriptPage));
-  if (page==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (page==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
   page->boundingBox = NULL;
   page->textSizeBox = NULL;
   //page->position[0] = 0;
   //page->position[1] = 0;
   page->text = ListInit();
-  if (page->text==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return NULL; }
+  if (page->text==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return NULL; }
   //page->currentPosition = NULL; // No position set initially
   return page;
  }
@@ -915,7 +915,7 @@ int dviPostscriptAppend(dviInterpreterState *interp, char *new)
   // Grab the new string and copy it into place
   len = strlen(new)+1;
   s = (char *)lt_malloc(len*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   strncpy(s, new, len);
   ListAppendPtr(interp->output->currentPage->text, (void *)s, len, 0, DATATYPE_VOID);
   return 0;
@@ -960,7 +960,7 @@ int dviPostscriptLineto(dviInterpreterState *interp)
   // If we don't have a current position make one, else set the current ps position to the dvi one
   if (interp->output->currentPosition == NULL)
    {
-    ppl_error(ERR_INTERNAL,"postscript error: lineto command issued with NULL current state!");
+    ppl_error(ERR_INTERNAL, -1, -1,"postscript error: lineto command issued with NULL current state!");
     return DVIE_INTERNAL;
    }
   else
@@ -983,7 +983,7 @@ int dviPostscriptClosepathFill(dviInterpreterState *interp)
   if ((err=dviPostscriptAppend(interp, s))!=0) return err;
   if (interp->output->currentPosition == NULL)
    {
-    ppl_error(ERR_INTERNAL,"postscript error: closepath command issued with NULL current state!");
+    ppl_error(ERR_INTERNAL, -1, -1,"postscript error: closepath command issued with NULL current state!");
     return DVIE_INTERNAL;
    }
   else
@@ -1046,7 +1046,7 @@ int dviTypeset(dviInterpreterState *interp)
   // Count the number of characters to write to the ps string
   chars = strlen(interp->currentString)+9;
   s = (char *)lt_malloc(chars*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   snprintf(s, chars, "(%s) show\n", interp->currentString);
 
   // Send the string off to the postscript routine and clean up memory
@@ -1089,7 +1089,7 @@ int dviChngFnt(dviInterpreterState *interp, int fn)
   // See whether we found the font, and if not, throw an error
   if (interp->curFnt == NULL)
    {
-    ppl_error(ERR_INTERNAL,"Corrupt DVI file: failed to find current font");
+    ppl_error(ERR_INTERNAL, -1, -1,"Corrupt DVI file: failed to find current font");
     return DVIE_CORRUPT;
    }
 
@@ -1097,7 +1097,7 @@ int dviChngFnt(dviInterpreterState *interp, int fn)
   font = (dviFontDetails *)ListIter->data;
   len = strlen(font->psName) + 20;
   s = (char *)lt_malloc(len*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
   size = font->useSize*interp->scale;
   if (DEBUG) { sprintf(temp_err_string, "DVI: Font useSize %d size %g changed to %d", font->useSize, size, (int)ceil(size-.5)); ppl_log(temp_err_string); }
   snprintf(s, len, "/%s %d selectfont\n", font->psName, (int)ceil(size-.5));
@@ -1156,7 +1156,7 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
   if (interp->boundingBox == NULL)
    {
     bb = (double *)lt_malloc(4*sizeof(double));
-    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    if (bb==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
     bb[0] = bbObj[0];
     bb[1] = bbObj[1];
     bb[2] = bbObj[2];
@@ -1182,7 +1182,7 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
   if (interp->textSizeBox == NULL)
    {
     bb = (double *)lt_malloc(4*sizeof(double));
-    if (bb==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return DVIE_MEMORY; }
+    if (bb==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return DVIE_MEMORY; }
     bb[0] = bbObj[0];
     bb[1] = bbObj[1];
     bb[2] = bbObj[2];

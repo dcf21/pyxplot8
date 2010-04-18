@@ -140,15 +140,15 @@ void CheckForGvOutput()
      StrRemoveCompleteLine(PipeOutputBuffer, linebuffer);
      if (linebuffer[0]=='\0') continue;
      if (strstr(linebuffer, SIGTERM_NAME)!=NULL) continue;
-     if (strncmp(linebuffer, SED_COMMAND, strlen(SED_COMMAND))==0) ppl_error(ERR_GENERAL, "A problem was encounter with the supplied regular expression.");
-     else ppl_error(ERR_GENERAL, linebuffer);
+     if (strncmp(linebuffer, SED_COMMAND, strlen(SED_COMMAND))==0) ppl_error(ERR_GENERAL, -1, -1, "A problem was encounter with the supplied regular expression.");
+     else ppl_error(ERR_GENERAL, -1, -1, linebuffer);
     }
   return;
  }
 
 void SendCommandToCSP(char *cmd)
  {
-  if (write(PipeMAIN2CSP[1], cmd, strlen(cmd)) != strlen(cmd)) ppl_error(ERR_INTERNAL, "Attempt to send a message to the CSP failed.");
+  if (write(PipeMAIN2CSP[1], cmd, strlen(cmd)) != strlen(cmd)) ppl_error(ERR_INTERNAL, -1, -1, "Attempt to send a message to the CSP failed.");
   return;
  }
 
@@ -324,7 +324,7 @@ int CSPForkNewGv(char *fname, List *gv_list)
                && (execlp(ViewerApp, GHOSTVIEW_COMMAND, fname, NULL)!=0)) 
        )     if (DEBUG) ppl_log("Attempt to execute ghostview returned error code."); // Execute GhostView
     sprintf(temp_err_string, "Execution of ghostview using binary '%s' failed; has it been reinstalled since pyxplot was installed?", GHOSTVIEW_COMMAND);
-    ppl_error(ERR_GENERAL, temp_err_string); // execlp call should not return
+    ppl_error(ERR_GENERAL, -1, -1, temp_err_string); // execlp call should not return
     exit(1);
    }
   return 0;
@@ -437,7 +437,7 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
       close(PipeCSP2MAIN[1]);
      }
     if (execl(SED_COMMAND, SED_COMMAND, cmd, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute sed returned error code."); // Execute sed
-    ppl_error(ERR_GENERAL, "Execution of helper process 'sed' failed."); // execlp call should not return
+    ppl_error(ERR_GENERAL, -1, -1, "Execution of helper process 'sed' failed."); // execlp call should not return
     exit(1);
    }
   return;
@@ -493,7 +493,7 @@ void ForkLaTeX(char *filename, int *PidOut, int *fstdin, int *fstdout)
       close(fd1[1]);
      }
     if (execl(LATEX_COMMAND, LATEX_COMMAND, "-file-line-error", filename, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute latex returned error code."); // Execute latex
-    ppl_error(ERR_GENERAL, "Execution of helper process 'latex' failed."); // execlp call should not return
+    ppl_error(ERR_GENERAL, -1, -1, "Execution of helper process 'latex' failed."); // execlp call should not return
     exit(1);
    }
   return;
@@ -544,7 +544,7 @@ void ForkInputFilter(char **cmd, int *fstdout)
      }
     if (execvp(cmd[0], cmd)!=0) if (DEBUG) ppl_log("Attempt to execute input filter returned error code."); // Execute input filter
     sprintf(temp_err_string, "Execution of input filter '%s' failed.", cmd[0]);
-    ppl_error(ERR_GENERAL, temp_err_string); // execvp call should not return
+    ppl_error(ERR_GENERAL, -1, -1, temp_err_string); // execvp call should not return
     exit(1);
    }
   return;

@@ -67,7 +67,7 @@ void bmp_colour_count(bitmap_data *image)
 
   // Reduce to paletted image if possible
   image->palette = (unsigned char *)lt_malloc(3*ncols);
-  if (image->palette == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   // Copy colours we found into palette
   for (i=0; i<ncols; i++)

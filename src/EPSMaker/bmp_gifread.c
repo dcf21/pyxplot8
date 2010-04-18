@@ -52,7 +52,7 @@ void bmp_gifread(FILE *in, bitmap_data *image)
 
   if      (!strcmp((char *)buff,"87a")) { if (DEBUG) ppl_log("GIF image in format GIF87a"); }
   else if (!strcmp((char *)buff,"89a")) { if (DEBUG) ppl_log("GIF image in format GIF89a"); }
-  else                                  { ppl_error(ERR_FILE,"GIF image file is in an unrecognised format"); return; }
+  else                                  { ppl_error(ERR_FILE, -1, -1,"GIF image file is in an unrecognised format"); return; }
 
   fread(buff,4,1,in);
   width  = ((unsigned)buff[1]<<8) + buff[0];
@@ -76,7 +76,7 @@ void bmp_gifread(FILE *in, bitmap_data *image)
   if (gcm)
    {
     image->palette = (unsigned char *)lt_malloc(ncols*3);
-    if (image->palette == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     fread(image->palette,ncols*3,1,in);
     image->pal_len = ncols;
    }
@@ -89,7 +89,7 @@ void bmp_gifread(FILE *in, bitmap_data *image)
     if (DEBUG) { sprintf(temp_err_string, "Extension block %d",(int)flags); ppl_log(temp_err_string); }
     if ((int)flags==249){
       fread(&flags,1,1,in);
-      if (flags!=4) { ppl_error(ERR_FILE, "GIF image file has an unexpected extension length"); return; }
+      if (flags!=4) { ppl_error(ERR_FILE, -1, -1, "GIF image file has an unexpected extension length"); return; }
       fread(&flags,1,1,in);
       if (flags&1)
        {
@@ -102,13 +102,13 @@ void bmp_gifread(FILE *in, bitmap_data *image)
       else
        { fseek(in,3,SEEK_CUR); }
       fread(&flags,1,1,in);
-      if (flags) { ppl_error(ERR_FILE, "GIF image file has unexpected extension data"); return; }
+      if (flags) { ppl_error(ERR_FILE, -1, -1, "GIF image file has unexpected extension data"); return; }
      }
     else
      {
       do
        {
-        if (!fread(&flags,1,1,in)) { ppl_error(ERR_FILE, "GIF image file ends prematurely"); return; }
+        if (!fread(&flags,1,1,in)) { ppl_error(ERR_FILE, -1, -1, "GIF image file ends prematurely"); return; }
         fseek(in,(long)flags,SEEK_CUR);
        }
       while(flags);
@@ -139,7 +139,7 @@ void bmp_gifread(FILE *in, bitmap_data *image)
     if (DEBUG) { sprintf(temp_err_string, "Local number of colours=%d",ncols); ppl_log(temp_err_string); }
     if (gcm) free (image->palette);
     image->palette=malloc(ncols*3);
-    if (image->palette == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     fread(image->palette,ncols*3,1,in);
     image->pal_len=ncols;
    }
@@ -148,14 +148,14 @@ void bmp_gifread(FILE *in, bitmap_data *image)
 
   if (interlaced && DEBUG) { sprintf(temp_err_string, "Interlaced"); ppl_log(temp_err_string); }
 
-  if (lxoff || lyoff || (lw!=width) || (lh!=height)) { ppl_error(ERR_FILE, "GIF image file cannot be processed because local and global sizes differ; file appears to be corrupt"); return; }
+  if (lxoff || lyoff || (lw!=width) || (lh!=height)) { ppl_error(ERR_FILE, -1, -1, "GIF image file cannot be processed because local and global sizes differ; file appears to be corrupt"); return; }
 
   fread(&flags,1,1,in);
   lzwcs = flags+1;
   if (DEBUG) { sprintf(temp_err_string, "Initial code size=%ld",lzwcs); ppl_log(temp_err_string); }
 
   rawz = (unsigned char *)lt_malloc((width*height*3)/2);
-  if (rawz == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (rawz == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   datalen = 0;
   fread(&len,1,1,in);
@@ -168,12 +168,12 @@ void bmp_gifread(FILE *in, bitmap_data *image)
   if (DEBUG) { sprintf(temp_err_string, "Total GIF data length=%ld",datalen); ppl_log(temp_err_string); }
 
   image->data = (unsigned char *)lt_malloc(width*height);
-  if (image->data == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (image->data == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   datalen = bmp_de_lzw(rawz,image->data,width*height,lzwcs);
 
   if (datalen == 0) { image->data = NULL; return; } // Subroutine failed
-  if (datalen != width*height) { sprintf(temp_err_string, "Decoding error whilst processing GIF image file. Expecting %ld bytes of decoded data, but received %ld.",width*height,datalen); ppl_error(ERR_FILE, temp_err_string); return; }
+  if (datalen != width*height) { sprintf(temp_err_string, "Decoding error whilst processing GIF image file. Expecting %ld bytes of decoded data, but received %ld.",width*height,datalen); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
 
   image->data_len = width*height;
   image->height   = height;
@@ -195,7 +195,7 @@ int bmp_de_gifinterlace(bitmap_data *image)
   unsigned char *out,*in,*outp;
 
   out = (unsigned char *)lt_malloc(image->height*image->width);
-  if (out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+  if (out == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return 1; }
 
   in = image->data;
 
@@ -251,7 +251,7 @@ unsigned long bmp_de_lzw(unsigned char *buff, unsigned char *out, unsigned long 
   start = out;
   end   = out+len;
 
-  if (cs>MAXCS) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: initial token size of %d too large",cs); ppl_error(ERR_FILE, temp_err_string); return 0; }
+  if (cs>MAXCS) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: initial token size of %d too large",cs); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 0; }
 
   // Init table
   off  = 0;
@@ -268,7 +268,7 @@ unsigned long bmp_de_lzw(unsigned char *buff, unsigned char *out, unsigned long 
    }
 
   i = bmp_de_lzw_bits(buff,0,ccs);
-  if (i!=clr) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: ClearCode not first code, but instead got %x",i); ppl_error(ERR_FILE, temp_err_string); return 0; }
+  if (i!=clr) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: ClearCode not first code, but instead got %x",i); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 0; }
 
   while(1)
    {
@@ -284,8 +284,8 @@ unsigned long bmp_de_lzw(unsigned char *buff, unsigned char *out, unsigned long 
 
     if (i==eoi) return(out-start);
 
-    if (i>=tpos) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: token erroneously large"); ppl_error(ERR_FILE, temp_err_string); return 0; }
-    if (out>end) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: output buffer full"); ppl_error(ERR_FILE, temp_err_string); return 0; }
+    if (i>=tpos) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: token erroneously large"); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 0; }
+    if (out>end) { sprintf(temp_err_string, "Whilst decoding GIF image file, encountered de_lzw error: output buffer full"); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 0; }
 
     if (tpos<=tmax)
      {
@@ -299,7 +299,7 @@ unsigned long bmp_de_lzw(unsigned char *buff, unsigned char *out, unsigned long 
     if ((tpos==(1<<ccs)+1) && (ccs<MAXCS)) ccs++;
    }
   // Should never get here
-  sprintf(temp_err_string, "Whilst decoding GIF image file, encountered unidentified de_lzw error"); ppl_error(ERR_FILE, temp_err_string);
+  sprintf(temp_err_string, "Whilst decoding GIF image file, encountered unidentified de_lzw error"); ppl_error(ERR_FILE, -1, -1, temp_err_string);
   return 0;
  }
 

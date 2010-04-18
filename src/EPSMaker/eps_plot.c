@@ -71,7 +71,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
     for (i=0; i<*NExpect; i++)
      {
       AutoItem = (char *)lt_malloc(10);
-      if (AutoItem == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return 1; }
+      if (AutoItem == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; }
       sprintf(AutoItem, "%d", i+1);
       tempdict = DictInit();
       DictAppendPtr(tempdict, "using_item", (void *)AutoItem, 0, 0, DATATYPE_VOID);
@@ -84,7 +84,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
     temp = (char *)ListPop(UsingList);
     tempdict = DictInit();
     temp2 = (char *)lt_malloc(2);
-    if (temp2==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return 1; }
+    if (temp2==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; }
     strcpy(temp2, "0");
     DictAppendPtr(tempdict, "using_item", temp2, 0, 0, DATATYPE_VOID);
     ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID);
@@ -147,7 +147,7 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
  }
 
 #define WWCUID(X) \
- if (!FirstValues[i].dimensionless) { sprintf(temp_err_string, "The expression specified for the %s should have been dimensionless, but instead had units of <%s>. Cannot plot this dataset.", X, ppl_units_GetUnitStr(FirstValues+i, NULL, NULL, 0, 1, 0)); ppl_error(ERR_NUMERIC,temp_err_string); return 1; } \
+ if (!FirstValues[i].dimensionless) { sprintf(temp_err_string, "The expression specified for the %s should have been dimensionless, but instead had units of <%s>. Cannot plot this dataset.", X, ppl_units_GetUnitStr(FirstValues+i, NULL, NULL, 0, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1,temp_err_string); return 1; } \
  i--; \
  if (i<0) i=0;
 
@@ -237,8 +237,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     axis   = &axissets[xyz][axis_n];
 
     // Check if we have partial range which conflicts with units of range of axis
-    if ((pr->MinSet && (!pr->MaxSet)) && axis->HardMaxSet && (!pr->AutoMaxSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
-    if (((!pr->MinSet) && pr->MaxSet) && axis->HardMinSet && (!pr->AutoMinSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); *(x->status) = 1; return; }
+    if ((pr->MinSet && (!pr->MaxSet)) && axis->HardMaxSet && (!pr->AutoMaxSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The minimum limit specified for axis %c%d in the plot command has conflicting units with the maximum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); *(x->status) = 1; return; }
+    if (((!pr->MinSet) && pr->MaxSet) && axis->HardMinSet && (!pr->AutoMinSet) && (!ppl_units_DimEqual(&axis->HardUnit, &pr->unit))) { sprintf(temp_err_string, "The maximum limit specified for axis %c%d in the plot command has conflicting units with the minimum limit of that axis: the former has units of <%s> whilst the latter has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&pr->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); *(x->status) = 1; return; }
 
     // Read information about axis range out of list of ranges supplied to the plot command, ready to pass to eps_plot_ticking
     if (pr->MinSet)     { axis->HardMinSet = 1; axis->HardMin = pr->min; }
@@ -270,13 +270,14 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
    {
     x->current->plotdata      = (DataTable **)lt_malloc(Ndatasets * sizeof(DataTable *));
     x->current->DatasetTextID = (int *)lt_malloc(Ndatasets * sizeof(int));
-    if (x->current->plotdata == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
+    if (x->current->plotdata == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
    } else {
     x->current->plotdata = NULL;
    }
 
   // Make raster on which to evaluate parametric functions
   ordinate_raster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
+  if (ordinate_raster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
   if (x->current->settings.Tlog == SW_BOOL_TRUE) LogarithmicRaster(ordinate_raster, x->current->settings.Tmin.real, x->current->settings.Tmax.real, x->current->settings.samples);
   else                                           LinearRaster     (ordinate_raster, x->current->settings.Tmin.real, x->current->settings.Tmax.real, x->current->settings.samples);
 
@@ -317,11 +318,21 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
        } else {
         double *special_raster = ordinate_raster;
         int     Nsamples       = x->current->settings.samples;
+        value  *raster_unit    = &settings_graph_current.Tmin;
         DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "t", NULL, NULL, &special_raster, &Nsamples);
+
+        if ((special_raster == ordinate_raster) && (pd->TRangeSet))
+         {
+          special_raster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
+          if (special_raster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
+          if (x->current->settings.Tlog == SW_BOOL_TRUE) LogarithmicRaster(special_raster, pd->Tmin.real, pd->Tmax.real, x->current->settings.samples);
+          else                                           LinearRaster     (special_raster, pd->Tmin.real, pd->Tmax.real, x->current->settings.samples);
+         }
+
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(special_raster, 1, Nsamples, &settings_graph_current.Tmin, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
+        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
        }
-      if (status) { ppl_error(ERR_GENERAL, errbuffer); x->current->plotdata[i]=NULL; }
+      if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
       else
        {
         // Update axes to reflect usage
@@ -398,7 +409,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
         if ((!gsl_finite(left2))||(!gsl_finite(right2))||(right2<=left2)||(left2<0)||(left2>1)||(right2<0)||(right2>1)) { left2=0.0; right2=1.0; }
 
         OrdinateRaster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
-        if (OrdinateRaster == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
+        if (OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
         for (j=0; j<x->current->settings.samples; j++)
           OrdinateRaster[j] = eps_plot_axis_InvGetPosition(left2 + (right2-left2)*((double)j)/(x->current->settings.samples-1), OrdinateAxis);
         OrdinateRasterLen = x->current->settings.samples;
@@ -408,7 +419,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
         if (OrdinateAxis->OrdinateRaster == NULL) // Make ordinate raster if we don't already have one
          {
           OrdinateAxis->OrdinateRaster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
-          if (OrdinateAxis->OrdinateRaster == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *(x->status) = 1; return; }
+          if (OrdinateAxis->OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
           for (j=0; j<x->current->settings.samples; j++)
             OrdinateAxis->OrdinateRaster[j] = eps_plot_axis_InvGetPosition(((double)j)/(x->current->settings.samples-1), OrdinateAxis);
           OrdinateAxis->OrdinateRasterLen = x->current->settings.samples;
@@ -424,7 +435,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       Nsamples      = OrdinateRasterLen;
       DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
       DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, &ErrCount);
-      if (status) { ppl_error(ERR_GENERAL, errbuffer); x->current->plotdata[i]=NULL; }
+      if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage
       status=eps_plot_styles_UpdateUsage(x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2], &axissets[pd->axis3xyz][pd->axis3], &x->current->settings, pd->axis1xyz, pd->axis2xyz, pd->axis3xyz, pd->axis1, pd->axis2, pd->axis3, x->current->id);

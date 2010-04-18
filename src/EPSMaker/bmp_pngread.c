@@ -54,12 +54,12 @@ void bmp_pngread(FILE *in, bitmap_data *image)
 
   // Initialise libpng data structures
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (png_ptr == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (png_ptr == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   info_ptr = png_create_info_struct(png_ptr);
-  if (info_ptr == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (info_ptr == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
-  if (setjmp(png_jmpbuf(png_ptr))) { ppl_error(ERR_INTERNAL, "Unexpected error in libpng while trying to decode PNG image file"); return; }
+  if (setjmp(png_jmpbuf(png_ptr))) { ppl_error(ERR_INTERNAL, -1, -1, "Unexpected error in libpng while trying to decode PNG image file"); return; }
 
   png_init_io(png_ptr, in);
   png_set_sig_bytes(png_ptr, 3); // Three bytes consumed before this routine was called
@@ -106,10 +106,10 @@ void bmp_pngread(FILE *in, bitmap_data *image)
     image->type   = BMP_COLOUR_PALETTE;
     image->colour = BMP_COLOUR_PALETTE;
     i = png_get_PLTE(png_ptr,info_ptr,&palette,&ncols);
-    if (i==0) { ppl_error(ERR_FILE, "PNG image file claims to be paletted, but no palette was found"); return; }
+    if (i==0) { ppl_error(ERR_FILE, -1, -1, "PNG image file claims to be paletted, but no palette was found"); return; }
     image->pal_len = ncols;
     image->palette = (unsigned char *)lt_malloc(ncols*3);
-    if (image->palette == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     for (i=0; i<ncols; i++)
      {
       *(image->palette+3*i  ) = palette[i].red;
@@ -129,11 +129,11 @@ void bmp_pngread(FILE *in, bitmap_data *image)
 
   // Allocate block of memory for uncompressed image
   image->data = (unsigned char *)lt_malloc(row_bytes*height);
-  if (image->data == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (image->data == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   // libpng requires a sepate pointer to each row of image
   row_ptrs = (png_bytep *)malloc(height*sizeof(png_bytep));
-  if (row_ptrs == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); image->data = NULL; return; }
+  if (row_ptrs == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); image->data = NULL; return; }
 
   for (i=0; i<height; i++) row_ptrs[i] = image->data + row_bytes*i;
 

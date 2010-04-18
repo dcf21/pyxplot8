@@ -313,6 +313,7 @@ Dict *parse(char *line)
 
     if ((success==0) || (line[linepos]!='\0'))
      {
+      int HighlightPos1=-1, HighlightPos2=-1;
       if (AlgebraLinepos < 0) strcpy(ErrText, "\nSyntax Error: ");
       else                    strcpy(ErrText, "\nAt this point, was ");
       ErrPos = strlen(ErrText);
@@ -327,7 +328,10 @@ Dict *parse(char *line)
       for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
       strcpy(ErrText+ErrPos, " |\n");                    ErrPos += strlen(ErrText+ErrPos);
       for (i=0;i<ExpectingLinePos;i++) ErrText[ErrPos++] = ' ';
-      sprintf(ErrText+ErrPos, "\\|/\n %s", line);        ErrPos += strlen(ErrText+ErrPos);
+      sprintf(ErrText+ErrPos, "\\|/\n %s", line);
+      HighlightPos1 = ErrPos + 5 + ExpectingLinePos;
+      if (AlgebraLinepos >= 0) HighlightPos2 = ErrPos + 5 + AlgebraLinepos;
+      ErrPos += strlen(ErrText+ErrPos);
       if (AlgebraLinepos >= 0)
        {
         ErrText[ErrPos++] = '\n';
@@ -337,7 +341,7 @@ Dict *parse(char *line)
         sprintf(ErrText+ErrPos, " |\n%s", AlgebraError); ErrPos += strlen(ErrText+ErrPos);
        }
       strcpy(ErrText+ErrPos, "\n"); ErrPos += strlen(ErrText+ErrPos);
-      ppl_error(ERR_PREFORMED,ErrText);
+      ppl_error(ERR_PREFORMED, HighlightPos1, HighlightPos2, ErrText);
       return NULL;
      }
     return output;
@@ -378,7 +382,7 @@ char *parse_autocomplete(const char *LineConst, int status)
     else
      {
       i = strlen(rl_line_buffer) + strlen(InputLineAddBuffer);
-      if ((line = (char *)malloc((i+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
+      if ((line = (char *)malloc((i+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
       strcpy(line, InputLineAddBuffer);
       strcpy(line+strlen(line) , rl_line_buffer);
       line[i] = '\0';
@@ -413,7 +417,7 @@ char *parse_autocomplete(const char *LineConst, int status)
        {
         if (status < 0) // Special case: use Readline's filename tab completion
          {
-          if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
+          if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
           strcpy(output, expecting);
           return output;
          } else {
@@ -422,7 +426,7 @@ char *parse_autocomplete(const char *LineConst, int status)
        }
       if (expecting[0] != '\0') // We have a new completion option; do not iterate through more commands
        {
-        if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
+        if ((output = (char *)malloc((strlen(expecting)+1)*sizeof(char)))==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst trying to generate tab-completion suggestions."); return NULL; }
         strcpy(output, expecting);
         return output;
        }
@@ -474,7 +478,7 @@ void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *
  {
   unsigned char repeating=0, first=0;
   int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, j, ACLevel;
-  union {double _dbl; int _int; char *_str; value _val; } MatchVal;
+  struct {int _int; char *_str; value _val; } MatchVal;
   char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4], QuoteType;
   unsigned char DummyStatus[ALGEBRA_MAXLENGTH];
   Dict *OutputOld=NULL, *DictBaby=NULL;
@@ -693,21 +697,21 @@ NO_TAB_COMPLETION:
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
              }
-            else if (!gsl_finite(MatchVal._dbl))
+            else if (!gsl_finite(MatchVal._val.real))
              {
               sprintf(AlgebraError, "Axis numbers must be finite real integers in the range 1 - %d.",MAX_AXES-1);
               *AlgebraLinepos = *linepos;
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
              }
-            else if ((MatchVal._dbl>=INT_MAX)||(MatchVal._dbl>=MAX_AXES))
+            else if ((MatchVal._val.real>=INT_MAX)||(MatchVal._val.real>=MAX_AXES))
              {
               sprintf(AlgebraError, "A maximum of %d parallel axes are allowed; axis numbers greater than %d are not permitted.",MAX_AXES-1,MAX_AXES-1);
               *AlgebraLinepos = *linepos;
               *match          = 1; // Fudge to make sure error is displayed
               *success        = 0;
              }
-            else if ((MatchVal._dbl<1)||(!gsl_finite(MatchVal._dbl)))
+            else if ((MatchVal._val.real<1)||(!gsl_finite(MatchVal._val.real)))
              {
               sprintf(AlgebraError, "Axis numbers must be greater than or equal to one.");
               *AlgebraLinepos = *linepos;
@@ -716,7 +720,7 @@ NO_TAB_COMPLETION:
              }
             else
              {
-              sprintf(TempMatchStr+1, "%d", (int)floor(MatchVal._dbl));
+              sprintf(TempMatchStr+1, "%d", (int)floor(MatchVal._val.real));
               *linepos = i;
              }
            }
@@ -787,13 +791,13 @@ NO_TAB_COMPLETION:
            }
           else if (strcmp(node->MatchString, "%d")==0)
            {
-            if (!gsl_finite(MatchVal._dbl))
+            if (!gsl_finite(MatchVal._val.real))
              {
               sprintf(AlgebraError, "This integer value is not finite and real.");
               *AlgebraLinepos = *linepos;
               *success        = 0;
              }
-            else if ((MatchVal._dbl<=INT_MIN)||(MatchVal._dbl>=INT_MAX))
+            else if ((MatchVal._val.real<=INT_MIN)||(MatchVal._val.real>=INT_MAX))
              {
               sprintf(AlgebraError, "This integer value is too large.");
               *AlgebraLinepos = *linepos;
@@ -807,8 +811,7 @@ NO_TAB_COMPLETION:
            }
           else if (strcmp(node->MatchString, "%f")==0)
            {
-            MatchVal._dbl = MatchVal._val.real;
-            MatchType     = DATATYPE_FLOAT;
+            MatchType    = DATATYPE_FLOAT;
            }
           else
            {
@@ -843,10 +846,10 @@ NO_TAB_COMPLETION:
           if ((node->VarSetVal != NULL) && (node->VarSetVal[0]  != '\0'))  DictAppendString(output , node->VarName , node->VarSetVal);
           else
            {
-            if      (MatchType == DATATYPE_INT)    DictAppendInt   (output , node->VarName , MatchVal._int);
-            else if (MatchType == DATATYPE_FLOAT)  DictAppendFloat (output , node->VarName , MatchVal._dbl);
-            else if (MatchType == DATATYPE_VALUE)  DictAppendValue (output , node->VarName , MatchVal._val);
-            else if (MatchType == DATATYPE_STRING) DictAppendString(output , node->VarName , MatchVal._str);
+            if      (MatchType == DATATYPE_INT)    DictAppendInt   (output , node->VarName , MatchVal._int     );
+            else if (MatchType == DATATYPE_FLOAT)  DictAppendFloat (output , node->VarName , MatchVal._val.real);
+            else if (MatchType == DATATYPE_VALUE)  DictAppendValue (output , node->VarName , MatchVal._val     );
+            else if (MatchType == DATATYPE_STRING) DictAppendString(output , node->VarName , MatchVal._str     );
            }
          }
        }

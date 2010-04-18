@@ -12,7 +12,7 @@
 //
 // PyXPlot is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the Free Software
-// Foundation; either version 2 of the License, or (at your option) any later
+// Foundation; either version 2 of the License, -1, -1, or (at your option) any later
 // version.
 //
 // You should have received a copy of the GNU General Public License along with
@@ -52,7 +52,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   fread(buff,11,1,in);
   off2 += 11;
 
-  if ((buff[3])||(buff[4])||(buff[5])||(buff[6])) { ppl_error(ERR_FILE,"This bitmap file appears to be corrupted"); return; }
+  if ((buff[3])||(buff[4])||(buff[5])||(buff[6])) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
 
   offset = buff[7] + (buff[8]<<8) + (buff[9]<<16) + (buff[10]<<24);
 
@@ -63,7 +63,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   if ((buff[0]==12)&&(buff[1]==0)) // OS/2 bitmap
    {
     os2=1;
-    if ((buff[8]!=1)||(buff[9])) { ppl_error(ERR_FILE,"This OS/2 bitmap file appears to be corrupted"); return; }
+    if ((buff[8]!=1)||(buff[9])) { ppl_error(ERR_FILE, -1, -1,"This OS/2 bitmap file appears to be corrupted"); return; }
     width  = buff[4] + ((unsigned)buff[5]<<8);
     height = buff[6] + ((unsigned)buff[7]<<8);
     depth  = buff[10];
@@ -73,7 +73,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   else // Windows bitmap
    {
     os2=0;
-    if ((buff[0]!=40)||(buff[1])||(buff[2])||(buff[3])) { ppl_error(ERR_FILE,"This Windows bitmap file appears to be corrupted"); return; }
+    if ((buff[0]!=40)||(buff[1])||(buff[2])||(buff[3])) { ppl_error(ERR_FILE, -1, -1,"This Windows bitmap file appears to be corrupted"); return; }
 
     fread(buff+12,40-12,1,in);
     off2 += 40-12;
@@ -81,7 +81,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     width  = buff[4] + ((unsigned)buff[5]<<8) + ((unsigned)buff[ 6]<<16) + ((unsigned)buff[ 7]<<24);
     height = buff[8] + ((unsigned)buff[9]<<8) + ((unsigned)buff[10]<<16) + ((unsigned)buff[11]<<24);
 
-    if ((buff[12]!=1)||(buff[13])||(buff[15])) { ppl_error(ERR_FILE,"This Windows bitmap file appears to be corrupted"); return; }
+    if ((buff[12]!=1)||(buff[13])||(buff[15])) { ppl_error(ERR_FILE, -1, -1,"This Windows bitmap file appears to be corrupted"); return; }
 
     depth  = buff[14];
     encode = buff[16];
@@ -95,10 +95,10 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
    {
     if      ((encode==1)&&(depth== 8)) rle=8;
     else if ((encode==2)&&(depth== 4)) rle=4;
-    else if ((encode!=3)||(depth!=16)) { ppl_error(ERR_FILE,"This Windows bitmap file has an invalid encoding"); return; }
+    else if ((encode!=3)||(depth!=16)) { ppl_error(ERR_FILE, -1, -1,"This Windows bitmap file has an invalid encoding"); return; }
    }
 
-  if ((depth!=1)&&(depth!=4)&&(depth!=8)&&(depth!=16)&&(depth!=24)) { sprintf(temp_err_string, "Bitmap colour depth of %d not supported\n",depth); ppl_error(ERR_FILE, temp_err_string); return; }
+  if ((depth!=1)&&(depth!=4)&&(depth!=8)&&(depth!=16)&&(depth!=24)) { sprintf(temp_err_string, "Bitmap colour depth of %d not supported\n",depth); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
 
   if (depth<=8) // We have a palette to read
    {
@@ -106,12 +106,12 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     if (!os2  ) ncols = buff[32] + (buff[33]<<8) + (buff[34]<<16) + (buff[35]<<24);
     if (!ncols) ncols = 1<<depth;
 
-    if (ncols > (1<<depth)) { sprintf(temp_err_string, "Bitmap image has a palette length of %d, which is not possible with a colour depth of %d", ncols, depth); ppl_error(ERR_FILE, temp_err_string); return; }
+    if (ncols > (1<<depth)) { sprintf(temp_err_string, "Bitmap image has a palette length of %d, which is not possible with a colour depth of %d", ncols, depth); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
 
     image->pal_len = ncols;
     image->palette = lt_malloc(3*image->pal_len);
     off2 += (4-os2)*image->pal_len;
-    if (image->palette == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     p = image->palette;
     for (i=0; i<image->pal_len; i+=2)
      {
@@ -136,7 +136,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     off2 += 12;
    }
 
-  if      (offset<off2) { ppl_error(ERR_FILE, "This bitmap file appears to be corrupted"); return; }
+  if      (offset<off2) { ppl_error(ERR_FILE, -1, -1, "This bitmap file appears to be corrupted"); return; }
   else if (offset>off2)
    {
     if (DEBUG) { sprintf(temp_err_string, "%ld bytes of extra data", offset-off2); ppl_log(temp_err_string); }
@@ -159,7 +159,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   if (!rle)
    {
     image->data = lt_malloc(dw*height);
-    if (image->data==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (image->data==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     for (i=1 ; i<=height ; i++)
      {
       fread(image->data+(height-i)*dw,dw,1,in);
@@ -182,7 +182,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
      }
    } else {  // if (rle)
     p = lt_malloc(size);
-    if (p==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); image->data = NULL; return; }
+    if (p==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); image->data = NULL; return; }
     fread(p,size,1,in);
     if (bmp_demsrle(image,p,size) != 0) { image->data = NULL; return; }
    }
@@ -208,10 +208,10 @@ void bmp_bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
                       // and the entries are stored as dwords,
                       // not words.
     palette = header+40;
-    if ((palette[0]!=0) || (palette[4]!=0xe0) || (palette[8]!=0x1f) || (palette[9]!=0)) { ppl_error(ERR_FILE, "This 16-bit bitmap file appears to be corrupted"); return; }
+    if ((palette[0]!=0) || (palette[4]!=0xe0) || (palette[8]!=0x1f) || (palette[9]!=0)) { ppl_error(ERR_FILE, -1, -1, "This 16-bit bitmap file appears to be corrupted"); return; }
 
     if (palette[1]&0x80) is15=0;
-   } else if (header[30]!=0) { ppl_error(ERR_FILE, "This 16-bit bitmap file has invalid compression type"); return; }
+   } else if (header[30]!=0) { ppl_error(ERR_FILE, -1, -1, "This 16-bit bitmap file has invalid compression type"); return; }
 
   if (DEBUG)
    {
@@ -222,10 +222,10 @@ void bmp_bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
   image->depth    = 24;
   image->data_len = 3*width*height;
   image->data     = lt_malloc(3*width*height);
-  if (image->data==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+  if (image->data==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   rowptr = lt_malloc(2*width);
-  if (rowptr==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); image->data=NULL; return; }
+  if (rowptr==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); image->data=NULL; return; }
 
   for (i=1; i<=height; i++)
    {
@@ -259,7 +259,7 @@ int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned long len)
   height = image->height;
   width  = image->width;
   rle    = image->depth;
-  if ((rle!=4)&&(rle!=8)) { ppl_error(ERR_FILE,"This bitmap file has an impossible MSRLE image depth"); return 1; }
+  if ((rle!=4)&&(rle!=8)) { ppl_error(ERR_FILE, -1, -1,"This bitmap file has an impossible MSRLE image depth"); return 1; }
   if (DEBUG) { sprintf(temp_err_string, "Bitmap image has RLE%d compression\n",rle); ppl_log(temp_err_string); }
 
   image->depth = 8;
@@ -267,7 +267,7 @@ int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned long len)
   image->data_len = size;
 
   out = (unsigned char *)lt_malloc(size);
-  if (out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+  if (out == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return 1; }
 
   c_in  = in;
   c_out = out;
@@ -305,7 +305,7 @@ int bmp_demsrle(bitmap_data *image, unsigned char *in, unsigned long len)
             delta = *c_in++;    // dx
             for (j=0; (j<delta)&&(c_out<=end); j++) { *c_out++ = 0; }
             delta = *c_in++;    // dy
-            if (i+delta>height) { ppl_error(ERR_FILE,"Image overflow whilst decoding RLE in bitmap image file"); return 1; }
+            if (i+delta>height) { ppl_error(ERR_FILE, -1, -1,"Image overflow whilst decoding RLE in bitmap image file"); return 1; }
             for(j=0; j<delta*width; j++) { *c_out++ =0; }
             i   += delta;
             end += width*delta;

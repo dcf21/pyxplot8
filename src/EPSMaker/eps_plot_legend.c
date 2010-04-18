@@ -41,6 +41,7 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_texify.h"
+#include "ppl_units_fns.h"
 
 #include "eps_colours.h"
 #include "eps_comm.h"
@@ -71,6 +72,7 @@ void GraphLegend_YieldUpText(EPSComm *x)
        {
         k=0;
         if (pd->parametric) { sprintf(cptr+k, "parametric"); k+=strlen(cptr+k); }
+        if (pd->TRangeSet)  { sprintf(cptr+k, " [%s:%s]", ppl_units_NumericDisplay(&pd->Tmin,0,SW_DISPLAY_L,0), ppl_units_NumericDisplay(&pd->Tmax,1,SW_DISPLAY_L,0)); k+=strlen(cptr+k); }
         if (!pd->function) { cptr[k++]=' '; StrEscapify(pd->filename, buffer); inlen=strlen(buffer); BracketLevel=0; status=-1; texify_generic(buffer, &inlen, cptr+k, 0, &status, temp_err_string, 1, &BracketLevel); if (status>=0) cptr[k++]='?'; else k+=strlen(cptr+k); } // Filename of datafile we are plotting
         else
          for (j=0; j<pd->NFunctions; j++) // Print out the list of functions which we are plotting

@@ -48,10 +48,12 @@ void ppl_error_setstreaminfo(int linenumber,char *filename)
   return;
  }
 
-void ppl_error(int ErrType, char *msg)
+void ppl_error(int ErrType, int HighlightPos1, int HighlightPos2, char *msg)
  {
-  int i=0;
+  unsigned char ApplyHighlighting, reverse=0;
+  int i=0, j;
 
+  ApplyHighlighting = ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDERR_FILENO) == 1));
   if (msg!=temp_stringA) { strcpy(temp_stringA, msg); msg = temp_stringA; }
 
   temp_stringB[i]='\0';
@@ -79,12 +81,20 @@ void ppl_error(int ErrType, char *msg)
     i += strlen(temp_stringB+i);
    }
 
-  strcpy(temp_stringB+i, msg);
+  for (j=0; msg[j]!='\0'; j++)
+   {
+    if (ApplyHighlighting && ((j==HighlightPos1-1) || (j==HighlightPos2-1))) { if (reverse==0) { strcpy(temp_stringB+i, "\x1b[7m"); i+=strlen(temp_stringB+i); } reverse=3; }
+    else if (ApplyHighlighting && (reverse==1)) { strcpy(temp_stringB+i, "\x1b[27m"); i+=strlen(temp_stringB+i); reverse=0; }
+    else if (ApplyHighlighting && (reverse> 1)) reverse--;
+    temp_stringB[i++] = msg[j];
+   }
+  if (ApplyHighlighting && (reverse!=0)) { strcpy(temp_stringB+i, "\x1b[27m"); i+=strlen(temp_stringB+i); reverse=0; }
+  temp_stringB[i] = '\0';
 
   if (DEBUG) { ppl_log(temp_stringB); }
 
   // Print message in colour or monochrome
-  if ((settings_session_default.colour == SW_ONOFF_ON) && (isatty(STDERR_FILENO) == 1))
+  if (ApplyHighlighting)
    sprintf(temp_stringC, "%s%s%s\n", *(char **)FetchSettingName( settings_session_default.colour_err , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)),
                                      temp_stringB,
                                      *(char **)FetchSettingName( SW_TERMCOL_NOR                      , SW_TERMCOL_INT , (void *)SW_TERMCOL_TXT, sizeof(char *)) );
@@ -99,7 +109,7 @@ void ppl_fatal(char *file, int line, char *msg)
   char introline[FNAME_LENGTH];
   if (msg!=temp_stringE) strcpy(temp_stringE, msg);
   sprintf(introline, "Fatal Error encountered in %s at line %d: %s", file, line, temp_stringE);
-  ppl_error(ERR_PREFORMED, introline);
+  ppl_error(ERR_PREFORMED, -1, -1, introline);
   lt_FreeAll(0);
   if (DEBUG) ppl_log("Terminating with error condition 1.");
   exit(1);

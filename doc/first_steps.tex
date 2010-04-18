@@ -588,8 +588,6 @@ $e$ & Plot only up to the $e\,$th line within each block. \\
 $f$ & Plot only up to the $f\,$th block within each index block. \\
 \end{longtable}
 
-\newpage %% FUDGE!!
-
 \noindent Any or all of these values can be omitted, and so the following would
 both be valid statements:
 
@@ -600,6 +598,15 @@ plot 'data.dat' index 1 every ::3
 
 \noindent The first would plot only every other \datapoint\ from every third
 data block; the second from the third line onwards within each data block.
+
+\index{comment lines!in datafiles}
+Comment lines may be included in \datafile s by prefixing them with a hash
+character. Such lines are completely ignored by PyXPlot and do not count
+towards the one or two blank lines required to separate blocks and index
+blocks.  It is usually good practice to include comment lines at the top of
+\datafile s to indicate their date and source. In
+Section~\ref{sec:special_comments} we will see that PyXPlot can read metadata
+from some comment lines which follow particular syntax.
 
 \example{ex:datafile}{An example}{
 Here, we have an example of plotting a datafile.
@@ -635,12 +642,13 @@ plot '*.dat' using 1:2, '' using 2:3
 \end{verbatim}
 
 \subsection{Horizontally arranged \Datafile s}
-
+\label{sec:horizontal_datafiles}
 \index{horizontal datafiles}\index{datafiles!horizontal}\index{using rows
 modifier@{\tt using rows} modifier}\index{using columns modifier@{\tt using
-columns} modifier}\label{sec:horizontal_datafiles} PyXPlot also allows rows of
-data to be plotted against one another. To do so, the keyword \indkeyt{rows} is
-placed after the {\tt using} modifier:
+columns} modifier}
+
+PyXPlot also allows rows of data to be plotted against one another. To do so,
+the keyword \indkeyt{rows} is placed after the {\tt using} modifier:
 
 \begin{verbatim}
 plot 'data.dat' index 1 using rows 1:2

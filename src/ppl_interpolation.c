@@ -84,12 +84,12 @@ int directive_interpolate(Dict *command, int mode)
 
   // Expand filename if it contains wildcards
   DictLookup(command,"filename",NULL,(void **)(&cptr));
-  if (cptr==NULL) ppl_error(ERR_INTERNAL, "File attribute not found in interpolate command.");
+  if (cptr==NULL) ppl_error(ERR_INTERNAL, -1, -1, "File attribute not found in interpolate command.");
   filename = ppl_glob_oneresult(cptr);
   if (filename == NULL) return 1;
 
   status=0;
-  DictLookup(command, "fit_function",NULL, (void **)&fitfunc);    if (fitfunc  == NULL) { ppl_error(ERR_INTERNAL, "ppl_interpolation could not read name of function for output."); return 1; }
+  DictLookup(command, "fit_function",NULL, (void **)&fitfunc);    if (fitfunc  == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_interpolation could not read name of function for output."); return 1; }
   DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
   DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
   DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
@@ -104,15 +104,15 @@ int directive_interpolate(Dict *command, int mode)
   TempDict = (Dict *)ListIter->data;
   DictLookup(TempDict,"min",NULL,(void **)&xmin);
   DictLookup(TempDict,"max",NULL,(void **)&xmax);
-  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
   ListIter = ListIterate(ListIter, NULL);
   if (ListIter == NULL) goto RANGES_DONE;
   TempDict = (Dict *)ListIter->data;
   DictLookup(TempDict,"min",NULL,(void **)&ymin);
   DictLookup(TempDict,"max",NULL,(void **)&ymax);
-  if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
   ListIter = ListIterate(ListIter, NULL);
-  if (ListIter != NULL) { ppl_error(ERR_SYNTAX, "Too many ranges have been supplied to the interpolate command. Only two are allowed: one for each ordinate."); return 1; }
+  if (ListIter != NULL) { ppl_error(ERR_SYNTAX, -1, -1, "Too many ranges have been supplied to the interpolate command. Only two are allowed: one for each ordinate."); return 1; }
 
 RANGES_DONE:
 
@@ -123,25 +123,25 @@ RANGES_DONE:
   else if (mode == INTERP_SPLINE) { SplineType = gsl_interp_cspline;    NxRequired = 3; }
   else if (mode == INTERP_AKIMA ) { SplineType = gsl_interp_akima;      NxRequired = 5; }
   else if (mode == INTERP_POLYN ) { SplineType = gsl_interp_polynomial; NxRequired = 3; }
-  else                            { ppl_error(ERR_INTERNAL, "interpolate command requested to perform unknown type of interpolation."); return 1; }
+  else                            { ppl_error(ERR_INTERNAL, -1, -1, "interpolate command requested to perform unknown type of interpolation."); return 1; }
 
   // Check that the function we're about to replace isn't a system function
   DictLookup(_ppl_UserSpace_Funcs, fitfunc, NULL, (void *)&FuncPtr); // Check whether we are going to overwrite an existing function
   if ((FuncPtr!=NULL)&&((FuncPtr->FunctionType==PPL_USERSPACE_SYSTEM)||(FuncPtr->FunctionType==PPL_USERSPACE_STRFUNC)||(FuncPtr->FunctionType==PPL_USERSPACE_UNIT)))
-   { sprintf(temp_err_string, "Attempt to redefine a core system function %s()", fitfunc); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+   { sprintf(temp_err_string, "Attempt to redefine a core system function %s()", fitfunc); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   ContextOutput  = lt_GetMemContext();
   ContextLocalVec= lt_DescendIntoNewContext();
   ContextDataTab = lt_DescendIntoNewContext();
 
   DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, 2, SelectCrit, continuity, &ErrCount);
-  if (status) { ppl_error(ERR_GENERAL, errtext); return 1; }
+  if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
 
   xdata = (double *)lt_malloc_incontext(2 * data->Nrows * sizeof(double), ContextLocalVec); // Transfer data from multiple data tables into single vectors
   ydata = xdata + data->Nrows;
   Nrows = data->Nrows;
 
-  if ((xdata==NULL)||(ydata==NULL)) { ppl_error(ERR_MEMORY, "Out of memory whilst reading data from input file."); return 1; }
+  if ((xdata==NULL)||(ydata==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst reading data from input file."); return 1; }
 
   // Copy data table into an array of x values, and an array of y values
   blk = data->first; i=0;
@@ -157,19 +157,19 @@ RANGES_DONE:
   // Check that the FirstEntries above have the same units as any supplied ranges
   if      (xmin != NULL)
    {
-    if (!ppl_units_DimEqual(xmin,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(xmin,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
    }
   else if (xmax != NULL)
    {
-    if (!ppl_units_DimEqual(xmax,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(xmax,FirstEntries+0)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(xmax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+0,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
    }
   if      (ymin != NULL)
    {
-    if (!ppl_units_DimEqual(ymin,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(ymin,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
    }
   else if (ymax != NULL)
    {
-    if (!ppl_units_DimEqual(ymax,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(ymax,FirstEntries+1)) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", ppl_units_GetUnitStr(ymax,NULL,NULL,0,1,0), ppl_units_GetUnitStr(FirstEntries+1,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
    }
 
   // Free original data table which is no longer needed
@@ -211,34 +211,34 @@ RANGES_DONE:
   else if (mode == INTERP_SPLINE) SplineTypeName="Cubic spline";
   else if (mode == INTERP_AKIMA ) SplineTypeName="Akima spline";
   else if (mode == INTERP_POLYN ) SplineTypeName="Polynomial";
-  else                            { ppl_error(ERR_INTERNAL, "interpolate command requested to perform unknown type of interpolation."); return 1; }
+  else                            { ppl_error(ERR_INTERNAL, -1, -1, "interpolate command requested to perform unknown type of interpolation."); return 1; }
 
   // Check that we have at least three points to interpolate
-  if (k<NxRequired) { sprintf(temp_err_string,"%s interpolation is only possible on data sets with members at at least %d distinct values of x.",SplineTypeName,NxRequired); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if (k<NxRequired) { sprintf(temp_err_string,"%s interpolation is only possible on data sets with members at at least %d distinct values of x.",SplineTypeName,NxRequired); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
 
   // Create GSL interpolation object
   SplineObj = gsl_spline_alloc(SplineType, k);
-  if (SplineObj==NULL) { ppl_error(ERR_INTERNAL, "Failed to make interpolation object."); return 1; }
+  if (SplineObj==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Failed to make interpolation object."); return 1; }
   status    = gsl_spline_init(SplineObj, xdata, ydata, k);
-  if (status) { sprintf(temp_err_string, "Error whilst creating interpolation object: %s", gsl_strerror(status)); ppl_error(ERR_INTERNAL, temp_err_string); return 1; }
+  if (status) { sprintf(temp_err_string, "Error whilst creating interpolation object: %s", gsl_strerror(status)); ppl_error(ERR_INTERNAL, -1, -1, temp_err_string); return 1; }
 
   // Generate a function descriptor for this spline
   desc              = (SplineDescriptor *)lt_malloc_incontext(sizeof(SplineDescriptor), 0);
-  if (desc == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  if (desc == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
   desc->UnitX       = FirstEntries[0];
   desc->UnitY       = FirstEntries[1];
   desc->LogInterp   = (mode == INTERP_LOGLIN);
   desc->SplineObj   = SplineObj;
   desc->accelerator = gsl_interp_accel_alloc();
-  if (desc->accelerator == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  if (desc->accelerator == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
   desc->filename    = (char *)lt_malloc_incontext(strlen(filename)+1, 0);
-  if (desc->filename == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  if (desc->filename == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
   strcpy(desc->filename, filename);
   desc->SplineType=SplineTypeName;
 
   // Make a new function descriptor
   FuncPtr2 = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor), 0);
-  if (FuncPtr2 == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
+  if (FuncPtr2 == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst adding interpolation object to function dictionary."); return 1; }
   FuncPtr2->FunctionType    = PPL_USERSPACE_SPLINE;
   FuncPtr2->modified        = 1;
   FuncPtr2->NumberArguments = 1;

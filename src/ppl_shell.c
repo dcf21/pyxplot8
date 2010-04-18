@@ -105,7 +105,7 @@ void InteractiveSession()
     sigemptyset(&sigs);
     sigaddset(&sigs,SIGCHLD);
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
-    ppl_error(ERR_PREFORMED, "\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
+    ppl_error(ERR_PREFORMED, -1, -1, "\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
     if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir out of temporary directory
    }
   PPL_SHELL_EXITING = 0;
@@ -133,7 +133,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   sprintf(filename_description, "file '%s'", input);
   if ((infile=fopen(full_filename,"r")) == NULL)
    {
-    sprintf(temp_err_string, "Could not find command file '%s'. Skipping on to next command file.", full_filename); ppl_error(ERR_FILE, temp_err_string);
+    sprintf(temp_err_string, "Could not find command file '%s'. Skipping on to next command file.", full_filename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
     return;
    }
 
@@ -151,7 +151,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
       PPLKillAllHelpers();
       if ((ProcessedALine==0) && (status>0)) // If an error occurs on the first line of a script, aborted processing it
        {
-        ppl_error(ERR_FILE, "Error on first line of command file.  Is this a valid script?  Aborting.");
+        ppl_error(ERR_FILE, -1, -1, "Error on first line of command file.  Is this a valid script?  Aborting.");
         break;
        }
       if (status==0) ProcessedALine = 1;
@@ -204,12 +204,12 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
        {
         is=++i;
         for ( ; ((in[i]!='\0')&&(in[i]!='`')) ; i++);
-        if (in[i]!='`') { ppl_error(ERR_SYNTAX, "Mismatched `"); status=1; break; }
+        if (in[i]!='`') { ppl_error(ERR_SYNTAX, -1, -1, "Mismatched `"); status=1; break; }
         in[i]='\0';
         if (DEBUG) { sprintf(temp_err_string, "Shell substitution with command '%s'.", in+is); ppl_log(temp_err_string); }
         if ((SubstPipe = popen(in+is,"r"))==NULL)
          {
-          sprintf(temp_err_string, "Could not spawl shell substitution command '%s'.", in+is); ppl_error(ERR_GENERAL, temp_err_string);
+          sprintf(temp_err_string, "Could not spawl shell substitution command '%s'.", in+is); ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
           status=1; break;
          }
         while ((!feof(SubstPipe)) && (!ferror(SubstPipe)))
@@ -269,7 +269,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
     sigemptyset(&sigs);
     sigaddset(&sigs,SIGCHLD);
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
-    ppl_error(ERR_PREFORMED, "\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
+    ppl_error(ERR_PREFORMED, -1, -1, "\nReceived CTRL-C. Terminating command."); // SIGINT longjmps return here
     status = 1;
    }
   PPL_FLOWCTRL_BREAKABLE = breakable;
@@ -292,7 +292,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
 
   if (DEBUG) { sprintf(temp_err_string, "Received command:\n%s", in); ppl_log(temp_err_string); }
 
-  if (IterLevel > MAX_ITERLEVEL_DEPTH) { ppl_error(ERR_GENERAL, "Maximum recursion depth exceeded."); return 1; }
+  if (IterLevel > MAX_ITERLEVEL_DEPTH) { ppl_error(ERR_GENERAL, -1, -1, "Maximum recursion depth exceeded."); return 1; }
 
   DictLookup(command,"directive",NULL,(void **)(&directive));
 
@@ -314,7 +314,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    {
     i=-1;
     ppl_UserSpace_SetFunc(in, 1, &i, buffer);
-    if (i >= 0) ppl_error(ERR_GENERAL, buffer);
+    if (i >= 0) ppl_error(ERR_GENERAL, -1, -1, buffer);
    }
   else if (strcmp(directive, "var_set_regex")==0)
    return directive_regex(command);
@@ -345,7 +345,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "eps")==0)
    return directive_eps(command, interactive);
   else if (strcmp(directive, "else")==0)
-   ppl_error(ERR_SYNTAX, "This else statement does not match any earlier if statement.");
+   ppl_error(ERR_SYNTAX, -1, -1, "This else statement does not match any earlier if statement.");
   else if (strcmp(directive, "exec")==0)
    return directive_exec(command, IterLevel+1);
   else if (strcmp(directive, "fit")==0)
@@ -373,10 +373,10 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "load")==0)
    {
     DictLookup(command,"filename",NULL,(void **)(&varstrval));
-    if ((wordexp(varstrval, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", varstrval); ppl_error(ERR_FILE, temp_err_string); return 1; }
+    if ((wordexp(varstrval, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", varstrval); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 1; }
     for (j=0; j<WordExp.we_wordc; j++)
      {
-      if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return 1; }
+      if ((glob(WordExp.we_wordv[j], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", WordExp.we_wordv[j]); ppl_error(ERR_FILE, -1, -1, temp_err_string); wordfree(&WordExp); return 1; }
       lt_AscendOutOfContext(memcontext); command = NULL;
       for (i=0; i<GlobData.gl_pathc; i++) ProcessPyXPlotScript(GlobData.gl_pathv[i], IterLevel+1);
       globfree(&GlobData);
@@ -472,12 +472,12 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    {
     DictLookup(command,"close_brace",NULL,(void **)(&varstrval));
     if (varstrval == NULL) return directive_while(command, IterLevel+1);
-    else                   ppl_error(ERR_SYNTAX, "This while statement does not match any earlier do statement.");
+    else                   ppl_error(ERR_SYNTAX, -1, -1, "This while statement does not match any earlier do statement.");
    }
   else if (strcmp(directive, "unrecognised")==0)
    {
     sprintf(temp_err_string, txt_invalid, in);
-    ppl_error(ERR_PREFORMED, temp_err_string);
+    ppl_error(ERR_PREFORMED, -1, -1, temp_err_string);
     return 1;
    }
   else
@@ -490,12 +490,12 @@ int directive_break(Dict *command, int IterLevel)
  {
   char *loopname;
   int i;
-  if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, "The break statement can only be placed inside a loop structure."); return 1; }
+  if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, -1, -1, "The break statement can only be placed inside a loop structure."); return 1; }
   DictLookup(command,"loopname",NULL,(void **)(&loopname));
   if (loopname != NULL)
    {
     for (i=IterLevel; i>=0; i--) if ((PPL_FLOWCTRL_LOOPNAME[i]!=NULL) && (strcmp(loopname, PPL_FLOWCTRL_LOOPNAME[i])==0)) break;
-    if (i<0) { sprintf(temp_err_string, "Not inside any loop with the name '%s'", loopname); ppl_error(ERR_SYNTAX,temp_err_string); return 1; }
+    if (i<0) { sprintf(temp_err_string, "Not inside any loop with the name '%s'", loopname); ppl_error(ERR_SYNTAX, -1, -1,temp_err_string); return 1; }
     PPL_FLOWCTRL_BREAKLEVEL = i;
    } else {
     PPL_FLOWCTRL_BREAKLEVEL = -1;
@@ -508,12 +508,12 @@ int directive_continue(Dict *command, int IterLevel)
  {
   char *loopname;
   int i;
-  if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, "The continue statement can only be placed inside a loop structure."); return 1; }
+  if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, -1, -1, "The continue statement can only be placed inside a loop structure."); return 1; }
   DictLookup(command,"loopname",NULL,(void **)(&loopname));
   if (loopname != NULL)
    {
     for (i=IterLevel; i>=0; i--) if ((PPL_FLOWCTRL_LOOPNAME[i]!=NULL) && (strcmp(loopname, PPL_FLOWCTRL_LOOPNAME[i])==0)) break;
-    if (i<0) { sprintf(temp_err_string, "Not inside any loop with the name '%s'", loopname); ppl_error(ERR_SYNTAX,temp_err_string); return 1; }
+    if (i<0) { sprintf(temp_err_string, "Not inside any loop with the name '%s'", loopname); ppl_error(ERR_SYNTAX, -1, -1,temp_err_string); return 1; }
     PPL_FLOWCTRL_BREAKLEVEL = i;
    } else {
     PPL_FLOWCTRL_BREAKLEVEL = -1;
@@ -530,12 +530,12 @@ int directive_return(Dict *command, int IterLevel)
   DictLookup(command,"return_value",NULL,(void **)(&ReturnVal));
   DictLookup(command,"string_return_value",NULL,(void **)(&ReturnValStr));
 
-  if (!PPL_FLOWCTRL_RETURNABLE) { ppl_error(ERR_SYNTAX, "The return statement can only be placed inside subroutines."); return 1; }
+  if (!PPL_FLOWCTRL_RETURNABLE) { ppl_error(ERR_SYNTAX, -1, -1, "The return statement can only be placed inside subroutines."); return 1; }
   PPL_FLOWCTRL_BREAKLEVEL = -1;
   PPL_FLOWCTRL_RETURNED   =  1;
   if (ReturnVal != NULL) PPL_FLOWCTRL_RETURNVAL = *ReturnVal;
   else                   ppl_units_zero(&PPL_FLOWCTRL_RETURNVAL);
-  if (ReturnValStr != NULL) { PPL_FLOWCTRL_RETURNVAL.string = (char *)lt_malloc_incontext(strlen(ReturnValStr)+1,PPL_FLOWCTRL_RETURNCONTEXT); if (PPL_FLOWCTRL_RETURNVAL.string==NULL) { ppl_error(ERR_MEMORY,"Out of memory."); return 1; } strcpy(PPL_FLOWCTRL_RETURNVAL.string, ReturnValStr); }
+  if (ReturnValStr != NULL) { PPL_FLOWCTRL_RETURNVAL.string = (char *)lt_malloc_incontext(strlen(ReturnValStr)+1,PPL_FLOWCTRL_RETURNCONTEXT); if (PPL_FLOWCTRL_RETURNVAL.string==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } strcpy(PPL_FLOWCTRL_RETURNVAL.string, ReturnValStr); }
   return 0;
  }
 
@@ -554,13 +554,13 @@ void directive_cd(Dict *command)
    {
     CDIterate = ListIterate(CDIterate , (void **)&DirNameDict);
     DictLookup(DirNameDict,"directory",NULL,(void **)&DirName);
-    if ((wordexp(DirName, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", DirName); ppl_error(ERR_FILE, temp_err_string); return; }
-    if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, temp_err_string); wordfree(&WordExp); return; }
+    if ((wordexp(DirName, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", DirName); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
+    if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, -1, -1, temp_err_string); wordfree(&WordExp); return; }
     wordfree(&WordExp);
     if (chdir(GlobData.gl_pathv[0]) < 0)
      {
       sprintf(temp_err_string, "Could not change into directory '%s'.", GlobData.gl_pathv[0]);
-      ppl_error(ERR_FILE, temp_err_string);
+      ppl_error(ERR_FILE, -1, -1, temp_err_string);
       globfree(&GlobData);
       break;
      }
@@ -630,7 +630,7 @@ void directive_save(Dict *command)
     DataFile_CreateBackupIfRequired(outfname);
     outfile = fopen(outfname , "w");
    }
-  if (outfile == NULL) { sprintf(temp_err_string, "The save command could not open output file '%s' for writing.", outfname); ppl_error(ERR_FILE, temp_err_string); return; }
+  if (outfile == NULL) { sprintf(temp_err_string, "The save command could not open output file '%s' for writing.", outfname); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
   fprintf(outfile, "# Command script saved by PyXPlot %s\n# Timestamp: %s\n", VERSION, StrStrip(FriendlyTimestring(),temp_err_string));
   fprintf(outfile, "# User: %s\n\n", UnixGetIRLName());
 
@@ -696,13 +696,13 @@ int directive_regex(Dict *command)
   if (varnumval == NULL)
    {
     sprintf(temp_err_string, "No such variable as '%s'.", varname);
-    ppl_error(ERR_GENERAL, temp_err_string);
+    ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
     return 1;
    }
   if (varnumval->string == NULL) // ... which must be a string variable
    {
     sprintf(temp_err_string, "Variable '%s' is not a string variable; regular expressions cannot be applied to it.", varname); 
-    ppl_error(ERR_GENERAL, temp_err_string);
+    ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
     return 1;
    }
 
@@ -721,17 +721,17 @@ int directive_regex(Dict *command)
   waitperiod.tv_sec  = 1; waitperiod.tv_nsec = 0;
   FD_ZERO(&readable); FD_SET(fstdout, &readable);
   pselect(fstdout+1, &readable, NULL, NULL, &waitperiod, NULL);
-  if (!FD_ISSET(fstdout , &readable)) { ppl_error(ERR_GENERAL, "Got bored waiting for sed to return data."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
+  if (!FD_ISSET(fstdout , &readable)) { ppl_error(ERR_GENERAL, -1, -1, "Got bored waiting for sed to return data."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
 
   // Read data back from sed process
-  if ((i = read(fstdout, cmd, LSTR_LENGTH)) < 0) { ppl_error(ERR_GENERAL, "Could not read from pipe to sed."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
+  if ((i = read(fstdout, cmd, LSTR_LENGTH)) < 0) { ppl_error(ERR_GENERAL, -1, -1, "Could not read from pipe to sed."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
   cmd[i] = '\0';
   close(fstdout);
   sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 
   // Copy string into string variable
   varnumval->string = (char *)lt_malloc_incontext(strlen(cmd)+1, _ppl_UserSpace_Vars->memory_context);
-  if (varnumval->string==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return 1; }
+  if (varnumval->string==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return 1; }
   strcpy(varnumval->string, cmd);
   return 0;
  }

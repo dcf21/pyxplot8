@@ -331,12 +331,12 @@ int eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in, int xyz)
     while ((i>0)&&(out->linkusing[i-1]<=' ')) i--;
     j = -1;
     ppl_EvaluateAlgebra(out->linkusing, &OutVal, 0, &j, 0, &k, err_string, 1);
-    if (k>=0) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, err_string); goto FAIL; }
-    if (j< i) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Unexpected trailing matter."); goto FAIL; }
-    if (OutVal.FlagComplex) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Received a complex number; axes must have strictly real values at all points."); goto FAIL; }
-    if (!gsl_finite(OutVal.real)) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); ppl_error(ERR_GENERAL, "Expression returned non-finite result."); goto FAIL; }
+    if (k>=0) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); ppl_error(ERR_GENERAL, -1, -1, err_string); goto FAIL; }
+    if (j< i) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); ppl_error(ERR_GENERAL, -1, -1, "Unexpected trailing matter."); goto FAIL; }
+    if (OutVal.FlagComplex) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); ppl_error(ERR_GENERAL, -1, -1, "Received a complex number; axes must have strictly real values at all points."); goto FAIL; }
+    if (!gsl_finite(OutVal.real)) { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); ppl_error(ERR_GENERAL, -1, -1, "Expression returned non-finite result."); goto FAIL; }
     if (!out->DataUnitSet) { out->DataUnit = OutVal; out->DataUnitSet = 1; }
-    if (!ppl_units_DimEqual(&out->DataUnit,&OutVal))  { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, temp_err_string); sprintf(temp_err_string, "Axis linkage function produces axis values with dimensions of <%s> whilst data plotted on this axis has dimensions of <%s>.", ppl_units_GetUnitStr(&OutVal,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&out->DataUnit,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, temp_err_string); goto FAIL; }
+    if (!ppl_units_DimEqual(&out->DataUnit,&OutVal))  { sprintf(temp_err_string, "Error encountered whilst evaluating axis linkage expression: %s",out->linkusing); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); sprintf(temp_err_string, "Axis linkage function produces axis values with dimensions of <%s> whilst data plotted on this axis has dimensions of <%s>.", ppl_units_GetUnitStr(&OutVal,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&out->DataUnit,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); goto FAIL; }
     out->AxisLinearInterpolation[l] = OutVal.real;
     if (l>0) // Check for turning points
      {

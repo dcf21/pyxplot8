@@ -99,29 +99,29 @@ int directive_fft(Dict *command)
     DictLookup(TempDict,"max" ,NULL,(void **)(max +Ndims));
     DictLookup(TempDict,"step",NULL,(void **)(step+Ndims));
 
-    if (!ppl_units_DimEqual(min[Ndims],max [Ndims])) { sprintf(temp_err_string, "The minimum and maximum specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>."  , Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max [Ndims],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if (!ppl_units_DimEqual(min[Ndims],step[Ndims])) { sprintf(temp_err_string, "The minimum and step size specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(step[Ndims],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if (min[Ndims]->real >= max[Ndims]->real) { sprintf(temp_err_string, "The maximum ordinate value supplied for dimension %d to the fft command is not greater than the minimum ordinate value, which it must be.", Ndims+1); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if (step[Ndims]->real <= 0.0) { sprintf(temp_err_string, "The ordinate step size supplied for dimension %d to the fft command is not positive and non-zero, which it must be.", Ndims+1); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(min[Ndims],max [Ndims])) { sprintf(temp_err_string, "The minimum and maximum specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>."  , Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max [Ndims],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(min[Ndims],step[Ndims])) { sprintf(temp_err_string, "The minimum and step size specified for dimension %d to the fft command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", Ndims+1, ppl_units_GetUnitStr(min[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(step[Ndims],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+    if (min[Ndims]->real >= max[Ndims]->real) { sprintf(temp_err_string, "The maximum ordinate value supplied for dimension %d to the fft command is not greater than the minimum ordinate value, which it must be.", Ndims+1); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+    if (step[Ndims]->real <= 0.0) { sprintf(temp_err_string, "The ordinate step size supplied for dimension %d to the fft command is not positive and non-zero, which it must be.", Ndims+1); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     TempDbl = 1.0 + floor((max[Ndims]->real-min[Ndims]->real) / step[Ndims]->real + 0.5); // Add one because this is a fencepost problem
-    if (TempDbl<2.0) { sprintf(temp_err_string, "The number of samples produced by the range and step size specified for dimension %d to the fft command is fewer than two; a single data sample cannot be FFTed.", Ndims+1); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
-    if (TempDbl>1e8) { sprintf(temp_err_string, "The number of samples produced by the range and step size specified for dimension %d to the fft command is in excess of 1e8; PyXPlot is not the right tool to do this FFT in.", Ndims+1); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (TempDbl<2.0) { sprintf(temp_err_string, "The number of samples produced by the range and step size specified for dimension %d to the fft command is fewer than two; a single data sample cannot be FFTed.", Ndims+1); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+    if (TempDbl>1e8) { sprintf(temp_err_string, "The number of samples produced by the range and step size specified for dimension %d to the fft command is in excess of 1e8; PyXPlot is not the right tool to do this FFT in.", Ndims+1); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     Nsteps[Ndims] = (int)TempDbl;
     ListIter = ListIterate(ListIter, NULL);
    }
-   if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the fft command. A %d-dimensional fft was attempted, but only a maximum of %d dimensions are supported.", ListLen(RangeList), USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, temp_err_string); return 1; }
+   if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the fft command. A %d-dimensional fft was attempted, but only a maximum of %d dimensions are supported.", ListLen(RangeList), USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); return 1; }
 
   // Work out total size of FFT data grid
   TempDbl = 1.0;
   for (i=0; i<Ndims; i++) TempDbl *= Nsteps[i];
-  if (TempDbl > 1e8) { sprintf(temp_err_string, "The total number of samples in the requested %d-dimensional FFT is in excess of 1e8; PyXPlot is not the right tool to do this FFT in.", Ndims); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+  if (TempDbl > 1e8) { sprintf(temp_err_string, "The total number of samples in the requested %d-dimensional FFT is in excess of 1e8; PyXPlot is not the right tool to do this FFT in.", Ndims); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
   Nsamples = (int)TempDbl;
 
   // Check that the function we're about to replace isn't a system function
-  DictLookup(command, "fft_function", NULL, (void **)&outfunc);   if (outfunc == NULL) { ppl_error(ERR_INTERNAL, "ppl_fft could not read name of function for output."); return 1; }
+  DictLookup(command, "fft_function", NULL, (void **)&outfunc);   if (outfunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_fft could not read name of function for output."); return 1; }
   DictLookup(_ppl_UserSpace_Funcs, outfunc, NULL, (void *)&FuncPtr); // Check whether we are going to overwrite an existing function
   if ((FuncPtr!=NULL)&&((FuncPtr->FunctionType==PPL_USERSPACE_SYSTEM)||(FuncPtr->FunctionType==PPL_USERSPACE_STRFUNC)||(FuncPtr->FunctionType==PPL_USERSPACE_UNIT)))
-   { sprintf(temp_err_string, "Attempt to redefine a core system function %s()", outfunc); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+   { sprintf(temp_err_string, "Attempt to redefine a core system function %s()", outfunc); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
   ContextOutput  = lt_GetMemContext();
   ContextLocalVec= lt_DescendIntoNewContext();
@@ -155,7 +155,7 @@ int directive_fft(Dict *command)
 
   // Allocate workspace in which to do FFT
   datagrid = (fftw_complex *)fftw_malloc(Nsamples * sizeof(fftw_complex));
-  if (datagrid == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return 1; }
+  if (datagrid == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; }
 
   // Fetch data which we are going to FFT
   if (cptr != NULL) // We are FFTing data from a file
@@ -172,28 +172,28 @@ int directive_fft(Dict *command)
     status=0;
     errtext = (char *)lt_malloc(LSTR_LENGTH);
     DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, Ndims+2, SelectCrit, DATAFILE_CONTINUOUS, &ErrCount);
-    if (status) { ppl_error(ERR_GENERAL, errtext); return 1; }
-    if (data->Nrows==0) { ppl_error(ERR_FILE, "No data was read from file"); return 1; }
+    if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
+    if (data->Nrows==0) { ppl_error(ERR_FILE, -1, -1, "No data was read from file"); return 1; }
 
     // Check that units of data returned from file was as we expected
     for (i=0; i<Ndims; i++)
      if (!ppl_units_DimEqual(min[i], &data->FirstEntries[i]))
       {
        sprintf(temp_err_string, "Data in column %d of the data table supplied to the fft command has conflicting units with range %d: the former has units of <%s> while the latter has units of <%s>.", i+1, i+1, ppl_units_GetUnitStr(min[i],NULL,NULL,0,1,0), ppl_units_GetUnitStr(&data->FirstEntries[i],NULL,NULL,1,1,0));
-       ppl_error(ERR_NUMERIC, temp_err_string);
+       ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
        return 1;
       }
 
     // Read unit of f(x) in final column of data table
     FirstVal = data->FirstEntries[Ndims];
     FirstVal.real=1.0; FirstVal.imag=0.0; FirstVal.FlagComplex=0;
-    if (!ppl_units_DimEqual(&data->FirstEntries[Ndims], &data->FirstEntries[Ndims+1])) { sprintf(temp_err_string, "Data in columns %d and %d of the data table supplied to the fft command have conflicting units of <%s> and <%s> respectively. These represent the real and imaginary components of an input sample, and must have the same units.", Ndims+1, Ndims+2, ppl_units_GetUnitStr(&data->FirstEntries[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(&data->FirstEntries[Ndims+1],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+    if (!ppl_units_DimEqual(&data->FirstEntries[Ndims], &data->FirstEntries[Ndims+1])) { sprintf(temp_err_string, "Data in columns %d and %d of the data table supplied to the fft command have conflicting units of <%s> and <%s> respectively. These represent the real and imaginary components of an input sample, and must have the same units.", Ndims+1, Ndims+2, ppl_units_GetUnitStr(&data->FirstEntries[Ndims],NULL,NULL,0,1,0), ppl_units_GetUnitStr(&data->FirstEntries[Ndims+1],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
 
     // Loop through data table
     blk = data->first; j=0;
     for (i=0; i<Nsamples; i++)
      {
-      if ((blk==NULL)||(j==blk->BlockPosition)) { sprintf(temp_err_string, "Premature end to data table supplied to the fft command. To perform a "); k=strlen(temp_err_string); for (l=0;l<Ndims;l++) { sprintf(temp_err_string+k, "%dx", Nsteps[l]); k+=strlen(temp_err_string+k); } k-=(Ndims>0); sprintf(temp_err_string+k, " Fourier transform, need a grid of %d samples. Only received %d samples.", Nsamples, i); ppl_error(ERR_FILE, temp_err_string); return 1; }
+      if ((blk==NULL)||(j==blk->BlockPosition)) { sprintf(temp_err_string, "Premature end to data table supplied to the fft command. To perform a "); k=strlen(temp_err_string); for (l=0;l<Ndims;l++) { sprintf(temp_err_string+k, "%dx", Nsteps[l]); k+=strlen(temp_err_string+k); } k-=(Ndims>0); sprintf(temp_err_string+k, " Fourier transform, need a grid of %d samples. Only received %d samples.", Nsamples, i); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 1; }
 
       // Work out what position we're expecting this data point to represent
       for (k=i, l=Ndims-1; l>=0; l--) { Npos[l] = (k % Nsteps[l]); pos[l] = min[l]->real+step[l]->real*Npos[l]; k /= Nsteps[l]; }
@@ -210,7 +210,7 @@ int directive_fft(Dict *command)
          for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=blk->data_real[l + (Ndims+2)*j].d; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); } 
          m-=(Ndims>0);
          sprintf(temp_err_string+m, ")."); j=strlen(temp_err_string);
-         ppl_error(ERR_NUMERIC, temp_err_string);
+         ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
          return 1;
         }
 
@@ -234,14 +234,14 @@ int directive_fft(Dict *command)
   else // We are FFTing data from a function
    {
     DictLookup(command, "input_function", NULL, (void **)&infunc);
-    if (infunc == NULL) { ppl_error(ERR_INTERNAL, "ppl_fft could not read name of function for input."); return 1; }
+    if (infunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_fft could not read name of function for input."); return 1; }
     DictLookup(_ppl_UserSpace_Funcs, infunc, NULL, (void *)&FuncPtr2);
-    if (FuncPtr2 == NULL) { sprintf(temp_err_string, "No such function as %s()", infunc); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-    if (FuncPtr2->NumberArguments != Ndims) { sprintf(temp_err_string, "%d-dimensional Fourier transforms can only be performed upon functions which take %d inputs. The supplied function %s() takes %d inputs.", Ndims, Ndims, infunc, FuncPtr2->NumberArguments); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+    if (FuncPtr2 == NULL) { sprintf(temp_err_string, "No such function as %s()", infunc); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+    if (FuncPtr2->NumberArguments != Ndims) { sprintf(temp_err_string, "%d-dimensional Fourier transforms can only be performed upon functions which take %d inputs. The supplied function %s() takes %d inputs.", Ndims, Ndims, infunc, FuncPtr2->NumberArguments); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
 
     scratchpad = (char *)lt_malloc(LSTR_LENGTH);
     errtext    = (char *)lt_malloc(LSTR_LENGTH);
-    if ((scratchpad == NULL) || (errtext == NULL)) { ppl_error(ERR_MEMORY, "Out of memory"); return 1; }
+    if ((scratchpad == NULL) || (errtext == NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; }
 
     status=-1;
     for (i=0; i<Nsamples; i++)
@@ -253,9 +253,9 @@ int directive_fft(Dict *command)
       for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(scratchpad+j,"%s,",ppl_units_NumericDisplay(&x,0,1,20)); j+=strlen(scratchpad+j); }
       sprintf(scratchpad+j-(Ndims>0),")");
       ppl_EvaluateAlgebra(scratchpad, &x, 0, NULL, 0, &status, errtext, 0);
-      if ((status>=0)||(!gsl_finite(x.real))||(!gsl_finite(x.imag))) { sprintf(temp_err_string, "Could not evaluate input function at position %s(", infunc); j=strlen(temp_err_string); for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+j,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); j+=strlen(temp_err_string+j); } sprintf(temp_err_string+j-(Ndims>0),")"); ppl_error(ERR_NUMERIC, temp_err_string); return 1; } // Evaluation of algebra failed
+      if ((status>=0)||(!gsl_finite(x.real))||(!gsl_finite(x.imag))) { sprintf(temp_err_string, "Could not evaluate input function at position %s(", infunc); j=strlen(temp_err_string); for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+j,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); j+=strlen(temp_err_string+j); } sprintf(temp_err_string+j-(Ndims>0),")"); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; } // Evaluation of algebra failed
       if (i==0) { FirstVal=x; FirstVal.real=1.0; FirstVal.imag=0.0; FirstVal.FlagComplex=0; }
-      else if (!ppl_units_DimEqual(&x, &FirstVal)) { sprintf(temp_err_string, "The supplied function to FFT does not produce values with consistent units; has produced values with units of <%s> and of <%s>.", ppl_units_GetUnitStr(&FirstVal,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&x,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+      else if (!ppl_units_DimEqual(&x, &FirstVal)) { sprintf(temp_err_string, "The supplied function to FFT does not produce values with consistent units; has produced values with units of <%s> and of <%s>.", ppl_units_GetUnitStr(&FirstVal,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&x,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
       (*WindowType)(&x, Ndims, Npos, Nsteps); // Apply window function to data
       #ifdef HAVE_FFTW3
       datagrid[i][0] = x.real; datagrid[i][1] = x.imag;
@@ -278,16 +278,16 @@ int directive_fft(Dict *command)
 
   // Make FFTDescriptor data structure
   output = (FFTDescriptor *)lt_malloc_incontext(sizeof(FFTDescriptor), 0);
-  if (output == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+  if (output == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return 1; }
   output->Ndims    = Ndims;
   output->XSize    = (int   *)malloc(Ndims * sizeof(int  ));
   output->range    = (value *)malloc(Ndims * sizeof(value));
   output->invrange = (value *)malloc(Ndims * sizeof(value));
-  if ((output->XSize==NULL)||(output->range==NULL)||(output->invrange==NULL)) { free(output); fftw_free(datagrid); ppl_error(ERR_MEMORY,"Out of memory"); return 1; }
+  if ((output->XSize==NULL)||(output->range==NULL)||(output->invrange==NULL)) { free(output); fftw_free(datagrid); ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return 1; }
   for (i=0; i<Ndims; i++) output->XSize[i] = Nsteps[i];
   status=0;
   for (i=0; i<Ndims; i++) { ppl_units_sub(max[i], min[i], &output->range[i], &status, temp_err_string); if (status) break; }
-  if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
+  if (status) { ppl_error(ERR_INTERNAL, -1, -1,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
   for (i=0; i<Ndims; i++) ppl_units_DimInverse(&output->invrange[i], &output->range[i]);
   output->datagrid = datagrid;
 
@@ -323,13 +323,13 @@ int directive_fft(Dict *command)
   // Make output unit
   output->OutputUnit = FirstVal; // Output of an FFT has units of fn being FFTed, multiplied by the units of all of the arguments being FFTed
   for (i=0; i<Ndims; i++) { ppl_units_mult(&output->OutputUnit, &output->range[i], &output->OutputUnit, &status, temp_err_string); if (status>=0) break; }
-  if (status) { ppl_error(ERR_INTERNAL,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
+  if (status) { ppl_error(ERR_INTERNAL, -1, -1,temp_err_string); free(output); fftw_free(datagrid); free(output->XSize); free(output->range); free(output->invrange); return 1; }
   output->OutputUnit.real = output->OutputUnit.imag = 0.0;
   output->OutputUnit.FlagComplex = 0; // Output unit has zero magnitude
 
   // Make a new function descriptor
   FuncPtr2 = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor), 0);
-  if (FuncPtr2 == NULL) { ppl_error(ERR_MEMORY, "Out of memory whilst adding fft object to function dictionary."); return 1; }
+  if (FuncPtr2 == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst adding fft object to function dictionary."); return 1; }
   FuncPtr2->FunctionType    = PPL_USERSPACE_FFT;
   FuncPtr2->modified        = 1;
   FuncPtr2->NumberArguments = Ndims;

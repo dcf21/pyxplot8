@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     else
     {
      sprintf(temp_err_string, "Received switch '%s' which was not recognised. Type 'pyxplot -help' for a list of available commandline options.", argv[i]);
-     ppl_error(ERR_PREFORMED, temp_err_string);
+     ppl_error(ERR_PREFORMED, -1, -1, temp_err_string);
      if (DEBUG) ppl_log("Received unexpected commandline switch.");
      lt_FreeAll(0); lt_MemoryStop();
      return 1;
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
     sigemptyset(&sigs);
     sigaddset(&sigs,SIGCHLD);
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
-    ppl_error(ERR_PREFORMED, "\nReceived SIGINT. Terminating.");
+    ppl_error(ERR_PREFORMED, -1, -1, "\nReceived SIGINT. Terminating.");
    }
 
   // Notify the CSP that we are about to quit

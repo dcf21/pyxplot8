@@ -427,7 +427,7 @@ void ppl_settings_readconfig()
 
 #include "ppl_userspace.h"
 #include "ppl_units.h"
-#define COLMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *outcolRS=*outcolGS=*outcolBS=NULL; return 1; }
+#define COLMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *outcolRS=*outcolGS=*outcolBS=NULL; return 1; }
 
 int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outcolG, int *outcolB, char **outcolRS, char **outcolGS, char **outcolBS,
                     unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced)
@@ -457,9 +457,9 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
       j = strlen(tempstr);
       *errpos = -1;
       ppl_EvaluateAlgebra(tempstr, &valobj, 0, &j, 0, errpos, temp_err_string, 0);
-      if (*errpos>=0) { ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-      if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
-      if ((valobj.real <= INT_MIN+5) || (valobj.real >= INT_MAX-5)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+      if (*errpos>=0) { ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+      if (!valobj.dimensionless) { sprintf(temp_err_string, "Colour indices should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(&valobj, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
+      if ((valobj.real <= INT_MIN+5) || (valobj.real >= INT_MAX-5)) { sprintf(temp_err_string, "Colour indices should be in the range %d to %d.", INT_MIN, INT_MAX); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
       for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
       palette_index = ((int)valobj.real-1)%j;
       while (palette_index < 0) palette_index+=j;
@@ -481,8 +481,8 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
    } else if (tempval != NULL) { // Colour is specified by RGB components
 
 #define CHECK_REAL_DIMLESS \
-    if (!tempval->dimensionless) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
-    if (tempval->imag>1e-6) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, temp_err_string); return 1; }\
+    if (!tempval->dimensionless) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }\
+    if (tempval->imag>1e-6) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }\
 
     CHECK_REAL_DIMLESS;
     *outcol  = 0;
@@ -507,7 +507,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
    } else if (tempstr2 != NULL) { // Colour is specified by RGB expressions
     if (USEcol   !=NULL) *USEcol    = 0;
     if (USEcolRGB!=NULL) *USEcolRGB = 0;
-    if (outcolRS ==NULL) { ppl_error(ERR_INTERNAL, "Received RGB colour expressions, but have not received strings to put them into"); return 1; }
+    if (outcolRS ==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Received RGB colour expressions, but have not received strings to put them into"); return 1; }
     if (malloced)
      {
       if (*outcolRS!=NULL) free(*outcolRS);
@@ -561,7 +561,7 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
     if ((*tempint<0)||(*tempint>MAX_AXES)) \
      { \
       sprintf(temp_err_string, "Axis number %d is out of range; axis numbers must be in the range 0 - %d", *tempint, MAX_AXES-1); \
-      ppl_error(ERR_GENERAL,temp_err_string); \
+      ppl_error(ERR_GENERAL, -1, -1,temp_err_string); \
       return; \
      } \
    } \
@@ -576,8 +576,12 @@ int colour_fromdict(Dict *in, char *prefix, int *outcol, int *outcolR, int *outc
     for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (tempval->exponent[i] != (i==UNIT_LENGTH)) \
      { \
       sprintf(temp_err_string, "Coordinates specified in the graph and page systems must have dimensions of length. Received coordinate with dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 0, 1, 0)); \
-      ppl_error(ERR_GENERAL, temp_err_string); return; \
+      ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; \
      } \
+  if (!gsl_finite(tempval->real)) \
+   { \
+    ppl_error(ERR_GENERAL, -1, -1, "Coordinates specified are not finite."); return; \
+   } \
  }
 
 #define arrow_add_copy_coordinate(X,Y,Z) \
@@ -614,7 +618,7 @@ void arrow_add(arrow_object **list, Dict *in)
     with_words_destroy(&out->style);
    } else {
     out = (arrow_object *)malloc(sizeof(arrow_object));
-    if (out == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    if (out == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; }
     out->id   = *tempint;
     out->next = *list;
     *list     = out;
@@ -667,7 +671,7 @@ void arrow_remove(arrow_object **list, Dict *in)
       free(obj);
      } else {
       //sprintf(temp_err_string,"Arrow number %d is not defined", *tempint);
-      //ppl_error(ERR_GENERAL, temp_err_string);
+      //ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
      }
     listiter = ListIterate(listiter, NULL);
    }
@@ -699,7 +703,7 @@ void arrow_unset(arrow_object **list, Dict *in)
       list = first;
       while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
       new = (arrow_object *)malloc(sizeof(arrow_object));
-      if (new == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      if (new == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
       *new = *obj;
       new->next = *list;
       with_words_copy(&new->style, &obj->style);
@@ -731,7 +735,7 @@ void arrow_list_copy(arrow_object **out, arrow_object **in)
   while (*in != NULL)
    {
     *out = (arrow_object *)malloc(sizeof(arrow_object));
-    if (*out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (*out == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     **out = **in;
     (*out)->next = NULL;
     with_words_copy(&(*out)->style, &(*in)->style);
@@ -795,7 +799,7 @@ void arrow_print(arrow_object *in, char *out)
      if (VAR->exponent[i] != (i==UNIT_LENGTH)) \
       { \
        sprintf(temp_err_string,"The gap size supplied to the 'set label' command must have dimensions of length. Supplied gap size input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
-       ppl_error(ERR_NUMERIC, temp_err_string); \
+       ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); \
        return; \
       } \
    } \
@@ -808,7 +812,7 @@ void arrow_print(arrow_object *in, char *out)
      if (VAR->exponent[i] != (i==UNIT_ANGLE)) \
       { \
        sprintf(temp_err_string,"The rotation angle supplied to the 'set label' command must have dimensions of angle. Supplied input has units of <%s>.",ppl_units_GetUnitStr(VAR,NULL,NULL,1,1,0)); \
-       ppl_error(ERR_NUMERIC, temp_err_string); \
+       ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); \
        return; \
       } \
    } \
@@ -830,7 +834,7 @@ void label_add(label_object **list, Dict *in)
 
   DictLookup(in,"label_text",NULL,(void **)&tempstr);
   label = (char *)malloc(strlen(tempstr)+1);
-  if (label == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+  if (label == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; }
   strcpy(label, tempstr);
 
   // Check for rotation modifier
@@ -850,7 +854,7 @@ void label_add(label_object **list, Dict *in)
     with_words_destroy(&out->style);
    } else {
     out = (label_object *)malloc(sizeof(label_object));
-    if (out == NULL) { ppl_error(ERR_MEMORY, "Out of memory"); return; }
+    if (out == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; }
     out->id   = *tempint;
     out->next = *list;
     *list     = out;
@@ -905,7 +909,7 @@ void label_remove(label_object **list, Dict *in)
       free(obj);
      } else {
       //sprintf(temp_err_string,"Label number %d is not defined", *tempint);
-      //ppl_error(ERR_GENERAL, temp_err_string);
+      //ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
      }
     listiter = ListIterate(listiter, NULL);
    }
@@ -937,11 +941,11 @@ void label_unset(label_object **list, Dict *in)
       list = first;
       while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
       new = (label_object *)malloc(sizeof(label_object));
-      if (new == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+      if (new == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
       *new = *obj;
       new->next = *list;
       new->text = (char *)malloc(strlen(obj->text)+1);
-      if (new->text == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); free(new); return; }
+      if (new->text == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); free(new); return; }
       strcpy(new->text, obj->text);
       with_words_copy(&new->style, &obj->style);
       *list = new;
@@ -968,11 +972,11 @@ void label_list_copy(label_object **out, label_object **in)
   while (*in != NULL)
    {
     *out = (label_object *)malloc(sizeof(label_object));
-    if (*out == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return; }
+    if (*out == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     **out = **in;
     (*out)->next = NULL;
     (*out)->text = (char *)malloc(strlen((*in)->text)+1);
-    if ((*out)->text == NULL) { ppl_error(ERR_MEMORY,"Out of memory"); free(*out); *out=NULL; return; }
+    if ((*out)->text == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); free(*out); *out=NULL; return; }
     strcpy((*out)->text, (*in)->text);
     with_words_copy(&(*out)->style, &(*in)->style);
     in  = &((*in )->next);
@@ -1042,7 +1046,7 @@ void with_words_zero(with_words *a, const unsigned char malloced)
   return;
  }
 
-#define XWWMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); with_words_zero(out,1); return; }
+#define XWWMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); with_words_zero(out,1); return; }
 
 void with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew)
  {
@@ -1185,7 +1189,7 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
 
   for (i=4; i>=0; i--)
    {
-    if (i>24) { ppl_error(ERR_GENERAL, "Iteration depth exceeded whilst substituting plot styles. Infinite plot style loop suspected."); return; } // i can reach 24 when recursion happens
+    if (i>24) { ppl_error(ERR_GENERAL, -1, -1, "Iteration depth exceeded whilst substituting plot styles. Infinite plot style loop suspected."); return; } // i can reach 24 when recursion happens
     x = InputArray[i];
     if (x == NULL) continue;
     if ((x->USEstyle) && (!BlockStyleSubstitution[i])) // Substitute for numbered plot styles
@@ -1313,7 +1317,7 @@ void DestroyAxis(settings_axis *in)
  }
 
 // settings_axis_default is a safe fallback axis because it contains no malloced strings
-#define XMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); *out = settings_axis_default; return; }
+#define XMALLOC(X) (tmp = malloc(X)); if (tmp==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *out = settings_axis_default; return; }
 
 void CopyAxis(settings_axis *out, const settings_axis *in)
  {

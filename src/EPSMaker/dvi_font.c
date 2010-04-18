@@ -48,13 +48,13 @@ int dviGetTFM(dviFontDetails *font)
 
   // Get the TFM file
   s = (char *)lt_malloc((strlen(font->name)+5)*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
   sprintf(s, "%s.tfm", font->name);
   TFMpath = (char *)kpse_find_tfm(s);
-  if (TFMpath==NULL) { ppl_error(ERR_INTERNAL,"Could not find TFM file"); return 1; }
+  if (TFMpath==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Could not find TFM file"); return 1; }
   if (DEBUG) { sprintf(temp_err_string, "Font file %s: TFM path: %s", font->name, TFMpath); ppl_log(temp_err_string); }
   TFMfp = fopen(TFMpath, "r");
-  if (TFMfp==NULL) { ppl_error(ERR_INTERNAL,"Could not open TFM file"); return 1; }
+  if (TFMfp==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Could not open TFM file"); return 1; }
   font->tfm = dviReadTFM(TFMfp, &err);
   fclose(TFMfp);
   if (err) return err;
@@ -83,7 +83,7 @@ int dviGetTFM(dviFontDetails *font)
     if (err == DVIE_NOFONT)
      {
       snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s", font->name);
-      ppl_error(ERR_GENERAL,errStr);
+      ppl_error(ERR_GENERAL, -1, -1,errStr);
      }
    }
   if (err != 0) return err;
@@ -104,7 +104,7 @@ int dviGetPfa(dviFontDetails *font, char *filename)
   int err, i;
 
   s = (char *)lt_malloc((strlen(filename)+5)*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
   sprintf(s, "%s.pfa", filename);
   // Crude lower-casing
   for (i=0; i<strlen(filename); i++) if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
@@ -130,20 +130,20 @@ int dviGetPfa(dviFontDetails *font, char *filename)
     if (fpin==NULL)
      {
       snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot open pfb file %s", PFBpath);
-      ppl_error(ERR_GENERAL,errStr);
+      ppl_error(ERR_GENERAL, -1, -1,errStr);
       return DVIE_ACCESS;
      }
       
     // Make a filename for the destination pfa file
     // free(PFApath);
     PFApath = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
-    if (PFApath==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); fclose(fpin); return DVIE_MEMORY; }
+    if (PFApath==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); fclose(fpin); return DVIE_MEMORY; }
     snprintf(PFApath, SSTR_LENGTH, "%s%s%s.pfa", settings_session_default.tempdir, PATHLINK, font->name);
     fpout = fopen(PFApath, "w");
     if (fpout == NULL)
      {
       snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot write to pfa file %s", PFApath);
-      ppl_error(ERR_GENERAL,errStr);
+      ppl_error(ERR_GENERAL, -1, -1,errStr);
       fclose(fpin);
       return DVIE_ACCESS;
      }
@@ -173,7 +173,7 @@ char *psNameFromPFA(char *PFApath)
 
   if ((fp = fopen(PFApath, "r"))==NULL)
    {
-    ppl_error(ERR_INTERNAL, "Cannot open pfa file");
+    ppl_error(ERR_INTERNAL, -1, -1, "Cannot open pfa file");
     return NULL;
    }
 
@@ -192,7 +192,7 @@ char *psNameFromPFA(char *PFApath)
 
   // Produce a malloced string with the name in and return it
   s = (char *)lt_malloc((i+1)*sizeof(char));
-  if (s==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return NULL; }
+  if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return NULL; }
   snprintf(s, i+1, "%s", buf);
   return s;
  }
@@ -208,7 +208,7 @@ int pfb2pfa(FILE *in, FILE *out)
    {
     if (getc(in) != 128)
      {
-      ppl_error(ERR_INTERNAL, "Error in pfb file format");
+      ppl_error(ERR_INTERNAL, -1, -1, "Error in pfb file format");
       return 1;
      }
     i = getc(in);
@@ -240,7 +240,7 @@ int pfb2pfa(FILE *in, FILE *out)
      }
     else
      {
-      ppl_error(ERR_INTERNAL, "Corrupt pfb file");
+      ppl_error(ERR_INTERNAL, -1, -1, "Corrupt pfb file");
       return 1;
      }
    }
@@ -259,7 +259,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
   char *tit[12] = {"lf", "lh", "bc", "ec", "nw", "nh", "nd", "ni", "nl", "nk", "ne", "np"};
 
   tfm = (dviTFM *)lt_malloc(sizeof(dviTFM));
-  if (tfm==NULL) { ppl_error(ERR_INTERNAL,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
+  if (tfm==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
 
   // Read the file header
   for (i=0; i<12; i++) ReadLongInt(fp, buff+i, 2);
@@ -287,7 +287,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
   // We should have lf=6+lh+(ec-bc+1)+nw+nh+nd+ni+nl+nk+ne+np
   if (tfm->lf != 6 + tfm->lh + tfm->ec - tfm->bc + 1 + tfm->nw + tfm->nh + tfm->nd + tfm->ni + tfm->nl + tfm->nk + tfm->ne + tfm->np)
    {
-    ppl_error(ERR_INTERNAL,"TFM fail");
+    ppl_error(ERR_INTERNAL, -1, -1,"TFM fail");
     *err=1; return NULL;
    }
 
@@ -305,7 +305,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
     if (DEBUG) { sprintf(temp_err_string, "TFM: Coding length: %d", len); ppl_log(temp_err_string); }
     if (len>39)
      {
-      ppl_error(ERR_INTERNAL,"Malformed DVI header. coding len>40");
+      ppl_error(ERR_INTERNAL, -1, -1,"Malformed DVI header. coding len>40");
       len=39;
      }
     for (i=0; i<39; i++)
@@ -323,7 +323,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
     if ((*err=ReadUChar(fp, &len))!=0) return NULL;
     if (len>19)
      {
-      ppl_error(ERR_INTERNAL,"Malformed DVI header. coding len>19");
+      ppl_error(ERR_INTERNAL, -1, -1,"Malformed DVI header. coding len>19");
       len=19;
      }
     if (DEBUG) { sprintf(temp_err_string, "TFM: Family length: %d", len); ppl_log(temp_err_string); }
@@ -358,7 +358,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
   // Read the char info tables
   Nchars = tfm->ec - tfm->bc + 1;
   tfm->charInfo = (TFMcharInfo *)lt_malloc(Nchars*sizeof(TFMcharInfo));
-  if (tfm->charInfo==NULL) { ppl_error(ERR_INTERNAL,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
+  if (tfm->charInfo==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
   for (i=0; i<Nchars; i++)
    {
     int j;
@@ -377,7 +377,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
   tfm->height = (double *)lt_malloc(tfm->nh*sizeof(double));
   tfm->depth  = (double *)lt_malloc(tfm->nd*sizeof(double));
   tfm->italic = (double *)lt_malloc(tfm->ni*sizeof(double));
-  if ((tfm->width==NULL)||(tfm->height==NULL)||(tfm->depth==NULL)||(tfm->italic==NULL)) { ppl_error(ERR_INTERNAL,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
+  if ((tfm->width==NULL)||(tfm->height==NULL)||(tfm->depth==NULL)||(tfm->italic==NULL)) { ppl_error(ERR_INTERNAL, -1, -1,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
 
   for (i=0; i<tfm->nw; i++) { tfm->width[i]  = ReadFixWord(fp,err); if (*err) return NULL; }
   for (i=0; i<tfm->nh; i++) { tfm->height[i] = ReadFixWord(fp,err); if (*err) return NULL; }
@@ -386,7 +386,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
 
   // Read the lig_kern table
   tfm->ligKern = (TFMligKern *)lt_malloc(tfm->nl*sizeof(TFMligKern));
-  if (tfm->ligKern==NULL) { ppl_error(ERR_INTERNAL,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
+  if (tfm->ligKern==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
   for (i=0; i<tfm->nl; i++)
    {
     int j;
@@ -398,12 +398,12 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
 
   // Read the kern table
   tfm->kern = (double *)lt_malloc(tfm->nk*sizeof(double));
-  if (tfm->kern==NULL) { ppl_error(ERR_INTERNAL,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
+  if (tfm->kern==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
   for (i=0; i<tfm->nk; i++) { tfm->kern[i] = ReadFixWord(fp,err); if (*err) return NULL; }
 
   // Read the extensible character recipies
   tfm->extensibleRecipe = (TFMextRec *)lt_malloc(tfm->ne*sizeof(TFMextRec));
-  if (tfm->extensibleRecipe==NULL) { ppl_error(ERR_INTERNAL,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
+  if (tfm->extensibleRecipe==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Out of memory"); *err=DVIE_MEMORY; return NULL; }
   for (i=0; i<tfm->ne; i++)
    {
     int j;
@@ -438,7 +438,7 @@ int dviFindMaxSize(dviFontDetails *font)
   int i, loopMax, hmax, dmax;
   double height, depth;
 
-  if (!font) { ppl_error(ERR_INTERNAL,"Internal font failure!"); return DVIE_INTERNAL; }
+  if (!font) { ppl_error(ERR_INTERNAL, -1, -1,"Internal font failure!"); return DVIE_INTERNAL; }
   tfm = font->tfm;
   font->maxHeight = 0.0;
   font->maxDepth = 0.0;

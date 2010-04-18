@@ -106,6 +106,47 @@ END
 print "More PyXPlot commands can be placed after END"
 \end{verbatim}
 
+\section{Special Comment Lines in Datafiles}
+\label{sec:special_comments}
+\index{comment lines!in datafiles}
+
+Whilst most comment lines in \datafile s -- those lines which begin with a hash
+character -- are ignored by PyXPlot, lines which begin with any of the
+following four strings are parsed:
+\begin{verbatim}
+# Columns:
+# ColumnUnits:
+
+# Rows:
+# RowUnits:
+\end{verbatim}
+The first pair of special comments effect the behaviour of PyXPlot when
+plotting {\tt using columns}, while the second pair effect the behaviour of
+PyXPlot when plotting {\tt using rows} (see
+Section~\ref{sec:horizontal_datafiles}). Within each pair, the first may be
+used to tell PyXPlot the names of each of the columns/rows in the \datafile,
+while the second may be used to tell PyXPlot the physical units of the values
+in each of the columns/rows. These special comments may appear multiple times
+throughout a single \datafile\ to indicate changes to the format of the data.
+
+For example, a \datafile\ prefixed with the lines
+\begin{verbatim}
+# Columns:      Time   Distance
+# ColumnUnits:   s      10*m
+\end{verbatim}
+contains two columns of data, the first containing times measured in seconds
+and the second containing distances measured in tens of metres. Note that
+because the entries on each of these lines are whitespace-separated, spaces are
+not allowed in column names or within units such as {\tt 10*m}. This \datafile\
+could be plotted using any of the following forms equivalently
+\begin{verbatim}
+plot 'data' using Time:Distance
+plot 'data' using $Time:$Distance
+plot 'data' using 1:2
+\end{verbatim}
+and the axes of the graph would indicate the units of the data (see
+Section~\ref{sec:set_axisunitstyle}).
+
 \section{Tabulating Functions and Slicing Data Files}
 \label{sec:tabulate}
 

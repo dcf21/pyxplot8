@@ -336,7 +336,7 @@ int directive_fit(Dict *command)
 
   // Expand filename if it contains wildcards
   DictLookup(command,"filename",NULL,(void **)(&cptr));
-  if (cptr==NULL) ppl_error(ERR_INTERNAL, "File attribute not found in fit command.");
+  if (cptr==NULL) ppl_error(ERR_INTERNAL, -1, -1, "File attribute not found in fit command.");
   filename = ppl_glob_oneresult(cptr);
   if (filename == NULL) return 1;
 
@@ -349,7 +349,7 @@ int directive_fit(Dict *command)
   DictLookup(command, "fit_variables," , NULL, (void **)&VarList);
   i = ListLen(VarList);
   DataComm.NFitVars = i;
-  if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The fit command must be supplied a list of between %d and %d free parameters to fit.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, temp_err_string); return 1; }
+  if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The fit command must be supplied a list of between %d and %d free parameters to fit.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); return 1; }
   ListIter = ListIterateInit(VarList);
   for (j=0; j<i; j++)
    {
@@ -375,9 +375,9 @@ int directive_fit(Dict *command)
   // Get name of function to fit
   DictLookup(command,"fit_function", NULL, (void **)&cptr);
   DataComm.FunctionName = cptr;
-  if (cptr   ==NULL) ppl_error(ERR_INTERNAL, "Fitting function name not found in fit command.");
+  if (cptr   ==NULL) ppl_error(ERR_INTERNAL, -1, -1, "Fitting function name not found in fit command.");
   DictLookup(_ppl_UserSpace_Funcs, cptr, NULL, (void **)&funcdef);
-  if (funcdef==NULL) { sprintf(temp_err_string,"No such function as '%s()'.",cptr); ppl_error(ERR_GENERAL, temp_err_string); return 1; }
+  if (funcdef==NULL) { sprintf(temp_err_string,"No such function as '%s()'.",cptr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
   NArgs = funcdef->NumberArguments;
 
   // Look up index , using , every modifiers to datafile reading
@@ -401,10 +401,10 @@ int directive_fit(Dict *command)
      TempDict = (Dict *)ListIter->data;
      DictLookup(TempDict,"min",NULL,(void **)(min+j));
      DictLookup(TempDict,"max",NULL,(void **)(max+j));
-     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
      ListIter = ListIterate(ListIter, NULL);
     }
-   if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the fit command. %d ranges were supplied, but only a maximum of %ld were expected.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, temp_err_string); return 1; }
+   if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the fit command. %d ranges were supplied, but only a maximum of %ld were expected.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); return 1; }
 
   // Allocate a new memory context for the data file we're about to read
   ContextOutput  = lt_GetMemContext();
@@ -413,17 +413,17 @@ int directive_fit(Dict *command)
 
   // Read data from file
   DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NExpect, SelectCrit, DATAFILE_CONTINUOUS, &ErrCount);
-  if (status) { ppl_error(ERR_GENERAL, errtext); return 1; }
+  if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
 
   // Check that the FirstEntries above have the same units as any supplied ranges
   for (j=0; j<NExpect; j++)
    if (min[j] != NULL)
     {
-     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if (!ppl_units_DimEqual(min[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     }
    else if (max[j] != NULL)
     {
-     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, temp_err_string); return 1; }
+     if (!ppl_units_DimEqual(max[j],data->FirstEntries+j)) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions with the data returned from the data file. The limits have units of <%s>, whilst the data have units of <%s>.", j+1, ppl_units_GetUnitStr(max[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(data->FirstEntries+j,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     }
 
   // Work out how many data points we have within the specified ranges
@@ -446,7 +446,7 @@ int directive_fit(Dict *command)
 
   // Copy data into a new table and apply the specified ranges to it
   LocalDataTable = (double *)lt_malloc_incontext(NDataPoints * NExpect * sizeof(double), ContextLocalVec);
-  if (LocalDataTable==NULL) { ppl_error(ERR_MEMORY, "Out of memory."); return 1; } 
+  if (LocalDataTable==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return 1; } 
   i=0;
   blk = data->first;
   while (blk != NULL)
@@ -490,7 +490,7 @@ int directive_fit(Dict *command)
 
   // Set up a minimiser
   status = FitMinimiseIterate(&DataComm, &ResidualMinimiserSlave, 0);
-  if (status) { ppl_error(ERR_GENERAL, DataComm.errtext); return 1; }
+  if (status) { ppl_error(ERR_GENERAL, -1, -1, DataComm.errtext); return 1; }
 
   // Display the results of the minimiser
   ppl_report("\n# Best fit parameters were:\n# -------------------------\n");
@@ -522,7 +522,7 @@ int directive_fit(Dict *command)
   if (!DataComm.FlagYErrorBars)
    {
     status = FitMinimiseIterate(&DataComm, &FitSigmaData, 1);
-    if (status) { ppl_error(ERR_GENERAL, DataComm.errtext); gsl_vector_free(BestFitParamVals); return 1; }
+    if (status) { ppl_error(ERR_GENERAL, -1, -1, DataComm.errtext); gsl_vector_free(BestFitParamVals); return 1; }
     FirstVals[NArgs].real = DataComm.SigmaData;
     FirstVals[NArgs].imag = 0.0;
     FirstVals[NArgs].FlagComplex = 0;

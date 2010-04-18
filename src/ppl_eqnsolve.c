@@ -304,7 +304,7 @@ void MinOrMax(Dict *command, double sign)
     if (commlink.Nfitvars >= EQNSOLVE_MAXDIMS)
      {
       sprintf(temp_err_string, "Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
-      ppl_error(ERR_NUMERIC, temp_err_string);
+      ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
       return;
      }
    }
@@ -321,7 +321,7 @@ void MinOrMax(Dict *command, double sign)
   MultiMinIterate(&commlink);
 
   if (commlink.WarningPos >= 0) ppl_warning(ERR_NUMERIC, commlink.warntext);
-  if (errpos >= 0) ppl_error(ERR_NUMERIC, commlink.errtext);
+  if (errpos >= 0) ppl_error(ERR_NUMERIC, -1, -1, commlink.errtext);
 
   if ((errpos >= 0) || (commlink.GoneNaN==1))
    {
@@ -371,7 +371,7 @@ void directive_solve(Dict *command)
     if (commlink.Nfitvars >= EQNSOLVE_MAXDIMS)
      {
       sprintf(temp_err_string, "Too many via variables; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
-      ppl_error(ERR_NUMERIC, temp_err_string);
+      ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
       return;
      }
    }
@@ -387,7 +387,7 @@ void directive_solve(Dict *command)
     if (commlink.Nexprs >= EQNSOLVE_MAXDIMS)
      {
       sprintf(temp_err_string, "Too many simultaneous equations to solve; the maximum allowed number is %d.", EQNSOLVE_MAXDIMS);
-      ppl_error(ERR_NUMERIC, temp_err_string);
+      ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
       return;
      }
    }
@@ -395,7 +395,7 @@ void directive_solve(Dict *command)
  if (commlink.Nexprs < 1)
   {
    sprintf(temp_err_string, "No equations supplied to solve.");
-    ppl_error(ERR_NUMERIC, temp_err_string);
+    ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
     return;
    }
 
@@ -408,7 +408,7 @@ void directive_solve(Dict *command)
   MultiMinIterate(&commlink);
 
   if (commlink.WarningPos >= 0) ppl_warning(ERR_NUMERIC, commlink.warntext);
-  if (errpos >= 0) ppl_error(ERR_NUMERIC, commlink.errtext);
+  if (errpos >= 0) ppl_error(ERR_NUMERIC, -1, -1, commlink.errtext);
 
   if ((errpos >= 0) || (commlink.GoneNaN==1))
    {

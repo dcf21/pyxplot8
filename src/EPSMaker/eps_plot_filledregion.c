@@ -245,7 +245,7 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
         if      ((sense == OUTGOING) && (p->FillSideFlip_fwd%2)) FillSide = !FillSide;
         else if ((sense ==  INGOING) && (p->FillSideFlip_prv%2)) FillSide = !FillSide;
         for (i=0; i<nac; i++) if ((!CrossPointList[i].used)&&((CrossPointList[i].point==lil)||(CrossPointList[i].point==li))) break;
-        if (!((!CrossPointList[i].used)&&((CrossPointList[i].point==lil)||(CrossPointList[i].point==li)))) { ppl_error(ERR_INTERNAL, "Failure within FilledRegion"); fail=1; break; }
+        if (!((!CrossPointList[i].used)&&((CrossPointList[i].point==lil)||(CrossPointList[i].point==li)))) { ppl_error(ERR_INTERNAL, -1, -1, "Failure within FilledRegion"); fail=1; break; }
         PS_POINT(CrossPointList[i].x, CrossPointList[i].y); // Cut point where line leaves canvas
         CrossPointList[i].used = 1;
        }

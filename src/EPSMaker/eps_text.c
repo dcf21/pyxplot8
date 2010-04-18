@@ -44,7 +44,7 @@ void eps_text_YieldUpText(EPSComm *x)
   if (x->current->text[0]=='\0') return;
 
   i = (CanvasTextItem *)lt_malloc(sizeof(CanvasTextItem));
-  if (i==NULL) { ppl_error(ERR_MEMORY, "Out of memory"); *(x->status) = 1; return; }
+  if (i==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *(x->status) = 1; return; }
   i->text              = x->current->text;
   i->CanvasMultiplotID = x->current->id;
   ListAppendPtr(x->TextItems, i, sizeof(CanvasTextItem), 0, DATATYPE_VOID);

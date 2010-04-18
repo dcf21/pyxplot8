@@ -54,11 +54,11 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
      XOUT = XIN.real; \
      if      (SYSTEM == SW_SYSTEM_FIRST ) { XA = &(XAXES[1]); } \
      else if (SYSTEM == SW_SYSTEM_SECOND) { XA = &(XAXES[2]); } \
-     else if (SYSTEM == SW_SYSTEM_AXISN ) { if ((AXISN<0)||(AXISN>=MAX_AXES)) { XA = NULL; XOUT = 0.0; ppl_error(ERR_INTERNAL,"Axis number out of range"); } else { XA = &(XAXES[AXISN]); } } \
+     else if (SYSTEM == SW_SYSTEM_AXISN ) { if ((AXISN<0)||(AXISN>=MAX_AXES)) { XA = NULL; XOUT = 0.0; ppl_error(ERR_INTERNAL, -1, -1,"Axis number out of range"); } else { XA = &(XAXES[AXISN]); } } \
      else                                 { XA = NULL; XOUT = 0.0; } \
      if (XA != NULL) \
       { \
-       if (XA->DataUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->DataUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with the axes used. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(XA->DataUnit), NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
+       if (XA->DataUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->DataUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with the axes used. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(XA->DataUnit), NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
        else if (!XA->DataUnitSet) { XA=NULL; XOUT=0.5; } \
       }
 

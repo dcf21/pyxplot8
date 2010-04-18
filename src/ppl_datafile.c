@@ -519,15 +519,15 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
       if ((UsingItems[i]!=NULL)&&((UsingItems[i][0]=='\'')||(UsingItems[i][0]=='\"'))) NumericOut=0;
       DataFile_UsingConvert(UsingItems[i], &tempval, ContextOutput, ColumnData_str, ColumnData_val, ItemsOnLine, filename, file_linenumber, file_linenumbers, linenumber_count, block_count, index_number, UsingRowCol, RowColWord, NumericOut, ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, &LocalStatus, errout);
       if (LocalStatus) break;
-      if (tempval.FlagComplex) { COUNTEDERR1; sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is complex.", filename, file_linenumber, UsingItems[i]); COUNTEDERR2; LocalStatus=1; break; }
-      if (!gsl_finite(tempval.real)) { COUNTEDERR1; sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is not finite.", filename, file_linenumber, UsingItems[i]); COUNTEDERR2; LocalStatus=1; break; }
+      if (tempval.FlagComplex) { sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is complex.", filename, file_linenumber, UsingItems[i]); LocalStatus=(settings_term_current.ExplicitErrors == SW_ONOFF_ON)?1:2; break; }
+      if (!gsl_finite(tempval.real)) { sprintf(errout, "%s:%ld: Data item calculated from expression <%s> is not finite.", filename, file_linenumber, UsingItems[i]); LocalStatus=(settings_term_current.ExplicitErrors == SW_ONOFF_ON)?1:2; break; }
       out->current->FileLine [i + out->current->BlockPosition * Ncolumns] = file_linenumber;
       if (NumericOut)
        {
         if (out->Nrows==0)
          out->FirstEntries[i] = tempval;
         else
-         if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { COUNTEDERR1; sprintf(errout, "%s:%ld: The expression <%s> produces data with inconsistent units. On this line, a datum with units of <%s> is produced, but previous data have had units of <%s>.", filename, file_linenumber, UsingItems[i], ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 1, 0)); COUNTEDERR2; LocalStatus=1; break; }
+         if (!ppl_units_DimEqual(&tempval, out->FirstEntries+i)) { sprintf(errout, "%s:%ld: The expression <%s> produces data with inconsistent units. On this line, a datum with units of <%s> is produced, but previous data have had units of <%s>.", filename, file_linenumber, UsingItems[i], ppl_units_GetUnitStr(&tempval, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(out->FirstEntries+i, NULL, NULL, 1, 1, 0)); LocalStatus=1; break; }
         out->current->data_real[i + out->current->BlockPosition * Ncolumns].d = tempval.real;
        }
       else
@@ -545,7 +545,8 @@ void DataFile_ApplyUsingList(DataTable *out, int ContextOutput, char **ColumnDat
 
     if (LocalStatus)
      {
-      COUNTEDERR1; ppl_warning(ERR_STACKED, errout); COUNTEDERR2;
+      if (DEBUG) ppl_log(errout);
+      if (LocalStatus==1) { COUNTEDERR1; ppl_warning(ERR_STACKED, errout); COUNTEDERR2; }
       *discontinuity=1;
      }
     else // If we have evaluated all USING expressions successfully, commit this row to the DataTable
@@ -1108,7 +1109,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
       *status=-1; k=-1;
       ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+1+(!FlagParametric), 0, &k, 0, status, errout, 0);
       if (k<strlen(fnlist[j])) { sprintf(errout, "Expression '%s' is not syntactically valid %d %ld", fnlist[j],k,(long)strlen(fnlist[j])); *status=1; if (DEBUG) ppl_log(errout); return; }
-      if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, temp_err_string); COUNTEDERR2F; *status=1; break; }
+      if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); COUNTEDERR2F; *status=1; break; }
       else            { *status=0; }
      }
     if (!(*status))

@@ -336,7 +336,7 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
     // Find a list of units which multiply together to match dimensions of quantity to display
     while (1)
      {
-      if (pos>=UNITS_MAX_BASEUNITS) { ppl_error(ERR_INTERNAL, "Overflow whilst trying to display a unit."); break; }
+      if (pos>=UNITS_MAX_BASEUNITS) { ppl_error(ERR_INTERNAL, -1, -1, "Overflow whilst trying to display a unit."); break; }
       ppl_units_FindOptimalNextUnit(&residual, pos==0, UnitList + pos, UnitPow + pos);
       UnitDisp[pos] = 0;
       if (ppl_units_DblEqual(UnitPow[pos],0)!=0) break;

@@ -538,10 +538,10 @@ in the example
 \begin{verbatim}
 set trange [unit(0*rad):unit(2*pi*rad)]
 \end{verbatim}
-By default, values in the range $0\leq t\leq1$ are used. Note that the
-\indcmdt{set trange} differs from other commands for setting axis ranges in
-that auto-scaling is not an allowed behaviour; an explicit range {\it must} be
-specified for $t$.
+or in the {\tt plot} command itself. By default, values in the range $0\leq
+t\leq1$ are used. Note that the \indcmdt{set trange} differs from other
+commands for setting axis ranges in that auto-scaling is not an allowed
+behaviour; an explicit range {\it must} be specified for $t$.
 
 Having set an appropriate range for $t$, parametric functions may be plotted by
 placing the keyword {\tt parametric} before the list of functions to be
@@ -549,6 +549,12 @@ plotted, as in the following simple example which plots a circle:
 \begin{verbatim}
 set trange [unit(0*rev):unit(1*rev)]
 plot parametric sin(t):cos(t)
+\end{verbatim}
+Optionally, a range for $t$ can be specified on a plot-by-plot basis
+immediately after the keyword {\tt parametric}, and thus the effect above could
+also be achieved using:
+\begin{verbatim}
+plot parametric [unit(0*rev):unit(1*rev)] sin(t):cos(t)
 \end{verbatim}
 The only difference between parametric function plotting and ordinary function
 plotting -- other than the change of dummy variable from {\tt x} to {\tt t} --
@@ -730,6 +736,47 @@ plot f(x) axes y3x2
 Similar syntax is used when plotting three-dimensional graphs, except that
 three axes should be specified.
 
+\subsection{Plotting Quantities with Physical Units}
+\label{sec:set_axisunitstyle}
+
+When data with non-dimensionless physical units are plotted against an axis,
+for example using any of the statements
+\begin{verbatim}
+plot [0:10] x*unit(m)
+plot [0:10] x using 1:$2*unit(m)
+plot [0:1] asin(x)
+\end{verbatim}
+the axis is set to share the particular physical dimensions of that unit, and
+thereafter no data with any other physical dimensions may be plotted against
+that axis. When the axis comes to be drawn, PyXPlot makes a decision about
+which physical unit should be used to label the axis. For example, in the
+default SI system and with no preferred unit of length set, axes with units of
+length might be displayed in millimetres, metres or kilometres depending upon
+their scales.
+
+The chosen unit is indicated in one of three styles in the axis label, selected
+using the \indcmdt{set axisunitstyle}:
+\begin{verbatim}
+set axisunitstyle ratio
+set axisunitstyle bracketed
+set axisunitstyle squarebracketed
+\end{verbatim}
+The effect of these three options, respectively, is shown below for an axis
+with units of momentum. In each case, the axis label was set simply using
+\begin{verbatim}
+set xlabel "Momentum"
+\end{verbatim}
+and the subsequent text was appended automatically by PyXPlot:
+
+\vspace{3mm}
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_axisunits.eps}}
+\vspace{3mm}
+
+When the \indcmdt{set xformat} is used (see Section~\ref{sec:set_xformat}), no
+indication of the units associated with axes are appended to axis labels, as
+the \indcmdt{set xformat} can be used to hard-code this information. The user
+must include this information in the axis label manually if it is needed.
+
 \subsection{Specifying the Positioning of Axes}
 
 By default, the {\tt x1} axis is placed along the bottom of graphs and the {\tt
@@ -772,7 +819,32 @@ positioning keywords listed above, which specify how the axis should appear:
 \item {\tt visible} -- Specifies that the axis should be displayed; opposite of {\tt invisible}. [{\bf Default}].
 \end{itemize}
 
-\subsection{Specifying where Ticks should appear along axes}
+The following simple examples demonstrate the use of some of these configuration options:
+\begin{verbatim}
+set axis x atzero twoway
+set axis y atzero twoway
+plot [-2:8][-10:10]
+\end{verbatim}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero.eps}}
+
+\begin{verbatim}
+set axis x atzero arrow
+set axis y atzero twoway
+plot [0:10][-10:10]
+\end{verbatim}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero2.eps}}
+
+\begin{verbatim}
+set axis x notatzero arrow nomirror
+set axis y notatzero arrow nomirror
+plot [0:10][0:20]
+\end{verbatim}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero3.eps}}
+
+\subsection{Specifying where Ticks should Appear along Axes}
 
 By default, PyXPlot places a series of tick marks at significant points along
 each axis, with the most significant points being labelled.  Labelled tick
@@ -857,6 +929,7 @@ at all.
 }
 
 \subsection{Configuring how Tick Marks are Labelled}
+\label{sec:set_xformat}
 
 By default, major ticks are labelled with representations of the ordinate
 values at each point, each accurate to the number of significant figures

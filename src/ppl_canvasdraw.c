@@ -80,11 +80,11 @@ static int filecopy(const char *in, const char *out)
 // Run ghostscript to convert postscript output into bitmap graphics
 #define BITMAP_TERMINAL_CLEANUP(X, Y) \
     if (system(temp_err_string) != 0) /* Run ghostscript */ \
-     { ppl_error(ERR_GENERAL, "Error encountered whilst using " X " to generate " Y " output"); } \
+     { ppl_error(ERR_GENERAL, -1, -1, "Error encountered whilst using " X " to generate " Y " output"); } \
     else \
      { \
       if (filecopy(GSOutputTemp, comm.FinalFilename) != 0) /* Move ghostscript output to desire target file */ \
-       { sprintf(temp_err_string, "Could not write output to file '%s'", comm.FinalFilename); ppl_error(ERR_FILE, temp_err_string); } \
+       { sprintf(temp_err_string, "Could not write output to file '%s'", comm.FinalFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); } \
       remove(GSOutputTemp);  /* Delete temporary files */ \
      } \
     remove(comm.EPSFilename);
@@ -170,8 +170,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
    }
 
   // Perform expansion of shell filename shortcuts such as ~
-  if ((wordexp(comm.FinalFilename, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not find directory containing filename '%s'.", comm.FinalFilename); ppl_error(ERR_FILE, temp_err_string); return; }
-  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", comm.FinalFilename); ppl_error(ERR_FILE, temp_err_string); return; }
+  if ((wordexp(comm.FinalFilename, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not find directory containing filename '%s'.", comm.FinalFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
+  if  (WordExp.we_wordc > 1) { sprintf(temp_err_string, "Filename '%s' is ambiguous.", comm.FinalFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
   strcpy(FinalFilenameTemp, WordExp.we_wordv[0]);
   wordfree(&WordExp);
   comm.FinalFilename = FinalFilenameTemp;
@@ -270,11 +270,11 @@ void canvas_draw(unsigned char *unsuccessful_ops)
     EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
     if (strcmp(GHOSTVIEW_COMMAND, "/bin/false")==0)
      {
-      ppl_error(ERR_GENERAL, "An attempt is being made to use an X11 terminal for output, but the required package 'ghostview' could not be found when PyXPlot was installed. If you have recently install ghostview, please reconfigure and recompile PyXPlot.");
+      ppl_error(ERR_GENERAL, -1, -1, "An attempt is being made to use an X11 terminal for output, but the required package 'ghostview' could not be found when PyXPlot was installed. If you have recently install ghostview, please reconfigure and recompile PyXPlot.");
      }
     else if ((EnvDisplay==NULL) || (EnvDisplay[0]=='\0'))
      {
-      ppl_error(ERR_GENERAL, "An attempt is being made to use an X11 terminal for output, but your DISPLAY environment variable is not set; there is no accessible X11 display.");
+      ppl_error(ERR_GENERAL, -1, -1, "An attempt is being made to use an X11 terminal for output, but your DISPLAY environment variable is not set; there is no accessible X11 display.");
      }
     else
      {
@@ -283,7 +283,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         if (termtype!=SW_TERMTYPE_X11P)
          {
           sprintf(temp_err_string, "An attempt is being made to use the %s terminal in a non-interactive PyXPlot session. This won't work, as the window will close as soon as PyXPlot exits. Reverting to the X11_persist terminal instead.", *(char **)FetchSettingName(termtype, SW_TERMTYPE_INT, (void *)SW_TERMTYPE_STR, sizeof(char *)));
-          ppl_error(ERR_GENERAL, temp_err_string);
+          ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
          }
         CSPCommand = 2;
        } else {
@@ -394,12 +394,12 @@ void canvas_CallLaTeX(EPSComm *x)
   const char TextFooter [] = "\\end{document}\n";
 
   // chdir into temporary directory so that LaTeX's mess goes into /tmp
-  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL, -1, -1,"Could not chdir into temporary directory."); *(x->status)=1; return; }
 
   // Start writing LaTeX document
   sprintf(filename, "%s.tex", x->TeXFilename);
   output = fopen(filename, "w");
-  if (output == NULL) { ppl_error(ERR_INTERNAL, "Could not create temporary LaTeX document"); *(x->status)=1; return; }
+  if (output == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Could not create temporary LaTeX document"); *(x->status)=1; return; }
   FPRINTF_LINECOUNT(TextHeader1);
   FPRINTF_LINECOUNT(settings_term_current.LatexPreamble);
   FPRINTF_LINECOUNT(TextHeader2);
@@ -488,9 +488,9 @@ void canvas_CallLaTeX(EPSComm *x)
       if (SuspectTextItem==NULL) sprintf(temp_err_string, "LaTeX error encountered in an unidentifiable canvas item.");
       else if (ExactHit)         sprintf(temp_err_string, "LaTeX error encountered in text string in canvas item %d.", SuspectTextItem->CanvasMultiplotID);
       else                       sprintf(temp_err_string, "LaTeX error encountered at the end of text string in canvas item %d.", SuspectTextItem->CanvasMultiplotID);
-      ppl_error(ERR_GENERAL,temp_err_string);
+      ppl_error(ERR_GENERAL, -1, -1,temp_err_string);
       sprintf(temp_err_string, "Error was: %s", ErrMsg); // Output the actual error which LaTeX returned to us
-      ppl_error(ERR_PREFORMED,temp_err_string);
+      ppl_error(ERR_PREFORMED, -1, -1,temp_err_string);
       if (SuspectTextItem!=NULL)
        {
         canvas_item *ptr = canvas_items->first; // Cycle through all canvas items to find the culprit
@@ -502,22 +502,22 @@ void canvas_CallLaTeX(EPSComm *x)
           canvas_item_textify(ptr, temp_err_string+i);
           i += strlen(temp_err_string+i);
           strcpy(temp_err_string+i, "\n");
-          ppl_error(ERR_PREFORMED,temp_err_string);
+          ppl_error(ERR_PREFORMED, -1, -1,temp_err_string);
          } // Then output the LaTeX string which produced the error
-        sprintf(temp_err_string, "\nOffending input to LaTeX was:\n\n%s\n", SuspectTextItem->text); ppl_error(ERR_PREFORMED,temp_err_string);
+        sprintf(temp_err_string, "\nOffending input to LaTeX was:\n\n%s\n", SuspectTextItem->text); ppl_error(ERR_PREFORMED, -1, -1,temp_err_string);
        }
      }
     else if ((ErrFilename[0]=='\0')&&(ErrMsg[0]=='\0')) // Case 2: Error encountered, but we didn't catch error message
      {
       sprintf(temp_err_string, "Unidentified LaTeX error encountered.");
-      ppl_error(ERR_GENERAL,temp_err_string);
+      ppl_error(ERR_GENERAL, -1, -1,temp_err_string);
      }
     else // Case 3: Error in another file which the user seems to have imported
      {
       sprintf(temp_err_string, "LaTeX error encountered in imported file <%s> on line %d.", ErrFilename, ErrLineNo);
-      ppl_error(ERR_GENERAL,temp_err_string);
+      ppl_error(ERR_GENERAL, -1, -1,temp_err_string);
       sprintf(temp_err_string, "Error was: %s", ErrMsg);
-      ppl_error(ERR_PREFORMED,temp_err_string);
+      ppl_error(ERR_PREFORMED, -1, -1,temp_err_string);
      }
     if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
     *(x->status) = 1;
@@ -538,7 +538,7 @@ void canvas_CallLaTeX(EPSComm *x)
 void canvas_MakeEPSBuffer(EPSComm *x)
  {
   x->epsbuffer = tmpfile();
-  if (x->epsbuffer == NULL) { ppl_error(ERR_INTERNAL,"Could not create temporary eps buffer file."); *(x->status)=1; return; }
+  if (x->epsbuffer == NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Could not create temporary eps buffer file."); *(x->status)=1; return; }
   return;
  }
 
@@ -576,7 +576,7 @@ void canvas_EPSWrite(EPSComm *x)
   margin_bottom = 2*margin_top;
 
   // Open output postscript file for writing
-  if ((epsout=fopen(x->EPSFilename,"w"))==NULL) { sprintf(temp_err_string, "Could not open file '%s' for writing.", x->EPSFilename); ppl_error(ERR_FILE, temp_err_string); *(x->status)=1; return; }
+  if ((epsout=fopen(x->EPSFilename,"w"))==NULL) { sprintf(temp_err_string, "Could not open file '%s' for writing.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status)=1; return; }
 
   // Write EPS header
   if (settings_term_current.TermType != SW_TERMTYPE_PS)
@@ -623,7 +623,7 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "%%%%BeginProlog\n");
 
   // Output all of the fonts which we're going to use
-  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL, -1, -1,"Could not chdir into temporary directory."); *(x->status)=1; return; }
   if (x->dvi != NULL) ListIter = ListIterateInit(x->dvi->fonts);
   else                ListIter = NULL;
   while (ListIter != NULL)
@@ -631,11 +631,11 @@ void canvas_EPSWrite(EPSComm *x)
     fprintf(epsout, "%%%%BeginFont: %s\n", ((dviFontDetails *)ListIter->data)->psName);
     PFAfilename = ((dviFontDetails *)ListIter->data)->pfaPath;
     PFAfile = fopen(PFAfilename,"r");
-    if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, temp_err_string); *(x->status)=1; return; }
+    if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status)=1; return; }
     while (fgets(temp_err_string, FNAME_LENGTH, PFAfile) != NULL)
      if (fputs(temp_err_string, epsout) == EOF)
       {
-       sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, temp_err_string);
+       sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
        *(x->status)=1;
        return;
       }
@@ -682,7 +682,7 @@ void canvas_EPSWrite(EPSComm *x)
   while (fgets(temp_err_string, FNAME_LENGTH, x->epsbuffer) != NULL)
    if (fputs(temp_err_string, epsout) == EOF)
     {
-     sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, temp_err_string);
+     sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
      *(x->status)=1;
      return;
     }
@@ -707,11 +707,11 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   // If colstr is blank, we are painting with null ink
   if (colstr[0]=='\0') return;
 
-  if (x->dvi == NULL) { ppl_error(ERR_INTERNAL, "Attempting to display a text item before latex has generated it"); return; }
+  if (x->dvi == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Attempting to display a text item before latex has generated it"); return; }
 
   // Fetch requested page of postscript
   dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, pageno+1);
-  if (dviPage==NULL) { ppl_error(ERR_INTERNAL, "Not all text items were rendered by LaTeX"); *(x->status)=1; return; }
+  if (dviPage==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Not all text items were rendered by LaTeX"); *(x->status)=1; return; }
   bb_left   = dviPage->boundingBox[0];
   bb_bottom = dviPage->boundingBox[1];
   bb_right  = dviPage->boundingBox[2];
@@ -729,11 +729,11 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
   if      (halign == SW_HALIGN_LEFT ) xanchor = ab_left;
   else if (halign == SW_HALIGN_CENT ) xanchor = (ab_left + ab_right)/2.0;
   else if (halign == SW_HALIGN_RIGHT) xanchor = ab_right;
-  else                                 { ppl_error(ERR_INTERNAL, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
+  else                                 { ppl_error(ERR_INTERNAL, -1, -1, "Illegal halign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
   if      (valign == SW_VALIGN_TOP  ) yanchor = bb_top;
   else if (valign == SW_VALIGN_CENT ) yanchor = (ab_top + ab_bottom)/2.0;
   else if (valign == SW_VALIGN_BOT  ) yanchor = ab_bottom;
-  else                                 { ppl_error(ERR_INTERNAL, "Illegal valign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
+  else                                 { ppl_error(ERR_INTERNAL, -1, -1, "Illegal valign value passed to canvas_EPSRenderTextItem"); *(x->status)=1; return; }
 
   // Update bounding box of canvas. For this, use BOUNDING box, not ALIGNMENT box.
   eps_core_PlotBoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),

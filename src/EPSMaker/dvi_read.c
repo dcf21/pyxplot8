@@ -71,7 +71,7 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
   fp = fopen(filename, "r");
   if (fp==NULL)
    {
-    ppl_error(ERR_INTERNAL,"dvi file does not exist!");
+    ppl_error(ERR_INTERNAL, -1, -1,"dvi file does not exist!");
     *status = 1;
     return NULL;
    }
@@ -125,7 +125,7 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
   // First read in the opcode
   if ((err=ReadUChar(fp,&v))!=0)
    {
-    ppl_error(ERR_INTERNAL,"Error reading dvi operator from disk");
+    ppl_error(ERR_INTERNAL, -1, -1,"Error reading dvi operator from disk");
     return err;
    }
   op->op = v;
@@ -133,7 +133,7 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
   // Now work out what it represents and get any extra data if needed
   if (v < DVI_CHARMIN)
    {
-    ppl_error(ERR_INTERNAL,"Illegal opcode whilst parsing DVI file");
+    ppl_error(ERR_INTERNAL, -1, -1,"Illegal opcode whilst parsing DVI file");
     return 1;
    }
   else if (v >= DVI_CHARMIN && v <= DVI_CHARMAX)
@@ -280,7 +280,7 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
      }
     Ndata = op->ul[4] + op->ul[5];
     op->s[0] = (char *)lt_malloc((Ndata+1)*sizeof(char));
-    if (op->s[0]==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+    if (op->s[0]==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
     op->s[0][Ndata] = '\0';
     for (i=0; i<Ndata; i++)
      {
@@ -336,12 +336,12 @@ int GetDVIOperator(DVIOperator *op, FILE *fp)
    }
   else
    {
-    ppl_error(ERR_INTERNAL,"Unidentified opcode in dvi file");
+    ppl_error(ERR_INTERNAL, -1, -1,"Unidentified opcode in dvi file");
     return 1;
    }
 
   // Once we've got an operator we return, so we should never get here
-  ppl_error(ERR_INTERNAL, "GetDVIOperator: flow control has gone wrong");
+  ppl_error(ERR_INTERNAL, -1, -1, "GetDVIOperator: flow control has gone wrong");
   return 1;
  }
 
@@ -352,7 +352,7 @@ int ReadUChar(FILE *fp, int *uc)
   i = getc(fp);
   if (i==EOF)
    {
-    ppl_error(ERR_INTERNAL, "Unexpected EOF in dvi file");
+    ppl_error(ERR_INTERNAL, -1, -1, "Unexpected EOF in dvi file");
     return 1;
    }
   *uc = i;

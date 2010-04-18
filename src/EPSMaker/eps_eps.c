@@ -58,7 +58,7 @@ void eps_eps_RenderEPS(EPSComm *x)
   if (!x->current->calcbbox) // Read bounding box from headers of EPS file
    {
     inf = fopen(filename, "r");
-    if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+    if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
     eps_eps_ExtractBBox(inf, &bb_left, &bb_bottom, &bb_right, &bb_top, &GotBBox);
     fclose(inf);
     if (!GotBBox) { sprintf(temp_err_string, "Could not extract bounding box from EPS file '%s'. Will therefore process file in calcbbox mode, and attempt to determine its bounding box using ghostview.", filename); ppl_warning(ERR_GENERAL, temp_err_string); }
@@ -69,7 +69,7 @@ void eps_eps_RenderEPS(EPSComm *x)
     sprintf(command, "%s -dQUIET -dSAFER -dBATCH -dNOPAUSE -sDEVICE=bbox %s > %s 2> %s", GHOSTSCRIPT_COMMAND, filename, tmpdata, tmpdata);
     system(command);
     inf = fopen(tmpdata, "r");
-    if (inf==NULL) { sprintf(temp_err_string, "Could not open temporary file '%s'.", tmpdata); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+    if (inf==NULL) { sprintf(temp_err_string, "Could not open temporary file '%s'.", tmpdata); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
     eps_eps_ExtractBBox(inf, &bb_left, &bb_bottom, &bb_right, &bb_top, &GotBBox);
     fclose(inf);
     if (!GotBBox) { sprintf(temp_err_string, "Could not calculate bounding box for EPS file '%s'.", filename); ppl_warning(ERR_GENERAL, temp_err_string); }
@@ -114,11 +114,11 @@ void eps_eps_RenderEPS(EPSComm *x)
   // Copy contents of EPS into output postscript file
   fprintf(x->epsbuffer, "%% ---- Beginning of included EPS graphic ----\n");
   inf = fopen(filename, "r");
-  if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, temp_err_string); *(x->status) = 1; return; }
+  if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
   while (fgets(temp_err_string, FNAME_LENGTH, inf) != NULL)
    if (fputs(temp_err_string, x->epsbuffer) == EOF)
     {
-     sprintf(temp_err_string, "Error while reading EPS file '%s'.", filename); ppl_error(ERR_FILE, temp_err_string);
+     sprintf(temp_err_string, "Error while reading EPS file '%s'.", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
      *(x->status)=1;
      return;
     }

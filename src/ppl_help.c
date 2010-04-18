@@ -106,7 +106,7 @@ void help_PagerDisplay(char *PageName, xmlNode *node, int interactive)
    }
   else
    {
-    if ((PagerHandle = popen(PagerName,"w"))==NULL) { ppl_error(ERR_INTERNAL, "Cannot open pipe to pager application."); }
+    if ((PagerHandle = popen(PagerName,"w"))==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Cannot open pipe to pager application."); }
     else
      {
       fprintf(PagerHandle, "%s", TextBuffer2);
@@ -133,7 +133,7 @@ void help_MatchFound(xmlNode *node, xmlNode **MatchNode, List *TopicWords, int *
   int   abbreviation,i;
   List *PrevMatchPosition;
 
-  if ((*Nmatches)==MAX_HELP_HITS) { ppl_error(ERR_INTERNAL, "Cannot parse ppl_help.xml. Need to increase MAX_HELP_HITS."); return; }
+  if ((*Nmatches)==MAX_HELP_HITS) { ppl_error(ERR_INTERNAL, -1, -1, "Cannot parse ppl_help.xml. Need to increase MAX_HELP_HITS."); return; }
   help_TopicPrint(HelpTexts[*Nmatches], HelpPosition, ListLen(TopicWords));
   if (*ambiguous == 0)
    {
@@ -170,7 +170,7 @@ void help_explore(xmlNode *node, xmlNode **MatchNode, List *TopicWords, int *Mat
   int match,i;
 
   if (depth>ListLen(TopicWords)) return;
-  if (depth==MAX_HELP_DEPTH) { ppl_error(ERR_INTERNAL, "Cannot parse ppl_help.xml. Need to increase MAX_HELP_DEPTH."); return; }
+  if (depth==MAX_HELP_DEPTH) { ppl_error(ERR_INTERNAL, -1, -1, "Cannot parse ppl_help.xml. Need to increase MAX_HELP_DEPTH."); return; }
 
   for (cur_node = node; cur_node; cur_node = cur_node->next) // Loop over siblings
    {
@@ -212,7 +212,7 @@ void directive_help(Dict *command, int interactive)
   if (doc==NULL)
    {
     sprintf(temp_err_string, "Help command cannot find help data in expected location of '%s'.", filename);
-    ppl_error(ERR_INTERNAL, temp_err_string);
+    ppl_error(ERR_INTERNAL, -1, -1, temp_err_string);
     return;
    }
 
