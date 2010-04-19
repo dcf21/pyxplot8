@@ -459,6 +459,7 @@ Table~\ref{tab:show_keywords}.
 \begin{tabular}{|>{\columncolor{LightGrey}}l>{\columncolor{LightGrey}}p{9cm}|}
 \hline
 {\bf Query} & {\bf Description} \\ \hline
+{\tt axes} & Lists all of the currently configured axes.\\
 {\tt functions} & Lists all currently defined mathematical functions, both those which are built into PyXPlot and those which the user has defined.\\
 {\tt settings} & Lists the current values of all settings which can be set with the {\tt set} command.\\
 {\tt units} & Lists all of the physical units which PyXPlot is currently set up to recognise.\\
@@ -499,26 +500,27 @@ plot 'data.dat' using 3:5
 {\tt data.dat} on the vertical axis, against the contents of the third column
 on the horizontal axis. As mentioned above, columns in \datafile s can be
 separated using whitespace and/or commas.  Algebraic expressions may also be
-used in place of column numbers, for example:
+used in place of column numbers, as in the example:
 
 \begin{verbatim}
 plot 'data.dat' using (3+$1+$2):(2+$3)
 \end{verbatim}
 
-\noindent In such expressions, column numbers are prefixed by dollar signs, to
+\noindent In such expressions, column numbers are prefixed by dollar signs to
 distinguish them from numerical constants. The example above would plot the sum
 of the values in the first two columns of the \datafile, plus three, on the
 horizontal axis, against two plus the value in the third column on the vertical
-axis. Another example would be:
+axis. The column numbers in such expressions can also be replaced by algebraic
+expressions, and so {\tt \$2} can also be written as {\tt \$(2)} or {\tt
+\$(1+1)}. In the following example, the \datapoint s are all placed on the
+vertical line $x=3$ -- the brackets around the {\tt 3} distinguish it as a
+numerical constant rather than a column number -- meanwhile their vertical
+positions are drawn from the value of some column $n$ in the \datafile, where
+the value of $n$ is itself read from the second column of the \datafile:
 
 \begin{verbatim}
-plot 'data.dat' using 3.0:$($2)
+plot 'data.dat' using (3):$($2)
 \end{verbatim}
-
-\noindent which would place all of the \datapoint s on the line $x=3$,
-meanwhile drawing their vertical positions from the value of some column $n$ in
-the \datafile, where the value of $n$ is itself read from the second column of
-the \datafile.
 
 It is also possible to plot data from only selected lines within a \datafile.
 When PyXPlot reads a \datafile, it looks for any blank lines in the file. It

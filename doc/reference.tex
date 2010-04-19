@@ -402,10 +402,10 @@ When running a script, CTRL-C terminates execution of it.
 \section{fft}\indcmd{fft}
 
 \begin{verbatim}
-fft <range specifier> [<range specifier> ...] <function> 
+fft <range specifier> [<range specifier> ...] <function>
     of ( '<filename>' | function ) [ using <using specifier> ]
 
-ifft <range specifier> [<range specifier> ...] <function> 
+ifft <range specifier> [<range specifier> ...] <function>
     of ( '<filename>' | function )[ using <using specifier> ]
 \end{verbatim}
 
@@ -1961,8 +1961,8 @@ Similar to the {\tt set noxtics} command, but acts on the $z$-axis.
 \subsection{numerics}\indcmd{set numerics}
 
 \begin{verbatim}
-set numerics [ ( complex | real ) ] [ errors ( explicit | quiet) ] 
-    [ display ( tex | natural | typeable) ] 
+set numerics [ ( complex | real ) ] [ errors ( explicit | quiet) ]
+    [ display ( tex | natural | typeable) ]
     [ sigfig <precision> ]
 \end{verbatim}
 
@@ -1970,7 +1970,7 @@ The {\tt set numerics} command allows various numerical options to be adjusted.
 
 The {\tt complex} option causes complex arithmetic to be carried out; the {\tt
 real} option causes all numbers to be real and any calculation that generates
-complex numbers will generate an error.  
+complex numbers will generate an error.
 
 The {\tt errors} option controls how errors are communicated to the user.  The
 {\tt explicit} option causes an error message to be printed to the screen each
@@ -2617,11 +2617,61 @@ setting, controls the number of pixels across the final image.
 
 \subsection{xformat}\indcmd{set xformat}
 
+\begin{verbatim}
+set x[<axisnumber>]format ( auto | '<format>' )
+      ( horizontal | vertical | rotate <angle> )
+\end{verbatim}
+
+By default, major ticks are labelled with representations of the ordinate
+values at each point, each accurate to the number of significant figures
+specified using the \indcmdt{set numerics sigfig}. These labels may appear as
+decimals, such as $3.142$, in scientific notion, as in $3\times10^8$, or, on
+logarithmic axes where a base has been specified for the logarithms using
+syntax such as \footnote{Note that the {\tt x} axis must be referred to as {\tt
+x1} here to distinguish this statement from {\tt set log x2}.}
+\begin{verbatim}
+set log x1 2
+\end{verbatim}
+in a format such as $1.5\times2^8$.
+
+The \indcmdt{set xformat} -- together with its companions such as {\tt set
+yformat} -- may be used to specify a format for the axis labels to take, as
+demonstrated by the following pair of examples:
+\begin{verbatim}
+set xformat "%.2f"%(x)
+set yformat "%s$^\prime$"%(y/unit(feet))
+\end{verbatim}
+The first example specifies that ordinate values should be displayed to two
+decimal places along the $x$-axis; the second specifies that distances should
+be displayed in feet along the $y$-axis. Note that the dummy variable used to
+represent the ordinate value is {\tt x}, {\tt y} or {\tt z} depending upon the
+direction of the axis, but that the dummy variable used in the {\tt set
+x2format} command is still {\tt x}. The following pair of examples both have
+the equivalent effect of returning the {\tt x2}-axis to its default system of
+tick labels:
+\begin{verbatim}
+set x2format auto
+set x2format "%s"%(x)
+\end{verbatim}
+
+The following example specifies that ordinate values should be displayed as
+multiples of $\pi$:
+\begin{verbatim}
+set xformat "%s$\pi$"%(x/pi)
+plot [-pi:2*pi] sin(x)
+\end{verbatim}
+
+Note that where possible, PyXPlot intelligently changes the positions where it
+places the ticks along the axis to reflect significant points in the chosen
+labelling system.  The extent to which this is possible depends upon the format
+string supplied. It is generally easier when continuous-varying numerical
+values are substituted into strings, rather than discretely-varying values or
+strings.
 
 \subsection{xlabel}\indcmd{set xlabel}
 
 \begin{verbatim}
-set xlabel '<text>'
+set x[<axisnumber>]label '<text>'
 \end{verbatim}
 
 The {\tt xlabel} setting controls the label placed on the $x$-axis (abscissa).
@@ -2683,41 +2733,6 @@ affect the lower limit; its range remains at its previous setting.  The first
 y-axis is automatically scaled on both its upper and lower limits.
 
 
-\subsection{xticdir REMOVE ME}\indcmd{set xticdir}
-
-MERGE ME INTO XTICS
-
-\begin{verbatim}
-set (x|y)[<axisnumber>]ticdir (inward|outward|both)
-\end{verbatim}
-
-The {\tt xticdir} setting can be used to set whether the ticks along the
-$x$-axis of a plot point inwards, towards the graph, as by default, or outwards,
-towards the numeric labels along the axis. They can also be set to point in both
-directions simultaneously. The syntax for this is as follows:
-
-\begin{verbatim}
-set xticdir inward
-set xticdir outward
-set xticdir both
-\end{verbatim}
-
-The same setting can also be made on higher numbered axes, by inserting their
-numbers after the `{\tt x}', for example:
-
-\begin{verbatim}
-set x10ticdir outward
-\end{verbatim}
-
-Similarly, the `{\tt x}' can be substituted with a `{\tt y}' to set the directions of ticks
-on vertical axes:
-
-\begin{verbatim}
-set yticdir inward
-set y10ticdir both
-\end{verbatim}
-
-
 \subsection{xtics}\indcmd{set xtics}
 
 \begin{verbatim}
@@ -2729,42 +2744,54 @@ set [m]x[<axisnumber>]tics
          ]
 \end{verbatim}
 
-The {\tt xtics} option specifies the positions of tick marks on the $x$-axis
-(similarly, {\tt ytics} acts on the $y$-axis).  One can specify:
+By default, PyXPlot places a series of tick marks at significant points along
+each axis, with the most significant points being labelled.  Labelled tick
+marks are termed {\it major} ticks, and unlabelled tick marks are termed {\it
+minor} ticks.  The position and appearance of the major ticks along the {\tt
+x}-axis can be configured with the \indcmdt{set xtics}; the corresponding
+command {\tt set mxtics} configures the appearance of the minor ticks along the
+{\tt x}-axis. Analogous commands such as {\tt set ytics} and {\tt set mx2tics}
+configure the major and minor ticks along other axes.
 
-\begin{itemize}
-\item The axis to modify; if none is specified, then the command acts upon all axes.
+The keywords \indkeyt{inward}, \indkeyt{outward} and \indkeyt{both} are used to
+configure how the ticks appear -- whether they point inward, towards the plot,
+as is default, or outwards towards the axis labels, or in both directions.  The
+keyword \indkeyt{axis} is an alias for \indkeyt{inward}, and \indkeyt{border}
+an alias for \indkeyt{outward}.
 
-\item {\tt mxtics} to alter the placement of minor tic marks.
+The remaining options are used to configure where along the axis ticks are
+placed. If a series of comma-separated values {\tt <minimum>, <increment>,
+<maximum>} are specified, then ticks are placed at evenly spaced intervals
+between the specified limits. The {\tt <minimum>} and {\tt <maximum>} values
+are optional; if only one value is specified then it is taken to be the step
+size between ticks. If two values are specified, then the first is taken to be
+{\tt <minimum>}. In the case of logarithmic axes, {\tt <increment>} is applied
+as a multiplicative step size.
 
-\item The keywords {\tt inward}, {\tt outward} and {\tt both}, which alter the
-directions of the tics.  {\tt axis} is an alias for {\tt inward}, {\tt border}
-for {\tt outward}.
-
-\item The {\tt autofreq} keyword restores automatic placement of the tics
-
-\item If {\tt minimum}, {\tt increment}, {\tt maximum} are specified, then ticks
-are placed at evenly spaced intervals between the specified limits. In the case
-of logarithmic axes, increment is applied multiplicatively.
-
-\item The final form allows ticks to be placed on an axis manually with
-individual labels.
-\end{itemize}
-
-Two examples:
+Alternatively, if a bracketed list of quoted tick labels and tick positions are
+provided, then ticks can be placed on an axis individually and each given its
+own textual label. The quoted tick labels may be omitted, in which case they
+are automatically generated:
+\begin{verbatim}
+set xtics ("a" 1, "b" 2, "c" 3)
+set xtics (1,2,3)
+\end{verbatim}
+The keyword \indkeyt{autofreq} overrides any manual selection of ticks which
+may have been placed on an axis and resumes the automatic placement of ticks
+along the axis. The \indcmdt{show xtics} command, together with its companions
+such as {\tt show x2tics} and {\tt show ytics}, may be used to query the
+current ticking options. The \indcmdt{set noxtics} may be used to stipulate
+that no ticks should appear along a particular axis:
 
 \begin{verbatim}
-set xtics 2 1 5
+set noxtics
+show xtics
 \end{verbatim}
 
-\noindent will set tick marks on the $x$-axis at positions 2, 3, 4 and 5.
 
-\begin{verbatim}
-set x2tics ("a" 2, "b" 3)
-\end{verbatim}
+\subsection{yformat}\indcmd{set yformat}
 
-\noindent will set tick marks on the second $x$-axis at positions 2 and 3 reading `a' and
-`b' respectively.
+See {\tt xformat}.
 
 
 \subsection{ylabel}\indcmd{set ylabel}
@@ -2780,6 +2807,11 @@ See {\tt xrange}.
 \subsection{ytics}\indcmd{set ytics}
 
 See {\tt xtics}.
+
+
+\subsection{zformat}\indcmd{set zformat}
+
+See {\tt xformat}.
 
 
 \subsection{zlabel}\indcmd{set zlabel}
@@ -2800,8 +2832,8 @@ See {\tt xtics}.
 \section{show}\indcmd{show}
 
 \begin{verbatim}
-show ( all | settings | axes | variables | functions |
-       <parameter> ...                                 )
+show ( all | axes | functions | settings | units
+       | userfunctions | variables | <parameter> ... )
 \end{verbatim}
 
 The {\tt show} command displays the values of PyXPlot's internal parameters. For
