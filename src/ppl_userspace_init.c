@@ -128,6 +128,11 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_hyperg_U      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_hyperg_U    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hyperg\\_U}@<@1,@2,@3@>", "hyperg_U(a,b,x) evaluates the confluent hypergeometric function U(m,n,x)"};
   FunctionDescriptor fd_hypot         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_hypot       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{hypot}@<@1,@2@>", "hypot(x,y) returns the quadrature sum of x and y"};
   FunctionDescriptor fd_imag          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_imag        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{Im}@<@1@>", "Im(z) returns the magnitude of the imaginary part of z"};
+  FunctionDescriptor fd_jacobi_cn     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_jacobi_cn   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{jacobi\\_cn}@<@1,@2@>", "jacobi_cn(u,m) returns the Jacobi elliptic function cn(u,m)"};
+  FunctionDescriptor fd_jacobi_dn     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_jacobi_dn   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{jacobi\\_dn}@<@1,@2@>", "jacobi_dn(u,m) returns the Jacobi elliptic function dn(u,m)"};
+  FunctionDescriptor fd_jacobi_sn     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_jacobi_sn   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{jacobi\\_sn}@<@1,@2@>", "jacobi_sn(u,m) returns the Jacobi elliptic function sn(u,m)"};
+  FunctionDescriptor fd_lambert_W0    = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_lambert_W0  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lambert\\_W0}@<@1@>", "lambert_W0(x) returns the principal branch of the Lambert W function"};
+  FunctionDescriptor fd_lambert_W1    = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_lambert_W1  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{lambert\\_W1}@<@1@>", "lambert_W1(x) returns the secondary branch of the Lambert W function"};
   FunctionDescriptor fd_ldexp         = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_ldexp       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{ldexp}@<@1,@2@>", "ldexp(x,y) returns x times 2 to the power of an integer y"};
   FunctionDescriptor fd_legendreP     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreP   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{legendreP}@<@1,@2@>", "legendreP(l,x) evaluates the lth Legendre polynomial at x"};
   FunctionDescriptor fd_legendreQ     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_legendreQ   , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{legendreQ}@<@1,@2@>", "legendreQ(l,x) evaluates the lth Legendre function at x"};
@@ -384,6 +389,11 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hyperg_U"       , (void *)&fd_hyperg_U    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "hypot"          , (void *)&fd_hypot       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "Im"             , (void *)&fd_imag        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "jacobi_cn"      , (void *)&fd_jacobi_cn   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "jacobi_dn"      , (void *)&fd_jacobi_dn   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "jacobi_sn"      , (void *)&fd_jacobi_sn   , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "lambert_W0"     , (void *)&fd_lambert_W0  , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "lambert_W1"     , (void *)&fd_lambert_W1  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "ldexp"          , (void *)&fd_ldexp       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreP"      , (void *)&fd_legendreP   , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "legendreQ"      , (void *)&fd_legendreQ   , sizeof(FunctionDescriptor), DATATYPE_VOID);

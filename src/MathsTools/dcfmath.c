@@ -38,10 +38,12 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_ellint.h>
+#include <gsl/gsl_sf_elljac.h>
 #include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_hyperg.h>
+#include <gsl/gsl_sf_lambert.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_sf_zeta.h>
 
@@ -912,6 +914,63 @@ void dcfmath_imag(value *in, value *output, int *status, char *errtext)
   output->real = in->imag;
   CHECK_OUTPUT_OKAY;
   ppl_units_DimCpy(output, in);
+ }
+
+void dcfmath_jacobi_cn(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "jacobi_cn(u,m)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { double t1,t2,t3; if (gsl_sf_elljac_e(in1->real,in2->real,&t1,&t2,&t3)!=GSL_SUCCESS) { output->real=GSL_NAN; } else { output->real=t2; } }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+
+void dcfmath_jacobi_dn(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "jacobi_dn(u,m)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { double t1,t2,t3; if (gsl_sf_elljac_e(in1->real,in2->real,&t1,&t2,&t3)!=GSL_SUCCESS) { output->real=GSL_NAN; } else { output->real=t3; } }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+
+void dcfmath_jacobi_sn(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "jacobi_sn(u,m)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { double t1,t2,t3; if (gsl_sf_elljac_e(in1->real,in2->real,&t1,&t2,&t3)!=GSL_SUCCESS) { output->real=GSL_NAN; } else { output->real=t1; } }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_lambert_W0(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "lambert_W0(x)";
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_lambert_W0(in->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_lambert_W1(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "lambert_W1(x)";
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_sf_lambert_Wm1(in->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_ldexp(value *in1, value *in2, value *output, int *status, char *errtext)

@@ -103,6 +103,11 @@ void dcfmath_hyperg_2F1(value *in1, value *in2, value *in3, value *in4, value *o
 void dcfmath_hyperg_U(value *in1, value *in2, value *in3, value *output, int *status, char *errtext);
 void dcfmath_hypot(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_imag(value *in, value *output, int *status, char *errtext);
+void dcfmath_jacobi_cn(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_jacobi_dn(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_jacobi_sn(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_lambert_W0(value *in, value *output, int *status, char *errtext);
+void dcfmath_lambert_W1(value *in, value *output, int *status, char *errtext);
 void dcfmath_ldexp(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_legendreP(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_legendreQ(value *in1, value *in2, value *output, int *status, char *errtext);

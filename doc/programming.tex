@@ -626,6 +626,87 @@ pyxplot> call f(5*unit(inch), 10*unit(mm))
 127 mm - 10 mm = 117 mm
 \end{verbatim}
 
+\example{ex:pendulum}{The dynamics of the simple pendulum}{
+The equation of motion for a pendulum bob may be derived from the rotational
+analogue to Newton's Second Law, $G=I\ddot\theta$ where $G$ is torque, $I$ is
+moment of inertia and $\theta$ is the displacement of the pendulum bob from the
+vertical. For a pendulum of length $l$, with a bob of mass $m$, this
+equation becomes $-mgl\sin\theta=ml^2\ddot\theta$. In the small-angle
+approximation, such that $\sin\theta\approx\theta$, it reduces to
+the equation for simple harmonic motion, with the solution
+\\ \noindent
+\begin{equation}
+\theta_\mathrm{approx}=\omega\sin\left(\sqrt{\frac{g}{l}}t\right).
+\label{eq:pendulum_approx}
+\end{equation}
+\nlnp
+A more exact solution requires integration of the second-order differential
+equation of motion including the $\sin\theta$ term. This integral cannot be
+done analytically, but the solution can be written in the form
+\\ \noindent
+\begin{equation}
+\theta_\mathrm{exact}(t) = 2\sin^{-1}\left[ k\,\mathrm{sn}\left(\sqrt{\frac{g}{l}}t,k\right)\right].
+\label{eq:pendulum_exact}
+\end{equation}
+\\ \noindent
+where $\mathrm{sn}(u,m)$ is a Jacobi elliptic function and
+$k=\sin\left(\omega/2\right)$.  The Jacobi elliptic function cannot be exactly
+computed, but can be numerically approximated using the {\tt jacobi\_\-sn(u,m)}
+function in PyXPlot.
+\nlnp
+Below, we produce a plot of Equations~(\ref{eq:pendulum_approx}) and
+(\ref{eq:pendulum_exact}).  The horizontal axis is demarked in units of the
+dimensionless period of the pendulum to eliminate $g$ and $l$, and a swing
+amplitude of $\pm30^\circ$ is assumed:
+\nlscf
+{\footnotesize
+\noindent{\tt theta\_approx(a,t) = a * sin(2*pi*t)}\newline
+\noindent{\tt theta\_exact (a,t) = 2*asin(sin(a/2)*jacobi\_sn(2*pi*t,sin(a/2)))}\newline
+}\\{\footnotesize
+\noindent{\tt set unit of angle degrees}\newline
+\noindent{\tt set key below}\newline
+\noindent{\tt set xlabel 'Time / \$$\backslash$sqrt\{g/l\}\$'}\newline
+\noindent{\tt set ylabel '\$$\backslash$theta\$'}\newline
+\noindent{\tt omega = unit(30*deg)}\newline
+\noindent{\tt plot [0:4] theta\_approx(omega,x) title 'Approximate solution', $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxxxxx}theta\_exact (omega,x) title 'Exact solution'}
+}
+\nlscf
+\centerline{\includegraphics[width=9cm]{examples/eps/ex_pendulum.eps}}
+\nlnp
+As is apparent, at this amplitude, the exact solution begins to deviate
+noticeably from the small-angle solution within 2--3 swings of the pendulum. We
+now seek to quantify more precisely how long the two solutions take to diverge
+by defining a subroutine to compute how long $T$ it takes before the two
+solutions to deviate by some amount $\psi$. We then plot these times as a
+function of amplitude $\omega$ for three deviation thresholds. Because this
+subroutine takes a significant amount of time to run, we only compute~40
+samples for each value of $\psi$:
+\nlscf
+{\footnotesize
+\noindent{\tt subroutine PendulumDivergenceTime(omega, psi)}\newline
+\noindent{\tt \phantom{x}\{}\newline
+\noindent{\tt \phantom{xx}for t=0 to 20 step 0.05}\newline
+\noindent{\tt \phantom{xxx}\{}\newline
+\noindent{\tt \phantom{xxxx}approx = theta\_approx(omega,t)}\newline
+\noindent{\tt \phantom{xxxx}exact  = theta\_exact (omega,t)}\newline
+\noindent{\tt \phantom{xxxx}if (abs(approx-exact)$>$psi) \{ ;break; \}}\newline
+\noindent{\tt \phantom{xxx}\}}\newline
+\noindent{\tt \phantom{xx}return t}\newline
+\noindent{\tt \phantom{x}\}}
+}\\{\footnotesize
+\noindent{\tt set xlabel 'Amplitude of swing'}\newline
+\noindent{\tt set ylabel 'Time / \$$\backslash$sqrt\{g/l\}\$ taken to diverge'}\newline
+\noindent{\tt set samples 40}\newline
+\noindent{\tt plot [unit(5*deg):unit(30*deg)][0:19] $\backslash$}\newline
+\noindent{\tt \phantom{xx}PendulumDivergenceTime(x,unit(20*deg)) title "\$20\^{}$\backslash$circ\$ deviation", $\backslash$}\newline
+\noindent{\tt \phantom{xx}PendulumDivergenceTime(x,unit(10*deg)) title "\$10\^{}$\backslash$circ\$ deviation", $\backslash$}\newline
+\noindent{\tt \phantom{xx}PendulumDivergenceTime(x,unit( 5*deg)) title "\$ 5\^{}$\backslash$circ\$ deviation"}
+}
+\nlscf
+\centerline{\includegraphics[width=9cm]{examples/eps/ex_pendulum2.eps}}
+}
+
 \section{The \indcmdt{exec}}
 
 The \indcmdt{exec} can be used to execute PyXPlot commands contained within
