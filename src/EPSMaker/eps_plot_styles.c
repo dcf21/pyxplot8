@@ -680,54 +680,60 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     last_colstr=NULL;
 
 #define MAKE_STEP(X0,Y0,WIDTH) \
-   IF_NOT_INVISIBLE \
-    { \
-     double x0=X0,y0=Y0,width=WIDTH; \
-     double xl,xr; \
-     if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
-     xl=x0-width; \
-     xr=x0+width; \
-     if (logaxis) { xl=exp(xl); xr=exp(xr); } \
-     LineDraw_Point(ld, xl, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, xr, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-    } \
+ IF_NOT_INVISIBLE \
+  { \
+   double x0=X0,y0=Y0,width=WIDTH; \
+   double xl,xr; \
+   if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
+   xl=x0-width; \
+   xr=x0+width; \
+   if (logaxis) { xl=exp(xl); xr=exp(xr); } \
+   LineDraw_Point(ld, xl, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+   LineDraw_Point(ld, xr, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+  } \
 
 #define MAKE_BOX(X0,Y0,WIDTH) \
-   IF_NOT_INVISIBLE \
-    { \
-     double x0=X0,y0=Y0,width=WIDTH; \
-     double xl,xr,yb,yt; \
-     xl = x0-width; \
-     xr = x0+width; \
-     if (logaxis) { xl=exp(xl); xr=exp(xr); } \
+ { \
+  double x0=X0,y0=Y0,width=WIDTH; \
+  double xl,xr,yb,yt; \
+  xl = x0-width; \
+  xr = x0+width; \
+  if (logaxis) { xl=exp(xl); xr=exp(xr); } \
 \
-     /* Set fill colour of box */ \
-     eps_core_SetFillColour(x, &pd->ww_final); \
-     eps_core_SwitchTo_FillColour(x); \
+  /* Set fill colour of box */ \
+  eps_core_SetFillColour(x, &pd->ww_final); \
+  eps_core_SwitchTo_FillColour(x); \
 \
-     /* Fill box */ \
-     IF_NOT_INVISIBLE \
-      { \
-       FilledRegionHandle *fr; \
-       yb = sg->BoxFrom.real; \
-       yt = y0; \
-       fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z); \
-       FilledRegion_Point(fr, xl, yb); \
-       FilledRegion_Point(fr, xl, yt); \
-       FilledRegion_Point(fr, xr, yt); \
-       FilledRegion_Point(fr, xr, yb); \
-       FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 0); \
-      } \
-     eps_core_SwitchFrom_FillColour(x); \
+  /* Fill box */ \
+  IF_NOT_INVISIBLE \
+   { \
+    FilledRegionHandle *fr; \
+    yb = sg->BoxFrom.real; \
+    if ((a[yn]->log==SW_BOOL_TRUE) && (yb<DBL_MIN)) yb=DBL_MIN; \
+    yt = y0; \
+    fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z); \
+    FilledRegion_Point(fr, xl, yb); \
+    FilledRegion_Point(fr, xl, yt); \
+    FilledRegion_Point(fr, xr, yt); \
+    FilledRegion_Point(fr, xr, yb); \
+    FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 0); \
+   } \
+  eps_core_SwitchFrom_FillColour(x); \
 \
-     if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
-     LineDraw_Point(ld, xl, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, xl, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, xr, y0              , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, xr, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_Point(ld, xl, sg->BoxFrom.real, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-     LineDraw_PenUp(ld); \
-    } \
+  /* Stroke outline of box */ \
+  IF_NOT_INVISIBLE \
+   { \
+    if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
+    yb = sg->BoxFrom.real; \
+    if ((a[yn]->log==SW_BOOL_TRUE) && (yb<DBL_MIN)) yb=DBL_MIN; \
+    LineDraw_Point(ld, xl, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, xl, y0 , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, xr, y0 , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, xr, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, xl, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_PenUp(ld); \
+   } \
+ } \
 
     if (a[yn]->DataUnitSet && (!ppl_units_DimEqual(&sg->BoxFrom, &a[yn]->DataUnit))) { sprintf(temp_err_string, "Data with units of <%s> plotted as boxes/steps when BoxFrom is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[yn]->DataUnit,NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&sg->BoxFrom,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
     else if (a[xn]->DataUnitSet && (sg->BoxWidth.real>0.0) && (!ppl_units_DimEqual(&sg->BoxWidth, &a[xn]->DataUnit))) { sprintf(temp_err_string, "Data with ordinate units of <%s> plotted as boxes/steps when BoxWidth is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[xn]->DataUnit,NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&sg->BoxWidth,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }

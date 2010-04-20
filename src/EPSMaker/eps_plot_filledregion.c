@@ -75,6 +75,8 @@ void FilledRegion_Point(FilledRegionHandle *fr, double x, double y)
   // Work out where (x,y) in coordinate space lies on the canvas
   eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, fr->ThreeDim, x, y, 0, fr->xa, fr->ya, fr->za, fr->xrn, fr->yrn, fr->zrn, fr->sg, fr->origin_x, fr->origin_y, fr->width, fr->height, fr->zdepth, 1);
 
+  if ((!gsl_finite(xpos))||(!gsl_finite(ypos))||(!gsl_finite(depth))) { return; }
+
   // Add this to a list of points describing the outline of the region which we are going to fill
   p.inside = ((xap>=0)&&(xap<=1)&&(yap>=0)&&(yap<=1)&&(zap>=0)&&(zap<=1));
   p.FillSideFlip_fwd = 0;
@@ -183,12 +185,13 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
   for (i=0; i<nac; i++) CrossPointList[i].used=0;
 
   // Loop over multiple detached segments of filled region which may be caused by clipping it into pieces
+  if (DEBUG) { ppl_log("New filled region."); }
   while (!fail)
    {
-    printf("*\n");
+    if (DEBUG) { ppl_log("New segment of filled region."); }
     // Find an axis crossing point which is unique
     l=-1;
-    for (i=0; i<nac; i++) printf("%d %d [%e %e] [%d %e] \n",i, (int)CrossPointList[i].used, CrossPointList[i].x, CrossPointList[i].y, (int)CrossPointList[i].AxisFace, CrossPointList[i].AxisPos);
+    if (DEBUG) { for (i=0; i<nac; i++) { sprintf(temp_err_string,"i=%d; used=%d; [x=%e y=%e] [af=%d ap=%e]",i, (int)CrossPointList[i].used, CrossPointList[i].x, CrossPointList[i].y, (int)CrossPointList[i].AxisFace, CrossPointList[i].AxisPos); ppl_log(temp_err_string); } }
     for (i=0; i<nac; i++)
      {
       if (CrossPointList[i].used) continue;
@@ -212,7 +215,7 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
 
     // Decide whether we are proceeding clockwise or anticlockwise around the region we're going to fill
     FillSide = inside_ahead;
-    printf("%d %d\n",i,(int)FillSide);
+    if (DEBUG) { sprintf(temp_err_string,"i=%d; fs=%d",i,(int)FillSide); ppl_log(temp_err_string); }
 
     while (1)
      {
@@ -256,7 +259,7 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
       if (FillSide) j=(i+nac-1)%nac; // Move anticlockwise around path
       else          j=(i+1)%nac;     // Move clockwise around path
       CurrentFace = CrossPointList[i].AxisFace;
-      printf("%d %d %d %d %d\n",i,j,(int)FillSide,(int)CrossPointList[i].AxisFace,(int)CrossPointList[j].AxisFace);
+      if (DEBUG) { sprintf(temp_err_string, "i=%d; j=%d; fs=%d; afi=%d; afj=%d",i,j,(int)FillSide,(int)CrossPointList[i].AxisFace,(int)CrossPointList[j].AxisFace); ppl_log(temp_err_string); }
       while (CurrentFace != CrossPointList[j].AxisFace) // If we've changed side of clip region, add corner to path
        {
         double xap,yap;
@@ -272,7 +275,9 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
      }
     if (!first_point) { fprintf(fr->x->epsbuffer, "closepath\n"); }
     first_point=1;
+    if (DEBUG) { ppl_log("End segment."); }
    }
+  if (DEBUG) { ppl_log("End filled region."); }
   if (!first_point) { fprintf(fr->x->epsbuffer, "closepath\n"); }
   fprintf(fr->x->epsbuffer, "%s\n", EndText);
   return;
