@@ -111,37 +111,43 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
   return 0;
  }
 
-#define PROJ_DBL(X) \
- dbl = DataRow[i--]; \
- if (i<0) i=0; \
- if (!gsl_finite(dbl)) dbl=0.0;
+#define PROJ_DBL \
+ { \
+  dbl = DataRow[i--]; \
+  if (i<0) i=0; \
+  if (!gsl_finite(dbl)) dbl=0.0; \
+ }
 
-#define PROJ0_255(X) \
- PROJ_DBL(X); \
- if (dbl <   0.0) dbl=  0.0; \
- if (dbl > 255.0) dbl=255.0;
+#define PROJ0_255 \
+ { \
+  PROJ_DBL; \
+  if (dbl <   0.0) dbl=  0.0; \
+  if (dbl > 255.0) dbl=255.0; \
+ }
 
-#define PROJ_INT(X) \
- PROJ_DBL(X); \
- if (dbl < INT_MIN) dbl=INT_MIN+1; \
- if (dbl > INT_MAX) dbl=INT_MAX-1;
+#define PROJ_INT \
+ { \
+  PROJ_DBL; \
+  if (dbl < INT_MIN) dbl=INT_MIN+1; \
+  if (dbl > INT_MAX) dbl=INT_MAX-1; \
+ }
 
 void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolumns)
  {
   int i = Ncolumns-1;
   double dbl;
 
-  if (ww->STRfillcolourB    != NULL) { PROJ0_255(i); ww->USEfillcolourRGB  = 1; ww->fillcolourB    = (int)dbl; }
-  if (ww->STRfillcolourG    != NULL) { PROJ0_255(i); ww->USEfillcolourRGB  = 1; ww->fillcolourG    = (int)dbl; }
-  if (ww->STRfillcolourR    != NULL) { PROJ0_255(i); ww->USEfillcolourRGB  = 1; ww->fillcolourR    = (int)dbl; }
-  if (ww->STRcolourB        != NULL) { PROJ0_255(i); ww->USEcolourRGB      = 1; ww->colourB        = (int)dbl; }
-  if (ww->STRcolourG        != NULL) { PROJ0_255(i); ww->USEcolourRGB      = 1; ww->colourG        = (int)dbl; }
-  if (ww->STRcolourR        != NULL) { PROJ0_255(i); ww->USEcolourRGB      = 1; ww->colourR        = (int)dbl; }
-  if (ww->STRpointtype      != NULL) { PROJ_INT (i); ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; }
-  if (ww->STRpointsize      != NULL) { PROJ_DBL (i); ww->USEpointsize      = 1; ww->pointsize      =      dbl; }
-  if (ww->STRpointlinewidth != NULL) { PROJ_DBL (i); ww->USEpointlinewidth = 1; ww->pointlinewidth =      dbl; }
-  if (ww->STRlinewidth      != NULL) { PROJ_DBL (i); ww->USElinewidth      = 1; ww->linewidth      =      dbl; }
-  if (ww->STRlinetype       != NULL) { PROJ_INT (i); ww->USElinetype       = 1; ww->linetype       = (int)dbl; }
+  if (ww->STRfillcolourB    != NULL) { PROJ0_255; ww->USEfillcolourRGB  = 1; ww->fillcolourB    = (int)dbl; }
+  if (ww->STRfillcolourG    != NULL) { PROJ0_255; ww->USEfillcolourRGB  = 1; ww->fillcolourG    = (int)dbl; }
+  if (ww->STRfillcolourR    != NULL) { PROJ0_255; ww->USEfillcolourRGB  = 1; ww->fillcolourR    = (int)dbl; }
+  if (ww->STRcolourB        != NULL) { PROJ0_255; ww->USEcolourRGB      = 1; ww->colourB        = (int)dbl; }
+  if (ww->STRcolourG        != NULL) { PROJ0_255; ww->USEcolourRGB      = 1; ww->colourG        = (int)dbl; }
+  if (ww->STRcolourR        != NULL) { PROJ0_255; ww->USEcolourRGB      = 1; ww->colourR        = (int)dbl; }
+  if (ww->STRpointtype      != NULL) { PROJ_INT ; ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; }
+  if (ww->STRpointsize      != NULL) { PROJ_DBL ; ww->USEpointsize      = 1; ww->pointsize      =      dbl; }
+  if (ww->STRpointlinewidth != NULL) { PROJ_DBL ; ww->USEpointlinewidth = 1; ww->pointlinewidth =      dbl; }
+  if (ww->STRlinewidth      != NULL) { PROJ_DBL ; ww->USElinewidth      = 1; ww->linewidth      =      dbl; }
+  if (ww->STRlinetype       != NULL) { PROJ_INT ; ww->USElinetype       = 1; ww->linetype       = (int)dbl; }
 
   return;
  }
