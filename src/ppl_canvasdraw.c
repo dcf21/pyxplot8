@@ -215,8 +215,9 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   comm.status               = &status;
   comm.NTextItems           = 0; // Used to count items as we add them to text buffer
   comm.TextItems            = ListInit(); // Empty list of pieces of text we are going to put on canvas
-  comm.LastEPSColour[0]     = '\0';
-  comm.LastEPSFillColour[0] = '\0';
+  comm.LastPSColour[0]      = '\0';
+  comm.CurrentColour[0]     = '\0';
+  comm.CurrentFillColour[0] = '\0';
   comm.LastLinewidth        = -1.0;
   comm.LastLinetype         = 0;
   comm.LaTeXpageno          = 0; // Used to count items off as we render them to postscript

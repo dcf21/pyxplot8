@@ -104,7 +104,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
 
   // Undo scaling of postscript axes
   fprintf(x->epsbuffer, "grestore\n");
-  x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0';
+  x->LastLinewidth = -1; x->LastLinetype = -1; x->LastPSColour[0]='\0';
 
   // Factor ellipse into EPS file's bounding box
   if (filled || stroked)

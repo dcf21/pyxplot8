@@ -368,7 +368,7 @@ void eps_pie_RenderEPS(EPSComm *x)
            { // Labelling pie wedges inside pie
             int pageno = x->LaTeXpageno++;
             eps_core_SetColour(x, &ww_txt, 1);
-            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*best_label_rpos)/M_TO_PS, (ypos+rad*cos(a)*best_label_rpos)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_CENT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*best_label_rpos)/M_TO_PS, (ypos+rad*cos(a)*best_label_rpos)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_CENT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
            }
           else if (ArrowType==SW_PIEKEYPOS_OUTSIDE)
            { // Labelling pie wedges around edge of pie
@@ -390,7 +390,7 @@ void eps_pie_RenderEPS(EPSComm *x)
             eps_core_SetColour(x, &ww, 1);
             IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nclosepath\nstroke\n",xpos+rad*sin(a),ypos+rad*cos(a),xpos+rad*sin(a)*1.03,ypos+rad*cos(a)*1.03);
             eps_core_SetColour(x, &ww_txt, 1);
-            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*1.05)/M_TO_PS, (ypos+rad*cos(a)*1.05)/M_TO_PS, hal, val, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*1.05)/M_TO_PS, (ypos+rad*cos(a)*1.05)/M_TO_PS, hal, val, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
            }
           else // Labelling pie wedges in a key
            {
@@ -433,7 +433,7 @@ void eps_pie_RenderEPS(EPSComm *x)
 
             // Write text next to icon
             eps_core_SetColour(x, &ww_txt, 1);
-            canvas_EPSRenderTextItem(x, pageno, (h+st)/M_TO_PS, v/M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, pageno, (h+st)/M_TO_PS, v/M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
             key_vpos += TextHeight[ItemNo];
            }
          }
@@ -450,7 +450,7 @@ END_LABEL_PRINTING:
     if ((x->current->settings.title != NULL) && (x->current->settings.title[0] != '\0'))
      {
       int pageno = x->LaTeXpageno++;
-      canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS, (vtitle+8)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+      canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS, (vtitle+8)/M_TO_PS, SW_HALIGN_CENT, SW_VALIGN_BOT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
      }
    }
 

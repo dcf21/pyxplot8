@@ -312,7 +312,7 @@ void GraphLegend_Render(EPSComm *x, double width, double height)
     if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
     else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
     eps_core_SetColour(x, &ww, 1);
-    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (pd->TitleFinal_xpos+MARGIN_HSIZE_LEFT)/M_TO_PS, (pd->TitleFinal_ypos - pd->TitleFinal_height/2)/ M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->LastEPSColour, fs, 0.0, NULL, NULL);
+    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (pd->TitleFinal_xpos+MARGIN_HSIZE_LEFT)/M_TO_PS, (pd->TitleFinal_ypos - pd->TitleFinal_height/2)/ M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->CurrentColour, fs, 0.0, NULL, NULL);
    NDataSet++;
   END_LOOP_OVER_DATASETS
   return;

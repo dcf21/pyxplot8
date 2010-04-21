@@ -156,7 +156,7 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
 
             IF_NOT_INVISIBLE
              {
-              canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN_THIS, VALIGN_THIS, x->LastEPSColour, x->current->settings.FontSize, theta, &width, &height);
+              canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN_THIS, VALIGN_THIS, x->CurrentColour, x->current->settings.FontSize, theta, &width, &height);
               height = height*fabs(cos(theta_pinpoint)) + width*fabs(sin(theta_pinpoint));
               if (height > TickMaxHeight) TickMaxHeight = height;
              }
@@ -189,7 +189,7 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
         if (theta_text >  M_PI  ) theta_text -= 2*M_PI;
         if (theta_text >  M_PI/2) theta_text -=   M_PI;
         if (theta_text < -M_PI/2) theta_text +=   M_PI;
-        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN, VALIGN, x->LastEPSColour, x->current->settings.FontSize, theta_text, &width, &height);
+        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN, VALIGN, x->CurrentColour, x->current->settings.FontSize, theta_text, &width, &height);
         *OutputWidth += (EPS_AXES_TEXTGAP * M_TO_PS + height*fabs(cos(theta_pinpoint)) + width*fabs(sin(theta_pinpoint)) ); // Allow gap after label
        }
      }

@@ -104,7 +104,7 @@ void eps_point_RenderEPS(EPSComm *x)
       canvas_EPSRenderTextItem(x, pageno,
               x->current->xpos - (x->current->settings.TextHAlign - SW_HALIGN_CENT) * ww.pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
               x->current->ypos + (x->current->settings.TextVAlign - SW_VALIGN_CENT) * ww.pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
-              x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+              x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
      }
    }
 

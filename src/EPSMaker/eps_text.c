@@ -55,7 +55,6 @@ void eps_text_YieldUpText(EPSComm *x)
 void eps_text_RenderEPS(EPSComm *x)
  {
   with_words def, merged;
-  char *colstr;
   double xgap, ygap, xgap2, ygap2;
   int pageno;
 
@@ -77,7 +76,6 @@ void eps_text_RenderEPS(EPSComm *x)
   def.USEcolourRGB = (def.colour==0);
   with_words_merge(&merged, &x->current->with_data, &def, NULL, NULL, NULL, 1);
   eps_core_SetColour(x, &merged, 1);
-  colstr = x->LastEPSColour;
 
   // Render text item to eps
   xgap  = -(x->current->settings.TextHAlign - SW_HALIGN_CENT) * x->current->xpos2;
@@ -87,7 +85,7 @@ void eps_text_RenderEPS(EPSComm *x)
   ygap2 = xgap*sin(x->current->rotation) + ygap*cos(x->current->rotation);
 
   canvas_EPSRenderTextItem(x, pageno, x->current->xpos + xgap2, x->current->ypos + ygap2,
-      x->current->settings.TextHAlign, x->current->settings.TextVAlign, colstr, x->current->settings.FontSize, x->current->rotation, NULL, NULL);
+      x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, x->current->rotation, NULL, NULL);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");

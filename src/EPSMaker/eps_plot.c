@@ -572,7 +572,7 @@ void eps_plot_RenderEPS(EPSComm *x)
 
   // Turn off clipping if 'set clip' is set
   if (x->current->settings.clip == SW_ONOFF_ON)
-   { fprintf(x->epsbuffer, "grestore\n"); x->LastLinewidth = -1; x->LastLinetype = -1; x->LastEPSColour[0]='\0'; }
+   { fprintf(x->epsbuffer, "grestore\n"); x->LastLinewidth = -1; x->LastLinetype = -1; x->LastPSColour[0]='\0'; }
 
   // Deactivate three-dimensional buffer
   ThreeDimBuffer_Deactivate(x);
@@ -593,7 +593,7 @@ void eps_plot_RenderEPS(EPSComm *x)
     if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
     else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
     eps_core_SetColour(x, &ww, 1);
-    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (x->current->ThreeDim ? origin_x : (origin_x+width/2))/M_TO_PS, x->current->PlotTopMargin/M_TO_PS+4e-3, SW_HALIGN_CENT, SW_VALIGN_BOT, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (x->current->ThreeDim ? origin_x : (origin_x+width/2))/M_TO_PS, x->current->PlotTopMargin/M_TO_PS+4e-3, SW_HALIGN_CENT, SW_VALIGN_BOT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
    }
 
   // Final newline at end of canvas item

@@ -22,7 +22,7 @@
 #ifndef _PPL_EPS_CORE_H
 #define _PPL_EPS_CORE_H 1
 
-#define IF_NOT_INVISIBLE if (x->LastEPSColour[0]!='\0')
+#define IF_NOT_INVISIBLE if (x->CurrentColour[0]!='\0')
 
 void eps_core_clear                (EPSComm *x);
 void eps_core_SetColour            (EPSComm *x, with_words *ww, unsigned char WritePS);

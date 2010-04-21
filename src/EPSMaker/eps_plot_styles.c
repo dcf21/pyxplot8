@@ -435,14 +435,13 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         if (blk->split[j]) { LineDraw_PenUp(ld); }
         IF_NOT_INVISIBLE
          {
-          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
          } else { LineDraw_PenUp(ld); }
        }
       blk=blk->next;
      }
     LineDraw_PenUp(ld);
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS) || (style == SW_STYLE_STARS) || (style == SW_STYLE_DOTS)) // POINTS, DOTS, STARS
@@ -465,7 +464,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         eps_core_SetColour(x, &pd->ww_final, 0);
         IF_NOT_INVISIBLE
          {
-          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           if (style != SW_STYLE_STARS)
            {
             pt = (style == SW_STYLE_DOTS) ? 9 : ((pd->ww_final.pointtype-1) % N_POINTTYPES); // Dots are always pt 9 (circle)
@@ -489,7 +488,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           canvas_EPSRenderTextItem(x, x->LaTeXpageno++,
              xpos/M_TO_PS - (x->current->settings.TextHAlign - SW_HALIGN_CENT) * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
              ypos/M_TO_PS + (x->current->settings.TextVAlign - SW_VALIGN_CENT) * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
-             x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+             x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
          }
        }
       blk=blk->next;
@@ -538,7 +537,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           if (a[1]->log==SW_BOOL_TRUE) { if (min[1]<DBL_MIN) min[1]=DBL_MIN; if (max[1]<DBL_MIN) max[1]=DBL_MIN; }
           if (a[2]->log==SW_BOOL_TRUE) { if (min[2]<DBL_MIN) min[2]=DBL_MIN; if (max[2]<DBL_MIN) max[2]=DBL_MIN; }
 
-          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
 
           for (i=0; i<3; i++) if (ac[i])
            {
@@ -571,12 +570,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
          {
           eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
           if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
          }
        }
       blk=blk->next;
      }
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   else if (style == SW_STYLE_IMPULSES       ) // IMPULSES
@@ -597,7 +595,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           LineDraw_PenUp(ld);
           IF_NOT_INVISIBLE
            {
-            if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+            if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
             LineDraw_Point(ld, UUR(xn), sg->BoxFrom.real, ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
             LineDraw_Point(ld, UUR(xn), UUR(yn)         , ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
            }
@@ -608,13 +606,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
            {
             eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
             if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
-            canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
            }
          }
         blk=blk->next;
        }
      }
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   else if ((style == SW_STYLE_LOWERLIMITS) || (style == SW_STYLE_UPPERLIMITS)) // LOWERLIMITS, UPPERLIMITS
@@ -640,7 +637,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, &theta_y, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
           if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
 
-          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,-ps,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, ps,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_PenUp(ld);
@@ -663,12 +660,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
          }
        }
       blk=blk->next;
      }
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_WBOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS)) // BOXES, WBOXES, STEPS, FSTEPS, HISTEPS
@@ -684,7 +680,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   { \
    double x0=X0,y0=Y0,width=WIDTH; \
    double xl,xr; \
-   if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
+   if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); } \
    xl=x0-width; \
    xr=x0+width; \
    if (logaxis) { xl=exp(xl); xr=exp(xr); } \
@@ -723,7 +719,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   /* Stroke outline of box */ \
   IF_NOT_INVISIBLE \
    { \
-    if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); } \
+    if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); } \
     yb = sg->BoxFrom.real; \
     if ((a[yn]->log==SW_BOOL_TRUE) && (yb<DBL_MIN)) yb=DBL_MIN; \
     LineDraw_Point(ld, xl, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
@@ -810,7 +806,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         LineDraw_PenUp(ld);
         IF_NOT_INVISIBLE
          {
-          if ((last_colstr==NULL)||(strcmp(last_colstr,x->LastEPSColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->LastEPSColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->LastEPSColour); }
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           LineDraw_Point(ld, UUR(xn           ), UUR(yn           ), ThreeDim ? UUR(zn  ) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_Point(ld, UUR(xn+2+ThreeDim), UUR(yn+2+ThreeDim), ThreeDim ? UUR(zn+3) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_PenUp(ld);
@@ -850,12 +846,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->LastEPSColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
          }
        }
       blk=blk->next;
      }
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   else if (style == SW_STYLE_FILLEDREGION) // FILLEDREGION
@@ -878,7 +873,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     eps_core_SwitchTo_FillColour(x);
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
     eps_core_SwitchFrom_FillColour(x);
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   else if (style == SW_STYLE_YERRORSHADED) // YERRORSHADED
@@ -915,7 +909,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     eps_core_SwitchTo_FillColour(x); 
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
     eps_core_SwitchFrom_FillColour(x);
-    strcpy(x->LastEPSColour, ""); // Nullify last EPS colour
    }
 
   // End looping over monotonic regions of axis space

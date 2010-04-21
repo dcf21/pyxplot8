@@ -39,8 +39,9 @@
 void eps_core_clear(EPSComm *x)
  {
   x->LastLinewidth = -1;
-  strcpy(x->LastEPSColour, "");
-  strcpy(x->LastEPSFillColour, "");
+  strcpy(x->LastPSColour, "");
+  strcpy(x->CurrentColour, "");
+  strcpy(x->CurrentFillColour, "");
   x->LastLinetype = 0;
   return;
  }
@@ -48,46 +49,39 @@ void eps_core_clear(EPSComm *x)
 // Set the colour of the EPS we are painting
 void eps_core_SetColour(EPSComm *x, with_words *ww, unsigned char WritePS)
  {
-  char NewColour[256];
-
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
-  if      (ww->USEcolourRGB)  sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->colourR/255,
-                                                                               (double)ww->colourG/255,
-                                                                               (double)ww->colourB/255  );
+  if      (ww->USEcolourRGB)  sprintf(x->CurrentColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->colourR/255,
+                                                                                      (double)ww->colourG/255,
+                                                                                      (double)ww->colourB/255  );
   else if((ww->USEcolour   ) && ((ww->colour==COLOUR_NULL)||(ww->colour==COLOUR_INVISIBLE)||(ww->colour==COLOUR_TRANSPARENT)))
-                              strcpy (NewColour, ""); // This is code to tell us we're writing in invisible ink
-  else if (ww->USEcolour   )  sprintf(NewColour, "%.3f %.3f %.3f %.3f setcmykcolor",
+                              strcpy (x->CurrentColour, ""); // This is code to tell us we're writing in invisible ink
+  else if (ww->USEcolour   )  sprintf(x->CurrentColour, "%.3f %.3f %.3f %.3f setcmykcolor",
                                           *(double *)FetchSettingName(ww->colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_C, sizeof(double)),
                                           *(double *)FetchSettingName(ww->colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_M, sizeof(double)),
                                           *(double *)FetchSettingName(ww->colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_Y, sizeof(double)),
                                           *(double *)FetchSettingName(ww->colour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_K, sizeof(double)) );
-  else                        sprintf(NewColour, "0 0 0 setrgbcolor");
+  else                        sprintf(x->CurrentColour, "0 0 0 setrgbcolor");
 
   // Only change postscript colour if the colour we want isn't the one we are already using
-  if (strcmp(NewColour, x->LastEPSColour) != 0)
-   {
-    if (WritePS && (NewColour[0]!='\0')) fprintf(x->epsbuffer, "%s\n", NewColour); // Write colour to postscript, providing we're not going invisible
-    strcpy(x->LastEPSColour, NewColour);
-   }
+  if ((strcmp(x->CurrentColour, x->LastPSColour) != 0) && WritePS && (x->CurrentColour[0]!='\0'))
+   { strcpy(x->LastPSColour, x->CurrentColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
   return;
  }
 
 void eps_core_SetFillColour(EPSComm *x, with_words *ww)
  {
-  char *NewColour = x->LastEPSFillColour;
-
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
-  if      (ww->USEfillcolourRGB)  sprintf(NewColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->fillcolourR/255,
-                                                                                   (double)ww->fillcolourG/255,
-                                                                                   (double)ww->fillcolourB/255  );
+  if      (ww->USEfillcolourRGB)  sprintf(x->CurrentFillColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->fillcolourR/255,
+                                                                                              (double)ww->fillcolourG/255,
+                                                                                              (double)ww->fillcolourB/255  );
   else if((ww->USEfillcolour   ) && ((ww->fillcolour==COLOUR_NULL)||(ww->fillcolour==COLOUR_INVISIBLE)||(ww->fillcolour==COLOUR_TRANSPARENT)))
-                                  strcpy (NewColour, ""); // This is code to tell us we're writing in invisible ink
-  else if (ww->USEfillcolour   )  sprintf(NewColour, "%.3f %.3f %.3f %.3f setcmykcolor",
+                                  strcpy (x->CurrentFillColour, ""); // This is code to tell us we're writing in invisible ink
+  else if (ww->USEfillcolour   )  sprintf(x->CurrentFillColour, "%.3f %.3f %.3f %.3f setcmykcolor",
                                               *(double *)FetchSettingName(ww->fillcolour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_C, sizeof(double)),
                                               *(double *)FetchSettingName(ww->fillcolour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_M, sizeof(double)),
                                               *(double *)FetchSettingName(ww->fillcolour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_Y, sizeof(double)),
                                               *(double *)FetchSettingName(ww->fillcolour, SW_COLOUR_INT, (void *)SW_COLOUR_CMYK_K, sizeof(double)) );
-  else                            strcpy (NewColour, ""); // If no fill colour is specified, we don't fill
+  else                            strcpy (x->CurrentFillColour, ""); // If no fill colour is specified, we don't fill
 
   return;
  }
@@ -96,16 +90,18 @@ static char TempColour[256];
 
 void eps_core_SwitchTo_FillColour(EPSComm *x)
  {
-  strcpy(TempColour , x->LastEPSColour); // Buffer the colour we're stroking with so we can restore it in eps_core_SwitchFrom_FillColour
-  if ((strcmp(TempColour, x->LastEPSFillColour) != 0) && (x->LastEPSFillColour[0]!='\0')) fprintf(x->epsbuffer, "%s\n", x->LastEPSFillColour);
-  strcpy(x->LastEPSColour , x->LastEPSFillColour); // This make the supression of invisible ink work...
+  strcpy(TempColour , x->CurrentColour); // Buffer the colour we're stroking with so we can restore it in eps_core_SwitchFrom_FillColour
+  if ((strcmp(x->CurrentFillColour, x->LastPSColour) != 0) && (x->CurrentFillColour[0]!='\0'))
+   { strcpy(x->LastPSColour, x->CurrentFillColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
+  strcpy(x->CurrentColour , x->CurrentFillColour); // This make the supression of invisible ink work...
   return;
  }
 
 void eps_core_SwitchFrom_FillColour(EPSComm *x)
  {
-  if ((strcmp(TempColour, x->LastEPSFillColour) != 0) && (TempColour[0]!='\0')) fprintf(x->epsbuffer, "%s\n", TempColour);
-  strcpy(x->LastEPSColour, TempColour); // Restore the colour we're stroking with
+  if ((strcmp(TempColour, x->LastPSColour) != 0) && (TempColour[0]!='\0'))
+   { strcpy(x->LastPSColour, TempColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
+  strcpy(x->CurrentColour, TempColour); // Restore the colour we're stroking with
   return;
  }
 

@@ -163,7 +163,7 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        with_words_merge(&ww, &li->style, &ww_default, NULL, NULL, NULL, 1);
        eps_core_SetColour(x, &ww, 1);
        IF_NOT_INVISIBLE if ((gsl_finite(xpos))&&(gsl_finite(ypos)))
-           canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS+xgap2, ypos/M_TO_PS+ygap2, hal, val, x->LastEPSColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
+           canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS+xgap2, ypos/M_TO_PS+ygap2, hal, val, x->CurrentColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
       }
      pageno++;
     }
