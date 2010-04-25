@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   gsl_set_error_handler_off();
 
   // Set program name within kpathsea
-  kpse_set_program_name("pyxplot", NULL);
+  kpse_set_program_name("dvips", "dvips");
   // kpse_init_prog();
 
   // Initialise GNU Readline

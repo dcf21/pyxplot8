@@ -36,6 +36,14 @@
 #include "dvi_read.h"
 #include "dvi_font.h"
 
+#define N_BUILTIN_FONTS 5
+#define L_BUILTIN_FNAME 10
+#define L_BUILTIN_FPSNAME 23
+
+char builtinFonts[N_BUILTIN_FONTS][L_BUILTIN_FNAME] = {"ptmb7t", "ptmr7t", "ptmri7t", "phvr7t", "pcrr7t"};
+char builtinFontNames[N_BUILTIN_FONTS][L_BUILTIN_FPSNAME] = {"Times-Bold", "Times-Roman", "Times-Italic", "Helvetica", "Courier"};
+
+
 int dviGetPfa(dviFontDetails *font, char *filename);
 
 int dviGetTFM(dviFontDetails *font)
@@ -44,6 +52,7 @@ int dviGetTFM(dviFontDetails *font)
   char *s;
   char errStr[SSTR_LENGTH];
   int err=0;
+  int i;
   FILE *TFMfp;
 
   // Get the TFM file
@@ -75,22 +84,59 @@ int dviGetTFM(dviFontDetails *font)
 
   if (DEBUG) {sprintf(temp_err_string, "TFM: font type %d", font->fontType);  ppl_log(temp_err_string);}
 
-  // Additionally obtain the pfa file
-  err = dviGetPfa(font, font->name);
-  if (err == DVIE_NOFONT)
+  // Deal with built-in fonts
+  font->psName = NULL;
+  for (i=0; i<N_BUILTIN_FONTS; i++) {
+   if (strlen(font->name)==strlen(builtinFonts[i]) && 
+                   strncmp(font->name, builtinFonts[i], L_BUILTIN_FNAME)==0)
+    {
+     font->pfaPath = NULL;
+     font->psName = (char *)lt_malloc((strlen(builtinFontNames[i])+1)*sizeof(char));
+     if (font->name==NULL) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory"); return DVIE_MEMORY; }
+     strcpy(font->psName, builtinFontNames[i]);
+     if (DEBUG) { snprintf(errStr, SSTR_LENGTH, "Found builtin font %sXXX%sXXX%sXXX %d", builtinFonts[i], font->psName, builtinFontNames[i], i); ppl_log(errStr); }
+     break;
+    }
+  }
+
+   /*
+  if (strlen(font->name)==6 && strncmp(font->name, "ptmb7t", 6)==0)
    {
-    err = dviGetPfa(font, font->tfm->family);
+    // Times-Bold
+    font->pfaPath = NULL;
+    font->psName = (char *)lt_malloc(11*sizeof(char));
+    if (font->name==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+    snprintf(font->psName, 11, "Times-Bold");
+   }
+  else if (strlen(font->name)==6 && strncmp(font->name, "ptmr7t", 6)==0)
+   {
+    // Times-Roman
+    font->pfaPath = NULL;
+    font->psName = (char *)lt_malloc(12*sizeof(char));
+    if (font->name==NULL) { ppl_error(ERR_MEMORY,"Out of memory"); return DVIE_MEMORY; }
+    snprintf(font->psName, 12, "Times-Roman");
+   }
+  else */
+  if (font->psName == NULL) // Not found a built-in font
+   {
+    // Obtain the pfa file
+    err = dviGetPfa(font, font->name);
     if (err == DVIE_NOFONT)
      {
-      snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s", font->name);
-      ppl_error(ERR_GENERAL, -1, -1,errStr);
+      err = dviGetPfa(font, font->tfm->family);
+      if (err == DVIE_NOFONT)
+       {
+        snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s", font->name);
+        ppl_error(ERR_GENERAL, -1, -1, errStr);
+       }
      }
-   }
-  if (err != 0) return err;
+    if (err != 0) return err;
 
-  // Obtain the font name from the PFA file
-  font->psName = psNameFromPFA(font->pfaPath);
-  if (font->psName==NULL) return 1;
+    // Obtain the font name from the PFA file
+    font->psName = psNameFromPFA(font->pfaPath);
+    if (font->psName==NULL) return 1;
+   }
+
   return 0;
  }
 

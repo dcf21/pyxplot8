@@ -629,19 +629,22 @@ void canvas_EPSWrite(EPSComm *x)
   else                ListIter = NULL;
   while (ListIter != NULL)
    {
-    fprintf(epsout, "%%%%BeginFont: %s\n", ((dviFontDetails *)ListIter->data)->psName);
     PFAfilename = ((dviFontDetails *)ListIter->data)->pfaPath;
-    PFAfile = fopen(PFAfilename,"r");
-    if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status)=1; return; }
-    while (fgets(temp_err_string, FNAME_LENGTH, PFAfile) != NULL)
-     if (fputs(temp_err_string, epsout) == EOF)
-      {
-       sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
-       *(x->status)=1;
-       return;
-      }
-    fclose(PFAfile);
-    fprintf(epsout, "\n%%%%EndFont\n");
+    if (PFAfilename != NULL)  // PFAfilename==NULL indicates that this is a built-in font that doesn't require a fontdef
+     {
+      fprintf(epsout, "%%%%BeginFont: %s\n", ((dviFontDetails *)ListIter->data)->psName);
+      PFAfile = fopen(PFAfilename,"r");
+      if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status)=1; return; }
+      while (fgets(temp_err_string, FNAME_LENGTH, PFAfile) != NULL)
+       if (fputs(temp_err_string, epsout) == EOF)
+        {
+         sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
+         *(x->status)=1;
+         return;
+        }
+      fclose(PFAfile);
+      fprintf(epsout, "\n%%%%EndFont\n");
+     }
     ListIter = ListIterate(ListIter, NULL);
    }
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
