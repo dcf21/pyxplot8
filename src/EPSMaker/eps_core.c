@@ -30,6 +30,7 @@
 
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
+#include "ppl_error.h"
 
 #include "eps_colours.h"
 #include "eps_comm.h"
@@ -50,9 +51,13 @@ void eps_core_clear(EPSComm *x)
 void eps_core_SetColour(EPSComm *x, with_words *ww, unsigned char WritePS)
  {
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
-  if      (ww->USEcolourRGB)  sprintf(x->CurrentColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->colourR/255,
-                                                                                      (double)ww->colourG/255,
-                                                                                      (double)ww->colourB/255  );
+  if      (ww->USEcolour1234)
+   {
+    if      (ww->Col1234Space==SW_COLSPACE_RGB ) sprintf(x->CurrentColour, "%.3f %.3f %.3f setrgbcolor", ww->colour1, ww->colour2, ww->colour3);
+    else if (ww->Col1234Space==SW_COLSPACE_HSB ) sprintf(x->CurrentColour, "%.3f %.3f %.3f sethsbcolor", ww->colour1, ww->colour2, ww->colour3);
+    else if (ww->Col1234Space==SW_COLSPACE_CMYK) sprintf(x->CurrentColour, "%.3f %.3f %.3f %.3f setcmykcolor", ww->colour1, ww->colour2, ww->colour3, ww->colour4);
+    else    ppl_error(ERR_INTERNAL,-1,-1,"Illegal setting for colour space switch.");
+   }
   else if((ww->USEcolour   ) && ((ww->colour==COLOUR_NULL)||(ww->colour==COLOUR_INVISIBLE)||(ww->colour==COLOUR_TRANSPARENT)))
                               strcpy (x->CurrentColour, ""); // This is code to tell us we're writing in invisible ink
   else if (ww->USEcolour   )  sprintf(x->CurrentColour, "%.3f %.3f %.3f %.3f setcmykcolor",
@@ -71,9 +76,13 @@ void eps_core_SetColour(EPSComm *x, with_words *ww, unsigned char WritePS)
 void eps_core_SetFillColour(EPSComm *x, with_words *ww)
  {
   // Colour may be specified as a named colour, or as RGB components, or may not be specified at all, in which case we use black
-  if      (ww->USEfillcolourRGB)  sprintf(x->CurrentFillColour, "%.3f %.3f %.3f setrgbcolor", (double)ww->fillcolourR/255,
-                                                                                              (double)ww->fillcolourG/255,
-                                                                                              (double)ww->fillcolourB/255  );
+  if      (ww->USEfillcolour1234)
+   {
+    if      (ww->FillCol1234Space==SW_COLSPACE_RGB ) sprintf(x->CurrentFillColour, "%.3f %.3f %.3f setrgbcolor", ww->fillcolour1, ww->fillcolour2, ww->fillcolour3);
+    else if (ww->FillCol1234Space==SW_COLSPACE_HSB ) sprintf(x->CurrentFillColour, "%.3f %.3f %.3f sethsbcolor", ww->fillcolour1, ww->fillcolour2, ww->fillcolour3);
+    else if (ww->FillCol1234Space==SW_COLSPACE_CMYK) sprintf(x->CurrentFillColour, "%.3f %.3f %.3f %.3f setcmykcolor", ww->fillcolour1, ww->fillcolour2, ww->fillcolour3, ww->fillcolour4);
+    else    ppl_error(ERR_INTERNAL,-1,-1,"Illegal setting for colour space switch.");
+   }
   else if((ww->USEfillcolour   ) && ((ww->fillcolour==COLOUR_NULL)||(ww->fillcolour==COLOUR_INVISIBLE)||(ww->fillcolour==COLOUR_TRANSPARENT)))
                                   strcpy (x->CurrentFillColour, ""); // This is code to tell us we're writing in invisible ink
   else if (ww->USEfillcolour   )  sprintf(x->CurrentFillColour, "%.3f %.3f %.3f %.3f setcmykcolor",

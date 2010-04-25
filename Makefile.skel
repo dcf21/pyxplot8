@@ -39,7 +39,7 @@ VERSION = 0.8.0
 DATE    = xx/05/2010
 
 COMPILE = $(CC) -Wall -g `xml2-config --cflags` -c -I $(CWD)/src
-LINK    = $(CC) -Wall -g `xml2-config --libs`   -lm -lgsl -lgslcblas $(LINK_FFTW) -lreadline -lz -lpng -lkpathsea
+LINK    = $(CC) -Wall -g `xml2-config --libs`   -lm -lgsl -lgslcblas $(LINK_FFTW) $(LINK_READLINE) -lz -lpng -lkpathsea
 
 OPTIMISATION = -O0
 
@@ -150,11 +150,11 @@ $(LOCAL_BINDIR)/install/pyxplot_watch: $(PPLW_OBJECTS_INSTALL)
 
 $(LOCAL_BINDIR)/pyxplot_fitshelper:         $(FITSHELP_OBJECTS)
 	mkdir -p $(LOCAL_BINDIR)
-	$(LINK) $(FITSIO_LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS)         -o $(LOCAL_BINDIR)/pyxplot_fitshelper
+	$(LINK) $(LINK_FITSIO) $(OPTIMISATION) $(FITSHELP_OBJECTS)         -o $(LOCAL_BINDIR)/pyxplot_fitshelper
 
 $(LOCAL_BINDIR)/install/pyxplot_fitshelper: $(FITSHELP_OBJECTS_INSTALL)
 	mkdir -p $(LOCAL_BINDIR)/install
-	$(LINK) $(FITSIO_LINK) $(OPTIMISATION) $(FITSHELP_OBJECTS_INSTALL) -o $(LOCAL_BINDIR)/install/pyxplot_fitshelper
+	$(LINK) $(LINK_FITSIO) $(OPTIMISATION) $(FITSHELP_OBJECTS_INSTALL) -o $(LOCAL_BINDIR)/install/pyxplot_fitshelper
 
 #
 # Make time helper

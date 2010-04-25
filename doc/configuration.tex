@@ -88,7 +88,7 @@ for certain file types (see Section~\ref{sec:filters}).
 \item {\tt functions} -- contains user-defined function definitions which
 become predefined in PyXPlot's mathematical environment, for example
 \begin{verbatim}
-sinc(x) = sin(pi*x)/(pi*x)
+sinc(x) = sin(x)/(x)
 \end{verbatim}
 \item {\tt latex} -- contains a single setting {\tt preamble}, which is
 prefixed to the beginning of all \LaTeX\ text items, before the {\tt
@@ -195,6 +195,7 @@ TRange_Log = False
 TRange_Max = 1.0
 TRange_Min = 0.0
 UnitAbbrev = On
+UnitAngleDimless = On
 UnitPrefix = On
 UnitScheme = SI
 Width = 8.0
@@ -627,6 +628,12 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                Sets whether physical units are displayed in abbreviated form, e.g.\ {\tt mm}, or in full, e.g.\ {\tt millimetres}.
                \\
+{\tt UnitAngleDimless} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} \indcmdts{set unit}
+
+               Sets whether angles are treated as dimensionless units, or whether the radian is treated as a base unit.
+               \\
 {\tt UnitPrefix} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} \indcmdts{set unit}
@@ -825,8 +832,9 @@ In addition, a scale of 100~shades of grey is available, ranging from {\tt
 grey00}, which is black, to {\tt grey99}, which is very nearly white.  The US
 spelling, {\tt gray??}, is also accepted.
 
-Arbitrary colours can be specified in the form {\tt rgb0:0:0}, where the
-colon-separated zeros should be replaced by integers in the range of~0 to~255
-to represent the red, green and blue components of the desired colour
-respectively.
+Arbitrary colours may be specified in the forms {\tt rgb0:0:0}, {\tt hsb0:0:0}
+or {\tt cmyk0:0:0:0}, where the colon-separated zeros should be replaced by
+values in the range of~0 to~1 to represent the components of the desired colour
+in RGB, HSB or CMYK space
+respectively.\index{colours!RGB}\index{colours!HSB}\index{colours!CMYK}
 

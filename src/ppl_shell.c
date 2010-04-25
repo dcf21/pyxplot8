@@ -28,9 +28,12 @@
 #include <wordexp.h>
 #include <glob.h>
 #include <setjmp.h>
-#include <readline/history.h>
 #include <sys/select.h>
 #include <sys/wait.h>
+
+#ifdef HAVE_READLINE
+#include <readline/history.h>
+#endif
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -424,9 +427,11 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
     for (i=0; i<PALETTE_LENGTH; i++)
      {
       settings_palette_current [i] = settings_palette_default [i];
-      settings_paletteR_current[i] = settings_paletteR_default[i];
-      settings_paletteG_current[i] = settings_paletteG_default[i];
-      settings_paletteB_current[i] = settings_paletteB_default[i];
+      settings_paletteS_current[i] = settings_paletteS_default[i];
+      settings_palette1_current[i] = settings_palette1_default[i];
+      settings_palette2_current[i] = settings_palette2_default[i];
+      settings_palette3_current[i] = settings_palette3_default[i];
+      settings_palette4_current[i] = settings_palette4_default[i];
      }
     for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i]));
                                  DestroyAxis( &(YAxes[i]) ); CopyAxis(&(YAxes[i]), &(YAxesDefault[i]));
@@ -602,6 +607,7 @@ int directive_exec(Dict *command, int IterLevel)
 
 void directive_history(Dict *command)
  {
+#ifdef HAVE_READLINE
   int start=0,endpos,k,*Nlines;
   HIST_ENTRY **history_data;
 
@@ -614,10 +620,15 @@ void directive_history(Dict *command)
 
   for (k=start; k<endpos; k++) ppl_report(history_data[k]->line);
   return;
+#else
+  ppl_error(ERR_GENERAL,-1,-1,"The 'history' command is not available as the GNU readline library was not linked to when PyXPlot was installed.");
+  return;
+#endif
  }
 
 void directive_save(Dict *command)
  {
+#ifdef HAVE_READLINE
   int start=0,endpos,k;
   long x;
   char *outfname;
@@ -644,6 +655,10 @@ void directive_save(Dict *command)
   for (k=start; k<endpos-1; k++) { fprintf(outfile, "%s\n", (history_data[k]->line)); }
   fclose(outfile);
   return;
+#else
+  ppl_error(ERR_GENERAL,-1,-1,"The 'save' command is not available as the GNU readline library was not linked to when PyXPlot was installed.");
+  return;
+#endif
  }
 
 

@@ -24,8 +24,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef HAVE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -116,18 +119,25 @@ void GetInputSource(int **lineno, char **descr)
 
 char *FetchInputLine(char *output, char *prompt)
  {
-  char *line_ptr;
-  int   i;
+  int i;
 
   if (mode == INPUT_READLINE)
    {
     ppl_error_setstreaminfo(-1, "");
-    line_ptr = readline(prompt);
-    if (line_ptr==NULL) return NULL;
-    add_history(line_ptr);
-    history_NLinesWritten++;
-    strcpy(output, line_ptr);
-    free(line_ptr);
+#ifdef HAVE_READLINE
+    {
+     char *line_ptr;
+     line_ptr = readline(prompt);
+     if (line_ptr==NULL) return NULL;
+     add_history(line_ptr);
+     history_NLinesWritten++;
+     strcpy(output, line_ptr);
+     free(line_ptr);
+    }
+#else
+    printf("%s",prompt);
+    if (fgets(output,LSTR_LENGTH,stdin)==NULL) return NULL;
+#endif
     return output;
    }
   else if ((mode == INPUT_PIPE) || (mode == INPUT_FILE))

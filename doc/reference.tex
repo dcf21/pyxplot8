@@ -659,9 +659,10 @@ engines, including GhostScript, do not support this functionality.}.  Images
 which include transparency are supported. The optional keyword {\tt
 notransparent} may be supplied to the \indcmdt{image} to cause transparent
 regions to be filled with the image's default background colour. Alternatively,
-the keyword {\tt transparent} may be followed by the name of an RGB colour in
-the form {\tt rgb<r>:<g>:<b>} to cause a particular colour to be converted to
-transparent.
+an RGB colour may be specified in the form {\tt rgb<r>:<g>:<b>} after the
+keyword {\tt transparent} to cause that particular colour to become
+transparent; the three components of the RGB colour should be in the range~0
+to~255.
 
 The {\tt image} command is often useful in multiplot mode, allowing images to
 be combined with plots, text labels, etc.

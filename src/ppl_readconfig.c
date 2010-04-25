@@ -386,9 +386,11 @@ void ReadConfigFile(char *ConfigFname)
               sprintf(temp_err_string, "Error in line %d of configuration file %s: Colour '%s' not recognised.", linecounter, ConfigFname, ColourName); ppl_warning(ERR_PREFORMED, temp_err_string);
              } else {
               settings_palette_default [PalettePos  ] = ColourNumber;
-              settings_paletteR_default[PalettePos  ] = 0;
-              settings_paletteG_default[PalettePos  ] = 0;
-              settings_paletteB_default[PalettePos++] = 0;
+              settings_paletteS_default[PalettePos  ] = 0;
+              settings_palette1_default[PalettePos  ] = 0.0;
+              settings_palette2_default[PalettePos  ] = 0.0;
+              settings_palette3_default[PalettePos  ] = 0.0;
+              settings_palette4_default[PalettePos++] = 0.0;
              }
            }
          }
@@ -505,9 +507,11 @@ void ReadConfigFile(char *ConfigFname)
       for (i=0; i<PALETTE_LENGTH; i++)
        {
         settings_palette_current [i] = settings_palette_default [i];
-        settings_paletteR_current[i] = settings_paletteR_default[i];
-        settings_paletteG_current[i] = settings_paletteG_default[i];
-        settings_paletteB_current[i] = settings_paletteB_default[i];
+        settings_paletteS_current[i] = settings_paletteS_default[i];
+        settings_palette1_current[i] = settings_palette1_default[i];
+        settings_palette2_current[i] = settings_palette2_default[i];
+        settings_palette3_current[i] = settings_palette3_default[i];
+        settings_palette4_current[i] = settings_palette4_default[i];
        }
       for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i]));
                                    DestroyAxis( &(YAxes[i]) ); CopyAxis(&(YAxes[i]), &(YAxesDefault[i]));
@@ -534,9 +538,11 @@ void ReadConfigFile(char *ConfigFname)
       for (i=0; i<PALETTE_LENGTH; i++)
        {
         settings_palette_default [i] = settings_palette_current [i];
-        settings_paletteR_default[i] = settings_paletteR_current[i];
-        settings_paletteG_default[i] = settings_paletteG_current[i];
-        settings_paletteB_default[i] = settings_paletteB_current[i];
+        settings_paletteS_default[i] = settings_paletteS_current[i];
+        settings_palette1_default[i] = settings_palette1_current[i];
+        settings_palette2_default[i] = settings_palette2_current[i];
+        settings_palette3_default[i] = settings_palette3_current[i];
+        settings_palette4_default[i] = settings_palette4_current[i];
        }
       for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxesDefault[i]) ); CopyAxis(&(XAxesDefault[i]), &(XAxes[i]));
                                    DestroyAxis( &(YAxesDefault[i]) ); CopyAxis(&(YAxesDefault[i]), &(YAxes[i]));

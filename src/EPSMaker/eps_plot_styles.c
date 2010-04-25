@@ -63,7 +63,7 @@ void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char
     i = (functions ? Fcounter : Dcounter) % j; // i is now the palette colour number to use
     while (i<0) i+=j;
     if (settings_palette_current[i] > 0) { output->colour  = settings_palette_current[i]; output->USEcolour = 1; }
-    else                                 { output->colourR = settings_paletteR_current[i]; output->colourG = settings_paletteG_current[i]; output->colourB = settings_paletteB_current[i]; output->USEcolourRGB = 1; }
+    else                                 { output->Col1234Space = settings_paletteS_current[i]; output->colour1 = settings_palette1_current[i]; output->colour2 = settings_palette2_current[i]; output->colour3 = settings_palette3_current[i]; output->colour4 = settings_palette4_current[i]; output->USEcolour1234 = 1; }
    }
   output->linespoints    = (functions ? SW_STYLE_LINES : SW_STYLE_POINTS);
   output->USElinespoints = 1;

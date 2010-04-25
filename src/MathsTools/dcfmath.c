@@ -1339,8 +1339,8 @@ void dcfmath_sinc(value *in, value *output, int *status, char *errtext)
   if ((in->real==0) && (in->imag==0)) { output->real = 1.0; }
   else
    {
-    IF_1COMPLEX { GSL_SET_COMPLEX(&z,M_PI*in->real, M_PI*in->imag); z=gsl_complex_sin(z); CLEANUP_GSLCOMPLEX; output->real /= M_PI; output->imag /= M_PI; ppl_units_div(output, in, output, status, errtext); }
-    ELSE_REAL   { output->real = sin(M_PI*in->real)/M_PI/in->real; }
+    IF_1COMPLEX { GSL_SET_COMPLEX(&z,in->real, in->imag); z=gsl_complex_sin(z); CLEANUP_GSLCOMPLEX; ppl_units_div(output, in, output, status, errtext); }
+    ELSE_REAL   { output->real = sin(in->real)/in->real; }
     ENDIF
    }
   CHECK_OUTPUT_OKAY;

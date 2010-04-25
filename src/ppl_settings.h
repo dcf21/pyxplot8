@@ -27,18 +27,24 @@
 #include "ppl_constants.h"
 #include "ppl_units.h"
 
+#define SW_COLSPACE_RGB  10031
+#define SW_COLSPACE_HSB  10032
+#define SW_COLSPACE_CMYK 10033
+
 typedef struct with_words {
  int    colour, fillcolour, linespoints, linetype, pointtype, style; // Core style settings which can be placed after the 'with' modifier
  double linewidth, pointlinewidth, pointsize;
- int    colourR, colourG, colourB, fillcolourR, fillcolourG, fillcolourB; // Alternatives to the colour and fillcolour settings, RGB settings
+ int    Col1234Space, FillCol1234Space;
+ double colour1, colour2, colour3, colour4; // Alternatives to the colour and fillcolour settings, RGB settings
+ double fillcolour1, fillcolour2, fillcolour3, fillcolour4;
  char  *STRlinetype, *STRlinewidth, *STRpointlinewidth, *STRpointsize, *STRpointtype; // Alternatives to the above, where expressions are evaluated per use, e.g. $4
- char  *STRcolourR, *STRcolourG, *STRcolourB, *STRfillcolourR, *STRfillcolourG, *STRfillcolourB;
- unsigned char USEcolour, USEfillcolour, USElinespoints, USElinetype, USElinewidth, USEpointlinewidth, USEpointsize, USEpointtype, USEstyle, USEcolourRGB, USEfillcolourRGB; // Set to 1 to indicate settings to be used
+ char  *STRcolour1, *STRcolour2, *STRcolour3, *STRcolour4, *STRfillcolour1, *STRfillcolour2, *STRfillcolour3, *STRfillcolour4;
+ unsigned char USEcolour, USEfillcolour, USElinespoints, USElinetype, USElinewidth, USEpointlinewidth, USEpointsize, USEpointtype, USEstyle, USEcolour1234, USEfillcolour1234; // Set to 1 to indicate settings to be used
  unsigned char malloced; // Indicates whether we need to free strings
  } with_words;
 
 typedef struct settings_terminal {
- int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplay, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev, viewer;
+ int    backup, CalendarIn, CalendarOut, colour, ComplexNumbers, display, ExplicitErrors, landscape, multiplot, NumDisplay, SignificantFigures, TermAntiAlias, TermType, TermEnlarge, TermInvert, TermTransparent, UnitScheme, UnitDisplayPrefix, UnitDisplayAbbrev, UnitAngleDimless, viewer;
  long int RandomSeed;
  double dpi;
  unsigned char BinOriginAuto, BinWidthAuto;
@@ -49,7 +55,8 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int           AutoAspect, AxesColour, AxesColourR, AxesColourG, AxesColourB, AxisUnitStyle, clip, grid, GridMajColour, GridMajColourR, GridMajColourG, GridMajColourB, GridMinColour, GridMinColourR, GridMinColourG, GridMinColourB, key, KeyColumns, KeyPos, samples, TextColour, TextColourR, TextColourG, TextColourB, TextHAlign, TextVAlign, Tlog;
+ int           AutoAspect, AxesColour, AxesCol1234Space, AxisUnitStyle, clip, grid, GridMajColour, GridMajCol1234Space, GridMinColour, GridMinCol1234Space, key, KeyColumns, KeyPos, samples, TextColour, TextCol1234Space, TextHAlign, TextVAlign, Tlog;
+ double        AxesColour1, AxesColour2, AxesColour3, AxesColour4, GridMajColour1, GridMajColour2, GridMajColour3, GridMajColour4, GridMinColour1, GridMinColour2, GridMinColour3, GridMinColour4, TextColour1, TextColour2, TextColour3, TextColour4;
  double        aspect, bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
@@ -72,8 +79,10 @@ extern settings_terminal settings_term_current;
 extern settings_graph    settings_graph_default;
 extern settings_graph    settings_graph_current;
 extern settings_session  settings_session_default;
-extern int               settings_palette_current[], settings_paletteR_current[], settings_paletteG_current[], settings_paletteB_current[];
-extern int               settings_palette_default[], settings_paletteR_default[], settings_paletteG_default[], settings_paletteB_default[];
+extern int               settings_palette_current[], settings_paletteS_current[];
+extern double            settings_palette1_current[], settings_palette2_current[], settings_palette3_current[], settings_palette4_current[];
+extern int               settings_palette_default[], settings_paletteS_default[];
+extern double            settings_palette1_default[], settings_palette2_default[], settings_palette3_default[], settings_palette4_default[];
 extern with_words        settings_plot_styles[], settings_plot_styles_default[];
 #endif
 
@@ -93,7 +102,7 @@ void  with_words_copy    (with_words *out, const with_words *in);
 
 #define AXISLINEARINTERPOLATION_NPOINTS 2045
 
-int   colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolR, int *outcolG, int *outcolB, char **outcolRS, char **outcolGS, char **outcolBS, unsigned char *USEcol, unsigned char *USEcolRGB, int *errpos, unsigned char malloced);
+int   colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace, double *outcol1, double *outcol2, double *outcol3, double *outcol4, char **outcol1S, char **outcol2S, char **outcol3S, char **outcol4S, unsigned char *USEcol, unsigned char *USEcol1234, int *errpos, unsigned char malloced);
 void  with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew);
 
 typedef struct settings_axis {

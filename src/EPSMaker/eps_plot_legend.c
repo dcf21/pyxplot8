@@ -309,8 +309,8 @@ void GraphLegend_Render(EPSComm *x, double width, double height)
     eps_plot_LegendIcon(x, NDataSet, pd, pd->TitleFinal_xpos + MARGIN_HSIZE_LEFT/2, pd->TitleFinal_ypos - pd->TitleFinal_height/2, MARGIN_HSIZE_LEFT, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2]);
     pageno = x->LaTeXpageno++;
     with_words_zero(&ww,0);
-    if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
-    else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
+    if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
+    else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
     eps_core_SetColour(x, &ww, 1);
     IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (pd->TitleFinal_xpos+MARGIN_HSIZE_LEFT)/M_TO_PS, (pd->TitleFinal_ypos - pd->TitleFinal_height/2)/ M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->CurrentColour, fs, 0.0, NULL, NULL);
    NDataSet++;

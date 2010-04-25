@@ -60,7 +60,7 @@ given. In this section, we list all of the modifiers such as {\tt line\-width}
 which may be used to alter the exact appearance of these plot styles, which are
 as follows:
 \begin{itemize}
-\item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}, or as an RGB colour in the form {\tt rgb1:2:3}, where the integers should be in the range~0 to~255. May also be spelt {\tt color}.\index{colours!setting for datasets}
+\item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb0.1:\-0.2:\-0.3}, {\tt hsb0.1:\-0.2:\-0.3} or {\tt cmyk0.4:\-0.3:\-0.2:\-0.1}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
 \item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
 \item \indmodt{linetype} -- used to select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
 \item \indmodt{linewidth} -- used to select the width of line, where~1 represent the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
@@ -78,12 +78,22 @@ plot 'datafile' using 1:2 with lines colour red linewidth 2
 plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
 \end{verbatim}
 
-\noindent Not all of these modifiers are applicable to all of PyXPlot's plot
-styles. For example, the {\tt line\-width} modifier has no effect on plot
-styles which do not draw lines between datapoints. Where modifiers are applied
-to plot styles for which they have no defined effect, the modifier has no
-effect, but no error results.  Table~\ref{tab:style_modifiers} lists which
-modifiers act upon which plot styles.
+\noindent Where modifiers take numerical values, expressions of the form {\tt
+\$2+1}, similar to those supplied to the {\tt using} modifier, may be used to
+indicate that each datapoint should be displayed in a different style or in a
+different colour. The following example would plot a \datafile\ with {\tt
+points}, drawing the position of each point from the first two columns of the
+supplied \datafile and the size of each point from the third column:
+\begin{verbatim}
+plot 'datafile' using 1:2 with points pointsize $3
+\end{verbatim}
+
+Not all of these modifiers are applicable to all of PyXPlot's plot styles. For
+example, the {\tt line\-width} modifier has no effect on plot styles which do
+not draw lines between datapoints. Where modifiers are applied to plot styles
+for which they have no defined effect, the modifier has no effect, but no error
+results.  Table~\ref{tab:style_modifiers} lists which modifiers act upon which
+plot styles.
 
 \begin{table}
 \centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}

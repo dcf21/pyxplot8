@@ -761,6 +761,15 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
 #define FETCHNEXTI(VARA,VARB,VARC) { for (j=p,ci=StatusRow[p]; StatusRow[j]==ci; j++); for (k=j, cj=StatusRow[j]; StatusRow[k]==cj; k++); VARA=j; VARB=(int)cj; VARC=k; }
 #define SETSTATUS(BEG,END,VAL)     { ci = (unsigned char)(VAL+BUFFER_OFFSET); for (j=BEG;j<END;j++) StatusRow[j]=ci; }
 
+#define ENFORCEANGLEDIMLESS(POS) \
+ if ((settings_term_current.UnitAngleDimless == SW_ONOFF_ON) && (ResultBuffer[POS].exponent[UNIT_ANGLE]!=0)) \
+  { \
+   int i; \
+   ResultBuffer[POS].exponent[UNIT_ANGLE] = 0; \
+   ResultBuffer[POS].dimensionless = 1; \
+   for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (ResultBuffer[POS].exponent[i]!=0.0) { ResultBuffer[POS].dimensionless=0; break; } \
+  }
+
 void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned char DollarAllowed, int *errpos, char *errtext, int RecursionDepth)
  {
   unsigned char OpList[OPLIST_LEN];           // A list of what operations this expression contains
@@ -1028,6 +1037,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
        }
       for ( ; StatusRow[i]==8; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
       for ( ; StatusRow[i]==3; i++) StatusRow[i] = (unsigned char)(bufpos + BUFFER_OFFSET);
+      ENFORCEANGLEDIMLESS(bufpos);
       bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
      }
     if (p==0) { *errpos=start+j; strcpy(errtext,"No such function"); return; }
@@ -1068,6 +1078,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       SETSTATUS(p, next_start, next_bufno);
       i = start + next_end;
       i--; p=i-start;
+      ENFORCEANGLEDIMLESS(next_bufno);
      }
     else // $ColumnName
      {
@@ -1083,6 +1094,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       SETSTATUS(p, next_end, bufpos);
       i = start + next_end;
       i--; p=i-start;
+      ENFORCEANGLEDIMLESS(bufpos);
       bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
      }
    }
@@ -1097,6 +1109,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     in[start+j] = ck;
     if (VarData->string != NULL) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected."); return; }
     ResultBuffer[bufpos] = *VarData;
+    ENFORCEANGLEDIMLESS(bufpos);
     for (k=i; (StatusRow[k]==8); k++) StatusRow[k] = (unsigned char)(bufpos + BUFFER_OFFSET);
     bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
    }

@@ -223,8 +223,8 @@ void eps_pie_RenderEPS(EPSComm *x)
       for (l=0; l<PALETTE_LENGTH; l++) if (settings_palette_current[l]==-1) break; // l now contains length of palette
       m = WedgeNumber % l; // m is now the palette colour number to use
       while (m<0) m+=l;
-      if (settings_palette_current[m] > 0) { ww.fillcolour  = settings_palette_current[m]; ww.USEfillcolour = 1; ww.USEfillcolourRGB = 0; }
-      else                                 { ww.fillcolourR = settings_paletteR_current[m]; ww.fillcolourG = settings_paletteG_current[m]; ww.fillcolourB = settings_paletteB_current[m]; ww.USEfillcolour = 0; ww.USEfillcolourRGB = 1; }
+      if (settings_palette_current[m] > 0) { ww.fillcolour  = settings_palette_current[m]; ww.USEfillcolour = 1; ww.USEfillcolour1234 = 0; }
+      else                                 { ww.FillCol1234Space = settings_paletteS_current[m]; ww.fillcolour1 = settings_palette1_current[m]; ww.fillcolour2 = settings_palette2_current[m]; ww.fillcolour3 = settings_palette3_current[m]; ww.fillcolour4 = settings_palette4_current[m]; ww.USEfillcolour = 0; ww.USEfillcolour1234 = 1; }
 
       // Work out size of wedge and fill it
       size = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 360.0;
@@ -276,8 +276,8 @@ void eps_pie_RenderEPS(EPSComm *x)
 
   // Write text on piechart
   with_words_zero(&ww_txt,0);
-  if (x->current->settings.TextColour > 0) { ww_txt.USEcolour = 1; ww_txt.colour = x->current->settings.TextColour; }
-  else                                     { ww_txt.USEcolourRGB = 1; ww_txt.colourR = x->current->settings.TextColourR; ww_txt.colourG = x->current->settings.TextColourG; ww_txt.colourB = x->current->settings.TextColourB; }
+  if (x->current->settings.TextColour > 0) { ww_txt.colour = x->current->settings.TextColour; ww_txt.USEcolour = 1; }
+  else                                     { ww_txt.Col1234Space = x->current->settings.TextCol1234Space; ww_txt.colour1 = x->current->settings.TextColour1; ww_txt.colour2 = x->current->settings.TextColour2; ww_txt.colour3 = x->current->settings.TextColour3; ww_txt.colour4 = x->current->settings.TextColour4; ww_txt.USEcolour1234 = 1; }
   eps_core_SetColour(x, &ww_txt, 1);
 
   IF_NOT_INVISIBLE
@@ -404,8 +404,8 @@ void eps_pie_RenderEPS(EPSComm *x)
             for (l=0; l<PALETTE_LENGTH; l++) if (settings_palette_current[l]==-1) break; // l now contains length of palette
             m = ItemNo % l; // m is now the palette colour number to use
             while (m<0) m+=l;
-            if (settings_palette_current[m] > 0) { ww.fillcolour  = settings_palette_current[m]; ww.USEfillcolour = 1; ww.USEfillcolourRGB = 0; }
-            else                                 { ww.fillcolourR = settings_paletteR_current[m]; ww.fillcolourG = settings_paletteG_current[m]; ww.fillcolourB = settings_paletteB_current[m]; ww.USEfillcolour = 0; ww.USEfillcolourRGB = 1; }
+            if (settings_palette_current[m] > 0) { ww.fillcolour  = settings_palette_current[m]; ww.USEfillcolour = 1; ww.USEfillcolour1234 = 0; }
+            else                                 { ww.FillCol1234Space = settings_paletteS_current[m]; ww.fillcolour1 = settings_palette1_current[m]; ww.fillcolour2 = settings_palette2_current[m]; ww.fillcolour3 = settings_palette3_current[m]; ww.fillcolour4 = settings_palette4_current[m]; ww.USEfillcolour = 0; ww.USEfillcolour1234 = 1; }
 
             // Fill icon
             eps_core_SetFillColour(x, &ww);

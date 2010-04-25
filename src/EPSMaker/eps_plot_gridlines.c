@@ -46,16 +46,16 @@ void eps_plot_gridlines(EPSComm *x, double origin_x, double origin_y, double wid
 #define MAJOR_GRIDCOL \
   /* Set colour for major axis axes */ \
   with_words_zero(&ww,0); \
-  if (x->current->settings.GridMajColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.GridMajColour; } \
-  else                                        { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.GridMajColourR; ww.colourG = x->current->settings.GridMajColourG; ww.colourB = x->current->settings.GridMajColourB; } \
+  if (x->current->settings.GridMajColour > 0) { ww.colour = x->current->settings.GridMajColour; ww.USEcolour = 1; } \
+  else                                        { ww.Col1234Space = x->current->settings.GridMajCol1234Space; ww.colour1 = x->current->settings.GridMajColour1; ww.colour2 = x->current->settings.GridMajColour2; ww.colour3 = x->current->settings.GridMajColour3; ww.colour4 = x->current->settings.GridMajColour4; ww.USEcolour1234 = 1; } \
   eps_core_SetColour(x, &ww, 1); \
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_GRID_MAJLINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
 
 #define MINOR_GRIDCOL \
   /* Set colour for minor axis axes */ \
   with_words_zero(&ww,0); \
-  if (x->current->settings.GridMinColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.GridMinColour; } \
-  else                                        { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.GridMinColourR; ww.colourG = x->current->settings.GridMinColourG; ww.colourB = x->current->settings.GridMinColourB; } \
+  if (x->current->settings.GridMinColour > 0) { ww.colour = x->current->settings.GridMinColour; ww.USEcolour = 1; } \
+  else                                        { ww.Col1234Space = x->current->settings.GridMinCol1234Space; ww.colour1 = x->current->settings.GridMinColour1; ww.colour2 = x->current->settings.GridMinColour2; ww.colour3 = x->current->settings.GridMinColour3; ww.colour4 = x->current->settings.GridMinColour4; ww.USEcolour1234 = 1; } \
   eps_core_SetColour(x, &ww, 1); \
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_GRID_MINLINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
 

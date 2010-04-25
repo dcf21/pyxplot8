@@ -29,8 +29,11 @@
 #include <setjmp.h>
 #include <time.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 
 #include <kpathsea/kpathsea.h>
 
@@ -100,8 +103,10 @@ int main(int argc, char **argv)
   // kpse_init_prog();
 
   // Initialise GNU Readline
+#ifdef HAVE_READLINE
   rl_readline_name = "PyXPlot";                          /* Allow conditional parsing of the ~/.inputrc file. */
   rl_attempted_completion_function = ppl_rl_completion;  /* Tell the completer that we want a crack first. */
+#endif
 
   // Initialise user variables and functions
   ppl_UserSpaceInit();
@@ -195,10 +200,12 @@ int main(int argc, char **argv)
     if (fail==1)                { ppl_fatal(__FILE__,__LINE__,"Failed to create temporary directory." ); }
 
     // Read GNU Readline history
+#ifdef HAVE_READLINE
     if (DEBUG) ppl_log("Reading GNU Readline history.");
     sprintf(tempdirpath, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplot_history");
     read_history(tempdirpath);
     stifle_history(1000);
+#endif
 
     // Set default terminal
     EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
@@ -259,12 +266,14 @@ int main(int argc, char **argv)
   label_list_destroy(&label_list); label_list_destroy(&label_list_default);
 
   // Save GNU Readline history
+#ifdef HAVE_READLINE
   if (WillBeInteractive>0)
    {
     if (DEBUG) ppl_log("Saving GNU Readline history.");
     sprintf(tempdirpath, "%s%s%s", settings_session_default.homedir, PATHLINK, ".pyxplot_history");
     write_history(tempdirpath);
    }
+#endif
 
   // Terminate
   lt_FreeAll(0);
@@ -281,3 +290,4 @@ void SigIntHandler(int signo)
   raise(SIGTERM);
   raise(SIGKILL);
  }
+

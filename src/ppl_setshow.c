@@ -450,15 +450,15 @@ void directive_set(Dict *command)
    {
     if (strcmp(directive,"unset")==0)
      {
-      if (strcmp(setoption,"axescolour"   )==0) { sg->AxesColour=settings_graph_default.AxesColour; sg->AxesColourR=settings_graph_default.AxesColourR; sg->AxesColourG=settings_graph_default.AxesColourG; sg->AxesColourB=settings_graph_default.AxesColourB; }
-      if (strcmp(setoption,"gridmajcolour")==0) { sg->GridMajColour=settings_graph_default.GridMajColour; sg->GridMajColourR=settings_graph_default.GridMajColourR; sg->GridMajColourG=settings_graph_default.GridMajColourG; sg->GridMajColourB=settings_graph_default.GridMajColourB; }
-      if (strcmp(setoption,"gridmincolour")==0) { sg->GridMinColour=settings_graph_default.GridMinColour; sg->GridMinColourR=settings_graph_default.GridMinColourR; sg->GridMinColourG=settings_graph_default.GridMinColourG; sg->GridMinColourB=settings_graph_default.GridMinColourB; }
-      if (strcmp(setoption,"textcolour"   )==0) { sg->TextColour=settings_graph_default.TextColour; sg->TextColourR=settings_graph_default.TextColourR; sg->TextColourG=settings_graph_default.TextColourG; sg->TextColourB=settings_graph_default.TextColourB; }
+      if (strcmp(setoption,"axescolour"   )==0) { sg->AxesColour=settings_graph_default.AxesColour; sg->AxesCol1234Space=settings_graph_default.AxesCol1234Space; sg->AxesColour1=settings_graph_default.AxesColour1; sg->AxesColour2=settings_graph_default.AxesColour2; sg->AxesColour3=settings_graph_default.AxesColour3; sg->AxesColour4=settings_graph_default.AxesColour4; }
+      if (strcmp(setoption,"gridmajcolour")==0) { sg->GridMajColour=settings_graph_default.GridMajColour; sg->GridMajCol1234Space=settings_graph_default.GridMajCol1234Space; sg->GridMajColour1=settings_graph_default.GridMajColour1; sg->GridMajColour2=settings_graph_default.GridMajColour2; sg->GridMajColour3=settings_graph_default.GridMajColour3; sg->GridMajColour4=settings_graph_default.GridMajColour4; }
+      if (strcmp(setoption,"gridmincolour")==0) { sg->GridMinColour=settings_graph_default.GridMinColour; sg->GridMinCol1234Space=settings_graph_default.GridMinCol1234Space; sg->GridMinColour1=settings_graph_default.GridMinColour1; sg->GridMinColour2=settings_graph_default.GridMinColour2; sg->GridMinColour3=settings_graph_default.GridMinColour3; sg->GridMinColour4=settings_graph_default.GridMinColour4; }
+      if (strcmp(setoption,"textcolour"   )==0) { sg->TextColour=settings_graph_default.TextColour; sg->TextCol1234Space=settings_graph_default.TextCol1234Space; sg->TextColour1=settings_graph_default.TextColour1; sg->TextColour2=settings_graph_default.TextColour2; sg->TextColour3=settings_graph_default.TextColour3; sg->TextColour4=settings_graph_default.TextColour4; }
      } else {
-      if (strcmp(setoption,"axescolour"   )==0) colour_fromdict(command,"",&sg->AxesColour   ,&sg->AxesColourR   ,&sg->AxesColourG   ,&sg->AxesColourB   ,NULL,NULL,NULL,NULL,NULL,&errpos,1);
-      if (strcmp(setoption,"gridmajcolour")==0) colour_fromdict(command,"",&sg->GridMajColour,&sg->GridMajColourR,&sg->GridMajColourG,&sg->GridMajColourB,NULL,NULL,NULL,NULL,NULL,&errpos,1);
-      if (strcmp(setoption,"gridmincolour")==0) colour_fromdict(command,"",&sg->GridMinColour,&sg->GridMinColourR,&sg->GridMinColourG,&sg->GridMinColourB,NULL,NULL,NULL,NULL,NULL,&errpos,1);
-      if (strcmp(setoption,"textcolour"   )==0) colour_fromdict(command,"",&sg->TextColour   ,&sg->TextColourR   ,&sg->TextColourG   ,&sg->TextColourB   ,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"axescolour"   )==0) colour_fromdict(command,"",&sg->AxesColour   ,&sg->AxesCol1234Space   ,&sg->AxesColour1   ,&sg->AxesColour2   ,&sg->AxesColour3   ,&sg->AxesColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"gridmajcolour")==0) colour_fromdict(command,"",&sg->GridMajColour,&sg->GridMajCol1234Space,&sg->GridMajColour1,&sg->GridMajColour2,&sg->GridMajColour3,&sg->GridMajColour4,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"gridmincolour")==0) colour_fromdict(command,"",&sg->GridMinColour,&sg->GridMinCol1234Space,&sg->GridMinColour1,&sg->GridMinColour2,&sg->GridMinColour3,&sg->GridMinColour4,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"textcolour"   )==0) colour_fromdict(command,"",&sg->TextColour   ,&sg->TextCol1234Space   ,&sg->TextColour1   ,&sg->TextColour2   ,&sg->TextColour3   ,&sg->TextColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
      }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"grid")==0)) /* set grid */
@@ -962,27 +962,59 @@ void directive_set(Dict *command)
        {
         j = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
         if (j<0) { sprintf(temp_err_string, "The set palette command has been passed an unrecognised colour '%s'; ignoring this.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
-        else     { settings_palette_current[i++] = j; }
+        else     { settings_palette_current[i] = j; settings_paletteS_current[i]=0; settings_palette1_current[i]=settings_palette2_current[i]=settings_palette3_current[i]=settings_palette4_current[i]=0.0; i++; }
        } else {
-        value *colR, *colG, *colB;
+        value *colR, *colG, *colB, *colH, *colS, *colC, *colM, *colY, *colK;
         unsigned char fail=0;
 
         DictLookup(tempdict,"colourR",NULL,(void **)&colR);
         DictLookup(tempdict,"colourG",NULL,(void **)&colG);
         DictLookup(tempdict,"colourB",NULL,(void **)&colB);
+        DictLookup(tempdict,"colourH",NULL,(void **)&colH);
+        DictLookup(tempdict,"colourS",NULL,(void **)&colS);
+        DictLookup(tempdict,"colourC",NULL,(void **)&colC);
+        DictLookup(tempdict,"colourM",NULL,(void **)&colM);
+        DictLookup(tempdict,"colourY",NULL,(void **)&colY);
+        DictLookup(tempdict,"colourK",NULL,(void **)&colK);
 
-        if ((!fail) && (colR!=NULL) && (!colR->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colR, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
-        if ((!fail) && (colR!=NULL) && (colR->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
-        if ((!fail) && (colG!=NULL) && (!colG->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colG, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
-        if ((!fail) && (colG!=NULL) && (colG->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
-        if ((!fail) && (colB!=NULL) && (!colB->dimensionless)) { sprintf(temp_err_string, "Colour RGB components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(colB, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
-        if ((!fail) && (colB!=NULL) && (colB->imag>1e-6)) { sprintf(temp_err_string, "Colour RGB components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; }
+#define CHECK_COLCOMPS(COLX) \
+        { \
+         if ((!fail) && (COLX!=NULL) && (!COLX->dimensionless)) { sprintf(temp_err_string, "Colour components should be dimensionless quantities; the specified quantity has units of <%s>.", ppl_units_GetUnitStr(COLX, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; } \
+         if ((!fail) && (COLX!=NULL) && (COLX->imag>1e-6)) { sprintf(temp_err_string, "Colour components should be real numbers; the specified quantity is complex."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; } \
+         if ((!fail) && (COLX!=NULL) && (!gsl_finite(COLX->real))) { sprintf(temp_err_string, "Supplied colour components is not a finite number."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); fail=1; } \
+        }
+
+        CHECK_COLCOMPS(colR); CHECK_COLCOMPS(colG); CHECK_COLCOMPS(colB);
+        CHECK_COLCOMPS(colH); CHECK_COLCOMPS(colS);
+        CHECK_COLCOMPS(colC); CHECK_COLCOMPS(colM); CHECK_COLCOMPS(colY); CHECK_COLCOMPS(colK);
+
+#define MAP01(X) (X->real <= 0.0) ? 0.0 : ((X->real >= 1.0) ? 1.0 : X->real); /* Make sure that colour component is in the range 0-1 */
 
         if (!fail)
          {
-          settings_paletteR_current[i] = (colR->real <= 0) ? 0 : ((colR->real >= 255) ? 255 : colR->real); // Make sure that colour component is in the range 0-255
-          settings_paletteG_current[i] = (colG->real <= 0) ? 0 : ((colG->real >= 255) ? 255 : colG->real); // Make sure that colour component is in the range 0-255
-          settings_paletteB_current[i] = (colB->real <= 0) ? 0 : ((colB->real >= 255) ? 255 : colB->real); // Make sure that colour component is in the range 0-255
+           settings_palette4_current[i] = 0.0;
+          if (colR!=NULL)
+           {
+            settings_paletteS_current[i] = SW_COLSPACE_RGB;
+            settings_palette1_current[i] = MAP01(colR);
+            settings_palette2_current[i] = MAP01(colG);
+            settings_palette3_current[i] = MAP01(colB);
+           }
+          else if (colH!=NULL)
+           {
+            settings_paletteS_current[i] = SW_COLSPACE_HSB;
+            settings_palette1_current[i] = MAP01(colH);
+            settings_palette2_current[i] = MAP01(colS);
+            settings_palette3_current[i] = MAP01(colB);
+           }
+          else
+           {
+            settings_paletteS_current[i] = SW_COLSPACE_CMYK;
+            settings_palette1_current[i] = MAP01(colC);
+            settings_palette2_current[i] = MAP01(colM);
+            settings_palette3_current[i] = MAP01(colY);
+            settings_palette4_current[i] = MAP01(colK);
+           }
           settings_palette_current[i++] = 0;
          }
        }
@@ -996,9 +1028,11 @@ void directive_set(Dict *command)
     for (i=0; i<PALETTE_LENGTH; i++)
      {
       settings_palette_current [i] = settings_palette_default [i];
-      settings_paletteR_current[i] = settings_paletteR_default[i];
-      settings_paletteG_current[i] = settings_paletteG_default[i];
-      settings_paletteB_current[i] = settings_paletteB_default[i];
+      settings_paletteS_current[i] = settings_paletteS_default[i];
+      settings_palette1_current[i] = settings_palette1_default[i];
+      settings_palette2_current[i] = settings_palette2_default[i];
+      settings_palette3_current[i] = settings_palette3_default[i];
+      settings_palette4_current[i] = settings_palette4_default[i];
      }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"papersize")==0)) /* set papersize */
@@ -1565,8 +1599,8 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"unit")==0)) /* set unit */
    {
-    DictLookup(command,"abbrev"   , NULL,(void **)&tempstr);
-    if (tempstr != NULL) settings_term_current.UnitDisplayAbbrev   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
+    DictLookup(command,"angle"    , NULL,(void **)&tempstr);
+    if (tempstr != NULL) settings_term_current.UnitAngleDimless    = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
     DictLookup(command,"prefix"  , NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.UnitDisplayPrefix   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
     DictLookup(command,"scheme"  , NULL,(void **)&tempstr);
@@ -1678,6 +1712,7 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit")==0)) /* unset unit */
    {
     double temp;
+    settings_term_current.UnitAngleDimless    = settings_term_default.UnitAngleDimless;
     settings_term_current.UnitDisplayAbbrev   = settings_term_default.UnitDisplayAbbrev;
     settings_term_current.UnitDisplayPrefix   = settings_term_default.UnitDisplayPrefix;
     settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
@@ -1686,6 +1721,10 @@ void directive_set(Dict *command)
     _lt_SetMemContext(0);
     ppl_unit_PreferredUnits = ListCopy(ppl_unit_PreferredUnits_default, 1);
     _lt_SetMemContext(temp);
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_angle")==0)) /* unset unit angle */
+   {
+    settings_term_current.UnitAngleDimless    = settings_term_default.UnitAngleDimless;
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_display")==0)) /* unset unit display */
    {
@@ -2049,9 +2088,19 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   out[0] = buf[0] = '\0';
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axescolour",1)>=0) || (StrAutocomplete(word, "axescolor",1)>=0))
    {
-    if (sg->AxesColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->AxesColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
-    else                  sprintf(buf, "rgb%d:%d:%d", sg->AxesColourR, sg->AxesColourG, sg->AxesColourB);
-    directive_show3(out+i, ItemSet, 1, interactive, "AxesColour", buf, (settings_graph_default.AxesColour == sg->AxesColour), "The colour used to draw graph axes");
+#define S_RGB(X,Y) (char *)NumericDisplay(X,Y,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L))
+#define SHOW_COLOUR(COLOUR,COL1234SPACE,COL1,COL2,COL3,COL4  ,  DEFAULT,DEF1234SPACE,DEF1,DEF2,DEF3,DEF4  ,  NAME1, NAME2) \
+    { \
+     if      (COLOUR>0)                       sprintf(buf, "%s", *(char **)FetchSettingName(COLOUR, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *))); \
+     else if (COL1234SPACE==SW_COLSPACE_RGB ) sprintf(buf, "rgb%s:%s:%s", S_RGB(COL1,0), S_RGB(COL2,1), S_RGB(COL3,2)); \
+     else if (COL1234SPACE==SW_COLSPACE_HSB ) sprintf(buf, "hsb%s:%s:%s", S_RGB(COL1,0), S_RGB(COL2,1), S_RGB(COL3,2)); \
+     else if (COL1234SPACE==SW_COLSPACE_CMYK) sprintf(buf, "cmyk%s:%s:%s:%s", S_RGB(COL1,0), S_RGB(COL2,1), S_RGB(COL3,2), S_RGB(COL4,3)); \
+     directive_show3(out+i, ItemSet, 1, interactive, NAME1, buf, ((COLOUR==DEFAULT)&&(COL1234SPACE==DEF1234SPACE)&&(COL1==DEF1)&&(COL2==DEF2)&&(COL3==DEF3)&&(COL4==DEF4)), NAME2); \
+    }
+
+    SHOW_COLOUR(sg->AxesColour,sg->AxesCol1234Space,sg->AxesColour1,sg->AxesColour2,sg->AxesColour3,sg->AxesColour4  ,
+                settings_graph_default.AxesColour,settings_graph_default.AxesCol1234Space,settings_graph_default.AxesColour1,settings_graph_default.AxesColour2,settings_graph_default.AxesColour3,settings_graph_default.AxesColour4  ,
+                "AxesColour", "The colour used to draw graph axes");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "axisunitstyle", 1)>=0))
@@ -2221,16 +2270,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmajcolour",1)>=0) || (StrAutocomplete(word, "gridmajcolor",1)>=0))
    {
-    if (sg->GridMajColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->GridMajColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
-    else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMajColourR, sg->GridMajColourG, sg->GridMajColourB);
-    directive_show3(out+i, ItemSet, 1, interactive, "GridMajColour", buf, (settings_graph_default.GridMajColour == sg->GridMajColour), "The colour of the major gridlines on graphs");
+    SHOW_COLOUR(sg->GridMajColour,sg->GridMajCol1234Space,sg->GridMajColour1,sg->GridMajColour2,sg->GridMajColour3,sg->GridMajColour4  ,
+                settings_graph_default.GridMajColour,settings_graph_default.GridMajCol1234Space,settings_graph_default.GridMajColour1,settings_graph_default.GridMajColour2,settings_graph_default.GridMajColour3,settings_graph_default.GridMajColour4  ,
+                "GridMajColour", "The colour of the major gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "gridmincolour",1)>=0) || (StrAutocomplete(word, "gridmincolor",1)>=0))
    {
-    if (sg->GridMinColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->GridMinColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
-    else                     sprintf(buf, "rgb%d:%d:%d", sg->GridMinColourR, sg->GridMinColourG, sg->GridMinColourB); 
-    directive_show3(out+i, ItemSet, 1, interactive, "GridMinColour", buf, (settings_graph_default.GridMinColour == sg->GridMinColour), "The colour of the minor gridlines on graphs");
+    SHOW_COLOUR(sg->GridMinColour,sg->GridMinCol1234Space,sg->GridMinColour1,sg->GridMinColour2,sg->GridMinColour3,sg->GridMinColour4  ,
+                settings_graph_default.GridMinColour,settings_graph_default.GridMinCol1234Space,settings_graph_default.GridMinColour1,settings_graph_default.GridMinColour2,settings_graph_default.GridMinColour3,settings_graph_default.GridMinColour4  ,
+                "GridMinColour", "The colour of the minor gridlines on graphs");
     i += strlen(out+i) ; p=1;
    }
 
@@ -2298,14 +2347,16 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     for (j=0; j<PALETTE_LENGTH; j++) // Check whether the palette has been changed from its default setting
      {
       if ((settings_palette_current[j] == -1) && (settings_palette_default[j] == -1)) break;
-      if ((settings_palette_current[j] == settings_palette_default[j])&&(settings_paletteR_current[j] == settings_paletteR_default[j])&&(settings_paletteG_current[j] == settings_paletteG_default[j])&&(settings_paletteB_current[j] == settings_paletteB_default[j])) continue;
+      if ((settings_palette_current[j] == settings_palette_default[j])&&(settings_paletteS_current[j] == settings_paletteS_default[j])&&(settings_palette1_current[j] == settings_palette1_default[j])&&(settings_palette2_current[j] == settings_palette2_default[j])&&(settings_palette3_current[j] == settings_palette3_default[j])&&(settings_palette4_current[j] == settings_palette4_default[j])) continue;
       l=1; break;
      }
     for (j=k=0; settings_palette_current[j]>=0; j++)
      {
       if (j>0) { sprintf(buf+k, ", "); k+=strlen(buf+k); }
       if (settings_palette_current[j]>0) sprintf(buf+k, "%s", *(char **)FetchSettingName(settings_palette_current[j], SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
-      else                               sprintf(buf+k, "rgb%d:%d:%d", settings_paletteR_current[j], settings_paletteG_current[j], settings_paletteB_current[j]);
+      else if (settings_paletteS_current[j]==SW_COLSPACE_RGB ) sprintf(buf, "rgb%s:%s:%s"    , S_RGB(settings_palette1_current[j],0), S_RGB(settings_palette2_current[j],1), S_RGB(settings_palette3_current[j],2));
+      else if (settings_paletteS_current[j]==SW_COLSPACE_HSB ) sprintf(buf, "hsb%s:%s:%s"    , S_RGB(settings_palette1_current[j],0), S_RGB(settings_palette2_current[j],1), S_RGB(settings_palette3_current[j],2));
+      else if (settings_paletteS_current[j]==SW_COLSPACE_CMYK) sprintf(buf, "cmyk%s:%s:%s:%s", S_RGB(settings_palette1_current[j],0), S_RGB(settings_palette2_current[j],1), S_RGB(settings_palette3_current[j],2), S_RGB(settings_palette4_current[j],3));
       k+=strlen(buf+k);
      }
     directive_show3(out+i, ItemSet, 0, interactive, "palette", buf, !l, "The sequence of colours used to plot datasets on colour graphs");
@@ -2429,9 +2480,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textcolour",1)>=0) || (StrAutocomplete(word, "textcolor",1)>=0))
    {
-    if (sg->TextColour>0) sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextColour, SW_COLOUR_INT, (void *)SW_COLOUR_STR, sizeof(char *)));
-    else                  sprintf(buf, "rgb%d:%d:%d", sg->TextColourR, sg->TextColourG, sg->TextColourB);
-    directive_show3(out+i, ItemSet, 1, interactive, "TextColour", buf, (settings_graph_default.TextColour==sg->TextColour), "Selects the colour of text labels");
+    SHOW_COLOUR(sg->TextColour,sg->TextCol1234Space,sg->TextColour1,sg->TextColour2,sg->TextColour3,sg->TextColour4  ,
+                settings_graph_default.TextColour,settings_graph_default.TextCol1234Space,settings_graph_default.TextColour1,settings_graph_default.TextColour2,settings_graph_default.TextColour3,settings_graph_default.TextColour4  ,
+                "TextColour", "Selects the colour of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "texthalign",1)>=0))
@@ -2472,6 +2523,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     ListIterator *listiter;
 
+    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitAngleDimless, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
+    directive_show3(out+i, ItemSet, 0, interactive, "unit angle dimensionless", buf, (settings_term_default.UnitAngleDimless==settings_term_current.UnitAngleDimless), "Selects whether angles are treated as dimensionless quantities");
+    i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitDisplayAbbrev, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "unit display abbreviated", buf, (settings_term_default.UnitDisplayAbbrev==settings_term_current.UnitDisplayAbbrev), "Selects whether units are displayed in abbreviated form ('m' vs. 'metres')");
     i += strlen(out+i) ; p=1;

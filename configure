@@ -198,9 +198,11 @@ if printf '#include <stdio.h>\n#include <readline/readline.h>\nint main() { retu
 then
  echo "YES"
  echo "HAVE_READLINE=-D HAVE_READLINE=1" >> Makefile
+ echo "LINK_READLINE=-ltermcap -lreadline" >> Makefile
 else
  echo "NO"
  echo "HAVE_READLINE=-D NOHAVE_READLINE=1" >> Makefile
+ echo "LINK_READLINE=" >> Makefile
 fi
 
 # 14. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
@@ -210,11 +212,11 @@ if printf '#include <fitsio.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev
 then
  echo "YES"
  echo "HAVE_FITSIO=-D HAVE_FITSIO=1" >> Makefile
- echo "FITSIO_LINK=-lcfitsio" >> Makefile
+ echo "LINK_FITSIO=-lcfitsio" >> Makefile
 else
  echo "NO"
  echo "HAVE_FITSIO=-D NOHAVE_FITSIO=1" >> Makefile
- echo "FITSIO_LINK=" >> Makefile
+ echo "LINK_FITSIO=" >> Makefile
 fi
 
 # 15. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS

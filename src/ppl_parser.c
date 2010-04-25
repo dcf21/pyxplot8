@@ -25,7 +25,10 @@
 #include <ctype.h>
 #include <limits.h>
 #include <math.h>
+
+#ifdef HAVE_READLINE
 #include <readline/readline.h>
+#endif
 
 #include <gsl/gsl_math.h>
 
@@ -353,7 +356,7 @@ Dict *parse(char *line)
 
 // PARSE_AUTOCOMPLETE(): Make suggestion for words which could come next. number gives the nth possible word.
 
-
+#ifdef HAVE_READLINE
 char *ppl_dummy_completer(const char *line, int status) // This is a replacement for GNU readline's default filename completer when we don't want
  {                                                      // filenames to be completion options.
   return NULL;
@@ -457,6 +460,7 @@ char **ppl_rl_completion(const char *text, int start, int end)
   rl_completion_entry_function = ppl_dummy_completer; // We replace readline's filename completer with a dummy, so that filenames are not completion options
   return matches;
  }
+#endif
 
 // PARSE_DESCEND(): We go through command definition structure, recursively descending into sub-structures
 //   line -- input line from user

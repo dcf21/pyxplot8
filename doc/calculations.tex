@@ -416,39 +416,6 @@ dimensionless number of hours in two seconds:
 print 2*unit(s)/unit(hr)
 \end{verbatim}
 
-\boxout{A note on the use of the radian is a base unit in PyXPlot.}{box:angles}{
-\index{units!angle}\index{angles, handling of}
-\setlength{\parindent}{0.5in}
-By convention, the SI system of units does not have a base unit of angle:
-instead, the radian is considered to be a dimensionless unit.  There are some
-strong mathematical reasons why this makes sense, since it makes it possible to
-write equations such as
-\begin{displaymath}
-d=\theta r
-\end{displaymath}
-and
-\begin{displaymath}
-x = \exp(a+i\theta).
-\end{displaymath}
-However, it also has some disadvantages: some interesting quantities such as
-radiative fluxes per steradian are measured per unit angle or per unit solid
-angle, and the SI system offers no way to dimensionally distinguish these from
-one another or from quantities with no angular dependence.
-
-On balance, we have decided that it is more useful if PyXPlot {\it does}
-consider the radian to be a base unit, so that it can distinguish such
-quantities. The unfortunate consequence of this is that first equation above to
-be rewritten as:
-\begin{displaymath}
-d=\left(\frac{\theta}{2\pi\,\mathrm{rad}}\right) r
-\end{displaymath}
-
-As compensation, the $\exp()$ function and all of the trigonometric functions
-accept either quantities with dimensions of angles, or dimensionless numbers as
-inputs. The second equation above might need some modification, however, since
-it is not possible to add a dimensionless number to an angle.
-}
-
 Compound units such as miles per hour, which is defined in terms of two other
 units, can be used thus:
 
@@ -517,6 +484,51 @@ script which PyXPlot runs upon start-up. Such configuration scripts will be
 discussed in Chapter~\ref{ch:configuration}. New units may either be derived
 from existing SI units, alternative measures of existing quantities, or
 entirely new base units such as numbers of CPU cycles or man-hours of labour.
+
+\subsection{Treatment of Angles in PyXPlot}
+\index{units!angle}\index{angles, handling of}
+
+By convention, the SI system of units does not have a base unit of angle:
+instead, the radian is considered to be a dimensionless unit.  There are some
+strong mathematical reasons why this makes sense, since it makes it possible to
+write equations such as
+\begin{displaymath}
+d=\theta r
+\end{displaymath}
+and
+\begin{displaymath}
+x = \exp(a+i\theta),
+\end{displaymath}
+which would otherwise have to be written as, for example,
+\begin{displaymath}
+d=2\pi\left(\frac{\theta}{2\pi\,\mathrm{rad}}\right) r=\left(\frac{\theta}{\mathrm{rad}}\right)
+\end{displaymath}
+in order to be strictly dimensionally correct.
+
+However, it also has some disadvantages since some physical quantities such as
+fluxes per steradian are measured per unit angle or per unit solid angle, and
+the SI system offers no way to dimensionally distinguish these from one another
+or from quantities with no angular dependence. Thus, in some branches of
+science, it is very useful to be able to keep track of dimensions of angle in a
+way incompatible with the traditional SI view that angles are fundamentally
+dimensionless.
+
+In order to be useful in both mathematical and physical contexts, PyXPlot
+provides a switch which can be changed using the commands:
+\begin{verbatim}
+set unit angle dimensionless 
+set unit angle nodimensionless
+\end{verbatim}
+By default, angles are treated as being dimensionless, and expressions such as
+$a+i\theta$ are considered to be dimensionally correct. Inverse trigonometric
+functions such as {\tt asin} return dimensionless numbers measured in radians.
+The unit of the degree is equal to the dimensionless constant $\pi/180$.
+However, when angles are set to have physical dimensions, the inverse
+trigonometric functions return values with dimensions of angle, and the above
+expression must be written as $a+i\theta/\mathrm{rad}$ in order to be
+dimensionally correct.  Nonetheless, the $\exp()$ function and all of the
+trigonometric functions continue to accept not only quantities with dimensions
+of angles, but also dimensionless numbers, as inputs.
 
 \subsection{Converting between different Temperature Scales}
 \index{temperature conversions}\index{units!temperature}

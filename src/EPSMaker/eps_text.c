@@ -69,11 +69,13 @@ void eps_text_RenderEPS(EPSComm *x)
   // Work out text colour
   with_words_zero(&def,0);
   def.colour    = x->current->settings.TextColour;
-  def.colourR   = x->current->settings.TextColourR;
-  def.colourG   = x->current->settings.TextColourG;
-  def.colourB   = x->current->settings.TextColourB;
-  def.USEcolour = (def.colour!=0);
-  def.USEcolourRGB = (def.colour==0);
+  def.colour1   = x->current->settings.TextColour1;
+  def.colour2   = x->current->settings.TextColour2;
+  def.colour3   = x->current->settings.TextColour3;
+  def.colour4   = x->current->settings.TextColour4;
+  def.Col1234Space  = x->current->settings.TextCol1234Space;
+  def.USEcolour     = (def.colour!=0);
+  def.USEcolour1234 = (def.colour==0);
   with_words_merge(&merged, &x->current->with_data, &def, NULL, NULL, NULL, 1);
   eps_core_SetColour(x, &merged, 1);
 

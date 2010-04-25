@@ -210,8 +210,8 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
 
   // Set colour for painting axes
   with_words_zero(&ww,0);
-  if (x->current->settings.AxesColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.AxesColour; }
-  else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.AxesColourR; ww.colourG = x->current->settings.AxesColourG; ww.colourB = x->current->settings.AxesColourB; }
+  if (x->current->settings.AxesColour > 0) { ww.colour = x->current->settings.AxesColour; ww.USEcolour = 1; }
+  else                                     { ww.Col1234Space = x->current->settings.AxesCol1234Space; ww.colour1 = x->current->settings.AxesColour1; ww.colour2 = x->current->settings.AxesColour2; ww.colour3 = x->current->settings.AxesColour3; ww.colour4 = x->current->settings.AxesColour4; ww.USEcolour1234 = 1; }
   ww.linewidth = EPS_AXES_LINEWIDTH; ww.USElinewidth = 1;
   ww.linetype  = 1;                  ww.USElinetype  = 1;
   eps_core_SetColour(x, &ww, 1);

@@ -532,7 +532,7 @@ in row-major order.
 
 \example{ex:fourier}{The Fourier transform of a top-hat function}{
 It is straightforward to show that the Fourier transform of a top-hat function
-of unit width is the function $\sinc(x)=\sin(\pi x)/\pi x$. If
+of unit width is the function $\sinc(x^\prime=\pi x)=\sin(x^\prime)/x^\prime$. If
 \begin{displaymath}
 f(x)=\left\{\begin{array}{l}1\;|x|\leq\nicefrac{1}{2}\\0\;|x|>\nicefrac{1}{2}\end{array}\right. ,
 \end{displaymath}
@@ -547,12 +547,12 @@ F(\omega) & = & \int_0^\infty f(x) \exp \left(-2\pi ix\omega\right) \,\mathrm{d}
 \nlnp
 In this example, we demonstrate this numerically by taking the Fourier
 transform of such a step function, and comparing the result against the
-function {\tt sinc(x)} which is pre-defined within PyXPlot:
+function {\tt sinc(pi*x)} which is pre-defined within PyXPlot:
 \nlscf
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt step(x) = tophat(x,0.5)}\newline
 \noindent{\tt fft [-1:1:0.01] f() of step()}\newline
-\noindent{\tt plot [-10:10] Re(f(x)), sinc(x)}
+\noindent{\tt plot [-10:10] Re(f(x)), sinc(pi*x)}
 \nlscf
 Note that the function {\tt Re(x)} is needed in the {\tt plot} statement here,
 since although the Fourier transform of a symmetric function is in theory real,
@@ -566,7 +566,7 @@ the central region in order to clearly show the stepping of the function:
 \includegraphics{examples/eps/ex_fft.eps}
 \end{center}
 \nlscf
-In the following steps, we take the square of the function $\sinc(x)$ just
+In the following steps, we take the square of the function $\sinc(pi*x)$ just
 calculated, and then plot the numerical inverse Fourier transform of the
 result:
 \nlscf

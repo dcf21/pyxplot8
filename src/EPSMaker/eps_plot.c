@@ -101,12 +101,14 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
   if (ww->STRpointlinewidth != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointlinewidth, 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
   if (ww->STRpointsize      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointsize     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
   if (ww->STRpointtype      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointtype     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolourR        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolourR       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolourG        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolourG       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolourB        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolourB       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolourR    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolourR   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolourG    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolourG   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolourB    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolourB   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolour1        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour1       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolour2        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour2       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolour3        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour3       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRcolour4        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour4       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolour1    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour1   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolour2    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour2   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolour3    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour3   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRfillcolour4    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour4   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
 
   return 0;
  }
@@ -118,11 +120,11 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
   if (!gsl_finite(dbl)) dbl=0.0; \
  }
 
-#define PROJ0_255 \
+#define PROJ0_1 \
  { \
   PROJ_DBL; \
-  if (dbl <   0.0) dbl=  0.0; \
-  if (dbl > 255.0) dbl=255.0; \
+  if (dbl < 0.0) dbl= 0.0; \
+  if (dbl > 1.0) dbl= 1.0; \
  }
 
 #define PROJ_INT \
@@ -137,16 +139,18 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
   int i = Ncolumns-1;
   double dbl;
 
-  if (ww->STRfillcolourB    != NULL) { PROJ0_255; ww->USEfillcolourRGB  = 1; ww->fillcolourB    = (int)dbl; }
-  if (ww->STRfillcolourG    != NULL) { PROJ0_255; ww->USEfillcolourRGB  = 1; ww->fillcolourG    = (int)dbl; }
-  if (ww->STRfillcolourR    != NULL) { PROJ0_255; ww->USEfillcolourRGB  = 1; ww->fillcolourR    = (int)dbl; }
-  if (ww->STRcolourB        != NULL) { PROJ0_255; ww->USEcolourRGB      = 1; ww->colourB        = (int)dbl; }
-  if (ww->STRcolourG        != NULL) { PROJ0_255; ww->USEcolourRGB      = 1; ww->colourG        = (int)dbl; }
-  if (ww->STRcolourR        != NULL) { PROJ0_255; ww->USEcolourRGB      = 1; ww->colourR        = (int)dbl; }
+  if (ww->STRfillcolour4    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour4    = dbl; }
+  if (ww->STRfillcolour3    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour3    = dbl; }
+  if (ww->STRfillcolour2    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour2    = dbl; }
+  if (ww->STRfillcolour1    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour1    = dbl; }
+  if (ww->STRcolour4        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour4        = dbl; }
+  if (ww->STRcolour3        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour3        = dbl; }
+  if (ww->STRcolour2        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour2        = dbl; }
+  if (ww->STRcolour1        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour1        = dbl; }
   if (ww->STRpointtype      != NULL) { PROJ_INT ; ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; }
-  if (ww->STRpointsize      != NULL) { PROJ_DBL ; ww->USEpointsize      = 1; ww->pointsize      =      dbl; }
-  if (ww->STRpointlinewidth != NULL) { PROJ_DBL ; ww->USEpointlinewidth = 1; ww->pointlinewidth =      dbl; }
-  if (ww->STRlinewidth      != NULL) { PROJ_DBL ; ww->USElinewidth      = 1; ww->linewidth      =      dbl; }
+  if (ww->STRpointsize      != NULL) { PROJ_DBL ; ww->USEpointsize      = 1; ww->pointsize      = dbl; }
+  if (ww->STRpointlinewidth != NULL) { PROJ_DBL ; ww->USEpointlinewidth = 1; ww->pointlinewidth = dbl; }
+  if (ww->STRlinewidth      != NULL) { PROJ_DBL ; ww->USElinewidth      = 1; ww->linewidth      = dbl; }
   if (ww->STRlinetype       != NULL) { PROJ_INT ; ww->USElinetype       = 1; ww->linetype       = (int)dbl; }
 
   return;
@@ -161,12 +165,14 @@ int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues,
  {
   int i = Ncolumns-1;
 
-  if (ww->STRfillcolourB    != NULL) { WWCUID("blue component of the fillcolour"); }
-  if (ww->STRfillcolourG    != NULL) { WWCUID("green component of the fillcolour"); }
-  if (ww->STRfillcolourR    != NULL) { WWCUID("red component of the fillcolour"); }
-  if (ww->STRcolourB        != NULL) { WWCUID("blue component of the colour"); }
-  if (ww->STRcolourG        != NULL) { WWCUID("green component of the colour"); }
-  if (ww->STRcolourR        != NULL) { WWCUID("red component of the colour"); }
+  if (ww->STRfillcolour4    != NULL) { WWCUID("fourth component of the fillcolour"); }
+  if (ww->STRfillcolour3    != NULL) { WWCUID("third component of the fillcolour"); }
+  if (ww->STRfillcolour2    != NULL) { WWCUID("second component of the fillcolour"); }
+  if (ww->STRfillcolour1    != NULL) { WWCUID("first component of the fillcolour"); }
+  if (ww->STRcolour4        != NULL) { WWCUID("fourth component of the colour"); }
+  if (ww->STRcolour3        != NULL) { WWCUID("third component of the colour"); }
+  if (ww->STRcolour2        != NULL) { WWCUID("second component of the colour"); }
+  if (ww->STRcolour1        != NULL) { WWCUID("first component of the colour"); }
   if (ww->STRpointtype      != NULL) { WWCUID("point type"); }
   if (ww->STRpointsize      != NULL) { WWCUID("point size"); }
   if (ww->STRpointlinewidth != NULL) { WWCUID("point line width"); }
@@ -596,8 +602,8 @@ void eps_plot_RenderEPS(EPSComm *x)
     int pageno = x->LaTeXpageno++;
     with_words ww;
     with_words_zero(&ww,0);
-    if (x->current->settings.TextColour > 0) { ww.USEcolour = 1; ww.colour = x->current->settings.TextColour; }
-    else                                     { ww.USEcolourRGB = 1; ww.colourR = x->current->settings.TextColourR; ww.colourG = x->current->settings.TextColourG; ww.colourB = x->current->settings.TextColourB; }
+    if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
+    else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
     eps_core_SetColour(x, &ww, 1);
     IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (x->current->ThreeDim ? origin_x : (origin_x+width/2))/M_TO_PS, x->current->PlotTopMargin/M_TO_PS+4e-3, SW_HALIGN_CENT, SW_VALIGN_BOT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
    }

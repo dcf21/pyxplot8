@@ -127,8 +127,8 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
    }
 
   // By default, use 'set textcolour' colour for text labels
-  if (x->current->settings.TextColour > 0) { ww_default.USEcolourRGB = 0; ww_default.USEcolour = 1; ww_default.colour = x->current->settings.TextColour; }
-  else                                     { ww_default.USEcolourRGB = 1; ww_default.USEcolour = 0; ww_default.colourR = x->current->settings.TextColourR; ww_default.colourG = x->current->settings.TextColourG; ww_default.colourB = x->current->settings.TextColourB; } 
+  if (x->current->settings.TextColour > 0) { ww_default.colour = x->current->settings.TextColour; ww_default.USEcolour = 1; ww_default.USEcolour1234 = 0; }
+  else                                     { ww_default.Col1234Space = x->current->settings.TextCol1234Space; ww_default.colour1 = x->current->settings.TextColour1; ww_default.colour2 = x->current->settings.TextColour2; ww_default.colour3 = x->current->settings.TextColour3; ww_default.colour4 = x->current->settings.TextColour4; ww_default.USEcolour = 0; ww_default.USEcolour1234 = 1; }
 
   // Loop through all text labels, rendering them in turn
   for (li=x->current->label_list; li!=NULL; li=li->next)
