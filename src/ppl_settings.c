@@ -557,7 +557,7 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
     if (outcol2S!=NULL) *outcol2S=NULL;
     if (outcol3S!=NULL) *outcol3S=NULL;
     if (outcol4S!=NULL) *outcol4S=NULL;
-   } else if ((tempstrR!=NULL) || (tempstrH!=NULL) || (tempvalC!=NULL)) { // Colour is specified by RGB/HSB/CMYK expressions
+   } else if ((tempstrR!=NULL) || (tempstrH!=NULL) || (tempstrC!=NULL)) { // Colour is specified by RGB/HSB/CMYK expressions
     if (USEcol    !=NULL) *USEcol     = 0;
     if (USEcol1234!=NULL) *USEcol1234 = 0;
     if (outcol1S  ==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Received colour expressions, but have not received strings to put them into."); return 1; }

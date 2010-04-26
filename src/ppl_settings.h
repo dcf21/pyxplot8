@@ -123,7 +123,7 @@ typedef struct settings_axis {
  double        MinUsed, MaxUsed, MinFinal, MaxFinal, *OrdinateRaster;
  double        HardMin, HardMax; // Contains ranges set via plot [foo:bar]
  unsigned char HardMinSet, HardMaxSet, HardAutoMinSet, HardAutoMaxSet, HardUnitSet, Mode0BackPropagated;
- int           OrdinateRasterLen;
+ int           OrdinateRasterLen, LogFinal;
  value         HardUnit, DataUnit;
  char         *FinalAxisLabel;
  unsigned char TickListFinalised;

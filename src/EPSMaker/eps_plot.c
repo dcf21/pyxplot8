@@ -95,20 +95,35 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
   // If using list is wrong length, give up and let ppl_datafile return an error
   if (UsingLen != *NExpect) return 0;
 
+#define ADD_FAKE_USING_ITEM(X) \
+ { \
+  int l = strlen(X); \
+  char *tempstr = lt_malloc(l+3); \
+  if (tempstr==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; } \
+  tempstr[0] = '('; \
+  strcpy(tempstr+  1, X ); \
+  strcpy(tempstr+l+1,")"); \
+  tempdict = DictInit(); \
+  if (tempdict==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; } \
+  DictAppendPtr(tempdict, "using_item", (void *)tempstr, 0, 0, DATATYPE_VOID); \
+  ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); \
+  (*NExpect)++; \
+ }
+
   // Now cycle through all with_words which can be item-specific
-  if (ww->STRlinetype       != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRlinetype      , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRlinewidth      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRlinewidth     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRpointlinewidth != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointlinewidth, 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRpointsize      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointsize     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRpointtype      != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRpointtype     , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolour1        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour1       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolour2        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour2       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolour3        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour3       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRcolour4        != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRcolour4       , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolour1    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour1   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolour2    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour2   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolour3    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour3   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
-  if (ww->STRfillcolour4    != NULL) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)ww->STRfillcolour4   , 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); (*NExpect)++; }
+  if (ww->STRlinetype       != NULL) ADD_FAKE_USING_ITEM(ww->STRlinetype      );
+  if (ww->STRlinewidth      != NULL) ADD_FAKE_USING_ITEM(ww->STRlinewidth     );
+  if (ww->STRpointlinewidth != NULL) ADD_FAKE_USING_ITEM(ww->STRpointlinewidth);
+  if (ww->STRpointsize      != NULL) ADD_FAKE_USING_ITEM(ww->STRpointsize     );
+  if (ww->STRpointtype      != NULL) ADD_FAKE_USING_ITEM(ww->STRpointtype     );
+  if (ww->STRcolour1        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour1       );
+  if (ww->STRcolour2        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour2       );
+  if (ww->STRcolour3        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour3       );
+  if (ww->STRcolour4        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour4       );
+  if (ww->STRfillcolour1    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour1   );
+  if (ww->STRfillcolour2    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour2   );
+  if (ww->STRfillcolour3    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour3   );
+  if (ww->STRfillcolour4    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour4   );
 
   return 0;
  }
@@ -218,6 +233,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       axes[i].MinUsedSet = axes[i].MaxUsedSet = axes[i].DataUnitSet = axes[i].RangeFinalised = 0;
       axes[i].FinalActive = axes[i].enabled;
       axes[i].MinUsed    = axes[i].MaxUsed    = axes[i].MinFinal = axes[i].MaxFinal = 0.0;
+      axes[i].LogFinal   = axes[i].log;
       axes[i].HardMin    = axes[i].min;
       axes[i].HardMax    = axes[i].max;
       axes[i].HardMinSet = (axes[i].MinSet==SW_BOOL_TRUE);

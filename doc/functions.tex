@@ -139,10 +139,11 @@ The #1 function #2
 \funcdef{radians($x$)}{takes a real input which should either have physical units of angle, or be dimensionless, in which case it is assumed to be measured in degrees. The output is the dimensionless number of radians in $x$.}
 \funcdef{random()}{returns a random real number between 0 and~1.}
 \funcdef{random\_\-binomial($p,n$)}{returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$. $n$ must be a real positive dimensionless integer. $p$ must be a dimensionless number in the range $0\leq p\leq 1$.}
-\funcdef{random\_\-chisq($\mu$)}{returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom, where $\mu$ must be a real positive dimensionless integer.}
+\funcdef{random\_\-chisq($\nu$)}{returns a random sample from a $\chi$-squared distribution with $\nu$ degrees of freedom, where $\nu$ must be a real positive dimensionless integer.}
 \funcdef{random\_\-gaussian($\sigma$)}{returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero. $\sigma$ must be real, but may have any physical units. The returned random sample shares the physical units of $\sigma$.}
 \funcdef{random\_\-lognormal($\zeta,\sigma$)}{returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$. $\sigma$ must be a real positive dimensionless number. $\zeta$ must be real, but may have any physical units. The returned random sample shares the physical units of $\zeta$.}
 \funcdef{random\_\-poisson($n$)}{returns a random integer from a Poisson distribution with mean $n$, where $n$ must be a real positive dimensionless number.}
+\funcdef{random\_\-tdist($\nu$)}{returns a random sample from a $t$-distribution with $\nu$ degrees of freedom, where $\nu$ must be a real positive dimensionless integer.}
 \funcdef{Re($z$)}{returns the real part of the complex number $z$, which may have any physical units. The number returned shares the same physical units as $z$.}
 \funcdef{root($z,n$)}{returns the $n$th root of $z$. $z$ may be any complex number, and may have any physical dimensions. $n$ must be a dimensionless integer. When complex arithmetic is enabled, and whenever $z$ is positive, this function is entirely equivalent to {\tt pow(z,1/n)}. However, when $z$ is negative and complex arithmetic is disabled, the expression {\tt pow(z,1/n)} may not be evaluated, since it will in general have a small imaginary part for any finite-precision floating-point representation of $1/n$. The expression {\tt root(z,n)}, on the other hand, may be evaluated under such conditions, providing that $n$ is an odd integer.}
 \funcdef{sec($z$)}{returns the secant of $z$, where $z$ may be any complex number and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
@@ -158,6 +159,10 @@ The #1 function #2
 \funcdef{strupper($s$)}{returns a version of the string $s$ in which all alphabetic characters are converted to uppercase.}
 \funcdef{tan($z$)}{returns the tangent of $z$, where $z$ may be any complex number and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
 \funcdef{tanh($z$)}{returns the hyperbolic tangent of $z$, where $z$ may be any complex number and must either have physical dimensions of angle or be a dimensionless number, in which case it is understood to be measured in radians.}
+\funcdef{tdistCDF($x,nu$)}{returns the cumulative probability density at $x$ in a $t$-distribution with $\nu$ degrees of freedom. $\nu$ must be a positive real dimensionless integer. $x$ must be a positive real dimensionless number.}
+\funcdef{tdistCDFi($P,nu$)}{returns the point $x$ at which the cumulative probability density in a $t$-distribution with $\nu$ degrees of freedom is $P$. $\nu$ must be a positive real dimensionless integer. $P$ must be a real number in the range $0\leq p \leq 1$.}
+\funcdef{tdistPDF($x,nu$)}{returns the probability density at $x$ in a $t$-distribution with $\nu$ degrees of freedom. $\nu$ must be a positive real dimensionless integer. $x$ must be a positive real dimensionless number.}
+\funcdef{texify(\ldots)}{returns a string of \LaTeX\ text corresponding to the algebraic expression or string supplied between the brackets.}
 \funcdef{time\_\-daymonth({\it JD})}{returns the number of the day of the month on which the supplied Julian Day number falls. For more details see the {\tt time\_\-julianday()} function.}
 \funcdef{time\_\-dayweekname({\it JD})}{returns as a string the name of the day of the week on which the supplied Julian Day number falls. For more details see the {\tt time\_\-julianday()} function.}
 \funcdef{time\_\-dayweeknum({\it JD})}{returns the number, in the range 1~(Sunday) to 7~(Saturday), of the day of the week on which the supplied Julian Day number falls. For more details see the {\tt time\_\-julianday()} function.}
@@ -217,7 +222,6 @@ Token & Value \\
 {\tt \%Y} & Year number.\\
 \end{longtable}}
 \funcdef{time\_\-year({\it JD})}{returns the year in which the supplied Julian Day number falls. For more details see the {\tt time\_\-julianday()} function. The returned value is a dimensionless integer. A value of $0$ corresponds to the year 1\,{\footnotesize BC}; a value of $-1$ corresponds to the year 2\,{\footnotesize BC}, and so forth.}
-\funcdef{texify(\ldots)}{returns a string of \LaTeX\ text corresponding to the algebraic expression or string supplied between the brackets.}
 \funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real, but may have any physical dimensions so long as they match.}
 \funcdef{unit(\ldots)}{multiplies a number by a physical unit. The string inside the brackets should consist of a string of the names of physical units, multiplied together with the {\tt *} operator, divided using the {\tt /} operator, or raised by numeric powers using the {\tt \^{}} operator. The list may be commenced with a numeric constant, for example: {\tt unit(2*m\^{}2/s)}.}
 \funcdef{zeta($x$)}{evaluates the Riemann zeta function for any dimensionless number $x$.}

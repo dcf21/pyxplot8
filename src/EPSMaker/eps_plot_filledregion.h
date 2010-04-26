@@ -28,7 +28,7 @@
 
 #include "ppl_settings.h"
 
-#define INGOING  0
+#define INCOMING 0
 #define OUTGOING 1
 
 typedef struct FilledRegionAxisCrossing {

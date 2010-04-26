@@ -1,7 +1,6 @@
 2010 ??? ??: PyXPlot 0.8.0
    - The handling of large datafiles has been streamlined to require around an
      order-of-magnitude less time and memory.
-   - PyXPlot's commandline interface now supports tab completion.
    - PyXPlot's mathematical environment has been extended to handle complex
      numbers and quantities with physical units.
    - The range of mathematical functions built into PyXPlot has been massively
@@ -13,7 +12,10 @@
    - An fft command has been added for performing Fourier transforms on data.
    - New plot styles -- filledregion and yerrorshaded -- have been added for
      plotting filled error regions.
+   - The configuration of linked axes has been entirely redesigned.
    - Parametric function plotting has been implemented.
+   - Colours can now be specified by RGB, HSB or CMYK components, as well as by
+     name.
    - Several commands, e.g. box, circle, ellipse, etc., have been added to
      allow vector graphics to be produced in PyXPlot's multiplot environment.
    - The jpeg command has been generalised to allow the incorporation of not
@@ -27,8 +29,8 @@
      commands and the conditionalS and conditionalN mathematical functions.
    - Input filters have been introduced as a mechanism by which datafiles in
      arbitrary formats can be read.
+   - PyXPlot's commandline interface now supports tab completion.
    - The show command has been reworked to produce pastable output.
-   - The configuration of linked axes has been entirely redesigned.
    - Many minor bugs have been fixed.
 2009 Nov 17: PyXPlot 0.7.1
    - Bug fix to the xyerrorrange plot style.

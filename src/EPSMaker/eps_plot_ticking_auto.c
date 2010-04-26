@@ -397,7 +397,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   VarName[0] = "xyz"[xyz];
   if (axis->format == NULL) { sprintf(FormatTemp, "\"%%s\"%%(%s)", VarName); format=FormatTemp; }
   else                      { format=axis->format; }
-  if ((format==FormatTemp) && (axis->AxisLinearInterpolation==NULL) && (axis->log==SW_BOOL_TRUE) && (log(axis->MaxFinal / axis->MinFinal) / log(axis->LogBase) > length / tick_sep_major)) { sprintf(FormatTemp, "\"%%s\"%%(logn(%s,%f))", VarName, axis->LogBase); }
+  if ((format==FormatTemp) && (axis->AxisLinearInterpolation==NULL) && (axis->LogFinal==SW_BOOL_TRUE) && (log(axis->MaxFinal / axis->MinFinal) / log(axis->LogBase) > length / tick_sep_major)) { sprintf(FormatTemp, "\"%%s\"%%(logn(%s,%f))", VarName, axis->LogBase); }
   for (i=0; ((format[i]!='\0')&&(format[i]!='\'')&&(format[i]!='\"')); i++);
   QuoteType = format[i];
   if (QuoteType=='\0') goto FAIL;
@@ -500,7 +500,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
    }
 
   // Work out factors of log base of axis. In fact, work out factors of log base ** 2, so that ten divides by four.
-  LogBase = (axis->log == SW_BOOL_TRUE) ? axis->LogBase : 10;
+  LogBase = (axis->LogFinal == SW_BOOL_TRUE) ? axis->LogBase : 10;
   factorise(pow(LogBase,FACTOR_MULTIPLY), FactorsLogBase, MAX_FACTORS, length/tick_sep_minor*1.2, &NFactorsLogBase);
 
   // Work out throw of each argument (i.e. the spread of values that it takes)
@@ -703,7 +703,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     sprintf(temp_err_string,"Potential ticks for %s axis (NArgs = %d)",VarName,NArgs); ppl_log(temp_err_string);
     for (i=0; i<NArgs; i++) { sprintf(temp_err_string, "Argument %d: id %d score %d StringArg %d ContinuousArg %d Vetoed %d NValueChanges %d",i,(int)args[i].id,(int)args[i].score,(int)args[i].StringArg,(int)args[i].ContinuousArg,(int)args[i].vetoed,args[i].NValueChanges); ppl_log(temp_err_string); }
     sprintf(temp_err_string, "Number of potential ticks: %d", NPotTicks); ppl_log(temp_err_string);
-    for (i=0; ((i<NPotTicks)&&(i<500)); i++) { sprintf(temp_err_string, "Tick %7d: Arg %3d DivOfThrow %4d OoM %10d DivOfOoM %3d IntervalNum %3d TargetVal %12.3e",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue); ppl_log(temp_err_string); }
+    for (i=0; ((i<NPotTicks)&&(i<50)); i++) { sprintf(temp_err_string, "Tick %7d: Arg %3d DivOfThrow %4d OoM %10d DivOfOoM %3d IntervalNum %3d TargetVal %12.3e",PotTickList[i].OrderPosition,PotTickList[i].ArgNo,PotTickList[i].DivOfThrow,PotTickList[i].OoM,PotTickList[i].DivOfOoM,PotTickList[i].IntervalNum,PotTickList[i].TargetValue); ppl_log(temp_err_string); }
    }
 
   // Make arrays for noting which ticks have been accepted

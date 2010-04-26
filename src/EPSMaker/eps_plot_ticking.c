@@ -65,20 +65,20 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
 
     if       (axis->HardMaxSet) axis->MaxFinal = axis->HardMax;
     else if  (axis->MaxUsedSet) axis->MaxFinal = axis->MaxUsed;
-    else if  (MinSet)           axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? axis->MinFinal * 100
-                                                                             : axis->MinFinal +  20;
-    else                        axis->MaxFinal = (axis->log == SW_BOOL_TRUE) ? 10.0 : 10.0;
+    else if  (MinSet)           axis->MaxFinal = (axis->LogFinal == SW_BOOL_TRUE) ? axis->MinFinal * 100
+                                                                                  : axis->MinFinal +  20;
+    else                        axis->MaxFinal = (axis->LogFinal == SW_BOOL_TRUE) ? 10.0 : 10.0;
 
     // Check that log axes do not venture too close to zero
-    if ((axis->log == SW_BOOL_TRUE) && (axis->MaxFinal <= 1e-200)) { axis->MaxFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
-    if (!MinSet) axis->MinFinal = (axis->log == SW_BOOL_TRUE) ? (axis->MaxFinal / 100) : (axis->MaxFinal - 20);
-    if ((axis->log == SW_BOOL_TRUE) && (axis->MinFinal <= 1e-200)) { axis->MinFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
+    if ((axis->LogFinal == SW_BOOL_TRUE) && (axis->MaxFinal <= 1e-200)) { axis->MaxFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
+    if (!MinSet) axis->MinFinal = (axis->LogFinal == SW_BOOL_TRUE) ? (axis->MaxFinal / 100) : (axis->MaxFinal - 20);
+    if ((axis->LogFinal == SW_BOOL_TRUE) && (axis->MinFinal <= 1e-200)) { axis->MinFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
 
     // If there's no spread of data on the axis, make a spread up
     if ( (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MinFinal)) || (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MaxFinal)) )
      {
       if (axis->HardMinSet && axis->HardMaxSet) { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
-      if (axis->log != SW_BOOL_TRUE)
+      if (axis->LogFinal != SW_BOOL_TRUE)
        {
         axis->MinFinal -= max(1.0,1e-3*fabs(axis->MinFinal));
         axis->MaxFinal += max(1.0,1e-3*fabs(axis->MinFinal));
@@ -114,19 +114,19 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     min_prelim = axis->MinFinal * UnitMultiplier;
     max_prelim = axis->MaxFinal * UnitMultiplier;
 
-    if (axis->log == SW_BOOL_TRUE) { min_prelim = log10(min_prelim); max_prelim = log10(max_prelim); }
+    if (axis->LogFinal == SW_BOOL_TRUE) { min_prelim = log10(min_prelim); max_prelim = log10(max_prelim); }
 
     OoM = pow(10.0, floor(log10(fabs(max_prelim - min_prelim)/5)));
     min_prelim = floor(min_prelim / OoM) * OoM;
     max_prelim = ceil (max_prelim / OoM) * OoM;
 
-    if (axis->log == SW_BOOL_TRUE) { min_prelim = pow(10.0,min_prelim); max_prelim = pow(10.0,max_prelim); }
+    if (axis->LogFinal == SW_BOOL_TRUE) { min_prelim = pow(10.0,min_prelim); max_prelim = pow(10.0,max_prelim); }
 
     min_prelim /= UnitMultiplier;
     max_prelim /= UnitMultiplier;
 
-    if (gsl_finite(min_prelim) && (!axis->HardMinSet) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MinFinal = min_prelim;
-    if (gsl_finite(max_prelim) && (!axis->HardMaxSet) && ((axis->log!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MaxFinal = max_prelim;
+    if (gsl_finite(min_prelim) && (!axis->HardMinSet) && ((axis->LogFinal!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MinFinal = min_prelim;
+    if (gsl_finite(max_prelim) && (!axis->HardMaxSet) && ((axis->LogFinal!=SW_BOOL_TRUE)||(min_prelim>1e-300))) axis->MaxFinal = max_prelim;
 
     // Print out debugging report
     if (DEBUG)
@@ -228,7 +228,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
         if ((*TickListPositions==NULL) || (*TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
         TStep= TickStep;
         if (TStep<0) TStep=-TStep;
-        if (axis->log == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
+        if (axis->LogFinal == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
 
         for (xrn=j=0; xrn<=axis->AxisValueTurnings; xrn++)
          {
@@ -246,8 +246,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
             if (!TickMaxSet) TMax = RegionMax;
             if (!TickMinSet)
              {
-              if (axis->log == SW_BOOL_TRUE) TMin = first - floor((TMin-RegionMin)/TStep) * TStep;
-              else                           TMin = exp(log(first) - floor((log(TMin)-log(RegionMin))/log(TStep)) * log(TStep));
+              if (axis->LogFinal == SW_BOOL_TRUE) TMin = first - floor((TMin-RegionMin)/TStep) * TStep;
+              else                                TMin = exp(log(first) - floor((log(TMin)-log(RegionMin))/log(TStep)) * log(TStep));
              }
             if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
            }
@@ -256,13 +256,13 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
             if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
             if (TMin < axis->MinFinal)
              {
-              if (axis->log == SW_BOOL_TRUE) TMin += exp(ceil ((log(axis->MinFinal)-log(TMin))/log(TStep)) * log(TStep));
-              else                           TMin +=     ceil ((    axis->MinFinal -    TMin )/    TStep ) *     TStep  ;
+              if (axis->LogFinal == SW_BOOL_TRUE) TMin += exp(ceil ((log(axis->MinFinal)-log(TMin))/log(TStep)) * log(TStep));
+              else                                TMin +=     ceil ((    axis->MinFinal -    TMin )/    TStep ) *     TStep  ;
              }
             if (TMax > axis->MaxFinal)
              {
-              if (axis->log == SW_BOOL_TRUE) TMax -= exp(floor((log(TMax)-log(axis->MaxFinal))/log(TStep)) * log(TStep));
-              else                           TMax -=     floor((    TMax -    axis->MaxFinal )/    TStep ) *     TStep  ;
+              if (axis->LogFinal == SW_BOOL_TRUE) TMax -= exp(floor((log(TMax)-log(axis->MaxFinal))/log(TStep)) * log(TStep));
+              else                                TMax -=     floor((    TMax -    axis->MaxFinal )/    TStep ) *     TStep  ;
              }
            }
           tmp = TMin;
@@ -275,7 +275,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
             else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, xyz, OutContext);
             if ((*TickListStrings)[j]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
             j++;
-            if (axis->log == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
+            if (axis->LogFinal == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
            }
          }
         (*TickListStrings)[j] = NULL; // null terminate list

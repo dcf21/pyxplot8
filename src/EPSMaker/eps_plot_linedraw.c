@@ -52,12 +52,12 @@ void LineDraw_FindCrossingPoints(double x1, double y1, double z1, double xap1, d
   if (XAP2 != XAP1) \
    { \
     fr = (POS-XAP1)/(XAP2-XAP1); \
-    if ((fr>0)&&(fr<1)) \
+    if ((fr>=0)&&(fr<=1)) \
      { \
       double yleft, zleft; \
       yleft = YAP1 + (YAP2-YAP1) * fr; \
       zleft = ZAP1 + (ZAP2-ZAP1) * fr; \
-      if ((yleft>=0.0)&&(yleft<1.0)&&(zleft>=0.0)&&(zleft<1.0)) \
+      if ((yleft>=0.0)&&(yleft<=1.0)&&(zleft>=0.0)&&(zleft<=1.0)) \
        { \
         cx = x1 + (x2-x1)*fr; \
         cy = y1 + (y2-y1)*fr; \

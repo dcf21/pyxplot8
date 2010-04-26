@@ -1197,7 +1197,7 @@ void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char
 
 void dcfmath_frandomcs(value *in, value *output, int *status, char *errtext)
  {
-  char *FunctionDescription = "random_chisq(mu)";
+  char *FunctionDescription = "random_chisq(nu)";
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
@@ -1241,6 +1241,18 @@ void dcfmath_frandomp(value *in, value *output, int *status, char *errtext)
   CHECK_1INPUT_DIMLESS;
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_ran_poisson(rndgen, in->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_frandomt(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "random_tdist(nu)";
+  if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_ran_tdist(rndgen, in->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }
@@ -1397,6 +1409,39 @@ void dcfmath_tanh(value *in, value *output, int *status, char *errtext)
   CHECK_DIMLESS_OR_HAS_UNIT(in , "first", "an angle", UNIT_ANGLE, 1);
   IF_1COMPLEX { GSL_SET_COMPLEX(&z,in->real,in->imag); z=gsl_complex_tanh(z); CLEANUP_GSLCOMPLEX; }
   ELSE_REAL   { output->real = tanh(in->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_tdistPDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "tdistPDF(x,nu)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_ran_tdist_pdf(in1->real , in2->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_tdistCDF(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "tdistCDF(x,nu)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_cdf_tdist_P(in1->real , in2->real); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcfmath_tdistCDFi(value *in1, value *in2, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "tdistCDFi(P,nu)";
+  CHECK_2NOTNAN;
+  CHECK_2INPUT_DIMLESS;
+  IF_2COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = gsl_cdf_tdist_Pinv(in1->real , in2->real); }
   ENDIF
   CHECK_OUTPUT_OKAY;
  }

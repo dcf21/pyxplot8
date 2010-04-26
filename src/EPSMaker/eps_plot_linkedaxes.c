@@ -261,6 +261,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
      }
     if (mode==1) // MODE 1: Propagate finalised ranges
      {
+      target->LogFinal = source->LogFinal;
       target->MinFinal = source->MinFinal;
       target->MaxFinal = source->MaxFinal;
       if (target->linkusing != NULL)
