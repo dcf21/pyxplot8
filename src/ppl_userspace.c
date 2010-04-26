@@ -1404,7 +1404,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
      }
    }
   // PHASE 15: RETURN RESULT TO USER
-  for (i=0;i<len;i++) if (StatusRow[i] >= BUFFER_OFFSET) { *out = ResultBuffer[ StatusRow[i] - BUFFER_OFFSET ]; return; }
+  for (i=0;i<len;i++) if (StatusRow[i] >= BUFFER_OFFSET) { *out = ResultBuffer[ StatusRow[i] - BUFFER_OFFSET ]; out->modified=0; out->string=NULL; return; }
   // for (i=0;i<len;i++) printf("%c",(StatusRow[i]+'A')); printf("\n"); // DEBUG LINE
   *errpos = start;
   strcpy(errtext,"Internal Error: ppl_EvaluateAlgebra failed to evaluate this expression"); // Oops

@@ -92,6 +92,8 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
   ThreeDimBuffer_ACTIVE = 0;
   if (Nitems > 0)
    {
+    eps_core_WritePSColour(x);
+
     // Display all items in 3D display buffer, from back to front
     DepthArray = (struct DepthArrayEntry *)lt_malloc(Nitems * sizeof(struct DepthArrayEntry));
     i=0;

@@ -55,7 +55,7 @@ void eps_box_RenderEPS(EPSComm *x)
 
   // Set fill colour of box
   eps_core_SetFillColour(x, &ww);
-  eps_core_SwitchTo_FillColour(x);
+  eps_core_SwitchTo_FillColour(x,1);
 
   // Work out the origin that we're rotating about
   if (!x->current->xpos2set) { xo=(x1+x2)/2.0; yo=(y1+y2)/2.0; } // Rotate about centre of box if specified as 'from .... to ....'

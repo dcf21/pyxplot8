@@ -47,6 +47,14 @@ void eps_core_clear(EPSComm *x)
   return;
  }
 
+// Write CurrentColour to postscript
+void eps_core_WritePSColour(EPSComm *x)
+ {
+  if ((strcmp(x->CurrentColour, x->LastPSColour) != 0) && (x->CurrentColour[0]!='\0'))
+   { strcpy(x->LastPSColour, x->CurrentColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
+  return;
+ }
+
 // Set the colour of the EPS we are painting
 void eps_core_SetColour(EPSComm *x, with_words *ww, unsigned char WritePS)
  {
@@ -68,8 +76,7 @@ void eps_core_SetColour(EPSComm *x, with_words *ww, unsigned char WritePS)
   else                        sprintf(x->CurrentColour, "0 0 0 setrgbcolor");
 
   // Only change postscript colour if the colour we want isn't the one we are already using
-  if ((strcmp(x->CurrentColour, x->LastPSColour) != 0) && WritePS && (x->CurrentColour[0]!='\0'))
-   { strcpy(x->LastPSColour, x->CurrentColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
+  if ((strcmp(x->CurrentColour, x->LastPSColour) != 0) && WritePS && (x->CurrentColour[0]!='\0')) eps_core_WritePSColour(x);
   return;
  }
 
@@ -97,18 +104,18 @@ void eps_core_SetFillColour(EPSComm *x, with_words *ww)
 
 static char TempColour[256];
 
-void eps_core_SwitchTo_FillColour(EPSComm *x)
+void eps_core_SwitchTo_FillColour(EPSComm *x, unsigned char WritePS)
  {
   strcpy(TempColour , x->CurrentColour); // Buffer the colour we're stroking with so we can restore it in eps_core_SwitchFrom_FillColour
-  if ((strcmp(x->CurrentFillColour, x->LastPSColour) != 0) && (x->CurrentFillColour[0]!='\0'))
+  if ((strcmp(x->CurrentFillColour, x->LastPSColour) != 0) && WritePS && (x->CurrentFillColour[0]!='\0'))
    { strcpy(x->LastPSColour, x->CurrentFillColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
   strcpy(x->CurrentColour , x->CurrentFillColour); // This make the supression of invisible ink work...
   return;
  }
 
-void eps_core_SwitchFrom_FillColour(EPSComm *x)
+void eps_core_SwitchFrom_FillColour(EPSComm *x, unsigned char WritePS)
  {
-  if ((strcmp(TempColour, x->LastPSColour) != 0) && (TempColour[0]!='\0'))
+  if ((strcmp(TempColour, x->LastPSColour) != 0) && WritePS && (TempColour[0]!='\0'))
    { strcpy(x->LastPSColour, TempColour); fprintf(x->epsbuffer, "%s\n", x->LastPSColour); }
   strcpy(x->CurrentColour, TempColour); // Restore the colour we're stroking with
   return;

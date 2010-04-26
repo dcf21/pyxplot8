@@ -229,7 +229,7 @@ void eps_pie_RenderEPS(EPSComm *x)
       // Work out size of wedge and fill it
       size = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 360.0;
       eps_core_SetFillColour(x, &ww);
-      eps_core_SwitchTo_FillColour(x);
+      eps_core_SwitchTo_FillColour(x,1);
       IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f %.2f %.2f %.2f arc\n%.2f %.2f lineto\nclosepath\nfill\n",xpos,ypos,rad,90-angle-size,90-angle,xpos,ypos);
       angle += size;
       WedgeNumber++;
@@ -409,7 +409,7 @@ void eps_pie_RenderEPS(EPSComm *x)
 
             // Fill icon
             eps_core_SetFillColour(x, &ww);
-            eps_core_SwitchTo_FillColour(x);
+            eps_core_SwitchTo_FillColour(x,1);
             IF_NOT_INVISIBLE
              {
               fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath fill\n", h, v-s, h, v+s, h+2*s, v+s, h+2*s, v-s);

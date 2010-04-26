@@ -25,10 +25,11 @@
 #define IF_NOT_INVISIBLE if (x->CurrentColour[0]!='\0')
 
 void eps_core_clear                (EPSComm *x);
+void eps_core_WritePSColour        (EPSComm *x);
 void eps_core_SetColour            (EPSComm *x, with_words *ww, unsigned char WritePS);
 void eps_core_SetFillColour        (EPSComm *x, with_words *ww);
-void eps_core_SwitchTo_FillColour  (EPSComm *x);
-void eps_core_SwitchFrom_FillColour(EPSComm *x);
+void eps_core_SwitchTo_FillColour  (EPSComm *x, unsigned char WritePS);
+void eps_core_SwitchFrom_FillColour(EPSComm *x, unsigned char WritePS);
 void eps_core_SetLinewidth         (EPSComm *x, double lw, int lt, double offset);
 void eps_core_BoundingBox          (EPSComm *x, double xpos, double ypos, double lw);
 void eps_core_PlotBoundingBox      (EPSComm *x, double xpos, double ypos, double lw);

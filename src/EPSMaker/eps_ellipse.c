@@ -75,7 +75,7 @@ void eps_ellps_RenderEPS(EPSComm *x)
 
   // Set fill colour of ellipse
   eps_core_SetFillColour(x, &ww);
-  eps_core_SwitchTo_FillColour(x);
+  eps_core_SwitchTo_FillColour(x,1);
 
   // Fill ellipse
   IF_NOT_INVISIBLE

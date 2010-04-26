@@ -64,7 +64,7 @@ void eps_circ_RenderEPS(EPSComm *x)
 
   // Set fill colour of circle
   eps_core_SetFillColour(x, &ww);
-  eps_core_SwitchTo_FillColour(x);
+  eps_core_SwitchTo_FillColour(x,1);
 
   // Fill circle
   IF_NOT_INVISIBLE

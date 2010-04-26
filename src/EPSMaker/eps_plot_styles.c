@@ -706,7 +706,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 \
   /* Set fill colour of box */ \
   eps_core_SetFillColour(x, &pd->ww_final); \
-  eps_core_SwitchTo_FillColour(x); \
+  eps_core_SwitchTo_FillColour(x,0); \
 \
   /* Fill box */ \
   IF_NOT_INVISIBLE \
@@ -722,7 +722,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     FilledRegion_Point(fr, xr, yb); \
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 0); \
    } \
-  eps_core_SwitchFrom_FillColour(x); \
+  eps_core_SwitchFrom_FillColour(x,0); \
 \
   /* Stroke outline of box */ \
   IF_NOT_INVISIBLE \
@@ -878,9 +878,9 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      }
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetFillColour(x, &pd->ww_final);
-    eps_core_SwitchTo_FillColour(x);
+    eps_core_SwitchTo_FillColour(x,0);
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
-    eps_core_SwitchFrom_FillColour(x);
+    eps_core_SwitchFrom_FillColour(x,1);
    }
 
   else if (style == SW_STYLE_YERRORSHADED) // YERRORSHADED
@@ -914,9 +914,9 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetFillColour(x, &pd->ww_final); 
-    eps_core_SwitchTo_FillColour(x); 
+    eps_core_SwitchTo_FillColour(x,0); 
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
-    eps_core_SwitchFrom_FillColour(x);
+    eps_core_SwitchFrom_FillColour(x,1);
    }
 
   // End looping over monotonic regions of axis space
@@ -999,7 +999,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
     double s=scale*0.45/2;
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetFillColour(x, &pd->ww_final);
-    eps_core_SwitchTo_FillColour(x);
+    eps_core_SwitchTo_FillColour(x,1);
     IF_NOT_INVISIBLE
      {
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath fill\n", xpos-s, ypos-s, xpos+s, ypos-s, xpos+s, ypos+s, xpos-s, ypos+s);
@@ -1008,7 +1008,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
       eps_core_BoundingBox(x, xpos-s, ypos+s, 0);
       eps_core_BoundingBox(x, xpos+s, ypos+s, 0);
      }
-    eps_core_SwitchFrom_FillColour(x);
+    eps_core_SwitchFrom_FillColour(x,1);
     eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
     IF_NOT_INVISIBLE
      {
