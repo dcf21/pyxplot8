@@ -36,7 +36,7 @@ typedef struct FilledRegionAxisCrossing {
  double AxisPos;
  ListItem *point;
  unsigned char AxisFace, sense, singleton, used;
- int twin;
+ int id, twin;
  } FilledRegionAxisCrossing;
 
 typedef struct FilledRegionPoint {
