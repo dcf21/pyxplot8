@@ -81,8 +81,8 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
   // Factor two ends of arrow into EPS file's bounding box
   IF_NOT_INVISIBLE
    {
-    eps_core_BoundingBox(x, x1, y1, lw);
-    eps_core_BoundingBox(x, x2, y2, lw);
+    eps_core_PlotBoundingBox(x, x1, y1, lw);
+    eps_core_PlotBoundingBox(x, x2, y2, lw);
    }
 
   // Work out direction of arrow
@@ -103,8 +103,8 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
     IF_NOT_INVISIBLE
      {
       fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x1,y1,x5,y5);
-      eps_core_BoundingBox(x, x3, y3, lw);
-      eps_core_BoundingBox(x, x5, y5, lw);
+      eps_core_PlotBoundingBox(x, x3, y3, lw);
+      eps_core_PlotBoundingBox(x, x5, y5, lw);
      }
     xstart = x4;
     ystart = y4;
@@ -127,8 +127,8 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
     IF_NOT_INVISIBLE
      {
       fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
-      eps_core_BoundingBox(x, x3, y3, lw);
-      eps_core_BoundingBox(x, x5, y5, lw);
+      eps_core_PlotBoundingBox(x, x3, y3, lw);
+      eps_core_PlotBoundingBox(x, x5, y5, lw);
      }
     xend = x4;
     yend = y4;

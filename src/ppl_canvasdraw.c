@@ -225,6 +225,16 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   for (i=0; i<N_POINTTYPES; i++) comm.PointTypesUsed[i] = 0; // Record which point and star macros we've used and need to include in postscript prolog
   for (i=0; i<N_STARTYPES ; i++) comm.StarTypesUsed [i] = 0;
 
+  // Loop over all of the items on the canvas zeroing the plot bounding boxes
+  if (comm.itemlist != NULL)
+  for (item=comm.itemlist->first; item!=NULL; item=item->next)
+   {
+    item->PlotLeftMargin   = 0.0;
+    item->PlotRightMargin  = 0.0;
+    item->PlotTopMargin    = 0.0;
+    item->PlotBottomMargin = 0.0;
+   }
+
   // Rendering of EPS occurs in a series of phases which we now loop over
   for (j=0 ; ; j++)
    {
