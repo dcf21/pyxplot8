@@ -448,7 +448,21 @@ void canvas_CallLaTeX(EPSComm *x)
            }
           else if (temp_err_string[j]==':')
            {
-            if      (ErrReadState==0) { TempErrFilename[ErrReadPos]='\0'; ErrReadState++; ErrReadPos=0; }
+            TempErrFilename[ErrReadPos]='\0';
+            ErrReadPos=0;
+            if      (ErrReadState==0)
+             {
+              if (strcmp(TempErrFilename,"! LaTeX Error")==0)
+              {
+               strcpy(TempErrFilename, filename);
+               strcpy(TempErrLineNo  , "-1");
+               ErrReadState = 2;
+              }
+              else
+              {
+               ErrReadState = 1;
+              }
+             }
             else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadState++; ErrReadPos=0; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
             else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=temp_err_string[j]; }
            }

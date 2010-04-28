@@ -147,6 +147,7 @@ BoxFrom = 0
 BoxWidth = 0
 CalendarIn = British
 CalendarOut = British
+Clip = Off
 Colour = On
 DataStyle = Points
 Display = On
@@ -333,6 +334,12 @@ The {\tt settings} section can contain any of the following settings in any orde
                {\bf Analogous set command:} \indcmdts{set calendar}
 
                Sets the default calendar for the output of dates from Julian Date representation to day, month and year representation. See Section~\ref{sec:time_series} for more details.
+               \\
+{\tt Clip} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} \indcmdts{set clip}
+
+               Sets whether datapoints close to the edges of graphs should be clipped at the edges ({\tt On}) or allowed to overrun the axes ({\tt Off}).
                \\
 {\tt Colour} & {\bf Possible values:} {\tt On}, {\tt Off}.
 

@@ -11,6 +11,7 @@ BoxFrom = 0
 BoxWidth = 0
 CalendarIn = British
 CalendarOut = British
+Clip = Off
 Colour = On
 DataStyle = Points
 Display = On
@@ -59,6 +60,7 @@ TRange_Log = False
 TRange_Max = 1.0
 TRange_Min = 0.0
 UnitAbbrev = On
+UnitAngleDimless = On
 UnitPrefix = On
 UnitScheme = SI
 Width = 8.0
@@ -71,6 +73,7 @@ Colour_Err = Red
 Colour_Rep = Green
 Colour_Wrn = Amber
 Splash = On
+
 [styling]
 Arrow_HeadAngle = 45
 Arrow_HeadSize = 1.0

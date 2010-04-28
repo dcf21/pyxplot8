@@ -408,6 +408,15 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
 
       (*BracketLevel)++;
      }
+    else if (StatusRow[i]==5) // Texify a unary minus sign
+     {
+      LastItemContainedSuperscript = 0;
+      if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
+      if ( InTextRm  ) { InTextRm  =0; out[outpos++]='}'; } // Make sure we are not in textrm
+      strcpy(out+outpos, "-");
+      outpos += strlen(out+outpos);
+      while (StatusRow[i]==5) i++; i--;
+     }
     else if (StatusRow[i]==7) // Texify an operator
      {
       if (!InMathMode) { InMathMode=1; strcpy(out+outpos, ENTERMATHMODE); outpos+=strlen(out+outpos); } // Make sure we are in math mode
@@ -578,13 +587,15 @@ void wrapper_texify(char *in, int inlen, value *output, unsigned char DollarAllo
 
   *status=-1;
   ppl_units_zero(output);
-  inlen--; // Make inlen point to last character
-  while ((in[0]!='\0')&&(in[0]<=' '))   { in++; offset++; inlen--; } // Strip spaces off front
-  while ((inlen>0)&&(in[inlen]<=' '))   {                 inlen--; } // Strip spaces off back
-  if ((inlen<0)||(inlen>ALGEBRA_MAXLENGTH)) { sprintf(errtext, "Supplied expression is longer than maximum of %d characters.", ALGEBRA_MAXLENGTH); *status=0; return; }
-  output->string = lt_malloc(ALGEBRA_MAXLENGTH);
+  output->string = lt_malloc(LSTR_LENGTH);
   if (output->string==NULL) { sprintf(errtext,"Out of memory."); *status=0; return; }
   output->string[0] = '\0';
+  inlen--; // Make inlen point to last character
+  if (inlen<=0) return; // Empty string gives empty output
+  while ((in[0]!='\0')&&(in[0]<=' '))   { in++; offset++; inlen--; } // Strip spaces off front
+  while ((inlen>0)&&(in[inlen]<=' '))   {                 inlen--; } // Strip spaces off back
+  if (inlen<=0) return; // Empty string gives empty output
+  if (inlen>ALGEBRA_MAXLENGTH) { sprintf(errtext, "Supplied expression is longer than maximum of %d characters.", ALGEBRA_MAXLENGTH); *status=0; return; }
   texify_generic(in, &inlen, output->string, 1, status, errtext, 1, &BracketLevel);
   if (*status>=0) (*status)+=offset;
   return;

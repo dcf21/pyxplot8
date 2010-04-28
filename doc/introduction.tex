@@ -166,34 +166,40 @@ print sin(i)
 In the above example, the variable {\tt i} is a pre-defined constant in
 PyXPlot, in this case set to equal $\sqrt{-1}$. PyXPlot has many other
 pre-defined physical and mathematical constants, and complete list of which can
-found in Appendix~\ref{ch:constants} or by typing {\tt show variables}.  These,
+found in Appendix~\ref{ch:constants} or by typing {\tt show variables}. These,
 together with the physical units which are built into PyXPlot make it easy to
-answer a wide range of questions very quickly:
+answer a wide range of questions very quickly.  In the following examples, we
+show both the commands typed by the user, which are preceded by PyXPlot prompts
+{\tt pyxplot>}, and the text returned by PyXPlot:
 
 \begin{itemize}
 \item What is $80^\circ$F in Celsius?
-\begin{verbatim}
-pyxplot> print 80*unit(oF) / unit(oC)
-26.666667
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print 80*unit(oF) / unit(oC)}}\newline
+\noindent{\tt 26.666667}
+\vspace{3mm}
 
 \item How long does it take for light to travel from the Sun to the Earth?
-\begin{verbatim}
-pyxplot> print unit(AU) / phy_c
-499.00478 s
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print unit(AU) / phy\_c}}\newline
+\noindent{\tt 499.00478 s}
+\vspace{3mm}
 
 \item What wavelength of light corresponds to the ionisation energy of hydrogen (13.6\,eV)?
-\begin{verbatim}
-pyxplot> print phy_c * phy_h / (13.6 * unit(eV))
-91.164844 nm
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print phy\_c * phy\_h / (13.6 * unit(eV))}}\newline
+\noindent{\tt 91.164844 nm}
+\vspace{3mm}
 
 \item What is the escape velocity of the Earth?
-\begin{verbatim}
-pyxplot> print sqrt(2 * phy_G * unit(Mearth) / unit(Rearth))
-11.186948 km/s
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print sqrt(2 * phy\_G * unit(Mearth) / unit(Rearth))}}\newline
+\noindent{\tt 11.186948 km/s}
+\vspace{3mm}
 \end{itemize}
 
 In addition, PyXPlot provides extensive functions for numerically solving
@@ -201,33 +207,33 @@ equations, which will be described in detail in Chapter~\ref{ch:numerics}. The
 following example evaluates $\int_{0\,\mathrm{s}}^{2\,\mathrm{s}}
 x^2\,\mathrm{d}x$:
 
-\begin{verbatim}
-pyxplot> print int_dx(x**2,0*unit(s),2*unit(s))
-2.6666667 s**3
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print int\_dx(x**2,0*unit(s),2*unit(s))}}\newline
+\noindent{\tt 2.6666667 s**3}
+\vspace{3mm}
 
 \noindent This example solves a simple pair of simultaneous equations of two variables:
 
-\begin{verbatim}
-pyxplot> solve x+y=1 , 2*x+3*y=7 via x,y
-pyxplot> print "x=%s; y=%s"%(x,y)
-x=-4; y=5
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf solve x+y=1 , 2*x+3*y=7 via x,y}}\newline
+\noindent{\tt pyxplot> {\bf print "x=\%s; y=\%s"\%(x,y)}}\newline
+\noindent{\tt x=-4; y=5}
+\vspace{3mm}
 
 \noindent And this third example searches for the minimum of the function $\cos(x)$ closest to $x=0.5$:
 
-\begin{verbatim}
-pyxplot> x=0.5
-pyxplot> minimise cos(x) via x
-pyxplot> print x
-3.1415927
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf x=0.5}}\newline
+\noindent{\tt pyxplot> {\bf minimise cos(x) via x}}\newline
+\noindent{\tt pyxplot> {\bf print x}}\newline
+\noindent{\tt 3.1415927}
+\vspace{3mm}
 
 This tour has touched briefly upon a few areas of PyXPlot's functionality, but
 has not described its facilities for producing vector graphics, which will be
 discussed in detail in Chapter~\ref{ch:vector_graphics} with numerous examples.
 
-\section{Credits}
+\section{Acknowledgements}
 
 The original inspiration for PyXPlot came primarily from two sources, to which
 PyXPlot owes a considerable historical debt.  PyXPlot's interface was heavily
@@ -244,11 +250,12 @@ Several other people have made very substantial contributions to PyXPlot's
 development. Matthew Smith provided extensive advice on many mathematical
 matters which arose during its development, provided C implementations of the
 Airy functions and the Riemann zeta function for general complex inputs, and
-suggested many mathematical functions which ought to be made available. Dave
-Ansell provided many good ideas which have shaped PyXPlot's interface. The
-writing of PyXPlot's postscript engine was substantially eased thanks to the
-help of Michael Rutter, who happily shared his code and past experiences with
-us; the implementation of the {\tt image} command is substantially his work.
+suggested many other mathematical functions which ought to be made available.
+Dave Ansell provided many good ideas which have helped to shape PyXPlot's
+interface. The writing of PyXPlot's postscript engine was substantially eased
+thanks to the help of Michael Rutter, who happily shared his code and past
+experiences with us; the implementation of the {\tt image} command is
+substantially his work.
 
 We are also very grateful to our team of alpha testers, without whose work this
 release of PyXPlot would doubtless contain many more bugs than it does: thanks

@@ -152,6 +152,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "CALENDAROUT"  )==0)
         if ((i=FetchSettingByName(setvalue,SW_CALENDAR_INT, SW_CALENDAR_STR ))>0)                settings_term_default.CalendarOut= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CalendarOut."  , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CLIP"         )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.clip          = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Clip."         , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "COLOUR"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .colour        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Colour."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
@@ -325,6 +328,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "UNITABBREV"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .UnitDisplayAbbrev= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting UnitAbbrev."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "UNITANGLEDIMLESS")==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .UnitAngleDimless= i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting UnitAngleDimless."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "UNITPREFIX"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .UnitDisplayPrefix= i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting UnitPrefix."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

@@ -123,12 +123,13 @@ dimensionless, to be certain of what unit it will be displayed in.
 Where the character {\tt *} is specified for either the character width or the
 precision of the substitution token, an integer is read from the list of items
 to be substituted, as happens in C's {\tt printf} command:
-\begin{verbatim}
-pyxplot> print "%.*f"%(3,pi)
-3.142
-pyxplot> print "%.*f"%(6,pi)
-3.141593
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print "\%.*f"\%(3,pi)}}\newline
+\noindent{\tt 3.142}\newline
+\noindent{\tt pyxplot> {\bf print "\%.*f"\%(6,pi)}}\newline
+\noindent{\tt 3.141593}
+\vspace{3mm}
 
 \subsection{Regular Expressions}
 
@@ -144,12 +145,12 @@ there are many more accessible tutorials on the web.}\index{regular
 expressions} In the following example, the first instance of the letter {\tt s} in
 the string variable {\tt twister} is replaced with the letters {\tt th}:
 
-\begin{verbatim}
-pyxplot> twister="seven silver soda syphons"
-pyxplot> twister =~ s/s/th/
-pyxplot> print twister
-theven silver soda syphons
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf twister="seven silver soda syphons"}}\newline
+\noindent{\tt pyxplot> {\bf twister =$\sim$ s/s/th/}}\newline
+\noindent{\tt pyxplot> {\bf print twister}}\newline
+\noindent{\tt theven silver soda syphons}
+\vspace{3mm}
 
 Note that only the {\tt s} (substitute) command of {\tt sed} is implemented in
 PyXPlot. Any character can be used in place of the {\tt /} characters in the
@@ -164,12 +165,12 @@ precise behaviour of the regular expression. In the following example the {\tt
 g} flag is used to perform a global search-and-replace of all instances of the
 letter {\tt s} with the letters {\tt th}:
 
-\begin{verbatim}
-pyxplot> twister="seven silver soda syphons"
-pyxplot> twister =~ s/s/th/g
-pyxplot> print twister
-theven thilver thoda thyphonth
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf twister="seven silver soda syphons"}}\newline
+\noindent{\tt pyxplot> {\bf twister =$\sim$ s/s/th/g}}\newline
+\noindent{\tt pyxplot> {\bf print twister}}\newline
+\noindent{\tt theven thilver thoda thyphonth}
+\vspace{3mm}
 
 \noindent Table~\ref{tab:re_flags} lists all of the regular expression flags
 recognised by the =$\sim$ operator.
@@ -207,17 +208,18 @@ strings:
 
 \noindent
 The following simple examples demonstrate the use of these functions:
-\begin{verbatim}
-pyxplot> x="It was the best of times, it was the worst of times"
-pyxplot> print strlen(x)
-51
-pyxplot> print strrange(x,0,24)
-It was the best of times
-pyxplot> print strrange(x,-25,0)
-it was the worst of times
-pyxplot> print strupper(x)
-IT WAS THE BEST OF TIMES, IT WAS THE WORST OF TIMES
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf x="It was the best of times, it was the worst of times"}}\newline
+\noindent{\tt pyxplot> {\bf print strlen(x)}}\newline
+\noindent{\tt 51}\newline
+\noindent{\tt pyxplot> {\bf print strrange(x,0,24)}}\newline
+\noindent{\tt It was the best of times}\newline
+\noindent{\tt pyxplot> {\bf print strrange(x,-25,0)}}\newline
+\noindent{\tt it was the worst of times}\newline
+\noindent{\tt pyxplot> {\bf print strupper(x)}}\newline
+\noindent{\tt IT WAS THE BEST OF TIMES, IT WAS THE WORST OF TIMES}
+\vspace{3mm}
 
 \section{Conditionals}
 
@@ -511,21 +513,21 @@ that loop structure. The {\tt continue} statement terminates execution of the
 execution proceeds with the next iteration of that loop, as demonstrated by the
 following pair of examples:
 
-\begin{verbatim}
-pyxplot> for i=0 to 4 {
-for... >  if (i==2) { ; break; }
-for... >  print i
-for... > }
-0
-1
-pyxplot> for i=0 to 4 {
-for... >  if (i==2) { ; continue ; }
-for... >  print i
-for... > }
-0
-1
-3
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot>~{\bf for i=0 to 4 \{}}\newline
+\noindent{\tt for... >~~{\bf if (i==2) \{ ; break; \}}}\newline
+\noindent{\tt for... >~~{\bf print i}}\newline
+\noindent{\tt for... >~{\bf \}}}\newline
+\noindent{\tt 0}\newline
+\noindent{\tt 1}\newline
+\noindent{\tt pyxplot>~{\bf for i=0 to 4 \{}}\newline
+\noindent{\tt for... >~~{\bf if (i==2) \{ ; continue ; \}}}\newline
+\noindent{\tt for... >~~{\bf print i}}\newline
+\noindent{\tt for... >~{\bf \}}}\newline
+\noindent{\tt 0}\newline
+\noindent{\tt 1}\newline
+\noindent{\tt 3}
+\vspace{3mm}
 
 Note that if several loops are nested, the {\tt break} and {\tt continue}
 statements only act upon the innermost loop. If either statement is encountered
@@ -560,11 +562,11 @@ be passed two string expressions, as the following examples demonstrate:
 
 \vspace{2mm}
 {\footnotesize
-\noindent{\tt pyxplot> f(x) = conditionalN(x$>$0,x,0)}\newline
-\noindent{\tt pyxplot> print "\%s \%s \%s \%s \%s"\%(f(-2),f(-1),f(0),f(1),f(2))}\newline
+\noindent{\tt pyxplot> {\bf f(x) = conditionalN(x$>$0,x,0)}}\newline
+\noindent{\tt pyxplot> {\bf print "\%s \%s \%s \%s \%s"\%(f(-2),f(-1),f(0),f(1),f(2))}}\newline
 \noindent{\tt 0 0 0 1 2}\newline
-\noindent{\tt pyxplot> x = 2}\newline
-\noindent{\tt pyxplot> print "x is \%s"\%(conditionalS(x$>$0,"positive","negative"))}\newline
+\noindent{\tt pyxplot> {\bf x = 2}}\newline
+\noindent{\tt pyxplot> {\bf print "x is \%s"\%(conditionalS(x$>$0,"positive","negative"))}}\newline
 \noindent{\tt x is positive}\newline
 }
 
@@ -614,17 +616,18 @@ may not have a return value, but may merely be used as a mechanism for
 encapsulating a block of commands.  In this case, the \indcmdt{call} may be
 used to execute a subroutine, discarding any return value which it may produce,
 as in the example:
-\begin{verbatim}
-pyxplot> subroutine f(x,y)
-subrtne>  {
-subrtne>   print "%s - %s = %s"%(x,y,x-y)
-subrtne>  }
-pyxplot> 
-pyxplot> call f(2,1)
+
+\vspace{3mm}
+\noindent{\tt pyxplot>~{\bf subroutine f(x,y)}}\newline
+\noindent{\tt subrtne>~~{\bf \{}}\newline
+\noindent{\tt subrtne>~~~{\bf print "\%s - \%s = \%s"\%(x,y,x-y)}}\newline
+\noindent{\tt subrtne>~~{\bf \}}}
+\vspace{3mm}\newline
+\noindent{\tt pyxplot> {\bf call f(2,1)}}\newline
 2 - 1 = 1
-pyxplot> call f(5*unit(inch), 10*unit(mm))
+\noindent{\tt pyxplot> {\bf call f(5*unit(inch), 10*unit(mm))}}\newline
 127 mm - 10 mm = 117 mm
-\end{verbatim}
+\vspace{3mm}
 
 \example{ex:pendulum}{The dynamics of the simple pendulum}{
 The equation of motion for a pendulum bob may be derived from the rotational

@@ -403,10 +403,10 @@ In this example, we demonstrate the {\tt linear}, {\tt spline} and {\tt akima}
 modes of interpolation using an example \datafile with non-smooth data
 generated using the {\tt tabulate} command (see Section~\ref{sec:tabulate}):
 \nlscf
-\noindent{\tt f(x) = 0}
-\noindent{\tt f(x)[0:1] = 0.5}
-\noindent{\tt f(x)[2:4] = cos((x-3)*pi/2)}
-\noindent{\tt set samples 20}
+\noindent{\tt f(x) = 0}\newline
+\noindent{\tt f(x)[0:1] = 0.5}\newline
+\noindent{\tt f(x)[2:4] = cos((x-3)*pi/2)}\newline
+\noindent{\tt set samples 20}\newline
 \noindent{\tt tabulate [0:4] f(x)}
 \nlscf
 Having set three functions to interpolate this non-smooth data in different
@@ -701,17 +701,19 @@ variety of probability distibutions. These are:
 \indfun{random()}
 \item {\tt random\_binomial($p,n$)} -- returns a random sample from a binomial distribution with $n$ independent trials and a success probability $p$.
 \indfun{random\_\-binomial($p,n$)}
-\item {\tt random\_chisq($\mu$)} -- returns a random sample from a $\chi$-squared distribution with $\mu$ degrees of freedom.
-\indfun{random\_\-chisq($\mu$)}
+\item {\tt random\_chisq($\nu$)} -- returns a random sample from a $\chi$-squared distribution with $\nu$ degrees of freedom.
+\indfun{random\_\-chisq($\nu$)}
 \item {\tt random\_gaussian($\sigma$)} -- returns a random sample from a Gaussian (normal) distribution of standard deviation $\sigma$ and centred upon zero.
 \indfun{random\_\-gaussian($\sigma$)}
 \item {\tt random\_lognormal($\zeta,\sigma$)} -- returns a random sample from the log normal distribution centred on $\zeta$, and of width $\sigma$.
 \indfun{random\_\-lognormal($\zeta,\sigma$)}
 \item {\tt random\_poisson($n$)} -- returns a random integer from a Poisson distribution with mean $n$.
 \indfun{random\_\-poisson($n$)}
+\item {\tt random\_tdist($\nu$)} -- returns a random sample from a $t$-distribution with $\nu$ degrees of freedom.
+\indfun{random\_\-tdist($\nu$)}
 \end{itemize}
 
-\noindent These functions all rely upon a common underlying random-number
+\noindent These functions all rely upon a common underlying random number
 generator, whose seed may be set using the \indcmdt{set seed}, which should be
 followed by any integer.
 

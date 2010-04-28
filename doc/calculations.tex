@@ -321,10 +321,10 @@ Expressions such as {\tt sqrt(-1)} will return either an error or {\tt NaN}.
 The most obvious example of this is the built-in variable {\tt i}, which is set
 to equal {\tt sqrt(-1)}:
 
-\begin{verbatim}
-pyxplot> print i
-nan
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print i}}\newline
+\noindent{\tt nan}
+\vspace{3mm}
 
 Complex arithmetic may be enabled by typing
 \indcmd{set numeric complex}
@@ -376,16 +376,16 @@ returns the modulus of $z$.  The \indfunt{conjugate(z)} command returns the
 complex conjugate of $z$. The following lines of code demonstrate the use of
 these functions:
 
-\begin{verbatim}
-pyxplot> set numeric complex
-pyxplot> x=0.5
-pyxplot> print Re(exp(i*x))
-0.87758256
-pyxplot> print cos(x)        # This equals the above
-0.87758256
-pyxplot> print arg(exp(i*x)) # This equals x
-0.5 rad
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf set numeric complex}}\newline
+\noindent{\tt pyxplot> {\bf x=0.5}}\newline
+\noindent{\tt pyxplot> {\bf print Re(exp(i*x))}}\newline
+\noindent{\tt 0.87758256}\newline
+\noindent{\tt pyxplot> {\bf print cos(x)}~~~~~~~~{\it \# This equals the above}}\newline
+\noindent{\tt 0.87758256}\newline
+\noindent{\tt pyxplot> {\bf print arg(exp(i*x))}~{\it \# This equals x}}\newline
+\noindent{\tt 0.5 rad}
+\vspace{3mm}
 
 \section{Working with Physical Units}
 \label{sec:units}
@@ -438,11 +438,11 @@ the {\tt **} operator, though this notation is arguably confusing, since the
 same character is used for the binary exclusive or operator in PyXPlot's normal
 arithmetic.}, as in
 
-\begin{verbatim}
-pyxplot> a = 2*unit(m**2)
-pyxplot> print "An area of %f square feet"%(a/unit(ft**2))
-An area of 21.527821 square feet
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf a = 2*unit(m**2)}}\newline
+\noindent{\tt pyxplot> {\bf print "An area of \%f square feet"\%(a/unit(ft**2))}}\newline
+\noindent{\tt An area of 21.527821 square feet}
+\vspace{3mm}
 
 \noindent As these examples also demonstrate, units may be referred to by either
 their abbreviated or full names, and each of these may be used in either their
@@ -642,17 +642,18 @@ scheme\index{imperial units}\index{units!imperial}, quantities are displayed in
 British imperial units -- inches, pounds, pints, and so forth -- and in the US
 unit scheme, US customary units are used. The current unit scheme can be
 changed using the \indcmdt{set unit scheme}:
-\begin{verbatim}
-pyxplot> vol = 3*unit(m**3)
-pyxplot> set unit scheme si ; print vol
-3 cubic_m
-pyxplot> set unit scheme cgs ; print vol
-3000000 cubic_cm
-pyxplot> set unit scheme imperial ; print vol
-82.488468 bushels_(UK)
-pyxplot> set unit scheme us ; print vol
-85.13278 bushels_(US)
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf vol = 3*unit(m**3)}}\newline
+\noindent{\tt pyxplot> {\bf set unit scheme si ; print vol}}\newline
+\noindent{\tt 3 cubic\_m}\newline
+\noindent{\tt pyxplot> {\bf set unit scheme cgs ; print vol}}\newline
+\noindent{\tt 3000000 cubic\_cm}\newline
+\noindent{\tt pyxplot> {\bf set unit scheme imperial ; print vol}}\newline
+\noindent{\tt 82.488468 bushels\_(UK)}\newline
+\noindent{\tt pyxplot> {\bf set unit scheme us ; print vol}}\newline
+\noindent{\tt 85.13278 bushels\_(US)}
+\vspace{3mm}
 
 \noindent A complete list of PyXPlot's unit schemes can be found in
 Table~\ref{tab:unit_schemes}.\index{natural units}\index{units!natural}
@@ -772,13 +773,13 @@ displayed on a one-by-one basis, as in the examples:
 
 \vspace{3mm}
 {\footnotesize
-\noindent{\tt pyxplot>~print~"\%d"~~\%(pi)~\#~Print~the~integer~part~of~pi}\newline
+\noindent{\tt pyxplot>~{\bf print~"\%d"~~\%(pi)}~{\it \#~Print~the~integer~part~of~pi}}\newline
 \noindent{\tt 3}\newline
-\noindent{\tt pyxplot>~print~"\%.5f"\%(pi)~\#~Print~pi~in~non-scientific~format,~to~5~d.p.}\newline
+\noindent{\tt pyxplot>~{\bf print~"\%.5f"\%(pi)}~{\it \#~Print~pi~in~non-scientific~format,~to~5~d.p.}}\newline
 \noindent{\tt 3.14159}\newline
-\noindent{\tt pyxplot>~print~"\%.5e"\%(pi)~\#~Print~pi~in~scientific~format,~to~5~d.p.}\newline
+\noindent{\tt pyxplot>~{\bf print~"\%.5e"\%(pi)}~{\it \#~Print~pi~in~scientific~format,~to~5~d.p.}}\newline
 \noindent{\tt 3.14159e+00}\newline
-\noindent{\tt pyxplot>~print~"\%s"~~\%(pi)~\#~Print~pi~as~normal}\newline
+\noindent{\tt pyxplot>~{\bf print~"\%s"~~\%(pi)}~{\it \#~Print~pi~as~normal}}\newline
 \noindent{\tt 3.1415927}\vspace{3mm}
 }
 
@@ -799,17 +800,17 @@ could be used in a \LaTeX\ text label on a plot. For this reason, the
 \indcmdt{set numerics display} command allows the user to choose between three
 different ways in which numbers can be displayed:
 
-\begin{verbatim}
-pyxplot> set numerics display natural
-pyxplot> print phy_c
-299792 km/s
-pyxplot> set numerics display typeable
-pyxplot> print phy_c
-299792*unit(km/s)
-pyxplot> set numerics display latex
-pyxplot> print phy_c
-$299792\,\mathrm{km}/\mathrm{s}$
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf set numerics display natural}}\newline
+\noindent{\tt pyxplot> {\bf print phy\_c}}\newline
+\noindent{\tt 299792 km/s}\newline
+\noindent{\tt pyxplot> {\bf set numerics display typeable}}\newline
+\noindent{\tt pyxplot> {\bf print phy\_c}}\newline
+\noindent{\tt 299792*unit(km/s)}\newline
+\noindent{\tt pyxplot> {\bf set numerics display latex}}\newline
+\noindent{\tt pyxplot> {\bf print phy\_c}}\newline
+\noindent{\tt $299792\,\mathrm{km}/\mathrm{s}$}
+\vspace{3mm}
 
 The first case is the default way in which PyXPlot displays numbers. The second
 case produces text which forms a valid algebraic expression which could be
@@ -891,13 +892,13 @@ of variables which are simultaneously solved for, meanwhile the accuracy
 achieved simultaneously decreases. The following example solves a simple pair
 of simultaneous equations of two variables:
 
-\begin{verbatim}
-pyxplot> solve x+y=10, x-y=3 via x,y
-pyxplot> print x
-6.5
-pyxplot> print y
-3.5
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf solve x+y=10, x-y=3 via x,y}}\newline
+\noindent{\tt pyxplot> {\bf print x}}\newline
+\noindent{\tt 6.5}\newline
+\noindent{\tt pyxplot> {\bf print y}}\newline
+\noindent{\tt 3.5}
+\vspace{3mm}
 
 \noindent No output is returned to the terminal if the numerical solver
 succeeds, otherwise an error message is displayed. If any of the fitting
@@ -906,16 +907,16 @@ values are used as initial guesses, otherwise an initial guess of unity for
 each fitting variable is assumed. Thus, the same \indcmdt{solve} returns two
 different values in the following two cases:
 
-\begin{verbatim}
-pyxplot> x= # Undefine x
-pyxplot> solve cos(x)=0 via x
-pyxplot> print x/pi
-0.5
-pyxplot> x=10
-pyxplot> solve cos(x)=0 via x
-pyxplot> print x/pi
-3.5
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf x=} {\it \# Undefine x}}\newline
+\noindent{\tt pyxplot> {\bf solve cos(x)=0 via x}}\newline
+\noindent{\tt pyxplot> {\bf print x/pi}}\newline
+\noindent{\tt 0.5}\newline
+\noindent{\tt pyxplot> {\bf x=10}}\newline
+\noindent{\tt pyxplot> {\bf solve cos(x)=0 via x}}\newline
+\noindent{\tt pyxplot> {\bf print x/pi}}\newline
+\noindent{\tt 3.5}
+\vspace{3mm}
 
 \noindent In cases where any of the variables being solved for are not
 dimensionless, it is essential that an initial guess with appropriate units be
@@ -940,13 +941,13 @@ compromise is returned. The following example has no solution -- a system of
 three equations with two variables is over-constrained -- but PyXPlot
 nonetheless finds a compromise solution:
 
-\begin{verbatim}
-pyxplot> solve x+y=10, x-y=3, 2*x+y=16 via x,y
-pyxplot> print x
-6.3571429
-pyxplot> print y
-3.4285714
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf solve x+y=10, x-y=3, 2*x+y=16 via x,y}}\newline
+\noindent{\tt pyxplot> {\bf print x}}\newline
+\noindent{\tt 6.3571429}\newline
+\noindent{\tt pyxplot> {\bf print y}}\newline
+\noindent{\tt 3.4285714}
+\vspace{3mm}
 
 When complex arithmetic is enabled, the \indcmdt{solve} allows each of the
 variables being fitted to take any value in the complex plane, and thus the
@@ -954,14 +955,14 @@ number of dimensions of the fitting problem is effectively doubled -- the real
 and imaginary components of each variable are solved for separately -- as in
 the following example:
 
-\begin{verbatim}
-pyxplot> set numerics complex
-pyxplot> solve exp(x)=e*i via x
-pyxplot> print Re(x)
-1
-pyxplot> print Im(x)/pi
-0.5
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf set numerics complex}}\newline
+\noindent{\tt pyxplot> {\bf solve exp(x)=e*i via x}}\newline
+\noindent{\tt pyxplot> {\bf print Re(x)}}\newline
+\noindent{\tt 1}\newline
+\noindent{\tt pyxplot> {\bf print Im(x)/pi}}\newline
+\noindent{\tt 0.5}
+\vspace{3mm}
 
 \section{Searching for Minima and Maxima of Functions}
 
@@ -972,13 +973,13 @@ together with a comma-separated list of the variables which it should be
 optimised with respect to. In the following example, a minimum of the
 sinusoidal function $\cos(x)$ is sought:
 
-\begin{verbatim}
-pyxplot> set numerics real
-pyxplot> x=0.1
-pyxplot> minimise cos(x) via x
-pyxplot> print x/pi
-1
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf set numerics real}}\newline
+\noindent{\tt pyxplot> {\bf x=0.1}}\newline
+\noindent{\tt pyxplot> {\bf minimise cos(x) via x}}\newline
+\noindent{\tt pyxplot> {\bf print x/pi}}\newline
+\noindent{\tt 1}
+\vspace{3mm}
 
 \noindent Note that this particular example doesn't work when complex
 arithmetic is enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty
@@ -1028,9 +1029,9 @@ To search for the maximum of this function using the \indcmdt{maximise}, we
 must provide an initial guess to indicate that the answer sought should have
 units of Hz:
 \nlscf
-\noindent {\tt pyxplot> nu = 1e14*unit(Hz)}\newline
-\noindent {\tt pyxplot> maximise Bv(nu,5800*unit(K)) via nu}\newline
-\noindent {\tt pyxplot> print nu}\newline
+\noindent {\tt pyxplot> {\bf nu = 1e14*unit(Hz)}}\newline
+\noindent {\tt pyxplot> {\bf maximise Bv(nu,5800*unit(K)) via nu}}\newline
+\noindent {\tt pyxplot> {\bf print nu}}\newline
 \noindent {\tt 340.9781 THz}
 \nlnp
 This maximum could also be sought be searching for turning points in the
@@ -1040,9 +1041,9 @@ function $B_\nu(\nu,T)$, i.e.\ by solving the equation
 \end{displaymath}
 This can be done as follows:
 \nlscf
-\noindent {\tt pyxplot> nu = 1e14*unit(Hz)}\newline
-\noindent {\tt pyxplot> solve diff\_dnu(Bv(nu,5800*unit(K)))=0 via nu}\newline
-\noindent {\tt pyxplot> print nu}\newline
+\noindent {\tt pyxplot> {\bf nu = 1e14*unit(Hz)}}\newline
+\noindent {\tt pyxplot> {\bf solve diff\_dnu(Bv(nu,5800*unit(K)))=0 via nu}}\newline
+\noindent {\tt pyxplot> {\bf print nu}}\newline
 \noindent {\tt YAY FOR PYXPLOT}
 \nlnp
 foo
@@ -1077,10 +1078,11 @@ minutes (0--59), and the number of seconds (0--59). To enter dates before
 {\footnotesize AD}\,1, a year of~$0$ should be passed to indicate
 1\,{\footnotesize BC}, $-1$ should be passed to indicate the year
 2\,{\footnotesize BC}, and so forth.
-\begin{verbatim}
-pyxplot> time_juliandate(2000,1,1,0,0,0.0)
-2451544.5
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf time\_juliandate(2000,1,1,0,0,0.0)}}\newline
+\noindent{\tt 2451544.5}
+\vspace{3mm}
 
 By default, the {\tt time\_juliandate()} function makes a transition from the
 Julian calendar to the Gregorian calendar at midnight on 14th~September 1752
@@ -1168,15 +1170,15 @@ Token & Substitution value \\
 \label{tab:time_string_subs}
 \end{table}
 
-\begin{verbatim}
-pyxplot> print time_string(2451544.5)
-Sat 2000 Jan 1 00:00:00
-pyxplot> print time_string(2451544.5+50, "%d %B %Y")
-20 February 2000
-pyxplot> set calendar muslim
-pyxplot> print time_string(2451544.5+50, "%d %B %Y")
-15 Dhu l-Qa'da 1420
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print time\_string(2451544.5)}}\newline
+\noindent{\tt Sat 2000 Jan 1 00:00:00}\newline
+\noindent{\tt pyxplot> {\bf print time\_string(2451544.5+50, "\%d \%B \%Y")}}\newline
+\noindent{\tt 20 February 2000}\newline
+\noindent{\tt pyxplot> {\bf set calendar muslim}}\newline
+\noindent{\tt pyxplot> {\bf print time\_string(2451544.5+50, "\%d \%B \%Y")}}\newline
+\noindent{\tt 15 Dhu l-Qa'da 1420}
+\vspace{3mm}
 
 Several functions are provided for numerically returning the various parts of
 the calendar date associated with any given Julian Day number. All of these
@@ -1219,22 +1221,23 @@ show calendar               # show calendars currently being used
 Finally, the function {\tt time\_now()}\indfun{time\_\-now()}, which takes no
 arguments, returns the Julian Day number corresponding to the current system
 clock time, as in the following example:
-\begin{verbatim}
-pyxplot> print time_string(time_now())
-Wed 2010 Mar 3 17:04:07
-\end{verbatim}
+
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf print time\_string(time\_now())}}\newline
+\noindent{\tt Wed 2010 Mar 3 17:04:07}
+\vspace{3mm}
 
 \example{ex:tolstoy}{Calculating the date of Leo Tolstoy's birth}{
 The Russian novelist Leo Tolstoy was born on 28th~August~$1828$ and died on
 7th~November~$1910$ in the Russian calendar. What dates do these correspond to
 in the Western calendar?
 \nlscf
-\noindent {\tt pyxplot> set calendar in russian out british}\newline
-\noindent {\tt pyxplot> birth = time\_julianday(1828, 8,28,12,0,0)}\newline
-\noindent {\tt pyxplot> death = time\_julianday(1910,11, 7,12,0,0)}\newline
-\noindent {\tt pyxplot> print time\_string(birth)}\newline
+\noindent {\tt pyxplot> {\bf set calendar in russian out british}}\newline
+\noindent {\tt pyxplot> {\bf birth = time\_julianday(1828, 8,28,12,0,0)}}\newline
+\noindent {\tt pyxplot> {\bf death = time\_julianday(1910,11, 7,12,0,0)}}\newline
+\noindent {\tt pyxplot> {\bf print time\_string(birth)}}\newline
 \noindent {\tt Tue 1828 Sep 9 12:00:00}\newline
-\noindent {\tt pyxplot> print time\_string(death)}\newline
+\noindent {\tt pyxplot> {\bf print time\_string(death)}}\newline
 \noindent {\tt Sun 1910 Nov 20 12:00:00}
 }
 
@@ -1253,14 +1256,14 @@ foundation of Rome by Romulus and Remus in 753\,{\footnotesize BC} and that of
 the deposition of the last Emperor of the Western Empire in {\footnotesize
 AD}\,476:
 
-\begin{verbatim}
-pyxplot> x = time_julianday(-752,4,21,12,0,0)
-pyxplot> y = time_julianday( 476,9, 4,12,0,0)
-pyxplot> print time_diff(x,y)
-3.8764483e+10 s
-pyxplot> print time_diff(x,y)/unit(year)
-1228.3723
-\end{verbatim}
+\vspace{3mm}
+\noindent {\tt pyxplot> {\bf x = time\_julianday(-752,4,21,12,0,0)}}\newline
+\noindent {\tt pyxplot> {\bf y = time\_julianday( 476,9, 4,12,0,0)}}\newline
+\noindent {\tt pyxplot> {\bf print time\_diff(x,y)}}\newline
+\noindent {\tt 3.8764483e+10 s}\newline
+\noindent {\tt pyxplot> {\bf print time\_diff(x,y)/unit(year)}}\newline
+\noindent {\tt 1228.3723}
+\vspace{3mm}
 
 The function {\tt time\_diff\_string()}\indfun{time\_\-diff\_\-string({\it
 JD}$_1$,\-{\it JD}$_2$,\-{\it format})} is similar, but returns a
@@ -1298,14 +1301,14 @@ Token & Substitution value \\
 \label{tab:time_diff_string_subs}
 \end{table}
 
-\begin{verbatim}
-pyxplot> x = time_julianday(-752,4,21,12,0,0)
-pyxplot> y = time_julianday( 476,9, 4,12,0,0)
-pyxplot> print time_diff_string(x,y)
-1229 years 78 days 0 hours 0 minutes and 0 seconds
-pyxplot> print time_diff_string(x,y,"$%Y^\mathrm{y}%d^\mathrm{d}$")
-$1229^\mathrm{y}78^\mathrm{d}$
-\end{verbatim}
+\vspace{3mm}
+\noindent {\tt pyxplot> {\bf x = time\_julianday(-752,4,21,12,0,0)}}\newline
+\noindent {\tt pyxplot> {\bf y = time\_julianday( 476,9, 4,12,0,0)}}\newline
+\noindent {\tt pyxplot> {\bf print time\_diff\_string(x,y)}}\newline
+\noindent {\tt 1229 years 78 days 0 hours 0 minutes and 0 seconds}\newline
+\noindent {\tt pyxplot> {\bf print time\_diff\_string(x,y,"\$\%Y\^{}\\mathrm\{y\}\%d\^{}\\mathrm{d}\$")}}\newline
+\noindent {\tt $1229^\mathrm{y}78^\mathrm{d}$}
+\vspace{3mm}
 
 \example{ex:timeseries}{A plot of the rate of downloads from an Apache webserver}{
 In this example, we use PyXPlot's facilities for handling dates and times to
