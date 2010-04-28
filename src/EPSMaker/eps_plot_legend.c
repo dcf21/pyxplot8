@@ -102,7 +102,7 @@ void GraphLegend_YieldUpText(EPSComm *x)
         if (pd->EverySet>5) { sprintf(cptr+k, ":$%d$", pd->EveryList[5]); k+=strlen(cptr+k); }
         if (pd->IndexSet) { sprintf(cptr+k, " index $%d$", pd->index); k+=strlen(cptr+k); } // Print index to use
         if (pd->label!=NULL) { sprintf(cptr+k, " label "); k+=strlen(cptr+k); inlen=strlen(pd->label); BracketLevel=0; status=-1; texify_generic(pd->label, &inlen, cptr+k, 0, &status, temp_err_string, 1, &BracketLevel); if (status>=0) cptr[k++]='?'; else k+=strlen(cptr+k); } // Print label string
-        if (pd->SelectCriterion!=NULL) { sprintf(cptr+k, " select "); inlen=strlen(pd->SelectCriterion); BracketLevel=0; status=-1; texify_generic(pd->SelectCriterion, &inlen, cptr+k, 0, &status, temp_err_string, 1, &BracketLevel); if (status>=0) cptr[k++]='?'; else k+=strlen(cptr+k); } // Print select criterion
+        if (pd->SelectCriterion!=NULL) { strcpy(cptr+k, " select "); k+=strlen(cptr+k); inlen=strlen(pd->SelectCriterion); BracketLevel=0; status=-1; texify_generic(pd->SelectCriterion, &inlen, cptr+k, 0, &status, temp_err_string, 1, &BracketLevel); if (status>=0) strcpy(cptr+k, "?"); k+=strlen(cptr+k); } // Print select criterion
         if ((pd->NUsing>0)||(pd->UsingRowCols!=DATAFILE_COL))
          {
           sprintf(cptr+k, " using %s", (pd->UsingRowCols==DATAFILE_COL)?"":"rows"); k+=strlen(cptr+k); // Print using list
