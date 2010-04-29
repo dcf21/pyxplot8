@@ -36,6 +36,39 @@ superimpose on top of or next to a graph, or what may be wanted may not be a
 graph at all, but rather a high-precision technical diagram. In this chapter,
 we turn our attention to such cases.
 
+Several of the vector graphics commands described in this chapter take rotation
+angles as one of their inputs.  It should be stressed that PyXPlot has two
+modes for handling angles: they can either be treated as dimensionless numbers
+or as being an additional base unit within the SI system (see
+Section~\ref{sec:angles}).  Where the vector graphics commands described in
+this chapter take rotation angles, a choice is always provided between
+expressing the angles as dimensionless numbers, measured in degrees, or as
+quantities with physical dimensions of angle. Thus, the following ways of
+specifying angles are all valid:
+
+\begin{dodo}
+set unit angle nodimensionless
+text "foo" rotate unit(pi*rad)
+text "foo" rotate 180
+text "foo" rotate unit(0.25*revolution)
+\end{dodo}
+
+\noindent as are these ways:
+
+\begin{dodo}
+set unit angle dimensionless
+text "foo" rotate 180
+text "foo" rotate degrees(pi)
+\end{dodo}
+
+\noindent The following is {\it not} valid, because the angle of $180^\circ$ is
+passed to the {\tt text} command in radians:
+
+\begin{dontdo}
+set unit angle dimensionless
+text "foo" rotate unit(180*deg)
+\end{dontdo}
+
 \section{Multiplot Mode}
 \label{sec:multiplot}
 \index{multiplot}
@@ -840,8 +873,8 @@ point at 0,0 label "The Origin" with ps 2
 \subsection{The {\tt ellipse} Command}
 \label{sec:ellipse}
 
-Ellipses may be placed on multiplot canvases using \indcmdt{ellipse}. The shape
-of the ellipse may be specified in many different ways, by specifying
+Ellipses may be placed on multiplot canvases using the \indcmdt{ellipse}. The
+shape of the ellipse may be specified in many different ways, by specifying
 
 \begin{enumerate}[(i)]
 \item the position of two corners of the smallest rectangle which can enclose

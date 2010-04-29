@@ -29,6 +29,7 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_euclid_I_47.eps"
 
 # Main body of figure script
+set unit angle nodimensionless
 set multiplot ; set nodisplay
 
 # Lengths of three sides of triangle

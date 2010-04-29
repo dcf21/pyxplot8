@@ -29,6 +29,7 @@ load "examples/fig_init.ppl"
 set output "examples/eps/ex_triangle.eps"
 
 # Main body of figure script
+set unit angle nodimensionless
 
 # Define subroutine for drawing triangles
 subroutine TriangleDraw(Bx,By,AB,AC,BC)

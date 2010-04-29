@@ -26,6 +26,7 @@ reset
 load "examples/fig_init.ppl"
 
 # Set output destination
+set width 8
 set output "examples/eps/ex_intro_legendre.eps"
 
 # Main body of figure script

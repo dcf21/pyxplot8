@@ -110,16 +110,16 @@ be produced, the \indcmdt{set terminal} takes many options for fine-tuning the
 behaviours of particular terminals. Its complete syntax is:
 
 \begin{verbatim}
-set terminal { X11_SingleWindow | X11_MultiWindow | X11_Persist |
+set terminal ( X11_SingleWindow | X11_MultiWindow | X11_Persist |
                bmp | eps | gif | jpeg | pdf | png | postscript |
-               svg | tiff }
-             { colour | color | monochrome }
-             { dpi <value> }
-             { portrait | landscape }
-             { invert | noinvert }
-             { transparent | solid }
-             { antialias | noantialias }
-             { enlarge | noenlarge }
+               svg | tiff )
+             ( colour | color | monochrome )
+             ( dpi <value> )
+             ( portrait | landscape )
+             ( invert | noinvert )
+             ( transparent | solid )
+             ( antialias | noantialias )
+             ( enlarge | noenlarge )
 \end{verbatim}
 
 The following table lists the effects which each of these settings has:

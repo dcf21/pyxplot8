@@ -1194,6 +1194,12 @@ the graph's axes.\label{sec:set_colours}
 
 \section{Clipping Behaviour}
 
+The treatment of datapoints close to the edges of plots may be specified using
+the \indcmdt{set clip}, which provides two options. Either datapoints close to
+the axes can be clipped and not allowed to overrun the axes -- specified by
+{\tt set clip} -- or such datapoints may be allowed to extend over the lines of
+the axes -- specified by {\tt set noclip} and the default behaviour.
+
 \section{Labelling Graphs}
 
 The \indcmdt{set arrow} and \indcmdt{set label}s allow arrows and text labels
@@ -1303,12 +1309,13 @@ modifier.  For example, the following would produce a green label at the origin:
 set label 2 'This label is green' at 0, 0 with colour green
 \end{verbatim}
 
-\index{fontsize}\index{text!size} The fontsize of these text labels can be set
+\index{fontsize}\index{text!size} The size of the text in such labels can be set
 globally using the \indcmdt{set fontsize}. This applies not only to the {\tt
 set label} command, but also to plot titles, axis labels, keys, etc. The value
-given should be an integer in the range $-4 \leq x \leq 5$. The default is
-zero, which corresponds to \LaTeX's {\tt normalsize}; $-4$ corresponds to {\tt
-tiny} and 5 to {\tt Huge}.
+supplied should be a multiplicative factor greater than zero; a 
+value of~{\tt 2} would cause text to be rendered at twice its normal size, and
+a value of~{\tt 0.5} would cause text to be rendered at half its normal size.
+The default value is one.
 
 \index{text!colour}\index{colours!text} The \indcmdt{set textcolour} can be
 used to globally set the colour of all text output, and applies to all of the

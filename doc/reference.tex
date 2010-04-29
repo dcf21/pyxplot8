@@ -24,14 +24,24 @@
 \chapter{Command Reference}
 \label{ch:reference}
 
-This chapter contains an alphabetically ordered list of all the commands that
-PyXPlot understands.
-
+This chapter contains an alphabetically ordered list of all of PyXPlot's
+commands. The syntax of each is specified in a variant of Backus-Naur notation,
+in which angle brackets {\tt <>} are used to indicate replaceable tokens, curly
+brackets {\tt ()} are used to indicate mutually-exclusive options which are
+separated by vertical lines {\tt |}, square brackets {\tt []} are used to
+indicate optional items, and braces {\tt \{\}} are used to indicate items which
+may be repeated. Dots {\tt ...} are used to indicate arbitrary strings of text.
+Where any of these punctuation marks appear as a part of PyXPlot's syntax, they
+are placed in double quotes, as in {\tt "\{"}. Strings, such as filenames, which
+should be placed in quotes are placed in single quotes, as in {\tt
+'<filename>'}, though in practice, double quotes can always be used
+interchangeably with single quotes. In case where there is likely to be any
+ambiguity, worked examples are usually shown beneath the syntax specification.
 
 \section{?}\indcmd{?}
 
 \begin{verbatim}
-? [<help option> ... ]
+? [<topic> {<sub-topic>} ]
 \end{verbatim}
 
 The {\tt ?} symbol is a shortcut to the {\tt help} command.
@@ -69,12 +79,12 @@ set xlabel '`ls`'
 \section{arc}\indcmd{arc}
 
 \begin{verbatim}
-arc at <x>, <y> radius <r> from <start> to <finish>
-    [with <option> ... ]
+arc [at] <x>, <y> radius <r> from <start> to <finish>
+    [with {<option>}]
 \end{verbatim}
 
 Arcs (curves with constant radius of curvature, that is, segments of circles)
-may be drawn on a multiplot using the arc command.  The {\tt at} modifier
+may be drawn on a multiplot using the \indcmdt{arc}.  The {\tt at} modifier
 specifies the coordinates of the centre of curvature, from which all points on
 the arc are the distance given following the {\tt radius} modifier.  The angles
 {\tt start} and {\tt finish}, measured clockwise from the vertical, control
@@ -92,11 +102,11 @@ pie-chart slice.
 \section{arrow}\indcmd{arrow}
 
 \begin{verbatim}
-arrow [from] <x>, <y> [to] <x>, <y> [with <option> ... ]
+arrow [from] <x>, <y> [to] <x>, <y> [with {<option>}]
 \end{verbatim}
 
 Arrows may be placed on multiplot pages independently of any plots using the
-{\tt arrow} command. The style of the arrows produced may be specified by
+\indcmdt{arrow}. The style of the arrows produced may be specified by
 following the \indmodt{with} keyword with one of the style keywords
 \indkeyt{nohead}, \indkeyt{head} (default) or \indkeyt{twohead}. In addition,
 keywords such as \indkeyt{colour}, \indkeyt{linewidth} and \indkeyt{linetype}
@@ -121,13 +131,13 @@ subsequently with the {\tt delete} and {\tt undelete} commands respectively.
 
 \begin{verbatim}
 box at <x>, <y> width <w> height <h> [rotate <r>]
-    [with <option> ... ]
+    [with {<option>}]
 
 box from <x1>, <y1> to <x2>, <y2> [rotate <r>]
-    [with <option> ... ]
+    [with {<option>}]
 \end{verbatim}
 
-There are two different ways to use the {\tt box} command to specify boxes that
+There are two different ways to use the \indcmdt{box} to specify boxes that
 are to be drawn onto a multiplot.  In the first syntax, the coordinates of one
 corner of the box are specified, along with the width and height.  If both width
 and height are positive then the coordinates are taken to be those of the
@@ -148,26 +158,28 @@ box at 1, -1 width -2 height 2
 \section{break}\indcmd{break}
 
 \begin{verbatim}
-break
+break [<loopname>]
 \end{verbatim}
 
-The {\tt break} command breaks out of a {\tt do}, {\tt while}, {\tt for} or {\tt
-foreach} loop.  Execution resumes at the statement following the end of the
-loop.  For example, the following example would only print the numbers 1 and 2:
+The \indcmdt{break} breaks out of {\tt do}, {\tt while}, {\tt for} or {\tt
+foreach} loops.  Execution resumes at the statement following the end of the
+loop.  For example, the following example would only print the numbers~1 and~2:
 
 \begin{verbatim}
 for i = 1 to 10
-{
-   print i
-   if (i==2)
+ {
+  print i
+  if (i==2)
    {
-      break
+    break
    }
-}
+ }
 \end{verbatim}
 
-The break command can only be used within a loop.  It should not be followed by
-any parameters.
+The {\tt break} command may only be used within loop structures, and by default
+breaks the smallest loop which contains it. If a larger loop is to be broken,
+the {\tt break} command may optionally be followed by the name of the loop to
+be broken.
 
 
 \section{cd}\indcmd{cd}
@@ -176,7 +188,7 @@ any parameters.
 cd <directory>
 \end{verbatim}
 
-PyXPlot's {\tt cd} command is very similar to the shell {\tt cd} command; it
+PyXPlot's \indcmdt{cd} is very similar to the shell {\tt cd} command; it
 changes the current working directory. For example:
 
 \begin{verbatim}
@@ -187,10 +199,10 @@ cd foo
 \section{circle}\indcmd{circle}
 
 \begin{verbatim}
-circle at <x>, <y> radius <r> [with <option> ... ]
+circle [at] <x>, <y> radius <r> [with {<option>}]
 \end{verbatim}
 
-The {\tt circle} command allows circles to be added to a multiplot.  The
+The \indcmdt{circle} allows circles to be added to a multiplot.  The
 coordinates of the circle's centre and its radius are specified.  Additional
 options may be passed following the {\tt with} modifier that change the line and
 fill types.  For example
@@ -199,8 +211,9 @@ fill types.  For example
 circle at 2,2 radius 1 with colour red fillcolour blue
 \end{verbatim}
 
-\noindent would draw a red circle filled in blue centred 2 cm above and to the
+\noindent would draw a red circle filled in blue centred 2~cm above and to the
 right of the origin, with unit radius.
+
 
 \section{clear}\indcmd{clear}
 
@@ -208,7 +221,7 @@ right of the origin, with unit radius.
 clear
 \end{verbatim}
 
-In multiplot mode, the {\tt clear} command removes all current plots, arrows
+In multiplot mode, the \indcmdt{clear} removes all current plots, arrows
 and text objects from the working page. In single plot mode it is not
 especially useful; it removes the current plot to leave a blank page.
 
@@ -218,36 +231,38 @@ The {\tt clear} command should not be followed by any parameters.
 \section{continue}\indcmd{continue}
 
 \begin{verbatim}
-continue
+continue [<loopname>]
 \end{verbatim}
 
-The continue command is used within {\tt for}, {\tt foreach}, {\tt do} and {\tt
-while} loops.  It causes PyXPlot to skip the remainder of the current iteration
-of the loop, in an analogous manner to the continue statement in the C language.
-For example, the following programme will not print the number `2':
+The \indcmdt{continue} may be used within {\tt for}, {\tt foreach}, {\tt do}
+and {\tt while} loops.  It causes PyXPlot to skip the remainder of the current
+iteration of the loop, in an analogous manner to the continue statement in the
+C language.  For example, the following programme will not print the number~2:
 
 \begin{verbatim}
 for i = 0 to 5
-{
-   if (i==2)
+ {
+  if (i==2)
    {
-      continue
+    continue
    }
-   print i
-}
+  print i
+ }
 \end{verbatim}
 
-The {\tt continue} command may only be used in a loop.  It does not take any
-parameters.
+The {\tt continue} command may only be used within loop structures, and by
+default acts upon the smallest loop which contains it. If a larger loop is the
+intended target, the {\tt continue} command may optionally be followed by the
+name of that loop.
 
 
 \section{delete}\indcmd{delete}
 
 \begin{verbatim}
-delete <plot number>, ...
+delete <plot number> {, <plot number>}
 \end{verbatim}
 
-The {\tt delete} command is part of the multiplot environment; it removes
+The \indcmdt{delete} is part of the multiplot environment; it removes
 plots, arrows or text items from a multiplot page. The items to be deleted should be
 identified using a comma-separated list of their reference numbers.  Reference
 numbers count sequentially from zero for the first item created on a multiplot
@@ -257,7 +272,7 @@ page, and are displayed on the terminal when items are created.  For example:
 delete 1,2,3
 \end{verbatim}
 
-\noindent would remove item numbers 1, 2 and 3.
+\noindent would remove item numbers~1,~2 and~3.
 
 Having been deleted, multiplot items can be restored using the {\tt undelete}
 command.
@@ -266,12 +281,13 @@ command.
 \section{do}\indcmd{do}
 
 \begin{verbatim}
-do {
-  [ ... commands ... ]
-} while ( <condition> )
+do [loopname <loopname>]
+ "{"
+  ...
+ "}" while <condition>
 \end{verbatim}
 
-The {\tt do} command sets up a loop, in a similar manner to the {\tt while}
+The \indcmdt{do} sets up a loop, in a similar manner to the {\tt while}
 command.  PyXPlot executes the block of commands in the body of the loop, then
 checks the condition given in the while clause at the end.  If the condition is
 true, the loop executes again.  Hence the contents of a {\tt do} loop are {\emph
@@ -281,10 +297,10 @@ and 3:
 \begin{verbatim}
 i=1
 do
-{
-   print i
-   i = i + 1
-} while (i < 4)
+ {
+  print i
+  i = i + 1
+ } while (i < 4)
 \end{verbatim}
 
 Note that there must always be a newline following the opening brace after the
@@ -294,7 +310,7 @@ closing brace.
 
 \section{ellipse}\indcmd{ellipse}
 
-Ellipses may be placed on multiplot canvases using \indcmdt{ellipse}. The shape
+Ellipses may be placed on multiplot canvases using the \indcmdt{ellipse}. The shape
 of the ellipse may be specified in many different ways, by specifying
 
 \begin{enumerate}[(i)]
@@ -342,7 +358,7 @@ commands above. Likewise, ellipses may be filled in the same manner.
 
 \section{else}\indcmd{else}
 
-The \indcmdt{else} statement is described in the entry for the {\tt if}
+The {\tt else} statement is described in the entry for the {\tt if}
 statement, of which it forms part.
 
 
@@ -353,7 +369,7 @@ eps '<filename>' [at <x>, <y>] [rotate <angle>] [width <width>]
                  [height <height>]
 \end{verbatim}
 
-The {\tt eps} command inserts an image into the current multiplot from an
+The \indcmdt{eps} inserts an image onto the current multiplot from an
 encapsulated postscript (eps) file.  The {\tt at} modifier can be used to
 specify where the bottom-left corner of the image should be placed; if it is
 not, then the image is placed at the origin. The {\tt rotate} modifier can be
@@ -372,7 +388,7 @@ plots, text labels, etc.
 exec <command>
 \end{verbatim}
 
-The {\tt exec} command can be used to execute PyXPlot commands contained within
+The \indcmdt{exec} can be used to execute PyXPlot commands contained within
 string variables. For example:
 
 \begin{verbatim}
@@ -389,7 +405,7 @@ It can also be used to write obfuscated PyXPlot scripts.
 exit
 \end{verbatim}
 
-The {\tt exit} command can be used to quit PyXPlot. If multiple command files,
+The \indcmdt{exit} can be used to quit PyXPlot. If multiple command files,
 or a mixture of command files and interactive sessions, were specified on
 PyXPlot's command line, then PyXPlot moves onto the next command-line item
 after receiving the {\tt exit} command.
@@ -402,14 +418,16 @@ When running a script, CTRL-C terminates execution of it.
 \section{fft}\indcmd{fft}
 
 \begin{verbatim}
-fft <range specifier> [<range specifier> ...] <function>
-    of ( '<filename>' | function ) [ using <using specifier> ]
+fft {<range>} <function>"()"
+    of ( '<filename>' | function )
+    [using <expression> {:<expression>} ]
 
-ifft <range specifier> [<range specifier> ...] <function>
-    of ( '<filename>' | function )[ using <using specifier> ]
+ifft {<range>} <function>"()"
+    of ( '<filename>' | function )
+    [using <expression> {:<expression>} ]
 \end{verbatim}
 
-The {\tt fft} command calculates Fourier transforms of \datafile s or functions.
+The \indcmdt{fft} calculates Fourier transforms of \datafile s or functions.
 Transforms can be calculated in multiple dimensions.  For each dimension of your
 function that you wish to transform a range specification must be provided, in
 the form
@@ -431,19 +449,19 @@ syntax as the {\tt fft} command.
 \section{fit}\indcmd{fit}
 
 \begin{verbatim}
-fit [<range specifier> ...] <function> [withouterrors] '<datafile>'
-    [index <index specifier>] [using <using specifier>]
-    via <variable>[, <variable>, ...]
+fit [{<range>}] <function>"()" [withouterrors] '<datafile>'
+    [index <value>]
+    [using <expression> {:<expression>} ]
+    via <variable> {, <variable>}
 \end{verbatim}
 
-The {\tt fit} command allows the user to fit arbitrary functional forms to
-\datapoint s read from files.  This may be used to produce best-fit lines, or
-may be used to determine the gradient and other mathematical properties of
-datasets, by looking at the parameters used to make the functional form fit the
-data.
+The \indcmdt{fit} can be used to fit arbitrary functional forms to \datapoint s
+read from files. It can be used to produce best-fit lines for datasets, or to
+determine gradients and other mathematical properties of data by looking at the
+parameters associated with the best-fitting functional form.
 
-The following simple example fits a straight line to data in
-a file called {\tt data.dat}:
+The following simple example fits a straight line to data in a file called {\tt
+data.dat}:
 
 \begin{verbatim}
 f(x) = a*x+b
@@ -471,42 +489,49 @@ More details can be found in Section~\ref{sec:fit_command}.
 \section{for}\indcmd{for}
 
 \begin{verbatim}
-for <variable> = <start> to <end> [step <step>] {
-   < ... commands ... >
-}
+for <variable> = <start> to <end> [step <step>]
+                          [loopname <loopname>]
+ "{"
+  ...
+ "}"
 \end{verbatim}
 
-The \indcmdt{for} command carries out a set of commands with a specified
-variable taking a different value each time.  In PyXPlot's implementation the
-value of the variable increases by a fixed value {\tt step} each time, which may
-be negative and is equal to unity if not specified.  The {\tt end} value is not
-included in the squence.  The following example prints the squares of the first
-five natural numbers:
+The \indcmdt{for} executes a set of commands with a specified variable taking a
+different value each time.  In PyXPlot's implementation the value of the
+variable increases by a fixed value {\tt step} each time, which may be negative
+and is equal to unity if not specified.  The {\tt end} value is not included in
+the squence.  The following example prints the squares of the first five
+natural numbers:
 
 \begin{verbatim}
-for i = 1 to 6 {
-   print i**2
-}
+for i = 1 to 6
+ {
+  print i**2
+ }
 \end{verbatim}
 
 
 \section{foreach}\indcmd{foreach}
 
 \begin{verbatim}
-foreach <variable> in [ <filename expression> | ( <a>, [<b>, ....] ) ] {
-   < ... commands ... >
-}
+foreach <variable> in ( <filename expression> |
+                         "("<value> {, <value>}")" )
+                      [loopname <loopname>]
+ "{"
+  ...
+ "}"
 \end{verbatim}
 
-The foreach command has two uses.  The first is to take a set of filename, their
-names produced by expansion of a user-provided expression, and run a set of
-commands with a variable set to each filename.  For example, to plot the data in
-the set of files whose names end with {\tt .dat}:
+The \indcmdt{foreach} has two uses.  The first is to take a set of filename,
+their names produced by expansion of a user-provided expression, and run a set
+of commands with a variable set to each filename.  For example, to plot the
+data in the set of files whose names end with {\tt .dat}:
 
 \begin{verbatim}
-foreach file in *.dat {
-   plot file with lines
-}
+foreach file in *.dat
+ {
+  plot file with lines
+ }
 \end{verbatim}
 
 The second form of the command takes a list of values provided by the user and
@@ -514,19 +539,20 @@ runs a block of commands with the specified variable set equal to each value in
 turn.  For example, to plot normal distributions of three different widths:
 
 \begin{verbatim}
-foreach sigma in (1, 2, 3) {
-   replot 1/sigma*exp(-x**2/(2*sigma**2))
-}
+foreach sigma in (1, 2, 3)
+ {
+  replot 1/sigma*exp(-x**2/(2*sigma**2))
+ }
 \end{verbatim}
 
 
 \section{help}\indcmd{help}
 
 \begin{verbatim}
-help [<topic> [<sub-topic> ... ] ]
+help [<topic> {<sub-topic>} ]
 \end{verbatim}
 
-The {\tt help} command provides an hierarchical source of information which
+The \indcmdt{help} provides an hierarchical source of information which
 is supplementary to that in the Users' Guide.  To obtain information on any
 particular topic, type {\tt help} followed by the name of the topic. For
 example:
@@ -554,14 +580,16 @@ To exit any help page, press the {\tt q} key.
 \section{histogram}\indcmd{histogram}
 
 \begin{verbatim}
-histogram [range specification] <function name> '<datafile>'
-     [using <using specifier>] [select <select specifier>]
-     [index <index specifier>] [every <every specifier>]
-     [binwidth <bin width>] [binorigin <bin origin>]
-     [bins (x1, x2, ...)]
+histogram [<range>] <function name>"()" '<datafile>'
+     [every <expression> {:<expression>} ]
+     [index <value>]
+     [select <expression>]
+     [using <expression> {:<expression>} ]
+     ( [binwidth <value>] [binorigin <value>] |
+       [bins (x1, x2, ...)] )
 \end{verbatim}
 
-The {\tt histogram} command takes a \datafile\ and counts the number of points
+The \indcmdt{histogram} takes a \datafile\ and counts the number of points
 in various bins, producing a function the area under which is equal to the
 number of points for each bin.  The width and starting position of the bins can
 be specified using the {\tt binwidth} and {\tt binorigin} modifiers, or a
@@ -588,10 +616,10 @@ user-specified bins.
 \section{history}\indcmd{history}
 
 \begin{verbatim}
-history [<N>]
+history [<number of items>]
 \end{verbatim}
 
-The {\tt history} command outputs the current command-line history to the
+The \indcmdt{history} outputs the current command-line history to the
 terminal.  The optional parameter, {\tt N}, if supplied, causes only the first
 $N$ lines to be printed.
 
@@ -599,14 +627,19 @@ $N$ lines to be printed.
 \section{if}\indcmd{if}
 
 \begin{verbatim}
-if ( <criterion> ) {
-   < ... commands ... >
-} [ else [if ( <criterion> ) ] {
-   < ... further commands ... >
-} ... ]
+if <criterion>
+ "{"
+    ...
+ "}" { else if <criterion>
+ "{"
+    ...
+ "}" } [ else
+ "{"
+    ...
+ "}" ]
 \end{verbatim}
 
-The \indcmdt{if} command allows conditional execution of commands.  If the {\tt
+The \indcmdt{if} allows conditional execution of commands.  If the {\tt
 criterion} is satisfied then the list of commands are executed.  It is also
 possible to have one or more subsequent \indcmdt{else if} statements, which have
 their own criteria which are only considered if the first criterion is not true.
@@ -614,16 +647,17 @@ Finally, an \indcmdt{else} statement precedes a set of commands that are only
 executed if none of the preceding statements are true.  For example:
 
 \begin{verbatim}
-if (x==2) {
-   print "x is two!"
-} else if (x==3) {
-   print "x is three!"
-} else if (x>3) {
-   print "x is greater than three!"
-} else {
-   x=2
-   print "x didn't used to be two, but it is now!"
-}
+if (x==2)
+ {
+  print "x is two!"
+ } else if (x==3) {
+  print "x is three!"
+ } else if (x>3) {
+  print "x is greater than three!"
+ } else {
+  x=2
+  print "x didn't used to be two, but it is now!"
+ }
 \end{verbatim}
 
 
@@ -640,7 +674,7 @@ image '<filename>' [at <x>, <y>] [rotate <angle>] [width <width>]
                    [transparent rgb<r>:<g>:<b>]
 \end{verbatim}
 
-The {\tt image} command inserts a graphical image into the current multiplot
+The \indcmdt{image} inserts a graphical image into the current multiplot
 from a file in disk.  The graphical image may be in bitmap ({\tt .bmp}), gif
 ({\tt .gif}), jpeg ({\tt .jpg}) or png ({\tt .png}) formats; the file type is
 automatically detected. The {\tt at} modifier can be used to specify where the
@@ -672,16 +706,17 @@ be combined with plots, text labels, etc.
 
 \begin{verbatim}
 interpolate ( linear | loglinear | polynomial | spline )
-       [<range specification>] <function name> '<filename>'
-       [index <index specification>] [every <every specification>]
-       [using <using specification>]
-       [smooth <smoothing>]
+       [ <range> ] <function name>"()" '<filename>'
+       [ every <expressions> {:<expression>} ]
+       [ index <value> ]
+       [ select <expression> ]
+       [ using <expression>  {:<expression>} ]
 \end{verbatim}
 
-The {\tt interpolate} command generates a special function which interpolates a
-set of data points supplied from a \datafile.  Four types of interpolation are available; linear, log-linear,
-polynomial and spline.  Log-linear interpolation is equivalent to linear
-interpolation in a log-log space.  For example:
+The \indcmdt{interpolate} generates a special function which interpolates a
+set of data points supplied from a \datafile.  Four types of interpolation are
+available; linear, log-linear, polynomial and spline.  Log-linear interpolation
+is equivalent to linear interpolation in a log-log space.  For example:
 
 \begin{verbatim}
 interpolate spline f() 'data.1'
@@ -711,7 +746,7 @@ See {\tt image}.
 let <varname> = <value>
 \end{verbatim}
 
-The {\tt let} command sets the variable {\tt varname} to equal {\tt value}.
+The \indcmdt{let} sets the variable {\tt varname} to equal {\tt value}.
 
 
 \section{list}\indcmd{list}
@@ -720,24 +755,21 @@ The {\tt let} command sets the variable {\tt varname} to equal {\tt value}.
 list
 \end{verbatim}
 
-The {\tt list} command outputs a listing of all of the items on a multiplot,
+The \indcmdt{list} outputs a listing of all of the items on a multiplot,
 giving their reference numbers and the commands used to produce them. For
 example:
 
 \begin{verbatim}
 pyxplot> list
-#  ID | Command
-    0   plot f(x)
-d   1   text 'Figure 1: A plot of f(x)'
-    2   text 'Figure 1: A plot of $f(x)$'
-
-# Items marked 'd' are deleted
+# ID   Command
+    1  plot item 1 f(x) using columns
+    2  [deleted] text item 2 "Figure 1: A plot of f(x)" at 0,0 rotate 0 gap 0
+    3  text item 3 "Figure 1: A plot of $f(x)$" at 0,0 rotate 0 gap 0
 \end{verbatim}
 
 In this example, the user has plotted a graph of $f(x)$, and added a caption to
 it. The {\tt ID} column lists the reference numbers of each multiplot item.
-Item {\tt 1} has been deleted, and this is indicated by the {\tt d} to the left
-of its reference number.
+Item {\tt 1} has been deleted.
 
 
 \section{load}\indcmd{load}
@@ -746,7 +778,7 @@ of its reference number.
 load '<filename>'
 \end{verbatim}
 
-The {\tt load} command executes a PyXPlot command script file, just as if its
+The \indcmdt{load} executes a PyXPlot command script file, just as if its
 contents had been typed into the current terminal. For example:
 
 \begin{verbatim}
@@ -767,10 +799,10 @@ load '*.script'
 \section{maximise}\indcmd{maximise}
 
 \begin{verbatim}
-maximise <expression> via <variable> [, variable ...]
+maximise <expression> via <variable> {, variable}
 \end{verbatim}
 
-The \indcmdt{maximise} command takes a user-supplied expression and finds its
+The \indcmdt{maximise} takes a user-supplied expression and finds its
 maximum value obtained by varying the specified variable.  More than one
 variable may be varied for functions of multiple variables.  In the following
 example $x$ ends up being set to $-2$:
@@ -783,10 +815,10 @@ maximise exp(-(x+2)**2) via x
 \section{minimise}\indcmd{minimise}
 
 \begin{verbatim}
-minimise <expression> via <variable> [, variable ...]
+minimise <expression> via <variable> {, variable}
 \end{verbatim}
 
-The \indcmdt{minimise} command takes a user-supplied expression and finds its
+The \indcmdt{minimise} takes a user-supplied expression and finds its
 minimum value obtained by varying the specified variable.  More than one
 variable may be varied for functions of multiple variables.  In the following
 example $x$ ends up being set to $-3$ and $y$ to $-1$:
@@ -802,7 +834,7 @@ minimise (x+3)**2 + (y+1)**2 via x, y
 move <plot number> to <x>, <y>
 \end{verbatim}
 
-The {\tt move} command is part of the multiplot environment; it can be used to
+The \indcmdt{move} is part of the multiplot environment; it can be used to
 move items around on a multiplot page. The item to be moved should be specified
 using the reference number which it was given when it was created; it would
 have been displayed on the terminal at that time. For example:
@@ -819,16 +851,17 @@ set origin 8,8} had been called before it had originally been plotted.
 \section{plot}\indcmd{plot}
 
 \begin{verbatim}
-plot [<range specifier> ...] ('<filename>'|<function>)
-     [using <using specifier>] [axes <axis specifier>]
-     [select <select specifier>]
-     [index <index specifier>]
-     [every <every specifier>]
-     [title <title>]
-     [with <style> [<style modifier> ... ] ]
+plot [{<range>}] ( '<filename>' | <function> )
+     [axes <axes>]
+     [every <expression> {:<expression>} ]
+     [index <value>]
+     [select <expression>]
+     [title <string>]
+     [using <expression> {:<expression>} ]
+     [with {<option>} ]
 \end{verbatim}
 
-The {\tt plot} command is the main workhorse command of PyXPlot, which is used
+The \indcmdt{plot} is the main workhorse command of PyXPlot, which is used
 to produce all plots. For example to plot the sine function:
 
 \begin{verbatim}
@@ -904,7 +937,6 @@ The following plot styles are recognised: {\tt lines}, {\tt points}, {\tt
 linespoints}, {\tt dots}, {\tt boxes}, {\tt wboxes}, {\tt impulses}, {\tt
 steps}, {\tt histeps}, {\tt fsteps}, {\tt xerrorbars}, {\tt yerrorbars}, {\tt
 xyerrorbars}, {\tt xerrorrange}, {\tt yerrorrange}, {\tt xyerrorrange},
-\newline\noindent % WHY IS THIS NECESSARY?
 {\tt arrows\_head}, {\tt arrows\_nohead}, {\tt arrows\_twohead}, {\tt
 csplines}, {\tt acsplines}.
 
@@ -943,10 +975,10 @@ plot sin(x) axes x2y1 with colour blue linetype 2 \
 \section{print}\indcmd{print}
 
 \begin{verbatim}
-print <expression>
+print <expression> {, <expression>}
 \end{verbatim}
 
-The {\tt print} command outputs the value of a mathematical expression to the
+The \indcmdt{print} outputs the value of a mathematical expression to the
 terminal.  It is most often used to find the value of a variable, though it can
 also be used to produce formatted output from a PyXPlot script. For example:
 
@@ -963,7 +995,7 @@ print a
 pwd
 \end{verbatim}
 
-The {\tt pwd} command prints the location of the current working directory.
+The \indcmdt{pwd} prints the location of the current working directory.
 
 
 \section{quit}\indcmd{quit}
@@ -972,7 +1004,7 @@ The {\tt pwd} command prints the location of the current working directory.
 quit
 \end{verbatim}
 
-The {\tt quit} command can be used to exit PyXPlot. See {\tt exit} for more
+The \indcmdt{quit} can be used to exit PyXPlot. See {\tt exit} for more
 details.
 
 
@@ -980,13 +1012,14 @@ details.
 
 See {\tt box}.
 
+
 \section{refresh}\indcmd{refresh}
 
 \begin{verbatim}
 refresh
 \end{verbatim}
 
-The {\tt refresh} command produces an exact copy of the latest display. This can
+The \indcmdt{refresh} produces an exact copy of the latest display. This can
 be useful, for example, after changing the terminal type, to produce a second
 copy of a plot in a different graphic format. It differs from the {\tt replot}
 command in that it doesn't replot anything; use of the {\tt set} command since
@@ -999,14 +1032,15 @@ even be any plots; there might perhaps only be textual items and arrows.
 \section{point}\indcmd{point}
 
 \begin{verbatim}
-point at <x>, <y> [label <string>] [with <option> ... ]
+point [at] <x>, <y> [label <string>] [with {<option>} ]
 \end{verbatim}
 
-The {\tt point} command places a point on the plot at the specified
+The \indcmdt{point} places a point on the plot at the specified
 coordinates.  It is equivalent to plotting a \datafile\ continaing a single
 datum.  If an optional {\tt label} is specified then the text string provided is
 placed next to the point.  The {\tt with} modifier may be used to change the
 point type, colour, etc.
+
 
 \section{replot}\indcmd{replot}
 
@@ -1014,7 +1048,7 @@ point type, colour, etc.
 replot [<plot number>]
 \end{verbatim}
 
-In single plot mode, the {\tt replot} command causes the most recent plot
+In single plot mode, the \indcmdt{replot} causes the most recent plot
 command to be re-run.  This can be useful to replot a \datafile\ which has changed
 in the meantime, but also to change some aspect of a plot within PyXPlot itself.
 Uses of the {\tt set} command between the original {\tt plot} command and the
@@ -1048,8 +1082,9 @@ replot sin(x) axes x2y1 with linespoints
 reset
 \end{verbatim}
 
-The {\tt reset} command returns the values of all settings that have been
-changed with the {\tt set} command back to their default values.
+The \indcmdt{reset} returns the values of all settings that have been changed
+with the {\tt set} command back to their default values. It also clears the
+current multiplot canvas.
 
 
 \section{save}\indcmd{save}
@@ -1058,7 +1093,7 @@ changed with the {\tt set} command back to their default values.
 save '<filename>'
 \end{verbatim}
 
-The {\tt save} command saves a list of all of the commands which have been
+The \indcmdt{save} saves a list of all of the commands which have been
 executed in the current interactive PyXPlot session into a given file. The
 filename of the desired location for this file should be placed in quotes, for
 example:
@@ -1076,7 +1111,7 @@ save 'foo'
 set <option> <value>
 \end{verbatim}
 
-The {\tt set} command sets the value of various operational parameters within
+The \indcmdt{set} sets the value of various operational parameters within
 PyXPlot.  For example:
 
 \begin{verbatim}
@@ -1088,10 +1123,12 @@ follows that above: the {\tt set} command should be followed by some keyword
 specifying which setting it is which should be set.  Settings which work in an
 on/off fashion tend to take a syntax along the lines of:
 
+\vspace{3mm}
 \begin{tabular}{ll}
-{\tt set key} & Set option ON \\
-{\tt set nokey} & Set option OFF
+{\tt set key} & {\tt\it \# Set option ON} \\
+{\tt set nokey} & {\tt\it \# Set option OFF}
 \end{tabular}
+\vspace{3mm}
 
 \noindent
 More details of the functions of each individual setting can be found in the
@@ -1107,17 +1144,18 @@ commonly used settings can be saved into a configuration file.
 \subsection{arrow}\indcmd{set arrow}
 
 \begin{verbatim}
-set arrow <arrow number> from [<coordinate>] <x>,
-          [<coordinate>] <y> to [<coordinate>] <x>,
-          [<coordinate>] <y> [with <modifier> ]
+set arrow <arrow number>
+      from [<system>] <x>, [<system>] <y>
+      to   [<system>] <x>, [<system>] <y>
+      [with {<option>} ]
 \end{verbatim}
 
-\begin{verbatim}
-<coordinate> = ( first | second | screen | graph |
-                  axis<axisnumber>                  )
-\end{verbatim}
+\noindent where {\tt <system>} is may take any of the values
+\newline\noindent
+{\tt ( first | second | screen | graph | axis<number> )}
+\vspace{5mm}
 
-The {\tt set arrow} command causes an arrow to be added to a plot. An example of
+The \indcmdt{set arrow} causes an arrow to be added to a plot. An example of
 its syntax would be:
 
 \begin{verbatim}
@@ -1158,7 +1196,7 @@ set arrow 2 from first 0, second 2.5 to axis3 0,
 \subsection{autoscale}\indcmd{set autoscale}
 
 \begin{verbatim}
-set autoscale <axis>[<axis>... ]
+set autoscale {<axis>}
 \end{verbatim}
 
 The {\tt autoscale} setting causes PyXPlot to choose the scaling for an axis
@@ -1199,7 +1237,12 @@ Section~\ref{sec:colour_names} can be used.
 \subsection{axis}\indcmd{set axis}
 
 \begin{verbatim}
-set axis <axis>, ...
+set axis <axis> [ ( visible | invisible ) ]
+  [ ( top | bottom | left | right | front | back ) ]
+  [ ( atzero | notatzero ) ]
+  [ ( automirrored | mirrored | fullmirrored ) ]
+  [ ( noarrow | arrow | reversearrow | twowayarrow ) ]
+  [ linked [item <number>] <axis> [using <expression>] ]
 \end{verbatim}
 
 The command:
@@ -1255,12 +1298,13 @@ given.
 set axisunitstyle ( bracketed | squarebracketed | ratio )
 \end{verbatim}
 
-The {\tt axisunitstyle} command controls the style with which the units of
-plotted quantities are indicated on plot axes. The {\tt bracketed} option causes
-the units to be placed in parentheses following the axis labels, whilst the {\tt
-squarebracketed} option using square brackets instead.  The {\tt ratio} option
-causes the units to follow the label as a divisor so as to leave the quantity
-dimensionless.
+The {\tt axisunitstyle} setting controls the style with which the units of
+plotted quantities are indicated on the axes of plots. The {\tt bracketed}
+option causes the units to be placed in parentheses following the axis labels,
+whilst the {\tt squarebracketed} option using square brackets instead.  The
+{\tt ratio} option causes the units to follow the label as a divisor so as to
+leave the quantity dimensionless.
+
 
 \subsection{backup}\indcmd{set backup}
 
@@ -1282,7 +1326,7 @@ The setting may be turned off via {\tt set nobackup}.
 \subsection{bar}\indcmd{set bar}
 
 \begin{verbatim}
-set bar ( large | small | <barsize> )
+set bar ( large | small | <value> )
 \end{verbatim}
 
 The {\tt bar} setting changes the size of the bar on the end of the error bars,
@@ -1293,23 +1337,23 @@ set bar 2
 \end{verbatim}
 
 \noindent sets the bars to be twice the size of the points.  The options {\tt large} and
-{\tt small} are equivalent to 1 (the default) and 0 (no bar) respectively.
+{\tt small} are equivalent to~1 (the default) and~0 (no bar) respectively.
 
 
 \subsection{binorigin}\indcmd{set binorigin}
 
 \begin{verbatim}
-set binorigin <bin origin>
+set binorigin <value>
 \end{verbatim}
 
-The {\tt binorigin} setting changes the position on the $x$ axis from whence
+The {\tt binorigin} setting changes the position on the ordinate axis from whence
 the bins used by the histogram command originate.
 
 
 \subsection{binwidth}\indcmd{set binwidth}
 
 \begin{verbatim}
-set binwidth <bin width>
+set binwidth <value>
 \end{verbatim}
 
 The {\tt binwidth} setting changes the width of the bins used by the histogram
@@ -1350,7 +1394,7 @@ the horizontal midpoints between their specified $x$-positions.  For example:
 set boxwidth 2
 \end{verbatim}
 
-\noindent would set all boxes to be two units wide.
+\noindent would set all boxes to be two units wide, and
 
 \begin{verbatim}
 set boxwidth -2
@@ -1364,10 +1408,10 @@ midpoints between them.
 \subsection{calendar}\indcmd{set calendar}
 
 \begin{verbatim}
-set calendar [ (input|output) ] <calendar name>
+set calendar [ ( input | output ) ] <calendar>
 \end{verbatim}
 
-The {\tt set calendar} command sets the calendar that PyXPlot uses internally to
+The \indcmdt{set calendar} sets the calendar that PyXPlot uses internally to
 process dates.  PyXPlot understands two separate calendars: an input calendar
 for processing dates that the user reads in from files, and an output calendar
 that controls dates printed out or written to plots.  The available calendars
@@ -1380,8 +1424,9 @@ hebrew, islamic and julian.
 set clip
 \end{verbatim}
 
-The {\tt set clip} command causes PyXPlot to clip points that extend over the
-edge of the plot axes.
+The \indcmdt{set clip} causes PyXPlot to clip points which extend over the edge
+of plots. The opposite effect may be achieved using the {\tt set noclip}
+command.
 
 
 \subsection{data style}\indcmd{set data style}
@@ -1396,11 +1441,11 @@ set [no]display
 \end{verbatim}
 
 By default, whenever an item is added to a multiplot, or an existing item moved
-or replotted, the whole multiplot is replotted to show the change. This can be
-a time-consuming process on large and complex multiplots. For this reason, the
+or replotted, the whole multiplot is redrawn to show the change. This can be a
+time-consuming process on large and complex multiplots. For this reason, the
 {\tt set nodisplay} command is provided, which stops PyXPlot from producing any
-output. The {\tt set display} command can subsequently be issued to return to
-normal behaviour.
+graphical output. The {\tt set display} command can subsequently be issued to
+return to normal behaviour.
 
 This can be especially useful in scripts which produce large multiplots. There
 is no point in producing output at each step in the construction of a large
@@ -1409,7 +1454,7 @@ with:
 
 \begin{verbatim}
 set nodisplay
-[...prepare large multiplot...]
+...
 set display
 refresh
 \end{verbatim}
@@ -1418,19 +1463,19 @@ refresh
 \subsection{filter}\indcmd{set filter}
 
 \begin{verbatim}
-set filter "<file name specifier>" "<filter command>"
+set filter '<filename wildcard>' '<filter command>'
 \end{verbatim}
 
-The {\tt set filter} command allows filter programmes to be specified to allow
+The \indcmdt{set filter} allows input filter programs to be specified to allow
 PyXPlot to deal with file types that are not in its \datafile\ format.  Firstly
-the set of \datafile s that the filter should apply to must be specified;
-the standard wildcard characters * and ? may be used.  Then a filter programme
+the set of \datafile s that the filter should apply to must be specified; the
+standard wildcard characters * and ? may be used.  Then a filter programme
 should be specified, along with any necessary options.  This should take the
 name of the file to be filtered as the final option on its command line,
 immediately following any options specified above.  It should and provide a
-suitable PyXPlot data file on standard output for PyXPlot to read.  For example,
-to filter all files that end in ``.foo'' through the `defoo' filter using the
---text option one would type:
+suitable PyXPlot data file on standard output for PyXPlot to read.  For
+example, to filter all files that end in {\tt .foo} through the {\tt defoo}
+filter using the --text option one would type:
 
 \begin{verbatim}
 set filter "*.foo" "/usr/local/bin/defoo --text"
@@ -1442,19 +1487,15 @@ set filter "*.foo" "/usr/local/bin/defoo --text"
 set fontsize <value>
 \end{verbatim}
 
-The {\tt fontsize} setting changes the size of the fount\footnote{This is not a
-spelling mistake. `font', by contrast, \textit{would} be a spelling mistake. See the
-Oxford English Dictionary.} used to render all text labels which appear on a
-plot, including keys, axis labels, etc. The value specified should be an integer
-in the range -4 to 5, corresponding to \LaTeX's tiny (-4) and Huge (5) sizes,
-for example:
+The {\tt fontsize} setting changes the size of the font used to render all text
+labels which appear on a plot, including keys, axis labels, etc. The value
+specified should be a multiplicative factor greater than zero; a value of~{\tt
+2} would cause text to be rendered at twice its normal size, and a value
+of~{\tt 0.5} would cause text to be rendered at half its normal size.  The
+default value is one.
 
-\begin{verbatim}
-set fontsize 2
-\end{verbatim}
-
-The default value is zero, \LaTeX's normal fount size. As an alternative, fount
-sizes can be specified directly in the \LaTeX\ text of labels, for example:
+As an alternative, font sizes can be specified directly in the \LaTeX\ text of
+labels, for example:
 
 \begin{verbatim}
 set xlabel '\Large This is a BIG label'
@@ -1469,7 +1510,7 @@ See {\tt set style function}.
 \subsection{grid}\indcmd{set grid}
 
 \begin{verbatim}
-set [no]grid <axis> ...
+set [no]grid {<axis>}
 \end{verbatim}
 
 The {\tt grid} setting controls whether a grid is placed behind a plot or not.
@@ -1549,10 +1590,10 @@ See also the {\tt set gridmajcolour} command.
 \subsection{key}\indcmd{set key}
 
 \begin{verbatim}
-set key [ <position> ... ] [<xoffset>, <yoffset>]
+set key <position> [<xoffset>, <yoffset>]
 \end{verbatim}
 
-The setting {\tt key} determines whether a legend is placed on a plot, and if
+The {\tt key} setting determines whether a legend is placed on a plot, and if
 so, where it should be located on the plot. Issuing the command:
 
 \begin{verbatim}
@@ -1596,7 +1637,7 @@ set key bottom left 0.0, -0.5
 \subsection{keycolumns}\indcmd{set keycolumns}
 
 \begin{verbatim}
-set keycolumns <value>
+set keycolumns ( <value> | auto )
 \end{verbatim}
 
 The {\tt keycolumns} settings sets how many columns the legend of a plot should
@@ -1614,30 +1655,30 @@ set keycolumns 3
 \subsection{label}\indcmd{set label}
 
 \begin{verbatim}
-set label <label number> '<text>' [<coordinate>] <x>,
-                                  [<coordinate>] <y>
-                                  [rotate <angle>]
-                                  [with colour <colour>]
+set label <label number> '<text>'
+      [<system>] <x>, [<system>] <y>
+      [rotate <angle>]
+      [with colour <colour>]
 \end{verbatim}
 
-\begin{verbatim}
-<coordinate> = ( first | second | screen | graph |
-                 axis<axisnumber>                  )
-\end{verbatim}
+\noindent where {\tt <system>} is may take any of the values
+\newline\noindent
+{\tt ( first | second | screen | graph | axis<number> )}
+\vspace{5mm}
 
-The {\tt set label} command can be used to place text labels onto a plot.  For
+The \indcmdt{set label} can be used to place text labels onto a plot.  For
 example:
 
 \begin{verbatim}
 set label 1 'Hello' 0, 0
 \end{verbatim}
 
-\noindent would place the word `Hello' at plot coordinates $(0,0)$, as measured on the $x$-
-and $y$-axes.  The tag {\tt 1} immediately following the {\tt label} keyword is an
-identification number, and allows the label to be removed later with the {\tt
-unset label} command.  By default the position coordinates of the label are
-measured relative to the first $x$- and $y$-axes, but can be specified in a
-range of coordinate systems. These are specified as follows:
+\noindent would place the word `Hello' at plot coordinates $(0,0)$, as measured
+on the $x$- and $y$-axes.  The tag {\tt 1} immediately following the {\tt
+label} keyword is an identification number, and allows the label to be removed
+later with the {\tt unset label} command.  By default the position coordinates
+of the label are measured relative to the first $x$- and $y$-axes, but can be
+specified in a range of coordinate systems. These are specified as follows:
 
 \begin{verbatim}
 set label 1 'Hello' first 0, second 0
@@ -1679,9 +1720,9 @@ set label 3 'A purple label' 0, 0 with colour purple
 set linewidth <value>
 \end{verbatim}
 
-Sets the default line width, in units of pt (1\,pt = 1/72\,inch), of the lines
-used to plot datasets onto graphs with the {\tt lines} plot style.  For
-example in the following statement:
+The \indcmdt{set linewidth} sets the default line width, in units of postscript
+points ($1$\,pt = $1/72$\,inch), of the lines used to plot datasets onto graphs
+with the {\tt lines} plot style.  For example in the following statement:
 
 \begin{verbatim}
 set linewidth 3
@@ -1696,7 +1737,7 @@ manually specified.
 \subsection{logscale}\indcmd{set logscale}
 
 \begin{verbatim}
-set logscale [<axis> ... ] [<base>]
+set logscale {<axis>} [<base>]
 \end{verbatim}
 
 The {\tt logscale} setting causes an axis to be laid out with logarithmically,
@@ -1788,8 +1829,8 @@ Issuing the command:
 set noarrow
 \end{verbatim}
 
-\noindent removes all arrows produced with the {\tt set arrow} command from the current
-plot. Alternatively, individual arrows can be removed using the syntax:
+\noindent removes all arrows produced with the {\tt set arrow} command from the
+current plot. Alternatively, individual arrows can be removed using the syntax:
 
 \begin{verbatim}
 set noarrow 2
@@ -1803,7 +1844,7 @@ command.
 \subsection{noaxis}\indcmd{set noaxis}
 
 \begin{verbatim}
-set noaxis <axis specification>, ...
+set noaxis [ <axis> {, <axis> } ]
 \end{verbatim}
 
 The {\tt set noaxis} command is equivalent to the {\tt unset axis} command. It
@@ -1829,7 +1870,7 @@ See {\tt display}.
 \subsection{nogrid}\indcmd{set nogrid}
 
 \begin{verbatim}
-set nogrid [<axis> ... ]
+set nogrid {<axis>}
 \end{verbatim}
 
 Issuing the command {\tt set nogrid} removes gridlines from the current plot. On
@@ -1849,13 +1890,13 @@ set nokey
 \end{verbatim}
 
 Issuing the command {\tt set nokey} causes plots to be generated with no legend.
-See the command {\tt set key} for more details.
+See the {\tt set key} command for more details.
 
 
 \subsection{nolabel}\indcmd{set nolabel}
 
 \begin{verbatim}
-set nolabel [<label number> ... ]
+set nolabel {<label number>}
 \end{verbatim}
 
 Issuing the command:
@@ -1880,7 +1921,7 @@ command.
 \subsection{nologscale}\indcmd{set nologscale}
 
 \begin{verbatim}
-set nologscale [<axis> ... ]
+set nologscale {<axis>}
 \end{verbatim}
 
 The {\tt logscale} setting causes an axis to be laid out with logarithmically,
@@ -1920,7 +1961,7 @@ side-by-side.
 set nostyle <style number>
 \end{verbatim}
 
-The {\tt nostyle} setting deletes a plot style. For example, the command:
+The {\tt nostyle} setting deletes a numbered plot style. For example, the command:
 
 \begin{verbatim}
 set nostyle 3
@@ -1943,51 +1984,58 @@ title at the top.
 \subsection{noxtics}\indcmd{set noxtics}
 
 \begin{verbatim}
-set no<axis specification>tics
+set no<axis>tics
 \end{verbatim}
 
-This command causes graphs to be produced with no tick marks along their $x$-axes.
+This command causes graphs to be produced with no major tick marks along the
+specified axis. For example, the {\tt set noxtics} command removes all major
+tick marks from the {\tt x}-axis.
 
 
 \subsection{noytics}\indcmd{set noytics}
 
-Similar to the {\tt set noxtics} command, but acts on the $y$-axis.
+Similar to the {\tt set noxtics} command, but acts on vertical axes.
 
 
 \subsection{noztics}\indcmd{set noztics}
 
-Similar to the {\tt set noxtics} command, but acts on the $z$-axis.
+Similar to the {\tt set noxtics} command, but acts on $z$-axes.
 
 
 \subsection{numerics}\indcmd{set numerics}
 
 \begin{verbatim}
 set numerics [ ( complex | real ) ] [ errors ( explicit | quiet) ]
-    [ display ( tex | natural | typeable) ]
+    [ display ( latex | natural | typeable) ]
     [ sigfig <precision> ]
 \end{verbatim}
 
-The {\tt set numerics} command allows various numerical options to be adjusted.
+The \indcmdt{set numerics} allows the way in which numerical quantities are displayed to be adjusted:
 
-The {\tt complex} option causes complex arithmetic to be carried out; the {\tt
+\begin{itemize}
+
+\item The {\tt complex} option causes complex arithmetic to be carried out; the {\tt
 real} option causes all numbers to be real and any calculation that generates
 complex numbers will generate an error.
 
-The {\tt errors} option controls how errors are communicated to the user.  The
+\item The {\tt errors} option controls how errors are communicated to the user.  The
 {\tt explicit} option causes an error message to be printed to the screen each
 time a calculation causes an error.  The {\tt quiet} option causes such
 calcluations to silently generate a {\tt nan} (not a number) result.  The {\tt
 nan} option is a synonym for {\tt quiet}.
 
-The {\tt display} option changes the output of numbers that are printed to the
-terminal.  Setting the option to {\tt typable} causes the numbers to be printed
-in a form suitable for pasting back into PyXPlot commands.  {\tt tex} setting
+\item The {\tt display} option changes the output of numbers that are printed to the
+terminal.  Setting the option to {\tt typeable} causes the numbers to be printed
+in a form suitable for pasting back into PyXPlot commands.  The {\tt latex} setting
 causes \LaTeX-compatible output to be generated.  The {\tt natural} setting
 generates concise, readable output which has neither of the above properties.
 
-The {\tt sigfig} setting changes the number of significant figures to which
+\item The {\tt sigfig} setting changes the number of significant figures to which
 numbers are displayed when printed out on the PyXPlot terminal.  Regardless of
 the value set, all calculations are carried out internally at double precision.
+
+\end{itemize}
+
 
 \subsection{origin}\indcmd{set origin}
 
@@ -1995,16 +2043,18 @@ the value set, all calculations are carried out internally at double precision.
 set origin <x>, <y>
 \end{verbatim}
 
-The {\tt origin} setting controls the default location of graphs on a multiplot.
-For example, the command:
+The \indcmdt{set origin} sets the location of the bottom-left corner of the
+next graph to be placed on a multiplot canvas.  For example, the command:
 
 \begin{verbatim}
 set origin 3,5
 \end{verbatim}
 
-\noindent would cause the next graph to be plotted at position $(3,5)$ centimetres on the
-multiplot page. The {\tt set origin} command is of little use outside multiplot
-mode.
+\noindent would cause the next graph to be plotted with its bottom-left corner
+at position $(3,5)$ centimetres on the multiplot page. Alternatively, either of
+the coordinates may be specified as quantities with physical units of length,
+such as {\tt unit(35*mm)}.  The {\tt set origin} command is of little use
+outside of multiplot mode.
 
 
 \subsection{output}\indcmd{set output}
@@ -2027,7 +2077,7 @@ set output 'myplot.eps'
 \subsection{palette}\indcmd{set palette}
 
 \begin{verbatim}
-set palette <colour>, [<colour> ... ]
+set palette <colour> {, <colour>}
 \end{verbatim}
 
 PyXPlot has a palette of colours which it assigns sequentially to datasets when
@@ -2063,21 +2113,20 @@ Any of the recognised colour names listed in Section~\ref{sec:colour_names} can 
 \subsection{papersize}\indcmd{set papersize}
 
 \begin{verbatim}
-set papersize ( size | <height>,<width> )
+set papersize ( <named size> | <height>,<width> )
 \end{verbatim}
 
 The {\tt papersize} option sets the size of output produced by the postscript
 terminal. This can take the form of either a recognised paper size name -- a
-list of these is given below -- or a (height, width) pair of values, both measured
-in millimetres. For example:
+list of these is given in Appendix~\ref{ch:paper_sizes} -- or as a (height,
+width) pair of values, both measured in millimetres. The following examples
+demonstrate these possibilities:
 
 \begin{verbatim}
 set papersize a4
 set papersize letter
 set papersize 200,100
 \end{verbatim}
-
-A list of recognised papersizes can be found in Appendix~\ref{ch:paper_sizes}.
 
 
 \subsection{pointlinewidth}\indcmd{set pointlinewidth}
@@ -2087,7 +2136,7 @@ set pointlinewidth <value>
 \end{verbatim}
 
 The {\tt pointlinewidth} setting changes the width of the lines that are used to
-plot \datapoint s.  For instance:
+plot \datapoint s.  For example,
 
 \begin{verbatim}
 set pointlinewidth 20
@@ -2095,7 +2144,7 @@ set pointlinewidth 20
 
 \noindent would cause points to be plotted with lines 20 times the default thickness.
 
-Note that {\tt pointlinewidth} can be abbreviated as {\tt plw}.
+The {\tt pointlinewidth} setting can be abbreviated as {\tt plw}.
 
 
 \subsection{pointsize}\indcmd{set pointsize}
@@ -2126,15 +2175,16 @@ text rendered using \LaTeX{}.  This allows, for example, different packages to
 be loaded by default and user-defined macros to be set up.
 
 
-\subsection{projection}\indcmd{set projection}
+%\subsection{projection}\indcmd{set projection}
+%
+%\begin{verbatim}
+%set projection flat
+%\end{verbatim}
+%
+%The {\tt set projection} command will change between different projections of
+%plots in a future version of PyXPlot.  Currently only the {\tt flat} option is
+%supported.
 
-\begin{verbatim}
-set projection flat
-\end{verbatim}
-
-The {\tt set projection} command will change between different projections of
-plots in a future version of PyXPlot.  Currently only the {\tt flat} option is
-supported.
 
 \subsection{samples}\indcmd{set samples}
 
@@ -2142,19 +2192,18 @@ supported.
 set samples <value>
 \end{verbatim}
 
-The {\tt samples} setting determines the number of values along the $x$-axis at
-which functions are evaluated when they are plotted. For example:
+The {\tt samples} setting determines the number of values along the ordinate
+axis at which functions are evaluated when they are plotted. For example:
 
 \begin{verbatim}
 set samples 100
 \end{verbatim}
 
-\noindent causes 100 points to be evaluated.  Increasing this value will cause
-functions to be plotted more smoothly, but also more slowly, and the postscript
-files generated will also be larger.
-
-When functions are plotted with the {\tt points} plot style, this setting
-controls the number of points plotted.
+\noindent would cause functions to be evaluated at 100~points along the
+ordinate axis.  Increasing this value will cause functions to be plotted more
+smoothly, but also more slowly, and the postscript files generated will also be
+larger. When functions are plotted with the {\tt points} plot style, this
+setting controls the number of points plotted.
 
 
 \subsection{seed}\indcmd{set seed}
@@ -2163,20 +2212,25 @@ controls the number of points plotted.
 set seed <value>
 \end{verbatim}
 
-The {\tt set seed} command allows the seed used to generate random numbers to be
-set.  This allows repeatable sequences of random numbers to be generated in
-order to calculate re-producable pseudo-random numbers to be generated.
+The {\tt set seed} command sets the seed used by all of those mathematical
+functions which generate random samples from probability distributions.  This
+allows repeatable sequences of pseudo-random numbers to be generated.
+
 
 \subsection{size}\indcmd{set size}
 
 \begin{verbatim}
-set size (<width>|ratio <ratio>|noratio|square)
+set size ( <width> | ratio <ratio> | noratio | square )
 \end{verbatim}
 
-The setting {\tt size} is deprecated: use {\tt set width} instead.  It sets the
-width of the plot in centimetres. However, the command {\tt set size}, when
-followed by the keyword {\tt ratio}, is still used to set the aspect ratio of
-plots. See the {\tt ratio} setting below for details.
+The setting {\tt size} is used to set the width or aspect ratio of the next
+graph to be generated. If a width is specified, then it may either take the
+form of a dimensionless number implicitly measured in centimetres, or a
+quantity with physical dimensions of length such as {\tt unit(50*mm)}. When the
+keyword {\tt ratio} is specified, it should be followed by the ratio of the
+graph's height to its width. The keyword {\tt noratio} returns the aspect ratio
+to its default value of the golden ratio, and the keyword {\tt square} sets the
+aspect ratio to one.
 
 
 \subsubsection{noratio}\index{set size command!noratio modifier@{\tt noratio} modifier}
@@ -2221,20 +2275,14 @@ $2/(1+\sqrt{5})$.
 set size square
 \end{verbatim}
 
-The command:
-
-\begin{verbatim}
-set size square
-\end{verbatim}
-
-\noindent sets PyXPlot to produce square plots, i.e.\ with unit aspect ratio. Other aspect
-ratios can be set with the {\tt set size ratio} command.
+This command sets PyXPlot to produce square plots, i.e.\ with unit aspect
+ratio. Other aspect ratios can be set with the {\tt set size ratio} command.
 
 
 \subsection{style}\indcmd{set style}
 
 \begin{verbatim}
-set style <style number> <style specifier> ...
+set style <style number> {<style option>}
 \end{verbatim}
 
 At times, the string of style keywords following the {\tt with} modifier in
@@ -2257,7 +2305,7 @@ plot sin(x) with style 2
 \subsection{style data | style function}\indcmd{set style data}\indcmd{set style function}
 
 \begin{verbatim}
-set style { data | function } <style modifier> ...
+set style { data | function } {<style option>}
 \end{verbatim}
 
 The {\tt set style data} command affects the default style with which data from
@@ -2277,22 +2325,16 @@ functions using lines with the first defined line style.
 \subsection{terminal}\indcmd{set terminal}
 
 \begin{verbatim}
-set terminal <terminal type> [<option> ... ]
-\end{verbatim}
-
-Syntax:
-
-\begin{verbatim}
-set terminal { X11_SingleWindow | X11_MultiWindow | X11_Persist |
+set terminal ( X11_SingleWindow | X11_MultiWindow | X11_Persist |
                bmp | eps | gif | jpeg | pdf | png | postscript |
-               svg | tiff }
-             { colour | color | monochrome }
-             { dpi <value> }
-             { portrait | landscape }
-             { invert | noinvert }
-             { transparent | solid }
-             { antialias | noantialias }
-             { enlarge | noenlarge }
+               svg | tiff )
+             ( colour | color | monochrome )
+             ( dpi <value> )
+             ( portrait | landscape )
+             ( invert | noinvert )
+             ( transparent | solid )
+             ( antialias | noantialias )
+             ( enlarge | noenlarge )
 \end{verbatim}
 
 The {\tt set terminal} command controls the graphic format in which PyXPlot
@@ -2318,8 +2360,18 @@ enlarge}, {\tt noenlarge}. Details of each of these can be found below.
 
 \subsubsection{antialias}\index{set terminal command!antialias modifier@{\tt antialias} modifier}
 
-The {\tt antialias} terminal option causes plots produced with the bitmap (gif,
-jpg and png) terminals to be antialiased; this is the default behaviour.
+The {\tt antialias} terminal option causes plots produced with the bitmap
+terminals ({\tt bmp}, {\tt gif}, {\tt jpeg}, {\tt png} and {\tt tiff}) to be
+antialiased; this is the default behaviour.
+
+
+\subsubsection{bmp}\index{set terminal command!bmp modifier@{\tt gif} modifier}
+
+The {\tt bmp} terminal renders output as Windows bitmap images. The filename to
+which output is to be sent should be set using the {\tt set output} command;
+the default is {\tt pyxplot.bmp}. The number of dots per inch used can be
+changed using the dpi option. The {\tt invert} option may be used to produce an
+image with inverted colours.
 
 
 \subsubsection{colour}\index{set terminal command!colour modifier@{\tt colour} modifier}
@@ -2330,8 +2382,7 @@ the default behaviour.
 
 \subsubsection{color}\index{set terminal command!color modifier@{\tt color} modifier}
 
-The {\tt color} terminal option is provided for the convenience of users unable
-to spell {\tt colour}.
+The {\tt color} terminal option is the US-English equivalent of {\tt colour}.
 
 
 \subsubsection{dpi}\index{set terminal command!dpi modifier@{\tt dpi} modifier}
@@ -2346,7 +2397,7 @@ resolution of these file formats:
 set terminal dpi 100
 \end{verbatim}
 
-\noindent sets the output to a resolution of 100 dots per inch. Higher dpi
+\noindent sets the output to a resolution of~100 dots per inch. Higher dpi
 values yield better quality images, but larger file sizes.
 
 
@@ -2366,36 +2417,36 @@ suitable for including in, for example, \LaTeX documents.
 
 \subsubsection{gif}\index{set terminal command!gif modifier@{\tt gif} modifier}
 
-The {\tt gif} terminal renders output as gif files. The filename to which output
-is to be sent should be set using the {\tt set output} command; the default is
-{\tt pyxplot.gif}. The number of dots per inch used can be changed using the dpi
-option; the filename using {\tt set output}. Transparent gifs can be produced
-with the {\tt transparent} option. Also of relevance is the {\tt invert} option
-for producing gifs with inverted colours.
+The {\tt gif} terminal renders output as gif images. The filename to which
+output is to be sent should be set using the {\tt set output} command; the
+default is {\tt pyxplot.gif}. The number of dots per inch used can be changed
+using the dpi option. Transparent gifs can be produced with the {\tt
+transparent} option. The {\tt invert} option may be used to produce an image
+with inverted colours.
 
 
 \subsubsection{invert}\index{set terminal command!invert modifier@{\tt invert} modifier}
 
-The {\tt invert} terminal option causes the bitmap terminals ({\tt gif}, {\tt
-jpeg}, {\tt png}) to produce output with inverted colours. This is useful for
-producing plots for slideshows, where bright colours on a dark background may be
-desired.
+The {\tt invert} terminal option causes the bitmap terminals ({\tt bmp}, {\tt
+gif}, {\tt jpeg}, {\tt png} and {\tt tiff}) to produce output with inverted
+colours. This is useful for producing plots for slideshows, where bright
+colours on a dark background may be desired.
 
 
 \subsubsection{jpeg}\index{set terminal command!jpeg modifier@{\tt jpeg} modifier}
 
-The {\tt jpeg} terminal renders output as jpeg files. The filename to which
+The {\tt jpeg} terminal renders output as jpeg images. The filename to which
 output is to be sent should be set using the {\tt set output} command; the
 default is {\tt pyxplot.jpg}.  The number of dots per inch used can be changed
-using the dpi option. Of relevance is the {\tt invert} option for producing
-jpegs with inverted colours.
+using the dpi option. The {\tt invert} option may be used to produce an
+image with inverted colours.
 
 
 \subsubsection{landscape}\index{set terminal command!landscape modifier@{\tt landscape} modifier}
 
 The {\tt landscape} terminal option causes PyXPlot's output to be displayed in
-rotated orientation.  This is useful for printing as you get more on your sheet
-of paper that way around; probably less useful for plotting things on screen.
+rotated orientation.  This can be useful for fitting graphs onto sheets of
+paper, but is generally less useful for plotting things on screen.
 
 
 \subsubsection{monochrome}\index{set terminal command!monochrome modifier@{\tt monochrome} modifier}
@@ -2408,7 +2459,8 @@ lines on plots with several datasets.
 \subsubsection{noantialias}\index{set terminal command!noantialias modifier@{\tt noantialias} modifier}
 
 The {\tt noantialias} terminal option causes plots produced with the bitmap
-(gif, jpg and png) terminals not to be antialiased.
+terminals ({\tt bmp}, {\tt gif}, {\tt jpeg}, {\tt png} and {\tt tiff}) not to
+be antialiased.
 
 
 \subsubsection{noenlarge}\index{set terminal command!noenlarge modifier@{\tt noenlarge} modifier}
@@ -2427,23 +2479,24 @@ converse of {\tt inverse}.
 \subsubsection{pdf}\index{set terminal command!pdf modifier@{\tt pdf}
 modifier}
 
-The {\tt pdf} terminal options causes pdf format output files to be produced.
+The {\tt pdf} terminal renders output in Adobe's portable document format
+(pdf).
 
 
 \subsubsection{png}\index{set terminal command!png modifier@{\tt png} modifier}
 
-The {\tt png} terminal renders output as png files. The filename to which output
-is to be sent should be set using the {\tt set output} command; the default is
-{\tt pyxplot.png}. The number of dots per inch used can be changed using the dpi
-option; the filename using {\tt set output}. Transparent pngs can be produced
-with the {\tt transparent} option. Also of relevance is the {\tt invert} option
-for producing pngs with inverted colours.
+The {\tt png} terminal renders output as png images. The filename to which
+output is to be sent should be set using the {\tt set output} command; the
+default is {\tt pyxplot.png}. The number of dots per inch used can be changed
+using the dpi option. Transparent pngs can be produced with the {\tt
+transparent} option. The {\tt invert} option may be used to produce an image
+with inverted colours.
 
 
 \subsubsection{portrait}\index{set terminal command!portrait modifier@{\tt portrait} modifier}
 
 The {\tt portrait} terminal option causes PyXPlot's output to be displayed in
-upright (normal) orientation.
+upright (normal) orientation; it is the converse of the {\tt landscape} option.
 
 
 \subsubsection{postscript}\index{set terminal command!postscript modifier@{\tt postscript} modifier}
@@ -2468,21 +2521,21 @@ terminals to produce output with a transparent background.
 
 \subsubsection{X11\_multiwindow}\index{set terminal command!X11\_multiwindow modifier@{\tt X11\_multiwindow} modifier}
 
-Displays plots on the screen (in X11 windows, using \ghostview). Each time a new
+Displays plots on the screen in X11 windows. Each time a new
 plot is generated it appears in a new window, and the old plots remain visible.
 As many plots as may be desired can be left on the desktop simultaneously.
 
 \subsubsection{X11\_persist}\index{set terminal command!X11\_persist
 modifier@{\tt X11\_persist} modifier}
 
-Displays plots on the screen in X11 windows, using \ghostview.  Each time a new
+Displays plots on the screen in X11 windows.  Each time a new
 plot is generated it appears in a new window, and the old plots remain visible.
 When PyXPlot is exited the windows remain in place until they are closed
 manually.
 
 \subsubsection{X11\_singlewindow}\index{set terminal command!X11\_singlewindow modifier@{\tt X11\_singlewindow} modifier}
 
-Displays plots on the screen (in X11 windows, using \ghostview). Each time a new
+Displays plots on the screen in X11 windows. Each time a new
 plot is generated it replaces the old one, preventing the desktop from becoming
 flooded with old plots. This terminal is the default when running
 interactively.
@@ -2567,37 +2620,83 @@ unset title
 \subsection{trange}\indcmd{set trange}
 
 \begin{verbatim}
-set trange <range specifier>
+set trange <range>
 \end{verbatim}
 
-The {\tt set trange} command changes the range of the independent {\tt t}
-variable used for parametric plots.  For more details of the syntax of the range
-specifier, see the {\tt set xrange} command.
+The {\tt set trange} command changes the range of the free parameter {\tt t}
+used when generating parametric plots.  For more details of the syntax of the
+range specifier, see the {\tt set xrange} command.
 
 \subsection{unit}\indcmd{set unit}
 
 \begin{verbatim}
-set unit [ of <dimension> <unit> ]
+set unit [ angle ( dimensionless | nodimensionless ) ]
+         [ of <dimension> <unit> ]
          [ scheme <unit scheme> ]
          [ preferred <unit> ]
          [ nopreferred <unit> ]
-         [ display ( full | abbreviated ) ]
+         [ display ( full | abbreviated | prefix | noprefix ) ]
 \end{verbatim}
 
-The {\tt set unit} command controls how units are used to display numbers within
-PyXPlot.  To change the unit used to display a particular dimension of quantity
-the {\tt set unit of} form should be used.  For example, the following command
-will cause all lengths to be displayed in inches:
+The \indcmdt{set unit} controls how quantities with physical units are
+displayed by PyXPlot. The \indcmdt{set unit scheme} provides the most general
+configuration option, allowing one of several {\it units
+schemes}\index{units!unit schemes} to be selected, each of which comprises a
+list of units which are deemed to be members of the particular scheme. For
+example, in the CGS unit scheme\index{CGS units}\index{units!CGS}, all lengths
+are displayed in centimetres, all masses are displayed in grammes, all energies
+are displayed in ergs, and so forth.  In the imperial unit
+scheme\index{imperial units}\index{units!imperial}, quantities are displayed in
+British imperial units -- inches, pounds, pints, and so forth -- and in the US
+unit scheme, US customary units are used. The available schemes are: {\tt
+ancient}, {\tt cgs}, {\tt imperial}, {\tt planck}, {\tt si}, and {\tt us}.
+
+To change the unit used to display a particular dimension of quantity the {\tt
+set unit of} form should be used.  For example, the following command will
+cause all lengths to be displayed in inches:
 
 \begin{verbatim}
 set unit of length inch
 \end{verbatim}
 
-The {\tt set unit preferred} command allows units that should be used
-preferentially to be specified; this generalises the {\tt set unit of} command
-to compound units.  Issuing {\tt set unit nopreferred} will undo this command.
-The {\tt set unit display} command specifies whether the full or abbreviated
-names of units should be displayed.
+The \indcmdt{set unit preferred} offers a slightly more flexible way of
+achieving the same result. Whereas the \indcmdt{set unit of} can only operate
+on named quanities such as lengths and powers, and cannot act upon compound
+units such as {\tt W/Hz}, the \indcmdt{set unit preferred} can act upon any
+unit or combination of units:
+\begin{verbatim}
+set unit preferred parsec
+set unit preferred W/Hz
+set unit preferred Nm
+\end{verbatim}
+The latter two examples are particularly useful when working with spectral
+densities (powers per unit frequency) or torques (forces multiplied by
+distances). Unfortunately, both of these units are dimensionally equal to
+powers, and so are displayed by PyXPlot in Joules by default. The above
+statement overrides such behaviour. Having set a particular unit to be
+preferred, this can be unset as in the following example:
+\begin{verbatim}
+set unit nopreferred parsec
+\end{verbatim}
+
+By default, units are displayed in their abbreviated forms, for example {\tt A}
+instead of {\tt amperes} and {\tt W} instead of {\tt watts}. Furthermore, SI
+prefixes such as milli- and kilo- are applied to SI units where they are
+appropriate. Both of these behaviours can be turned on or off, in the former
+case with the commands:
+
+\begin{verbatim}
+set unit display abbreviated
+set unit display full
+\end{verbatim}
+
+\noindent and in the latter case using the following pair of commands:
+
+\begin{verbatim}
+set unit display prefix
+set unit display noprefix
+\end{verbatim}
+
 
 \subsection{width}\indcmd{set width}
 
@@ -2605,21 +2704,16 @@ names of units should be displayed.
 set width <value>
 \end{verbatim}
 
-The {\tt width} setting controls the size of a graph.  For example:
-
-\begin{verbatim}
-set width 10
-\end{verbatim}
-
-\noindent sets output to be 10 centimetres in width.  For the bitmap terminals ({\tt gif},
-{\tt jpg} and {\tt png}) this setting, in conjunction with the {\tt dpi}
-setting, controls the number of pixels across the final image.
+The {\tt width} setting is used to set the width of the next graph to be
+generated. The width may be specified either as a dimensionless number
+implicitly measured in centimetres, or as a quantity with physical dimensions
+of length such as {\tt unit(50*mm)}.
 
 
 \subsection{xformat}\indcmd{set xformat}
 
 \begin{verbatim}
-set x[<axisnumber>]format ( auto | '<format>' )
+set <axis>format ( auto | '<format>' )
       ( horizontal | vertical | rotate <angle> )
 \end{verbatim}
 
@@ -2643,8 +2737,8 @@ set xformat "%.2f"%(x)
 set yformat "%s$^\prime$"%(y/unit(feet))
 \end{verbatim}
 The first example specifies that ordinate values should be displayed to two
-decimal places along the $x$-axis; the second specifies that distances should
-be displayed in feet along the $y$-axis. Note that the dummy variable used to
+decimal places along the {\tt x}-axis; the second specifies that distances should
+be displayed in feet along the {\tt y}-axis. Note that the dummy variable used to
 represent the ordinate value is {\tt x}, {\tt y} or {\tt z} depending upon the
 direction of the axis, but that the dummy variable used in the {\tt set
 x2format} command is still {\tt x}. The following pair of examples both have
@@ -2672,26 +2766,26 @@ strings.
 \subsection{xlabel}\indcmd{set xlabel}
 
 \begin{verbatim}
-set x[<axisnumber>]label '<text>'
+set <axis>label '<text>'
 \end{verbatim}
 
-The {\tt xlabel} setting controls the label placed on the $x$-axis (abscissa).
+The {\tt xlabel} setting controls the label placed on the {\tt x}-axis.
 For example:
 
 \begin{verbatim}
 set xlabel '$x$'
 \end{verbatim}
 
-\noindent sets the label on the $x$-axis to `$x$'.  Labels can be placed on higher axes by
-inserting their number after the `{\tt x}', for example:
+\noindent sets the label on the {\tt x}-axis to `$x$'.  Labels can be placed on
+higher axes by inserting their number after the `{\tt x}', for example:
 
 \begin{verbatim}
 set x10label 'foo'
 \end{verbatim}
 
-\noindent would label the tenth $x$ axis.
+\noindent would label the tenth horizontal axis.
 
-Similarly, labels can be placed on $y$-axes as follows:
+Similarly, labels can be placed on vertical axes as follows:
 
 \begin{verbatim}
 set ylabel '$y$'
@@ -2702,10 +2796,10 @@ set y2label 'foo'
 \subsection{xrange}\indcmd{set xrange}
 
 \begin{verbatim}
-set x[<axisnumber>]range <range specifier>
+set <axis>range <range> [reverse]
 \end{verbatim}
 
-The {\tt xrange} setting controls the range of values along the $x$-axes of
+The {\tt xrange} setting controls the range of values along the {\tt x}-axes of
 plots.  For function plots, this is also the domain across which the function
 will be evaluated.  For example:
 
@@ -2713,15 +2807,16 @@ will be evaluated.  For example:
 set xrange [0:10]
 \end{verbatim}
 
-\noindent sets the first $x$ axis to be between 0 and 10.  Higher numbered axes may be
-referred to be inserting their number after the $x$; $y$-axes similarly be
-replacing the $x$ with a $y$.  Hence:
+\noindent sets the first horizontal axis to run from~0 to~10.  Higher numbered
+axes may be referred to be inserting their number after the {\tt x}; the ranges
+of vertical axes may similarly be set by replacing the {\tt x} with a {\tt y}.
+Hence:
 
 \begin{verbatim}
 set y23range [-5:5]
 \end{verbatim}
 
-\noindent sets the range of the 23rd $y$-axis to be between -5 and 5.  To
+\noindent sets the range of the 23rd vertical axis to run from~$-5$ to~5.  To
 request a range to be automatically scaled an asterix can be used.  The
 following command:
 
@@ -2729,20 +2824,24 @@ following command:
 set xrange [:10][*:*]
 \end{verbatim}
 
-\noindent would set the $x$-axis to have an upper limit of 10, but does not
+\noindent would set the {\tt x}-axis to have an upper limit of 10, but does not
 affect the lower limit; its range remains at its previous setting.  The first
 y-axis is automatically scaled on both its upper and lower limits.
+
+The keyword {\tt reverse} may be used to indicate that the two limits of an
+axis should be swapped. This is useful for setting auto-scaling axes to be
+displayed running from right to left, or from top to bottom.
 
 
 \subsection{xtics}\indcmd{set xtics}
 
 \begin{verbatim}
-set [m]x[<axisnumber>]tics
-         [axis|border|inward|outward|both]
-         [auto
-          | [<minimum>,] <increment[, <maximum>]
-          | ( '<label>' <position> ... )
-         ]
+set [m]<axis>tics
+    [ ( axis | border | inward | outward | both ) ]
+    [ ( auto
+          | [<minimum>,] <increment> [, <maximum>]
+          | { '<label>' <position> }
+         ] )
 \end{verbatim}
 
 By default, PyXPlot places a series of tick marks at significant points along
@@ -2837,8 +2936,8 @@ show ( all | axes | functions | settings | units
        | userfunctions | variables | <parameter> ... )
 \end{verbatim}
 
-The {\tt show} command displays the values of PyXPlot's internal parameters. For
-example:
+The \indcmdt{show} displays the present state of settings which can be set with
+the {\tt set} command. For example,
 
 \begin{verbatim}
 show pointsize
@@ -2861,7 +2960,8 @@ current user-defined functions.
 \section{solve}\indcmd{solve}
 
 \begin{verbatim}
-solve <equation1> [, ...] via <variable1> [, ...]
+solve <equation> {, <equation>}
+    via <variable> {, <variable>}
 \end{verbatim}
 
 The \indcmdt{solve} can be used to solve simple systems of one or more
@@ -2907,8 +3007,8 @@ supplied, otherwise the solver will try and fail to solve the system of
 equations using dimensionless values:
 
 \begin{verbatim}
-x = unit(m)\newline
-y = 5*unit(km)\newline
+x = unit(m)
+y = 5*unit(km)
 solve x=y via x
 \end{verbatim}
 
@@ -2945,13 +3045,14 @@ pyxplot> print Im(x)/pi
 \section{spline}\indcmd{spline}
 
 \begin{verbatim}
-spline [<range specification>] <function name> '<filename>'
-       [index <index specification>] [every <every specification>]
-       [using <using specification>]
-       [smooth <smoothing>]
+spline [ <range> ] <function name>"()" '<filename>'
+       [ every <expressions> {:<expression>} ]
+       [ index <value> ]
+       [ select <expression> ]
+       [ using <expression>  {:<expression>} ]
 \end{verbatim}
 
-The {\tt spline} command is an alias for the {\tt interpolate spline} command.
+The \indcmdt{spline} is an alias for the {\tt interpolate spline} command.
 See the entry for the {\tt interpolate} command for more details.
 
 
@@ -2968,7 +3069,7 @@ front of the multiplot. When new items are added, they are given higher
 identification numbers than previous items, and appear at the front of the
 multiplot.
 
-If this ordering is not the desired ordering, then the {\tt swap} command may
+If this ordering is not the desired ordering, then the \indcmdt{swap} may
 be used to rearrange items. It simply takes two multiplot items, and swaps
 their identification numbers and hence positions in the ordered sequence in
 which the items on the multiplot are drawn. Thus, if, for example, the corner
@@ -2982,13 +3083,15 @@ swap 3 5
 \section{tabulate}\indcmd{tabulate}
 
 \begin{verbatim}
-tabulate [<range specification>] ( <expression> | <filename> )
-         [index <index specification>] [every <every specification>]
-         [using <using specification>] [select <select specifier>]
-         [with <output format>]
+tabulate [ <range> ] ( <expression> | <filename> )
+       [ every <expressions> {:<expression>} ]
+       [ index <value> ]
+       [ select <expression> ]
+       [ using <expression>  {:<expression>} ]
+       [ with <output format> ]
 \end{verbatim}
 
-The {\tt tabulate} commands produces a text file containing the values of a
+The \indcmdt{tabulate} produces a text file containing the values of a
 function at a set of points.  For example, to produce a \datafile\ called {\tt
 sine.dat} with the principal values of the sine function:
 
@@ -3041,13 +3144,14 @@ points at which the functions are evaluated are spaced logarithmically.
 \section{text}\indcmd{text}
 
 \begin{verbatim}
-text '<text string>' [at <x>, <y>] [rotate <angle>] [gap <gap>]
-     [halign <alignment>] [valign <alignment>]
-     [with colour <colour>]
+text '<text string>' [ at <x>, <y> ]
+     [ rotate <angle> ] [ gap <gap> ]
+     [ halign <alignment> ] [ valign <alignment> ]
+     [ with colour <colour> ]
 \end{verbatim}
 
-The {\tt text} command is used to add strings of text to a multiplot. An
-example would be:
+The \indcmdt{text} is used to add strings of text to a multiplot. An example
+would be:
 
 \begin{verbatim}
 text 'Hello World!' at 0,2
@@ -3091,10 +3195,10 @@ by themselves.
 \section{undelete}\indcmd{undelete}
 
 \begin{verbatim}
-undelete <item number>, ...
+undelete <item> {, <item>}
 \end{verbatim}
 
-The {\tt undelete} command is part of the multiplot environment; it can be used
+The \indcmdt{undelete} is part of the multiplot environment; it can be used
 to reverse the effect of deleting a multiplot item with the {\tt delete}
 command. The desired item to be undeleted should be identified using the
 reference number which it was given when it was created; it would have been
@@ -3113,7 +3217,7 @@ undelete 1
 unset <setting>
 \end{verbatim}
 
-The {\tt unset} command causes a setting that has been changed using the set
+The \indcmdt{unset} causes a setting that has been changed using the set
 command to be returned to its default value.  For example:
 
 \begin{verbatim}
@@ -3129,9 +3233,10 @@ the same as those which can follow the {\tt set} command.
 \section{while}\indcmd{while}
 
 \begin{verbatim}
-while ( <condition> ) {
-   < ... commands ... >
-}
+while <condition> [loopname <loopname>]
+ "{"
+    ...
+ "}"
 \end{verbatim}
 
 The \indcmdt{while} command causes a set of commands to be executed whilst the
@@ -3141,10 +3246,12 @@ example, the following code prints out the low-valued Fibonacci numbers:
 \begin{verbatim}
 i = 1
 j = 1
-while (j < 50) {
-   print j
-   i = i + j
-   print i
-   j = j + i
-}
+while (j < 50)
+ {
+  print j
+  i = i + j
+  print i
+  j = j + i
+ }
 \end{verbatim}
+
