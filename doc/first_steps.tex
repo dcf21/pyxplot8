@@ -933,11 +933,11 @@ override this and set his own range.\index{axes!setting ranges} This can be
 done directly from the plot command, by following the word {\tt plot} with the
 syntax {\tt [minimum:maximum]}.\footnote{An alternative valid syntax is to
 replace the colon with the word {\tt to}: {\tt [minimum to maximum]}.} The
-first specified range applies to the $x$-axis, and the second to the
-$y$-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
-further ranges are specified, they apply to the $x2$-axis, then the $y2$-axis,
-and so forth.} In the following example, the first three cylindrical Bessel
-functions are plotted in the range $0<x<10$:
+first specified range applies to the {\tt x}-axis, and the second to the {\tt
+y}-axis.\footnote{As will be discussed in Section~\ref{sec:multiple_axes}, if
+further ranges are specified, they apply to the {\tt x2}-axis, then the {\tt
+y2}-axis, and so forth.} In the following example, the first three cylindrical
+Bessel functions are plotted in the range $0<x<10$:
 
 \begin{verbatim}
 plot [0:10][-0.5:1] besselJ(0,x), besselJ(1,x), besselJ(2,x)

@@ -311,7 +311,7 @@ The following plot styles allow barcharts to be produced:
 \end{itemize}
 
 \noindent These styles differ in where the horizontal interfaces between the
-bars are placed along the $x$-axis and how wide the bars are.  In the
+bars are placed along the ordinate axis and how wide the bars are.  In the
 \indpst{boxes} plot style, the interfaces between the bars are at the midpoints
 between the specified \datapoint s by default (see, for example,
 Figure~\ref{fig:ex_barchart2}a).  Alternatively, the widths of the bars may be
@@ -347,7 +347,7 @@ Figure~\ref{fig:ex_barchart1}(c) for an example.
 
 In all of these plot styles, the bars originate from the line $y=0$ by default,
 as is normal for a histogram. However, should it be desired for the bars to
-start from a different vertical point, this may be achieved by using the
+start from a different vertical line, this may be achieved by using the
 \indcmdt{set boxfrom}, for example:
 
 \begin{verbatim}
@@ -521,13 +521,13 @@ plot f(x):g(x) using 2:3
 \end{verbatim}
 
 \noindent though this example is not sensible. $g(x)$ would be plotted on the
-$y$-axis, against $f(x)$ on the $x$-axis. However, this is unlikely to be
+$y$-axis, against $f(x)$ on the {\tt x}-axis. However, this is unlikely to be
 sensible because the range of values of $x$ substituting into these expressions
 would correspond to the range of the plot's horizontal axis. The result might
 be particularly unexpected if the above were attempted with an autoscaling
-horizontal axis -- PyXPlot would find itself autoscaling the $x$-axis range to
-the spread of values of $f(x)$, but find that this itself changed depending
-upon the range of the $x$-axis. In this case, the user should have used the
+horizontal axis -- PyXPlot would find itself autoscaling the {\tt x}-axis range
+to the spread of values of $f(x)$, but find that this itself changed depending
+upon the range of the {\tt x}-axis. In this case, the user should have used the
 {\tt parametric} plot option described in the next section.
 
 \section{Plotting Parametric Functions}
@@ -678,13 +678,13 @@ set keycolumns auto
 \section{Configuring Axes}
 \label{sec:multiple_axes}
 
-By default, plots have only one horizontal $x$-axis and one vertical $y$-axis.
-Additional axes may be added parallel to these, which are referred to as, for
-example, the {\tt x2} axis, the {\tt x3} axis, and so forth up to a maximum of
-{\tt x127}.  In keeping with this nomenclature, the first axis in each
-direction can be referred to interchangably as, for example, {\tt x} or {\tt
-x1}, or as {\tt y} or {\tt y1}.  Further axes are automatically generated when
-statements such as the following are issued:
+By default, plots have only one horizontal {\tt x}-axis and one vertical {\tt
+y}-axis.  Additional axes may be added parallel to these, which are referred to
+as, for example, the {\tt x2} axis, the {\tt x3} axis, and so forth up to a
+maximum of {\tt x127}.  In keeping with this nomenclature, the first axis in
+each direction can be referred to interchangably as, for example, {\tt x} or
+{\tt x1}, or as {\tt y} or {\tt y1}.  Further axes are automatically generated
+when statements such as the following are issued:
 
 \begin{verbatim}
 set x3label 'A second horizontal axis'
@@ -915,11 +915,11 @@ show xtics
 
 \example{ex:axistics}{A plot of the function $\exp(x)\sin(1/x)$}{
 In this example we produce a plot illustrating some of the crossing points of
-the function $\exp(x)\sin(1/x)$.  We set the $x$-axis to have tick marks at
-$x=0.05$, $0.1$, $0.2$ and $0.4$.  The $x2$-axis has custom labelled ticks at
-$x=1/\pi, 2/\pi$, etc., pointing outwards from the plot.  The left-hand
-$y$-axis has tick marks placed automatically whereas the $y2$-axis has no tics
-at all.
+the function $\exp(x)\sin(1/x)$.  We set the {\tt x}-axis to have tick marks at
+$x=0.05$, $0.1$, $0.2$ and $0.4$.  The {\tt x2}-axis has custom labelled ticks
+at $x=1/\pi, 2/\pi$, etc., pointing outwards from the plot.  The left-hand {\tt
+y}-axis has tick marks placed automatically whereas the {\tt y2}-axis has no
+tics at all.
 \nlscf
 \noindent{\tt set log x1x2}\newline
 \noindent{\tt set xrange [0.05:0.5]}\newline
@@ -963,8 +963,8 @@ set xformat "%.2f"%(x)
 set yformat "%s$^\prime$"%(y/unit(feet))
 \end{verbatim}
 The first example specifies that ordinate values should be displayed to two
-decimal places along the $x$-axis; the second specifies that distances should
-be displayed in feet along the $y$-axis. Note that the dummy variable used to
+decimal places along the {\tt x}-axis; the second specifies that distances should
+be displayed in feet along the {\tt y}-axis. Note that the dummy variable used to
 represent the ordinate value is {\tt x}, {\tt y} or {\tt z} depending upon the
 direction of the axis, but that the dummy variable used in the {\tt set
 x2format} command is still {\tt x}. The following pair of examples both have
@@ -1154,19 +1154,19 @@ unset nogrid
 \end{verbatim}
 
 \noindent By default, gridlines are drawn from the major and minor ticks of the
-default $x$- and $y$-axes (which are the first $x$- and $y$-axes unless set
-otherwise in the configuration file; see Chapter~\ref{ch:configuration}).
-However, the axes which should be used may be specified after the \indcmdt{set
-grid}\index{grid}:
+default horizontal and vertical axes (which are the first axes in each
+direction unless set otherwise in the configuration file; see
+Chapter~\ref{ch:configuration}).  However, the axes which should be used may be
+specified after the \indcmdt{set grid}\index{grid}:
 
 \begin{verbatim}
 set grid x2y2
 set grid x x2y2
 \end{verbatim}
 
-\noindent The top example would connect the gridlines to the ticks of the $x2$-
-and $y2$-axes, whilst the lower would draw gridlines from both the $x$- and the
-$x2$-axes.
+\noindent The top example would connect the gridlines to the ticks of the {\tt
+x2}- and {\tt y2}-axes, whilst the lower would draw gridlines from both the
+{\tt x}- and the {\tt x2}-axes.
 
 If one of the specified axes does not exist, then no gridlines will be drawn in
 that direction.  Gridlines can subsequently be removed selectively from some
@@ -1250,14 +1250,14 @@ set arrow 1 from 0,0 to 1,1 with nohead \
 linetype 1 c blue
 \end{verbatim}
 
-The coordinates for the start and end points of the arrow can be specified in
-a range of coordinate systems. The coordinate system to be used should be
+The coordinates for the start and end points of the arrow can be specified in a
+range of coordinate systems. The coordinate system to be used should be
 specified immediately before the coordinate value. The default system,
-\indcot{first} measures the graph using the $x$- and $y$-axes. The
-\indcot{second} system uses the $x2$- and $y2$-axes. The \indcot{screen} and
-\indcot{graph} systems both measure in centimetres from the origin of the
-graph. In the following example, we use these specifiers, and specify
-coordinates using variables rather than doing so explicitly:
+\indcot{first} measures the graph using the {\tt x}- and {\tt y}-axes. The
+\indcot{second} system uses the {\tt x2}- and {\tt y2}-axes. The
+\indcot{screen} and \indcot{graph} systems both measure in centimetres from the
+origin of the graph. In the following example, we use these specifiers, and
+specify coordinates using variables rather than doing so explicitly:
 
 \begin{verbatim}
 x0 = 0.0
@@ -1270,10 +1270,10 @@ set arrow 1 from first  x0, first  y0 \
 \end{verbatim}
 
 In addition to these four options, \indcot{axis{\it n}} specifies that the
-position is to be measured along the $n\,$th $x$- or $y$-axis -- for example,
-`{\tt axis3}'.\indcmd{set arrow} This allows the graph to be measured with
-reference to any arbitrary axis on plots which make use of large numbers of
-parallel axes (see Section~\ref{sec:multiple_axes}).
+position is to be measured along the $n\,$th horizontal or vertical axis -- for
+example, `{\tt axis3}'.\indcmd{set arrow} This allows the graph to be measured
+with reference to any arbitrary axis on plots which make use of large numbers
+of parallel axes (see Section~\ref{sec:multiple_axes}).
 
 \subsection{Text Labels}
 
