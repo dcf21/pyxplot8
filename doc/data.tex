@@ -219,13 +219,19 @@ to very many significant figures with some additional text, one could use:
 tabulate x**2 with format "x = %f ; x**2 = %27.20e"
 \end{verbatim}
 
-This might produce the following output:
+\noindent This might produce the following output:
 
 \begin{verbatim}
 x = 0.000000 ; x**2 =  0.00000000000000000000e+00
 x = 0.833333 ; x**2 =  6.94444444444442421371e-01
 x = 1.666667 ; x**2 =  2.77777777777778167589e+00
 \end{verbatim}
+
+The data produced by the {\tt tabulate} command can be sorted in order of any
+arbitrary metric by supplying an expression after the {\tt sortby} modifier;
+where such expressions are supplied, the data is sorted in order from the
+smallest value of the expression to the largest.
+
 
 \section{Function Fitting}
 \label{sec:fit_command}

@@ -214,7 +214,7 @@ int directive_tabulate(Dict *command, char *line)
   List         *RangeList, *TabList, *ExprList;
   ListIterator *ListIter, *ExprListIter;
   Dict         *TempDict, *TempDict2, *TempExprDict;
-  char          errtext[LSTR_LENGTH], *tempstr=NULL, *SelectCrit=NULL, *fnlist[USING_ITEMS_MAX];
+  char          errtext[LSTR_LENGTH], *tempstr=NULL, *SelectCrit=NULL, *SortBy=NULL, *fnlist[USING_ITEMS_MAX];
   List         *UsingList=NULL, *EveryList=NULL;
 
 
@@ -268,6 +268,7 @@ int directive_tabulate(Dict *command, char *line)
     DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
     DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
     DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
+    DictLookup(TempDict, "sort_expression", NULL, (void **)&SortBy);
     DictLookup(TempDict, "format", NULL, (void **)(&format));
 
     // Case 1: Plotting a datafile
@@ -301,7 +302,7 @@ int directive_tabulate(Dict *command, char *line)
         ContextDataTab = lt_DescendIntoNewContext();
 
         // Read data from file
-        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
+        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
         if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); ppl_glob_close(glob_handle); fclose(output); return 1; }
         status = DataGridDisplay(output, data, NUsingItems, min, max, format);
         if (status) { ppl_glob_close(glob_handle); fclose(output); return 1; }
@@ -429,7 +430,7 @@ int directive_tabulate(Dict *command, char *line)
        }
       DataFile_FromFunctions(ordinate_raster, FlagParametric,
                              NumberOfSamples, (FlagParametric ? &para_Tunit : &raster_units),
-                             &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, &ErrCount);
+                             &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); fclose(output); return 1; }
       status = DataGridDisplay(output, data, NUsingItems, min+1, max+1, format); // First range is for ordinate axis
       if (status) { fclose(output); return 1; }

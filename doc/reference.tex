@@ -1288,51 +1288,58 @@ set axis <axis> [ ( visible | invisible ) ]
   [ linked [item <number>] <axis> [using <expression>] ]
 \end{verbatim}
 
-The command:
-
+The \indcmdt{set axis} may be used to add additional axes to plots and to
+configure their appearance. Where an axis is stated on its own, as in the
+example
 \begin{verbatim}
 set axis x2
 \end{verbatim}
-
-\noindent may be used to add a second horizontal axis to a plot, with default settings. In
-general, there is no practical reason to use this command, as a second horizontal axis
-would implicitly be created by any of the following statements:
-
+additional horizontal or vertical axes are added with default
+settings. The converse statements
 \begin{verbatim}
-set x2label 'foo' \\
-set x2ticdir outwards \\
-plot sin(x) axes x2y1
-\end{verbatim}
-
-Of more practical use is the {\tt unset x2} command, which is used to remove an
-axis once it has been added to a plot. After executing:
-
-\begin{verbatim}
-set x2label 'foo'
-\end{verbatim}
-
-\noindent for example, the only way to tell PyXPlot to subsequently produce a plot
-without a second horizontal axis would be to delete this axis with the following
-command:
-
-\begin{verbatim}
+set noaxis x2
 unset axis x2
 \end{verbatim}
+are used, respectively, to remove axes from plots and to return them
+to their default configurations, which often has the same effect of removing
+them from the graph, unless they are configured otherwise in a configuration
+file.
 
-Note that in this case, the {\tt unset x2label} command would be sufficient to
-remove the label `foo' placed on the new axis, but not sufficient to delete the
-new axis that the {\tt set x2label} command implicitly created. Multiple axes
-can be deleted in a single {\tt unset axis} statement, for example:
-
+The position of any axis can be explicitly set using syntax of the form:
 \begin{verbatim}
-unset axis x2x4x5
+set axis x top
+set axis y right
+set axis z back
 \end{verbatim}
+Horizontal axes can be set to appear either at the {\tt top} or {\tt bottom};
+vertical axes can be set to appear either at the {\tt left} or {\tt right}; and
+$z$-axes can be set to appear either at the {\tt front} or {\tt back}.
+By default, the {\tt x1} axis is placed along the bottom of graphs and the {\tt
+y1} axis is placed up the left-hand side of graphs. On three-dimensional plots,
+the {\tt z1} axis is placed at the front of the graph. The second set of axes
+are placed opposite to the first: the {\tt x2}, {\tt y2} and {\tt z2} axes are
+placed respectively along the top, right and back sides of graphs.
+Higher-numbered axes are placed alongside the {\tt x1}, {\tt y1} and {\tt z1}
+axes.
 
-In the special cases of {\tt unset axis x1} or {\tt unset axis y1}, these axes
-cannot be deleted; a plot must have at least one horizontal and one vertical axis. Instead,
-the {\tt unset axis} command restores these axes to their default
-configurations, removing any set titles or ranges that they might have been
-given.
+The following keywords may also be placed alongside the positioning keywords
+listed above to specify how the axis should appear:
+\begin{itemize}
+\item {\tt arrow} -- Specifies that an arrowhead should be drawn on the right/top end of the axis. [{\bf Not default}].
+\item {\tt atzero} -- Specifies that rather than being placed along an edge of the plot, the axis should mark the lines where the perpendicular axes {\tt x1}, {\tt y1} and/or {\tt z1} are zero. [{\bf Not default}].
+\item {\tt automirrored} -- Specifies that an automatic decision should be made between the behaviour of {\tt mirrored} and {\tt nomirrored}. If there are no axes on the opposite side of the graph, a mirror axis is produced. If there are already axes on the opposite side of the graph, no mirror axis is produced. [{\bf Default}].
+\item {\tt fullmirrored} -- Similar to {\tt mirrored}. Specifies that this axis should have a corresponding twin placed on the opposite side of the graph with mirroring ticks and labelling. [{\bf Not default}; see {\tt automirrored}].
+\item {\tt invisible} -- Specifies that the axis should not be drawn; data can still be plotted against it, but the axis is unseen. See Example~\ref{ex:australia} for a plot where all of the axes are invisible.
+\item {\tt linked} -- Specifies that the axis should be linked to another axis; see Section~\ref{sec:linked_axes}.
+\item {\tt mirrored} -- Specifies that this axis should have a corresponding twin placed on the opposite side of the graph with mirroring ticks but with no labels on the ticks. [{\bf Not default}; see {\tt automirrored}].
+\item {\tt noarrow} -- Specifies that no arrowheads should be drawn on the ends of the axis. [{\bf Default}].
+\item {\tt nomirrored} -- Specifies that this axis should not have any corresponding twins. [{\bf Not default}; see {\tt automirrored}].
+\item {\tt notatzero} -- Opposite of {\tt atzero}; the axis should be placed along an edge of the plot. [{\bf Default}].
+\item {\tt notlinked} -- Specifies that the axis should no longer be linked to any other; see Section~\ref{sec:linked_axes}. [{\bf Default}].
+\item {\tt reversearrow} -- Specifies that an arrowhead should be drawn on the left/bottom end of the axis. [{\bf Not default}].
+\item {\tt twowayarrow} -- Specifies that arrowheadsshould be drawn on both ends of the axis. [{\bf Not default}].
+\item {\tt visible} -- Specifies that the axis should be displayed; opposite of {\tt invisible}. [{\bf Default}].
+\end{itemize}
 
 
 \subsection{axisunitstyle}\indcmd{set axisunitstyle}
@@ -3137,6 +3144,7 @@ tabulate [ <range> ] ( <expression> | <filename> )
        [ every <expressions> {:<expression>} ]
        [ index <value> ]
        [ select <expression> ]
+       [ sortby <expression> ]
        [ using <expression>  {:<expression>} ]
        [ with <output format> ]
 \end{verbatim}
@@ -3189,6 +3197,11 @@ tabulate [0:2*pi] sin(x):cos(x):tan(x) u 1:2:3:4
 The {\tt samples} setting can be used to control the number of points that are
 inserted into the \datafile.  If the ordinate axis is set to be logarithmic then the
 points at which the functions are evaluated are spaced logarithmically.
+
+The data produced by the {\tt tabulate} command can be sorted in order of any
+arbitrary metric by supplying an expression after the {\tt sortby} modifier;
+where such expressions are supplied, the data is sorted in order from the
+smallest value of the expression to the largest.
 
 
 \section{text}\indcmd{text}

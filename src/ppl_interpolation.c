@@ -52,7 +52,7 @@
 
 static long int __compare_offset;
 
-int __compare(const void *x, const void *y)
+static int __compare(const void *x, const void *y)
  {
   if      (*(((double *)x)+__compare_offset) > *(((double *)y)+__compare_offset)) return  1.0;
   else if (*(((double *)x)+__compare_offset) < *(((double *)y)+__compare_offset)) return -1.0;
@@ -134,7 +134,7 @@ RANGES_DONE:
   ContextLocalVec= lt_DescendIntoNewContext();
   ContextDataTab = lt_DescendIntoNewContext();
 
-  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, 2, SelectCrit, continuity, &ErrCount);
+  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, 2, SelectCrit, continuity, NULL, -1, &ErrCount);
   if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
 
   xdata = (double *)lt_malloc_incontext(2 * data->Nrows * sizeof(double), ContextLocalVec); // Transfer data from multiple data tables into single vectors

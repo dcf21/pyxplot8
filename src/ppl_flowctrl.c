@@ -532,7 +532,7 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
    if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the 'foreach ... in datafile' construct. %d ranges were supplied, even though only %ld variables are being read.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); *status=1; return; }
 
   ContextDataTab = lt_DescendIntoNewContext();
-  DataFile_read(&data, status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, i, SelectCrit, DATAFILE_CONTINUOUS, &ErrCount);
+  DataFile_read(&data, status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, i, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, &ErrCount);
   if (*status) { ppl_error(ERR_GENERAL, -1, -1, errtext); *status=1; return; }
 
   // Check that the FirstEntries above have the same units as any supplied ranges

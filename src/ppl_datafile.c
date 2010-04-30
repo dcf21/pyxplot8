@@ -618,7 +618,7 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
 // DataFile_read is the main entry point for reading a table of data from a data file
 // ----------------------------------------------------------------------------------
 
-void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
+void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
  {
   unsigned char AutoUsingList=0, HadNonNullUsingItem=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma, OneColumnInput=1;
   int           UsingLen, logi, logj, ContextOutput, ContextRough, ContextRaw;
@@ -738,6 +738,13 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   prev_blanklines    = 10; // The number of blank lines we've hit since the last datapoint
   file_linenumber    = 0;
 
+  // If SortBy is not NULL, add it to using list
+  if (SortBy!=NULL)
+   {
+    if (strcmp(SortBy, "@")==0) UsingItems[UsingLen++] = UsingItems[0];
+    else                        UsingItems[UsingLen++] = SortBy;
+   }
+
   // Open the requested datafile
   if      (strcmp(filename,"-" )==0) { filtered_input = stdin;  if (DEBUG) ppl_log("Reading from stdin.");       } // Special filename '-'  means we read from stdin
   else if (strcmp(filename,"--")==0) { ReadFromCommandLine = 1; if (DEBUG) ppl_log("Reading from commandline."); } // Special filename '--' means we read from the commandline
@@ -757,7 +764,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   ContextRough  = lt_DescendIntoNewContext(); // Rough mallocs inside this subroutine happen in this context
   ContextRaw    = lt_DescendIntoNewContext(); // Raw data goes into here when plotting with rows
 
-  *output = DataFile_NewDataTable(Ncolumns, ContextOutput, -1);
+  *output = DataFile_NewDataTable(UsingLen, ContextOutput, -1);
   if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
   if (UsingRowCol == DATAFILE_ROW)
    {
@@ -948,7 +955,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
     // Fetch this line if linenumber is within range, or if we are using rows and we need everything
     if (UsingRowCol == DATAFILE_ROW) // Store the whole line into a raw text spool
      {
-      if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, filename, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout);
+      if (discontinuity) DataFile_RotateRawData(&RawDataTab, *output, UsingItems, UsingLen, filename, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout);
       if (*status) { FCLOSE_FI; return; }
       cptr = RawDataTab->current->text[RawDataTab->current->BlockPosition] = (char *)lt_malloc_incontext(strlen(linebuffer)+1, ContextRaw);
       if (cptr==NULL) { strcpy(errout, "Out of memory whilst placing data into text spool."); *status=1; if (DEBUG) ppl_log(errout); FCLOSE_FI; return; }
@@ -978,7 +985,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
         sprintf(LineNumberStr,"%ld",file_linenumber);
        }
 
-      DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, NULL, ItemsOnLine, UsingItems, Ncolumns, filename, file_linenumber, NULL, linenumber_count, block_count, index_number, DATAFILE_COL, "column", ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      DataFile_ApplyUsingList(*output, ContextOutput, ColumnData, NULL, ItemsOnLine, UsingItems, UsingLen, filename, file_linenumber, NULL, linenumber_count, block_count, index_number, DATAFILE_COL, "column", ColumnHeadings, NColumnHeadings, ColumnUnits, NColumnUnits, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
       if (*status) { FCLOSE_FI; return; }
      }
     linenumber_count++;
@@ -989,7 +996,13 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   FCLOSE_FI;
 
   // If we are reading rows, go through all of the data that we've read and rotate it by 90 degrees
-  if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, Ncolumns, filename, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }
+  if (UsingRowCol == DATAFILE_ROW) { DataFile_RotateRawData(&RawDataTab, *output, UsingItems, UsingLen, filename, block_count, index_number, RowHeadings, NRowHeadings, RowUnits, NRowUnits, LabelStr, SelectCriterion, continuity, ErrCounter, status, errout); if (*status) return; }
+
+  // If data is to be sorted, sort it now
+  if (SortBy != NULL)
+   {
+    *output = DataTable_sort(*output, UsingLen-1, SortByContinuity==DATAFILE_CONTINUOUS);
+   }
 
   // Debugging line
   // DataFile_DataTable_List(*output);
@@ -1005,7 +1018,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 #define COUNTEDERR2F if (*ErrCounter==0) { sprintf(temp_err_string, "%s: Too many errors: no more errors will be shown.",buffer); ppl_warning(ERR_STACKED, temp_err_string); } }
 
-void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, int *ErrCounter)
+void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
  {
   unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0;
   int           UsingLen, logi, logj, i, j, k, ContextOutput;
@@ -1073,9 +1086,16 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   // If our using list has the wrong number of elements for the plot style we're aiming to use, then reject it
   if (UsingLen != Ncolumns) { sprintf(errout,"The supplied using ... clause contains the wrong number of items. We need %d columns of data, but %d have been supplied.", Ncolumns, UsingLen); *status=1; if (DEBUG) ppl_log(errout); return; }
 
+  // If SortBy is not NULL, add it to using list
+  if (SortBy!=NULL)
+   {
+    if (strcmp(SortBy, "@")==0) UsingItems[UsingLen++] = UsingItems[0];
+    else                        UsingItems[UsingLen++] = SortBy;
+   }
+
   // Keep a record of the memory context we're going to output into
   ContextOutput = lt_GetMemContext();
-  *output = DataFile_NewDataTable(Ncolumns, ContextOutput, RasterLen);
+  *output = DataFile_NewDataTable(UsingLen, ContextOutput, RasterLen);
   if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
 
   // Get a pointer to the value of the variable 'x' in the user's variable space
@@ -1114,15 +1134,93 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
      }
     if (!(*status))
      {
-      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric), UsingItems, Ncolumns, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric), UsingItems, UsingLen, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      } else {
       discontinuity = 1;
      }
     *status=0;
    }
 
-  // Reset the variable x to its old value and exit
+  // Reset the variable x to its old value
   *OrdinateVar = DummyTemp;
+
+  // If data is to be sorted, sort it now
+  if (SortBy != NULL)
+   {
+    *output = DataTable_sort(*output, UsingLen-1, SortByContinuity==DATAFILE_CONTINUOUS);
+   }
+
   return;
+ }
+
+// --------------------------------
+// Routines for sorting data tables
+// --------------------------------
+
+typedef struct DataTable_sorter
+ {
+  double       *data;
+  char         *text;
+  long int     *FileLine;
+  unsigned char split;
+ } DataTable_sorter;
+
+static int DataTable_sort_SortColumn;
+
+static int DataTable_sort_compare(const void *xv, const void *yv)
+ {
+  DataTable_sorter *x = (DataTable_sorter *)xv;
+  DataTable_sorter *y = (DataTable_sorter *)yv;
+
+  if      (x->data[DataTable_sort_SortColumn] > y->data[DataTable_sort_SortColumn]) return  1.0;
+  else if (x->data[DataTable_sort_SortColumn] < y->data[DataTable_sort_SortColumn]) return -1.0;
+  else                                                                              return  0.0;
+ }
+
+DataTable *DataTable_sort(DataTable *in, int SortColumn, int IgnoreContinuity)
+ {
+  int               i,io,Nc,Nco,Nr;
+  long              ji,jo;
+  DataBlock        *blk;
+  DataTable_sorter *sorter;
+  DataTable        *output;
+
+  Nc = in->Ncolumns;
+  Nco= Nc-1;
+  Nr = in->Nrows;
+  sorter = (DataTable_sorter *)lt_malloc(Nr * sizeof(DataTable_sorter));
+  if (sorter==NULL) return NULL;
+
+  // Transfer data from DataTable into a DataTable_sorter array which is in a format qsort() can sort
+  blk = in->first;
+  jo=0;
+  while (blk != NULL)
+   {
+    for (ji=0; ji<blk->BlockPosition; ji++, jo++)
+     {
+      sorter[jo].data     = &(blk->data_real[Nc*ji].d);
+      sorter[jo].text     =   blk->text     [   ji];
+      sorter[jo].FileLine = &(blk->FileLine [Nc*ji]);
+      if (IgnoreContinuity) sorter[jo].split = 0;
+      else                  sorter[jo].split = blk->split[ji];
+     }
+    blk=blk->next;
+   }
+
+  // Sort the DataTable_sorter array
+  DataTable_sort_SortColumn = SortColumn;
+  qsort((void *)sorter, jo, sizeof(DataTable_sorter), DataTable_sort_compare);
+
+  // Copy sorted data into a new DataTable, removing the sort column
+  output = DataFile_NewDataTable(Nco, in->MemoryContext, Nr);
+  if (output==NULL) return NULL;
+                          for (i=0,io=0; i<Nc; i++) if (i!=SortColumn) output->FirstEntries[io++] = in->FirstEntries[i];
+  for (jo=0; jo<Nr; jo++) for (i=0,io=0; i<Nc; i++) if (i!=SortColumn) output->first->data_real[(io++)+Nco*jo].d = sorter[jo].data[i];
+  for (jo=0; jo<Nr; jo++)                                              output->first->text     [           jo]   = sorter[jo].text;
+  for (jo=0; jo<Nr; jo++) for (i=0,io=0; i<Nc; i++) if (i!=SortColumn) output->first->FileLine [(io++)+Nco*jo]   = sorter[jo].FileLine[i];
+  for (jo=0; jo<Nr; jo++)                                              output->first->split    [           jo]   = sorter[jo].split;
+  output->Nrows = Nr;
+  output->first->BlockPosition = Nr;
+  return output;
  }
 
