@@ -246,8 +246,10 @@ char *FetchInputStatement(char *prompt1, char *prompt2)
    {
     if      ((QuoteChar=='\0') && (line[i]=='\'')                     ) QuoteChar = '\'';
     else if ((QuoteChar=='\0') && (line[i]=='\"')                     ) QuoteChar = '\"';
+    else if ((QuoteChar=='\0') && (line[i]=='`')                      ) QuoteChar = '`';
     else if ((QuoteChar=='\'') && (line[i]=='\'') && (line[i-1]!='\\')) QuoteChar = '\0';
     else if ((QuoteChar=='\"') && (line[i]=='\"') && (line[i-1]!='\\')) QuoteChar = '\0';
+    else if ((QuoteChar=='`' ) && (line[i]=='`' ) && (line[i-1]!='\\')) QuoteChar = '\0';
     else if ((QuoteChar=='\0') && (line[i]==';' )                     )
      {
       line[i]='\0';

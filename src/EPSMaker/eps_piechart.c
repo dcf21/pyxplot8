@@ -119,7 +119,7 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
 void eps_pie_YieldUpText(EPSComm *x)
  {
   int              j, k, l, Ncolumns;
-  char            *FormatString, *label, DefaultFormat[64]="\"%.1d\\%% %s\"%(percentage,label)";
+  char            *FormatString, *label, DefaultFormat[64]="\"%.0f\\%% %s\"%(percentage,label)";
   canvas_plotdesc *pd;
   DataBlock       *blk;
   CanvasTextItem  *i;
@@ -383,19 +383,19 @@ void eps_pie_RenderEPS(EPSComm *x)
             else if (a < 330*M_PI/180) { hal=SW_HALIGN_RIGHT; val=SW_VALIGN_CENT; }
             else if (a < 355*M_PI/180) { hal=SW_HALIGN_RIGHT; val=SW_VALIGN_BOT;  }
             else                       { hal=SW_HALIGN_CENT ; val=SW_VALIGN_BOT;  }
-            if      (val == SW_VALIGN_BOT ) vtop = ypos+rad*cos(a)*1.05 + TextHeight[ItemNo];
-            else if (val == SW_VALIGN_CENT) vtop = ypos+rad*cos(a)*1.05 + TextHeight[ItemNo]/2;
-            else                            vtop = ypos+rad*cos(a)*1.05;
+            if      (val == SW_VALIGN_BOT ) vtop = ypos+rad*cos(a)*1.08 + TextHeight[ItemNo];
+            else if (val == SW_VALIGN_CENT) vtop = ypos+rad*cos(a)*1.08 + TextHeight[ItemNo]/2;
+            else                            vtop = ypos+rad*cos(a)*1.08;
             if (vtop > vtitle) vtitle=vtop;
             eps_core_SetColour(x, &ww, 1);
-            IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nclosepath\nstroke\n",xpos+rad*sin(a),ypos+rad*cos(a),xpos+rad*sin(a)*1.03,ypos+rad*cos(a)*1.03);
+            IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nclosepath\nstroke\n",xpos+rad*sin(a),ypos+rad*cos(a),xpos+rad*sin(a)*1.05,ypos+rad*cos(a)*1.05);
             eps_core_SetColour(x, &ww_txt, 1);
-            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*1.05)/M_TO_PS, (ypos+rad*cos(a)*1.05)/M_TO_PS, hal, val, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, pageno, (xpos+rad*sin(a)*1.08)/M_TO_PS, (ypos+rad*cos(a)*1.08)/M_TO_PS, hal, val, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
            }
           else // Labelling pie wedges in a key
            {
             int    pageno = x->LaTeXpageno++;
-            double h = xpos + rad*1.1; // Position of left of key
+            double h = xpos + rad*1.2; // Position of left of key
             double v = ypos + TotalHeight/2 - key_vpos - TextHeight[ItemNo]/2; // Vertical position of centre of key item
             double s = MARGIN_HSIZE_LEFT*0.45/3; // Controls size of filled square which appears next to wedge label
             double st= MARGIN_HSIZE_LEFT*0.67;
