@@ -1209,7 +1209,14 @@ DataTable *DataTable_sort(DataTable *in, int SortColumn, int IgnoreContinuity)
 
   // Sort the DataTable_sorter array
   DataTable_sort_SortColumn = SortColumn;
-  qsort((void *)sorter, jo, sizeof(DataTable_sorter), DataTable_sort_compare);
+  for (i=0,io=0; io<=jo; io++)
+   if (sorter[io].split || (io==jo))
+    {
+     qsort((void *)(sorter+i), io-i, sizeof(DataTable_sorter), DataTable_sort_compare);
+     sorter[i].split = (i!=0);
+     for (ji=i+1; ji<io; ji++) sorter[ji].split = 0;
+     i=io;
+    }
 
   // Copy sorted data into a new DataTable, removing the sort column
   output = DataFile_NewDataTable(Nco, in->MemoryContext, Nr);

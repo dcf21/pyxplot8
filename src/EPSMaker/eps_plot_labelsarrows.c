@@ -36,6 +36,7 @@
 #include "eps_colours.h"
 #include "eps_comm.h"
 #include "eps_core.h"
+#include "eps_plot.h"
 #include "eps_plot_canvas.h"
 #include "eps_plot_labelsarrows.h"
 #include "eps_plot_legend.h"
@@ -51,6 +52,7 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
  }
 
 #define FETCH_AXES(SYSTEM, XA, XAXES, AXISN, XIN, XOUT) \
+ { \
      XOUT = XIN.real; \
      if      (SYSTEM == SW_SYSTEM_FIRST ) { XA = &(XAXES[1]); } \
      else if (SYSTEM == SW_SYSTEM_SECOND) { XA = &(XAXES[2]); } \
@@ -58,9 +60,12 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
      else                                 { XA = NULL; XOUT = 0.0; } \
      if (XA != NULL) \
       { \
-       if (XA->DataUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->DataUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with the axes used. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(XA->DataUnit), NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
-       else if (!XA->DataUnitSet) { XA=NULL; XOUT=0.5; } \
-      }
+       if (!XA->RangeFinalised) { XA = &(XAXES[1]); } /* Default to first axis if desired axis doesn't exist */ \
+       if (XA->HardUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->HardUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with the range specified for the axis. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(XA->HardUnit), NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
+       if (XA->DataUnitSet && (!ppl_units_DimEqual(&(XIN),&(XA->DataUnit)))) { sprintf(temp_err_string, "Position specified for %s dimensionally incompatible with data plotted against the axis. Position has units of <%s> while axis has units of <%s>.", ItemName, ppl_units_GetUnitStr(&(XIN), NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(XA->DataUnit), NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1,temp_err_string); XA=NULL; XOUT=0.5; status=1; } \
+       if (!XA->RangeFinalised) { XA=NULL; XOUT=0.5; } \
+      } \
+ }
 
 #define ADD_PAGE_COORDINATES(SYSTEM, XIN, THETA_X) \
      if ((SYSTEM==SW_SYSTEM_PAGE)||(SYSTEM==SW_SYSTEM_GRAPH)) \

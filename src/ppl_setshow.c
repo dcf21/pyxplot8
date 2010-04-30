@@ -805,6 +805,7 @@ void directive_set(Dict *command)
    {
 
 #define SET_NOTICS \
+ { \
       DictLookup(command,"minor",NULL,(void **)&tempstr2); \
       if (tempstr2==NULL) \
        { \
@@ -842,6 +843,7 @@ void directive_set(Dict *command)
         tempaxis->MTickStrs = malloc(sizeof(char *)); \
         if (tempaxis->MTickStrs!=NULL) *(tempaxis->MTickStrs) = NULL; \
        } \
+ }
 
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -856,9 +858,9 @@ void directive_set(Dict *command)
        }
       else
        {
-        for (i=0; i<MAX_AXES; i++) { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; if (tempaxis->enabled) SET_NOTICS; }
-        for (i=0; i<MAX_AXES; i++) { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; if (tempaxis->enabled) SET_NOTICS; }
-        for (i=0; i<MAX_AXES; i++) { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; if (tempaxis->enabled) SET_NOTICS; }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; if (tempaxis->enabled) { SET_NOTICS; } }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; if (tempaxis->enabled) { SET_NOTICS; } }
+        for (i=0; i<MAX_AXES; i++) { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; if (tempaxis->enabled) { SET_NOTICS; } }
        }
      }
    }

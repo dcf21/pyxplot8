@@ -167,7 +167,8 @@ char *NumericDisplay(double in, int N, int SigFig, int latex)
   if (k==i) k--;
   k++;
   if (k==j) return output;
-  strcpy(output+k , output+j);
+  for (l=0; output[j+l]!='\0'; l++) output[k+l] = output[j+l];
+  output[k+l]='\0';
   return output;
  }
 

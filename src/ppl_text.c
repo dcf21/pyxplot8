@@ -117,12 +117,12 @@ Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
 'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linewidth',\n\
 'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
-'nogrid', 'nokey', 'nolabel', 'nolinewidth', 'nologscale', 'nomultiplot',\n\
-'notitle', 'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette',\n\
-'papersize', 'pointlinewidth', 'pointsize', 'preamble', 'projection',\n\
-'samples', 'size', 'style', 'terminal', 'textcolour', 'texthalign',\n\
-'textvalign', 'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format',\n\
-'[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot', 'notitle',\n\
+'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette', 'papersize',\n\
+'pointlinewidth', 'pointsize', 'preamble', 'projection', 'samples', 'size',\n\
+'style', 'terminal', 'textcolour', 'texthalign', 'textvalign', 'title',\n\
+'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set, "\n\

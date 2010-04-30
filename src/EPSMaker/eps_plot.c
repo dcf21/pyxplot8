@@ -342,7 +342,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       if (pd->function == 0) // Read data from file
        {
         if (DEBUG) { sprintf(temp_err_string, "Reading data from file '%s' for dataset %d in plot item %d", pd->filename, i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_CONTINUOUS, &ErrCount);
+        DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
        } else {
         double *special_raster = ordinate_raster;
         int     Nsamples       = x->current->settings.samples;
@@ -358,7 +358,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
          }
 
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_CONTINUOUS, &ErrCount);
+        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
       else
@@ -462,7 +462,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       SpecialRaster = OrdinateRaster;
       Nsamples      = OrdinateRasterLen;
       DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
-      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_CONTINUOUS, &ErrCount);
+      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage

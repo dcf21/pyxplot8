@@ -342,7 +342,35 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
       else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))
        {
         // Boxes and steps need slightly more complicated logic to take into account finite width of boxes/steps
+
+#define FINISH_FACTORING_BOXES \
+ { \
+  /* Logic to take account of final boxes/steps */ \
+  if (ptAset && ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))) \
+   { \
+    unsigned char logaxis = (a1->LogFinal==SW_BOOL_TRUE); \
+    UUC_RESET; \
+    UUC(a2, lasty); \
+    if (ptBset) /* We have one final box/step to process */ \
+     { \
+            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, (ptCx - (ptCx-ptBx)/2      )); UUF(a1, (ptCx + (ptCx-ptBx)/2      )); UUUBF(a2); } \
+            else if (style == SW_STYLE_BOXES)                                 { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); UUUBF(a2); } \
+            else if (style == SW_STYLE_HISTEPS)                               { UUF(a1, (ptCx - (ptCx-ptBx)/2      )); UUF(a1, (ptCx + (ptCx-ptBx)/2      )); } \
+            else if (style == SW_STYLE_STEPS)  { UUF(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUF(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); } \
+            else if (style == SW_STYLE_FSTEPS) { UUF(a1, ptCx); } \
+     } \
+    else if (ptCset) /* We have a dataset with only a single box/step */ \
+     { \
+      if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, (ptCx - 0.5)); UUF(a1, (ptCx + 0.5)); UUUBF(a2); } \
+      else if (style == SW_STYLE_BOXES)                                { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); UUUBF(a2); } \
+      else if (sg->BoxWidth.real<1e-200)                               { UUF(a1, (ptCx - 0.5)); UUF(a1, (ptCx + 0.5)); } \
+      else                                                             { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); } \
+     } \
+   } \
+ }
+
         unsigned char logaxis = (a1->LogFinal==SW_BOOL_TRUE);
+        if (blk->split[j]) { FINISH_FACTORING_BOXES; }
         UUC(a2, UUR(1)); // y-coordinates are easy
         ptAx=ptBx; ptAset=ptBset;
         ptBx=ptCx; ptBset=ptCset;
@@ -373,30 +401,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
      }
     blk=blk->next;
    }
-
-  // Logic to take account of final boxes/steps
-  if (ptAset && ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS)))
-   {
-    unsigned char logaxis = (a1->LogFinal==SW_BOOL_TRUE);
-    UUC_RESET;
-    UUC(a2, lasty);
-    if (ptBset) // We have one final box/step to process
-     {
-            if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, (ptCx - (ptCx-ptBx)/2      )); UUF(a1, (ptCx + (ptCx-ptBx)/2      )); UUUBF(a2); }
-            else if (style == SW_STYLE_BOXES)                                 { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); UUUBF(a2); }
-            else if (style == SW_STYLE_HISTEPS)                               { UUF(a1, (ptCx - (ptCx-ptBx)/2      )); UUF(a1, (ptCx + (ptCx-ptBx)/2      )); }
-            else if (style == SW_STYLE_STEPS)  { UUF(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUF(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
-            else if (style == SW_STYLE_FSTEPS) { UUF(a1, ptCx); }
-     }
-    else // We have a dataset with only a single box/step
-     {
-      if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, (ptCx - 0.5)); UUF(a1, (ptCx + 0.5)); UUUBF(a2); }
-      else if (style == SW_STYLE_BOXES)                                { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); UUUBF(a2); }
-      else if (sg->BoxWidth.real<1e-200)                               { UUF(a1, (ptCx - 0.5)); UUF(a1, (ptCx + 0.5)); }
-      else                                                             { UUF(a1, (ptCx - sg->BoxWidth.real/2)); UUF(a1, (ptCx + sg->BoxWidth.real/2)); }
-     }
-   }
-
+  FINISH_FACTORING_BOXES;
   return 0;
  }
 
@@ -739,6 +744,27 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    } \
  } \
 
+#define FINISH_ROW_OF_BOXES \
+ { \
+  if (ptBset) /*/ We have one final box/step to process */ \
+   { \
+    if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ( ptCx                 , ptCy, (ptCx-ptBx)/2      ); } \
+    else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptCx                 , ptCy, sg->BoxWidth.real/2); } \
+    else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptCx                 , ptCy, (ptCx-ptBx)/2      ); } \
+    else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptBx+ptCx)/2, ptCy, (ptCx-ptBx)/2); } \
+    else if (style == SW_STYLE_FSTEPS) { MAKE_STEP( ptCx        , ptCy, 0.0          ); } \
+   } \
+  else if (ptCset) /* We have a dataset with only a single box/step */ \
+   { \
+    if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX (ptCx, ptCy, 0.5); } \
+    else if (style == SW_STYLE_BOXES)                                { MAKE_BOX (ptCx, ptCy, sg->BoxWidth.real/2); } \
+    else if (sg->BoxWidth.real<1e-200)                               { MAKE_STEP(ptCx, ptCy, 0.5); } \
+    else                                                             { MAKE_STEP(ptCx, ptCy, sg->BoxWidth.real/2); } \
+   } \
+  ptAset = ptBset = ptCset = 0; \
+  LineDraw_PenUp(ld); \
+ } \
+
     if (a[yn]->DataUnitSet && (!ppl_units_DimEqual(&sg->BoxFrom, &a[yn]->DataUnit))) { sprintf(temp_err_string, "Data with units of <%s> plotted as boxes/steps when BoxFrom is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[yn]->DataUnit,NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&sg->BoxFrom,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
     else if (a[xn]->DataUnitSet && (sg->BoxWidth.real>0.0) && (!ppl_units_DimEqual(&sg->BoxWidth, &a[xn]->DataUnit))) { sprintf(temp_err_string, "Data with ordinate units of <%s> plotted as boxes/steps when BoxWidth is set to a value with units of <%s>.", ppl_units_GetUnitStr(&a[xn]->DataUnit,NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&sg->BoxWidth,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
     else
@@ -748,6 +774,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
        {
         for (j=0; j<blk->BlockPosition; j++)
          {
+          if (blk->split[j]) { FINISH_ROW_OF_BOXES; }
           ptAx=ptBx; ptAy=ptBy; ptAset=ptBset;
           ptBx=ptCx; ptBy=ptCy; ptBset=ptCset;
           ptCx=logaxis?log(UUR(0)):(UUR(0)); ptCy=UUR(1); ptCset=1;
@@ -777,21 +804,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
          }
         blk=blk->next;
        }
-      if (ptBset) // We have one final box/step to process
-       {
-              if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ( ptCx                 , ptCy, (ptCx-ptBx)/2      ); }
-              else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptCx                 , ptCy, sg->BoxWidth.real/2); }
-              else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptCx                 , ptCy, (ptCx-ptBx)/2      ); }
-              else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptBx+ptCx)/2, ptCy, (ptCx-ptBx)/2); }
-              else if (style == SW_STYLE_FSTEPS) { MAKE_STEP( ptCx        , ptCy, 0.0          ); }
-       }
-      else if (ptCset) // We have a dataset with only a single box/step
-       {
-        if     ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX (ptCx, ptCy, 0.5); }
-        else if (style == SW_STYLE_BOXES)                                { MAKE_BOX (ptCx, ptCy, sg->BoxWidth.real/2); }
-        else if (sg->BoxWidth.real<1e-200)                               { MAKE_STEP(ptCx, ptCy, 0.5); }
-        else                                                             { MAKE_STEP(ptCx, ptCy, sg->BoxWidth.real/2); }
-       }
+      FINISH_ROW_OF_BOXES;
      }
     LineDraw_PenUp(ld);
    }
