@@ -41,6 +41,7 @@
 #include "eps_plot_canvas.h"
 #include "eps_plot_ticking.h"
 #include "eps_plot_ticking_auto.h"
+#include "eps_plot_ticking_auto2.h"
 
 void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle)
  {
@@ -287,7 +288,13 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
      }
 
     // Do automatic ticking as required
-    if (AutoTicks[1]) eps_plot_ticking_auto(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
+    if (AutoTicks[1])
+     {
+      if ((axis->format != NULL) || (axis->linkusing != NULL))
+        eps_plot_ticking_auto (axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
+      else
+        eps_plot_ticking_auto2(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
+     }
 
     // Set flag to show that we have finalised the ticking of this axis
     axis->TickListFinalised = 1;
