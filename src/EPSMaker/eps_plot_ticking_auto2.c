@@ -62,16 +62,16 @@
 // Main entry point for automatic ticking of axes
 void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier, unsigned char *AutoTicks, double length, double tick_sep_major, double tick_sep_minor)
  {
-  int    OutContext, ContextRough=-1;
+  //int    OutContext, ContextRough=-1;
 
   // Make temporary rough workspace
-  OutContext   = lt_GetMemContext();
-  ContextRough = lt_DescendIntoNewContext();
+  //OutContext   = lt_GetMemContext();
+  //ContextRough = lt_DescendIntoNewContext();
 
   eps_plot_ticking_auto(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
 
   // Delete rough workspace
-  if (ContextRough>0) lt_AscendOutOfContext(ContextRough);
+  //if (ContextRough>0) lt_AscendOutOfContext(ContextRough);
   return;
  }
 
