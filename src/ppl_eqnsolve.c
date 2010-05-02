@@ -48,8 +48,8 @@ double optimise_RealToLog(double in, int iter, double *norm)
  {
   double a=-2;
 
-  if (iter >= 3) { *norm = max(1e-200, fabs(in)); return in/(*norm); }
-  if (iter >=2) a = -500;
+  if ((iter==1) || (iter >= 4)) { *norm = max(1e-200, fabs(in)); return in/(*norm); }
+  if (iter >=3) a = -500;
 
   if (in >= exp(a)) return log(in);
   else              return 2*a - log(2*exp(a)-in);
@@ -59,8 +59,8 @@ double optimise_LogToReal(double in, int iter, double *norm)
  {
   double a=-2;
 
-  if (iter >=3) return in*(*norm);
-  if (iter >=2) a = -500;
+  if ((iter==1) || (iter >=4)) return in*(*norm);
+  if (iter >=3) a = -500;
 
   if (in >= a) return exp(in);
   else         return 2*exp(a)-exp(2*a-in);
@@ -78,11 +78,14 @@ typedef struct MMComm {
  double        sign;
  value         first  [EQNSOLVE_MAXDIMS];
  unsigned char IsFirst[EQNSOLVE_MAXDIMS];
+ double        WorstScore;
  int          *errpos;
  char          errtext[LSTR_LENGTH];
  int           WarningPos; // One final algebra error is allowed to produce a warning
  char          warntext[LSTR_LENGTH];
  } MMComm;
+
+#define WORSTSCORE_INIT -(DBL_MAX/1e10)
 
 char *PrintParameterValues(const gsl_vector *x, MMComm *data, char *output)
  {
@@ -106,7 +109,7 @@ double MultiMinSlave(const gsl_vector *x, void *params)
   value output1, output2;
   int i;
   unsigned char squareroot=0;
-  double accumulator=0.0;
+  double accumulator=0.0, output;
   MMComm *data = (MMComm *)params;
 
   if (*(data->errpos)>=0) return GSL_NAN; // We've previously had a serious error... so don't do any more work
@@ -167,8 +170,11 @@ double MultiMinSlave(const gsl_vector *x, void *params)
      }
    }
   if (squareroot) accumulator = sqrt(accumulator);
-  if (!gsl_finite(accumulator)) data->GoneNaN=1;
-  return accumulator * data->sign;
+  output = accumulator * data->sign;
+  if ((!gsl_finite(output)) && (data->WorstScore > WORSTSCORE_INIT)) { data->WorstScore *= 1.1; return data->WorstScore; }
+  if (!gsl_finite(output)) { data->GoneNaN=1; }
+  else                     { if (data->WorstScore < output) data->WorstScore = output; }
+  return output;
  }
 
 void MultiMinIterate(MMComm *commlink)
@@ -214,8 +220,8 @@ void MultiMinIterate(MMComm *commlink)
 
     for (i=0; i<Nparams; i++)
      {
-      if (fabs(gsl_vector_get(x,i))>1e-6) gsl_vector_set(ss, i, 0.1 * gsl_vector_get(x,i));
-      else                                gsl_vector_set(ss, i, 0.1                      ); // Avoid having a stepsize of zero
+      if (fabs(gsl_vector_get(x,i))>1e-6) gsl_vector_set(ss, i, 0.05 * gsl_vector_get(x,i));
+      else                                gsl_vector_set(ss, i, 0.05                      ); // Avoid having a stepsize of zero
      }
 
     s = gsl_multimin_fminimizer_alloc (T, fn.n);
@@ -227,6 +233,7 @@ void MultiMinIterate(MMComm *commlink)
 
     iter                 = 0;
     commlink->GoneNaN    = 0;
+    commlink->WorstScore = WORSTSCORE_INIT;
     do 
      {
       iter++;
@@ -255,7 +262,7 @@ void MultiMinIterate(MMComm *commlink)
 
     gsl_multimin_fminimizer_free(s);
    }
-  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
+  while ((iter2 < 4) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
 
   if (iter2>=20) status=1;
   if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); }
@@ -403,6 +410,7 @@ void directive_solve(Dict *command)
   commlink.errpos     = &errpos;
   commlink.WarningPos =-1;
   commlink.GoneNaN    = 0;
+  commlink.WorstScore = WORSTSCORE_INIT;
   for (i=0; i<commlink.Nexprs; i++) { commlink.IsFirst[i]=1; ppl_units_zero(&commlink.first[i]); }
 
   MultiMinIterate(&commlink);

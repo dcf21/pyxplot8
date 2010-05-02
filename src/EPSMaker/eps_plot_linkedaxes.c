@@ -370,15 +370,19 @@ typedef struct LAUComm {
  int           GoneNaN, mode, iter2;
  double        norm;
  value         target;
+ double        WorstScore;
  int          *errpos;
  char          errtext[LSTR_LENGTH];
  int           WarningPos; // One final algebra error is allowed to produce a warning
  char          warntext[LSTR_LENGTH];
  } LAUComm;
 
+#define WORSTSCORE_INIT -(DBL_MAX/1e10)
+
 double eps_plot_LAUSlave(const gsl_vector *x, void *params)
  {
   int      i;
+  double   output;
   value    OutValue;
   LAUComm *data = (LAUComm *)params;
 
@@ -394,8 +398,11 @@ double eps_plot_LAUSlave(const gsl_vector *x, void *params)
   if (*(data->errpos) >= 0) { data->WarningPos=*(data->errpos); sprintf(data->warntext, "An algebraic error was encountered at %s=%s: %s", data->VarName, ppl_units_NumericDisplay(data->VarValue,0,0,0), data->errtext); *(data->errpos)=-1; return GSL_NAN; }
 
 #define TWINLOG(X) ((X>1e-200) ? log(X) : (2*log(1e-200) - log(2e-200-X)))
-  if (data->mode==0) return pow( TWINLOG(data->target.real                  ) - TWINLOG(OutValue.real                   ) ,2);
-  else               return pow( TWINLOG(data->target.exponent[data->mode-1]) - TWINLOG(OutValue.exponent[data->mode-1] ) ,2);
+  if (data->mode==0) output = pow( TWINLOG(data->target.real                  ) - TWINLOG(OutValue.real                   ) ,2);
+  else               output = pow( TWINLOG(data->target.exponent[data->mode-1]) - TWINLOG(OutValue.exponent[data->mode-1] ) ,2);
+  if ((!gsl_finite(output)) && (data->WorstScore > WORSTSCORE_INIT)) { data->WorstScore *= 1.1; return data->WorstScore; }
+  if (( gsl_finite(output)) && (data->WorstScore < output)         ) { data->WorstScore = output; }
+  return output;
  }
 
 void eps_plot_LAUFitter(LAUComm *commlink)
@@ -430,8 +437,9 @@ void eps_plot_LAUFitter(LAUComm *commlink)
     // If initial value we are giving the minimiser produces an algebraic error, it's not worth continuing
     testval = eps_plot_LAUSlave(x,(void *)commlink);
     if (commlink->WarningPos>=0) { *(commlink->errpos) = commlink->WarningPos; commlink->WarningPos=-1; sprintf(commlink->errtext, "%s", commlink->warntext); return; }
-    iter              = 0;
-    commlink->GoneNaN = 0;
+    iter                 = 0;
+    commlink->GoneNaN    = 0;
+    commlink->WorstScore = WORSTSCORE_INIT;
     do
      {
       iter++;
@@ -448,7 +456,7 @@ void eps_plot_LAUFitter(LAUComm *commlink)
     gsl_multimin_fminimizer_free(s);
     if (iter2==999) { iter2=2; break; }
    }
-  while ((iter2 < 3) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
+  while ((iter2 < 4) || ((commlink->GoneNaN==0) && (!status) && (size < sizelast2) && (iter2 < 20))); // Iterate 2 times, and then see whether size carries on getting smaller
 
   if (iter2>=20) status=1;
   if (status) { *(commlink->errpos)=0; sprintf(commlink->errtext, "Failed to converge. GSL returned error: %s", gsl_strerror(status)); }

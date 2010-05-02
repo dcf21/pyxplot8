@@ -872,8 +872,28 @@ implemented using the {\tt gsl\_\-deriv\_\-central()} function of the same libra
 Any caveats which apply to the use of these routines also apply to PyXPlot's
 numerical calculus routines.
 
-\example{ex:calculus}{An example}{
-In this example,.
+\example{ex:calculus}{Integrating the function $\mathrm{sinc}(x)$}{
+The function $\mathrm{sinc}(x)$ cannot be integrated analytically, but it can be shown that
+\begin{displaymath}
+\int_0^{\pm\infty} \mathrm{sinc}(x)\,\mathrm{d}x = \pm\pi/2 .
+\end{displaymath}
+In the following script, we use PyXPlot's facilities for numerical integration to produce a plot of
+\begin{displaymath}
+y=\int_0^{x} \mathrm{sinc}(x)\,\mathrm{d}x .
+\end{displaymath}
+We reduce the number of samples taken along the ordinate axis to~80, as
+evaluation of the numerical integral may be time consuming on older computers.
+We use the \indcmdt{set xformat} (see Section~\ref{sec:set_xformat}) to demark
+both the {\tt x}- and {\tt y}-axes in fractions of $\pi$:
+\nlscf
+\noindent{\tt set samples 80}\newline
+\noindent{\tt set key bottom right}\newline
+\noindent{\tt set xformat "\%s\$$\backslash$pi\$"\%(x/pi)}\newline
+\noindent{\tt set yformat "\%s\$$\backslash$pi\$"\%(y/pi)}\newline
+\noindent{\tt set xrange [-5*pi:5*pi]}\newline
+\noindent{\tt plot int\_dz(sinc(z),0,x)}
+\nlscf
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_integration.eps}}
 }
 
 \section{Solving Systems of Equations}
@@ -1043,11 +1063,10 @@ function $B_\nu(\nu,T)$, i.e.\ by solving the equation
 This can be done as follows:
 \nlscf
 \noindent {\tt pyxplot> {\bf nu = 1e14*unit(Hz)}}\newline
-\noindent {\tt pyxplot> {\bf solve diff\_dnu(Bv(nu,5800*unit(K)))=0 via nu}}\newline
+\noindent {\tt pyxplot> {\bf solve diff\_dnu(Bv(nu,5800*unit(K)),nu) = $\backslash$}}\newline
+\noindent {\tt .......> {\bf ~~~~~~~~~unit(0*W/Hz**2/m**2) via nu}}\newline
 \noindent {\tt pyxplot> {\bf print nu}}\newline
-\noindent {\tt YAY FOR PYXPLOT}
-\nlnp
-foo
+\noindent {\tt 340.9781 THz}
 }
 
 \section{Working with Time-Series Data}
