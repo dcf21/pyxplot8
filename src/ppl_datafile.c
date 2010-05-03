@@ -1210,7 +1210,7 @@ DataTable *DataTable_sort(DataTable *in, int SortColumn, int IgnoreContinuity)
   // Sort the DataTable_sorter array
   DataTable_sort_SortColumn = SortColumn;
   for (i=0,io=0; io<=jo; io++)
-   if (sorter[io].split || (io==jo))
+   if ((io==jo) || sorter[io].split)
     {
      qsort((void *)(sorter+i), io-i, sizeof(DataTable_sorter), DataTable_sort_compare);
      sorter[i].split = (i!=0);
