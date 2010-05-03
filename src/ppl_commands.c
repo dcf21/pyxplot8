@@ -28,8 +28,8 @@
 // < ...a... | ...b... >  Match exactly one of ...a... or ...b...
 // ( ...a... ~ ...b... )  Match ...a..., ...b..., etc., in any order, either 1 or 0 times each
 // %q:variable            Match a quoted string ('...' or "...") and place it in variable
-// %S:variable            Match an unquoted string and place it in variable 
-// %f:variable            Match a float and place it in variable 
+// %S:variable            Match an unquoted string and place it in variable
+// %f:variable            Match a float and place it in variable
 // %d:variable            Match an integer and place it in variable
 
 // List of commands recognised by PyXPlot

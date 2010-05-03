@@ -1211,7 +1211,7 @@ int directive_piechart(Dict *command, int interactive)
   DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
   if (SelectCrit==NULL) { ptr->plotitems->SelectCriterion = NULL; }
   else
-   { 
+   {
     ptr->plotitems->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
     if (ptr->plotitems->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
     strcpy(ptr->plotitems->SelectCriterion, SelectCrit);
@@ -1487,7 +1487,7 @@ int directive_plot(Dict *command, int interactive, int replot)
     ppl_error(ERR_MEMORY, -1, -1,"Out of memory");
     if (ptr->XAxes!=NULL) { free(ptr->XAxes); ptr->XAxes = NULL; }
     if (ptr->YAxes!=NULL) { free(ptr->YAxes); ptr->YAxes = NULL; }
-    if (ptr->ZAxes!=NULL) { free(ptr->ZAxes); ptr->ZAxes = NULL; } 
+    if (ptr->ZAxes!=NULL) { free(ptr->ZAxes); ptr->ZAxes = NULL; }
    }
   else
    {
@@ -1677,7 +1677,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
       DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_ROW;
       DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
-  
+
       DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
       if (EveryList==NULL) { (*PlotItemPtr)->EverySet = 0; }
       else
@@ -1686,7 +1686,7 @@ int directive_plot(Dict *command, int interactive, int replot)
         if (j>6) { ppl_error(ERR_SYNTAX, -1, -1, "More than six items specified in every modifier -- final items are not valid syntax."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         ListIter2 = ListIterateInit(EveryList);
         for (i=0; i<j; i++)
-         {        
+         {
           TempDict2 = (Dict *)ListIter2->data;
           DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
           if (tempint != NULL) (*PlotItemPtr)->EveryList[i] = *tempint;
@@ -1699,7 +1699,7 @@ int directive_plot(Dict *command, int interactive, int replot)
       DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
       if (SelectCrit==NULL) { (*PlotItemPtr)->SelectCriterion = NULL; }
       else
-       {  
+       {
         (*PlotItemPtr)->SelectCriterion = (char *)malloc(strlen(SelectCrit)+1);
         if ((*PlotItemPtr)->SelectCriterion == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
         strcpy((*PlotItemPtr)->SelectCriterion, SelectCrit);

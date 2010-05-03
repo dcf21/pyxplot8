@@ -177,7 +177,7 @@ int dviNonAsciiChar(dviInterpreterState *interp, int c, char move)
 
   postPos = interp->output->currentPosition;
   dviPos = interp->state;
-   
+
   // First check if we need to move before typesetting
   if (postPos== NULL)
    {
@@ -224,7 +224,7 @@ int dviInOpChar(dviInterpreterState *interp, DVIOperator *op)
   char *s;
 
   // Typeset non-printable characters separately
-  if (  (charToTypeset< 48) || 
+  if (  (charToTypeset< 48) ||
        ((charToTypeset> 57) && (charToTypeset<65)) ||
        ((charToTypeset> 90) && (charToTypeset<97)) ||
         (charToTypeset>126)                           )
@@ -418,7 +418,7 @@ int dviInOpEop(dviInterpreterState *interp, DVIOperator *op)
   bb[1]  = 765 - bb[1] * interp->scale;
   bb[2] *= interp->scale;
   bb[3]  = 765 - bb[3] * interp->scale;
-  
+
   // Move pointer to postscript
   interp->output->currentPage->textSizeBox = bb;
   interp->textSizeBox = NULL;
@@ -603,7 +603,7 @@ int dviInOpPre(dviInterpreterState *interp, DVIOperator *op)
     return 1;
    }
   // Convert mag, num and den into points (for ps)
-  interp->scale = (double)mag / 1000.0 * (double)num / (double)den / 1.0e3 * 72.0 / 254;    
+  interp->scale = (double)mag / 1000.0 * (double)num / (double)den / 1.0e3 * 72.0 / 254;
   if (DEBUG) { sprintf(temp_err_string, "DVI: Scale %g V=%lu num=%lu den=%lu mag=%lu", interp->scale,i,num,den,mag); ppl_log(temp_err_string); }
   return 0;
  }
@@ -721,7 +721,7 @@ int dviSpecialColourStackPop(dviInterpreterState *interp)
  {
   int err=0;
   char *item;
-   
+
   // Lop last colour off the end of the colour stack
   item = (char *)ListPop(interp->colStack);
   if (item==NULL)
@@ -838,7 +838,7 @@ int dviDeleteInterpreter(dviInterpreterState *interp)
 
   // Delete any remaining postscript output
   if (interp->output != NULL) dviDeletePostscriptState(interp->output);
-   
+
   // Delete the interpreter shell
   //free(interp);
   return 0;
@@ -1006,7 +1006,7 @@ int dviTypeset(dviInterpreterState *interp)
 
   postPos = interp->output->currentPosition;
   dviPos = interp->state;
-   
+
   // First check if we need to move before typesetting
   if (postPos== NULL)
    {
@@ -1042,7 +1042,7 @@ int dviTypeset(dviInterpreterState *interp)
 
   // Only need to consider extra italic width for the final glyph
   if ((err=dviUpdateBoundingBox(interp, width+italic, height, depth))!=0) return err;
-   
+
   // Count the number of characters to write to the ps string
   chars = strlen(interp->currentString)+9;
   s = (char *)lt_malloc(chars*sizeof(char));
@@ -1115,7 +1115,7 @@ int dviGetCharSize(dviInterpreterState *interp, unsigned char s, double *size)
   int wi, hi, di, ii;        // Indices
   dviFontDetails *font;      // Font information (for tfm and use size)
   double scale;              // Font use size * unit scaling
-   
+
   font  = (dviFontDetails *)interp->curFnt;
   tfm   = font->tfm;
   chnum = s - tfm->bc;
@@ -1144,7 +1144,7 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
  {
   double *bb;
   double bbObj[4];      // Bounding box of the object that we are typeseting
-   
+
   // left bottom right top
   // DVI counts down from the top (and this is all DVI units)
   bbObj[0] = interp->state->h;
@@ -1162,7 +1162,7 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
     bb[2] = bbObj[2];
     bb[3] = bbObj[3];
     interp->boundingBox = bb;
-   }    
+   }
   else
    {
     // Check against current bounding box
@@ -1188,7 +1188,7 @@ int dviUpdateBoundingBox(dviInterpreterState *interp, double width, double heigh
     bb[2] = bbObj[2];
     bb[3] = bbObj[3];
     interp->textSizeBox = bb;
-   }    
+   }
   else
    {
     // Check against current bounding box

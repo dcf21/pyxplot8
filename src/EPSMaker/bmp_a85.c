@@ -70,7 +70,7 @@ unsigned int bmp_A85(FILE* fout, unsigned char* in, int len)
       else
        *(outp++)='z'; // zero is encoded as "z", not "!"
      }
-    
+
     if (line&0x3) // Deal with any final group of <4 bytes
      {
       i   = line&0xfffc;

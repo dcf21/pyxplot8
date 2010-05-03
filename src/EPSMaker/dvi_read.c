@@ -36,7 +36,7 @@
 const char *dviops[58] =
  {
   "set1", "set2", "set3", "set4",
-  "setrule", 
+  "setrule",
   "put1", "put2", "put3", "put4",
   "putrule",
   "nop", "bop", "eop",
@@ -115,7 +115,7 @@ dviInterpreterState *ReadDviFile(char *filename, int *status)
   return interpreter;
  }
 
-// Read in a DVI Operator and any additional data that it comes with   
+// Read in a DVI Operator and any additional data that it comes with
 // A useful reference for the meaning and size of the additional data is
 // http://www-users.math.umd.edu/~asnowden/comp-cont/dvi.html
 int GetDVIOperator(DVIOperator *op, FILE *fp)

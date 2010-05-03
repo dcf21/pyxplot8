@@ -171,7 +171,7 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int xy
   int            IterDepth, target_xyz, target_axis_n, source_xyz, OriginalMode=mode;
   settings_axis *source, *target, *target2;
   canvas_item   *item;
-  
+
   // Propagate MinUsed and MaxUsed variables along links
   IterDepth     = 0;
   target        = axis;

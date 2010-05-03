@@ -229,6 +229,12 @@ void MAKE_INLINE ppl_units_mult(const value *a, const value *b, value *o, int *s
      }
    }
 
+  if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Multiplication produced an overflow error."); *status = 1; return; }
+    else { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+   }
+
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) { if ((o != a) && (o != b)) ppl_units_DimCpy(o,a); return; }
 
   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -236,7 +242,7 @@ void MAKE_INLINE ppl_units_mult(const value *a, const value *b, value *o, int *s
     o->exponent[i] = a->exponent[i] + b->exponent[i];
     if (ppl_units_DblEqual(o->exponent[i], 0) == 0) DimLess=0;
     if (fabs(o->exponent[i]) > 20000 )
-     { 
+     {
       if (settings_term_current.ExplicitErrors == SW_ONOFF_OFF) { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
       else { sprintf(errtext, "Overflow of physical dimensions of argument."); *status = 1; return; }
      }
@@ -308,6 +314,12 @@ void MAKE_INLINE ppl_units_div (const value *a, const value *b, value *o, int *s
      }
    }
 
+  if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Division produced an overflow error."); *status = 1; return; }
+    else { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+   }
+
   if ((a->dimensionless != 0) && (b->dimensionless != 0)) { if ((o != a) && (o != b)) ppl_units_DimCpy(o,a); return; }
 
   for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -351,6 +363,13 @@ void MAKE_INLINE ppl_units_add (const value *a, const value *b, value *o, int *s
     o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
     if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
    }
+
+  if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Addition produced an overflow error."); *status = 1; return; }
+    else { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+   }
+
   return;
  }
 
@@ -380,6 +399,13 @@ void MAKE_INLINE ppl_units_sub (const value *a, const value *b, value *o, int *s
     o->FlagComplex = !ppl_units_DblEqual(o->imag, 0);
     if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
    }
+
+  if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Subtraction produced an overflow error."); *status = 1; return; }
+    else { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+   }
+
   return;
  }
 
@@ -408,6 +434,13 @@ void MAKE_INLINE ppl_units_mod (const value *a, const value *b, value *o, int *s
     sprintf(errtext, "Mod operator can only be applied to real operands; complex operands supplied.");
     *status = 1; return;
    }
+
+  if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
+   {
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errtext, "Modulo operator produced an overflow error."); *status = 1; return; }
+    else { ppl_units_zero(o); o->real = GSL_NAN; o->imag = 0; o->FlagComplex=0; return; }
+   }
+
   return;
  }
 

@@ -269,7 +269,7 @@ char *ListPrint(List *in, char *out, int size)
     else if (iter->DataType == DATATYPE_VALUE ) { sprintf(out+pos, "%e+%ei <unit>", ((value *)iter->data)->real, ((value *)iter->data)->imag); }
     else if (iter->DataType == DATATYPE_STRING) { sprintf(out+pos, "'%s'",  ((char   *)iter->data)); }
     else if (iter->DataType == DATATYPE_LIST  ) { ListPrint( ((List *)iter->data), out+pos, size-pos); }
-    else if (iter->DataType == DATATYPE_DICT  ) { DictPrint( ((Dict *)iter->data), out+pos, size-pos); } 
+    else if (iter->DataType == DATATYPE_DICT  ) { DictPrint( ((Dict *)iter->data), out+pos, size-pos); }
     pos += strlen(out+pos);
     first=0;
     iter = ListIterate(iter, NULL);

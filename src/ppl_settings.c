@@ -363,7 +363,7 @@ void ppl_settings_makedefault()
       settings_term_default.PaperWidth.real    = PaperWidth /1000;
       ppl_GetPaperName(settings_term_default.PaperName, &PaperHeight, &PaperWidth);
      } else {
-      if (DEBUG) ppl_log("$PAPERSIZE returned an unrecognised paper size."); 
+      if (DEBUG) ppl_log("$PAPERSIZE returned an unrecognised paper size.");
      }
    }
 
@@ -371,7 +371,7 @@ void ppl_settings_makedefault()
   settings_term_current  = settings_term_default;
   settings_graph_current = settings_graph_default;
   for (i=0; i<PALETTE_LENGTH; i++)
-   { 
+   {
     settings_palette_current [i] = settings_palette_default [i];
     settings_paletteS_current[i] = settings_paletteS_default[i];
     settings_palette1_current[i] = settings_palette1_default[i];
@@ -405,7 +405,7 @@ void ppl_settings_readconfig()
     settings_palette3_current[i] = settings_palette3_default[i];
     settings_palette4_current[i] = settings_palette4_default[i];
    }
-  for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i])); 
+  for (i=0; i<MAX_AXES; i++) { DestroyAxis( &(XAxes[i]) ); CopyAxis(&(XAxes[i]), &(XAxesDefault[i]));
                                DestroyAxis( &(YAxes[i]) ); CopyAxis(&(YAxes[i]), &(YAxesDefault[i]));
                                DestroyAxis( &(ZAxes[i]) ); CopyAxis(&(ZAxes[i]), &(ZAxesDefault[i]));
                              }

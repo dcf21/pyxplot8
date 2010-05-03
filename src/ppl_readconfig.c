@@ -488,7 +488,7 @@ void ReadConfigFile(char *ConfigFname)
         if (ppl_baseunit_pos == UNITS_MAX_BASEUNITS) { sprintf(temp_err_string, "Error in line %d of configuration file %s:\nBase unit definition list full.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
         ppl_unit_database[ppl_unit_pos++].exponent[ppl_baseunit_pos++] = 1;
        }
-      else 
+      else
        {
         j = k = -1;
         ppl_units_StringEvaluate(setvalue, &setnumeric, &k, &j, errtext);

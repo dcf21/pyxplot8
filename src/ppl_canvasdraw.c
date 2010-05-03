@@ -520,7 +520,7 @@ void canvas_CallLaTeX(EPSComm *x)
        {
         canvas_item *ptr = canvas_items->first; // Cycle through all canvas items to find the culprit
         for (ptr = canvas_items->first; ((ptr!=NULL)&&(ptr->id!=SuspectTextItem->CanvasMultiplotID)); ptr = ptr->next);
-        if (ptr!=NULL) 
+        if (ptr!=NULL)
          {
           sprintf(temp_err_string, "\nInput PyXPlot command was:\n\n"); // Now tell the user what PyXPlot command produced the culprit
           i  = strlen(temp_err_string);

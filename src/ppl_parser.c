@@ -290,6 +290,12 @@ Dict *parse(char *line)
   char          AlgebraError   [LSTR_LENGTH];
   char          AlgebraNewError[LSTR_LENGTH];
 
+  if (strlen(line)>LSTR_LENGTH-STR_MARGIN)
+   {
+    ppl_error(ERR_SYNTAX, -1, -1, "Input commandline is too long.");
+    return NULL;
+   }
+
   CmdIterator = ListIterateInit(PplParserCmdList);
   while (CmdIterator != NULL)
    {
@@ -756,7 +762,7 @@ NO_TAB_COMPLETION:
          {
           *success=0;
           (*AlgebraNewLinepos)+=*linepos;
-          if (*AlgebraNewLinepos > *AlgebraLinepos) 
+          if (*AlgebraNewLinepos > *AlgebraLinepos)
             { *AlgebraLinepos=*AlgebraNewLinepos; strcpy(AlgebraError, AlgebraNewError); }
          }
         else
@@ -775,8 +781,8 @@ NO_TAB_COMPLETION:
         ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
         if (*AlgebraNewLinepos >= 0)
          {
-          *success=0;  
-          if (*AlgebraNewLinepos > *AlgebraLinepos)  
+          *success=0;
+          if (*AlgebraNewLinepos > *AlgebraLinepos)
             { *AlgebraLinepos=*AlgebraNewLinepos; strcpy(AlgebraError, AlgebraNewError); }
          }
         else

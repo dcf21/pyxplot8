@@ -152,17 +152,17 @@ static unsigned char TestPointInside(FilledRegionHandle *fr, double X, double Y,
     // Count how many segments cross lines travelling out up/left/down/right from (X,Y)
 
     if (dir_x==0)
-     { 
+     {
       y_intersect = (p2->y - p1->y)/(p2->x - p1->x)*(X - p1->x) + p1->y; // y point where line p1->p2 intersects x=X
       if ((gsl_finite(y_intersect)) && (((X>=p1->x)&&(X<p2->x)) || ((X<=p1->x)&&(X>p2->x)))
               && (((dir_y>0)&&(y_intersect>Y)) || ((dir_y<0)&&(y_intersect<Y)))) { n++; }
-     } 
+     }
     else
-     { 
+     {
       x_intersect = (p2->x - p1->x)/(p2->y - p1->y)*(Y - p1->y) + p1->x; // x point where line p1->p2 intersects y=Y
       if ((gsl_finite(x_intersect)) && (((Y>=p1->y)&&(Y<p2->y)) || ((Y<=p1->y)&&(Y>p2->y)))
               && (((dir_x>0)&&(x_intersect>X)) || ((dir_x<0)&&(x_intersect<X)))) { n++; }
-     } 
+     }
    }
   inside = (n%2); // If were an even number of segments, we are outside. If there were an odd number, we are inside.
   return inside;

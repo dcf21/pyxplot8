@@ -34,9 +34,9 @@
 // Structure to store a DVI operator and the data that goes with it
 typedef struct DVIOperator
  {
-  unsigned char op; 
-  unsigned long int ul[10]; 
-  signed long int sl[2]; 
+  unsigned char op;
+  unsigned long int ul[10];
+  signed long int sl[2];
   char *s[2];
  } DVIOperator;
 
@@ -49,7 +49,7 @@ typedef struct dviStackState
 // Structure to store a page of postscript
 typedef struct postscriptPage
  {
-  double *boundingBox;  // The current bounding box 
+  double *boundingBox;  // The current bounding box
   double *textSizeBox;  // The current text size box (b.box plus oversize text)
   List *text;           // The big list of strings of postscript
  } postscriptPage;

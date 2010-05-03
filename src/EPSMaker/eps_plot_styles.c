@@ -301,15 +301,15 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
                                                     UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a1, UUR(3+ThreeDim)); UUU(a2, UUR(4+ThreeDim)); UUU(a2, UUR(5+ThreeDim)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if (style == SW_STYLE_XZERRORRANGE   ) { UUC(a2, UUR(1)); UUE(a1, UUR(0)); UUC(a3, UUR(5));
                                                                      UUD(a1, UUR(0)); UUC(a3, UUR(2));
-                                                                     UUD(a1, UUR(0)); UUC(a3, UUR(6)); 
-                                                                     UUD(a1, UUR(3)); UUC(a3, UUR(2)); 
+                                                                     UUD(a1, UUR(0)); UUC(a3, UUR(6));
+                                                                     UUD(a1, UUR(3)); UUC(a3, UUR(2));
                                                                      UUD(a1, UUR(4)); UUC(a3, UUR(2));
                                                     UUU(a2, UUR(1)); UUU(a1, UUR(0)); UUU(a1, UUR(3)); UUU(a1, UUR(4)); UUU(a3, UUR(2)); UUU(a3, UUR(5)); UUU(a3, UUR(6)); }
       else if (style == SW_STYLE_YZERRORRANGE   ) { UUC(a1, UUR(0)); UUE(a2, UUR(1)); UUC(a3, UUR(5));
-                                                                     UUD(a2, UUR(1)); UUC(a3, UUR(2)); 
-                                                                     UUD(a2, UUR(1)); UUC(a3, UUR(6)); 
-                                                                     UUD(a2, UUR(3)); UUC(a3, UUR(2)); 
-                                                                     UUD(a2, UUR(4)); UUC(a3, UUR(2)); 
+                                                                     UUD(a2, UUR(1)); UUC(a3, UUR(2));
+                                                                     UUD(a2, UUR(1)); UUC(a3, UUR(6));
+                                                                     UUD(a2, UUR(3)); UUC(a3, UUR(2));
+                                                                     UUD(a2, UUR(4)); UUC(a3, UUR(2));
                                                     UUU(a1, UUR(0)); UUU(a1, UUR(3)); UUU(a1, UUR(4)); UUU(a2, UUR(1)); UUU(a2, UUR(5)); UUU(a2, UUR(6)); UUU(a3, UUR(2)); UUU(a3, UUR(7)); UUU(a3, UUR(8)); }
       else if (style == SW_STYLE_XYZERRORRANGE  ) { UUC(a1, UUR(0)); UUC(a2, UUR(1)); UUC(a3, UUR(7));
                                                     UUD(a1, UUR(0)); UUC(a2, UUR(1)); UUC(a3, UUR(2));
@@ -394,7 +394,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
             else if (style == SW_STYLE_FSTEPS) { UUF(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUF(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
            }
          }
-        UUU(a2, UUR(1)); // y-coordinates are easy  
+        UUU(a2, UUR(1)); // y-coordinates are easy
         lasty = UUR(1);
        }
       i++;
@@ -926,8 +926,8 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      }
 
     eps_core_SetColour(x, &pd->ww_final, 1);
-    eps_core_SetFillColour(x, &pd->ww_final); 
-    eps_core_SwitchTo_FillColour(x,0); 
+    eps_core_SetFillColour(x, &pd->ww_final);
+    eps_core_SwitchTo_FillColour(x,0);
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 1);
     eps_core_SwitchFrom_FillColour(x,1);
    }
@@ -963,7 +963,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
 
   if ((style==SW_STYLE_POINTS) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_STARS) || (style==SW_STYLE_DOTS))
    {
-    double final_pointsize = pd->ww_final.pointsize; 
+    double final_pointsize = pd->ww_final.pointsize;
     if (style==SW_STYLE_DOTS) final_pointsize *= 0.05; // Dots are 1/20th size of points
     eps_core_SetColour(x, &pd->ww_final, 1);
     IF_NOT_INVISIBLE
@@ -1041,7 +1041,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
 
     eps_core_SetColour(x, &pd->ww_final, 1);
     IF_NOT_INVISIBLE
-     {            
+     {
       eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n",xpos-s,ypos   ,xpos+s,ypos   );
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n",xpos-s,ypos-b ,xpos-s,ypos+b );

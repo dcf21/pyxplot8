@@ -47,7 +47,7 @@ extern double EPS_ARROW_HEADSIZE;
 extern double EPS_AXES_LINEWIDTH;
 extern double EPS_AXES_MAJTICKLEN;
 extern double EPS_AXES_MINTICKLEN;
-extern double EPS_AXES_SEPARATION;   
+extern double EPS_AXES_SEPARATION;
 extern double EPS_AXES_TEXTGAP;
 extern double EPS_GRID_MAJLINEWIDTH;
 extern double EPS_GRID_MINLINEWIDTH;

@@ -632,7 +632,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=1;
   ppl_unit_pos++;
-  
+
   ppl_unit_database[ppl_unit_pos].nameAs     = "furlong"; // Furlong
   ppl_unit_database[ppl_unit_pos].nameAp     = "furlongs";
   ppl_unit_database[ppl_unit_pos].nameLs     = ppl_unit_database[ppl_unit_pos].nameAs;

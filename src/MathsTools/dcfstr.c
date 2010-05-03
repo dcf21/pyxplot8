@@ -95,13 +95,13 @@ void dcfstr_strcmp (char *in, int inlen, value *output, unsigned char DollarAllo
     else             { *status = i; strcpy(errtext,"Syntax Error: Unexpected trailing matter after argument to function."); return; }
    }
   i++;
-  while ((in[i]!='\0')&&(in[i]<=' ')) i++; /* Strip spaces off front */ 
+  while ((in[i]!='\0')&&(in[i]<=' ')) i++; /* Strip spaces off front */
   /* Fetch second input string */
-  j=-1; 
+  j=-1;
   InString2 = lt_malloc(LSTR_LENGTH);
   ppl_GetQuotedString(in+i, InString2, 0, &j, DollarAllowed, status, errtext, RecursionDepth+1);
-  if (*status >= 0) { (*status) += i; return; } 
-  i+=j; 
+  if (*status >= 0) { (*status) += i; return; }
+  i+=j;
   while ((in[i]>'\0')&&(in[i]<=' ')) i++;
   END_INPUT_STRING;
   output->real = strcmp(InString, InString2);

@@ -99,7 +99,7 @@ void InteractiveSession()
       PPLKillAllHelpers();
      }
 
-    if (isatty(STDIN_FILENO) == 1) 
+    if (isatty(STDIN_FILENO) == 1)
      {
       if (settings_session_default.splash == SW_ONOFF_ON) ppl_report("\nGoodbye. Have a nice day.");
       else                                                ppl_report(""); // Make a new line
@@ -220,13 +220,13 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
           if (l <= j)
            {
             char *new;
-            new = (char *)lt_malloc(l+4096);
+            new = (char *)lt_malloc(l+LSTR_LENGTH);
             if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
             memcpy(new, DirectiveLinebuffer, l);
-            l+=4096;
+            l+=LSTR_LENGTH;
             DirectiveLinebuffer=new;
            }
-          fscanf(SubstPipe,"%c",DirectiveLinebuffer + j);
+          if (fscanf(SubstPipe,"%c",DirectiveLinebuffer + j) == EOF) break;
           if (DirectiveLinebuffer[j] == '\n') DirectiveLinebuffer[j] = ' ';
           if (DirectiveLinebuffer[j] != '\0') j++;
          }
@@ -238,10 +238,10 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
         if (l <= j)
          {
           char *new;
-          new = (char *)lt_malloc(l+4096);
+          new = (char *)lt_malloc(l+LSTR_LENGTH);
           if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
           memcpy(new, DirectiveLinebuffer, l);
-          l+=4096;
+          l+=LSTR_LENGTH;
           DirectiveLinebuffer=new;
          }
         DirectiveLinebuffer[j++] = in[i];
@@ -250,10 +250,10 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
     if (l <= j)
      {
       char *new;
-      new = (char *)lt_malloc(l+4096);
+      new = (char *)lt_malloc(l+LSTR_LENGTH);
       if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
       memcpy(new, DirectiveLinebuffer, l);
-      l+=4096;
+      l+=LSTR_LENGTH;
       DirectiveLinebuffer=new;
      }
     DirectiveLinebuffer[j] = '\0';
@@ -716,7 +716,7 @@ int directive_regex(Dict *command)
    }
   if (varnumval->string == NULL) // ... which must be a string variable
    {
-    sprintf(temp_err_string, "Variable '%s' is not a string variable; regular expressions cannot be applied to it.", varname); 
+    sprintf(temp_err_string, "Variable '%s' is not a string variable; regular expressions cannot be applied to it.", varname);
     ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
     return 1;
    }

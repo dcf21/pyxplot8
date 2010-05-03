@@ -138,7 +138,7 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
    }
   if (cmp == 0) // Overwrite an existing entry in dictionary
    {
-    if ((size != ptr->DataSize) || (ptr->MallocedByUs == 0)) 
+    if ((size != ptr->DataSize) || (ptr->MallocedByUs == 0))
      {
       ptr->data     = (void *)lt_malloc_incontext(size , in->memory_context);
       ptr->DataSize = size;

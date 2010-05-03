@@ -73,7 +73,7 @@ typedef struct dviTFM
   int nl;   // number of words in the lig/kern table
   int nk;   // number of words in the kern table
   int ne;   // number of words in the extensible character table
-  int np;   // number of font parameter words 
+  int np;   // number of font parameter words
   // Header
   int checksum;
   double ds;    // Design size of font

@@ -38,7 +38,7 @@ char txt_init               [LSTR_LENGTH];
 char txt_invalid            [LSTR_LENGTH];
 char txt_valid_set_options  [LSTR_LENGTH];
 char txt_set_noword         [LSTR_LENGTH];
-char txt_unset_noword       [LSTR_LENGTH]; 
+char txt_unset_noword       [LSTR_LENGTH];
 char txt_set                [LSTR_LENGTH];
 char txt_unset              [LSTR_LENGTH];
 char txt_show               [LSTR_LENGTH];

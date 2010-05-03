@@ -59,6 +59,7 @@ double CalculusSlave(double x, void *params)
   else                   { data->dummy->imag = x; data->dummy->real = data->DummyReal; data->dummy->FlagComplex = !ppl_units_DblEqual(data->dummy->imag,0); }
 
   ppl_EvaluateAlgebra(data->expr, &output, 0, NULL, 0, data->errpos, data->errtext, data->RecursionDepth+1);
+  if (*(data->errpos)>=0) return GSL_NAN;
 
   if (data->IsFirst)
    {
@@ -152,12 +153,12 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
     out->imag = ResultImag;
     out->FlagComplex = !ppl_units_DblEqual(ResultImag, 0);
     if (!out->FlagComplex) out->imag=0.0; // Enforce that real numbers have positive zero imaginary components
-   }
 
-  if ((!gsl_finite(out->real)) || (!gsl_finite(out->imag)) || ((out->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)))
-   {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *errpos=0; sprintf(errtext, "Integral does not evaluate to a finite value."); return; }
-    else { out->real = GSL_NAN; out->imag = 0; out->FlagComplex=0; }
+    if ((!gsl_finite(out->real)) || (!gsl_finite(out->imag)) || ((out->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)))
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *errpos=0; sprintf(errtext, "Integral does not evaluate to a finite value."); return; }
+      else { out->real = GSL_NAN; out->imag = 0; out->FlagComplex=0; }
+     }
    }
   return;
  }
@@ -243,7 +244,7 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
 
   if ((!gsl_finite(out->real)) || (!gsl_finite(out->imag)) || ((out->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *errpos=0; sprintf(errtext, "Differential does not evaluate to a finite value."); return; } 
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *errpos=0; sprintf(errtext, "Differential does not evaluate to a finite value."); return; }
     else { out->real = GSL_NAN; out->imag = 0; out->FlagComplex=0; }
    }
   return;

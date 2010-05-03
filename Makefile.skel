@@ -66,7 +66,7 @@ PPL_SOURCES         = $(PPL_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
 PPL_OBJECTS         = $(PPL_FILES:%.c=$(LOCAL_OBJDIR)/%.o)
 PPL_OBJECTS_DEBUG   = $(PPL_OBJECTS:%.o=%.debug.o)
 PPL_OBJECTS_INSTALL = $(PPL_OBJECTS:%.o=%.install.o)
-PPL_HFILES          = $(PPL_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
+PPL_HFILES          = $(PPL_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) $(LOCAL_SRCDIR)/ppl_units_inline.c Makefile
 
 PPLW_SOURCES        = $(PPLW_FILES:%.c=$(LOCAL_SRCDIR)/%.c)
 PPLW_OBJECTS        = $(PPLW_FILES:%.c=$(LOCAL_OBJDIR)/%.o)

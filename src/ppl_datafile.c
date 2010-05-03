@@ -230,7 +230,7 @@ void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value
   return;
 
 RETURN_STRING:
-  ppl_units_zero(output); 
+  ppl_units_zero(output);
   if (MallocOut)
    {
     for (i=0; (outstr[i]>' '); i++);
@@ -1048,7 +1048,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
     UsingLen++;
     listiter = ListIterate(listiter, NULL);
    }
-    
+
   // If have only one using item, and it is NULL, pretend we have an empty list
   if ((UsingLen==1) && (!HadNonNullUsingItem)) UsingLen=0;
 

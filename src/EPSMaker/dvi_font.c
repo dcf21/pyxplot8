@@ -87,7 +87,7 @@ int dviGetTFM(dviFontDetails *font)
   // Deal with built-in fonts
   font->psName = NULL;
   for (i=0; i<N_BUILTIN_FONTS; i++) {
-   if (strlen(font->name)==strlen(builtinFonts[i]) && 
+   if (strlen(font->name)==strlen(builtinFonts[i]) &&
                    strncmp(font->name, builtinFonts[i], L_BUILTIN_FNAME)==0)
     {
      font->pfaPath = NULL;
@@ -141,7 +141,7 @@ int dviGetTFM(dviFontDetails *font)
  }
 
 
-// Locate and obtain pfa file 
+// Locate and obtain pfa file
 int dviGetPfa(dviFontDetails *font, char *filename)
  {
   FILE *fpin, *fpout;
@@ -179,7 +179,7 @@ int dviGetPfa(dviFontDetails *font, char *filename)
       ppl_error(ERR_GENERAL, -1, -1,errStr);
       return DVIE_ACCESS;
      }
-      
+
     // Make a filename for the destination pfa file
     // free(PFApath);
     PFApath = (char *)lt_malloc(SSTR_LENGTH*sizeof(char));
@@ -329,7 +329,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
     for (i=0; i<12; i++) { sprintf(temp_err_string+j, "%s:%lu  ", tit[i], buff[i]); j+=strlen(temp_err_string+j); }
     ppl_log(temp_err_string);
    }
-   
+
   // We should have lf=6+lh+(ec-bc+1)+nw+nh+nd+ni+nl+nk+ne+np
   if (tfm->lf != 6 + tfm->lh + tfm->ec - tfm->bc + 1 + tfm->nw + tfm->nh + tfm->nd + tfm->ni + tfm->nl + tfm->nk + tfm->ne + tfm->np)
    {
@@ -339,7 +339,7 @@ dviTFM *dviReadTFM(FILE *fp, int *err)
 
   // Read the header (distinct from the file header...)
   lh = tfm->lh;
-  ReadLongInt(fp, buff, 4); tfm->checksum = buff[0]; 
+  ReadLongInt(fp, buff, 4); tfm->checksum = buff[0];
   lh--;
   tfm->ds = ReadFixWord(fp, err); if (*err) return NULL;
   lh--;

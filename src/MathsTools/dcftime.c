@@ -216,7 +216,7 @@ double JulianDayHebrew(int year, int month, int day, int hour, int min, int sec,
   GetHebrewNewYears(year-3760, YearNumbers, JDs, YearTypes);
   JD = JDs[0];
   for (i=0; i<month-1; i++) JD += HebrewMonthLengths[ YearTypes[0] ][ i ];
-  if (day>HebrewMonthLengths[ YearTypes[0] ][ i ]) { *status=1; sprintf(errtext, "Supplied day number in the Hebrew month of %s in the year AM %d must be in the range 1-%d.", GetMonthName(month), year, HebrewMonthLengths[ YearTypes[1] ][ i ]); return 0.0; } 
+  if (day>HebrewMonthLengths[ YearTypes[0] ][ i ]) { *status=1; sprintf(errtext, "Supplied day number in the Hebrew month of %s in the year AM %d must be in the range 1-%d.", GetMonthName(month), year, HebrewMonthLengths[ YearTypes[1] ][ i ]); return 0.0; }
   JD += day-1;
   DayFraction = (fabs(hour) + fabs(min)/60.0 + fabs(sec)/3600.0) / 24.0;
   return JD + DayFraction;

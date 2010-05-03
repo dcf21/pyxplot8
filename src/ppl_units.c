@@ -451,7 +451,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
   i+=j;
   if (j==0)
    { out->real = 1.0; }
-  else 
+  else
    {
     while ((in[i]<=' ')&&(in[i]!='\0')) i++;
     if      (in[i]=='*')   i++;

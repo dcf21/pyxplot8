@@ -446,7 +446,7 @@ int directive_fit(Dict *command)
 
   // Copy data into a new table and apply the specified ranges to it
   LocalDataTable = (double *)lt_malloc_incontext(NDataPoints * NExpect * sizeof(double), ContextLocalVec);
-  if (LocalDataTable==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return 1; } 
+  if (LocalDataTable==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return 1; }
   i=0;
   blk = data->first;
   while (blk != NULL)

@@ -37,7 +37,7 @@ struct passwd *UnixGetPwEntry()
 
   uid = getuid();
   setpwent(); // Memory leak which valgrind reveals here is probably okay; getpwent sets up a static variable with malloc
-  while ((ptr = getpwent()) != NULL) 
+  while ((ptr = getpwent()) != NULL)
    if (ptr->pw_uid == uid) break;
   endpwent();
   return(ptr);

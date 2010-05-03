@@ -207,7 +207,7 @@ int directive_fft(Dict *command)
          for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=pos[l]; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); }
          m-=(Ndims>0);
          sprintf(temp_err_string+m, "). In fact, it contained a data point at position ("); m+=strlen(temp_err_string+m);
-         for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=blk->data_real[l + (Ndims+2)*j].d; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); } 
+         for (l=0; l<Ndims; l++) { x=*(min[l]); x.real=blk->data_real[l + (Ndims+2)*j].d; sprintf(temp_err_string+m,"%s,",ppl_units_NumericDisplay(&x,0,1,-1)); m+=strlen(temp_err_string+m); }
          m-=(Ndims>0);
          sprintf(temp_err_string+m, ")."); j=strlen(temp_err_string);
          ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);

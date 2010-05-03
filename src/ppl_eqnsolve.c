@@ -234,7 +234,7 @@ void MultiMinIterate(MMComm *commlink)
     iter                 = 0;
     commlink->GoneNaN    = 0;
     commlink->WorstScore = WORSTSCORE_INIT;
-    do 
+    do
      {
       iter++;
       // When you're minimising over many parameters simultaneously sometimes nothing happens for a long time

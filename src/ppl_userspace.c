@@ -397,7 +397,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         *errpos=0;
         DataFile_UsingConvert_FetchColumnByNumber(argf.d, &(argf.v), 0, 0, errpos, errtext);
         if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
-        for (i=0; argf.v.string[i]>' '; i++);
+        for (i=0; ((argf.v.string[i]>' ')&&(i<LSTR_LENGTH-STR_MARGIN)); i++);
         strncpy(out, argf.v.string,i);
         out[i]='\0';
         return;
@@ -411,7 +411,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         *errpos=0;
         DataFile_UsingConvert_FetchColumnByNumber(argf.v.real, &(argf.v), 0, 0, errpos, errtext);
         if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
-        for (i=0; argf.v.string[i]>' '; i++);
+        for (i=0; ((argf.v.string[i]>' ')&&(i<LSTR_LENGTH-STR_MARGIN)); i++);
         strncpy(out, argf.v.string,i);
         out[i]='\0';
         return;
@@ -425,19 +425,20 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
           *errpos=0;
           DataFile_UsingConvert_FetchColumnByName(FormatString, &(argf.v), 0, 0, errpos, errtext);
           if (*errpos==0) { *errpos=-1; } else { *errpos=20000; return; }
-          for (i=0; argf.v.string[i]>' '; i++);
+          for (i=0; ((argf.v.string[i]>' ')&&(i<LSTR_LENGTH-STR_MARGIN)); i++);
           strncpy(out, argf.v.string,i);
           out[i]='\0';
           return;
          }
        }
-      for (i=pos+1,j=0;((isalnum(in[i]))||(in[i]=='_')); i++,j++) temp_err_string[j]=in[i];
+      for (i=pos+1,j=0;(((isalnum(in[i]))||(in[i]=='_'))&&(j<LSTR_LENGTH-300)); i++,j++) temp_err_string[j]=in[i];
       temp_err_string[j++]='\0';
       *errpos=0;
       sprintf(errtext, "Request for unrecognised column of datafile '$%s'.", temp_err_string);
       return;
      }
-    while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<=*end))) FormatString[outpos++]=in[pos++]; // Fetch a word
+    while (((isalnum(in[pos]))||(in[pos]=='_')) && ((end==NULL)||(*end<0)||(pos<=*end)) && (outpos<LSTR_LENGTH-STR_MARGIN)) FormatString[outpos++]=in[pos++]; // Fetch a word
+    if (outpos>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
     FormatString[outpos] = '\0';
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
     if (in[pos]=='(') // We have a function
@@ -451,7 +452,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         if (stat) { *errpos = (ep>=0) ? (pos+1+ep) : start; return; }
         if (PPL_FLOWCTRL_RETURNTOALGEBRA.string == NULL) { *errpos = start; sprintf(errtext, "This subroutine returns a numeric result; a string result was expected."); return; }
         pos += endpos+1;
-        strcpy(out, PPL_FLOWCTRL_RETURNTOALGEBRA.string);
+        snprintf(out, LSTR_LENGTH-STR_MARGIN, "%s", PPL_FLOWCTRL_RETURNTOALGEBRA.string);
         if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after function call."); return; }
         if ((end!=NULL)&&(*end<0)) *end=pos;
         return;
@@ -509,7 +510,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
         else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,int*,char*))FuncDefn->FunctionPtr)(ResultBuffer+2,ResultBuffer+3,ResultBuffer+4,ResultBuffer+5,ResultBuffer,&j,errtext);
         if (j>0) { *errpos = start; return; }
         if ((end!=NULL)&&(*end<0)) *end=pos;
-        strcpy(out, ResultBuffer[0].string);
+        snprintf(out, LSTR_LENGTH-STR_MARGIN, "%s", ResultBuffer[0].string);
         return;
        }
      }
@@ -521,7 +522,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
       if (VarData->string == NULL) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected."); return; }
       *errpos = -1;
       if ((end!=NULL)&&(*end<0)) *end=pos;
-      strcpy(out, VarData->string);
+      snprintf(out, LSTR_LENGTH-STR_MARGIN, "%s", VarData->string);
       return;
      }
    }
@@ -533,6 +534,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     if ((in[pos]=='\\') && (in[pos+1]=='\\')) { FormatString[outpos++]='\\'; pos++; continue; }
     if ((in[pos]=='\\') && (in[pos+1]=='\'')) { FormatString[outpos++]='\''; pos++; continue; }
     if ((in[pos]=='\\') && (in[pos+1]=='\"')) { FormatString[outpos++]='\"'; pos++; continue; }
+    if (outpos>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
     FormatString[outpos++] = in[pos];
    }
   FormatString[outpos] = '\0';
@@ -545,7 +547,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after quoted string"); return; } // Have we used up as many characters as we were told we had to?
     *errpos = -1;
     if ((end!=NULL)&&(*end<0)) *end=pos;
-    strcpy(out, FormatString);
+    snprintf(out, LSTR_LENGTH-STR_MARGIN, "%s", FormatString);
     return;
    }
 
@@ -565,6 +567,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
   // See <http://www.cplusplus.com/reference/clibrary/cstdio/sprintf/>
   for (i=j=ArgCount=0; FormatString[i]!='\0'; i++)
    {
+    if (j>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
     if (FormatString[i]!='%') { out[j++] = FormatString[i]; continue; }
     k=i+1; // k looks ahead to see experimentally if syntax is right
     RequiredArgs =1; // Normal %f like tokens require 1 argument
@@ -610,7 +613,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
        {
         ppl_EvaluateAlgebra(in+pos , &argtemp, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0)
-         { 
+         {
           *errpos = -1;
           ppl_GetQuotedString(in+pos , FormatArg , CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
           if (*errpos>=0) { *errpos += pos; return; } // Error from attempt at string evaluation should prevail
@@ -619,16 +622,16 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
           argf.s = ppl_units_NumericDisplay(&argtemp, 0, 0, 0);
          }
         FormatToken[k-i] = 's';
-        if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.s); // Print a string variable
-        if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.s);
-        if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.s);
+        if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.s); // Print a string variable
+        if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.s);
+        if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.s);
        }
       else
        {
         ppl_EvaluateAlgebra(in+pos , &argf.v, CommaPositions[ArgCount+0]+1, &CommaPositions[ArgCount+1], DollarAllowed, errpos, errtext, RecursionDepth+1);
         if (*errpos>=0) { *errpos += pos; return; }
         if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (argf.v.FlagComplex!=0))
-         { sprintf(out+j, "nan"); }
+         { snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, "nan"); }
         else
          {
           argf.s = ppl_units_GetUnitStr(&argf.v, &argf.d, &argf.d2, 0, 1, 0);
@@ -641,22 +644,22 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
             else if (argf.v.FlagComplex == 0) // Print a real integer
              {
               argf.i = (int)argf.d; // sprintf will expect to be passed an int
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i); // Print an integer variable
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.i); // Print an integer variable
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.i);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.i);
              }
             else // Print a complex integer
              {
               argf.i = (int)argf.d ; // sprintf will expect to be passed an int real part, and an int imag part
               argf.i2= (int)argf.d2;
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i); // Print an integer real part
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.i); // Print an integer real part
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.i);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.i);
               j += strlen(out+j);
               out[j++]='+';
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.i2); // Print an integer imag part
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.i2);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.i2);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.i2); // Print an integer imag part
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.i2);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.i2);
               j += strlen(out+j);
               strcpy(out+j,"i");
              }
@@ -670,38 +673,38 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
             else if (argf.v.FlagComplex == 0) // Print a real unsigned integer
              {
               argf.u = (unsigned int)argf.d; // sprintf will expect to be passed an unsigned int
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u); // Print an integer variable
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.u); // Print an integer variable
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.u);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.u);
              }
             else // Print a complex unsigned integer
              {
               argf.u = (unsigned int)argf.d ; // sprintf will expect to be passed an int real part, and an int imag part
               argf.u2= (unsigned int)argf.d2;
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u); // Print an integer real part
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.u); // Print an integer real part
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.u);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.u);
               j += strlen(out+j);
               out[j++]='+';
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.u2); // Print an integer imag part
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.u2);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.u2);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.u2); // Print an integer imag part
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.u2);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.u2);
               j += strlen(out+j);
               strcpy(out+j,"i");
              }
            }
           else // otherwise, sprintf will expect a double
            {
-            if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d); // Print a double (real part)
-            if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d);
-            if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d);
+            if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.d); // Print a double (real part)
+            if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.d);
+            if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.d);
             if (argf.v.FlagComplex != 0) // Print a complex double
              {
               j += strlen(out+j);
               out[j++]='+';
-              if (RequiredArgs==1) sprintf(out+j, FormatToken, argf.d2); // Print the imaginary part
-              if (RequiredArgs==2) sprintf(out+j, FormatToken, arg1i, argf.d2);
-              if (RequiredArgs==3) sprintf(out+j, FormatToken, arg1i, arg2i, argf.d2);
+              if (RequiredArgs==1) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, argf.d2); // Print the imaginary part
+              if (RequiredArgs==2) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, argf.d2);
+              if (RequiredArgs==3) snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, FormatToken, arg1i, arg2i, argf.d2);
               j += strlen(out+j);
               strcpy(out+j,"i");
              }
@@ -709,7 +712,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
           if (argf.v.dimensionless != 0)
            {
             j += strlen(out+j);
-            strcpy(out+j, argf.s); // Print dimensions of this value
+            snprintf(out+j, LSTR_LENGTH-STR_MARGIN+1-j, "%s", argf.s); // Print dimensions of this value
            }
          }
        }
@@ -718,6 +721,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     j += strlen(out+j);
     i = k;
    }
+  if (j>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
   out[j]  = '\0';
   *errpos = -1;
   if ((end!=NULL)&&(*end<0)) *end=pos+pos2+1;
@@ -972,7 +976,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
               if (ResultBuffer[bufpos+k+2].real < FuncDef->min[k].real) { FuncDef=FuncDef->next; l=0; continue; }
              }
             if (FuncDef->MaxActive[k]!=0)
-             { 
+             {
               if (j==0)
                {
                 if (!ppl_units_DimEqual(FuncDef->max+k , ResultBuffer+bufpos+k+2))
@@ -980,7 +984,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
                   *errpos = start+i;
                   sprintf(errtext,"Argument %d supplied to this function is dimensionally incompatible with the argument's specified min/max range: argument has dimensions of <%s>, meanwhile range has dimensions of <%s>.",k+1,ppl_units_GetUnitStr(ResultBuffer+bufpos+k+2,NULL,NULL,0,1,0),ppl_units_GetUnitStr(FuncDef->max+k,NULL,NULL,1,1,0));
                   return;
-                 } 
+                 }
                 else if (ResultBuffer[bufpos+k+2].FlagComplex)
                  {
                   *errpos = start+i;
@@ -1105,7 +1109,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     while ((j>i) && (in[start+j-1]<=' ')) j--;
     ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
     DictLookup(_ppl_UserSpace_Vars, in+start+i, NULL, (void **)&VarData);
-    if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start+i; sprintf(errtext, "No such variable, '%s'.", in+start+i); in[start+j] = ck; return; } 
+    if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start+i; sprintf(errtext, "No such variable, '%s'.", in+start+i); in[start+j] = ck; return; }
     in[start+j] = ck;
     if (VarData->string != NULL) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected."); return; }
     ResultBuffer[bufpos] = *VarData;
@@ -1249,7 +1253,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       FETCHNEXT(next_start, next_bufno, next_end);
       if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
       if (ppl_units_DimEqual(ResultBuffer+prev_bufno , ResultBuffer+next_bufno) == 0)
-       { 
+       {
         *errpos=i;
         if      (ResultBuffer[prev_bufno].dimensionless)
          { sprintf(errtext, "Attempt to compare a quantity which is dimensionless with one with dimensions of <%s>.", ppl_units_GetUnitStr(ResultBuffer+next_bufno,NULL,NULL,1,1,0)); }

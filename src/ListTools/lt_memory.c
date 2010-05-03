@@ -104,7 +104,7 @@ void _lt_SetMemContext(int context)
   if ((context<0) || (context>=PPL_MAX_CONTEXTS))
    { sprintf(temp_merr_string, "lt_SetMemContext passed unrecognised context number %d.", context); (*mem_error)(100, -1, -1, temp_merr_string); return; }
   lt_mem_context = context;
-  return; 
+  return;
  }
 
 // lt_GetMemContext() -- Returns the number of the current memory allocation context.
@@ -124,7 +124,7 @@ void lt_FreeAll(int context)
   if (lt_mem_context<0) return; // Memory management not initialised
   latch=1;
 
-  if ((context<0) || (context>=PPL_MAX_CONTEXTS)) 
+  if ((context<0) || (context>=PPL_MAX_CONTEXTS))
    { sprintf(temp_merr_string, "lt_FreeAll() passed unrecognised context %d.", context); (*mem_error)(100, -1, -1, temp_merr_string); return; }
 
   if (MEMDEBUG1) { sprintf(temp_merr_string, "Freeing all memory down to level %d.", context); (*mem_log)(temp_merr_string); }
@@ -157,7 +157,7 @@ void *lt_malloc(int size)
  {
   void *out;
 
-  if ((lt_mem_context<0) || (lt_mem_context>=PPL_MAX_CONTEXTS)) 
+  if ((lt_mem_context<0) || (lt_mem_context>=PPL_MAX_CONTEXTS))
    { sprintf(temp_merr_string, "lt_malloc() using unrecognised context %d.", lt_mem_context); (*mem_error)(100, -1, -1, temp_merr_string); return NULL; }
 
   if (MEMDEBUG2) { sprintf(temp_merr_string, "Request to malloc %d bytes at memory level %d.", size, lt_mem_context); (*mem_log)(temp_merr_string); }
@@ -172,7 +172,7 @@ void *lt_malloc_incontext(int size, int context)
  {
   void *out;
 
-  if ((context<0) || (context>=PPL_MAX_CONTEXTS)) 
+  if ((context<0) || (context>=PPL_MAX_CONTEXTS))
    { sprintf(temp_merr_string, "lt_malloc_incontext() passed unrecognised context %d.", context); (*mem_error)(100, -1, -1, temp_merr_string); return NULL; }
 
   if (MEMDEBUG2) { sprintf(temp_merr_string, "Request to malloc %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }

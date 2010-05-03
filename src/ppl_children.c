@@ -49,7 +49,7 @@ char PipeOutputBuffer[LSTR_LENGTH] = "";
 
 static char SIGTERM_NAME[16]; // The name of SIGTERM, which we filter out from GV's output, as it tends to whinge about being killed.
 
-// Flags used to keep track of all of the open GhostView processes 
+// Flags used to keep track of all of the open GhostView processes
 
 static List *GhostViews;                    // A list of X11_multiwindow and X11_singlewindow sessions which we kill on PyXPlot exit
 static List *GhostView_Persists;            // A list of X11_persist sessions for which we leave our temporary directory until they quit
@@ -69,7 +69,7 @@ void  InitialiseCSP()
   GhostViews         = ListInit();
   GhostView_Persists = ListInit();
   HelperPIDs         = ListInit();
-  
+
   // The string "signal 15" we filter out of GhostView's output
   sprintf(SIGTERM_NAME, "signal %d", SIGTERM);
 
@@ -321,7 +321,7 @@ int CSPForkNewGv(char *fname, List *gv_list)
     if (   (((viewer == SW_VIEWER_GV) || (viewer == SW_VIEWER_GGV))
                && (execlp(ViewerApp, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0))
         || (((viewer != SW_VIEWER_GV) && (viewer != SW_VIEWER_GGV))
-               && (execlp(ViewerApp, GHOSTVIEW_COMMAND, fname, NULL)!=0)) 
+               && (execlp(ViewerApp, GHOSTVIEW_COMMAND, fname, NULL)!=0))
        )     if (DEBUG) ppl_log("Attempt to execute ghostview returned error code."); // Execute GhostView
     sprintf(temp_err_string, "Execution of ghostview using binary '%s' failed; has it been reinstalled since pyxplot was installed?", GHOSTVIEW_COMMAND);
     ppl_error(ERR_GENERAL, -1, -1, temp_err_string); // execlp call should not return
@@ -411,7 +411,7 @@ void ForkSed(char *cmd, int *fstdin, int *fstdout)
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     return;
    }
-  else 
+  else
    {
     // Child process
     close(fd0[1]); close(fd1[0]);

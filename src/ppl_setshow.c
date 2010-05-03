@@ -336,8 +336,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
     DictLookup(command,"auto",NULL,(void **)&tempval);
-    if (tempval!=NULL) 
-     { 
+    if (tempval!=NULL)
+     {
       settings_term_current.BinWidthAuto = 1;
      } else {
       DictLookup(command,"bin_width",NULL,(void **)&tempval);
@@ -355,8 +355,8 @@ void directive_set(Dict *command)
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
    {
     DictLookup(command,"auto",NULL,(void **)&tempval);
-    if (tempval!=NULL) 
-     { 
+    if (tempval!=NULL)
+     {
       sg->BoxFromAuto = 1;
      } else {
       DictLookup(command,"box_from",NULL,(void **)&tempval);
@@ -483,10 +483,10 @@ void directive_set(Dict *command)
       sg->grid = SW_ONOFF_ON;
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
-       {   
+       {
         tempdict = (Dict *)listiter->data;
         DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
-        i = (int)GetFloat(tempstr+1,NULL); 
+        i = (int)GetFloat(tempstr+1,NULL);
         if      (tempstr[0]=='y') { sg->GridAxisY[i] = 1; }
         else if (tempstr[0]=='z') { sg->GridAxisZ[i] = 1; }
         else                      { sg->GridAxisX[i] = 1; }
@@ -508,10 +508,10 @@ void directive_set(Dict *command)
     if (tempval != NULL)
      {
       if (!(tempval->dimensionless))
-       { 
+       {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
-          { 
+          {
            sprintf(temp_err_string, "The horizontal offset supplied to the 'set key' command must have dimensions of length. Supplied input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
@@ -667,7 +667,7 @@ void directive_set(Dict *command)
           sg->Tlog = SW_BOOL_TRUE; // No concept of log base on T axis as it's never drawn as an axis with ticks
          }
         listiter = ListIterate(listiter, NULL);
-       } 
+       }
      }
     else
      {
@@ -701,14 +701,14 @@ void directive_set(Dict *command)
          }
         listiter = ListIterate(listiter, NULL);
        }
-     } 
-    else 
+     }
+    else
      {
       sg->Tlog = settings_graph_default.Tlog;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
-     } 
+     }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
    {
@@ -744,7 +744,7 @@ void directive_set(Dict *command)
      } else {
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
-       {   
+       {
         tempdict = (Dict *)listiter->data;
         DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
         i = (int)GetFloat(tempstr+1,NULL);
@@ -1055,15 +1055,15 @@ void directive_set(Dict *command)
       DictLookup(command,"x_size",NULL,(void **)&tempval);
       DictLookup(command,"y_size",NULL,(void **)&tempval2);
       if (!(tempval->dimensionless))
-       { 
+       {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
          if (tempval->exponent[i] != (i==UNIT_LENGTH))
           {
-           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));  
+           sprintf(temp_err_string, "The size supplied to the 'set papersize' command must have dimensions of length. Supplied x input has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
            ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
            return;
           }
-       } 
+       }
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The size coordinates supplied to the 'set papersize' command was not finite."); return; }
       if (!(tempval2->dimensionless))
@@ -1230,7 +1230,7 @@ void directive_set(Dict *command)
       DictLookup(command,"style_ids,",NULL,(void **)&templist);
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
-       {   
+       {
         tempdict = (Dict *)listiter->data;
         DictLookup(tempdict,"id",NULL,(void **)&tempint);
         if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
@@ -1537,8 +1537,8 @@ void directive_set(Dict *command)
       else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The offset coordinates supplied to the 'set title' command were not finite."); return; }
      }
-    if (tempval2!= NULL) 
-     { 
+    if (tempval2!= NULL)
+     {
       if (!(tempval2->dimensionless))
        {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -2118,7 +2118,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "bar",1)>=0))
-   { 
+   {
     sprintf(buf, "%s", (char *)NumericDisplay(sg->bar,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, 1, interactive, "bar", buf, (settings_graph_default.bar == sg->bar), "Sets the size of the strokes which mark the lower and upper limits of errorbars");
     i += strlen(out+i) ; p=1;
@@ -2143,8 +2143,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "binwidth",1)>=0))
    {
     bufp = "Sets the width of bins used by the histogram command";
-    if (settings_term_current.BinWidthAuto) 
-     { 
+    if (settings_term_current.BinWidthAuto)
+     {
       directive_show3(out+i, ItemSet, 0, interactive, "BinWidth", "auto", settings_term_current.BinWidthAuto==settings_term_default.BinWidthAuto, bufp);
      } else {
       directive_show3(out+i, ItemSet, 0, interactive, "BinWidth", ppl_units_NumericDisplay(&(settings_term_current.BinWidth),0,0,0),
@@ -2161,7 +2161,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     bufp = "Sets the vertical level from which the bars of barcharts and histograms are drawn";
     if (sg->BoxFromAuto)
-     { 
+     {
       directive_show3(out+i, ItemSet, 0, interactive, "BoxFrom", "auto", sg->BoxFromAuto==settings_graph_default.BoxFromAuto, bufp);
      } else {
       directive_show3(out+i, ItemSet, 0, interactive, "BoxFrom", ppl_units_NumericDisplay(&(sg->BoxFrom),0,0,0),
@@ -2177,8 +2177,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "boxwidth",1)>=0))
    {
     bufp = "Sets the width of bars on barcharts and histograms";
-    if (sg->BoxWidthAuto) 
-     { 
+    if (sg->BoxWidthAuto)
+     {
       directive_show3(out+i, ItemSet, 0, interactive, "BoxWidth", "auto", sg->BoxWidthAuto==settings_graph_default.BoxWidthAuto, bufp);
      } else {
       directive_show3(out+i, ItemSet, 0, interactive, "BoxWidth", ppl_units_NumericDisplay(&(sg->BoxWidth),0,0,0),
@@ -2210,7 +2210,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
-   { 
+   {
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.display, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "display", buf, (settings_term_default.display == settings_term_current.display), "Sets whether any output is produced; turn on to improve performance whilst setting up large multiplots");
     i += strlen(out+i) ; p=1;
@@ -2230,7 +2230,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "fontsize",1)>=0) || (StrAutocomplete(word, "fountsize",1)>=0))
-   { 
+   {
     sprintf(buf, "%s", (char *)NumericDisplay(sg->FontSize,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, 1, interactive, "FontSize", buf, (settings_graph_default.FontSize == sg->FontSize), "Sets the font size of text output: 1.0 is the default, and other values multiply this default size");
     i += strlen(out+i) ; p=1;
@@ -2286,7 +2286,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
 
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "key",1)>=0))
-   { 
+   {
     sprintf(buf, "%s", *(char **)FetchSettingName(sg->key, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 1, interactive, "key", buf, (settings_graph_default.key == sg->key), "Selects whether a legend is included on plots");
     i += strlen(out+i) ; p=1;
@@ -2298,20 +2298,20 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "keycolumns",1)>=0))
-   { 
+   {
     if (sg->KeyColumns>0) sprintf(buf, "%d", sg->KeyColumns);
     else                  sprintf(buf, "auto");
     directive_show3(out+i, ItemSet, 1, interactive, "KeyColumns", buf, (settings_graph_default.KeyColumns == sg->KeyColumns), "Sets the number of columns into which legends on graphs are sorted");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "linewidth", 1)>=0) || (StrAutocomplete(word, "lw", 2)>=0))
-   { 
+   {
     sprintf(buf, "%s", NumericDisplay(sg->LineWidth,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, 1, interactive, "LineWidth", buf, (settings_graph_default.LineWidth == sg->LineWidth), "Sets the widths of lines drawn on graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "multiplot", 1)>=0))
-   { 
+   {
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.multiplot, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "multiplot", buf, (settings_term_default.multiplot == settings_term_current.multiplot), "Selects whether multiplot mode is currently active");
     i += strlen(out+i) ; p=1;
@@ -2332,13 +2332,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "origin", 1)>=0))
-   { 
+   {
     sprintf(buf, "%s , %s", ppl_units_NumericDisplay(&(sg->OriginX),0,0,0), ppl_units_NumericDisplay(&(sg->OriginY),1,0,0));
     directive_show3(out+i, ItemSet, 1, interactive, "origin", buf, ((settings_graph_default.OriginX.real == sg->OriginX.real)&&(settings_graph_default.OriginY.real == sg->OriginY.real)), "Selects where the bottom-left corners of graphs are located on multiplot pages");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "output", 1)>=0))
-   { 
+   {
     StrEscapify(settings_term_current.output, buf);
     directive_show3(out+i, ItemSet, 0, interactive, "output", buf, (strcmp(settings_term_default.output,settings_term_current.output)==0), "Filename to which graphic output is sent");
     i += strlen(out+i) ; p=1;
@@ -2450,7 +2450,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "terminal", 1)>=0) || (StrAutocomplete(word, "dpi", 1)>=0))
-   {                  
+   {
     sprintf(buf, "%s", (char *)NumericDisplay(settings_term_current.dpi,0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
     directive_show3(out+i, ItemSet, 0, interactive, "terminal dpi", buf, (settings_term_default.dpi == settings_term_current.dpi), "Sets the pixel resolution used when producing bitmap graphic output");
     i += strlen(out+i) ; p=1;
@@ -2488,13 +2488,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "texthalign",1)>=0))
-   { 
+   {
     sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextHAlign, SW_HALIGN_INT, (void *)SW_HALIGN_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 1, interactive, "TextHAlign", buf, (settings_graph_default.TextHAlign==sg->TextHAlign), "Selects the horizontal alignment of text labels");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "textvalign",1)>=0))
-   { 
+   {
     sprintf(buf, "%s", *(char **)FetchSettingName(sg->TextVAlign, SW_VALIGN_INT, (void *)SW_VALIGN_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 1, interactive, "TextVAlign", buf, (settings_graph_default.TextVAlign==sg->TextVAlign), "Selects the vertical alignment of text labels");
     i += strlen(out+i) ; p=1;
@@ -2569,13 +2569,13 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
-   { 
+   {
     sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0, 0));
     directive_show3(out+i, ItemSet, 1, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "view", 1)>=0))
-   {       
+   {
     sprintf(buf, "%s,%s", ppl_units_NumericDisplay(&(sg->XYview), 0, 0, 0), ppl_units_NumericDisplay(&(sg->YZview), 1, 0, 0));
     directive_show3(out+i, ItemSet, 1, interactive, "view", buf, (settings_graph_default.XYview.real==sg->XYview.real)&&(settings_graph_default.YZview.real==sg->YZview.real), "The rotation angle of 3d graphs");
     i += strlen(out+i) ; p=1;
@@ -2653,14 +2653,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
                         );
          i += strlen(out+i) ; p=1;
         }
-                       
+
        sprintf(temp1, "%c%dformat", "xyz"[k], j);
        sprintf(temp2, "%cformat"  , "xyz"[k]   );
        if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
          if (AxisPtr->format != NULL) sprintf(buf, "%s ", AxisPtr->format);
          else                         buf[0]='\0';
-         m = strlen(buf);                
+         m = strlen(buf);
          sprintf(buf+m, "%s", *(char **)FetchSettingName(AxisPtr->TickLabelRotation, SW_TICLABDIR_INT, (void *)SW_TICLABDIR_STR, sizeof(char *))); m += strlen(buf+m);
          if (AxisPtr->TickLabelRotation == SW_TICLABDIR_ROT)
           {
@@ -2798,7 +2798,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
              sprintf(buf+m, "%s", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
             }
            if (AxisPtr->MTickStepSet)
-            { 
+            {
              AxisPtr->unit.real = AxisPtr->MTickStep;
              sprintf(buf+m, "%s%s", (AxisPtr->MTickMinSet)?", ":"", ppl_units_NumericDisplay(&(AxisPtr->unit),0,0,0)); m += strlen(buf+m);
             }
@@ -2809,7 +2809,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
             }
           }
          else
-          {  
+          {
            buf[m++]='(';
            for (n=0; AxisPtr->MTickStrs[n]!=NULL; n++)
             {
@@ -2847,11 +2847,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       ai_default = ai_default_prev = arrow_list_default;
       for (ai=*al; ai!=NULL; ai=ai->next)
        {
-        while ((ai_default != NULL) && (ai_default->id <= ai->id)) 
+        while ((ai_default != NULL) && (ai_default->id <= ai->id))
          {
           if (ai_default->id < ai->id)
-           { 
-            sprintf(buf2, "noarrow %6d", ai_default->id); 
+           {
+            sprintf(buf2, "noarrow %6d", ai_default->id);
             sprintf(buf,"remove arrow %6d", ai_default->id);
             directive_show3(out+i, ItemSet, 1, interactive, buf2, "", 1, buf);
             i += strlen(out+i);
@@ -2867,7 +2867,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
        }
       while (ai_default != NULL)
        {
-        sprintf(buf2, "noarrow %6d", ai_default->id); 
+        sprintf(buf2, "noarrow %6d", ai_default->id);
         sprintf(buf,"remove arrow %6d", ai_default->id);
         directive_show3(out+i, ItemSet, 1, interactive, buf2, "", 1, buf);
         i += strlen(out+i);
@@ -3150,12 +3150,12 @@ void directive_show(Dict *command, int interactive)
     if ((*EditNo<1) || (*EditNo>MULTIPLOT_MAXINDEX) || (canvas_items == NULL)) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
     ptr = canvas_items->first;
     for (i=1; i<*EditNo; i++)
-     {   
+     {
       if (ptr==NULL) break;
       ptr=ptr->next;
      }
     if (ptr == NULL) { sprintf(temp_err_string, "No multiplot item with index %d.", *EditNo); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
-  
+
     sg = &(ptr->settings);
     al = &(ptr->arrow_list);
     ll = &(ptr->label_list);

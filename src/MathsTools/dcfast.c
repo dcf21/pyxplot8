@@ -100,7 +100,7 @@ double Lcdm_t_from_z(double z, double H, double OmegaM, double OmegaL)
 
   if (z<=0) return GSL_NAN;
   p.OmegaM = OmegaM; p.OmegaL = OmegaL;
-  
+
   ws          = gsl_integration_workspace_alloc(1000);
   fn.function = &__Lcdm_t_integrand;
   fn.params   = &p;

@@ -521,7 +521,7 @@ void dcfmath_planck_Bvmax(value *in, value *output, int *status, char *errtext)
 
   CHECK_1NOTNAN;
   CHECK_DIMLESS_OR_HAS_UNIT(in , "first" , "a temperature", UNIT_TEMPERATURE, 1);
-  IF_1COMPLEX 
+  IF_1COMPLEX
    { QUERY_MUST_BE_REAL }
   ELSE_REAL
    {
@@ -1300,14 +1300,14 @@ void dcfmath_root(value *in1, value *in2, value *output, int *status, char *errt
         output->real = -tmpdbl;
         output->FlagComplex = !ppl_units_DblEqual(output->imag, 0);
         if (!output->FlagComplex) output->imag=0.0; // Enforce that real numbers have positive zero imaginary components
-       } 
+       }
      }
    }
   CHECK_OUTPUT_OKAY;
  }
 
 void dcfmath_sec(value *in, value *output, int *status, char *errtext)
- {  
+ {
   char *FunctionDescription = "sec(x)";
   int i;
   gsl_complex z;
@@ -1329,7 +1329,7 @@ void dcfmath_sech(value *in, value *output, int *status, char *errtext)
  }
 
 void dcfmath_sin(value *in, value *output, int *status, char *errtext)
- {  
+ {
   char *FunctionDescription = "sin(x)";
   int i;
   gsl_complex z;
@@ -1388,7 +1388,7 @@ void dcfmath_sqrt(value *in, value *output, int *status, char *errtext)
  }
 
 void dcfmath_tan(value *in, value *output, int *status, char *errtext)
- {  
+ {
   char *FunctionDescription = "tan(x)";
   int i;
   gsl_complex z;
@@ -1474,7 +1474,7 @@ void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *er
 //     {
 //      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
 //      else { NULL_OUTPUT; }
-//     } 
+//     }
 //    if ((n%2)!=(m%2)) return; // Defined to be zero
 //    output->real = gsl_sf_gamma(n+1) * gsl_sf_hyperg_2F1(-0.5*(fabs(m)+n),0.5*(fabs(m)-n),-n,pow(in3->real,-2.0)) / gsl_sf_gamma(0.5*(2+n+m)) / gsl_sf_gamma(0.5*(2+n-m));
 //    if (m>0) output->real *= cos(m*in4->real);

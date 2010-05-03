@@ -160,9 +160,9 @@ char *FetchInputLine(char *output, char *prompt)
   else if (mode == INPUT_STRING)
    {
     if (instr[*inpos]=='\0') return NULL;
-    for (i=0; instr[*inpos]>=' '; i++,(*inpos)++) output[i]=instr[*inpos];
+    for (i=0; ((instr[*inpos]!='\0')&&(instr[*inpos]!='\n')&&(instr[*inpos]!=EOF)); i++,(*inpos)++) output[i]=instr[*inpos];
     output[i++]='\0';
-    while ((instr[*inpos]!='\0')&&(instr[*inpos]<' ')) (*inpos)++;
+    while ((instr[*inpos]=='\n')||(instr[*inpos]==EOF)) (*inpos)++;
     return output;
    }
   else

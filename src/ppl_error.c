@@ -61,7 +61,7 @@ void ppl_error(int ErrType, int HighlightPos1, int HighlightPos2, char *msg)
   if (ErrType != ERR_PREFORMED) // Do not prepend anything to pre-formed errors
    {
     // When processing scripts, print error location
-    if ((ppl_error_input_linenumber != -1) && (strcmp(ppl_error_input_filename, "") !=  0)) 
+    if ((ppl_error_input_linenumber != -1) && (strcmp(ppl_error_input_filename, "") !=  0))
      {
       sprintf(temp_stringB+i, "%s:%d:", ppl_error_input_filename, ppl_error_input_linenumber);
       i += strlen(temp_stringB+i);

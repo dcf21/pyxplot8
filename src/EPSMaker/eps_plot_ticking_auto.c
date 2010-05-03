@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "ListTools/lt_memory.h"
 
@@ -743,8 +744,8 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
         {
          if (DEBUG) { sprintf(temp_err_string, "Accepted minor ticks to mark changes of argument %d (now %d ticks).", i, NTicksMajor); ppl_log(temp_err_string); }
          memcpy(TicksAccepted, TicksAcceptedNew, NPotTicks); // Update TicksAccepted
-         continue; 
-        } 
+         continue;
+        }
       }
      else // Continuous arguments are more complicated
       {
@@ -927,7 +928,7 @@ FAIL:
   N = 1 + length/tick_sep_major; // Estimate how many ticks we want
   if (N<  3) N=  3;
   if (N>100) N=100;
-  
+
   axis->TickListPositions = (double  *)lt_malloc_incontext((N+1) * sizeof(double), OutContext);
   axis->TickListStrings   = (char   **)lt_malloc_incontext((N+1) * sizeof(char *), OutContext);
   if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
@@ -940,7 +941,7 @@ FAIL:
     if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase, OutContext);
     else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz, OutContext);
     if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
-   } 
+   }
   axis->TickListStrings[i] = NULL; // null terminate list
 
 CLEANUP:

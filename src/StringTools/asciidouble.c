@@ -197,8 +197,8 @@ void file_readline(FILE *file, char *output, int MaxLength)
 void GetWord(char *out, const char *in, int max)
  {
   int count = 0;
-  while ((*in <= ' ') && (*in != '\0')) in++; /* Fastforward over preceeding whitespace */
-  while ((*in >  ' ') && (count < (max-1)))
+  while  ((*in <= ' ') && (*in > '\0')) in++; /* Fastforward over preceeding whitespace */
+  while (((*in >  ' ') || (*in < '\0')) && (count < (max-1)))
    {
     *(out++) = *(in++);
     count++;
@@ -210,9 +210,9 @@ void GetWord(char *out, const char *in, int max)
 
 char *NextWord(char *in)
  {
-  while ((*in <= ' ') && (*in != '\0')) in++; /* Fastforward over preceeding whitespace */
-  while  (*in >  ' ')                   in++; /* Fastforward over one word */
-  while ((*in <= ' ') && (*in != '\0')) in++; /* Fastforward over whitespace before next word */
+  while ((*in <= ' ') && (*in > '\0')) in++; /* Fastforward over preceeding whitespace */
+  while ((*in >  ' ') || (*in < '\0')) in++; /* Fastforward over one word */
+  while ((*in <= ' ') && (*in > '\0')) in++; /* Fastforward over whitespace before next word */
   return(in); /* Return pointer to next word */
  }
 
@@ -231,9 +231,9 @@ char *StrStrip(const char *in, char *out)
  {
   char *scan = out;
   while ((*in <= ' ') && (*in > '\0')) in++;
-  while (                (*in > '\0')) *(scan++)=*(in++);
+  while (*in != '\0') *(scan++)=*(in++);
   scan--;
-  while ((scan>out) && (*scan <= ' ')) scan--;
+  while ((scan>out) && (*scan >= '\0') && (*scan <= ' ')) scan--;
   *++scan = '\0';
   return out;
  }
@@ -243,7 +243,7 @@ char *StrStrip(const char *in, char *out)
 char *StrUpper(const char *in, char *out)
  {
   char *scan = out;
-  while (*in > 0)
+  while (*in != '\0')
    if ((*in >='a') && (*in <='z')) *scan++ = *in++ +'A'-'a';
    else                            *scan++ = *in++;
   *scan = '\0';
@@ -255,7 +255,7 @@ char *StrUpper(const char *in, char *out)
 char *StrLower(const char *in, char *out)
  {
   char *scan = out;
-  while (*in > 0)
+  while (*in != '\0')
    if ((*in >='A') && (*in <='Z')) *scan++ = *in++ +'a'-'A';
    else                            *scan++ = *in++;
   *scan = '\0';
@@ -267,7 +267,7 @@ char *StrLower(const char *in, char *out)
 char *StrUnderline(const char *in, char *out)
  {
   char *scan = out;
-  while (*in > 0) if (*in++ >= ' ') *scan++='-';
+  while (*in != '\0') { if ((*in>=' ')||(*in<'\0')) *scan++='-'; in++; }
   *scan = '\0';
   return out;
  }

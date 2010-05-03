@@ -88,7 +88,7 @@ void GraphLegend_YieldUpText(EPSComm *x)
           else                                          { sprintf(cptr+k,    " continuous"); k+=strlen(cptr+k); }
          }
         if (pd->axis1set || pd->axis2set || pd->axis3set) // Print axes to use
-         {           
+         {
           strcpy(cptr+k, " axes "); k+=strlen(cptr+k);
           if (pd->axis1set) { sprintf(cptr+k, "$%c%d$", "xyz"[pd->axis1xyz], pd->axis1); k+=strlen(cptr+k); }
           if (pd->axis2set) { sprintf(cptr+k, "$%c%d$", "xyz"[pd->axis2xyz], pd->axis2); k+=strlen(cptr+k); }
@@ -260,7 +260,7 @@ void GraphLegend_Render(EPSComm *x, double width, double height)
       ColumnX[Ncolumns] += (Ncolumns-1)*GapPerColumn;
      }
    }
-  
+
   // Translate legend to desired place on canvas (2D case)
   if (!x->current->ThreeDim)
    switch (kp)
