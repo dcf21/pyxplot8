@@ -35,7 +35,7 @@ Where any of these punctuation marks appear as a part of PyXPlot's syntax, they
 are placed in double quotes, as in {\tt "\{"}. Strings, such as filenames,
 which should be placed in quotes are placed in single quotes, as in {\tt
 '<filename>'}, though in practice, double quotes can always be used
-interchangeably with single quotes. In case where there is likely to be any
+interchangeably with single quotes. In cases where there is likely to be any
 ambiguity, worked examples are usually shown beneath the syntax specification.
 
 \section{?}\indcmd{?}
@@ -54,7 +54,7 @@ The {\tt ?} symbol is a shortcut to the {\tt help} command.
 ... `<shell command>` ...
 \end{verbatim}
 
-Shell commands can be executed from within PyXPlot by prefixing them with
+Shell commands can be executed within PyXPlot by prefixing them with
 pling (!) characters, as in the example:
 
 \begin{verbatim}
@@ -86,7 +86,7 @@ arc [ item <id> ] [at] <x>, <y> radius <r>
 Arcs (curves with constant radius of curvature, that is, segments of circles)
 may be drawn on multiplot canvases using the \indcmdt{arc}.  The {\tt at}
 modifier specifies the coordinates of the centre of curvature, from which all
-points on the arc are the distance given following the {\tt radius} modifier.
+points on the arc are at the distance given following the {\tt radius} modifier.
 The angles {\tt start} and {\tt finish}, measured clockwise from the vertical,
 control where the arc begins and finishes.  For example, the command
 
@@ -95,14 +95,14 @@ arc at 0,0 radius 2 from 90 to 270
 \end{verbatim}
 
 \noindent would draw a semi-circle beneath the line $x=0$, centred on the
-origin with radius $2\,\mathrm{cm}$.  The usual with modifiers for lines may be
-passed; if the {\tt fillcolour} modifier is specified then the arc will be
-filled to form a pie-chart slice.
+origin with radius $2\,\mathrm{cm}$.  The usual style modifiers for lines may
+be passed after the keyword {\tt with}; if the {\tt fillcolour} modifier is
+specified then the arc will be filled to form a pie-chart slice.
 
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -118,21 +118,21 @@ of the arrows produced may be specified by following the \indmodt{with}
 modifier by one of the style keywords \indkeyt{nohead}, \indkeyt{head}
 (default) or \indkeyt{twohead}. In addition, keywords such as \indkeyt{colour},
 \indkeyt{linewidth} and \indkeyt{linetype} have the same syntax and meaning
-following the \indmodt{with} keyword in the \indcmdt{arrow} as in the {\tt
-plot} command. The following example would draw a bidirectional blue arrow:
+following the \indmodt{with} keyword as in the {\tt plot} command. The
+following example would draw a bidirectional blue arrow:
 
 \begin{verbatim}
 arrow from x1,y1 to x2,y2 with twohead linetype 2 colour blue
 \end{verbatim}
 
 The {\tt arrow} command has a twin, the {\tt line} command, which has the same
-syntax, but uses the default arrow style of \indkeyt{nohead}, producing a short
-line segment.
+syntax, but uses the default arrow style of \indkeyt{nohead}, producing short
+line segments.
 
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -147,17 +147,17 @@ box [ item <id> ] from <x1>, <y1> to <x2>, <y2>
 \end{verbatim}
 
 The \indcmdt{box} may be used to draw and fill rectangular boxes on multiplot
-canvases.  The position of the box may be specified in one of two ways.  In the
-first, the coordinates of one corner of the box are specified, along with the
-width and height. If both the width and height are positive then the
+canvases.  The position of each box may be specified in one of two ways.  In the
+first, the coordinates of one corner of the box are specified, along with its
+width and height. If both the width and the height are positive then the
 coordinates are taken to be those of the bottom left-hand corner of the box;
 other corners may be specified if the supplied width and/or height are
 negative. If a rotation angle is specified then the box is rotated about the
 specified corner.  The {\tt with} modifier allows the style of the box to be
 specified using similar options to those accepted by the {\tt plot} command.
 
-\noindent The second syntax allows two pairs of coordinates to be specified.
-PyXPlot will then draw a rectangular box with opposing corners at the specified
+The second syntax allows two pairs of coordinates to be specified.  PyXPlot
+will then draw a rectangular box with opposing corners at the specified
 locations.  If an angle is specified the box will be rotated about its centre.
 Hence the following two commands both draw a square box centred on the origin:
 
@@ -169,7 +169,7 @@ box at 1, -1 width -2 height 2
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -179,9 +179,10 @@ commands respectively.
 break [<loopname>]
 \end{verbatim}
 
-The \indcmdt{break} breaks out of {\tt do}, {\tt while}, {\tt for} or {\tt
-foreach} loops.  Execution resumes at the statement following the end of the
-loop. To demonstrate this, the following example would only print the numbers~1
+The \indcmdt{break} terminates execution of {\tt do}, {\tt while}, {\tt for}
+and {\tt foreach} loops in an analogous manner to the {\tt break} statement in
+the C programming language.  Execution resumes at the statement following the
+end of the loop. For example, the following loop would only print the numbers~1
 and~2:
 
 \begin{verbatim}
@@ -195,22 +196,23 @@ for i = 1 to 10
  }
 \end{verbatim}
 
-If several loops are nested, the {\tt break} and {\tt continue}
-statements only act upon the innermost loop. If either statement is encountered
-outside of a loop structure, an error results. Optionally, the {\tt for}, {\tt
-foreach}, {\tt do} and {\tt while}, may be supplied with a name for the loop,
-prefixed by the word {\tt loopname}, as in the examples:
+If several loops are nested, the {\tt break} statement only acts on the
+innermost loop. If the {\tt break} statement is encountered outside of any loop
+structure, an error results. Optionally, the {\tt for}, {\tt foreach}, {\tt do}
+and {\tt while} commands may be supplied with a name for the loop, prefixed by
+the word {\tt loopname}, as in the examples:
 
 \begin{verbatim}
 for i=0 to 4 loopname iloop
-...
+
 foreach i in "*.dat" loopname DatafileLoop
-...
 \end{verbatim}
 
-\noindent When loops are given such names, the {\tt break} and {\tt continue}
-statements may be followed by the name of the loop to be broken out of,
-allowing the user to act upon loops other than the innermost one.
+\noindent When loops are given such names, the {\tt break} statement may be
+followed by the name of the loop whose iteration is to be broken, allowing it
+to act upon loops other than the innermost one.
+
+See also the {\tt continue} command.
 
 
 \section{cd}\indcmd{cd}
@@ -235,7 +237,7 @@ circle [ item <id> ] [at] <x>, <y> radius <r>
        [ with {<option>} ]
 \end{verbatim}
 
-The \indcmdt{circle} allows circles to be drawn on multiplot canvases.  The
+The \indcmdt{circle} is used to draw circles on multiplot canvases.  The
 coordinates of the circle's centre and its radius are specified. The {\tt with}
 modifier allows the style of the circle to be specified using similar options
 to those accepted by the {\tt plot} command.  The example
@@ -244,13 +246,13 @@ to those accepted by the {\tt plot} command.  The example
 circle at 2,2 radius 1 with colour red fillcolour blue
 \end{verbatim}
 
-\noindent would draw a red circle filled in blue centred $2\,\mathrm{cm}$ above
-and to the right of the origin, with unit radius.
+\noindent would draw a red circle of unit radius filled in blue, centred
+$2\,\mathrm{cm}$ above and to the right of the origin.
 
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -260,11 +262,10 @@ commands respectively.
 clear
 \end{verbatim}
 
-In multiplot mode, the \indcmdt{clear} removes all current plots, arrows and
-text objects from the working multiplot canvas. Outside of multiplot mode, it
-is not especially useful; it removes the current plot to leave a blank canvas.
-
-The {\tt clear} command should not be followed by any parameters.
+In multiplot mode, the \indcmdt{clear} removes all plots, arrows and text
+objects from the working multiplot canvas. Outside of multiplot mode, it is not
+especially useful; it removes the current plot to leave a blank canvas.  The
+{\tt clear} command should not be followed by any parameters.
 
 
 \section{continue}\indcmd{continue}
@@ -273,10 +274,12 @@ The {\tt clear} command should not be followed by any parameters.
 continue [<loopname>]
 \end{verbatim}
 
-The \indcmdt{continue} may be used within {\tt for}, {\tt foreach}, {\tt do}
-and {\tt while} loops.  It causes PyXPlot to skip the remainder of the current
-iteration of the loop, in an analogous manner to the continue statement in the
-C language.  For example, the following script will not print the number~2:
+The \indcmdt{continue} terminates execution of the current iteration of {\tt
+for}, {\tt foreach}, {\tt do} and {\tt while} loops in an analogous manner to
+the {\tt continue} statement in the C programming language. Execution resumes
+at the first statement of the next iteration of the loop, or at the first
+statement following the end of the loop in the case of the last iteration of
+the loop.  For example, the following script will not print the number~2:
 
 \begin{verbatim}
 for i = 0 to 5
@@ -289,22 +292,23 @@ for i = 0 to 5
  }
 \end{verbatim}
 
-If several loops are nested, the {\tt break} and {\tt continue} statements only
-act upon the innermost loop. If either statement is encountered outside of a
+If several loops are nested, the {\tt continue} statement only
+acts on the innermost loop. If the {\tt continue} statement is encountered outside of any
 loop structure, an error results. Optionally, the {\tt for}, {\tt foreach},
-{\tt do} and {\tt while}, may be supplied with a name for the loop, prefixed by
+{\tt do} and {\tt while} statements may be supplied with a name for the loop, prefixed by
 the word {\tt loopname}, as in the examples:
 
 \begin{verbatim}
 for i=0 to 4 loopname iloop
-...
+
 foreach i in "*.dat" loopname DatafileLoop
-...
 \end{verbatim}
 
-\noindent When loops are given such names, the {\tt break} and {\tt continue}
-statements may be followed by the name of the loop to be broken out of,
-allowing the user to act upon loops other than the innermost one.
+\noindent When loops are given such names, the {\tt continue} statement may be
+followed by the name of the loop whose iteration is to be broken, allowing it
+to act upon loops other than the innermost one.
+
+See also the {\tt break} command.
 
 
 \section{delete}\indcmd{delete}
@@ -318,7 +322,7 @@ text items from the current multiplot canvas. All vector graphics objects
 placed on multiplot canvases receive unique identification numbers which count
 sequentially from one, and which may be listed using the {\tt list} command.
 The items to be deleted should be identified using a comma-separated list of
-their reference numbers. The example
+their identification numbers. The example
 
 \begin{verbatim}
 delete 1,2,3
@@ -339,12 +343,11 @@ do [loopname <loopname>]
  "}" while <condition>
 \end{verbatim}
 
-The \indcmdt{do} sets up a loop, in a similar manner to the {\tt while}
-command.  PyXPlot executes the block of commands in the body of the loop, then
-checks the condition given in the while clause at the end.  If the condition is
-true, the loop executes again.  Hence the contents of a {\tt do} loop are {\emph
-always} executed at least once.  The following example prints the numbers 1, 2
-and 3:
+The \indcmdt{do} executes a block of commands repeatedly, checking the
+condition given in the {\tt while} clause at the end of each iteration.  If the
+condition is true then the loop executes again. This is similar to a {\tt
+while} loop, except that the contents of a {\tt do} loop are {\emph always}
+executed at least once.  The following example prints the numbers~1, 2 and~3:
 
 \begin{verbatim}
 i=1
@@ -376,10 +379,10 @@ ellipse from 0,0 to 4,1 rot 70
 \end{verbatim}
 
 \item the position of both the centre and one of the foci of the ellipse,
-together with any one of the following pieces of information: the major axis
-length, the semi-major axis length, the minor axis length, the semi-minor axis
-length, the eccentricity, the latus rectum, or the semi-latus rectum.  For
-example:
+together with any one of the following additional pieces of information: the
+ellipse's major axis length, its semi-major axis length, its minor axis length,
+its semi-minor axis length, its eccentricity, its latus rectum, or its
+semi-latus rectum.  For example:
 
 \begin{verbatim}
 ellipse focus 0,0 centre 2,2 majoraxis 4
@@ -390,13 +393,13 @@ ellipse focus 0,0 centre 2,2 slr 3
 \end{verbatim}
 
 \item the position of either the centre or one of the foci of the ellipse,
-together with any two of the following pieces of information: the major axis
-length, the semi-major axis length, the minor axis length, the semi-minor axis
-length, the eccentricity, the latus rectum, or the semi-latus rectum. An
-optional counter-clockwise rotation angle may also be specified, applied about
-either the centre or one of the foci of the ellipse, whichever is specified. If
-no rotation angle is given, then the major axis of the ellipse is horizontal.
-For example:
+together with any two of the following additional pieces of information: the
+ellipse's major axis length, its semi-major axis length, its minor axis length,
+its semi-minor axis length, its eccentricity, its latus rectum, or its
+semi-latus rectum. An optional counter-clockwise rotation angle may also be
+specified, applied about either the centre or one of the foci of the ellipse,
+whichever is specified. If no rotation angle is given, then the major axis of
+the ellipse is horizontal.  For example:
 
 \begin{verbatim}
 ellipse centre 0,0 majoraxis 4 minoraxis 4
@@ -404,13 +407,14 @@ ellipse centre 0,0 majoraxis 4 minoraxis 4
 \end{enumerate}
 
 The line type, line width, and colour of line with which the outlines of
-ellipses are drawn may be specified as in the {\tt box} and {\tt circle}
-commands above. Likewise, ellipses may be filled in the same manner.
+ellipses are drawn may be specified after the keyword {\tt with}, as in the
+{\tt box} and {\tt circle} commands above. Likewise, ellipses may be filled in
+the same manner.
 
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -442,7 +446,7 @@ labels, etc.
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -477,36 +481,47 @@ after receiving the {\tt exit} command.
 
 PyXPlot may also be quit be pressing CTRL-D or via the {\tt quit} command. In
 interactive mode, CTRL-C terminates the current command, if one is running.
-When running a script, CTRL-C terminates execution of it.
+When running a script, CTRL-C terminates execution of the script.
 
 
 \section{fft}\indcmd{fft}
 
 \begin{verbatim}
 fft {<range>} <function>"()"
-    of ( '<filename>' | function )
+    of ( '<filename>' | <function>"()" )
     [using <expression> {:<expression>} ]
 
 ifft {<range>} <function>"()"
-    of ( '<filename>' | function )
+    of ( '<filename>' | <function>"()" )
     [using <expression> {:<expression>} ]
 \end{verbatim}
 
 The \indcmdt{fft} calculates Fourier transforms of \datafile s or functions.
-Transforms can be calculated in multiple dimensions.  For each dimension of your
-function that you wish to transform a range specification must be provided, in
-the form
+Transforms can be performed on datasets with arbitrary numbers of dimensions.
+To transform an algebraic expression with $n$~degrees of freedom, it must be
+wrapped in a function of the form $f(i_2,i_2,\ldots,i_n)$. To transform an
+$n$-dimensional dataset stored in a \datafile, the samples must be arranged on
+a regular linearly-spaced grid and stored in row-major order.  For each
+dimension of the transform, a range specification must be provided to the {\tt
+fft} command in the form
 
 \begin{verbatim}
 [ <minimum> : <maximum> : <step> ]
 \end{verbatim}
 
-After the range(s) a function name should be provided.  A function of this name
-will be generated to represent your transformed data.  Note that this function
-is in general complex: you can enable complex numerics with the {\tt set
-numerics complex} command.  You can use the {\tt using}, {\tt index}, {\tt
-every} and {\tt select} statements to specify how data will be selected from
-your function or \datafile\ in an analogous manner to the {\tt plot} command.
+When data from a \datafile\ is being transformed, the specified range(s) must
+precisely match those of the samples read from the file; the first $n$~columns
+of data should contain the values of the $n$~real-space coordinates, and the
+$n+1$th column should contain the data to be transformed.  After the range(s),
+a function name should be provided for the output transform: a function of
+$n$~arguments with this name will be generated to represent the transformed
+data.  Note that this function is in general complex -- i.e.\ it has a non-zero
+imaginary component. Complex numerics can be enabled using the {\tt set
+numerics complex} command and the {\tt fft} command is of little use without
+doing so. The {\tt using}, {\tt index}, {\tt every} and {\tt select} modifiers
+can be used to specify how data will be sampled from the input function or
+\datafile\ in an analogous manner to how they are used in the {\tt plot}
+command.
 
 The {\tt ifft} command calculates inverse Fourier transforms; it has the same
 syntax as the {\tt fft} command.
@@ -521,12 +536,10 @@ fit [{<range>}] <function>"()" [withouterrors] '<datafile>'
 \end{verbatim}
 
 The \indcmdt{fit} can be used to fit arbitrary functional forms to \datapoint s
-read from files. It can be used to produce best-fit lines for datasets, or to
+read from files. It can be used to produce best-fit lines for datasets or to
 determine gradients and other mathematical properties of data by looking at the
-parameters associated with the best-fitting functional form.
-
-The following simple example fits a straight line to data in a file called {\tt
-data.dat}:
+parameters associated with the best-fitting functional form.  The following
+simple example fits a straight line to data in a file called {\tt data.dat}:
 
 \begin{verbatim}
 f(x) = a*x+b
@@ -539,14 +552,15 @@ process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
 The modifiers \indmodt{index}, \indmodt{every}, \indmodt{select} and
 \indmodt{using} have the same meanings as in the {\tt plot} command.
 
-As the {\tt fit} works, it displays statistics including the best-fit values of
-each of the fitting parameters, the uncertainties in each of them, and the
-covariance matrix. These can be useful for analysing the security of the fit
-achieved, but calculating the uncertainties in the best-fit parameters and the
-covariance matrix can be time consuming, especially when many parameters are
-being fitted simultaneously. The optional word {\tt withouterrors} can be
-included immediately before the filename of the \datafile\ to be fitted to
-substantially speed up cases where this information is not required.
+As the {\tt fit} command works, it displays statistics including the best-fit
+values of each of the fitting parameters, the uncertainties in each of them,
+and the covariance matrix. These can be useful for analysing the security of
+the fit achieved, but calculating the uncertainties in the best-fit parameters
+and the covariance matrix can be time consuming, especially when many
+parameters are being fitted simultaneously. The optional keyword {\tt
+withouterrors} can be included immediately before the filename of the
+\datafile\ to be fitted to substantially speed up cases where this information
+is not required.
 
 More details can be found in Section~\ref{sec:fit_command}.
 
@@ -561,12 +575,14 @@ for <variable> = <start> to <end> [step <step>]
  "}"
 \end{verbatim}
 
-The \indcmdt{for} executes a set of commands with a specified variable taking a
-different value each time.  In PyXPlot's implementation the value of the
-variable increases by a fixed value {\tt step} each time, which may be negative
-and is equal to unity if not specified.  The {\tt end} value is not included in
-the squence.  The following example prints the squares of the first five
-natural numbers:
+The \indcmdt{for} executes a set of commands repeatedly, with a specified
+variable taking a different value on each iteration. The variable takes the
+value {\tt start} on the first iteration, and increases by a fixed value {\tt
+step} on each iteration; {\tt step} may be negative if {\tt end} $<$ {\tt
+start}. If {\tt step} is not specified then a value of unity is assumed. The
+loop terminates when the variable exceeds or equals {\tt end}; note that the
+loop is not executed with the variable equalling {\tt end}.  The following
+example prints the squares of the first five natural numbers:
 
 \begin{verbatim}
 for i = 1 to 6
@@ -587,25 +603,28 @@ foreach <variable> in ( <filename expression> |
  "}"
 \end{verbatim}
 
-The \indcmdt{foreach} can be used to iteratively run a block of commands in one
-of two ways.  In the first case, it takes a set of filenames or filename
-wildcards, and executes the block of commands once for each supplied filename,
-with a string variable set to each filename in succession.  For example, to
-plot the data in the set of files whose names end with {\tt .dat}:
+The \indcmdt{foreach} can be used to run a block of commands repeatedly, once
+for each item in a list.  The list of items can be specified in one of two
+ways.  In the first case, a set of filenames or filename wildcards is supplied,
+and the {\tt foreach} loop iterates once for each supplied filename, with a
+string variable set to each filename in succession.  For example, the following
+loop would plot the data in the set of files whose names end with {\tt .dat}:
 
 \begin{verbatim}
+plot     # Create blank plot
 foreach file in *.dat
  {
-  plot file with lines
+  replot file with lines
  }
 \end{verbatim}
 
 The second form of the command takes a list of string or numerical values
-provided by the user and executes the block of commands once for each value,
-with a variable set to each value in succession.  For example, the following
-script would plot normal distributions of three different widths:
+provided explicitly by the user, and the {\tt foreach} loop iterates once for
+each value, with a variable set to each value in succession.  For example, the
+following script would plot normal distributions of three different widths:
 
 \begin{verbatim}
+plot     # Create blank plot
 foreach sigma in (1, 2, 3)
  {
   replot 1/sigma*exp(-x**2/(2*sigma**2))
@@ -620,26 +639,26 @@ help [<topic> {<sub-topic>} ]
 \end{verbatim}
 
 The \indcmdt{help} provides an hierarchical source of information which is
-supplementary to that in the Users' Guide.  To obtain information on any
-particular topic, type {\tt help} followed by the name of the topic, as in the
-following example:
+supplementary to this Users' Guide.  To obtain information on any particular
+topic, type {\tt help} followed by the name of the topic, as in the following
+example
 
 \begin{verbatim}
 help commands
 \end{verbatim}
 
-\noindent provides information on PyXPlot's commands. Some topics have
+\noindent which provides information on PyXPlot's commands. Some topics have
 sub-topics; these are listed at the end of each help page. To view them, add
-further words to the end of your help request, as in the example:
+further words to the end of the help request, as in the example:
 
 \begin{verbatim}
 help commands help
 \end{verbatim}
 
-Information is arranged with general information about PyXPlot under the heading
-{\tt about} and information about PyXPlot's commands under {\tt commands}.
-Information about the format that input \datafile s should take can be found
-under {\tt datafile}.  Other categories are self-explanatory.
+Information is arranged with general information about PyXPlot under the
+heading {\tt about} and information about PyXPlot's commands under {\tt
+commands}.  Information about the format that input \datafile s should take can
+be found under {\tt datafile}.  Other categories are self-explanatory.
 
 To exit any help page, press the {\tt q} key.
 
@@ -656,28 +675,74 @@ histogram [<range>] <function name>"()" '<datafile>'
        [bins (x1, x2, ...)] )
 \end{verbatim}
 
-The \indcmdt{histogram} takes a \datafile\ and counts the number of points
-in various bins, producing a function the area under which is equal to the
-number of points for each bin.  The width and starting position of the bins can
-be specified using the {\tt binwidth} and {\tt binorigin} modifiers, or a
-user-supplied set of bins can be used with the {\tt bins} modifier.  For
-example:
+The \indcmdt{histogram} takes a single column of data from a file and produces
+a function that represents the frequency distribution of the supplied data
+values. The output function consists of a series of discrete intervals which we
+term {\it bins}. Within each interval the output function has a constant value,
+determined such that the area under each interval -- i.e.\ the integral of the
+function over each interval -- is equal to the number of datapoints found
+within that interval.  The following simple example
 
 \begin{verbatim}
-histogram f() 'output.dat' u 2 binwidth 2
+histogram f() 'input.dat'
 \end{verbatim}
 
-\noindent produces a function $f()$, which contains the data in the second
-column of the {\tt output.dat} file binned into bins of width~2.  A range
-specifier can be used to restrict the set of data in the \datafile\ that is to be
-binned; for example:
+\noindent produces a frequency distribution of the data values found in the
+first column of the file {\tt input.dat}, which it stores in the function
+$f(x)$. The value of this function at any given point is equal to the number of
+items in the bin at that point, divided by the width of the bins used. If the
+input datapoints are not dimensionless then the output frequency distribution
+adopts appropriate units, thus a histogram of data with units of length has
+units of one over length.
+
+The number and arrangement of bins used by the \indcmdt{histogram} can be
+controlled by means of various modifiers.  The \indmodt{binwidth} modifier sets
+the width of the bins used. The \indmodt{binorigin} modifier controls where
+their boundaries lie; the \indcmdt{histogram} selects a system of bins which,
+if extended to infinity in both directions, would put a bin boundary at the
+value specified in the {\tt binorigin} modifier. Thus, if {\tt binorigin 0.1}
+were specified, together with a bin width of~20, bin boundaries might lie
+at~$20.1$, $40.1$, $60.1$, and so on. Alternatively global defaults for the bin
+width and the bin origin can be specified using the {\tt set binwidth} and {\tt
+set binorigin} commands respectively. The example
 
 \begin{verbatim}
-histogram [0:10] f() 'data.dat' bins (0,1,3,6,10)
+histogram h() 'input.dat' binorigin 0.5 binwidth 2
 \end{verbatim}
 
-\noindent would only bin data between~0 and~10, and would do so into the
-user-specified bins.
+\noindent would bin data into bins between $0.5$ and $2.5$, between $2.5$ and
+$4.5$, and so forth.
+
+Alternatively the set of bins to be used can be controlled more precisely using
+the \indmodt{bins} modifier, which allows an arbitrary set of bins to be
+specified. The example
+
+\begin{verbatim}
+histogram g() 'input.dat' bins (1, 2, 4)
+\end{verbatim}
+
+\noindent would bin the data into two bins, $x=1\to 2$ and $x=2\to 4$.
+
+A range can be supplied immediately following the {\tt histogram} command,
+using the same syntax as in the {\tt plot} and {\tt fit} commands; if such a
+range is supplied, only points that fall within that range will be binned.  In
+the same way as in the {\tt plot} command, the \indmodt{index},
+\indmodt{every}, \indmodt{using} and \indmodt{select} modifiers can be used to
+specify which subsets of a \datafile\ should be used.
+
+Two points about the {\tt histogram} command are worthy of note. First,
+although histograms are similar to bar charts, they are not the same.  A bar
+chart conventionally has the height of each bar equal to the number of points
+that it represents, whereas a histogram is a continuous function in which the
+area underneath each interval is equal to the number of points within it.
+Thus, to produce a bar chart using the {\tt histogram} command, the end result
+should be multiplied by the bin width used.
+
+Second, if the function produced by the {\tt histogram} command is plotted
+using the {\tt plot} command, samples are automatically taken not at evenly
+spaced intervals along the ordinate axis, but at the centres of each bin. If
+the \indpst{boxes} plot style is used, the box boundaries are be conveniently
+drawn to coincide with the bins into which the data were sorted.
 
 
 \section{history}\indcmd{history}
@@ -686,12 +751,12 @@ user-specified bins.
 history [<number of items>]
 \end{verbatim}
 
-The \indcmdt{history} outputs the current command-line history to the
-terminal.  The optional parameter, {\tt N}, if supplied, causes only the first
-$N$ lines to be printed.
+The \indcmdt{history} prints a list of the most recently executed commands on
+the terminal.  The optional parameter, {\tt N}, if supplied, causes only the
+latest $N$ commands to be displayed.
 
 
-\section{if}\indcmd{if}
+\section{if}\indcmd{if}\indcmd{else if}\indcmd{else}
 
 \begin{verbatim}
 if <criterion>
@@ -706,13 +771,16 @@ if <criterion>
  "}" ]
 \end{verbatim}
 
-The \indcmdt{if} allows conditional execution of commands.  If and only if the
-{\tt criterion} is satisfied, the list of commands are executed.  It is also
-possible to have one or more subsequent \indcmdt{else if} statements, which
-have their own criteria which are only considered if the first criterion is not
-true.  Finally, an \indcmdt{else} statement precedes a set of commands that are
-only executed if none of the preceding statements are true.  The following
-example illustrates a chain of {\tt else if} clauses:
+The \indcmdt{if} allows conditional execution of blocks of commands.  The code
+enclosed in braces following the {\tt if} statement is executed if, and only
+if, the {\tt criterion} is satisfied.  An arbitrary number of subsequent {\tt
+else if} statements can optionally follow the initial {\tt if} statement; these
+have their own criteria for execution which are only considered if all of the
+previous criteria have tested false -- i.e.\ if none of the previous command
+blocks have been executed.  A final optional {\tt else} statement can be
+provided; the block of commands which follows it are executed only if none of
+the preceding criteria have tested true.  The following example illustrates a
+chain of {\tt else if} clauses:
 
 \begin{verbatim}
 if (x==2)
@@ -731,6 +799,12 @@ if (x==2)
 
 \section{ifft}\indcmd{ifft}
 
+\begin{verbatim}
+ifft {<range>} <function>"()"
+    of ( '<filename>' | <function>"()" )
+    [using <expression> {:<expression>} ]
+\end{verbatim}
+
 See {\tt fft}.
 
 
@@ -743,67 +817,81 @@ image [ item <id> ] '<filename>' [at <x>, <y>] [rotate <angle>]
 \end{verbatim}
 
 The \indcmdt{image} allows graphical images to be inserted onto the current
-multiplot from files on disk.  The graphical image may be in bitmap, gif jpeg
-or png format; the file type of the image is automatically detected. The {\tt
-at} modifier can be used to specify where the bottom-left corner of the image
-should be placed; if it is not, then the image is placed at the origin. The
-{\tt rotate} modifier can be used to rotate the image by any angle, measured in
-degrees counter-clockwise.  The {\tt width} or {\tt height} modifiers can be
-used to specify the width or height with which the image should be rendered;
-both should be specified in centimetres. If neither is specified then the image
-will be rendered with the native dimensions specified within the metadata
-present in the image file (if any). If both are specified, then the aspect
-ratio of the image is changed.
+multiplot canvas from files on disk. Input graphical images may be in bitmap,
+gif, jpeg or png formats; the file type of each image is automatically
+detected. The {\tt at} modifier can be used to specify where the bottom-left
+corner of each image should be placed; if no position is specified then this
+corner of the image is placed at the origin. The {\tt rotate} modifier can be
+used to rotate images by any angle, measured in degrees counter-clockwise.  The
+{\tt width} or {\tt height} modifiers can be used to specify the width or
+height with which images should be rendered; both should be specified in
+centimetres. If neither is specified then images are rendered with the native
+dimensions specified within the metadata present in the image file (if any). If
+both are specified, then the aspect ratio of the image is changed.
 
-The keyword {\tt smooth} may optionally be supplied to cause the pixels of the
-image to be interpolated\footnote{Many commonly-used postscript display
+The keyword {\tt smooth} may optionally be supplied to cause the pixels of
+images to be interpolated\footnote{Many commonly-used postscript display
 engines, including GhostScript, do not support this functionality.}.  Images
 which include transparency are supported. The optional keyword {\tt
-notransparent} may be supplied to the \indcmdt{image} to cause transparent
-regions to be filled with the image's default background colour. Alternatively,
-an RGB colour may be specified in the form {\tt rgb<r>:<g>:<b>} after the
-keyword {\tt transparent} to cause that particular colour to become
-transparent; the three components of the RGB colour should be in the range~0
-to~255.
+notransparent} may be supplied to cause transparent regions to be filled with
+the image's default background colour. Alternatively, an RGB colour may be
+specified in the form {\tt rgb<r>:<g>:<b>} after the keyword {\tt transparent}
+to cause that particular colour to become transparent; the three components of
+the RGB colour should be in the range~0 to~255.
 
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
 \section{interpolate}\indcmd{interpolate}
 
 \begin{verbatim}
-interpolate ( linear | loglinear | polynomial | spline )
-       [ <range> ] <function name>"()" '<filename>'
-       [ every <expressions> {:<expression>} ]
-       [ index <value> ]
-       [ select <expression> ]
-       [ using <expression>  {:<expression>} ]
+interpolate ( akima | linear | loglinear | polynomial | spline )
+            [<range specification>] <function name>"()"
+            '<filename>'
+            [ every <expression> {:<expression} ]
+            [ index <value> ]
+            [ select <expression> ]
+            [ using <expression> {:<expression} ]
 \end{verbatim}
 
-The \indcmdt{interpolate} generates a special function which interpolates a
-set of data points supplied from a \datafile.  Four types of interpolation are
-available; linear, log-linear, polynomial and spline.  Log-linear interpolation
-is equivalent to linear interpolation in a log-log space.  For example:
+The \indcmdt{interpolate} can be used to generate a special function within
+PyXPlot's mathematical environment which interpolates a set of \datapoint s
+supplied from a \datafile.  Various different types of interpolation are
+supported: linear interpolation, power-law interpolation, polynomial
+interpolation, cubic-spline interpolation and akima-spline interpolation. The
+use of polynomial interpolation with large datasets is strongly discouraged, as
+polynomial fits tend to show severe oscillations between \datapoint s.
+Extrapolation is not permitted; if an attempt is made to evaluate an
+interpolated function beyond the limits of the \datapoint s which it
+interpolates, PyXPlot returns an error or value of not-a-number.
+
+A very common application of the \indcmdt{interpolate} is to perform arithmetic
+functions such as addition or subtraction on datasets which are not sampled at
+the same abscissa values. The following example would plot the difference
+between two such datasets:
 
 \begin{verbatim}
-interpolate spline f() 'data.1'
+interpolate linear f() 'data1.dat'
+interpolate linear g() 'data2.dat'
+plot [min:max] f(x)-g(x)
 \end{verbatim}
 
-\noindent would create a function $f(x)$ that is a spline fit to the data in the
-file {\tt data.1}. The \indmodt{using} modifier, if present, should supply two
-columns (or rows) to act as the range and domain of the function.  By default,
-the {\tt interpolate} command uses the first two columns of a \datafile\ in a
-manner analogous to the plot command. The {\tt index}, {\tt every} and {\tt
-using} modifiers can be used in the same way as in the {\tt plot} command to
-select which parts of the \datafile\ should be used; see the {\tt datafile}
-section for more details.
+\noindent Note that it is advisable to supply a range to the {\tt plot} command
+in this example: because the two datasets have been turned into continuous
+functions, the {\tt plot} command has to guess a range over which to plot them
+unless one is explicitly supplied.
 
-Note that trying to interpolate multi-valued functions will not, in general,
-produce useful results.
+The \indcmdt{spline} is an alias for {\tt interpolate spline}; the following
+two statements are equivalent:
+
+\begin{verbatim}
+spline f() 'data1.dat'
+interpolate spline f() 'data1.dat'
+\end{verbatim}
 
 
 \section{jpeg}\indcmd{jpeg}
@@ -1137,7 +1225,7 @@ using similar options to those accepted by the {\tt plot} command.
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
@@ -3178,7 +3266,7 @@ pyxplot> print Im(x)/pi
 
 \begin{verbatim}
 spline [ <range> ] <function name>"()" '<filename>'
-       [ every <expressions> {:<expression>} ]
+       [ every <expression> {:<expression>} ]
        [ index <value> ]
        [ select <expression> ]
        [ using <expression>  {:<expression>} ]
@@ -3216,7 +3304,7 @@ swap 3 5
 
 \begin{verbatim}
 tabulate [ <range> ] ( <expression> | <filename> )
-       [ every <expressions> {:<expression>} ]
+       [ every <expression> {:<expression>} ]
        [ index <value> ]
        [ select <expression> ]
        [ sortby <expression> ]
@@ -3332,7 +3420,7 @@ by themselves.
 All vector graphics objects placed on multiplot canvases receive unique
 identification numbers which count sequentially from one, and which may be
 listed using the {\tt list} command.  By reference to these numbers, they can
-be deleted and undeleted subsequently with the {\tt delete} and {\tt undelete}
+be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 

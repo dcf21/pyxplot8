@@ -887,10 +887,10 @@ ellipse from 0,0 to 4,1 rot 70
 \end{verbatim}
 
 \item the position of both the centre and one of the foci of the ellipse,
-together with any one of the following pieces of information: the major axis
-length, the semi-major axis length, the minor axis length, the semi-minor axis
-length, the eccentricity, the latus rectum, or the semi-latus rectum.  For
-example:
+together with any one of the following additional pieces of information: the
+ellipse's major axis length, its semi-major axis length, its minor axis length,
+its semi-minor axis length, its eccentricity, its latus rectum, or its
+semi-latus rectum.  For example:
 
 \begin{verbatim}
 ellipse focus 0,0 centre 2,2 majoraxis 4
@@ -901,13 +901,13 @@ ellipse focus 0,0 centre 2,2 slr 3
 \end{verbatim}
 
 \item the position of either the centre or one of the foci of the ellipse,
-together with any two of the following pieces of information: the major axis
-length, the semi-major axis length, the minor axis length, the semi-minor axis
-length, the eccentricity, the latus rectum, or the semi-latus rectum. An
-optional counter-clockwise rotation angle may also be specified, applied about
-either the centre or one of the foci of the ellipse, whichever is specified. If
-no rotation angle is given, then the major axis of the ellipse is horizontal.
-For example:
+together with any two of the following additional pieces of information: the
+ellipse's major axis length, its semi-major axis length, its minor axis length,
+its semi-minor axis length, its eccentricity, its latus rectum, or its
+semi-latus rectum. An optional counter-clockwise rotation angle may also be
+specified, applied about either the centre or one of the foci of the ellipse,
+whichever is specified. If no rotation angle is given, then the major axis of
+the ellipse is horizontal.  For example:
 
 \begin{verbatim}
 ellipse centre 0,0 majoraxis 4 minoraxis 4
@@ -915,8 +915,9 @@ ellipse centre 0,0 majoraxis 4 minoraxis 4
 \end{enumerate}
 
 The line type, line width, and colour of line with which the outlines of
-ellipses are drawn may be specified as in the {\tt box} and {\tt circle}
-commands above. Likewise, ellipses may be filled in the same manner.
+ellipses are drawn may be specified after the keyword {\tt with}, as in the
+{\tt box} and {\tt circle} commands above. Likewise, ellipses may be filled in
+the same manner.
 
 \example{ex:ellipse}{A labelled diagram of an ellipse}{
 In this example script, we illustrate the text of Section~\ref{sec:ellipse} by

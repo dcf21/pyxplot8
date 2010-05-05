@@ -363,16 +363,20 @@ interpolation is equivalent to linear interpolation in log-log space.},
 polynomial interpolation, cubic-spline interpolation and akima-spline
 interpolation. The use of polynomial interpolation with large datasets is
 strongly discouraged, as polynomial fits tend to show severe oscillations
-between \datapoint s.
+between \datapoint s.  Extrapolation is not permitted; if an attempt is made to
+evaluate an interpolated function beyond the limits of the \datapoint s which
+it interpolates, PyXPlot returns an error or value of not-a-number.
 
 The \indcmdt{interpolate} has similar syntax to the \indcmdt{fit}:
 
 \begin{verbatim}
 interpolate ( akima | linear | loglinear | polynomial | spline )
-            [<range specification>] <function name>() '<filename>'
-            [index <index specification>]
-            [every <every specification>]
-            [using <using specification>]
+            [<range specification>] <function name>"()"
+            '<filename>'
+            [ every <expression> {:<expression} ]
+            [ index <value> ]
+            [ select <expression> ]
+            [ using <expression> {:<expression} ]
 \end{verbatim}
 
 A very common application of the \indcmdt{interpolate} is to perform arithmetic
@@ -390,11 +394,6 @@ plot [min:max] f(x)-g(x)
 in this example: because the two datasets have been turned into continuous
 functions, the {\tt plot} command has to guess a range over which to plot them
 unless one is explicitly supplied.
-
-The functions have not, however, lost the range of the original data: because
-it is generally very inadvisable to extrapolate interpolated function fits
-beyond the limits of the \datapoint s used to constrain the fit, PyXPlot returns
-an error or NaN if this is attempted.
 
 The \indcmdt{spline} is an alias for {\tt interpolate spline}; the following
 two statements are equivalent:
@@ -646,32 +645,47 @@ Triangular   & $\displaystyle w(n) = \left( \frac{2}{N_x} \right) \left( \frac{N
 \section{Histograms}
 \label{sec:histogram}
 
-The \indcmdt{histogram} takes data from a file and bins it, producing a
-function that represents the frequency distribution of the supplied data.  A
-histogram is defined as a function consisting of discrete intervals, the area
-under each of which is equal to the number of points binned in that interval.
-For example:
+The \indcmdt{histogram} takes a single column of data from a file and produces
+a function that represents the frequency distribution of the supplied data
+values. The output function consists of a series of discrete intervals which we
+term {\it bins}. Within each interval the output function has a constant value,
+determined such that the area under each interval -- i.e.\ the integral of the
+function over each interval -- is equal to the number of datapoints found
+within that interval.  The following simple example
 
 \begin{verbatim}
 histogram f() 'input.dat'
 \end{verbatim}
 
-\noindent bins the points in the first column of the file {\tt input.dat}
-into bins of unit width and produces a function $f()$, the value of which at any
-given point is equal to the number of items in the bin at that point.
+\noindent produces a frequency distribution of the data values found in the
+first column of the file {\tt input.dat}, which it stores in the function
+$f(x)$. The value of this function at any given point is equal to the number of
+items in the bin at that point, divided by the width of the bins used. If the
+input datapoints are not dimensionless then the output frequency distribution
+adopts appropriate units, thus a histogram of data with units of length has
+units of one over length.
 
-Modifiers can be supplied to the \indcmdt{histogram} to control the bins that
-it uses.  The \indmodt{binwidth} modifier sets the width of the bins used and
-the \indmodt{binorigin} modifier controls where their boundaries lie.  For
-example,
+The number and arrangement of bins used by the \indcmdt{histogram} can be
+controlled by means of various modifiers.  The \indmodt{binwidth} modifier sets
+the width of the bins used. The \indmodt{binorigin} modifier controls where
+their boundaries lie; the \indcmdt{histogram} selects a system of bins which,
+if extended to infinity in both directions, would put a bin boundary at the
+value specified in the {\tt binorigin} modifier. Thus, if {\tt binorigin 0.1}
+were specified, together with a bin width of~20, bin boundaries might lie
+at~$20.1$, $40.1$, $60.1$, and so on. Alternatively global defaults for the bin
+width and the bin origin can be specified using the {\tt set binwidth} and {\tt
+set binorigin} commands respectively. The example
 
 \begin{verbatim}
 histogram h() 'input.dat' binorigin 0.5 binwidth 2
 \end{verbatim}
 
 \noindent would bin data into bins between $0.5$ and $2.5$, between $2.5$ and
-$4.5$, and so forth.  Alternatively the \indmodt{bins} modifier allows an
-arbitrary set of bins to be specified. The example
+$4.5$, and so forth.
+
+Alternatively the set of bins to be used can be controlled more precisely using
+the \indmodt{bins} modifier, which allows an arbitrary set of bins to be
+specified. The example
 
 \begin{verbatim}
 histogram g() 'input.dat' bins (1, 2, 4)
@@ -680,22 +694,25 @@ histogram g() 'input.dat' bins (1, 2, 4)
 \noindent would bin the data into two bins, $x=1\to 2$ and $x=2\to 4$.
 
 A range can be supplied immediately following the {\tt histogram} command,
-using the same syntax as in the {\tt plot} and {\tt fit} commands; only points
-that fall in the specified range will be binned.  In the same way as for the
-{\tt plot} command, the \indmodt{index}, \indmodt{every}, \indmodt{using} and
-\indmodt{select} modifiers can be used to specify which subsets of a \datafile\
-should be used.
+using the same syntax as in the {\tt plot} and {\tt fit} commands; if such a
+range is supplied, only points that fall within that range will be binned.  In
+the same way as in the {\tt plot} command, the \indmodt{index},
+\indmodt{every}, \indmodt{using} and \indmodt{select} modifiers can be used to
+specify which subsets of a \datafile\ should be used.
 
-Note that, although a histogram is similar to a bar chart, they are subtly
-different.  A bar chart has the {\it height} of each bar equal to the number of
-points that it represents; in a histogram, the {\it area} underneath each bar
-is equal to the number of points.  To produce a bar chart using the {\tt
-histogram} command, the end result should be multiplied by the bin width used
-before plotting.
+Two points about the {\tt histogram} command are worthy of note. First,
+although histograms are similar to bar charts, they are not the same.  A bar
+chart conventionally has the height of each bar equal to the number of points
+that it represents, whereas a histogram is a continuous function in which the
+area underneath each interval is equal to the number of points within it.
+Thus, to produce a bar chart using the {\tt histogram} command, the end result
+should be multiplied by the bin width used.
 
-If the function produced by the {\tt histogram} command is plotted using the
-\indpst{boxes} plot style, box boundaries will be drawn to coincide with the
-bins into which the data were sorted.
+Second, if the function produced by the {\tt histogram} command is plotted
+using the {\tt plot} command, samples are automatically taken not at evenly
+spaced intervals along the ordinate axis, but at the centres of each bin. If
+the \indpst{boxes} plot style is used, the box boundaries are be conveniently
+drawn to coincide with the bins into which the data were sorted.
 
 \section{Random Data Generation}
 
