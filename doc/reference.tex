@@ -896,6 +896,12 @@ interpolate spline f() 'data1.dat'
 
 \section{jpeg}\indcmd{jpeg}
 
+\begin{verbatim}
+jpeg [ item <id> ] '<filename>' [at <x>, <y>] [rotate <angle>]
+                    [width <width>] [height <height>] [smooth]
+                  [notransparent] [transparent rgb<r>:<g>:<b>]
+\end{verbatim}
+
 See {\tt image}.
 
 
@@ -915,9 +921,10 @@ list
 \end{verbatim}
 
 The \indcmdt{list} returns a list of all of the items on the current multiplot
-canvas, giving their reference numbers and the commands used to produce them.
-The following is an example of the output produced:
+canvas, giving their identification numbers and the commands used to produce
+them.  The following is an example of the output produced:
 
+{\footnotesize
 \begin{verbatim}
 pyxplot> list
 # ID   Command
@@ -925,8 +932,9 @@ pyxplot> list
     2  [deleted] text item 2 "Figure 1: A plot of f(x)" at 0,0 rotate 0 gap 0
     3  text item 3 "Figure 1: A plot of $f(x)$" at 0,0 rotate 0 gap 0
 \end{verbatim}
+}
 
-In this example, the user has plotted a graph of $f(x)$, and added a caption to
+In this example, the user has plotted a graph of $f(x)$ and added a caption to
 it. The {\tt ID} column lists the reference numbers of each multiplot item.
 Item {\tt 1} has been deleted.
 
@@ -945,10 +953,9 @@ load 'foo'
 \end{verbatim}
 
 \noindent would have the same effect as typing the contents of the file {\tt
-foo} into the present session.
-
-Wildcards can be used in the load command, in which case {\it all} command
-files matching the given wildcard are executed, as in the example:
+foo} into the present terminal.  Filename wildcard can be supplied, in which
+case {\it all} command files matching the given wildcard are executed, as in
+the example:
 
 \begin{verbatim}
 load '*.script'
@@ -961,14 +968,41 @@ load '*.script'
 maximise <expression> via <variable> {, variable}
 \end{verbatim}
 
-The \indcmdt{maximise} takes a user-supplied expression and finds its
-maximum value obtained by varying the specified variable.  More than one
-variable may be varied for functions of multiple variables.  In the following
-example $x$ ends up being set to $-2$:
+The \indcmdt{maximise} can be used to find the maxima of algebraic expressions.
+A single algebraic expression should be supplied for optimisation, together
+with a comma-separated list of the variables which it should be optimised with
+respect to. In the following example, a maximum of the sinusoidal function
+$\cos(x)$ is sought:
 
-\begin{verbatim}
-maximise exp(-(x+2)**2) via x
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf set numerics real}}\newline
+\noindent{\tt pyxplot> {\bf x=0.1}}\newline
+\noindent{\tt pyxplot> {\bf maximise cos(x) via x}}\newline
+\noindent{\tt pyxplot> {\bf print x/pi}}\newline
+\noindent{\tt 0}
+\vspace{3mm}
+
+\noindent Note that this particular example doesn't work when complex
+arithmetic is enabled, since $\cos(x)$ diverges to $\infty$ at $x=\infty
+i$, and this is correctly identified by PyXPlot as the global maximum of the
+function when complex numbers are allowed.
+
+Various caveats apply the {\tt maximise} command, as well as to the {\tt
+minimise} and {\tt solve} commands.  All of these commands operate by searching
+numerically for optimal sets of input parameters to meet the criteria set by
+the user. As with all numerical algorithms, there is no guarantee that the {\it
+locally} optimum solutions returned are the {\it globally} optimum solutions.
+It is always advisable to double-check that the answered returned agree with
+common sense.
+
+These commands can often find solutions to equations when these solutions are
+either very large or very small, but they usually work best when the solution
+they are looking for is roughly of order unity.  PyXPlot does have mechanisms
+which attempt to correct cases where the supplied initial guess turns out to be
+many orders of magnitude different from the true solution, but it cannot be
+guaranteed not to wildly overshoot and produce unexpected results in such
+cases.  To reiterate, it is always advisable to double-check that the answered
+returned agree with common sense.
 
 
 \section{minimise}\indcmd{minimise}
@@ -977,14 +1011,41 @@ maximise exp(-(x+2)**2) via x
 minimise <expression> via <variable> {, variable}
 \end{verbatim}
 
-The \indcmdt{minimise} takes a user-supplied expression and finds its
-minimum value obtained by varying the specified variable.  More than one
-variable may be varied for functions of multiple variables.  In the following
-example $x$ ends up being set to $-3$ and $y$ to $-1$:
+The \indcmdt{minimise} can be used to find the minima of algebraic expressions.
+A single algebraic expression should be supplied for optimisation, together
+with a comma-separated list of the variables which it should be optimised with
+respect to. In the following example, a minimum of the sinusoidal function
+$\cos(x)$ is sought:
 
-\begin{verbatim}
-minimise (x+3)**2 + (y+1)**2 via x, y
-\end{verbatim}
+\vspace{3mm}
+\noindent{\tt pyxplot> {\bf set numerics real}}\newline
+\noindent{\tt pyxplot> {\bf x=0.1}}\newline
+\noindent{\tt pyxplot> {\bf minimise cos(x) via x}}\newline
+\noindent{\tt pyxplot> {\bf print x/pi}}\newline
+\noindent{\tt 1}
+\vspace{3mm}
+
+\noindent Note that this particular example doesn't work when complex
+arithmetic is enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty
+i$, and this is correctly identified by PyXPlot as the global minimum of the
+function when complex numbers are allowed.
+
+Various caveats apply the {\tt minimise} command, as well as to the {\tt
+maximise} and {\tt solve} commands.  All of these commands operate by searching
+numerically for optimal sets of input parameters to meet the criteria set by
+the user. As with all numerical algorithms, there is no guarantee that the {\it
+locally} optimum solutions returned are the {\it globally} optimum solutions.
+It is always advisable to double-check that the answered returned agree with
+common sense.
+
+These commands can often find solutions to equations when these solutions are
+either very large or very small, but they usually work best when the solution
+they are looking for is roughly of order unity.  PyXPlot does have mechanisms
+which attempt to correct cases where the supplied initial guess turns out to be
+many orders of magnitude different from the true solution, but it cannot be
+guaranteed not to wildly overshoot and produce unexpected results in such
+cases.  To reiterate, it is always advisable to double-check that the answered
+returned agree with common sense.
 
 
 \section{move}\indcmd{move}
@@ -997,7 +1058,7 @@ The \indcmdt{move} allows vector graphics objects to be moved around on the
 current multiplot canvas. All vector graphics objects placed on multiplot
 canvases receive unique identification numbers which count sequentially from
 one, and which may be listed using the {\tt list} command. The item to be moved
-should be specified using its reference number. The example
+should be specified using its identification number. The example
 
 \begin{verbatim}
 move 23 to 8,8
@@ -1035,21 +1096,21 @@ plot [-pi:pi] sin(x)
 
 \noindent which would plot the function $\sin(x)$ between $-\pi$ and $\pi$.
 
-\Datafile s may also be plotted as well as functions, in which case the filename
-of the \datafile\ to be plotted should be enclosed in apostrophes. An example of
-this syntax would be:
+\Datafile s may also be plotted as well as functions, in which case the
+filename of the \datafile\ to be plotted should be enclosed in either single or
+double quotation marks. An example of this syntax would be:
 
 \begin{verbatim}
 plot 'data.dat' with points
 \end{verbatim}
 
-\noindent which would plot the file called {\tt data.dat}.
-Section~\ref{sec:plot_datafiles} should be studied for further details of the
-format that is expected of input \datafile s, and how PyXPlot may be directed
-to plot only certain portions of \datafile s.
+\noindent which would plot data from the file {\tt data.dat}.
+Section~\ref{sec:plot_datafiles} provides further details of the format that
+input \datafile s should take and how PyXPlot may be directed to plot only
+certain portions of \datafile s.
 
-Multiple datasets can be plotted on a single graph by listing them with commas
-separating them:
+Multiple datasets can be plotted on a single graph by specifying them in a
+comma-separated list, as in the example:
 
 \begin{verbatim}
 plot sin(x) with colour blue, cos(x) with linetype 2
@@ -1058,18 +1119,20 @@ plot sin(x) with colour blue, cos(x) with linetype 2
 
 \subsection{axes}\indcmd{plot axes}
 
-The {\tt axes} modifier may be used to specified which axes data should be
+The {\tt axes} modifier may be used to specify which axes data should be
 plotted against when plots have multiple parallel axes -- for example, if a
 plot has an {\tt x}-axis along its lower edge and an {\tt x2}-axis along its
-upper edge.  the following example would plot data using the {\tt x2}-axis as
+upper edge. The following example would plot data using the {\tt x2}-axis as
 the ordinate axis and the {\tt y}-axis as the abscissa axis:
 
 \begin{verbatim}
 plot sin(x) axes x2y1
 \end{verbatim}
 
-The following example would plot data using the {\tt y}-axis as the ordinate
-axis and the {\tt x}-axis as the abscissa axis:
+\noindent It is also possible to use the {\tt axes} modifier to specify that a
+vertical ordinate axis and a horizontal abscissa axis should be used; the
+following example would plot data using the {\tt y}-axis as the ordinate axis
+and the {\tt x}-axis as the abscissa axis:
 
 \begin{verbatim}
 plot sin(x) axes yx
@@ -1078,13 +1141,17 @@ plot sin(x) axes yx
 
 \subsection{title}\indcmd{plot title}
 
-By default, PyXPlot generates its own entry in the legend for each dataset
-plotted.  The user can override this default setting by using the {\tt title}
-modifier. The following example labels a dataset as `Dataset~1':
+By default, PyXPlot generates its own entry in the legend of a plot for each
+dataset plotted.  This default behaviour can be overridden using the {\tt
+title} modifier. The following example labels a dataset as `Dataset~1':
 
 \begin{verbatim}
 plot sin(x) title 'Dataset 1'
 \end{verbatim}
+
+\noindent If a blank string, i.e.\ {\tt ""}, is supplied, then no entry is made
+in the plot's legend for that dataset. The same effect can be achieved using
+the {\tt notitle} modifier.
 
 
 \subsection{with}\indcmd{plot with}
@@ -1104,31 +1171,33 @@ plot "data.dat" with lines linewidth 2.0
 would use twice the default width of line.
 
 The following is a complete list of all of PyXPlot's plot styles -- i.e.\ all
-of the words which may be used in place of {\tt lines}: {\tt arrows\_head},
-{\tt arrows\_nohead}, {\tt arrows\_twohead}, {\tt boxes}, {\tt dots}, {\tt
-FilledRegion}, {\tt fsteps}, {\tt histeps}, {\tt impulses}, {\tt lines}, {\tt
-LinesPoints}, {\tt LowerLimits}, {\tt points}, {\tt stars}, {\tt steps}, {\tt
-UpperLimits}, {\tt wboxes}, {\tt XErrorBars}, {\tt XErrorRange}, {\tt
-XYErrorBars}, {\tt XYErrorRange}, {\tt XYZErrorBars}, {\tt XYZErrorRange}, {\tt
-XZErrorBars}, {\tt XZErrorRange}, {\tt YErrorBars}, {\tt YErrorRange}, {\tt
-YErrorShaded}, {\tt YZErrorBars}, {\tt YZErrorRange}, {\tt ZErrorBars}, {\tt
-ZErrorRange}. In addition, {\tt lp} and {\tt pl} are recognised as
-abbreviations for {\tt linespoints}; {\tt errorbars} is recognised as an
-abbreviation for {\tt yerrorbars}; {\tt errorrange} is recognised as an
-abbreviation for {\tt yerrorrange}; and {\tt arrows\_twoway} is recognised as
-an alternative for {\tt arrows\_twohead}.
+of the words which may be used in place of {\tt lines}: {\tt arrows\_\-head},
+{\tt arrows\_\-no\-head}, {\tt arrows\_\-two\-head}, {\tt boxes}, {\tt dots},
+{\tt Filled\-Region}, {\tt fsteps}, {\tt histeps}, {\tt impulses}, {\tt lines},
+{\tt Lines\-Points}, {\tt Lower\-Limits}, {\tt points}, {\tt stars}, {\tt
+steps}, {\tt Upper\-Limits}, {\tt wbox\-es}, {\tt X\-Error\-Bars}, {\tt
+X\-Error\-Range}, {\tt XY\-Error\-Bars}, {\tt XY\-Error\-Range}, {\tt
+XYZ\-Error\-Bars}, {\tt XYZ\-Error\-Range}, {\tt XZ\-Error\-Bars}, {\tt
+XZ\-Error\-Range}, {\tt Y\-Error\-Bars}, {\tt Y\-Error\-Range}, {\tt
+Y\-Error\-Shaded}, {\tt YZ\-Error\-Bars}, {\tt YZ\-Error\-Range}, {\tt
+Z\-Error\-Bars}, {\tt Z\-Error\-Range}. In addition, {\tt lp} and {\tt pl} are
+recognised as abbreviations for {\tt lines\-points}; {\tt error\-bars} is
+recognised as an abbreviation for {\tt y\-error\-bars}; {\tt error\-range} is
+recognised as an abbreviation for {\tt y\-error\-range}; and {\tt
+arrows\_\-two\-way} is recognised as an alternative for {\tt
+arrows\_\-two\-head}.
 
 As well as the names of these plot styles, the {\tt with} modifier can also be
 followed by style modifiers such as {\tt line\-width} which alter the exact
 appearance of various plot styles. A complete list of these is as follows:
 \begin{itemize}
 \item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb0.1:\-0.2:\-0.3}, {\tt hsb0.1:\-0.2:\-0.3} or {\tt cmyk0.4:\-0.3:\-0.2:\-0.1}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
-\item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
-\item \indmodt{linetype} -- used to select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
-\item \indmodt{linewidth} -- used to select the width of line, where~1 represent the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
-\item \indmodt{pointlinewidth} -- used to select the width of line, where~1 represent the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
-\item \indmodt{pointsize} -- used to select the size of drawn points, where~1 represent the default size. May be abbreviated {\tt ps}.
-\item \indmodt{pointtype} -- used to select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
+\item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
+\item \indmodt{linetype} -- used to numerically select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
+\item \indmodt{linewidth} -- used to select the width of line, where one represents the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
+\item \indmodt{pointlinewidth} -- used to select the width of line, where one represents the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
+\item \indmodt{pointsize} -- used to select the size of drawn points, where one represents the default size. May be abbreviated {\tt ps}.
+\item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
 \end{itemize}
 
 Any number of these modifiers may be placed sequentially after the {\tt with}
@@ -1145,7 +1214,7 @@ plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
 indicate that each datapoint should be displayed in a different style or in a
 different colour. The following example would plot a \datafile\ with {\tt
 points}, drawing the position of each point from the first two columns of the
-supplied \datafile and the size of each point from the third column:
+supplied \datafile\ and the size of each point from the third column:
 \begin{verbatim}
 plot 'datafile' using 1:2 with points pointsize $3
 \end{verbatim}
@@ -1157,15 +1226,21 @@ plot 'datafile' using 1:2 with points pointsize $3
 print <expression> {, <expression>}
 \end{verbatim}
 
-The \indcmdt{print} outputs the value of a mathematical expression to the
-terminal.  It is most often used to find the value of a variable, though it can
-also be used to produce formatted output from a PyXPlot script. For example:
+The \indcmdt{print} displays a string or the value of a mathematical expression to the
+terminal. It is most often used to find the value of a variable, though it can
+also be used to produce formatted textual output from a PyXPlot script. For example,
 
 \begin{verbatim}
 print a
 \end{verbatim}
 
-\noindent would print the value of the variable {\tt a}.
+\noindent would print the value of the variable {\tt a}, and
+
+\begin{verbatim}
+print "a = %s"%(a)
+\end{verbatim}
+
+\noindent would produce the same result in the midst of formatted text.
 
 
 \section{pwd}\indcmd{pwd}
@@ -1189,6 +1264,14 @@ details.
 
 \section{rectangle}\indcmd{rectangle}
 
+\begin{verbatim}
+rectangle [ item <id> ] at <x>, <y> width <w> height <h>
+               [ rotate <r> ] [ with {<option>} ]
+
+rectangle [ item <id> ] from <x1>, <y1> to <x2>, <y2>
+               [ rotate <r> ] [ with {<option>} ]
+\end{verbatim}
+
 See {\tt box}.
 
 
@@ -1202,10 +1285,7 @@ The \indcmdt{refresh} produces an exact copy of the latest display. It can be
 useful, for example, after changing the terminal type, to produce a second copy
 of a plot in a different graphic format. It differs from the {\tt replot}
 command in that it doesn't replot anything; use of the {\tt set} command since
-the previous {\tt plot} command has no effect on the output. The {\tt refresh}
-command is also especially useful in the multiplot environment: it can be used
-to produce second copies of multiplot canvases in different graphical formats
-selected using the {\tt set terminal} command.
+the previous {\tt plot} command has no effect on the output.
 
 
 \section{point}\indcmd{point}

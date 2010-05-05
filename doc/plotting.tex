@@ -62,11 +62,11 @@ as follows:
 \begin{itemize}
 \item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb0.1:\-0.2:\-0.3}, {\tt hsb0.1:\-0.2:\-0.3} or {\tt cmyk0.4:\-0.3:\-0.2:\-0.1}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
 \item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
-\item \indmodt{linetype} -- used to select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
-\item \indmodt{linewidth} -- used to select the width of line, where~1 represent the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
-\item \indmodt{pointlinewidth} -- used to select the width of line, where~1 represent the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
-\item \indmodt{pointsize} -- used to select the size of drawn points, where~1 represent the default size. May be abbreviated {\tt ps}.
-\item \indmodt{pointtype} -- used to select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
+\item \indmodt{linetype} -- used to numerically select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
+\item \indmodt{linewidth} -- used to select the width of line, where one represents the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
+\item \indmodt{pointlinewidth} -- used to select the width of line, where one represents the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
+\item \indmodt{pointsize} -- used to select the size of drawn points, where one represents the default size. May be abbreviated {\tt ps}.
+\item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
 \end{itemize}
 
 Any number of these modifiers may be placed sequentially after the {\tt with}
@@ -83,7 +83,7 @@ plot 'datafile' using 1:2 with lp col 1 lw 2 ps 3
 indicate that each datapoint should be displayed in a different style or in a
 different colour. The following example would plot a \datafile\ with {\tt
 points}, drawing the position of each point from the first two columns of the
-supplied \datafile and the size of each point from the third column:
+supplied \datafile\ and the size of each point from the third column:
 \begin{verbatim}
 plot 'datafile' using 1:2 with points pointsize $3
 \end{verbatim}
