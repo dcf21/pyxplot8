@@ -1073,10 +1073,10 @@ origin 8,8} had been executed before it had originally been plotted.
 
 \begin{verbatim}
 plot [item <id>] [{<range>}] ( '<filename>' | <function> )
-     [axes <axes>] [every <expression> {:<expression>} ]
+     [axes <axes>] [every <expression> {:<expression>}]
      [index <value>] [select <expression>]
-     [title <string>] [using <expression> {:<expression>} ]
-     [with {<option>} ]
+     [title <string>] [using <expression> {:<expression>}]
+     [with {<option>}]
 \end{verbatim}
 
 The \indcmdt{plot} is used to produce graphs. The following simple example
@@ -1291,8 +1291,8 @@ the previous {\tt plot} command has no effect on the output.
 \section{point}\indcmd{point}
 
 \begin{verbatim}
-point [ item <id> ] [at] <x>, <y> [label <string>]
-                    [with {<option>} ]
+point [ item <id> ] [at] <x>, <y> [ label <string> ]
+                    [ with {<option>} ]
 \end{verbatim}
 
 The \indcmdt{point} allows a single point to be plotted on the current
@@ -1315,9 +1315,9 @@ commands respectively.
 replot [ item <id> ] ...
 \end{verbatim}
 
-The \indcmdt{replot} may be used to add more datasets to an existing plot, or
-to change its axis ranges. For example, having plotted one \datafile\ using the
-command
+The \indcmdt{replot} has the same syntax as the {\tt plot} command and may be
+used to add more datasets to an existing plot, or to change its axis ranges.
+For example, having plotted one \datafile\ using the command
 
 \begin{verbatim}
 plot 'datafile1.dat'
@@ -1347,10 +1347,10 @@ set title 'foo'
 replot cos(x)
 \end{verbatim}
 
-Additionally, it is possible to modify any plot on the page by adding an {\tt
-item} modifier to the {\tt replot} statement to specify which plot should be
-replotted.  The following example would produce two plots, and then add an
-additional function to the first plot:
+Additionally, in multiplot mode it is possible to modify any plot on the
+current multiplot canvas by adding an {\tt item} modifier to the {\tt replot}
+statement to specify which plot should be replotted.  The following example
+would produce two plots, and then add an additional function to the first plot:
 
 \begin{verbatim}
 set multiplot
@@ -1370,7 +1370,7 @@ upon the most recent plot to have been added to the multiplot canvas.
 reset
 \end{verbatim}
 
-The \indcmdt{reset} returns the values of all settings that have been changed
+The \indcmdt{reset} reverts the values of all settings that have been changed
 with the {\tt set} command back to their default values. It also clears the
 current multiplot canvas.
 
@@ -1381,10 +1381,9 @@ current multiplot canvas.
 save '<filename>'
 \end{verbatim}
 
-The \indcmdt{save} saves a list of all of the commands which have been
-executed in the current interactive PyXPlot session into a given file. The
-filename of the desired location for this file should be placed in quotes, for
-example:
+The \indcmdt{save} saves a list of all of the commands which have been executed
+in the current interactive PyXPlot session into a file. The filename to be used
+for the output should be placed in quotes, as in the example:
 
 \begin{verbatim}
 save 'foo'
@@ -1399,17 +1398,20 @@ save 'foo'
 set <option> <value>
 \end{verbatim}
 
-The \indcmdt{set} sets the value of various operational parameters within
-PyXPlot.  For example:
+The \indcmdt{set} is used to configure the values of a wide range of parameters
+within PyXPlot which control its behaviour and the style of the output which it
+produces.  For example:
 
 \begin{verbatim}
 set pointsize 2
 \end{verbatim}
 
-\noindent would sets the default point size to 2. The basic syntax always
-follows that above: the {\tt set} command should be followed by some keyword
-specifying which setting it is which should be set.  Settings which work in an
-on/off fashion tend to take a syntax along the lines of:
+\noindent would set the size of points plotted by PyXPlot to be twice the
+default. In the majority of cases, the syntax follows that above: the {\tt set}
+command should be followed by a keyword which specifies which parameter
+should be set, followed by the value to which that parameter should be
+set. Those parameters which work in an on/off fashion take a different syntax
+along the lines of:
 
 \vspace{3mm}
 \begin{tabular}{ll}
@@ -1419,7 +1421,7 @@ on/off fashion tend to take a syntax along the lines of:
 \vspace{3mm}
 
 \noindent
-More details of the functions of each individual setting can be found in the
+More details of the effects of each individual parameter can be found in the
 subsections below, which forms a complete list of the recognised setting
 keywords.
 
@@ -1435,7 +1437,7 @@ commonly used settings can be saved into a configuration file.
 set arrow <arrow number>
       from [<system>] <x>, [<system>] <y>
       to   [<system>] <x>, [<system>] <y>
-      [with {<option>} ]
+      [ with {<option>} ]
 \end{verbatim}
 
 \noindent where {\tt <system>} is may take any of the values
@@ -1956,8 +1958,8 @@ set keycolumns 3
 \begin{verbatim}
 set label <label number> '<text>'
       [<system>] <x>, [<system>] <y>
-      [rotate <angle>]
-      [with colour <colour>]
+      [ rotate <angle> ]
+      [ with colour <colour> ]
 \end{verbatim}
 
 \noindent where {\tt <system>} is may take any of the values
@@ -3232,29 +3234,29 @@ See {\tt xtics}.
 \section{show}\indcmd{show}
 
 \begin{verbatim}
-show ( all | axes | functions | settings | units
-       | userfunctions | variables | <parameter> ... )
+show { all | axes | functions | settings | units
+       | userfunctions | variables | <parameter> }
 \end{verbatim}
 
-The \indcmdt{show} displays the present state of settings which can be set with
-the {\tt set} command. For example,
+The \indcmdt{show} displays the present state of parameters which can be set
+with the {\tt set} command. For example,
 
 \begin{verbatim}
 show pointsize
 \end{verbatim}
 
-\noindent will display the current default point size.
+\noindent displays the currently set point size.
 
-Details of the various settings that can be shown can be found under the {\tt
-set} command; any keyword which can follow the {\tt set} command can also follow
-the {\tt show} command.
+Details of the various parameters which can be queried can be found under the
+{\tt set} command; any keyword which can follow the {\tt set} command can also
+follow the {\tt show} command.
 
-In addition, {\tt show all} shows the configuration state of all aspects of
-PyXPlot. The command {\tt show settings} shows all of PyXPlot's settings, as
-distinct from variables, functions and axes. {\tt show axes} shows the
-configuration of all of PyXPlot's axes. {\tt show variables} lists all of the
-currently defined variables. And finally, {\tt show functions} lists all of the
-current user-defined functions.
+In addition, {\tt show all} shows a complete list of the present values of all
+of PyXPlot's configurable parameters.  The command {\tt show settings} shows
+all of these parameters, but does not list the currently-configured variables,
+functions and axes. {\tt show axes} shows the configuration states of all graph
+axes. {\tt show variables} lists all of the currently defined variables. And
+finally, {\tt show functions} lists all of the current user-defined functions.
 
 
 \section{solve}\indcmd{solve}
