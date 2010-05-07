@@ -3368,15 +3368,15 @@ Items on multiplot canvases are drawn in order of increasing identification
 number, and thus items with low identification numbers are drawn first, at the
 back of the multiplot, and items with higher identification numbers are later,
 towards the front of the multiplot. When new items are added, they are given
-higher identification numbers than previous items, and appear at the front of
+higher identification numbers than previous items and appear at the front of
 the multiplot.
 
-If this ordering is not the desired ordering, then the \indcmdt{swap} may
-be used to rearrange items. It simply takes two multiplot items, and swaps
-their identification numbers and hence positions in the ordered sequence in
-which the items on the multiplot are drawn. Thus, if, for example, the corner
-of item~3 disappears behind the corner of item~5, when the converse effect is
-actually desired, the following command should be issued:
+If this is not the desired ordering, then the \indcmdt{swap} may be used to
+rearrange items. It takes the identification numbers of two multiplot items and
+swaps their identification numbers and hence their positions in the ordered
+sequence.  Thus, if, for example, the corner of item~3 disappears behind the
+corner of item~5, when the converse effect is actually desired, the following
+command should be issued:
 \begin{verbatim}
 swap 3 5
 \end{verbatim}
@@ -3394,54 +3394,82 @@ tabulate [ <range> ] ( <expression> | <filename> )
        [ with <output format> ]
 \end{verbatim}
 
-The \indcmdt{tabulate} produces a text file containing the values of a
-function at a set of points.  For example, to produce a \datafile\ called {\tt
-sine.dat} with the principal values of the sine function:
+PyXPlot's \indcmdt{tabulate} is similar to its {\tt plot} command, but instead
+of plotting a series of \datapoint s onto a graph, it outputs them to \datafile
+s. This can be used to produce text files containing samples of functions, to
+rearrange/filter the columns in \datafile s, to change the units in which data
+is expressed in \datafile s, and so forth.  The following example would produce
+a \datafile\ called {\tt gamma.dat} containing a list of values of the gamma
+function:
 
 \begin{verbatim}
-set output 'sine.dat'
-tabulate [-pi:pi] sin(x)
+set output 'gamma.dat'
+tabulate [1:5] gamma(x)
 \end{verbatim}
 
-The {\tt tabulate} command can also be used to select portions of \datafile s.
-For example, to select the third, sixth and ninth columns of the \datafile\ {\tt
-data.dat}, but only when the arcsine of the value in the fourth column is
-positive:
-
-\begin{verbatim}
-set output 'filtered.dat'
-tabulate 'data.dat' u 3:6:9 select (asin($4)>0)
-\end{verbatim}
-
-The format used in each column of the output file is chosen automatically with
-integers and small numbers treated intelligently to produce output which
-preserves accuracy, but is also easily human-readable. If desired, however, a
-format statement may be specified using the {\tt with format} specifier. The
-syntax for this is similar to that expected by the Python string substitution
-operator ({\tt \%})\index{\% operator@{\tt \%} operator}\index{string
-operators!substitution}\footnote{Note that this operator can also be used
-within PyXPlot; see Section~\ref{sec:stringsubop} for details.}.  For example,
-to tabulate the values of $x^2$ to very many significant figures one could use:
-
-\begin{verbatim}
-tabulate x**2 with format "%27.20e"
-\end{verbatim}
-
-If there are not enough columns present in the supplied format statement it
-will be repeated in a cyclic fashion; e.g. in the example above the single
-supplied format is used for both columns.
-
-The {\tt index}, {\tt every}, {\tt using} and {\tt select} modifiers work in the
-same way as for the {\tt plot} command.  For example multiple functions may be
-tabulated into the same file with the {\tt using} modifier:
+\noindent Multiple functions may be tabulated into the same file, either by
+using the \indmodt{using} modifier:
 
 \begin{verbatim}
 tabulate [0:2*pi] sin(x):cos(x):tan(x) u 1:2:3:4
 \end{verbatim}
 
+\noindent or by placing them in a comma-separated list, as in the {\tt plot}
+command:
+
+\begin{verbatim}
+tabulate [0:2*pi] sin(x), cos(x), tan(x)
+\end{verbatim}
+
+In the former case, the functions are tabulated horizontally alongside one
+another in a series of columns. In the latter case, the functions are tabulated
+one after another in a series of index blocks separated by double linefeeds
+(see Section~\ref{sec:plot_datafiles}).
+
 The {\tt samples} setting can be used to control the number of points that are
-inserted into the \datafile.  If the ordinate axis is set to be logarithmic then the
-points at which the functions are evaluated are spaced logarithmically.
+produced when tabulating functions, in the same way that it controls the {\tt
+plot} command:\indcmd{set samples}
+
+\begin{verbatim}
+set samples 200
+\end{verbatim}
+
+\noindent If the ordinate axis is set to be logarithmic then the points at which
+functions are evaluated are spaced logarithmically, otherwise they are spaced
+linearly.
+
+The \indmodt{select}, \indmodt{using} and \indmodt{every} modifiers operate in
+the same manner in the {\tt tabulate} command as in the {\tt plot} command.
+Thus, the following example would write out the third, sixth and ninth columns
+of the \datafile\ {\tt input.dat}, but only when the arcsine of the value in the
+fourth column is positive:
+
+\begin{verbatim}
+set output 'filtered.dat'
+tabulate 'input.dat' u 3:6:9 select (asin($4)>0)
+\end{verbatim}
+
+The numerical display format used in each column of the output file is chosen
+automatically to preserve accuracy whilst simultaneously being as easily human
+readable as possible.  Thus, columns which contain only integers are displayed
+as such, and scientific notation is only used in columns which contain very
+large or very small values.  If desired, however, a format statement may be
+specified using the {\tt with format} specifier. The syntax for this is similar
+to that expected by the string substitution operator ({\tt \%}; see
+Section~\ref{sec:stringsubop}). As an example, to tabulate the values of $x^2$
+to very many significant figures with some additional text, one could use:
+
+\begin{verbatim}
+tabulate x**2 with format "x = %f ; x**2 = %27.20e"
+\end{verbatim}
+
+\noindent This might produce the following output:
+
+\begin{verbatim}
+x = 0.000000 ; x**2 =  0.00000000000000000000e+00
+x = 0.833333 ; x**2 =  6.94444444444442421371e-01
+x = 1.666667 ; x**2 =  2.77777777777778167589e+00
+\end{verbatim}
 
 The data produced by the {\tt tabulate} command can be sorted in order of any
 arbitrary metric by supplying an expression after the {\tt sortby} modifier;
@@ -3514,9 +3542,9 @@ undelete <item number> { , <item number> }
 
 The \indcmdt{undelete} allows vector graphics objects which have previously
 been deleted from the current multiplot canvas to be restored.  The item(s)
-which are to be restored should be identified using the reference number which
-was used to delete it, and as can be found using the {\tt list} command. The
-example
+which are to be restored should be identified using the reference number(s)
+which were used to delete them, and can be queried using the {\tt list}
+command. The example
 
 \begin{verbatim}
 undelete 1
@@ -3531,8 +3559,8 @@ undelete 1
 unset <setting>
 \end{verbatim}
 
-The \indcmdt{unset} causes a setting that has been changed using the set
-command to be returned to its default value.  For example:
+The \indcmdt{unset} causes a configuration option which has been changed using
+the {\tt set} command to be returned to its default value.  For example:
 
 \begin{verbatim}
 unset linewidth
@@ -3540,8 +3568,9 @@ unset linewidth
 
 \noindent returns the linewidth to its default value.
 
-The list of keywords which can follow the {\tt unset} command are essentially
-the same as those which can follow the {\tt set} command.
+Any keyword which can follow the {\tt set} command to identify a configuration
+parameter can also follow the {\tt unset} command; a complete list of these can
+be found under the {\tt set} command.
 
 
 \section{while}\indcmd{while}
@@ -3553,9 +3582,12 @@ while <condition> [loopname <loopname>]
  "}"
 \end{verbatim}
 
-The \indcmdt{while} is a loop construct; it causes a set of commands to be
-executed repeatedly whilst the specified {\tt condition} remains true. For
-example, the following code prints out the low-valued Fibonacci numbers:
+The \indcmdt{while} executes a block of commands repeatedly, checking the
+provided condition at the start of each iteration. If the condition is true,
+the loop executes again. This is similar to a {\tt do} loop, except that the
+contents of a {\tt while} loop may not be executed at all if the iteration
+criterion tests false upon the first iteration. For example, the following code
+prints out the low-valued Fibonacci numbers:
 
 \begin{verbatim}
 i = 1

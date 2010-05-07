@@ -193,15 +193,15 @@ Items on multiplot canvases are drawn in order of increasing identification
 number, and thus items with low identification numbers are drawn first, at the
 back of the multiplot, and items with higher identification numbers are later,
 towards the front of the multiplot. When new items are added, they are given
-higher identification numbers than previous items, and appear at the front of
+higher identification numbers than previous items and appear at the front of
 the multiplot.
 
-If this ordering is not the desired ordering, then the \indcmdt{swap} may be
-used to rearrange items. It simply takes two multiplot items, and swaps their
-identification numbers and hence positions in the ordered sequence in which the
-items on the multiplot are drawn. Thus, if, for example, the corner of item~3
-disappears behind the corner of item~5, when the converse effect is actually
-desired, the following command should be issued:
+If this is not the desired ordering, then the \indcmdt{swap} may be used to
+rearrange items. It takes the identification numbers of two multiplot items and
+swaps their identification numbers and hence their positions in the ordered
+sequence.  Thus, if, for example, the corner of item~3 disappears behind the
+corner of item~5, when the converse effect is actually desired, the following
+command should be issued:
 \begin{verbatim}
 swap 3 5
 \end{verbatim}
