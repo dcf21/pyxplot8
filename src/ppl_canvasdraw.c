@@ -389,7 +389,7 @@ void canvas_CallLaTeX(EPSComm *x)
   fd_set          readable;
   sigset_t        sigs;
 
-  int  ErrLineNo=0, ErrReadState=0, ErrReadPos=0, NCharsRead=0;
+  int  ErrLineNo=0, ErrReadState=0, ErrReadPos=0, NCharsRead=0, ReadErrorState=0;
   char ErrFilename[FNAME_LENGTH]="", ErrMsg[FNAME_LENGTH]="";
   char TempErrFilename[FNAME_LENGTH], TempErrLineNo[FNAME_LENGTH], TempErrMsg[FNAME_LENGTH];
 
@@ -440,7 +440,9 @@ void canvas_CallLaTeX(EPSComm *x)
   LatexStatus = 0;
   while (1)
    {
-    waitperiod.tv_sec  = FirstIter ? 10 : 0; waitperiod.tv_nsec = 750000000; // Wait 10 seconds first time around; otherwise wait 0.75 seconds
+    waitperiod.tv_sec  = FirstIter ? 15 : 4; // Wait 15 seconds first time around; otherwise wait 4 seconds
+    waitperiod.tv_nsec = 0;
+    if (ErrReadState) { waitperiod.tv_nsec = 500000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
     FirstIter = 0;
     FD_ZERO(&readable); FD_SET(LatexOut, &readable);
     if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1) { LatexStatus=1; ppl_log("pselect returned -1"); break; }
@@ -467,13 +469,14 @@ void canvas_CallLaTeX(EPSComm *x)
                strcpy(TempErrFilename, filename);
                strcpy(TempErrLineNo  , "-1");
                ErrReadState = 2;
+               ReadErrorState = 1;
               }
               else
               {
                ErrReadState = 1;
               }
              }
-            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadState++; ErrReadPos=0; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
+            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadState++; ErrReadState = 1; ErrReadPos=0; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
             else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=temp_err_string[j]; }
            }
           else

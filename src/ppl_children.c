@@ -378,12 +378,18 @@ void PPLKillAllHelpers()
  {
   ListIterator *iter;
   int          *pid;
+  sigset_t sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
+  sigprocmask(SIG_BLOCK, &sigs, NULL);
   iter = ListIterateInit(HelperPIDs);
   while (iter != NULL)
    {
     iter = ListIterate(iter, (void **)&pid);
     kill(*pid, SIGTERM); // Dulce et decorum est pro patria mori
    }
+  sigprocmask(SIG_UNBLOCK, &sigs, NULL);
   return;
  }
 
