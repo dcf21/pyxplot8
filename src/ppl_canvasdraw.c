@@ -442,7 +442,7 @@ void canvas_CallLaTeX(EPSComm *x)
    {
     waitperiod.tv_sec  = FirstIter ? 15 : 4; // Wait 15 seconds first time around; otherwise wait 4 seconds
     waitperiod.tv_nsec = 0;
-    if (ErrReadState) { waitperiod.tv_nsec = 500000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
+    if (ReadErrorState) { waitperiod.tv_nsec = 500000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
     FirstIter = 0;
     FD_ZERO(&readable); FD_SET(LatexOut, &readable);
     if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1) { LatexStatus=1; ppl_log("pselect returned -1"); break; }
@@ -476,7 +476,7 @@ void canvas_CallLaTeX(EPSComm *x)
                ErrReadState = 1;
               }
              }
-            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadState++; ErrReadState = 1; ErrReadPos=0; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
+            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadState++; ReadErrorState = 1; ErrReadPos=0; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
             else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=temp_err_string[j]; }
            }
           else
