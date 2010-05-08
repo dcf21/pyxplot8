@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -125,12 +126,22 @@ void CheckForGvOutput()
  {
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   fd_set          readable;
-  int             pos;
+  int             pos, TrialNumber;
   char            linebuffer[SSTR_LENGTH];
 
-  waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
-  FD_ZERO(&readable); FD_SET(PipeCSP2MAIN[0], &readable);
-  pselect(PipeCSP2MAIN[0]+1, &readable, NULL, NULL, &waitperiod, NULL);
+  TrialNumber=1;
+  while (1)
+   {
+    waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
+    FD_ZERO(&readable); FD_SET(PipeCSP2MAIN[0], &readable);
+    if (pselect(PipeCSP2MAIN[0]+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
+     {
+      if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
+      if (DEBUG) ppl_log("pselect failure whilst checking for GV output");
+      return;
+     }
+    break;
+   }
   if (!FD_ISSET(PipeCSP2MAIN[0] , &readable)) return; // select tells us that pipe from CSP is not readable
 
   pos = strlen(PipeOutputBuffer);
@@ -202,12 +213,22 @@ void CSPCheckForNewCommands()
  {
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   fd_set          readable;
-  int pos;
+  int             pos, TrialNumber;
   char linebuffer[SSTR_LENGTH];
 
-  waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
-  FD_ZERO(&readable); FD_SET(PipeMAIN2CSP[0], &readable);
-  pselect(PipeMAIN2CSP[0]+1, &readable, NULL, NULL, &waitperiod, NULL);
+  TrialNumber=1;
+  while (1)
+   {
+    waitperiod.tv_sec  = waitperiod.tv_nsec = 0;
+    FD_ZERO(&readable); FD_SET(PipeMAIN2CSP[0], &readable);
+    if (pselect(PipeMAIN2CSP[0]+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
+     {
+      if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
+      if (DEBUG) ppl_log("pselect failure whilst CSP checking for new commaands");
+      return;
+     }
+    break;
+   }
   if (!FD_ISSET(PipeMAIN2CSP[0] , &readable)) return; // select tells us that pipe from main process is not readable
 
   pos = strlen(PipeOutputBuffer);

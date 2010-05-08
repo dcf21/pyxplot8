@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <wordexp.h>
 #include <glob.h>
 #include <setjmp.h>
@@ -696,7 +697,7 @@ int directive_regex(Dict *command)
   char  *varname;
   char   cmd[LSTR_LENGTH];
   value *varnumval;
-  int    i, j, fstdin, fstdout;
+  int    i, j, fstdin, fstdout, TrialNumber;
   char   ci;
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   fd_set          readable;
@@ -733,9 +734,19 @@ int directive_regex(Dict *command)
   close(fstdin);
 
   // Wait for sed process's stdout to become readable. Get bored if this takes more than a second.
-  waitperiod.tv_sec  = 1; waitperiod.tv_nsec = 0;
-  FD_ZERO(&readable); FD_SET(fstdout, &readable);
-  pselect(fstdout+1, &readable, NULL, NULL, &waitperiod, NULL);
+  TrialNumber = 1;
+  while (1)
+   {
+    waitperiod.tv_sec  = 1; waitperiod.tv_nsec = 0;
+    FD_ZERO(&readable); FD_SET(fstdout, &readable);
+    if (pselect(fstdout+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
+     {
+      if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
+      ppl_error(ERR_INTERNAL, -1, -1, "Failure of the pselect() function whilst waiting for sed to return data.");
+      return 1;
+     }
+    break;
+   }
   if (!FD_ISSET(fstdout , &readable)) { ppl_error(ERR_GENERAL, -1, -1, "Got bored waiting for sed to return data."); sigprocmask(SIG_UNBLOCK, &sigs, NULL); return 0; }
 
   // Read data back from sed process

@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <signal.h>
 #include <wordexp.h>
 #include <sys/select.h>
@@ -389,7 +390,7 @@ void canvas_CallLaTeX(EPSComm *x)
   fd_set          readable;
   sigset_t        sigs;
 
-  int  ErrLineNo=0, ErrReadState=0, ErrReadPos=0, NCharsRead=0, ReadErrorState=0;
+  int  ErrLineNo=0, ErrReadState=0, ErrReadPos=0, NCharsRead=0, ReadErrorState=0, TrialNumber;
   char ErrFilename[FNAME_LENGTH]="", ErrMsg[FNAME_LENGTH]="";
   char TempErrFilename[FNAME_LENGTH], TempErrLineNo[FNAME_LENGTH], TempErrMsg[FNAME_LENGTH];
 
@@ -440,13 +441,25 @@ void canvas_CallLaTeX(EPSComm *x)
   LatexStatus = 0;
   while (1)
    {
-    waitperiod.tv_sec  = FirstIter ? 15 : 4; // Wait 15 seconds first time around; otherwise wait 4 seconds
-    waitperiod.tv_nsec = 0;
-    if (ReadErrorState) { waitperiod.tv_nsec = 500000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
+    TrialNumber=1;
+    while (1)
+     {
+      waitperiod.tv_sec  = FirstIter ? 15 : 4; // Wait 15 seconds first time around; otherwise wait 4 seconds
+      waitperiod.tv_nsec = 0;
+      if (ReadErrorState) { waitperiod.tv_nsec = 500000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
+      FD_ZERO(&readable); FD_SET(LatexOut, &readable);
+      if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
+       {
+        if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
+        LatexStatus=1;
+        if (DEBUG) ppl_log("pselect returned -1");
+        break;
+       }
+      break;
+     }
+    if (LatexStatus) break;
     FirstIter = 0;
-    FD_ZERO(&readable); FD_SET(LatexOut, &readable);
-    if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1) { LatexStatus=1; ppl_log("pselect returned -1"); break; }
-    if (!FD_ISSET(LatexOut , &readable)) { LatexStatus=1; ppl_log("latex's output pipe has not become readable within time limit"); break; }
+    if (!FD_ISSET(LatexOut , &readable)) { LatexStatus=1; if (DEBUG) ppl_log("latex's output pipe has not become readable within time limit"); break; }
     else
      {
       if ((NCharsRead = read(LatexOut, temp_err_string, LSTR_LENGTH)) > 0)
