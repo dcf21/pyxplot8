@@ -69,8 +69,8 @@ as follows:
 \item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
 \end{itemize}
 
-Any number of these modifiers may be placed sequentially after the {\tt with}
-keyword, as in the following examples:
+Any number of these modifiers may be placed sequentially after the keyword {\tt
+with}, as in the following examples:
 
 \begin{verbatim}
 plot 'datafile' using 1:2 with points pointsize 2
@@ -639,7 +639,7 @@ positioned on graphs, using a syntax along the lines of:
 set key top right
 \end{verbatim}
 
-The following recognised positioning keywords are self-explanatory:
+The following recognised positional keywords are self-explanatory:
 \indkeyt{top}, \indkeyt{bottom}, \indkeyt{left}, \indkeyt{right},
 \indkeyt{xcentre} and \indkeyt{ycentre}. Any single instance of the
 \indcmdt{set key} can be followed by one horizontal alignment keyword and one
@@ -724,9 +724,9 @@ set x3label 'foo'
 unset x3label 'foo'
 \end{verbatim}
 
-\noindent If an $x3$-axis did not previously exist, then the first will have
-implicitly created one. This would need to be removed with the {\tt unset axis
-x3} command if it was not desired.
+\noindent If an {\tt x3}-axis did not previously exist, then the first will
+have implicitly created one. This would need to be removed with the {\tt unset
+axis x3} command if it was not desired.
 
 \subsection{Selecting which Axes to Plot Against}
 
@@ -789,13 +789,13 @@ must include this information in the axis label manually if it is needed.
 
 \subsection{Specifying the Positioning of Axes}
 
-By default, the {\tt x1} axis is placed along the bottom of graphs and the {\tt
-y1} axis is placed up the left-hand side of graphs. On three-dimensional plots,
-the {\tt z1} axis is placed at the front of the graph. The second set of axes
-are placed opposite to the first: the {\tt x2}, {\tt y2} and {\tt z2} axes are
-placed respectively along the top, right and back sides of graphs.
-Higher-numbered axes are placed alongside the {\tt x1}, {\tt y1} and {\tt z1}
-axes.
+By default, the {\tt x1}-axis is placed along the bottom of graphs and the {\tt
+y1}-axis is placed up the left-hand side of graphs. On three-dimensional plots,
+the {\tt z1}-axis is placed at the front of the graph. The second set of axes
+are placed opposite to the first: the {\tt x2}-, {\tt y2}- and {\tt z2}-axes
+are placed respectively along the top, right and back sides of graphs.
+Higher-numbered axes are placed alongside the {\tt x1}-, {\tt y1}- and {\tt
+z1}-axes.
 
 However, the position of any axis can be explicitly set using syntax of the
 form:
@@ -811,7 +811,7 @@ $z$-axes can be set to appear either at the {\tt front} or {\tt back}.
 \subsection{Configuring the Appearance of Axes}
 
 The \indcmdt{set axis} also accepts the following keywords alongside the
-positioning keywords listed above, which specify how the axis should appear:
+positional keywords listed above, which specify how the axis should appear:
 \begin{itemize}
 \item {\tt arrow} -- Specifies that an arrowhead should be drawn on the right/top end of the axis. [{\bf Not default}].
 \item {\tt atzero} -- Specifies that rather than being placed along an edge of the plot, the axis should mark the lines where the perpendicular axes {\tt x1}, {\tt y1} and/or {\tt z1} are zero. [{\bf Not default}].
@@ -956,8 +956,9 @@ in a format such as $1.5\times2^8$.
 The \indcmdt{set xformat} -- together with its companions such as {\tt set
 yformat}\footnote{There is no {\tt set mxformat} command since minor axis ticks
 are never labelled unless labels are explicitly provided for them using the
-syntax {\tt set mxtics (...)}.} -- may be used to specify a format for the axis
-labels to take, as demonstrated by the following pair of examples:
+syntax {\tt set mxtics (...)}.} -- is used to manually specify an explicit
+format for the axis labels to take, as demonstrated by the following pair of
+examples:
 \begin{verbatim}
 set xformat "%.2f"%(x)
 set yformat "%s$^\prime$"%(y/unit(feet))
@@ -1208,7 +1209,7 @@ graphics to them.
 
 \subsection{Arrows}
 
-\label{sec:set_arrow}\index{arrows} The \indcmdt{set arrow} may be used to add
+\label{sec:set_arrow}\index{arrows} The \indcmdt{set arrow} may be used to
 draw arrows on top of graphs; its syntax is illustrated by the following simple
 example:
 
@@ -1269,9 +1270,9 @@ set arrow 1 from first  x0, first  y0 \
             with nohead
 \end{verbatim}
 
-In addition to these four options, \indcot{axis{\it n}} specifies that the
+In addition to these four options, \indcot{axis<n>} specifies that the
 position is to be measured along the $n\,$th horizontal or vertical axis -- for
-example, `{\tt axis3}'.\indcmd{set arrow} This allows the graph to be measured
+example, {\tt axis3}.\indcmd{set arrow} This allows the graph to be measured
 with reference to any arbitrary axis on plots which make use of large numbers
 of parallel axes (see Section~\ref{sec:multiple_axes}).
 

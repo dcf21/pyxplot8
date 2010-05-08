@@ -118,7 +118,7 @@ of the arrows produced may be specified by following the \indmodt{with}
 modifier by one of the style keywords \indkeyt{nohead}, \indkeyt{head}
 (default) or \indkeyt{twohead}. In addition, keywords such as \indkeyt{colour},
 \indkeyt{linewidth} and \indkeyt{linetype} have the same syntax and meaning
-following the \indmodt{with} keyword as in the {\tt plot} command. The
+following the keyword \indmodt{with} as in the {\tt plot} command. The
 following example would draw a bidirectional blue arrow:
 
 \begin{verbatim}
@@ -146,7 +146,7 @@ box [ item <id> ] from <x1>, <y1> to <x2>, <y2>
          [ rotate <r> ] [ with {<option>} ]
 \end{verbatim}
 
-The \indcmdt{box} may be used to draw and fill rectangular boxes on multiplot
+The \indcmdt{box} is used to draw and fill rectangular boxes on multiplot
 canvases.  The position of each box may be specified in one of two ways.  In the
 first, the coordinates of one corner of the box are specified, along with its
 width and height. If both the width and the height are positive then the
@@ -479,7 +479,7 @@ or a mixture of command files and interactive sessions, were specified on
 PyXPlot's command line, then PyXPlot moves onto the next command-line item
 after receiving the {\tt exit} command.
 
-PyXPlot may also be quit be pressing CTRL-D or via the {\tt quit} command. In
+PyXPlot may also be quit be pressing CTRL-D or using the {\tt quit} command. In
 interactive mode, CTRL-C terminates the current command, if one is running.
 When running a script, CTRL-C terminates execution of the script.
 
@@ -1200,8 +1200,8 @@ appearance of various plot styles. A complete list of these is as follows:
 \item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
 \end{itemize}
 
-Any number of these modifiers may be placed sequentially after the {\tt with}
-keyword, as in the following examples:
+Any number of these modifiers may be placed sequentially after the keyword {\tt
+with}, as in the following examples:
 
 \begin{verbatim}
 plot 'datafile' using 1:2 with points pointsize 2
@@ -1315,7 +1315,7 @@ commands respectively.
 replot [ item <id> ] ...
 \end{verbatim}
 
-The \indcmdt{replot} has the same syntax as the {\tt plot} command and may be
+The \indcmdt{replot} has the same syntax as the {\tt plot} command and is
 used to add more datasets to an existing plot, or to change its axis ranges.
 For example, having plotted one \datafile\ using the command
 
@@ -1440,41 +1440,42 @@ set arrow <arrow number>
       [ with {<option>} ]
 \end{verbatim}
 
-\noindent where {\tt <system>} is may take any of the values
+\noindent where {\tt <system>} may take any of the values
 \newline\noindent
 {\tt ( first | second | screen | graph | axis<number> )}
 \vspace{5mm}
 
-The \indcmdt{set arrow} causes an arrow to be added to a plot. The example
+The \indcmdt{set arrow} is used to add arrows to graphs. The example
 
 \begin{verbatim}
 set arrow 1 from 0,0 to 1,1
 \end{verbatim}
 
 \noindent would draw an arrow between the points $(0,0)$ and $(1,1)$, as
-measured on the {\tt x} and {\tt y}-axes.  The tag {\tt 1} immediately following the {\tt
-arrow} keyword is an identification number, and allows the arrow to be removed
-later with the {\tt unset arrow} command.  By default the coordinates are
-measured relative to the first horizontal and vertical axes, but can be specified in a range
-of coordinate systems. These are specified as in the example:
+measured along the {\tt x} and {\tt y}-axes.  The tag {\tt 1} immediately
+following the keyword {\tt arrow} is an identification number and allows arrows
+to be subsequently removed using the {\tt unset arrow} command.  By default,
+the coordinates are specified relative to the first horizontal and vertical
+axes, but they can alternatively be specified any one of several of coordinate
+systems. The coordinate system to be used is specified as in the example:
 
 \begin{verbatim}
 set arrow 1 from first 0, second 0 to axis3 1, axis4 1
 \end{verbatim}
 
-\noindent As can be seen, the name of the desired coordinate system precedes the position
-value in that coordinate system. The coordinate system {\tt first}, the default,
-measures the graph using the {\tt x}- and {\tt y}-axes. {\tt second} uses the {\tt x2}- and
-{\tt y2}-axes.  {\tt screen} and {\tt graph} both measure in centimetres from the
-origin of the graph.  The syntax {\tt axisn} may also be
-used, to use the $n$th horizontal or vertical axis; for example, {\tt axis3} above.
+\noindent The name of the coordinate system to be used precedes the position
+value in that system. The coordinate system {\tt first}, the default, measures
+the graph using the {\tt x}- and {\tt y}-axes. {\tt second} uses the {\tt x2}-
+and {\tt y2}-axes.  {\tt screen} and {\tt graph} both measure in centimetres
+from the origin of the graph.  The syntax {\tt axis<n>} may also be used, to
+use the $n$th horizontal or vertical axis; for example, {\tt axis3} above.
 
-The {\tt set arrow} command can be followed by the keyword {\tt with}, to
+The {\tt set arrow} command can be followed by the keyword {\tt with} to
 specify the style of the arrow. For example, the specifiers {\tt nohead}, {\tt
-head} and {\tt twohead}, after the keyword {\tt with}, can be used to make
-arrows with no arrow heads, normal arrow heads, or two arrow heads. {\tt twoway}
-is an alias for {\tt twohead}.  Normal line type modifiers can also be used
-here.  For example:
+head} and {\tt twohead}, when placed after the keyword {\tt with}, can be used
+to make arrows with no arrow heads, normal arrow heads, or two arrow heads.
+{\tt twoway} is an alias for {\tt twohead}. All of the line type modifiers
+accepted by the {\tt plot} command can also be used here, as in the example:
 
 \begin{verbatim}
 set arrow 2 from first 0, second 2.5 to axis3 0,
@@ -1488,22 +1489,23 @@ set arrow 2 from first 0, second 2.5 to axis3 0,
 set autoscale {<axis>}
 \end{verbatim}
 
-The {\tt autoscale} setting causes PyXPlot to choose the scaling for an axis
-automatically based on the data and/or functions to be plotted against it. The example
+The \indcmdt{set autoscale} causes PyXPlot to choose the scaling for an axis
+automatically based on the data and/or functions to be plotted against it. The
+example
 
 \begin{verbatim}
 set autoscale x1
 \end{verbatim}
 
-\noindent would cause the size of the first horizontal axis to be scaled to fit the
-data.  Multiple axes can be specified, viz.:
+\noindent would cause the range of the first horizontal axis to be scaled to
+fit the data.  Multiple axes can be specified, as in the example
 
 \begin{verbatim}
 set autoscale x1y3
 \end{verbatim}
 
-\noindent Note that ranges explicitly specified in a \indcmdt{plot} will override
-the autoscale setting.
+\noindent Note that ranges explicitly specified in a \indcmdt{plot} will
+override the {\tt set autoscale} command.
 
 
 \subsection{axescolour}\indcmd{set axescolour}
@@ -1512,14 +1514,14 @@ the autoscale setting.
 set axescolour <colour>
 \end{verbatim}
 
-The {\tt axescolour} setting changes the colour of the plot's axes.  For example:
+The setting {\tt axescolour} changes the colour used to draw graph axes.  The example
 
 \begin{verbatim}
 set axescolour blue
 \end{verbatim}
 
-\noindent changes the axes to be blue. Any of the recognised colour names listed in
-Section~\ref{sec:colour_names} can be used.
+\noindent would specify that graph axes should be drawn in blue. Any of the
+recognised colour names listed in Section~\ref{sec:colour_names} can be used.
 
 
 \subsection{axis}\indcmd{set axis}
@@ -1533,7 +1535,7 @@ set axis <axis> [ ( visible | invisible ) ]
   [ linked [item <number>] <axis> [using <expression>] ]
 \end{verbatim}
 
-The \indcmdt{set axis} may be used to add additional axes to plots and to
+The \indcmdt{set axis} is used to add additional axes to plots and to
 configure their appearance. Where an axis is stated on its own, as in the
 example
 \begin{verbatim}
@@ -1558,16 +1560,16 @@ set axis z back
 \end{verbatim}
 Horizontal axes can be set to appear either at the {\tt top} or {\tt bottom};
 vertical axes can be set to appear either at the {\tt left} or {\tt right}; and
-$z$-axes can be set to appear either at the {\tt front} or {\tt back}.
-By default, the {\tt x1} axis is placed along the bottom of graphs and the {\tt
-y1} axis is placed up the left-hand side of graphs. On three-dimensional plots,
-the {\tt z1} axis is placed at the front of the graph. The second set of axes
-are placed opposite to the first: the {\tt x2}, {\tt y2} and {\tt z2} axes are
-placed respectively along the top, right and back sides of graphs.
-Higher-numbered axes are placed alongside the {\tt x1}, {\tt y1} and {\tt z1}
-axes.
+$z$-axes can be set to appear either at the {\tt front} or {\tt back}.  By
+default, the {\tt x1}-axis is placed along the bottom of graphs and the {\tt
+y1}-axis is placed up the left-hand side of graphs. On three-dimensional plots,
+the {\tt z1}-axis is placed at the front of the graph. The second set of axes
+are placed opposite to the first: the {\tt x2}-, {\tt y2}- and {\tt z2}-axes
+are placed respectively along the top, right and back sides of graphs.
+Higher-numbered axes are placed alongside the {\tt x1}-, {\tt y1}- and {\tt
+z1}-axes.
 
-The following keywords may also be placed alongside the positioning keywords
+The following keywords may also be placed alongside the positional keywords
 listed above to specify how the axis should appear:
 \begin{itemize}
 \item {\tt arrow} -- Specifies that an arrowhead should be drawn on the right/top end of the axis. [{\bf Not default}].
@@ -1593,10 +1595,10 @@ listed above to specify how the axis should appear:
 set axisunitstyle ( bracketed | squarebracketed | ratio )
 \end{verbatim}
 
-The {\tt axisunitstyle} setting controls the style with which the units of
+The setting {\tt axisunitstyle} controls the style with which the units of
 plotted quantities are indicated on the axes of plots. The {\tt bracketed}
 option causes the units to be placed in parentheses following the axis labels,
-whilst the {\tt squarebracketed} option using square brackets instead.  The
+whilst the {\tt square\-bracketed} option using square brackets instead.  The
 {\tt ratio} option causes the units to follow the label as a divisor so as to
 leave the quantity dimensionless.
 
@@ -1607,15 +1609,16 @@ leave the quantity dimensionless.
 set backup
 \end{verbatim}
 
-The setting {\tt backup} changes PyXPlot's behaviour when it detects that a file
-which it is about to write is going to overwrite an existing file. Whereas by
-default the existing file would be overwritten by the new one, when the
-{\tt backup} setting is turned on, it is renamed, placing a tilde at the end of
+The setting {\tt backup} changes PyXPlot's behaviour when it detects that a
+file which it is about to write is going to overwrite an existing file. Whereas
+by default the existing file would be overwritten by the new one, when the
+setting {\tt backup} is turned on, it is renamed, placing a tilde at the end of
 its filename. For example, suppose that a plot were to be written with filename
-{\tt out.ps}, but such a file already existed.  With the backup setting turned on
-the existing file would be renamed {\tt out.ps$\sim$} to save it from being overwritten.
+{\tt out.ps}, but such a file already existed.  With the backup setting turned
+on the existing file would be renamed {\tt out.ps$\sim$} to save it from being
+overwritten.
 
-The setting may be turned off via {\tt set nobackup}.
+The setting is turned off using the {\tt set nobackup} command.
 
 
 \subsection{bar}\indcmd{set bar}
@@ -1624,8 +1627,8 @@ The setting may be turned off via {\tt set nobackup}.
 set bar ( large | small | <value> )
 \end{verbatim}
 
-The {\tt bar} setting changes the size of the bar on the end of the error bars,
-relative to the current point size.  For example:
+The setting {\tt bar} changes the size of the bar drawn on the end of the error
+bars, relative to the current point size.  For example:
 
 \begin{verbatim}
 set bar 2
@@ -1641,7 +1644,7 @@ set bar 2
 set binorigin <value>
 \end{verbatim}
 
-The {\tt binorigin} setting affects the behaviour of the \indcmdt{histogram} by
+The setting {\tt binorigin} affects the behaviour of the \indcmdt{histogram} by
 adjusting where it places the boundaries between the bins into which it places
 data. The \indcmdt{histogram} selects a system of bins which, if extended to
 infinity in both directions, would put a bin boundary at the value specified in
@@ -1658,9 +1661,9 @@ finite.
 set binwidth <value>
 \end{verbatim}
 
-The {\tt binwidth} setting changes the width of the bins used by the histogram
-command. The specified width may have any physical units, but must be real and
-finite.
+The setting {\tt binwidth} changes the width of the bins used by the {\tt
+histogram} command. The specified width may have any physical units, but must
+be real and finite.
 
 
 \subsection{boxfrom}\indcmd{set boxfrom}
@@ -1669,7 +1672,7 @@ finite.
 set boxfrom <value>
 \end{verbatim}
 
-The {\tt boxfrom} setting alters the vertical line from which bars are drawn
+The setting {\tt boxfrom} alters the vertical line from which bars are drawn
 when PyXPlot draws bar charts.  By default, bars all originate from the line
 $y=0$, but the example
 
@@ -1678,7 +1681,8 @@ set boxfrom 2
 \end{verbatim}
 
 \noindent would make the bars originate from the line $y=2$. The specified
-vertical ordinate may have any physical units, but must be real and finite.
+vertical abscissa value may have any physical units, but must be real and
+finite.
 
 
 
@@ -1688,7 +1692,7 @@ vertical ordinate may have any physical units, but must be real and finite.
 set boxwidth <width>
 \end{verbatim}
 
-The {\tt boxwidth} setting alters PyXPlot's behaviour when plotting bar charts.
+The setting {\tt boxwidth} alters PyXPlot's behaviour when plotting bar charts.
 It sets the default width of the boxes used, in ordinate axis units.  If the
 specified width is negative then, as happens by default, the boxes have
 automatically selected widths, such that the interfaces between them occur at
@@ -1716,12 +1720,15 @@ units, but must be real and finite.
 set calendar [ ( input | output ) ] <calendar>
 \end{verbatim}
 
-The \indcmdt{set calendar} sets the calendar that PyXPlot uses internally to
-process dates.  PyXPlot understands two separate calendars: an input calendar
-for processing dates that the user reads in from files, and an output calendar
-that controls dates printed out or written to plots.  The available calendars
-are british, french, gregorian, jewish, muslim, russian, catholic, greek,
-hebrew, islamic and julian.
+The \indcmdt{set calendar} sets the calendar that PyXPlot uses to convert dates
+between calendar dates and Julian Day numbers. PyXPlot uses two separate
+calendars which may be different: an input calendar for processing dates that
+the user inputs as calendar dates, and an output calendar that controls how
+dates are displayed or written on plots.  The available calendars are {\tt
+British}, {\tt Catholic} {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt
+Hebrew}, {\tt Islamic}, {\tt Jewish}, {\tt Julian}, {\tt Muslim} and {\tt
+Russian}, where {\tt Jewish} is an alias for {\tt Hebrew} and {\tt Muslim} is
+an alias for {\tt Islamic}.
 
 \subsection{clip}\indcmd{set clip}
 
@@ -1730,7 +1737,7 @@ set clip
 \end{verbatim}
 
 The \indcmdt{set clip} causes PyXPlot to clip points which extend over the edge
-of plots. The opposite effect may be achieved using the {\tt set noclip}
+of plots. The opposite effect is achieved using the {\tt set noclip}
 command.
 
 
@@ -1746,13 +1753,13 @@ set [no]display
 \end{verbatim}
 
 By default, whenever an item is added to a multiplot canvas, or an existing
-item moved or replotted, the whole multiplot is redrawn to reflect the change.
-This can be a time-consuming process when constructing large and complex
-multiplot canvases, as fresh output is produced at each step. For this reason,
-the {\tt set nodisplay} command is provided, which stops PyXPlot from producing
-any graphical output. The {\tt set display} command can subsequently be issued
-to return to normal behaviour.  To use these, a script which produces a large
-and complex multiplot canvas is typically wrapped as follows:
+item is moved or replotted, the whole multiplot is redrawn to reflect the
+change.  This can be a time-consuming process when constructing large and
+complex multiplot canvases, as fresh output is produced at each step. For this
+reason, the {\tt set nodisplay} command is provided, which stops PyXPlot from
+producing any graphical output. The {\tt set display} command can subsequently
+be issued to return to normal behaviour. Scripts which produces large and
+complex multiplot canvases are typically wrapped as follows:
 
 \begin{verbatim}
 set nodisplay
@@ -1769,15 +1776,17 @@ set filter '<filename wildcard>' '<filter command>'
 \end{verbatim}
 
 The \indcmdt{set filter} allows input filter programs to be specified to allow
-PyXPlot to deal with file types that are not in its \datafile\ format.  Firstly
-the set of \datafile s that the filter should apply to must be specified; the
-standard wildcard characters {\tt *} and {\tt ?} may be used.  Then a filter
-program should be specified, along with any necessary options.  This should
-take the name of the file to be filtered as the final option on its command
-line, immediately following any options specified above.  It should and provide
-a suitable PyXPlot data file on standard output for PyXPlot to read.  For
-example, to filter all files that end in {\tt .foo} through the {\tt defoo}
-filter using the {\tt --text} option one would type:
+PyXPlot to deal with file types that are not in the plaintext format which it
+ordinarily expects.  Firstly the pattern used to recognise the filenames of the
+\datafile s to which the filter should apply to must be specified; the standard
+wildcard characters {\tt *} and {\tt ?} may be used.  Then a filter program
+should be specified, along with any necessary commandline options which should
+be passed to it.  This program should take the name of the file to be filtered
+as the final option on its command line, immediately following any commandline
+options specified above.  It should output a suitable PyXPlot \datafile on its
+standard output stream for PyXPlot to read.  For example, to filter all files
+that end in {\tt .foo} through the a program called {\tt defoo} using the {\tt
+--text} option one would type:
 
 \begin{verbatim}
 set filter "*.foo" "/usr/local/bin/defoo --text"
@@ -1789,15 +1798,16 @@ set filter "*.foo" "/usr/local/bin/defoo --text"
 set fontsize <value>
 \end{verbatim}
 
-The {\tt fontsize} setting changes the size of the font used to render all text
-labels which appear on a plot, including keys, axis labels, etc. The value
-specified should be a multiplicative factor greater than zero; a value of~{\tt
-2} would cause text to be rendered at twice its normal size, and a value
-of~{\tt 0.5} would cause text to be rendered at half its normal size.  The
-default value is one.
+The setting {\tt fontsize} changes the size of the font used to render all text
+labels which appear on graphs and multiplot canvases, including keys, axis
+labels, text labels produced using the {\tt text} command, and so forth. The
+value specified should be a multiplicative factor greater than zero; a value
+of~{\tt 2} would cause text to be rendered at twice its normal size, and a
+value of~{\tt 0.5} would cause text to be rendered at half its normal size.
+The default value is one.
 
-As an alternative, font sizes can be specified directly in the \LaTeX\ text of
-labels, as in the example:
+As an alternative, font sizes can be specified with coarser granulation
+directly in the \LaTeX\ text of labels, as in the example:
 
 \begin{verbatim}
 set xlabel '\Large This is a BIG label'
@@ -1815,7 +1825,7 @@ See {\tt set style function}.
 set [no]grid {<axis>}
 \end{verbatim}
 
-The {\tt grid} setting controls whether a grid is placed behind a plot or not.
+The setting {\tt grid} controls whether a grid is placed behind a plot or not.
 Issuing the command
 
 \begin{verbatim}
@@ -1854,7 +1864,7 @@ set grid x1x2x3
 set gridmajcolour <colour>
 \end{verbatim}
 
-The {\tt gridmajcolour} setting changes the colour that is used to plot the
+The setting {\tt gridmajcolour} changes the colour that is used to plot the
 gridlines (see the {\tt set grid} command) which are associated with the major
 ticks of axes (i.e.\ major gridlines). For example:
 
@@ -1874,7 +1884,7 @@ See also the {\tt set gridmincolour} command.
 set gridmincolour <colour>
 \end{verbatim}
 
-The {\tt gridmincolour} setting changes the colour that is used to plot the
+The setting {\tt gridmincolour} changes the colour that is used to plot the
 gridlines (see the {\tt set grid} command) which are associated with the minor
 ticks of axes (i.e.\ minor gridlines). For example:
 
@@ -1894,7 +1904,7 @@ See also the {\tt set gridmajcolour} command.
 set key <position> [<xoffset>, <yoffset>]
 \end{verbatim}
 
-The {\tt key} setting determines whether a legend is placed on a plot, and if
+The setting {\tt key} determines whether a legend is placed on a plot, and if
 so, where it should be located on the plot. Issuing the command:
 
 \begin{verbatim}
@@ -1941,7 +1951,7 @@ set key bottom left 0.0, -0.5
 set keycolumns ( <value> | auto )
 \end{verbatim}
 
-The {\tt keycolumns} settings sets how many columns the legend of a plot should
+The setting {\tt keycolumns} sets how many columns the legend of a plot should
 be arranged into. By default, all of the entries in the legends of plots are
 arranged in a single vertical list. However, for plots with very large number
 of datasets, it may be preferably to split this list into several columns. The
@@ -1962,36 +1972,36 @@ set label <label number> '<text>'
       [ with colour <colour> ]
 \end{verbatim}
 
-\noindent where {\tt <system>} is may take any of the values
+\noindent where {\tt <system>} may take any of the values
 \newline\noindent
 {\tt ( first | second | screen | graph | axis<number> )}
 \vspace{5mm}
 
-The \indcmdt{set label} can be used to place text labels onto a plot.  For
-example:
+The \indcmdt{set label} is used to place text labels on graphs. The example
 
 \begin{verbatim}
 set label 1 'Hello' 0, 0
 \end{verbatim}
 
-\noindent would place the word `Hello' at plot coordinates $(0,0)$, as measured
-on the {\tt x}- and {\tt y}-axes.  The tag {\tt 1} immediately following the {\tt
-label} keyword is an identification number, and allows the label to be removed
-later with the {\tt unset label} command.  By default the position coordinates
-of the label are measured relative to the first horizontal and vertical axes, but can be
-specified in a range of coordinate systems. These are specified as in the example:
+\noindent would place a label reading `Hello' at the point $(0,0)$ on a graph,
+as measured along the {\tt x}- and {\tt y}-axes.  The tag {\tt 1} immediately
+following the keyword {\tt label} is an identification number and allows the
+label to be subsequently removed using the {\tt unset label} command. By
+default, the positional coordinates of the label are specified relative to the
+first horizontal and vertical axes, but they can alternatively be specified in
+any one of several coordinate systems. The coordinate system to be used is
+specified as in the example:
 
 \begin{verbatim}
 set label 1 'Hello' first 0, second 0
 \end{verbatim}
 
-As can be seen, the name of the desired coordinate system precedes the position
-value in that coordinate system. Following \gnuplot's nomenclature, the
-coordinate system {\tt first} the default, measures the graph using the {\tt x}- and
-{\tt y}-axes. {\tt second} uses the {\tt x2}- and {\tt y2}-axes.  {\tt screen} and {\tt
-graph} both measure in centimetres from the origin of the graph.  The syntax
-{\tt axisn} may also be used, to use the $n$th horizontal or vertical axis; for example,
-{\tt axis3}:
+\noindent The name of the coordinate system to be used precedes the position
+value in that system. The coordinate system {\tt first}, the default, measures
+the graph using the {\tt x}- and {\tt y}-axes. {\tt second} uses the {\tt x2}-
+and {\tt y2}-axes.  {\tt screen} and {\tt graph} both measure in centimetres
+from the origin of the graph.  The syntax {\tt axis<n>} may also be used, to
+use the $n\,$th horizontal or vertical axis; for example, {\tt axis3}:
 
 \begin{verbatim}
 set label 1 'Hello' axis3 1, axis4 1
@@ -2031,7 +2041,7 @@ plot sin(x) with lines
 \end{verbatim}
 
 \noindent lines of three times the default thickness are plotted.  The
-{\tt set linewidth} setting only affects plot statements where no line width is
+{\tt set linewidth} command only affects plot statements where no line width is
 manually specified.
 
 
@@ -2041,23 +2051,24 @@ manually specified.
 set logscale {<axis>} [<base>]
 \end{verbatim}
 
-The {\tt logscale} setting causes an axis to be laid out with logarithmically,
+The setting {\tt logscale} causes an axis to be laid out with logarithmically,
 rather than linearly, spaced intervals.  For example, issuing the command:
 
 \begin{verbatim}
 set log
 \end{verbatim}
 
-\noindent would cause all of the axes of a plot to be scaled logarithmically. Alternatively
-only one, or a selection of axes, can be set to scale logarithmically as
-follows:
+\noindent would cause all of the axes of a plot to be scaled logarithmically.
+Alternatively only one, or a selection of axes, can be set to scale
+logarithmically as follows:
 
 \begin{verbatim}
 set log x1 y2
 \end{verbatim}
 
-This would cause the first horizontal and second vertical axes to be scaled logarithmically.
-Linear scaling can be restored to all axes via:
+\noindent This would cause the first horizontal and second vertical axes to be
+scaled logarithmically.  Linear scaling can be restored to all axes using the
+command:
 
 \begin{verbatim}
 set nolog
@@ -2069,7 +2080,7 @@ set nolog
 unset log
 \end{verbatim}
 
-\noindent and to only one, or a selection of axes, via:
+\noindent and to only one, or a selection of axes, using the command:
 
 \begin{verbatim}
 set nolog x1 y2
@@ -2226,8 +2237,8 @@ command.
 set nologscale {<axis>}
 \end{verbatim}
 
-The {\tt logscale} setting causes an axis to be laid out with logarithmically,
-rather than linearly, spaced intervals. Conversely, the {\tt nologscale} setting
+The setting {\tt logscale} causes an axis to be laid out with logarithmically,
+rather than linearly, spaced intervals. Conversely, the setting {\tt nologscale}
 is used to restore linear scaling. For example, issuing the command:
 
 \begin{verbatim}
@@ -2263,7 +2274,7 @@ Section~\ref{sec:multiplot} for a full discussion of multiplot mode.
 set nostyle <style number>
 \end{verbatim}
 
-The {\tt nostyle} setting deletes a numbered plot style. For example, the command:
+The setting {\tt nostyle} deletes a numbered plot style. For example, the command:
 
 \begin{verbatim}
 set nostyle 3
@@ -2328,11 +2339,11 @@ nan} option is a synonym for {\tt quiet}.
 
 \item The {\tt display} option changes the output of numbers that are printed to the
 terminal.  Setting the option to {\tt typeable} causes the numbers to be printed
-in a form suitable for pasting back into PyXPlot commands.  The {\tt latex} setting
-causes \LaTeX-compatible output to be generated.  The {\tt natural} setting
+in a form suitable for pasting back into PyXPlot commands.  The setting {\tt latex}
+causes \LaTeX-compatible output to be generated.  The setting {\tt natural}
 generates concise, readable output which has neither of the above properties.
 
-\item The {\tt sigfig} setting changes the number of significant figures to which
+\item The setting {\tt sigfig} changes the number of significant figures to which
 numbers are displayed when printed out on the PyXPlot terminal.  Regardless of
 the value set, all calculations are carried out internally at double precision.
 
@@ -2345,8 +2356,9 @@ the value set, all calculations are carried out internally at double precision.
 set origin <x>, <y>
 \end{verbatim}
 
-The \indcmdt{set origin} sets the location of the bottom-left corner of the
-next graph to be placed on a multiplot canvas.  For example, the command:
+The \indcmdt{set origin} is used to set the location of the bottom-left corner
+of the next graph to be placed on a multiplot canvas.  For example, the
+command:
 
 \begin{verbatim}
 set origin 3,5
@@ -2365,7 +2377,7 @@ use outside of multiplot mode.
 set output '<filename>'
 \end{verbatim}
 
-The {\tt output} setting controls the name of the file that is produced for
+The setting {\tt output} controls the name of the file that is produced for
 non-interactive terminals ({\tt postscript}, {\tt eps}, {\tt jpeg}, {\tt gif}
 and {\tt png}).  For example:
 
@@ -2437,7 +2449,7 @@ set papersize 200,100
 set pointlinewidth <value>
 \end{verbatim}
 
-The {\tt pointlinewidth} setting changes the width of the lines that are used to
+The setting {\tt pointlinewidth} changes the width of the lines that are used to
 plot \datapoint s.  For example,
 
 \begin{verbatim}
@@ -2446,7 +2458,7 @@ set pointlinewidth 20
 
 \noindent would cause points to be plotted with lines 20 times the default thickness.
 
-The {\tt pointlinewidth} setting can be abbreviated as {\tt plw}.
+The setting {\tt pointlinewidth} can be abbreviated as {\tt plw}.
 
 
 \subsection{pointsize}\indcmd{set pointsize}
@@ -2455,7 +2467,7 @@ The {\tt pointlinewidth} setting can be abbreviated as {\tt plw}.
 set pointsize <value>
 \end{verbatim}
 
-The {\tt pointsize} setting changes the size at which points are plotted
+The setting {\tt pointsize} changes the size at which points are plotted
 relative to their default size. It should be followed by a single value, the
 relative size, which can be any positive number. For example:
 
@@ -2472,7 +2484,7 @@ set pointsize 1.5
 set preamble <text>
 \end{verbatim}
 
-The {\tt preamble} setting changes the preamble that is prepended to each item of
+The setting {\tt preamble} changes the preamble that is prepended to each item of
 text rendered using \LaTeX{}.  This allows, for example, different packages to
 be loaded by default and user-defined macros to be set up.
 
@@ -2494,7 +2506,7 @@ be loaded by default and user-defined macros to be set up.
 set samples <value>
 \end{verbatim}
 
-The {\tt samples} setting determines the number of values along the ordinate
+The setting {\tt samples} determines the number of values along the ordinate
 axis at which functions are evaluated when they are plotted. For example:
 
 \begin{verbatim}
@@ -2691,7 +2703,7 @@ The {\tt color} terminal option is the US-English equivalent of {\tt colour}.
 
 When PyXPlot is set to produce bitmapped graphics output, using the {\tt bmp},
 {\tt gif}, {\tt jpg} or {\tt png} terminals (see the {\tt set terminal}
-command), the {\tt dpi} setting changes the number of dots per inch with which
+command), the setting {\tt dpi} changes the number of dots per inch with which
 these graphics files are produced. That is to say, it changes the image
 resolution of these file formats:
 
@@ -2849,7 +2861,7 @@ interactively.
 set textcolour <colour>
 \end{verbatim}
 
-The {\tt textcolour} setting changes the colour of all text displayed on a plot.
+The setting {\tt textcolour} changes the colour of all text displayed on a plot.
 For example:
 
 \begin{verbatim}
@@ -2868,7 +2880,7 @@ into the current palette.
 set texthalign ( left | centre | right )
 \end{verbatim}
 
-The {\tt texthalign} setting controls how text labels are justified
+The setting {\tt texthalign} controls how text labels are justified
 horizontally with respect to their specified positions, acting both upon labels
 placed on plots using the {\tt set label} command, and upon text items created
 using the {\tt text} command. Three options are available:
@@ -2886,7 +2898,7 @@ set texthalign right
 set textvalign ( bottom | centre | top )
 \end{verbatim}
 
-The {\tt textvalign} setting controls how text labels are justified vertically
+The setting {\tt textvalign} controls how text labels are justified vertically
 with respect to their specified positions, acting both upon labels placed on
 plots using the {\tt set label} command, and upon text items created using the
 {\tt text} command. Three options are available:
@@ -2904,7 +2916,7 @@ set textvalign top
 set title '<title>'
 \end{verbatim}
 
-The {\tt title} setting can be used to set a title for a plot, to be displayed
+The setting {\tt title} can be used to set a title for a plot, to be displayed
 above it.  For example, the command:
 
 \begin{verbatim}
@@ -2912,7 +2924,7 @@ set title 'foo'
 \end{verbatim}
 
 \noindent would cause a title `foo' to be displayed above a graph. The easiest
-way to remove a title, having set one, is via:
+way to remove a title, having set one, is using the command:
 
 \begin{verbatim}
 unset title
@@ -3006,8 +3018,8 @@ set unit display noprefix
 set width <value>
 \end{verbatim}
 
-The {\tt width} setting is used to set the width of the next graph to be
-generated. The width may be specified either as a dimensionless number
+The setting {\tt width} is used to set the width of the next graph to be
+generated. The width is specified either as a dimensionless number
 implicitly measured in centimetres, or as a quantity with physical dimensions
 of length such as {\tt unit(50*mm)}.
 
@@ -3032,8 +3044,8 @@ set log x1 2
 in a format such as $1.5\times2^8$.
 
 The \indcmdt{set xformat} -- together with its companions such as {\tt set
-yformat} -- may be used to specify a format for the axis labels to take, as
-demonstrated by the following pair of examples:
+yformat} -- is used to manually specify an explicit format for the axis labels
+to take, as demonstrated by the following pair of examples:
 \begin{verbatim}
 set xformat "%.2f"%(x)
 set yformat "%s$^\prime$"%(y/unit(feet))
@@ -3071,7 +3083,7 @@ strings.
 set <axis>label '<text>'
 \end{verbatim}
 
-The {\tt xlabel} setting controls the label placed on the {\tt x}-axis.
+The setting {\tt xlabel} controls the label placed on the {\tt x}-axis.
 For example:
 
 \begin{verbatim}
@@ -3101,7 +3113,7 @@ set y2label 'foo'
 set <axis>range <range> [reverse]
 \end{verbatim}
 
-The {\tt xrange} setting controls the range of values along the {\tt x}-axes of
+The setting {\tt xrange} controls the range of values along the {\tt x}-axes of
 plots.  For function plots, this is also the domain across which the function
 will be evaluated.  For example:
 
@@ -3130,9 +3142,9 @@ set xrange [:10][*:*]
 affect the lower limit; its range remains at its previous setting.  The first
 y-axis is automatically scaled on both its upper and lower limits.
 
-The keyword {\tt reverse} may be used to indicate that the two limits of an
-axis should be swapped. This is useful for setting auto-scaling axes to be
-displayed running from right to left, or from top to bottom.
+The keyword {\tt reverse} is used to indicate that the two limits of an axis
+should be swapped. This is useful for setting auto-scaling axes to be displayed
+running from right to left, or from top to bottom.
 
 
 \subsection{xtics}\indcmd{set xtics}
@@ -3181,8 +3193,8 @@ set xtics (1,2,3)
 The keyword \indkeyt{autofreq} overrides any manual selection of ticks which
 may have been placed on an axis and resumes the automatic placement of ticks
 along the axis. The \indcmdt{show xtics}, together with its companions such as
-{\tt show x2tics} and {\tt show ytics}, may be used to query the current
-ticking options. The \indcmdt{set noxtics} may be used to stipulate that no
+{\tt show x2tics} and {\tt show ytics}, is used to query the current
+ticking options. The \indcmdt{set noxtics} is used to stipulate that no
 ticks should appear along a particular axis:
 
 \begin{verbatim}
@@ -3426,7 +3438,7 @@ another in a series of columns. In the latter case, the functions are tabulated
 one after another in a series of index blocks separated by double linefeeds
 (see Section~\ref{sec:plot_datafiles}).
 
-The {\tt samples} setting can be used to control the number of points that are
+The setting {\tt samples} can be used to control the number of points that are
 produced when tabulating functions, in the same way that it controls the {\tt
 plot} command:\indcmd{set samples}
 
@@ -3493,11 +3505,11 @@ canvases. The example
 text 'Hello World!' at 0,2
 \end{verbatim}
 
-\noindent would render the text `Hello World!' at position $(0,2)$,
-measured in centimetres. The alignment of the text item with respect to this
-position can be set using the {\tt set texthalign} and {\tt set textvalign}
-commands, or via the {\tt halign} and {\tt valign} modifiers supplied to the
-{\tt text} command itself.
+\noindent would render the text `Hello World!' at position $(0,2)$, measured in
+centimetres. The alignment of the text item with respect to this position can
+be set using the {\tt set texthalign} and {\tt set textvalign} commands, or
+using the {\tt halign} and {\tt valign} modifiers supplied to the {\tt text}
+command itself.
 
 A gap may be specified, which should either have dimensions of length, or be
 dimensionless, in which case it is interpreted as being measured in
