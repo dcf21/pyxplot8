@@ -120,6 +120,7 @@ void eps_eps_RenderEPS(EPSComm *x)
     {
      sprintf(temp_err_string, "Error while reading EPS file '%s'.", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
      *(x->status)=1;
+     fclose(inf);
      return;
     }
   fclose(inf);
@@ -199,3 +200,4 @@ void eps_eps_ExtractBBox(FILE *in, double *bl, double *bb, double *br, double *b
    }
   return;
  }
+

@@ -56,7 +56,7 @@ char *ppl_glob_oneresult(char *filename)
   if (filename[0]!='\0')
    {
     strncpy(LastFilename, filename, FNAME_LENGTH);
-    filename[FNAME_LENGTH-1]='\0';
+    LastFilename[FNAME_LENGTH-1]='\0';
    } else {
     filename = LastFilename;
    }

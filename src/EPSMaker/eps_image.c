@@ -75,7 +75,7 @@ void eps_image_RenderEPS(EPSComm *x)
   for (i=0; i<3; i++)
    {
     j = fgetc(infile);
-    if (j==EOF) { sprintf(temp_err_string, "Could not read any image data from the input file '%s'", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
+    if (j==EOF) { sprintf(temp_err_string, "Could not read any image data from the input file '%s'", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; fclose(infile); return; }
     buff[i] = (unsigned char)j;
    }
   if      ((buff[0]=='G' )&&(buff[1]=='I' )&&(buff[2]=='F' )) ImageType = SW_BITMAP_GIF;
@@ -87,6 +87,7 @@ void eps_image_RenderEPS(EPSComm *x)
     sprintf(temp_err_string, "Could not determine the file type of input file '%s'. The image command only supports bmp, gif, jpeg and png images. The supplied image does not appear to be in any of these formats.", filename);
     ppl_error(ERR_FILE, -1, -1, temp_err_string);
     *(x->status) = 1;
+    fclose(infile);
     return;
    }
 
@@ -97,8 +98,9 @@ void eps_image_RenderEPS(EPSComm *x)
     case SW_BITMAP_GIF: bmp_gifread (infile , &data); break;
     case SW_BITMAP_JPG: bmp_jpegread(infile , &data); break;
     case SW_BITMAP_PNG: bmp_pngread (infile , &data); break;
-    default: ppl_error(ERR_INTERNAL, -1, -1, "Unrecognised image type"); *(x->status) = 1; return;
+    default: ppl_error(ERR_INTERNAL, -1, -1, "Unrecognised image type"); *(x->status) = 1; fclose(infile); return;
    }
+  fclose(infile);
 
   // Check to see whether reading of data failed
   if (data.data == NULL) { *(x->status) = 1; return; }

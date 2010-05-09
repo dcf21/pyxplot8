@@ -1825,33 +1825,32 @@ See {\tt set style function}.
 set [no]grid {<axis>}
 \end{verbatim}
 
-The setting {\tt grid} controls whether a grid is placed behind a plot or not.
+The setting {\tt grid} controls whether a grid is placed behind graphs or not.
 Issuing the command
 
 \begin{verbatim}
 set grid
 \end{verbatim}
 
-\noindent would cause a grid to be drawn with its grid lines connecting to the ticks of
-the default axes (usually the first horizontal and vertical axes).  Conversely, issuing the command
+\noindent would cause a grid to be drawn with its lines connecting to the ticks
+of the default axes (usually the first horizontal and vertical axes).
+Conversely, issuing the command
 
 \begin{verbatim}
 set nogrid
 \end{verbatim}
 
-\noindent would remove from the plot all grid lines associated with the ticks of any axes.
-One or more axes can be specified for the {\tt set grid} command; a grid will
-then be drawn to connect with the ticks of these axes as in the example
+\noindent would remove from the plot all gridlines associated with the ticks of
+any axes.  One or more axes can be specified for the {\tt set grid} command to
+draw gridlines from; in such cases, gridlines are then drawn only to connect
+with the ticks of the specified axes, as in the example
 
 \begin{verbatim}
 set grid x1 y3
 \end{verbatim}
 
-\noindent which would cause gridlines to be drawn from ticks of the first horizontal and third
-vertical axes.
-
 It is possible, though not always aesthetically pleasing, to draw gridlines
-from multiple parallel axes, for example:
+from multiple parallel axes, as in example:
 
 \begin{verbatim}
 set grid x1x2x3
@@ -1864,7 +1863,7 @@ set grid x1x2x3
 set gridmajcolour <colour>
 \end{verbatim}
 
-The setting {\tt gridmajcolour} changes the colour that is used to plot the
+The setting {\tt gridmajcolour} changes the colour that is used to draw the
 gridlines (see the {\tt set grid} command) which are associated with the major
 ticks of axes (i.e.\ major gridlines). For example:
 
@@ -1872,8 +1871,8 @@ ticks of axes (i.e.\ major gridlines). For example:
 set gridmajcolour purple
 \end{verbatim}
 
-\noindent would cause the major grid lines to be drawn in purple. Any of the recognised
-colour names listed in Section~\ref{sec:colour_names} can be used.
+\noindent would cause the major gridlines to be drawn in purple. Any of the
+recognised colour names listed in Section~\ref{sec:colour_names} can be used.
 
 See also the {\tt set gridmincolour} command.
 
@@ -1884,7 +1883,7 @@ See also the {\tt set gridmincolour} command.
 set gridmincolour <colour>
 \end{verbatim}
 
-The setting {\tt gridmincolour} changes the colour that is used to plot the
+The setting {\tt gridmincolour} changes the colour that is used to draw the
 gridlines (see the {\tt set grid} command) which are associated with the minor
 ticks of axes (i.e.\ minor gridlines). For example:
 
@@ -1892,8 +1891,8 @@ ticks of axes (i.e.\ minor gridlines). For example:
 set gridmincolour purple
 \end{verbatim}
 
-\noindent would cause the minor grid lines to be drawn in purple. Any of the recognised
-colour names listed in Section~\ref{sec:colour_names} can be used.
+\noindent would cause the minor gridlines to be drawn in purple. Any of the
+recognised colour names listed in Section~\ref{sec:colour_names} can be used.
 
 See also the {\tt set gridmajcolour} command.
 
@@ -1904,39 +1903,42 @@ See also the {\tt set gridmajcolour} command.
 set key <position> [<xoffset>, <yoffset>]
 \end{verbatim}
 
-The setting {\tt key} determines whether a legend is placed on a plot, and if
-so, where it should be located on the plot. Issuing the command:
+The setting {\tt key} determines whether legends are drawn on graphs, and if
+so, where they should be located on the plots. Issuing the command
 
 \begin{verbatim}
 set key
 \end{verbatim}
 
-\noindent simply causes a legend to be added to the plot in its default position, usually
-the plot's upper-right corner. The converse action is achieved by:
+\noindent by itself causes legends to be drawn on graphs in the default
+position, usually in the upper-right corner of the graphs. The converse action
+is achieved by:
 
 \begin{verbatim}
 set nokey
 \end{verbatim}
 
-\noindent or:
+\noindent The command
 
 \begin{verbatim}
 unset key
 \end{verbatim}
 
-\noindent both of which cause a plot to have no legend. A position for the key may also
-be specified after the {\tt set key} command, for example:
+\noindent causes PyXPlot to revert to its default behaviour, as specified in a
+configuration file, if present. A position for the key may optionally be
+specified after the {\tt set key} command, as in the example:
 
 \begin{verbatim}
 set key bottom left
 \end{verbatim}
 
-Recognised positions are {\tt top}, {\tt bottom}, {\tt left}, {\tt
-right}, {\tt below}, {\tt above}, {\tt outside}, {\tt xcentre} and
-{\tt ycentre}. In addition, if none of these quite achieved the desired
-result, a positional offset may be specified after one of the position keywords
-above.  The first value is assumed to be a horizontal offset, and the second a
-vertical offset, both measured in centimetres.  For example:
+Recognised positions are {\tt top}, {\tt bottom}, {\tt left}, {\tt right}, {\tt
+below}, {\tt above}, {\tt outside}, {\tt xcentre} and {\tt ycentre}. In
+addition, if none of these options quite achieve the desired position, a
+horizontal and vertical offset may be specified as a comma-separated pair after
+any of the positional keywords above.  The first value is assumed to be the
+horizontal offset, and the second the vertical offset, both measured in
+centimetres.  The example
 
 \begin{verbatim}
 set key bottom left 0.0, -0.5
@@ -1952,11 +1954,12 @@ set keycolumns ( <value> | auto )
 \end{verbatim}
 
 The setting {\tt keycolumns} sets how many columns the legend of a plot should
-be arranged into. By default, all of the entries in the legends of plots are
-arranged in a single vertical list. However, for plots with very large number
-of datasets, it may be preferably to split this list into several columns. The
-{\tt set keycolumns} command can be followed by any positive integer, as in the
-example:
+be arranged into. By default, the legends of plots are arranged into an
+automatically-selected number of columns, equivalent to the behaviour achieved
+by issuing the command {\tt set key\-columns auto}. However, if a different
+arrangement is desired, the {\tt set keycolumns} command can be followed by any
+positive integer to specify that the legend should be split into that number of
+columns, as in the example:
 
 \begin{verbatim}
 set keycolumns 3

@@ -273,7 +273,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
       status = 0;
      }
     if (AfterHandler != NULL) (*AfterHandler)(&comm); // At the end of each phase, a canvas-wide handler may be called
-    if (status) { return; } // The failure of a canvas-wide handler is fatal
+    if (status) { if (comm.epsbuffer!=NULL) fclose(comm.epsbuffer); return; } // The failure of a canvas-wide handler is fatal
    }
 
   // Now convert eps output to bitmaped graphics if requested
@@ -662,7 +662,7 @@ void canvas_EPSWrite(EPSComm *x)
   fprintf(epsout, "%%%%BeginProlog\n");
 
   // Output all of the fonts which we're going to use
-  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL, -1, -1,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+  if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL, -1, -1,"Could not chdir into temporary directory."); *(x->status)=1; fclose(epsout); return; }
   if (x->dvi != NULL) ListIter = ListIterateInit(x->dvi->fonts);
   else                ListIter = NULL;
   while (ListIter != NULL)
@@ -672,12 +672,13 @@ void canvas_EPSWrite(EPSComm *x)
      {
       fprintf(epsout, "%%%%BeginFont: %s\n", ((dviFontDetails *)ListIter->data)->psName);
       PFAfile = fopen(PFAfilename,"r");
-      if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status)=1; return; }
+      if (PFAfile==NULL) { sprintf(temp_err_string, "Could not open pfa file '%s'", PFAfilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status)=1; fclose(epsout); return; }
       while (fgets(temp_err_string, FNAME_LENGTH, PFAfile) != NULL)
        if (fputs(temp_err_string, epsout) == EOF)
         {
          sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
          *(x->status)=1;
+         fclose(PFAfile); fclose(epsout);
          return;
         }
       fclose(PFAfile);
@@ -726,6 +727,7 @@ void canvas_EPSWrite(EPSComm *x)
     {
      sprintf(temp_err_string, "Error while writing to file '%s'.", x->EPSFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string);
      *(x->status)=1;
+     fclose(epsout);
      return;
     }
 
@@ -733,6 +735,7 @@ void canvas_EPSWrite(EPSComm *x)
   if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "pgsave restore\n"); // End of page
   fprintf(epsout, "showpage\n%%%%EOF\n"); // End of document
   fclose(x->epsbuffer);
+  x->epsbuffer=NULL;
   fclose(epsout);
   return;
  }
