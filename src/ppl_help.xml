@@ -10,12 +10,12 @@ help commands
 
 provides information on PyXPlot's commands. Some topics have subtopics, this
 being one example; these are listed at the end of each help page. To view them,
-add further words to the end of your help request -- an example might be:
+add further words to the end of your help request, as in the example:
 
 help commands help
 
 Information is arranged with general information about PyXPlot under the
-heading 'about', and information about PyXPlot's commands under 'commands'.
+heading 'about' and information about PyXPlot's commands under 'commands'.
 Information about the format that input datafiles should take can be found
 under 'datafile'. Other categories, listed below, are self-explanatory.
 
@@ -30,10 +30,34 @@ email: \labcoders@pyxplot.org.uk\rab
  </authors>
  <credits>
 
-The author would like to express his gratitude to Joerg Lehmann and Andre Wobst
-for writing the PyX graphics library for python, upon which this software is
-heavily built, as well as to Ross Church for his many useful comments and
-suggestions during its development.
+The original inspiration for PyXPlot came primarily from two sources, to which
+PyXPlot owes a considerable historical debt. PyXPlot's interface was heavily
+motivated by gnuplot's simple and intuitive interface, which was devised by
+Thomas Williams and Colin Kelley and has more recently been developed by many
+others. PyXPlot's graphical output engine was heavily motivated by the PyX
+graphics library for Python, originally written by Joerg Lehmann and Andre
+Wobst and more recently developed by a larger team. Versions of PyXPlot prior
+to 0.8.0 used PyX to produce their graphical output, and though version 0.8.0
+uses its own graphics engine, it continues to bear many similarities to PyX.
+
+Several other people have made very substantial contributions to PyXPlot's
+development. Matthew Smith provided extensive advice on many mathematical
+matters which arose during its development, provided C implementations of the
+Airy functions and the Riemann zeta function for general complex inputs, and
+suggested many mathematical functions which ought to be made available. Dave
+Ansell provided many good ideas which have shaped PyXPlot's interface. The
+writing of PyXPlot's postscript engine was substantially eased thanks to the
+help of Michael Rutter, who happily shared his code and past experiences with
+us; the implementation of the image command is substantially his work.
+
+We are also very grateful to our team of alpha testers, without whose work this
+release of PyXPlot would doubtless contain many more bugs than it does: thanks
+go to XXX. Of course, the authors remain solely responsible for any bugs which
+remain.
+
+Finally, we would like to think all of the users who have got in touch with us
+by email since PyXPlot was first released on the web in 2006. Your feedback and
+suggestions have been gratefully received.
 
  </credits>
  <version>
@@ -45,46 +69,67 @@ This is PyXPlot version $VERSION.
 
 PyXPlot expects its input datafiles to be in plain text format, with columns of
 data separated either by whitespace or by commas. This means that PyXPlot is
-compatible both with the format of datafiles read by gnuplot, and also with
-Comma Separated Values (CSV) format, which many spreadsheets are able to
+compatible both with the format of datafiles read by gnuplot and with the
+Comma Separated Values (CSV) format which many spreadsheets are able to
 produce.
 
 The subsections below provide some details of the modifiers that can follow the
-plot command when working with data files to select which parts of the file
-should be used. They also apply equally to the spline and fit commands, which
-also take input from data files.
+plot command when working with datafiles to select which parts of the file
+should be used. They also apply equally to other commands -- for example, the
+interpolate, fit, fft and tabulate commands -- which also take input from
+datafiles.
 
    <using>
 
-The using specifier allows one to choose which columns of a data file to use.
-For example:
+The using specifier allows one to choose which columns of a datafile to use.
+The example
 
-plot 'data' using 2:5 with points
+plot 'data.dat' using 2:5 with points
 
-will plot data from the file drawing the x-positions of each datapoint from the
-second column of the data file, and the y-positions from the fourth.
+would plot data from the file 'data.dat', drawing the horizontal positions of
+each datapoint from the second column of the datafile, and the vertical
+positions from the fifth. Algebraic expressions may also be used in place of
+column numbers, as in the example:
+
+plot 'data.dat' using (3+$1+$2):(2+$3)
+
+In such expressions, column numbers are prefixed by dollar signs to distinguish
+them from numerical constants. The example above would plot the sum of the
+values in the first two columns of the datafile, plus three, on the horizontal
+axis, against two plus the value in the third column on the vertical axis. The
+column numbers in such expressions can also be replaced by algebraic
+expressions, and so $2 can also be written as $(2) or $(1+1). In the following
+example, the datapoints are all placed on the vertical line x=3 -- the brackets
+around the 3 distinguish it as a numerical constant rather than a column number
+-- meanwhile their vertical positions are drawn from the value of some column n
+in the datafile, where the value of n is itself read from the second column of
+the datafile:
+
+plot 'data.dat' using (3):$($2)
 
     <rows>
 
-The rows modifier causes the data file to be considered as a set of rows rather
+The rows modifier causes datafiles to be considered as sets of rows rather
 than columns. For example:
 
 plot 'data' using rows 2:5 with points
 
-would plot data from the file drawing the x-positions of each datapoint from
-the second row of the data file, and the y-positions from the fourth.
+would draw the horizontal positions of each datapoint from the second row of
+the datafile, and the vertical positions from the fourth.
 
     </rows>
    </using>
    <every>
 
 When PyXPlot reads a datafile, it looks for any blank lines in the file. It
-divides the datafile up into "data blocks", each being separated by single
-blank lines. The first datablock is numbered 0, the next 1, and so on.
+divides the datafile up into "data blocks", each being separated from the next
+by a single blank line. The first datablock is numbered 0, the next 1, and so
+on.
 
 When two or more blank lines are found together, the datafile is divided up
-into "index blocks". Each index block may be made up of a series of data 
-blocks. To clarify this, a labelled example datafile is shown below:
+into "index blocks". The first index block is numbered 0, the next 1, and so
+on. Each index block may be made up of a series of data blocks. To clarify
+this, a labelled example datafile is shown below:
 
 |#0.0###0.0#######Start#of#index#0,#data#block#0. \\
 |#1.0###1.0###### \\
@@ -103,7 +148,7 @@ blocks. To clarify this, a labelled example datafile is shown below:
 |#################...etc...
 
 The every modifier chooses which lines and data blocks of a datafile to take
-data from. It has syntax
+data from; it takes up to six values, separated by colons:
 
 plot 'datafile' every a:b:c:d:e:f
 
@@ -121,15 +166,28 @@ e Plot only up to the e th line within each block.
 
 f Plot only up to the f th block within each index block.
 
+Any or all of these values can be omitted, and so the following would both be
+valid statements:
+
+plot 'data.dat' index 1 every 2:3 \\
+plot 'data.dat' index 1 every ::3
+
+The first would plot only every other datapoint from every third data block;
+the second from the third line onwards within each data block.
+
 To select which index blocks to take data from, see the "index" modifier.
 
    </every>
    <index>
 
-When PyXPlot reads a datafile, it looks for any blank lines in the file. When
-two or more are found together, the datafile is divided up into large blocks
-called "index blocks".  The index blocks are numbered from the start of the
-file, the first being numbered zero.
+When PyXPlot reads a datafile, it looks for any blank lines in the file. It
+divides the datafile up into "data blocks", each being separated from the next
+by a single blank line. The first datablock is numbered 0, the next 1, and so
+on.
+
+When two or more blank lines are found together, the datafile is divided up
+into "index blocks". The first index block is numbered 0, the next 1, and so
+on. Each index block may be made up of a series of data blocks.
 
 The index specifier selects an index block from a data set to plot data from.
 For example:
@@ -147,28 +205,22 @@ For more information on the divisions of datafiles see the "every" modifier.
 The select modifier can be used to take only those datapoints from a datafile
 which satisfy some criterion. For example:
 
-plot 'datafile' select ($3>50)
+plot 'data.dat' select ($3>50)
 
-would select from the file 'datafile' only those datapoints for which the value
+would select from the file 'data.dat' only those datapoints for which the value
 in the third column of the file was greater than fifty.
 
-Multiple select criteria can be specified; the following two statements would
-be entirely equivalent:
+Multiple select criteria can be specified using the logical and operator, as in
+the example:
 
-plot sin(x) select (($1>0)and($2>0)) \\
-plot sin(x) select ($1>0) select ($2>0)
-
-It should be noted, however, that whitespace is not permitted in select
-criteria. The following would NOT be permitted:
-
-plot 'datafile' select ($3 > 50)
+plot sin(x) select (($1>0)and($2>0))
 
 The select modifier has many applications, including plotting two-dimensional
 slices from three-dimensional datasets, and selecting certain subsets of
 datapoints from a datafile for plotting.
 
    </select>
-  
+
  </datafile>
  <date>
 
