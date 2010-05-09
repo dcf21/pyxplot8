@@ -861,8 +861,8 @@ By default, PyXPlot places a series of tick marks at significant points along
 each axis, with the most significant points being labelled.  Labelled tick
 marks are termed {\it major} ticks, and unlabelled tick marks are termed {\it
 minor} ticks.  The position and appearance of the major ticks along the {\tt
-x}-axis can be configured with the \indcmdt{set xtics}, which has the following
-syntax:
+x}-axis can be configured using the \indcmdt{set xtics}, which has the
+following syntax:
 
 \begin{verbatim}
 set xtics { axis | border | inward | outward | both }
@@ -874,7 +874,7 @@ set xtics { axis | border | inward | outward | both }
           }
 \end{verbatim}
 
-The corresponding command {\tt set mxtics}, which has the same syntax as above,
+The corresponding {\tt set mxtics} command, which has the same syntax as above,
 configures the appearance of the minor ticks along the {\tt x}-axis. Analogous
 commands such as {\tt set ytics} and {\tt set mx2tics} configure the major and
 minor ticks along other axes.
@@ -895,19 +895,19 @@ size between ticks. If two values are specified, then the first is taken to be
 as a multiplicative step size.
 
 Alternatively, if a bracketed list of quoted tick labels and tick positions are
-provided, then ticks can be placed on an axis individually and each given its
-own textual label. The quoted tick labels may be omitted, in which case they
-are automatically generated:
+provided, then ticks can manually be placed on an axis individually, and each
+given its own textual label. The quoted tick labels may be omitted, in which
+case they are automatically generated:
 \begin{verbatim}
 set xtics ("a" 1, "b" 2, "c" 3)
 set xtics (1,2,3)
 \end{verbatim}
 The keyword \indkeyt{autofreq} overrides any manual selection of ticks which
 may have been placed on an axis and resumes the automatic placement of ticks
-along the axis. The \indcmdt{show xtics}, together with its companions such as
-{\tt show x2tics} and {\tt show ytics}, may be used to query the current
-ticking options. The \indcmdt{set noxtics} may be used to stipulate that no
-ticks should appear along a particular axis:
+along it. The \indcmdt{show xtics}, together with its companions such as {\tt
+show x2tics} and {\tt show ytics}, may be used to query the current ticking
+options. The \indcmdt{set noxtics} may be used to stipulate that no ticks
+should appear along a particular axis:
 
 \begin{verbatim}
 set noxtics
@@ -942,13 +942,14 @@ tics at all.
 \subsection{Configuring how Tick Marks are Labelled}
 \label{sec:set_xformat}
 
-By default, major ticks are labelled with representations of the ordinate
-values at each point, each accurate to the number of significant figures
-specified using the \indcmdt{set numerics sigfig}. These labels may appear as
-decimals, such as $3.142$, in scientific notion, as in $3\times10^8$, or, on
-logarithmic axes where a base has been specified for the logarithms using
-syntax such as \footnote{Note that the {\tt x} axis must be referred to as {\tt
-x1} here to distinguish this statement from {\tt set log x2}.}
+By default, the major tick marks along axes are labelled with representations
+of the ordinate values at each point, each accurate to the number of
+significant figures specified using the \indcmdt{set numerics sigfig}. These
+labels may appear as decimals, such as $3.142$, in scientific notion, as in
+$3\times10^8$, or, on logarithmic axes where a base has been specified for the
+logarithms, using syntax such as\footnote{Note that the {\tt x} axis must be
+referred to as {\tt x1} here to distinguish this statement from {\tt set log
+x2}.}
 \begin{verbatim}
 set log x1 2
 \end{verbatim}
@@ -986,8 +987,8 @@ plot [-pi:2*pi] sin(x)
 
 \noindent\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
 
-Note that where possible, PyXPlot intelligently changes the positions where it
-places the ticks along the axis to reflect significant points in the chosen
+Note that where possible, PyXPlot intelligently changes the positions along
+axes where it places the ticks to reflect significant points in the chosen
 labelling system.  The extent to which this is possible depends upon the format
 string supplied. It is generally easier when continuous-varying numerical
 values are substituted into strings, rather than discretely-varying values or
