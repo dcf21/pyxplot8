@@ -4,7 +4,7 @@
 # <http://www.pyxplot.org.uk>
 #
 # Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2009-2010 Ross Church
+#               2008-2010 Ross Church
 #
 # $Id$
 #
@@ -72,6 +72,7 @@ subroutine LensDraw(x0,y0,u,h,f)
  }
 
 # Display diagram of lens
+set unit angle nodimensionless
 set multiplot ; set nodisplay
 call LensDraw(0*unit(cm),0*unit(cm), 5*unit(cm),1.5*unit(cm),2*unit(cm))
 set display ; refresh

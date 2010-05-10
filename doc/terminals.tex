@@ -4,7 +4,7 @@
 % <http://www.pyxplot.org.uk>
 %
 % Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-%               2009-2010 Ross Church
+%               2008-2010 Ross Church
 %
 % $Id$
 %
@@ -125,7 +125,7 @@ set terminal ( X11_SingleWindow | X11_MultiWindow | X11_Persist |
 The following table lists the effects which each of these settings has:
 
 \begin{longtable}{p{3cm}p{9cm}}
-{\tt X11\_SingleWindow} & Displays plots on the screen (in X11 windows, using \ghostview). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
+{\tt X11\_SingleWindow} & Displays plots on the screen (in X11 windows, using \ghostview or other viewing application selected using the \indcmdt{set viewer}). Each time a new plot is generated, it replaces the old one, to prevent the desktop from becoming flooded with old plots.\footnote{The authors are aware of a bug, that this terminal can occasionally go blank when a new plot is generated. This is a known bug in \ghostview, and can be worked around by selecting File $\to$ Reload within the \ghostview\ window.} {\bf [default when running interactively; see below]}\\
 {\tt X11\_MultiWindow} & As above, but each new plot appears in a new window, and the old plots remain visible. As many plots as may be desired can be left on the desktop simultaneously.\\
 {\tt X11\_Persist} & As above, but plot windows remain open after PyXPlot closes.\\
 {\tt bmp} & Sends output to a Windows bitmap ({\tt .bmp}) file. The filename for this file should be set using {\tt set output}. This is a bitmap graphics terminal. \index{bmp output}\\

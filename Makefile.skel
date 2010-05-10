@@ -4,7 +4,7 @@
 # <http://www.pyxplot.org.uk>
 #
 # Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2009-2010 Ross Church
+#               2008-2010 Ross Church
 #
 # $Id$
 #
@@ -87,7 +87,7 @@ NOINSTALL_SWITCHES  = $(COMMON_SWITCHES) -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  
 INSTALL_SWITCHES    = $(COMMON_SWITCHES) -D SRCDIR=\"$(SRCDIR)\"   -D DOCDIR=\"$(DOCDIR)\"   -D PPLBINARY=\"$(BINDIR)/pyxplot\"  -D FITSHELPER=\"$(BINDIR)/pyxplot_fitshelper\"  -D TIMEHELPER=\"$(BINDIR)/pyxplot_timehelper\"
 DEBUG_SWITCHES      = $(COMMON_SWITCHES) -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/debug/pyxplot\"  -D FITSHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_fitshelper\"  -D TIMEHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_timehelper\"
 
-all: $(LOCAL_BINDIR)/pyxplot $(LOCAL_BINDIR)/pyxplot_watch $(LOCAL_BINDIR)/pyxplot_fitshelper $(LOCAL_BINDIR)/pyxplot_timehelper $(LOCAL_BINDIR)/debug/pyxplot $(LOCAL_BINDIR)/debug/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot $(LOCAL_BINDIR)/install/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot_fitshelper $(LOCAL_BINDIR)/install/pyxplot_timehelper
+all: $(LOCAL_BINDIR)/pyxplot $(LOCAL_BINDIR)/pyxplot_watch $(LOCAL_BINDIR)/pyxplot_fitshelper $(LOCAL_BINDIR)/pyxplot_timehelper $(LOCAL_BINDIR)/debug/pyxplot $(LOCAL_BINDIR)/debug/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot $(LOCAL_BINDIR)/install/pyxplot_watch $(LOCAL_BINDIR)/install/pyxplot_fitshelper $(LOCAL_BINDIR)/install/pyxplot_timehelper pyxplot.1 pyxplot_watch.1
 
 src/EPSMaker/eps_colours.h: colourlist_generate.py
 	python colourlist_generate.py
@@ -169,11 +169,33 @@ $(LOCAL_BINDIR)/install/pyxplot_timehelper: $(LOCAL_SRCDIR)/Helpers/pyxplot_time
 	cp $(LOCAL_SRCDIR)/Helpers/pyxplot_timehelper.sh $@
 
 #
+# Make man page
+#
+
+pyxplot.1: manpage_pyxplot.py
+	python manpage_pyxplot.py       ${DOCDIR}/pyxplot.pdf > pyxplot.1
+
+pyxplot_watch.1: manpage_pyxplot_watch.py
+	python manpage_pyxplot_watch.py ${DOCDIR}/pyxplot.pdf > pyxplot_watch.1
+
+
+#
 # Install step
 #
 
-install:
-	echo "I don't think you want to do this just yet."
+install: all
+	install -d ${SRCDIR} ${BINDIR} ${DOCDIR} ${MANDIR} ${DOCDIR}/figures ${DOCDIR}/examples ${DOCDIR}/examples/eps
+	install -m644 ${LOCAL_SRCDIR}/ppl_help.xml               ${SRCDIR}
+	install -m755 ${LOCAL_BINDIR}/install/pyxplot            ${BINDIR}/pyxplot
+	install -m755 ${LOCAL_BINDIR}/install/pyxplot_watch      ${BINDIR}/pyxplot_watch
+	install -m755 ${LOCAL_BINDIR}/install/pyxplot_fitshelper ${BINDIR}/pyxplot_fitshelper
+	install -m755 ${LOCAL_BINDIR}/install/pyxplot_timehelper ${BINDIR}/pyxplot_timehelper
+	install -m644 doc/*.tex doc/pyxplot.pdf  ${DOCDIR}
+	install -m644 doc/figures/*.eps          ${DOCDIR}/figures
+	install -m644 doc/examples/ex_*          ${DOCDIR}/examples
+	install -m644 doc/examples/eps/*         ${DOCDIR}/examples/eps
+	install -m644 pyxplot.1                  ${MANDIR}/pyxplot.1
+	install -m644 pyxplot_watch.1            ${MANDIR}/pyxplot_watch.1
 
 
 #

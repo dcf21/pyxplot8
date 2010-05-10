@@ -258,7 +258,12 @@ void canvas_draw(unsigned char *unsuccessful_ops)
      {
       if (item->deleted)              continue; // ... except those which have been deleted
       if (unsuccessful_ops[item->id]) continue; // ... or which have already failed
-      comm.current = item;
+      comm.LastPSColour[0]      = '\0'; // Make each item produce free-standing postscript for easy editing
+      comm.CurrentColour[0]     = '\0';
+      comm.CurrentFillColour[0] = '\0';
+      comm.LastLinewidth        = -1.0;
+      comm.LastLinetype         = 0;
+      comm.current              = item;
       if      ((item->type == CANVAS_ARROW) && (ArrowHandler != NULL)) (*ArrowHandler)(&comm); // Call the relevant handler for each one
       else if ((item->type == CANVAS_BOX  ) && (BoxHandler   != NULL)) (*BoxHandler  )(&comm);
       else if ((item->type == CANVAS_CIRC ) && (CircHandler  != NULL)) (*CircHandler )(&comm);

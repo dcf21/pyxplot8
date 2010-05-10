@@ -4,7 +4,7 @@
 # <http://www.pyxplot.org.uk>
 #
 # Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2009-2010 Ross Church
+#               2008-2010 Ross Church
 #
 # $Id$
 #
@@ -35,6 +35,8 @@ xmax = phy_c/( 140*unit(nm))
 set xrange[xmin:xmax]
 set yrange[1e-9:1e-4]
 set log x y
+set ytics (1e-8,1e-6,1e-4)
+set mytics (1e-9,1e-7,1e-5)
 set xlabel "Frequency"
 set ylabel "%s / $\mathrm{erg}\,\mathrm{s}^{-1}\,\mathrm{Hz}^{-1}\,\mathrm{cm}^{-2}\,\mathrm{sterad}^{-1}$"%(texify(Bv(nu,T)))
 set key bottom right

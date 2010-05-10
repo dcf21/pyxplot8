@@ -4,7 +4,7 @@
 # <http://www.pyxplot.org.uk>
 #
 # Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2009-2010 Ross Church
+#               2008-2010 Ross Church
 #
 # $Id$
 #
@@ -38,6 +38,7 @@ omega_m = 0.27
 omega_l = 0.73
 age = ast_Lcdm_age(h0,omega_m,omega_l)
 set xrange [0.01*age:0.99*age]
+set xtics (unit(1*Gyr),unit(4*Gyr),unit(7*Gyr),unit(10*Gyr),unit(13.6*Gyr))
 set unit of time Gyr
 set axis x2 linked x using ast_Lcdm_z(age-x,h0,omega_m,omega_l)
 set xlabel "Time since Big Bang $t$"

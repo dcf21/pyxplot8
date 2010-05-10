@@ -456,7 +456,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
     i = strlen(output);
     if (ptr->text != NULL)
      {
-      sprintf(output+i, "label "); i+=strlen(output+i);
+      sprintf(output+i, " label "); i+=strlen(output+i);
       StrEscapify(ptr->text, output+i);
       i+=strlen(output+i);
      }

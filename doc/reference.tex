@@ -4,7 +4,7 @@
 % <http://www.pyxplot.org.uk>
 %
 % Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-%               2009-2010 Ross Church
+%               2008-2010 Ross Church
 %
 % $Id$
 %
@@ -3050,6 +3050,20 @@ set unit display full
 set unit display prefix
 set unit display noprefix
 \end{verbatim}
+
+
+\subsection{viewer}\indcmd{set viewer}
+
+\begin{verbatim}
+set viewer ( gv | ggv | evince | okular )
+\end{verbatim}
+
+The \indcmdt{set viewer} is used to select which external postscript viewing
+application is used to display PyXPlot output on screen in the {\tt X11}
+terminals.  The available options are {\tt gv}, {\tt ggv}, {\tt evince} and
+{\tt okular}, though the availability of each of these options is dependent
+upon the relevant viewer having been installed on your system. The use of {\tt
+gv} is strongly recommended on grounds of stability.
 
 
 \subsection{width}\indcmd{set width}
