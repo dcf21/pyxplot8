@@ -3055,15 +3055,28 @@ set unit display noprefix
 \subsection{viewer}\indcmd{set viewer}
 
 \begin{verbatim}
-set viewer ( gv | ggv | evince | okular )
+set viewer ( auto | <command> )
 \end{verbatim}
 
 The \indcmdt{set viewer} is used to select which external postscript viewing
 application is used to display PyXPlot output on screen in the {\tt X11}
-terminals.  The available options are {\tt gv}, {\tt ggv}, {\tt evince} and
-{\tt okular}, though the availability of each of these options is dependent
-upon the relevant viewer having been installed on your system. The use of {\tt
-gv} is strongly recommended on grounds of stability.
+terminals. If the option {\tt auto} is selected, then either \ghostview\ or
+{\tt ggv} is used, if installed. Alternatively, any other application such as
+{\tt evince} or {\tt okular} can be selected by name, providing it is installed
+in within your shell's search path or an abolute path is provided, as in the
+examples:
+
+\begin{verbatim}
+set viewer evince
+set viewer /usr/bin/okular
+\end{verbatim}
+
+\noindent Additional commandline switches may also be provided after the name
+of the application to be used, as in the example
+
+\begin{verbatim}
+set viewer gv --grayscale
+\end{verbatim}
 
 
 \subsection{width}\indcmd{set width}

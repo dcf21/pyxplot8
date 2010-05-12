@@ -1803,24 +1803,31 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"viewer")==0)) /* set viewer */
    {
-    int ViewerOld = settings_term_current.viewer;
-    DictLookup(command,"viewer",NULL,(void **)&tempstr);
-    if      ((strcmp(tempstr,"gv"    )==0) && (strcmp(GHOSTVIEW_COMMAND,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_GV;
-    else if ((strcmp(tempstr,"ggv"   )==0) && (strcmp(GGV_COMMAND      ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_GGV;
-    else if ((strcmp(tempstr,"evince")==0) && (strcmp(EVINCE_COMMAND   ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_EVINCE;
-    else if ((strcmp(tempstr,"okular")==0) && (strcmp(OKULAR_COMMAND   ,"/bin/false")!=0)) settings_term_current.viewer = SW_VIEWER_OKULAR;
+    unsigned char ChangedViewer = 0;
+    DictLookup(command,"auto_viewer",NULL,(void **)&tempstr );
+    DictLookup(command,"viewer"     ,NULL,(void **)&tempstr2);
+    if (tempstr != NULL)
+     {
+      int ViewerOld = settings_term_current.viewer;
+      if      (strcmp(GHOSTVIEW_COMMAND, "/bin/false")!=0) settings_term_current.viewer = SW_VIEWER_GV;
+      else if (strcmp(GGV_COMMAND      , "/bin/false")!=0) settings_term_current.viewer = SW_VIEWER_GGV;
+      else                                                 settings_term_current.viewer = SW_VIEWER_NULL;
+      ChangedViewer = (ViewerOld != settings_term_current.viewer);
+     }
     else
      {
-      sprintf(temp_err_string,"Could not set current viewer to %s since this program was not installed when PyXPlot was installed.",tempstr);
-      ppl_error(ERR_GENERAL, -1, -1,temp_err_string);
+      if (settings_term_current.viewer != SW_VIEWER_CUSTOM)     { ChangedViewer=1; settings_term_current.viewer = SW_VIEWER_CUSTOM; }
+      if (strcmp(settings_term_current.ViewerCmd, tempstr2)!=0) { ChangedViewer=1; snprintf(settings_term_current.ViewerCmd, FNAME_LENGTH, "%s", tempstr2); }
+      settings_term_current.ViewerCmd[FNAME_LENGTH-1]='\0';
      }
-    if (settings_term_current.viewer != ViewerOld) SendCommandToCSP("A"); // Clear away SingleWindow viewer
+    if (ChangedViewer) SendCommandToCSP("A\n"); // Clear away SingleWindow viewer
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"viewer")==0)) /* unset viewer */
    {
-    int ViewerOld = settings_term_current.viewer;
+    unsigned char ChangedViewer = ( (settings_term_current.viewer != settings_term_default.viewer) || (strcmp(settings_term_current.ViewerCmd,settings_term_default.ViewerCmd)!=0) );
     settings_term_current.viewer = settings_term_default.viewer;
-    if (settings_term_current.viewer != ViewerOld) SendCommandToCSP("A"); // Clear away SingleWindow viewer
+    strcpy(settings_term_current.ViewerCmd, settings_term_default.ViewerCmd);
+    if (ChangedViewer) SendCommandToCSP("A\n"); // Clear away SingleWindow viewer
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
@@ -2582,8 +2589,10 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "viewer", 1)>=0))
    {
-    sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.viewer, SW_VIEWER_INT, (void *)SW_VIEWER_STR, sizeof(char *)));
-    directive_show3(out+i, ItemSet, 0, interactive, "viewer", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the postscript viewer used by the X11 terminals");
+    unsigned char changed = (settings_term_current.viewer != settings_term_default.viewer);
+    sprintf(buf, "Selects the postscript viewer used by the X11 terminals%s%s%s", (settings_term_current.viewer != SW_VIEWER_CUSTOM)?" (":"", (settings_term_current.viewer ==SW_VIEWER_GGV)?"g":"", (settings_term_current.viewer != SW_VIEWER_CUSTOM)?"gv)":"");
+    if ((settings_term_current.viewer == SW_VIEWER_CUSTOM) && (settings_term_default.viewer == SW_VIEWER_CUSTOM)) changed=(strcmp(settings_term_current.ViewerCmd,settings_term_default.ViewerCmd)!=0);
+    directive_show3(out+i, ItemSet, 0, interactive, "viewer", (settings_term_current.viewer != SW_VIEWER_CUSTOM)?"auto":settings_term_current.ViewerCmd, !changed, buf);
     i += strlen(out+i) ; p=1;
    }
 

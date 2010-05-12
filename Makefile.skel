@@ -38,8 +38,8 @@ CWD=$(shell pwd)
 VERSION = 0.8.0
 DATE    = xx/05/2010
 
-COMPILE = $(CC) -Wall -g `xml2-config --cflags` -c -I $(CWD)/src
-LINK    = $(CC) -Wall -g `xml2-config --libs`   -lm -lgsl -lgslcblas $(LINK_FFTW) $(LINK_READLINE) -lz -lpng -lkpathsea
+COMPILE = $(CC) -Wall -g `xml2-config --cflags` `gsl-config --cflags` -c -I $(CWD)/src
+LINK    = $(CC) -Wall -g `xml2-config --libs`   `gsl-config --libs`   -lm $(LINK_FFTW) $(LINK_READLINE) -lz -lpng -lkpathsea
 
 OPTIMISATION = -O0
 
@@ -81,7 +81,7 @@ FITSHELP_HFILES     = $(FITSHELP_HEADERS:%.h=$(LOCAL_SRCDIR)/%.h) Makefile
 
 ALL_HFILES = $(PPL_HFILES) $(TESTCARD_HFILES) $(PPLW_HFILES) $(FITSHELP_HFILES)
 
-COMMON_SWITCHES = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  $(HAVE_READLINE)  $(HAVE_FFTW3)  $(HAVE_FITSIO)  -D LATEX_COMMAND=\"$(LATEX_COMMAND)\"  -D CONVERT_COMMAND=\"$(CONVERT_COMMAND)\"  -D GHOSTSCRIPT_COMMAND=\"$(GS_COMMAND)\"  -D SED_COMMAND=\"$(SED_COMMAND)\"  $(GUNZIP_COMMAND)  $(WGET_COMMAND)  -D GHOSTVIEW_COMMAND=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"  -D GGV_COMMAND=\"$(GGV_COMMAND)\"  -D EVINCE_COMMAND=\"$(EVINCE_COMMAND)\"  -D OKULAR_COMMAND=\"$(OKULAR_COMMAND)\"
+COMMON_SWITCHES = -D VERSION=\"$(VERSION)\"  -D DATE=\"$(DATE)\"  -D PATHLINK=\"$(PATHLINK)\"  $(HAVE_READLINE)  $(HAVE_FFTW3)  $(HAVE_FITSIO)  -D LATEX_COMMAND=\"$(LATEX_COMMAND)\"  -D CONVERT_COMMAND=\"$(CONVERT_COMMAND)\"  -D GHOSTSCRIPT_COMMAND=\"$(GS_COMMAND)\"  -D SED_COMMAND=\"$(SED_COMMAND)\"  $(GUNZIP_COMMAND)  $(WGET_COMMAND)  -D GHOSTVIEW_COMMAND=\"$(GV_COMMAND)\"  -D GHOSTVIEW_OPT=\"$(GV_OPT)\"  -D GGV_COMMAND=\"$(GGV_COMMAND)\"
 
 NOINSTALL_SWITCHES  = $(COMMON_SWITCHES) -D SRCDIR=\"$(CWD)/$(LOCAL_SRCDIR)/\"  -D DOCDIR=\"$(CWD)/$(LOCAL_DOCDIR)/\"  -D PPLBINARY=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot\"  -D FITSHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_fitshelper\"  -D TIMEHELPER=\"$(CWD)/$(LOCAL_BINDIR)/pyxplot_timehelper\"
 INSTALL_SWITCHES    = $(COMMON_SWITCHES) -D SRCDIR=\"$(SRCDIR)\"   -D DOCDIR=\"$(DOCDIR)\"   -D PPLBINARY=\"$(BINDIR)/pyxplot\"  -D FITSHELPER=\"$(BINDIR)/pyxplot_fitshelper\"  -D TIMEHELPER=\"$(BINDIR)/pyxplot_timehelper\"
@@ -184,16 +184,13 @@ pyxplot_watch.1: manpage_pyxplot_watch.py
 #
 
 install: all
-	install -d ${SRCDIR} ${BINDIR} ${DOCDIR} ${MANDIR} ${DOCDIR}/figures ${DOCDIR}/examples ${DOCDIR}/examples/eps
+	install -d ${SRCDIR} ${BINDIR} ${DOCDIR} ${MANDIR}
 	install -m644 ${LOCAL_SRCDIR}/ppl_help.xml               ${SRCDIR}
 	install -m755 ${LOCAL_BINDIR}/install/pyxplot            ${BINDIR}/pyxplot
 	install -m755 ${LOCAL_BINDIR}/install/pyxplot_watch      ${BINDIR}/pyxplot_watch
 	install -m755 ${LOCAL_BINDIR}/install/pyxplot_fitshelper ${BINDIR}/pyxplot_fitshelper
 	install -m755 ${LOCAL_BINDIR}/install/pyxplot_timehelper ${BINDIR}/pyxplot_timehelper
 	install -m644 doc/*.tex doc/pyxplot.pdf  ${DOCDIR}
-	install -m644 doc/figures/*.eps          ${DOCDIR}/figures
-	install -m644 doc/examples/ex_*          ${DOCDIR}/examples
-	install -m644 doc/examples/eps/*         ${DOCDIR}/examples/eps
 	install -m644 pyxplot.1                  ${MANDIR}/pyxplot.1
 	install -m644 pyxplot_watch.1            ${MANDIR}/pyxplot_watch.1
 

@@ -48,15 +48,8 @@ extern int   SW_ONOFF_INT[];
 
 #define SW_VIEWER_GV     10020
 #define SW_VIEWER_GGV    10021
-#define SW_VIEWER_EVINCE 10022
-#define SW_VIEWER_OKULAR 10023
-#define SW_VIEWER_NULL   10024
-
-#ifndef _PPL_SETTING_TYPES_C
-extern char *SW_VIEWER_STR[];
-extern int   SW_VIEWER_ACL[];
-extern int   SW_VIEWER_INT[];
-#endif
+#define SW_VIEWER_NULL   10022
+#define SW_VIEWER_CUSTOM 10023
 
 // Plot Style Switches
 

@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/select.h>
@@ -167,9 +168,13 @@ void SendCommandToCSP(char *cmd)
 
 void  CSPmain()
  {
+  struct timespec waitperiod, waitedperiod;
+
   while ((PyXPlotRunning==1) || (ListLen(GhostView_Persists)>0))
    {
-    sleep(1); // Wake up every second
+    waitperiod.tv_sec  = 0;
+    waitperiod.tv_nsec = 100000000;
+    nanosleep(&waitperiod,&waitedperiod); // Wake up every 100ms
     CSPCheckForNewCommands(); // Check for orders from PyXPlot
     if ((PyXPlotRunning==1) && (getppid()==1)) // We've been orphaned and adopted by init
      {
@@ -216,6 +221,7 @@ void CSPCheckForNewCommands()
   int             pos, TrialNumber;
   char linebuffer[SSTR_LENGTH];
 
+ppl_log(PipeOutputBuffer);
   TrialNumber=1;
   while (1)
    {
@@ -224,7 +230,7 @@ void CSPCheckForNewCommands()
     if (pselect(PipeMAIN2CSP[0]+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
      {
       if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
-      if (DEBUG) ppl_log("pselect failure whilst CSP checking for new commaands");
+      if (DEBUG) ppl_log("pselect failure whilst CSP checking for new commands");
       return;
      }
     break;
@@ -260,16 +266,25 @@ void CSPProcessCommand(char *in)
    }
   else if (in[0]=='0')                                // gv_singlewindow
    {
+    // Pick out filename of eps file to display, which is last commandline argument
+    int state=0,i; char *filename=in+1;
+    for (i=1; in[i]!='\0'; i++)
+      if ( ((in[i]>' ')||(in[i]<'\0')) || ((i>1)&&(in[i-1]=='\\')) )
+       {
+        if (!state) { filename = in+i; state=1; } // New word
+       }
+      else state=0;
+
     if (GhostView_pid > 1)
      {
       if (DEBUG) { sprintf(temp_err_string, "Received gv_singlewindow request. Putting into existing window with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
-      sprintf(cmd, "cp -f %s %s", in+2, GhostView_Fname);
+      sprintf(cmd, "cp -f %s %s", filename, GhostView_Fname);
       if (system(cmd) != 0) if (DEBUG) { ppl_log("Failed to copy postscript document into existing gv_singlewindow session.");}
      }
     else
      {
       if (DEBUG) ppl_log("Received gv_singlewindow request. Making a new window for it.");
-      strcpy(GhostView_Fname, in+2);
+      strcpy(GhostView_Fname, filename);
       GhostView_pid = CSPForkNewGv(in+1, GhostViews);
      }
    }
@@ -288,30 +303,49 @@ void CSPProcessCommand(char *in)
 
 int CSPForkNewGv(char *fname, List *gv_list)
  {
-  int pid, viewer;
-  char WatchText[16], *ViewerApp;
+
+#define MAX_CMDARGS 64
+
+  int pid, i, state=0, NArgs=0;
+  char *Args[MAX_CMDARGS], ViewerApp[FNAME_LENGTH];
   sigset_t sigs;
 
-  viewer = SW_VIEWER_GV + (fname[0]-'M');
-  fname++;
-
-  switch (viewer)
+  // Split up commandline into words
+  for (i=0; fname[i]!='\0'; i++)
    {
-    case SW_VIEWER_GV    : ViewerApp = GHOSTVIEW_COMMAND; break;
-    case SW_VIEWER_GGV   : ViewerApp = GGV_COMMAND; break;
-    case SW_VIEWER_EVINCE: ViewerApp = EVINCE_COMMAND; break;
-    case SW_VIEWER_OKULAR: ViewerApp = OKULAR_COMMAND; break;
-    default              : return 0;
-   }
+    if ( ((fname[i]>' ')||(fname[i]<'\0')) || ((i>1)&&(fname[i-1]=='\\')) )
+     {
+      if (state) {} // In the middle of a word... keep going
+      else       { Args[NArgs++] = fname+i; state=1; } // New word
+     }
+    else
+     {
+      if (state) { fname[i]='\0'; state=0; } // End of word
+      else       {} // Lots of whitespace
+     }
 
-  if (access(ViewerApp, F_OK) != 0)
-   {
-    FILE *f = fdopen(PipeCSP2MAIN[1], "w");
-    if (f==NULL) return 0;
-    fprintf(f, "Could not launch viewer application '%s' because this application does not appear to be installed.\n", *(char **)FetchSettingName(viewer, SW_VIEWER_INT, (void *)SW_VIEWER_STR, sizeof(char *)));
-    fclose(f);
-    return 0;
+    if (NArgs==MAX_CMDARGS)
+     {
+      FILE *f = fdopen(PipeCSP2MAIN[1], "w");
+      if (f==NULL) return 0;
+      fprintf(f, "Command for launching postscript viewer contains too many commandline switches.\n");
+      fclose(f);
+      return 0;
+     }
    }
+  Args[NArgs]=NULL;
+
+  snprintf(ViewerApp, FNAME_LENGTH, "%s", Args[0]);
+  ViewerApp[FNAME_LENGTH-1]='\0';
+
+  //if ((ViewerApp!=NULL) && (access(ViewerApp, F_OK) != 0))
+  // {
+  //  FILE *f = fdopen(PipeCSP2MAIN[1], "w");
+  //  if (f==NULL) return 0;
+  //  fprintf(f, "Could not launch viewer application '%s' because this application does not appear to be installed.\n", (viewer==SW_VIEWER_GV)?"gv":"ggv");
+  //  fclose(f);
+  //  return 0;
+  // }
 
   sigemptyset(&sigs);
   sigaddset(&sigs,SIGCHLD);
@@ -327,25 +361,21 @@ int CSPForkNewGv(char *fname, List *gv_list)
    }
   else
    {
-    // Child process; about to run GhostView.
+    // Child process; about to run postscript viewer
     sigprocmask(SIG_UNBLOCK, &sigs, NULL);
     sprintf(ppl_error_source, "GV%7d", getpid());
     settings_session_default.colour = SW_ONOFF_OFF;
-    if (DEBUG) { sprintf(temp_err_string, "New ghostview process alive; going to view %s.", fname); ppl_log(temp_err_string); }
+    if (DEBUG) { sprintf(temp_err_string, "New postscript viewer process alive; going to view %s.", fname); ppl_log(temp_err_string); }
     if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe, so that GhostView doesn't spam terminal
      {
       if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
       close(PipeCSP2MAIN[1]);
      }
     if (setpgid( getpid() , getpid() )) if (DEBUG) ppl_log("Failed to set process group ID."); // Make into a process group leader so that we won't catch SIGINT
-    sprintf(WatchText, "%s%s", (viewer == SW_VIEWER_GGV)?"--":GHOSTVIEW_OPT, "watch");
-    if (   (((viewer == SW_VIEWER_GV) || (viewer == SW_VIEWER_GGV))
-               && (execlp(ViewerApp, GHOSTVIEW_COMMAND, WatchText, fname, NULL)!=0))
-        || (((viewer != SW_VIEWER_GV) && (viewer != SW_VIEWER_GGV))
-               && (execlp(ViewerApp, GHOSTVIEW_COMMAND, fname, NULL)!=0))
-       )     if (DEBUG) ppl_log("Attempt to execute ghostview returned error code."); // Execute GhostView
-    sprintf(temp_err_string, "Execution of ghostview using binary '%s' failed; has it been reinstalled since pyxplot was installed?", GHOSTVIEW_COMMAND);
-    ppl_error(ERR_GENERAL, -1, -1, temp_err_string); // execlp call should not return
+
+    // Run postscript viewer
+    if (execvp(Args[0],Args)!=0) { if (DEBUG) ppl_log("Attempt to execute postscript viewer returned error code."); } // Execute postscript viewer
+    fprintf(stderr, "Execution of postscript viewer '%s' failed.\n", ViewerApp); fflush(stderr); // execvp call should not return
     exit(1);
    }
   return 0;
@@ -368,8 +398,15 @@ void CSPKillAllGvs()
 
 void CSPKillLatestSinglewindow()
  {
-  if (DEBUG) { sprintf(temp_err_string, "Killing latest ghostview singlewindow process with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
-  if (GhostView_pid > 1) kill(GhostView_pid, SIGTERM);
+  if (GhostView_pid > 1)
+   {
+    if (DEBUG) { sprintf(temp_err_string, "Killing latest ghostview singlewindow process with pid %d.", GhostView_pid); ppl_log(temp_err_string); }
+    kill(GhostView_pid, SIGTERM);
+   }
+  else
+   {
+    if (DEBUG) { sprintf(temp_err_string, "No ghostview singlewindow process to kill."); ppl_log(temp_err_string); }
+   }
   GhostView_pid = 0;
   return;
  }

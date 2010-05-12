@@ -84,6 +84,10 @@ static void canvas_item_delete(canvas_item *ptr)
     pd = pd2;
    }
 
+  // Reseal doubly-linked list
+  if (ptr->prev != NULL) ptr->prev->next = ptr->next; else canvas_items->first = ptr->next;
+  if (ptr->next != NULL) ptr->next->prev = ptr->prev; else canvas_items->last  = ptr->prev;
+
   free(ptr);
   return;
  }
@@ -91,8 +95,8 @@ static void canvas_item_delete(canvas_item *ptr)
 // Add a new multiplot canvas item to the list above
 static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, int *id, unsigned char IncludeAxes)
  {
-  canvas_item *ptr, *next, **insertpoint;
-  int i, PrevId, *EditNo;
+  canvas_item *ptr, *next, *prev, **insertpointA, **insertpointB;
+  int i, PrevId=-2, *EditNo;
 
   // If we're not in multiplot mode, clear the canvas now
   if (settings_term_current.multiplot == SW_ONOFF_OFF) directive_clear();
@@ -103,22 +107,45 @@ static int canvas_itemlist_add(Dict *command, int type, canvas_item **output, in
     canvas_items = (canvas_itemlist *)malloc(sizeof(canvas_itemlist));
     if (canvas_items == NULL) return 1;
     canvas_items->first = NULL;
+    canvas_items->last  = NULL;
    }
 
   DictLookup(command, "editno", NULL, (void *)&EditNo);
-  insertpoint = &(canvas_items->first);
-  PrevId      = 0;
-  while ((*insertpoint != NULL) && ((EditNo==NULL) ? ((*insertpoint)->id <= PrevId+1) : ((*insertpoint)->id < *EditNo))) { PrevId=(*insertpoint)->id; insertpoint = &((*insertpoint)->next); }
-  if ((EditNo != NULL) && (*insertpoint != NULL) && ((*insertpoint)->id == *EditNo))
+  if (EditNo==NULL)
    {
-    next = (*insertpoint)->next;
-    canvas_item_delete(*insertpoint);
-   } else {
-    next = (*insertpoint);
+    insertpointA = &(canvas_items->last);
+    next         = NULL;
+    prev         = (*insertpointA==NULL) ? NULL                   :   canvas_items->last;
+    insertpointB = (*insertpointA==NULL) ? &(canvas_items->first) : &(canvas_items->last->next);
+    PrevId       = (*insertpointA==NULL) ? 0                      :   canvas_items->last->id;
    }
-  ptr = *insertpoint = (canvas_item *)malloc(sizeof(canvas_item));
+  else
+   {
+    insertpointB = &(canvas_items->first);
+    prev         = NULL;
+    while ((*insertpointB != NULL) && ((*insertpointB)->id < *EditNo)) { prev = *insertpointB; insertpointB = &((*insertpointB)->next); }
+    next = *insertpointB;
+    if (next==NULL)
+     {
+      insertpointA = &(canvas_items->last);
+     }
+    else if (next->id == *EditNo)
+     {
+      next = next->next;
+      if (next==NULL) insertpointA = &(canvas_items->last);
+      else            insertpointA = &(next->prev);
+      canvas_item_delete(*insertpointB);
+     }
+    else
+     {
+      insertpointA = &(next->prev);
+     }
+   }
+  ptr = (canvas_item *)malloc(sizeof(canvas_item));
   if (ptr==NULL) return 1;
-  ptr->next    = next; // Link singly-linked list
+  *insertpointA = *insertpointB = ptr;
+  ptr->next    = next; // Link doubly-linked list
+  ptr->prev    = prev;
   ptr->text    = NULL;
   ptr->plotitems  = NULL;
   ptr->plotranges = NULL;
@@ -172,6 +199,7 @@ int directive_clear()
   while (ptr != NULL)
    {
     next = ptr->next;
+    ptr->prev = NULL;
     canvas_item_delete(ptr);
     ptr = next;
    }

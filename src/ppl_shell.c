@@ -337,7 +337,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if ((strcmp(directive, "circle")==0) || (strcmp(directive, "arc")==0))
    directive_circle(command, interactive);
   else if (strcmp(directive, "clear")==0)
-   { directive_clear(); SendCommandToCSP("A"); }
+   { directive_clear(); SendCommandToCSP("A\n"); }
   else if (strcmp(directive, "continue")==0)
    return directive_continue(command, IterLevel);
   else if (strcmp(directive, "delete")==0)

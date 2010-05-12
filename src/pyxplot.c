@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
   sigset_t sigs;
 
-  struct timespec waitperiod, waitedperiod; // A time.h timespec specifier for a 100ms nanosleep wait
+  struct timespec waitperiod, waitedperiod; // A time.h timespec specifier for a 50ms nanosleep wait
   waitperiod.tv_sec  = 0;
   waitperiod.tv_nsec = 50000000;
   WillBeInteractive  = 1;
@@ -211,8 +211,6 @@ int main(int argc, char **argv)
     EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
     if      (strcmp(GHOSTVIEW_COMMAND, "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GV;
     else if (strcmp(GGV_COMMAND      , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GGV;
-    else if (strcmp(EVINCE_COMMAND   , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_EVINCE;
-    else if (strcmp(OKULAR_COMMAND   , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_OKULAR;
     else                                                 settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_NULL;
     if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) ||
                                                   (EnvDisplay==NULL) ||

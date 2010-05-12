@@ -144,33 +144,7 @@ else
  echo "GGV_COMMAND=/bin/false" >> Makefile
 fi
 
-# 10. FIND EVINCE
-
-echo $ECHO_N "Checking for evince            ............. $ECHO_C"
-whichout_evince=`which evince 2> /dev/null`
-if test "`echo $whichout_evince | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout_evince="" ; fi
-if test "$whichout_evince" != "" ; then
- echo "YES"
- echo "EVINCE_COMMAND=${whichout_evince}" >> Makefile
-else
- echo "NO"
- echo "EVINCE_COMMAND=/bin/false" >> Makefile
-fi
-
-# 11. FIND OKULAR
-
-echo $ECHO_N "Checking for okular            ............. $ECHO_C"
-whichout_okular=`which okular 2> /dev/null`
-if test "`echo $whichout_okular | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout_okular="" ; fi
-if test "$whichout_okular" != "" ; then
- echo "YES"
- echo "OKULAR_COMMAND=${whichout_okular}" >> Makefile
-else
- echo "NO"
- echo "OKULAR_COMMAND=/bin/false" >> Makefile
-fi
-
-# 12. FIND MAKE
+# 10. FIND MAKE
 
 echo $ECHO_N "Checking for GNU make          ............. $ECHO_C"
 whichout_make=`which make 2> /dev/null`
@@ -191,7 +165,7 @@ else
  exit
 fi
 
-# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
+# 11. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
 
 echo $ECHO_N "Checking for libreadline-dev   ............. $ECHO_C"
 if printf '#include <stdio.h>\n#include <readline/readline.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -205,7 +179,7 @@ else
  echo "LINK_READLINE=" >> Makefile
 fi
 
-# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
+# 12. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
 
 echo $ECHO_N "Checking for libcfitsio-dev    ............. $ECHO_C"
 if printf '#include <fitsio.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -219,10 +193,10 @@ else
  echo "LINK_FITSIO=" >> Makefile
 fi
 
-# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS
+# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS
 
 echo $ECHO_N "Checking for libgsl0-dev       ............. $ECHO_C"
-if printf '#include <gsl/gsl_version.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
+if printf '#include <gsl/gsl_version.h>\nint main() { return 0; }\n' | gcc `gsl-config --cflags` -x c - -o /dev/null > /dev/null 2> /dev/null
 then
  echo "YES"
 else
@@ -231,7 +205,17 @@ else
  exit
 fi
 
-# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS FFTW HEADERS
+echo $ECHO_N "Checking version of libgsl0-dev ............ $ECHO_C"
+if expr `gsl-config --version` \>= 1.10 > /dev/null
+then
+ echo "YES"
+else
+ echo "NO"
+ echo "ERROR: PyXPlot requires a version of gsl >= 1.10. Installed version is `gsl-config --version`." >&2
+ exit
+fi
+
+# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS FFTW HEADERS
 
 echo $ECHO_N "Checking for libfftw3-dev      ............. $ECHO_C"
 if printf '#include <fftw3.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -253,6 +237,8 @@ else
  fi
 fi
 
+# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS GUNZIP
+
 echo $ECHO_N "Checking for gunzip            ............. $ECHO_C"
 whichout=`which gunzip 2> /dev/null`
 if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
@@ -265,7 +251,7 @@ else
  echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files." >&2
 fi
 
-# 17. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
+# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
 
 echo $ECHO_N "Checking for libxml2-dev       ............. $ECHO_C"
 whichout=`which xml2-config 2> /dev/null`
@@ -278,7 +264,7 @@ else
  exit
 fi
 
-# 18. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
+# 17. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
 
 echo $ECHO_N "Checking for libpng-dev        ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <png.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -290,7 +276,7 @@ else
  exit
 fi
 
-# 19. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
+# 18. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
 
 echo $ECHO_N "Checking for libkpathsea-dev   ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <kpathsea/kpathsea.h>\nint main() { return 0; }\n' | gcc -x c - -o /dev/null > /dev/null 2> /dev/null
@@ -302,7 +288,7 @@ else
  exit
 fi
 
-# 20. OUTPUT MAKEFILE
+# 19. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 

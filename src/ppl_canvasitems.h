@@ -73,7 +73,7 @@ typedef struct canvas_item {
  settings_axis      *XAxes, *YAxes, *ZAxes;
  arrow_object       *arrow_list;
  label_object       *label_list;
- struct canvas_item *next;
+ struct canvas_item *next, *prev;
 
  // Parameters which can be used to define ellipses
  double              x1,y1,x2,y2,xc,yc,xf,yf,a,b,ecc,slr; // Parameters which can be used to define ellipses
@@ -90,6 +90,7 @@ typedef struct canvas_item {
 
 typedef struct canvas_itemlist {
  canvas_item  *first;
+ canvas_item  *last;
 } canvas_itemlist;
 
 #ifndef _PPL_CANVASITEMS_C

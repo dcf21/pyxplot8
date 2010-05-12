@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 #include <wordexp.h>
 #include <sys/select.h>
 #include <sys/wait.h>
@@ -285,7 +286,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
   if ((termtype==SW_TERMTYPE_X11S) || (termtype==SW_TERMTYPE_X11M) || (termtype==SW_TERMTYPE_X11P)) // X11 terminals
    {
     EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
-    if (strcmp(GHOSTVIEW_COMMAND, "/bin/false")==0)
+    if (settings_term_current.viewer==SW_VIEWER_NULL)
      {
       ppl_error(ERR_GENERAL, -1, -1, "An attempt is being made to use an X11 terminal for output, but the required package 'ghostview' could not be found when PyXPlot was installed. If you have recently install ghostview, please reconfigure and recompile PyXPlot.");
      }
@@ -308,8 +309,18 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         else if (termtype==SW_TERMTYPE_X11M) CSPCommand = 1;
         else if (termtype==SW_TERMTYPE_X11P) CSPCommand = 2;
        }
-      sprintf(temp_err_string, "%d%c%s\n", CSPCommand, (char)(settings_term_current.viewer-SW_VIEWER_GV+(int)'M'), comm.EPSFilename);
+      if      (settings_term_current.viewer==SW_VIEWER_GV)  sprintf(temp_err_string, "%d%s %swatch %s\n", CSPCommand, GHOSTVIEW_COMMAND, GHOSTVIEW_OPT, comm.EPSFilename);
+      else if (settings_term_current.viewer==SW_VIEWER_GGV) sprintf(temp_err_string, "%d%s --watch %s\n", CSPCommand, GGV_COMMAND, comm.EPSFilename);
+      else                                                  sprintf(temp_err_string, "%d%s %s\n", CSPCommand, settings_term_current.ViewerCmd, comm.EPSFilename);
       SendCommandToCSP(temp_err_string);
+
+      // Pause after launching an X11 ghostview viewer to give stderr error messages a moment to come back to us
+      for (i=0;i<7;i++)
+       {
+        struct timespec waitperiod, waitedperiod;
+        waitperiod.tv_sec  = 0; waitperiod.tv_nsec = 40000000;
+        nanosleep(&waitperiod,&waitedperiod);
+       }
      }
    }
   else if (termtype==SW_TERMTYPE_PDF) // PDF terminal

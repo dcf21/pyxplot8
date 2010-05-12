@@ -52,6 +52,7 @@ typedef struct settings_terminal {
  char   output[FNAME_LENGTH];
  char   PaperName[FNAME_LENGTH];
  char   LatexPreamble[FNAME_LENGTH];
+ char   ViewerCmd[FNAME_LENGTH];
  } settings_terminal;
 
 typedef struct settings_graph {
