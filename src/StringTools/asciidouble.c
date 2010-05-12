@@ -322,12 +322,10 @@ char *StrCommaSeparatedListScan(char **inscan, char *out)
 
 int StrAutocomplete(const char *candidate, const char *test, int Nmin)
  {
-  int IsAlphanumeric = 1; // Alphanumeric test strings can be terminated by punctuation; others must have spaces after them
   int i,j;
 
   if ((candidate==NULL) || (test==NULL)) return -1;
 
-  for (i=0; test[i]!='\0'; i++) if ((test[i]>' ') && (isalnum(test[i])==0) && (test[i]!='_')) {IsAlphanumeric=0; break;}
   for (j=0; ((candidate[j]>'\0') && (candidate[j]<=' ')); j++); // Fastforward over whitespace at beginning of candidate
 
   for (i=0; 1; i++,j++)
@@ -335,16 +333,34 @@ int StrAutocomplete(const char *candidate, const char *test, int Nmin)
     {
      if (toupper(test[i]) != toupper(candidate[j])) // Candidate string has deviated from test string
       {
-       if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && (isalnum(candidate[j])==0) && (candidate[j]!='_'))) // If this is with a space...
+       if (i<Nmin) return -1; // We've not passed enough characters yet
+
+       if (candidate[j]<=' ') // Word teminated with space...
         {
-         if (i>=Nmin) return j; // ... it's okay so long as we've already passed enough characters
-         return -1;
+         return j;
         }
-       else return -1;
+       else if ((isalnum(candidate[j])==0) && (candidate[j]!='_')) // Word teminated with punctuation...
+        {
+         // Alphanumeric test strings can be terminated by punctuation; others must have spaces after them
+         for (i=0; test[i]!='\0'; i++) if ((test[i]>' ') && (isalnum(test[i])==0) && (test[i]!='_')) return -1;
+         return j;
+        }
+       else // Word terminated with more letters
+        { return -1; }
       }
     } else { // We've hit the end of the test string
-     if ( (candidate[j]<=' ') || ((IsAlphanumeric==1) && (isalnum(candidate[j])==0) && (candidate[j]!='_'))) return j; // If candidate string has a space, it's okay
-     else return -1; // Otherwise it has unexpected characters on the end
+     if (candidate[j]<=' ') // Word teminated with space...
+      {
+       return j;
+      }
+     else if ((isalnum(candidate[j])==0) && (candidate[j]!='_')) // Word teminated with punctuation...
+      {
+       // Alphanumeric test strings can be terminated by punctuation; others must have spaces after them
+       for (i=0; test[i]!='\0'; i++) if ((test[i]>' ') && (isalnum(test[i])==0) && (test[i]!='_')) return -1;
+       return j;
+      }
+     else // Word terminated with more letters
+      { return -1; }
     }
  }
 
@@ -426,7 +442,7 @@ void StrBracketMatch(const char *in, int *CommaPositions, int *Nargs, int *Closi
     if (ClosingBracketPos != NULL) *ClosingBracketPos = -1;
     return;
    } else {
-    if ((CommaPositions != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+(commapos++)) = inpos; // Put ) on comma list
+    if ((CommaPositions   != NULL) && ((MaxCommaPoses < 0) || (commapos < MaxCommaPoses))) *(CommaPositions+(commapos++)) = inpos; // Put ) on comma list
     if (Nargs             != NULL) *Nargs             = commapos-1; // There are N+1 arguments between N commas, but we've also counted ( and ).
     if (ClosingBracketPos != NULL) *ClosingBracketPos = inpos;
     return;
