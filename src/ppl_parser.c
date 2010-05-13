@@ -158,23 +158,25 @@ void RollBack(ParserNode **DefnStack, int *i, int type, char *PplCommandsText, i
 // PplParserCmdList, with list-based definitions of PyXPlot's commands, parsed
 // using the functions above from plp_commands
 
-static List *PplParserCmdList;
+static List *PplParserCmdList[27];
 
 void ppl_commands_read()
  {
   int         InputPos = 0;
   ParserNode *DefnStack[25];
   int         StackPos;
-  int         i,j,k,l,m,n,N;
+  int         i,j,k,l,m,n,N,cln;
   ParserNode *NewNode;
   ParserNode **target = NULL;
 
-  PplParserCmdList = ListInit();
+  for (i=0;i<27;i++) PplParserCmdList[i] = ListInit();
   while (ppl_commands[InputPos] != '\0')
    {
     while ((ppl_commands[InputPos] != '\0') && (ppl_commands[InputPos] <= ' ')) InputPos++; // Ignore whitespace
     if (ppl_commands[InputPos] == '\0') continue;
     StackPos = 0;
+    if ((ppl_commands[InputPos]>='a')&&(ppl_commands[InputPos]<='z')) cln = (int)(ppl_commands[InputPos]-'a');
+    else                                                              cln = 26; // Begins with punctuation
     StartNewStructure(DefnStack, &StackPos, PN_TYPE_SEQ);
 
     while (1)
@@ -268,7 +270,7 @@ void ppl_commands_read()
         *target = NewNode; // Add new node into hierarchy
        }
      }
-    ListAppendPtr(PplParserCmdList, DefnStack[0], sizeof(ParserNode), 0, DATATYPE_VOID);
+    ListAppendPtr(PplParserCmdList[cln], DefnStack[0], sizeof(ParserNode), 0, DATATYPE_VOID);
    }
   return;
  }
@@ -284,7 +286,7 @@ Dict *parse(char *line)
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
   Dict         *output;
-  int           match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, ErrPos, i;
+  int           match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, ErrPos, i, cln;
   char          expecting      [LSTR_LENGTH];
   char          ErrText        [LSTR_LENGTH];
   char          AlgebraError   [LSTR_LENGTH];
@@ -296,9 +298,22 @@ Dict *parse(char *line)
     return NULL;
    }
 
-  CmdIterator = ListIterateInit(PplParserCmdList);
-  while (CmdIterator != NULL)
+  // Fetch first non-whitespace character of command string
+  for (i=0; ((line[i]>='\0')&&(line[i]<=' ')); i++);
+  if      ((line[i]>='a')&&(line[i]<='z')) cln=(int)(line[i]-'a');
+  else if ((line[i]>='A')&&(line[i]<='Z')) cln=(int)(line[i]-'A');
+  else                                     cln=-1;
+
+  CmdIterator = ListIterateInit(PplParserCmdList[26]);
+  while (1)
    {
+    if (CmdIterator == NULL)
+     {
+      if (cln==-1) break;
+      CmdIterator = ListIterateInit(PplParserCmdList[cln]);
+      cln=-1;
+      if (CmdIterator==NULL) break;
+     }
     CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
     match           = 0;
     success         = 1;
@@ -311,7 +326,7 @@ Dict *parse(char *line)
     ErrText[0]      = '\0';
     AlgebraError[0] = '\0';
     AlgebraNewError[0] = '\0';
-    output          = DictInit();
+    output          = DictInit(HASHSIZE_SMALL);
 
     parse_descend(CmdDescriptor, line, &linepos, NULL, NULL, expecting, &ExpectingPos, &ExpectingLinePos,
                   AlgebraError, &AlgebraLinepos, AlgebraNewError, &AlgebraNewLinepos, output, &match, &success);
@@ -355,7 +370,7 @@ Dict *parse(char *line)
      }
     return output;
    }
-  output = DictInit();
+  output = DictInit(HASHSIZE_SMALL);
   DictAppendString(output, "directive" , "unrecognised");
   return output;
  }
@@ -374,7 +389,7 @@ char *parse_autocomplete(const char *LineConst, int status)
 
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
-  int           i, match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
+  int           i, cln, match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
   static char  *line = NULL, *linep = NULL;
   static char   expecting      [SSTR_LENGTH];
   char          ErrText        [LSTR_LENGTH];
@@ -404,9 +419,23 @@ char *parse_autocomplete(const char *LineConst, int status)
    {
     NumberCpy = number++;
     if (NumberCpy<0) NumberCpy=0; // Return first item twice
-    CmdIterator = ListIterateInit(PplParserCmdList);
-    while (CmdIterator != NULL)
+
+    // Fetch first non-whitespace character of command string
+    for (i=0; ((line[i]>='\0')&&(line[i]<=' ')); i++);
+    if      ((line[i]>='a')&&(line[i]<='z')) cln=(int)(line[i]-'a');
+    else if ((line[i]>='A')&&(line[i]<='Z')) cln=(int)(line[i]-'A');
+    else                                     cln=-1;
+
+    CmdIterator = ListIterateInit(PplParserCmdList[26]);
+    while (1)
      {
+      if (CmdIterator == NULL)
+       {
+        if (cln==-1) break;
+        CmdIterator = ListIterateInit(PplParserCmdList[cln]);
+        cln=-1;
+        if (CmdIterator==NULL) break;
+       }
       CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
       match           = 0;
       success         = 1;
@@ -911,7 +940,7 @@ NO_TAB_COMPLETION:
 
     while (repeating != 0)
      {
-      if (output != NULL) DictBaby = DictInit();
+      if (output != NULL) DictBaby = DictInit(HASHSIZE_SMALL);
       LinePosOld = *linepos;
       SeparatorNode.MatchString = SeparatorString;
       if ((first==0)&&(SeparatorString[0]!='\0'))

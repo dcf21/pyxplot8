@@ -73,7 +73,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
       AutoItem = (char *)lt_malloc(10);
       if (AutoItem == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; }
       sprintf(AutoItem, "%d", i+1);
-      tempdict = DictInit();
+      tempdict = DictInit(HASHSIZE_SMALL);
       DictAppendPtr(tempdict, "using_item", (void *)AutoItem, 0, 0, DATATYPE_VOID);
       ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID);
      }
@@ -82,7 +82,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
   else if ((UsingLen==1) && (*NExpect==2)) // Prepend data point number if only one number specified in using statement
    {
     temp = (char *)ListPop(UsingList);
-    tempdict = DictInit();
+    tempdict = DictInit(HASHSIZE_SMALL);
     temp2 = (char *)lt_malloc(2);
     if (temp2==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; }
     strcpy(temp2, "0");
@@ -103,7 +103,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
   tempstr[0] = '('; \
   strcpy(tempstr+  1, X ); \
   strcpy(tempstr+l+1,")"); \
-  tempdict = DictInit(); \
+  tempdict = DictInit(HASHSIZE_SMALL); \
   if (tempdict==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return 1; } \
   DictAppendPtr(tempdict, "using_item", (void *)tempstr, 0, 0, DATATYPE_VOID); \
   ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); \
@@ -331,8 +331,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     // If plotting a datafile, can read in data now, so do so
     if ((pd->function == 0) || (pd->parametric == 1))
      {
-      UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
-      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
       status   = 0;
       ErrCount = DATAFILE_NERRS;
       NExpect  = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
@@ -407,8 +407,8 @@ void eps_plot_SampleFunctions(EPSComm *x)
    {
     if ((pd->function == 1) && (pd->parametric == 0))
      {
-      UsingList    = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
-      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      UsingList    = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+      EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
       status       = 0;
       ErrCount     = DATAFILE_NERRS;
       NExpect      = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);

@@ -87,6 +87,7 @@ typedef struct FunctionDescriptor {
 #ifndef _PPL_USERSPACE_C
 extern Dict *_ppl_UserSpace_Vars;
 extern Dict *_ppl_UserSpace_Funcs;
+extern Dict *_ppl_UserSpace_Funcs2;
 #endif
 
 void ppl_UserSpaceInit          ();

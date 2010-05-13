@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "lt_dict.h"
 #include "lt_list.h"
@@ -33,34 +34,53 @@
 
 #include "ppl_units.h"
 
-Dict *DictInit()
+Dict *DictInit(int HashSize)
  {
   Dict *out;
   out = (Dict *)lt_malloc(sizeof(Dict));
-  out->first  = NULL;
-  out->last   = NULL;
-  out->length = 0;
+  if (out==NULL) return NULL;
+  out->first     = NULL;
+  out->last      = NULL;
+  out->length    = 0;
+  out->HashSize  = HashSize;
+  out->HashTable = (DictItem **)lt_malloc(HashSize * sizeof(DictItem *));
+  memset(out->HashTable, 0, HashSize * sizeof(DictItem *));
+  if (out->HashTable==NULL) return NULL;
   out->memory_context = lt_GetMemContext();
   return out;
  }
 
+static int DictHash(const char *str, int HashSize)
+ {
+  unsigned int hash = 5381;
+  int c;
+  while ((c = *str++)) hash = ((hash << 5) + hash) + c;
+  return hash % HashSize;
+ }
+
+
 Dict *DictCopy(Dict *in, int deep)
  {
+  int hash;
   DictItem *item, *outitem;
   Dict     *out;
-  out  = DictInit();
+  out  = DictInit(in->HashSize);
+  if (out==NULL) return NULL;
   item = in->first;
   while (item != NULL)
    {
     outitem           = (DictItem *)lt_malloc_incontext(sizeof(DictItem), out->memory_context);
+    if (outitem==NULL) return NULL;
     outitem->prev     = out->last;
     outitem->next     = NULL;
     outitem->key      = (char *)lt_malloc_incontext((strlen(item->key)+1)*sizeof(char), out->memory_context);
+    if (outitem->key==NULL) return NULL;
     strcpy(outitem->key, item->key);
     outitem->DataSize = item->DataSize;
     if (item->copyable != 0)
      {
       outitem->data     = (void *)lt_malloc_incontext(outitem->DataSize, out->memory_context);
+      if (outitem->data==NULL) return NULL;
       memcpy(outitem->data, item->data, outitem->DataSize);
       outitem->MallocedByUs = 1;
      } else {
@@ -75,6 +95,8 @@ Dict *DictCopy(Dict *in, int deep)
     if (out->last  != NULL) out->last->next = outitem;
     out->last = outitem;
     out->length++;
+    hash = DictHash(item->key, in->HashSize);
+    out->HashTable[hash] = outitem;
     item = item->next;
    }
   return out;
@@ -88,7 +110,7 @@ int DictLen(Dict *in)
 void DictAppendPtr(Dict *in, char *key, void *item, int size, int copyable, int DataType)
  {
   DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
-  int       cmp = -1;
+  int       cmp = -1, hash;
 
   ptr = in->first;
   while (ptr != NULL)
@@ -108,9 +130,11 @@ void DictAppendPtr(Dict *in, char *key, void *item, int size, int copyable, int 
   else
    {
     ptrnew           = (DictItem *)lt_malloc_incontext(sizeof(DictItem), in->memory_context);
+    if (ptrnew==NULL) return;
     ptrnew->prev     = prev;
     ptrnew->next     = ptr;
     ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context);
+    if (ptrnew->key==NULL) return;
     strcpy(ptrnew->key, key);
     ptrnew->data     = item;
     ptrnew->MallocedByUs = 0;
@@ -120,6 +144,9 @@ void DictAppendPtr(Dict *in, char *key, void *item, int size, int copyable, int 
     if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
     if (ptr  == NULL) in->last  = ptrnew; else ptr ->prev = ptrnew;
     in->length++;
+
+    hash = DictHash(key, in->HashSize);
+    in->HashTable[hash] = ptrnew;
    }
  }
 
@@ -127,7 +154,7 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
  {
   DictItem *ptr=NULL, *ptrnew=NULL, *prev=NULL;
   char     *newstr;
-  int       cmp = -1;
+  int       cmp = -1, hash;
 
   ptr = in->first;
   while (ptr != NULL)
@@ -151,11 +178,14 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
   else
    {
     ptrnew           = (DictItem *)lt_malloc_incontext(sizeof(DictItem), in->memory_context);
+    if (ptrnew==NULL) return;
     ptrnew->prev     = prev;
     ptrnew->next     = ptr;
     ptrnew->key      = (char *)lt_malloc_incontext((strlen(key)+1)*sizeof(char), in->memory_context);
+    if (ptrnew->key==NULL) return;
     strcpy(ptrnew->key, key);
     ptrnew->data     = (void *)lt_malloc_incontext(size, in->memory_context);
+    if (ptrnew->data==NULL) return;
     memcpy(ptrnew->data, item, size);
     ptrnew->MallocedByUs = 1;
     ptrnew->copyable = 1;
@@ -164,6 +194,9 @@ void DictAppendPtrCpy(Dict *in, char *key, void *item, int size, int DataType)
     if (prev == NULL) in->first = ptrnew; else prev->next = ptrnew;
     if (ptr  == NULL) in->last  = ptrnew; else ptr ->prev = ptrnew;
     in->length++;
+
+    hash = DictHash(key, in->HashSize);
+    in->HashTable[hash] = ptrnew;
    }
   if ((ptrnew->DataType == DATATYPE_VALUE) && (((value *)ptrnew->data)->string != NULL))
    {
@@ -212,18 +245,30 @@ void DictAppendDict(Dict *in, char *key, Dict *item)
 
 void DictLookup(Dict *in, char *key, int *DataTypeOut, void **ptrout)
  {
+  int hash;
   DictItem *ptr;
 
   if (in==NULL) { *ptrout=NULL; return; }
+
+#define DICTLOOKUP_TEST \
+   if (strcmp(ptr->key, key) == 0) \
+    { \
+     if (DataTypeOut != NULL) *DataTypeOut = ptr->DataType; \
+     *ptrout = ptr->data; \
+     return; \
+    }
+
+  // Check hash table
+  hash = DictHash(key, in->HashSize);
+  ptr  = in->HashTable[hash];
+  if (ptr==NULL) { *ptrout=NULL; return; }
+  DICTLOOKUP_TEST;
+
+  // Hash table clash; need to exhaustively search dictionary
   ptr = in->first;
   while (ptr != NULL)
    {
-    if (strcmp(ptr->key, key) == 0)
-     {
-      if (DataTypeOut != NULL) *DataTypeOut = ptr->DataType ;
-      if (ptrout      != NULL) *ptrout = ptr->data;
-      return;
-     }
+    DICTLOOKUP_TEST
     else if (StrCmpNoCase(ptr->key, key) > 0) break;
     ptr = ptr->next;
    }
@@ -231,10 +276,74 @@ void DictLookup(Dict *in, char *key, int *DataTypeOut, void **ptrout)
   return;
  }
 
+void DictLookupWithWildcard(Dict *in, Dict *in_w, char *key, char *SubsString, int SubsMaxLen, DictItem **ptrout)
+ {
+  int hash, k, l;
+  char tmp;
+  DictItem *ptr;
+
+  SubsString[0]='\0';
+  if (in==NULL) { *ptrout=NULL; return; }
+
+  // Check hash table
+  for (k=0; (isalnum(key[k]) || (key[k]=='_')); k++);
+  tmp=key[k];
+  key[k]='\0';
+  hash = DictHash(key, in->HashSize);
+  key[k]=tmp;
+  ptr  = in->HashTable[hash];
+  if (ptr!=NULL)
+   {
+    for (k=0; ((ptr->key[k]>' ')&&(ptr->key[k]!='?')&&(ptr->key[k]==key[k])); k++);
+    if (!((ptr->key[k]>' ') || (isalnum(key[k])) || (key[k]=='_')) ) { *ptrout = ptr;  return; }
+
+    // Hash table clash; need to exhaustively search dictionary
+    ptr = in->first;
+    while (ptr != NULL)
+     {
+      for (k=0; ((ptr->key[k]>' ')&&(ptr->key[k]!='?')&&(ptr->key[k]==key[k])); k++);
+      if (!((ptr->key[k]>' ') || (isalnum(key[k])) || (key[k]=='_')) ) { *ptrout = ptr;  return; }
+      ptr = ptr->next;
+     }
+   }
+
+  // Need to start exhaustive search of dictionary of "int_d?"-like wildcards
+  for (ptr=in_w->first; ptr!=NULL; ptr=ptr->next)
+   {
+    for (k=0; ((ptr->key[k]>' ')&&(ptr->key[k]!='?')&&(ptr->key[k]==key[k])); k++);
+    if (ptr->key[k]=='?') // Dictionary key ends with a ?, e.g. "int_d?"
+     {
+      for (l=0; ((isalnum(key[k+l]) || (key[k+l]=='_')) && (l<SubsMaxLen)); l++) SubsString[l]=key[k+l];
+      if (l==SubsMaxLen) continue; // Dummy variable name was too long
+      if (l==0) continue; // Dummy variable was too short
+      SubsString[l]='\0';
+      *ptrout = ptr;
+      return;
+     } else { // Otherwise, we have to match function name exactly
+      if ((ptr->key[k]>' ') || (isalnum(key[k])) || (key[k]=='_')) continue; // Nope...
+      *ptrout = ptr;
+      SubsString[0]='\0';
+      return;
+     }
+   }
+  SubsString[0]='\0';
+  *ptrout = NULL;
+  return;
+ }
+
 int DictContains(Dict *in, char *key)
  {
+  int hash;
   DictItem *ptr;
   if (in==NULL) return 0;
+
+  // Check hash table
+  hash = DictHash(key, in->HashSize);
+  ptr  = in->HashTable[hash];
+  if (ptr==NULL) return 0;
+  if (strcmp(ptr->key, key)==0) return 1;
+
+  // Hash table clash; need to exhaustively search dictionary
   ptr = in->first;
   while (ptr != NULL)
    {
@@ -246,17 +355,22 @@ int DictContains(Dict *in, char *key)
 
 int  DictRemoveKey(Dict *in, char *key)
  {
+  int hash;
   DictItem *ptr;
 
   if (in==NULL) return -1;
+
+  // Check hash table
+  hash = DictHash(key, in->HashSize);
+  ptr  = in->HashTable[hash];
+  if (ptr==NULL) return -1;
+  if (strcmp(ptr->key, key)==0) { _DictRemoveEngine(in, ptr); return 0; }
+
+  // Hash table clash; need to exhaustively search dictionary
   ptr = in->first;
   while (ptr != NULL)
    {
-    if (strcmp(ptr->key, key)==0)
-     {
-      _DictRemoveEngine(in, ptr);
-      return 0;
-     }
+    if (strcmp(ptr->key, key)==0) { _DictRemoveEngine(in, ptr); return 0; }
     else if (StrCmpNoCase(ptr->key, key) > 0) break;
     ptr = ptr->next;
    }
@@ -270,11 +384,7 @@ int DictRemovePtr(Dict *in, void *item)
   ptr = in->first;
   while (ptr != NULL)
    {
-    if (ptr->data == item)
-     {
-      _DictRemoveEngine(in, ptr);
-      return 0;
-     }
+    if (ptr->data == item) { _DictRemoveEngine(in, ptr); return 0; }
     ptr = ptr->next;
    }
   return -1;
@@ -282,10 +392,15 @@ int DictRemovePtr(Dict *in, void *item)
 
 void _DictRemoveEngine(Dict *in, DictItem *ptr)
  {
+  int hash;
   DictItem *ptrnext;
 
   if (in ==NULL) return;
   if (ptr==NULL) return;
+
+  // Remove hash table entry
+  hash = DictHash(ptr->key,in->HashSize);
+  if (in->HashTable[hash]==ptr) in->HashTable[hash]=NULL;
 
   if (ptr->next != NULL) // We are not the last item in the list
    {
@@ -319,6 +434,18 @@ void _DictRemoveEngine(Dict *in, DictItem *ptr)
     in->last  = NULL;
    }
   in->length--;
+
+  // Fix up hash table in case another dictionary entry shared our hash entry
+  if (in->HashTable[hash]==NULL)
+   {
+    DictItem *iter=in->first;
+    while (iter != NULL)
+     {
+      if (DictHash(iter->key,in->HashSize)==hash) { in->HashTable[hash]=iter; break; }
+      iter = iter->next;
+     }
+   }
+
   return;
  }
 

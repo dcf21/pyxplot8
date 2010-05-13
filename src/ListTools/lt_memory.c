@@ -247,7 +247,7 @@ void *fastmalloc(int context, int size)
   if ((_fastmalloc_currentblocklist[context] == NULL) || (size > (FM_BLOCKSIZE - 2 - _fastmalloc_currentblock_alloc_ptr[context]))) // We need to malloc a new block
    {
     _fastmalloc_malloccount++;
-    if (size > FM_BLOCKSIZE)
+    if (size > FM_BLOCKSIZE - sizeof(void **))
      {
       if (MEMDEBUG1) { sprintf(temp_merr_string, "Fastmalloc creating block of size %d bytes at memory level %d.", size, context); (*mem_log)(temp_merr_string); }
       if ((ptr = malloc(size + SYNCSTEP + sizeof(void **))) == NULL) { (*mem_error)(100, -1, -1, "Out of memory."); return NULL; } // This is a big malloc which needs to new block to itself

@@ -32,4 +32,5 @@ set output "examples/eps/ex_fitting.eps"
 f(x) = a1*sin(x) + a3*sin(3*x) + a5*sin(5*x)
 fit f() withouterrors 'examples/ex_fitting.dat' via a1, a3, a5
 set xlabel '$x$' ; set ylabel '$y$'
-plot 'examples/ex_fitting.dat' title 'data' with points pointsize 2, f(x) title 'Fitted function' with lines
+plot 'examples/ex_fitting.dat' title 'Data' with points pointsize 2, f(x) title 'Fitted function' with lines
+

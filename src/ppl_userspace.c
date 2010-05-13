@@ -60,6 +60,7 @@
 
 Dict *_ppl_UserSpace_Vars;
 Dict *_ppl_UserSpace_Funcs;
+Dict *_ppl_UserSpace_Funcs2;
 
 // ppl_UserSpace_SetVarStr(): Called to define a new string variable within the user's variable space
 void ppl_UserSpace_SetVarStr(char *name, char *inval, int modified)
@@ -789,7 +790,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
   value  *VarData  = NULL;
   FunctionDescriptor *FuncDef = NULL;
   double  TempDbl, TempDbl2;
-  DictIterator *DictIter;
+  DictItem *DictItem;
 
   if (RecursionDepth > MAX_RECURSION_DEPTH) { *errpos=start; strcpy(errtext,"Overflow Error: Maximum recursion depth exceeded"); return; }
 
@@ -804,21 +805,12 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
   if (OpList[1]!=0) for (i=0;i<len-1;i++) if ((StatusRow[i]==8)&&(StatusRow[i+1]==3))
    {
     for (j=i;((j>0)&&(StatusRow[j-1]==8));j--); // Rewind to beginning of function name
-    p=0;
-    for ( DictIter=DictIterateInit(_ppl_UserSpace_Funcs) ; ((DictIter!=NULL)&&(p==0)) ; DictIter=DictIterate(DictIter,NULL,NULL) )
+    DictLookupWithWildcard(_ppl_UserSpace_Funcs, _ppl_UserSpace_Funcs2, in+start+j, dummy, DUMMYVAR_MAXLEN, &DictItem);
+    if (DictItem != NULL)
      {
-      for (k=0; ((DictIter->key[k]>' ')&&(DictIter->key[k]!='?')&&(DictIter->key[k]==in[start+j+k])); k++); // See if string we have matches the name of this function
-      if (DictIter->key[k]=='?') // This function name, e.g. int_dx, ends with a dummy variable name
-       {
-        for (l=0; ((isalnum(in[start+j+k+l]) || (in[start+j+k+l]=='_')) && (l<DUMMYVAR_MAXLEN)); l++) dummy[l]=in[start+j+k+l];
-        if (l==DUMMYVAR_MAXLEN) continue; // Dummy variable name was too long
-        dummy[l]='\0';
-       } else { // Otherwise, we have to match function name exactly
-        if ((DictIter->key[k]>' ') || (isalnum(in[start+j+k])) || (in[start+j+k]=='_')) continue; // Nope...
-       }
-      p=1; i+=2;
-      FunctionType = ((FunctionDescriptor *)DictIter->data)->FunctionType;
-      NArgs = (FunctionType == PPL_USERSPACE_SUBROUTINE) ? -1 : (((FunctionDescriptor *)DictIter->data)->NumberArguments);
+      i+=2;
+      FunctionType = ((FunctionDescriptor *)DictItem->data)->FunctionType;
+      NArgs = (FunctionType == PPL_USERSPACE_SUBROUTINE) ? -1 : (((FunctionDescriptor *)DictItem->data)->NumberArguments);
       for (k=0; k<NArgs; k++) // Now collect together numeric arguments
        {
         if (bufpos+k+2 >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
@@ -852,7 +844,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
             *errpos = start+i;
             if (in[start+i] ==')')
              {
-              if ((FunctionType == PPL_USERSPACE_INT) && (DictIter->key[0]!='i') && (k==NArgs-2)) // Last argument to diff_dx is optional
+              if ((FunctionType == PPL_USERSPACE_INT) && (DictItem->key[0]!='i') && (k==NArgs-2)) // Last argument to diff_dx is optional
                {
                 ResultBuffer[bufpos+k+3] = ResultBuffer[bufpos+k+2];
                 ResultBuffer[bufpos+k+3].real = hypot(ResultBuffer[bufpos+k+3].real , ResultBuffer[bufpos+k+3].imag) * 1e-6;
@@ -873,7 +865,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         int ep=-1, endpos, stat, j;
         j=i;
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
-        stat = CallSubroutineFromAlgebra(DictIter->key, in+start+j, &endpos, &ep, errtext, RecursionDepth+1);
+        stat = CallSubroutineFromAlgebra(DictItem->key, in+start+j, &endpos, &ep, errtext, RecursionDepth+1);
         if (stat) { *errpos = (ep>=0) ? (start+j+ep) : (start+i); return; }
         if (PPL_FLOWCTRL_RETURNTOALGEBRA.string != NULL) { *errpos = start+i; sprintf(errtext, "This subroutine returns a string result; a numeric result was expected."); return; }
         ResultBuffer[bufpos] = PPL_FLOWCTRL_RETURNTOALGEBRA;
@@ -892,7 +884,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         StrBracketMatch(in+i,NULL,NULL,&k,0);
         if (k<=0) { *errpos=start+i; strcpy(errtext,"Syntax Error: Mismatched bracket."); return; }
         j=-1;
-        ((void(*)(char*,int,value*,unsigned char,int,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(in+start+i+1,k-1,ResultBuffer+bufpos,DollarAllowed,RecursionDepth,&j,errtext);
+        ((void(*)(char*,int,value*,unsigned char,int,int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(in+start+i+1,k-1,ResultBuffer+bufpos,DollarAllowed,RecursionDepth,&j,errtext);
         if (j>=0) { *errpos = start+i+1+j; return; }
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
        }
@@ -907,13 +899,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
-        if      (NArgs==0) ((void(*)(value*,                                          int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                                                                                    ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==1) ((void(*)(value*,value*,                                   int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                                                              ResultBuffer+bufpos+2,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==2) ((void(*)(value*,value*,value*,                            int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                                        ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==3) ((void(*)(value*,value*,value*,value*,                     int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,              int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                                            ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==5) ((void(*)(value*,value*,value*,value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(                      ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos+6,ResultBuffer+bufpos,&j,errtext);
-        else if (NArgs==6) ((void(*)(value*,value*,value*,value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictIter->data)->FunctionPtr)(ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos+6,ResultBuffer+bufpos+7,ResultBuffer+bufpos,&j,errtext);
+        if      (NArgs==0) ((void(*)(value*,                                          int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(                                                                                                                                    ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==1) ((void(*)(value*,value*,                                   int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(                                                                                                              ResultBuffer+bufpos+2,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==2) ((void(*)(value*,value*,value*,                            int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(                                                                                        ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==3) ((void(*)(value*,value*,value*,value*,                     int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(                                                                  ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==4) ((void(*)(value*,value*,value*,value*,value*,              int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(                                            ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==5) ((void(*)(value*,value*,value*,value*,value*,value*,       int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(                      ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos+6,ResultBuffer+bufpos,&j,errtext);
+        else if (NArgs==6) ((void(*)(value*,value*,value*,value*,value*,value*,value*,int*,char*))((FunctionDescriptor*)DictItem->data)->FunctionPtr)(ResultBuffer+bufpos+2,ResultBuffer+bufpos+3,ResultBuffer+bufpos+4,ResultBuffer+bufpos+5,ResultBuffer+bufpos+6,ResultBuffer+bufpos+7,ResultBuffer+bufpos,&j,errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_UNIT)
@@ -929,27 +921,27 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
-        ppl_spline_evaluate(DictIter->key, (SplineDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        ppl_spline_evaluate(DictItem->key, (SplineDescriptor *)(((FunctionDescriptor *)DictItem->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_HISTOGRAM)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
-        ppl_histogram_evaluate(DictIter->key, (HistogramDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        ppl_histogram_evaluate(DictItem->key, (HistogramDescriptor *)(((FunctionDescriptor *)DictItem->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_FFT)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
-        ppl_fft_evaluate(DictIter->key, (FFTDescriptor *)(((FunctionDescriptor *)DictIter->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        ppl_fft_evaluate(DictItem->key, (FFTDescriptor *)(((FunctionDescriptor *)DictItem->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_USERDEF)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
-        FuncDef = (FunctionDescriptor *)DictIter->data;
+        FuncDef = (FunctionDescriptor *)DictItem->data;
         j=0;
         while (FuncDef != NULL) // Check whether supplied arguments are within the range of this definition
          {
@@ -1005,7 +997,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
           j=0;
           for (k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
            {
-            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictIter->data)->ArgList+j, NULL, (void **)&VarData);
+            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, NULL, (void **)&VarData);
             if (VarData!=NULL)
              {
               memcpy(ResultBuffer+bufpos+k+1, VarData, sizeof(value));
@@ -1015,9 +1007,9 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
              {
               ppl_units_zero(ResultBuffer+bufpos+k+1);
               ResultBuffer[bufpos+k+1].modified=2;
-              DictAppendValue(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictIter->data)->ArgList+j, ResultBuffer[bufpos+k+2]);
+              DictAppendValue(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, ResultBuffer[bufpos+k+2]);
              }
-            j += strlen(((FunctionDescriptor *)DictIter->data)->ArgList+j)+1;
+            j += strlen(((FunctionDescriptor *)DictItem->data)->ArgList+j)+1;
            }
           j=-1;
           ppl_EvaluateAlgebra((char *)FuncDef->FunctionPtr, ResultBuffer+bufpos, 0, &j, DollarAllowed, errpos, errtext, RecursionDepth+1);
@@ -1025,9 +1017,9 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
           j=0;
           for (k=0; k<NArgs; k++) // Swap old arguments for new in global dictionary
            {
-            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictIter->data)->ArgList+j, NULL, (void **)&VarData);
+            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, NULL, (void **)&VarData);
             memcpy(VarData, ResultBuffer+bufpos+k+1, sizeof(value));
-            j += strlen(((FunctionDescriptor *)DictIter->data)->ArgList+j)+1;
+            j += strlen(((FunctionDescriptor *)DictItem->data)->ArgList+j)+1;
            }
           if (*errpos >= 0) { (*errpos) = start+i; return; }
          }
@@ -1035,7 +1027,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       else if (FunctionType == PPL_USERSPACE_INT)
        {
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++;
-        if (DictIter->key[0]=='i') Integrate    ( integrand , dummy , ResultBuffer+bufpos+3 , ResultBuffer+bufpos+4 , ResultBuffer+bufpos , errpos , errtext , RecursionDepth );
+        if (DictItem->key[0]=='i') Integrate    ( integrand , dummy , ResultBuffer+bufpos+3 , ResultBuffer+bufpos+4 , ResultBuffer+bufpos , errpos , errtext , RecursionDepth );
         else                       Differentiate( integrand , dummy , ResultBuffer+bufpos+3 , ResultBuffer+bufpos+4 , ResultBuffer+bufpos , errpos , errtext , RecursionDepth );
         if (*errpos >= 0) { (*errpos) = start+i; return; }
        }
@@ -1044,7 +1036,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
       ENFORCEANGLEDIMLESS(bufpos);
       bufpos++; if (bufpos >= ALGEBRA_MAXITEMS) { *errpos = start+i; strcpy(errtext,"Internal Error: Temporary results buffer overflow."); return; }
      }
-    if (p==0) { *errpos=start+j; strcpy(errtext,"No such function"); return; }
+    else { *errpos=start+j; strcpy(errtext,"No such function"); return; }
    }
   // PHASE  2: EVALUATION OF BRACKETED EXPRESSIONS
   if (OpList[2]!=0) for (i=0;i<len;i++) if (StatusRow[i]==3)

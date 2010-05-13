@@ -82,8 +82,8 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
   else                   LabelString = "\"Item %d\"%($0)";
 
   // Collect together using and every items
-  UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
-  EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+  UsingList = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+  EveryList = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
   status   = 0;
   ErrCount = DATAFILE_NERRS;
   NExpect  = 1;

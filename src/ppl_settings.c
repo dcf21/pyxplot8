@@ -261,7 +261,7 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_axis_default.unit));
 
   // Set up list of input filters
-  settings_filters = DictInit();
+  settings_filters = DictInit(HASHSIZE_SMALL);
   ppl_units_zero(&tempval);
   #ifdef HAVE_FITSIO
   tempval.string = FITSHELPER;

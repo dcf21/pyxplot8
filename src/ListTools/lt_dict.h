@@ -24,6 +24,9 @@
 #ifndef _LT_DICT_H
 #define _LT_DICT_H 1
 
+#define HASHSIZE_SMALL   128
+#define HASHSIZE_LARGE 16384
+
 typedef struct DictItemS
  {
   char             *key;
@@ -39,10 +42,12 @@ typedef struct DictItemS
 
 typedef struct DictS
  {
-  struct DictItemS *first;
-  struct DictItemS *last;
-  int               length;
-  int               memory_context;
+  struct DictItemS  *first;
+  struct DictItemS  *last;
+  int                length;
+  int                HashSize;
+  struct DictItemS **HashTable;
+  int                memory_context;
  } Dict;
 
 typedef DictItem DictIterator;
@@ -51,7 +56,7 @@ typedef DictItem DictIterator;
 #include "ppl_units.h"
 
 // Functions defined in lt_dict.c
-Dict *DictInit         ();
+Dict *DictInit         (int HashSize);
 Dict *DictCopy         (Dict *in, int deep);
 int   DictLen          (Dict *in);
 void  DictAppendPtr    (Dict *in, char *key, void *item, int size, int copyable, int DataType);
@@ -63,6 +68,7 @@ void  DictAppendString (Dict *in, char *key, char *item);
 void  DictAppendList   (Dict *in, char *key, List *item);
 void  DictAppendDict   (Dict *in, char *key, Dict *item);
 void  DictLookup       (Dict *in, char *key, int *DataTypeOut, void **ptrout);
+void DictLookupWithWildcard(Dict *in, Dict *in_wildcards, char *key, char *SubsString, int SubsMaxLen, DictItem **ptrout);
 int   DictContains     (Dict *in, char *key);
 int   DictRemoveKey    (Dict *in, char *key);
 int   DictRemovePtr    (Dict *in, void *item);

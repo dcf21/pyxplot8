@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   // Initialise sub-modules
   if (DEBUG) ppl_log("Initialising PyXPlot Watch.");
   lt_MemoryInit(&ppl_error, &ppl_log);
-  StatInfoDict = DictInit();
+  StatInfoDict = DictInit(HASHSIZE_SMALL);
 
   // Set up default session settings
   settings_session_default.splash    = SW_ONOFF_ON;

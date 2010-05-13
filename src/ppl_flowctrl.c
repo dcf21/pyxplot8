@@ -864,7 +864,7 @@ int CallSubroutineFromAlgebra(char *FunctionName, char *ArgStart, int *endpos, i
     if (*errpos >= 0) { (*errpos) += i; return 1; }
     i+=j;
 
-    tempdict = DictInit();
+    tempdict = DictInit(HASHSIZE_SMALL);
     if (sflag) DictAppendString(tempdict, "string_argument", temp_err_string);
     else       DictAppendPtrCpy(tempdict, "argument"       , (void *)&ResultTemp, sizeof(value), DATATYPE_VOID);
     ListAppendPtr(ArgList, (void *)tempdict, 0, 0, DATATYPE_VOID);

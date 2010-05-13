@@ -48,8 +48,9 @@ void ppl_UserSpaceInit()
  {
   value v;
 
-  _ppl_UserSpace_Vars  = DictInit();
-  _ppl_UserSpace_Funcs = DictInit();
+  _ppl_UserSpace_Vars  = DictInit(HASHSIZE_LARGE);
+  _ppl_UserSpace_Funcs = DictInit(HASHSIZE_LARGE);
+  _ppl_UserSpace_Funcs2= DictInit(HASHSIZE_SMALL);
 
   // Function descriptors for the mathematical functions which are built into PyXPlot
   FunctionDescriptor fd_abs           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_abs         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{abs}@<@1@>", "abs(z) returns the absolute magnitude of z"};
@@ -462,7 +463,9 @@ void ppl_UserSpaceInit()
 //  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernikeR"       , (void *)&fd_zernikeR    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zeta"           , (void *)&fd_zeta        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs2,"int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "diff_d?"        , (void *)&fd_diff        , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs2,"diff_d?"        , (void *)&fd_diff        , sizeof(FunctionDescriptor), DATATYPE_VOID);
 
   return;
  }
