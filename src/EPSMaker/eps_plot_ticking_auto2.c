@@ -225,6 +225,7 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
            x = ts_min + j * TickSchemes[i].ticksep;
            if (IsLog) x = pow(LogBase, x);
            x *= TickSchemes[i].mantissa[k];
+           if (fabs(x)<1e-6*TickSchemes[i].ticksep) x=0;
            if ((x<axis_min) || (x>axis_max)) continue;
            TL_trial[TL_trial_len] = x;
            TL_trial_len++;

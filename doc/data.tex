@@ -164,7 +164,7 @@ tabulate [1:5] gamma(x)
 \end{verbatim}
 
 \noindent Multiple functions may be tabulated into the same file, either by
-using the \indmodt{using} modifier:
+using the \indmodt{using} modifier, as in the example
 
 \begin{verbatim}
 tabulate [0:2*pi] sin(x):cos(x):tan(x) u 1:2:3:4
@@ -257,7 +257,8 @@ varied during the fitting process, are listed after the keyword \indkeyt{via}
 in the {\tt fit} command.  The modifiers \indmodt{index}, \indmodt{every},
 \indmodt{select} and \indmodt{using} have the same meanings in the {\tt fit}
 command as in the {\tt plot} command. For example, given the following
-\datafile\ which contains a sampled square wave, entitled {\tt square.dat}:
+\datafile, entitled {\tt square.dat}, which contains a sampled square wave, the
+script below fits the first three terms of a truncated Fourier series to it:
 
 \begin{verbatim}
     0.314159          1
@@ -271,9 +272,6 @@ command as in the {\tt plot} command. For example, given the following
     5.340708         -1
     5.969026         -1
 \end{verbatim}
-
-\noindent the following script fits the first three terms of a truncated
-Fourier series to it:
 
 \begin{verbatim}
 f(x) = a1*sin(x) + a3*sin(3*x) + a5*sin(5*x)
@@ -547,12 +545,12 @@ F(\omega) & = & \int_0^\infty f(x) \exp \left(-2\pi ix\omega\right) \,\mathrm{d}
             =   \int_{-\nicefrac{1}{2}}^{\nicefrac{1}{2}} \exp\left(-2\pi ix\omega\right) \,\mathrm{d}x
 \\        & = & \frac{1}{2\pi\omega}\left[ \exp\left(\pi i\omega\right) - \exp\left(-\pi i\omega\right) \right]
             = \frac{\sin(\pi\omega)}{\pi\omega}
-            = \sinc(\omega).
+            = \sinc(\pi\omega).
 \end{eqnarray*}
 \nlnp
 In this example, we demonstrate this numerically by taking the Fourier
 transform of such a step function, and comparing the result against the
-function {\tt sinc(pi*x)} which is pre-defined within PyXPlot:
+function {\tt sinc(x)} which is pre-defined within PyXPlot:
 \nlscf
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt step(x) = tophat(x,0.5)}\newline
@@ -571,7 +569,7 @@ the central region in order to clearly show the stepping of the function:
 \includegraphics{examples/eps/ex_fft.eps}
 \end{center}
 \nlscf
-In the following steps, we take the square of the function $\sinc(pi*x)$ just
+In the following steps, we take the square of the function $\sinc(\pi x)$ just
 calculated, and then plot the numerical inverse Fourier transform of the
 result:
 \nlscf
@@ -601,7 +599,7 @@ sample number $n$, which ranges between $0$ and $N_x$. The window functions may
 be invoked using the following syntax:
 
 \begin{verbatim}
-fft [...] out() of in() window <window_name>
+fft [...] <out>() of <in>() window <window_name>
 \end{verbatim}
 
 \noindent Where multi-dimensional FFTs are performed, window functions are
