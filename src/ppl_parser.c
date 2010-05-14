@@ -378,11 +378,6 @@ Dict *parse(char *line)
 // PARSE_AUTOCOMPLETE(): Make suggestion for words which could come next. number gives the nth possible word.
 
 #ifdef HAVE_READLINE
-char *ppl_dummy_completer(const char *line, int status) // This is a replacement for GNU readline's default filename completer when we don't want
- {                                                      // filenames to be completion options.
-  return NULL;
- }
-
 char *parse_autocomplete(const char *LineConst, int status)
  {
   static int   number, start;
@@ -476,19 +471,21 @@ char **ppl_rl_completion(const char *text, int start, int end)
   char **matches;
   char  *FirstItem;
 
+  if ((start>0)&&((rl_line_buffer[start-1]=='\"')||(rl_line_buffer[start-1]=='\''))) return NULL; // Do filename completion
+
   FirstItem = parse_autocomplete(text, -1-start); // Setup parse_autocomplete to know what string it's working on
 
   if ((FirstItem!=NULL) && (FirstItem[0]=='\n'))  // We are trying to match a %s:filename field, so turn on filename completion
    {
     free(FirstItem);
-    rl_completion_entry_function  = NULL; // NULL means that readline's default filename completer is activated
+    rl_attempted_completion_over = 1; // NULL means that readline's default filename completer is activated
     return NULL;
    }
   else
    free(FirstItem);
 
   matches = rl_completion_matches(text, parse_autocomplete);
-  rl_completion_entry_function = ppl_dummy_completer; // We replace readline's filename completer with a dummy, so that filenames are not completion options
+  rl_attempted_completion_over = 1; // Make sure that filenames are not completion options
   return matches;
  }
 #endif

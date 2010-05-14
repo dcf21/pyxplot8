@@ -122,7 +122,7 @@ double Lcdm_z_from_t(double t, double H, double OmegaM, double OmegaL)
   Lcdm_comm p;
   int iter = 0, max_iter = 100, status;
   double m, a, b;
-  const gsl_min_fminimizer_type *T = gsl_min_fminimizer_brent;
+  const gsl_min_fminimizer_type *T = gsl_min_fminimizer_goldensection;
   gsl_min_fminimizer *s;
   gsl_function fn;
 
