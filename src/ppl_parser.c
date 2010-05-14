@@ -421,20 +421,16 @@ char *parse_autocomplete(const char *LineConst, int status)
     if (NumberCpy<0) NumberCpy=0; // Return first item twice
 
     // Fetch first non-whitespace character of command string
-    for (i=0; ((line[i]>='\0')&&(line[i]<=' ')); i++);
-    if      ((line[i]>='a')&&(line[i]<='z')) cln=(int)(line[i]-'a');
-    else if ((line[i]>='A')&&(line[i]<='Z')) cln=(int)(line[i]-'A');
-    else                                     cln=-1;
+    cln=26;
 
-    CmdIterator = ListIterateInit(PplParserCmdList[26]);
+    CmdIterator = ListIterateInit(PplParserCmdList[cln--]);
     while (1)
      {
       if (CmdIterator == NULL)
        {
         if (cln==-1) break;
-        CmdIterator = ListIterateInit(PplParserCmdList[cln]);
-        cln=-1;
-        if (CmdIterator==NULL) break;
+        CmdIterator = ListIterateInit(PplParserCmdList[cln--]);
+        if (CmdIterator==NULL) continue;
        }
       CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
       match           = 0;
