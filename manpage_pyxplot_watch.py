@@ -69,11 +69,12 @@ scripts which are to be watched.  Full documentation can be found in:
   \-q, \-\-quiet  : Quiet mode; only output PyXPlot error messages to terminal
   \-h, \-\-help   : Display this help
   \-V, \-\-version: Display version number
-.SH AUTHOR
+.SH AUTHORS
 %s.
 .SH CREDITS
-Thanks to Dave Ansell, Rachel Holdforth, Michael Rutter and Matthew Smith, all
-of whom have made substantial contributions to the development of PyXPlot.
+Thanks to Ian Abell, Dave Ansell, Rachel Holdforth, Michael Rutter and Matthew
+Smith, all of whom have made substantial contributions to the development of
+PyXPlot.
 .SH "SEE ALSO"
 .BR pyxplot (1), gnuplot (1)
 """%(docpath,author))

@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_tempscale"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_tempscale.eps"
 
 # Main body of figure script
 set size ratio 1e-2
@@ -37,4 +35,7 @@ set x2tics outward 20,20
 set xlabel "$^\circ$C"
 set x2label "$^\circ$F"
 plot [-10:100]
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

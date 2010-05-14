@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_ellipse"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_ellipse.eps"
 
 # Main body of figure script
 set multiplot ; set nodisplay
@@ -62,4 +60,7 @@ text '$L=a(1-e^2)$' at  0.2-fd,slr/2
 
 # Display diagram
 set display ; refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

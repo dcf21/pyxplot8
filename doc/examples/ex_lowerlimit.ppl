@@ -21,12 +21,11 @@
 
 # This script produces a figure for the PyXPlot Users' Guide
 
-# Call common initialisation script
+# Initialise
 reset
-load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_lowerlimit.eps"
+title = "ex_lowerlimit" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 set axis x invisible
@@ -39,7 +38,12 @@ plot [-1:1][-1:1] '--' with lowerlimits
 END
 
 # Set output destination
-set output "examples/eps/ex_upperlimit.eps"
+set term pdf
+set output "examples/eps/%s.pdf"%(title)
+refresh
+0 0
+END
+title = "ex_upperlimit" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 set axis x invisible
@@ -50,7 +54,12 @@ plot [-1:1][-1:1] '--' with upperlimits
 END
 
 # Set output destination
-set output "examples/eps/ex_plotstyletab.eps"
+set term pdf
+set output "examples/eps/%s.pdf"%(title)
+refresh
+0 0
+END
+title = "ex_plotstyletab" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 set preamble '\usepackage{wasysym}'
@@ -156,4 +165,7 @@ foreach datum a,b,c,d,e,f,g in '--'
 END
 
 plot
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

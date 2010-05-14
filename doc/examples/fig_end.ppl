@@ -1,4 +1,4 @@
-# EX_INTRO_BESSEL.PPL
+# FIG_END.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -19,17 +19,9 @@
 
 # ----------------------------------------------------------------------------
 
-# This script produces a figure for the PyXPlot Users' Guide
+# This script initialises the figures in the PyXPlot Users' Guide
 
-# Call common initialisation script
-reset
-title = "ex_intro_bessel"
-load "examples/fig_init.ppl"
-set width 8
-
-# Main body of figure script
-plot [0:10][-0.5:1] besselJ(0,x), besselJ(1,x), besselJ(2,x)
-
-# Call common cleanup script
-load "examples/fig_end.ppl"
+set term pdf
+set output "examples/eps/%s.pdf"%(title)
+refresh
 

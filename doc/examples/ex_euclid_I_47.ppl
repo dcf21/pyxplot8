@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_euclid_I_47"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_euclid_I_47.eps"
 
 # Main body of figure script
 set unit angle nodimensionless
@@ -84,4 +82,7 @@ text "L" at Lx,Ly gap TG   hal c val t
 
 # Display diagram
 set display ; refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

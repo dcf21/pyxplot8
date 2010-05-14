@@ -23,13 +23,14 @@
 
 # Call common initialisation script
 reset
+title = "ex_intro_legendre"
 load "examples/fig_init.ppl"
-
-# Set output destination
 set width 8
-set output "examples/eps/ex_intro_legendre.eps"
 
 # Main body of figure script
 set key xcentre
 p [-1:1][:] legendreP(2,x), legendreP(4,x), legendreP(6,x)
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

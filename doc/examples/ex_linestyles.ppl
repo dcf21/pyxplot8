@@ -23,10 +23,9 @@
 
 # Call common initialisation script
 reset
-load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_linestyles.eps"
+title = "ex_linestyles" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 set multiplot
@@ -47,7 +46,8 @@ set display
 refresh
 
 # Set output destination
-set output "examples/eps/ex_linestyles2.eps"
+load "examples/fig_end.ppl"
+title = "ex_linestyles2" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 clear
@@ -73,7 +73,8 @@ set display
 refresh
 
 # Set output destination
-set output "examples/eps/ex_linestyles3.eps"
+load "examples/fig_end.ppl"
+title = "ex_linestyles3" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 clear
@@ -101,4 +102,7 @@ for i=0 to 9
  }
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

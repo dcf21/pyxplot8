@@ -1,6 +1,6 @@
  ____       __  ______  _       _      PYXPLOT
 |  _ \ _   _\ \/ /  _ \| | ___ | |_    Version 0.8.0
-| |_) | | | |\  /| |_) | |/ _ \| __|   xx/05/2010
+| |_) | | | |\  /| |_) | |/ _ \| __|   19/05/2010
 |  __/| |_| |/  \|  __/| | (_) | |_
 |_|    \__, /_/\_\_|   |_|\___/ \__|   Copyright (C) 2006-2010 Dominic Ford
        |___/                                         2008-2010 Ross Church
@@ -70,26 +70,35 @@ Installation can proceed, but some of PyXPlot's features will be disabled. Once
 they have been added to the system, PyXPlot should be reinstalled to take
 advantage of their presence.
 
-- cfitsio -- required in order to plot datafiles in FITS format.
-- Ghostview (or ggv, evince or okular) -- required in order for PyXPlot to
-  display plots live on the screen; PyXPlot remains able to generate image
-  files on disk without it.
-- gunzip -- required in order to plot compressed datafiles in .gz format.
-- The Gnu Readline Library (version 5+) -- required in order to provide tab
-  completion and command histories in PyXPlot's interactive command-line
-  interface.
-- wget -- required in order to plot data files directly from the internet.
+- cfitsio -- required for PyXPlot to be able to plot datafiles in FITS format.
+- Ghostview (or ggv) -- required for PyXPlot to be able to display plots live
+  on the screen; PyXPlot remains able to generate image files on disk without
+  it. Alternatively, the set viewer within PyXPlot allows a different
+  postscript viewer to be used.
+- gunzip -- required for PyXPlot to be able to plot compressed datafiles in .gz
+  format.
+- The Gnu Readline Library (version 5+) -- required for PyXPlot to be able to
+  provide tab completion and command histories in PyXPlot's interactive
+  command-line interface.
+- wget -- required for PyXPlot to be able to plot datafiles directly from the
+  internet.
 
 Debian and Ubuntu users can find the above software in the following packages:
 
 fftw3-dev, gs, gv, imagemagick, libcfitsio3-dev, libgsl0-dev, libkpathsea-dev,
-libpng12-dev, libreadline5-dev, libxml2-dev, tetex-extra, wget, zlib1g-dev.
+libpng12-dev, libreadline5-dev, libxml2-dev, texlive-latex-extra,
+texlive-latex-recommended, texlive-fonts-extra, texlive-fonts-recommended,
+wget, zlib1g-dev.
 
 These packages may be installed from a command prompt by typing, all on one
 line:
 
-sudo apt-get install fftw3-dev gs gv imagemagick libcfitsio3-dev libgsl0-dev libkpathsea-dev libpng12-dev libreadline5-dev libxml2-dev tetex-extra wget zlib1g-dev
+sudo apt-get install fftw3-dev gs gv imagemagick libcfitsio3-dev libgsl0-dev libkpathsea-dev libpng12-dev libreadline5-dev libxml2-dev texlive-latex-extra texlive-latex-recommended  texlive-fonts-extra texlive-fonts-recommended wget zlib1g-dev
 
+Users of MacOS X can find the above software in the following MacPorts packages:
+
+cfitsio, fftw-3, ghostscript, gsl-devel, gv, ImageMagick, libpng, libxml2,
+readline-5, texlive, wget, zlib.
 
 
 3. INSTALLATION

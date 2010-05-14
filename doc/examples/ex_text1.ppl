@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_text1"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_text1.eps"
 
 # Main body of figure script
 text '\parbox[t]{6cm}{\setlength{\parindent}{1cm} \
@@ -35,3 +33,7 @@ Who ate a green apple and died, \\ \
 \indent While her lover lamented, \\ \
 \indent The apple fermented, \\ \
 and made cider inside her inside.}'
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
+

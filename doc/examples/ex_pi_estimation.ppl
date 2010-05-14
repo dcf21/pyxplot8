@@ -23,6 +23,7 @@
 
 # Call common initialisation script
 reset
+title = "null"
 load "examples/fig_init.ppl"
 
 # Main body of figure script
@@ -39,6 +40,7 @@ set output "examples/eps/ex_pi_estimation.dat"
 tabulate 1-2*random():1-2*random() using 0:2:3
 
 # Draw a unit circle and a unit square
+title = "ex_pi_estimation" ; load "examples/fig_init.ppl"
 box from -width/2,-width/2 to width/2,width/2
 circle at 0,0 radius width/2 with lt 2
 
@@ -53,8 +55,9 @@ foreach datum i,j in 'examples/eps/ex_pi_estimation.dat' using 2:3
 
 print "pi=%.4f"%(n / Nsamples * 4)
 
-# Set output destination
-set output "examples/eps/ex_pi_estimation.eps"
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

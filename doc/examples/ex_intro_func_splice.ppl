@@ -23,14 +23,15 @@
 
 # Call common initialisation script
 reset
+title = "ex_intro_func_splice"
 load "examples/fig_init.ppl"
-
-# Set output destination
 set width 8
-set output "examples/eps/ex_intro_func_splice.eps"
 
 # Main body of figure script
 f(x) = 0
 f(x)[-pi/2:pi/2] = cos(x)
 plot [-pi:pi][-0.1:1.1] f(x) with lines
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

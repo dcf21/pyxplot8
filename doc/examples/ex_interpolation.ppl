@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_interpolation"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_interpolation.eps"
 
 # Main body of figure script
 interpolate linear f_linear() "examples/ex_interpolation.dat"
@@ -41,4 +39,7 @@ plot [0:4][-0.1:1.3] \
    f_spline(x)+0.1 title "Spline", \
    "examples/ex_interpolation.dat" using 1:($2+0.2) notitle with points pt 1, \
    f_akima (x)+0.2 title "Akima"
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

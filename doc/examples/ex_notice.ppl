@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_notice"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_notice.eps"
 
 # Main body of figure script
 set multiplot ; set nodisplay
@@ -48,4 +46,7 @@ arrow from w/4, h/4 to 3/4*w, h/4 with linewidth 8
 
 # Display notice
 set display ; refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

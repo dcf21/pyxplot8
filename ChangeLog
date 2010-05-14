@@ -1,4 +1,4 @@
-2010 ??? ??: PyXPlot 0.8.0
+2010 May 19: PyXPlot 0.8.0
    - The handling of large datafiles has been streamlined to require around an
      order-of-magnitude less time and memory.
    - PyXPlot's mathematical environment has been extended to handle complex

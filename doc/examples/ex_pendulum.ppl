@@ -21,12 +21,11 @@
 
 # This script produces a figure for the PyXPlot Users' Guide
 
-# Call common initialisation script
+# Initialise
 reset
-load "examples/fig_init.ppl"
 
 # Set output destination
-set output "examples/eps/ex_pendulum.eps"
+title = "ex_pendulum" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 theta_approx(a,t) = a * sin(2*pi*t)
@@ -41,7 +40,8 @@ plot [0:4] theta_approx(omega,x) title 'Approximate solution', \
            theta_exact (omega,x) title 'Exact solution'
 
 # Set output destination
-set output "examples/eps/ex_pendulum2.eps"
+load "examples/fig_end.ppl"
+title = "ex_pendulum2" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
 subroutine PendulumDivergenceTime(omega, deviation)
@@ -63,4 +63,7 @@ plot [unit(5*deg):unit(30*deg)][0:19] \
   PendulumDivergenceTime(x,unit(20*deg)) title "$20^\circ$ deviation", \
   PendulumDivergenceTime(x,unit(10*deg)) title "$10^\circ$ deviation", \
   PendulumDivergenceTime(x,unit( 5*deg)) title "$ 5^\circ$ deviation"
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

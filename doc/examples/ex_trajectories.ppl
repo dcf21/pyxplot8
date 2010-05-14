@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_trajectories"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_trajectories.eps"
 
 # Main body of figure script
 
@@ -49,4 +47,7 @@ plot h(x,30,10) title "$\theta=30^\circ;\qquad v=10\,{\rm m\,s^{-1}}$", \
      h(x,60,10) title "$\theta=60^\circ;\qquad v=10\,{\rm m\,s^{-1}}$", \
      h(x,30,15) title "$\theta=30^\circ;\qquad v=15\,{\rm m\,s^{-1}}$", \
      h(x,60,15) title "$\theta=60^\circ;\qquad v=15\,{\rm m\,s^{-1}}$"
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

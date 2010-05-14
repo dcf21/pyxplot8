@@ -23,11 +23,9 @@
 
 # Call common initialisation script
 reset
+title = "ex_gallery"
 load "examples/fig_init.ppl"
 set term colour
-
-# Set output destination
-set output "examples/eps/ex_gallery.eps"
 
 # Main body of figure script
 set multiplot
@@ -72,4 +70,7 @@ plot "examples/ex_barchart1.dat" with steps, "" with points
 # Now that we are finished preparing multiplot, turn display on
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_apachelog"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_apachelog.eps"
 
 # Main body of figure script
 
@@ -41,4 +39,7 @@ set xtics 0.5, 1
 set mxtics 0.5, 0.25
 set xformat "%s"%(time_dayweekname(x,0)) rotate 30
 plot [2455284.9:2455290.9] "examples/ex_apachelog.dat" notitle with lines
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

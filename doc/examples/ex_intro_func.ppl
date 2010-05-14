@@ -23,11 +23,9 @@
 
 # Call common initialisation script
 reset
+title = "ex_intro_func"
 load "examples/fig_init.ppl"
-
-# Set output destination
 set width 8
-set output "examples/eps/ex_intro_func.eps"
 
 # Main body of figure script
 a = 0.02
@@ -35,4 +33,7 @@ b = -1
 c = 5
 f(x) = a*(x**3) + b*x + c
 plot f(x)
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

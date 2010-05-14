@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_funcsplice"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_funcsplice.eps"
 
 # Main body of figure script
 f(x)     = 0.0
@@ -44,4 +42,7 @@ set xlabel "$x$"
 set ylabel "$y$"
 set key bottom right
 plot f(x) , binet(x)
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

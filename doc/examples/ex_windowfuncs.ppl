@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_windowfuncs"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_windowfuncs.eps"
 
 # Define window functions
 a0    = 0.62
@@ -122,4 +120,7 @@ plot triangular(x*(N-1))
 set term landscape
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

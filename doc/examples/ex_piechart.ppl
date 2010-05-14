@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_piechart"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_piechart.eps"
 
 # Main body of figure script
 set palette grey40, grey60, grey80
@@ -38,8 +36,26 @@ piechart '--' using $1 label key "%s"%($2)
 END
 
 # Produce second version of figure
-set output "examples/eps/ex_piechart2.eps"
+set term pdf
+set output "examples/eps/%s.pdf"%(title)
+refresh
+0.22 Dark~Matter
+0.04 Baryonic~Matter
+0.74 Dark~Energy
+END
+title = "ex_piechart2" ; load "examples/fig_init.ppl"
+set width 6
+
 piechart '--' using $1 label auto "%s"%($2)
+0.22 Dark~Matter
+0.04 Baryonic~Matter
+0.74 Dark~Energy
+END
+
+# Call common cleanup script
+set term pdf
+set output "examples/eps/%s.pdf"%(title)
+refresh
 0.22 Dark~Matter
 0.04 Baryonic~Matter
 0.74 Dark~Energy

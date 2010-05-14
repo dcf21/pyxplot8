@@ -22,6 +22,7 @@
 # This script initialises the figures in the PyXPlot Users' Guide
 
 set term eps mono portrait
+set output "examples/eps/%s.eps"%(title)
 gold_ratio = 1/((1+sqrt(5))/2)
 set width 10.0
 

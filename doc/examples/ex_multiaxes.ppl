@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_multiaxes"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_multiaxes.eps"
 
 # Main body of figure script
 set numeric display latex
@@ -47,4 +45,7 @@ plot [80*unit(nm):unit(mm)][1e-20:] \
   bb(x, 300) title "$T= 300$\,K", \
   bb(x,1000) title "$T=1000$\,K", \
   bb(x,3000) title "$T=3000$\,K"
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

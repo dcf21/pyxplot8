@@ -23,10 +23,10 @@
 
 # Call common initialisation script
 reset
+title = "ex_axisunits"
 load "examples/fig_init.ppl"
 
-# Set output destination
-set output "examples/eps/ex_axisunits.eps"
+# Initialise
 set unit preferred kg*m/s
 s = unit(-2.2*cm)
 x = unit(kg*m/s)
@@ -53,4 +53,7 @@ plot [0*x:10*x]
 
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

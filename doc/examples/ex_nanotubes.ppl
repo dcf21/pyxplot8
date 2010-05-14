@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_nanotubes"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_nanotubes.eps"
 
 # Main body of figure script
 BASIS_ANGLE_X = (0  )*unit(deg)
@@ -71,3 +69,7 @@ for XPOS=0 to 10
 
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
+

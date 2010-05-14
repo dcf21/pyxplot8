@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_cover"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_cover.eps"
 
 # Main body of figure script
 set multiplot
@@ -73,7 +71,10 @@ set origin logo_x, logo_y
 p [-9.5:4.8][-0.75:0.60] - x*exp(-x**2) + \
    (1/(exp((x-1)*3)+1) - 0.5)/4 - 0.2 with l lw 3 colour 1
 
-# Now that we are finished preparing multiplot,
-# turn display on
+# Now that we are finished preparing multiplot, turn display on
 set display
 refresh
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
+

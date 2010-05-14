@@ -96,7 +96,7 @@ results.  Table~\ref{tab:style_modifiers} lists which modifiers act upon which
 plot styles.
 
 \begin{table}
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab.eps}}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_plotstyletab}}
 \caption{A list of the plot styles affected by each style modifiers.}
 \label{tab:style_modifiers}
 \end{table}
@@ -153,7 +153,7 @@ plot [][6:0] 1 with lp, 2 with lp, 3 w lp, 4 w lp, 5 w lp
 set terminal monochrome
 replot
 \end{verbatim}
-\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_col_vs_mono.eps}}
+\centerline{\includegraphics[width=\textwidth]{examples/eps/ex_col_vs_mono}}
 
 \section{PyXPlot's Plot Styles}
 \label{sec:list_of_plotstyles}
@@ -170,10 +170,10 @@ positions of each point:
 \item \indpst{dots} -- places a small dot at each datum.
 \item \indpst{lines} -- connects adjacent \datapoint s with straight lines.
 \item \indpst{linespoints} -- a combination of both lines and points.
-\item \indpst{lowerlimits} -- places a lower-limit sign (\includegraphics{examples/eps/ex_lowerlimit.eps}) at each datum.\index{lower-limit datapoints}
+\item \indpst{lowerlimits} -- places a lower-limit sign (\includegraphics{examples/eps/ex_lowerlimit}) at each datum.\index{lower-limit datapoints}
 \item \indpst{points} -- places a marker symbol at each datum.
 \item \indpst{stars} -- similar to {\tt points}, but uses a different set of marker symbols, based upon the stars drawn in Johann Bayer's highly ornate star atlas {\tt Uranometria} of 1603.
-\item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit.eps}) at each datum.\index{upper-limit datapoints}
+\item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit}) at each datum.\index{upper-limit datapoints}
 \end{itemize}
 
 \example{ex:hrdiagram}{A Hertzsprung-Russell Diagram}{
@@ -227,7 +227,7 @@ better than~20.
 \noindent{\tt \phantom{xxxxx}select (\$4/\$3<0.05) $\backslash$}\newline
 \noindent{\tt \phantom{xxxxx}with dots ps 3}
 \nlscf
-\centerline{\includegraphics[width=10cm]{examples/eps/ex_hrdiagram.eps}}
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_hrdiagram}}
 }
 
 \subsection{Error Bars}
@@ -323,7 +323,7 @@ between them, or they may overlap, as seen in Figure~\ref{fig:ex_barchart2}(b).
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{examples/eps/ex_barchart2.eps}
+\includegraphics[width=\textwidth]{examples/eps/ex_barchart2}
 \end{center}
 \caption[A gallery of the various bar chart styles which PyXPlot can produce]
 {A gallery of the various bar chart styles which PyXPlot can produce.
@@ -362,7 +362,7 @@ chart with the boxes starting from their default position of $y=0$.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{examples/eps/ex_barchart1.eps}
+\includegraphics[width=\textwidth]{examples/eps/ex_barchart1}
 \end{center}
 \caption[A second gallery of the various bar chart styles which PyXPlot can
 produce]
@@ -472,7 +472,7 @@ This data can then be plotted using the following PyXPlot script:
 \noindent{\tt \phantom{x}'data' u 1:2:(\$1+\$3):(\$2+\$4) w arrows, $\backslash$}\newline
 \noindent{\tt \phantom{x}parametric 4*sin(t):4*cos(t) w lt 2 col black}
 \nlscf
-\centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex.eps}}
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex}}
 }
 
 \section{The {\tt style} Keyword}
@@ -605,7 +605,7 @@ example below, we pick a ratio of $8:15$:
 \noindent{\tt plot parametric r1*sin(t) + r2*sin(t*(r1/r2)) : $\backslash$}\newline
 \noindent{\tt \phantom{xxxxxxxxxxxxxxxx}r1*cos(t) + r2*cos(t*(r1/r2))}
 \nlscf
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_spirograph.eps}}
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_spirograph}}
 \nlscf
 Other ratios of {\tt r1}:{\tt r2} such as $7:19$ and $5:19$ also produce
 intricate patterns.
@@ -781,7 +781,7 @@ set xlabel "Momentum"
 and the subsequent text was appended automatically by PyXPlot:
 
 \vspace{3mm}
-\centerline{\includegraphics[width=10cm]{examples/eps/ex_axisunits.eps}}
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_axisunits}}
 \vspace{3mm}
 
 When the \indcmdt{set xformat} is used (see Section~\ref{sec:set_xformat}), no
@@ -838,7 +838,7 @@ set axis y atzero twoway
 plot [-2:8][-10:10]
 \end{verbatim}
 
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero.eps}}
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero}}
 
 \begin{verbatim}
 set axis x atzero arrow
@@ -846,7 +846,7 @@ set axis y atzero twoway
 plot [0:10][-10:10]
 \end{verbatim}
 
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero2.eps}}
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero2}}
 
 \begin{verbatim}
 set axis x notatzero arrow nomirror
@@ -854,7 +854,7 @@ set axis y notatzero arrow nomirror
 plot [0:10][0:20]
 \end{verbatim}
 
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero3.eps}}
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero3}}
 
 \subsection{Specifying where Ticks should Appear along Axes}
 
@@ -937,7 +937,7 @@ tics at all.
 \noindent{\tt set ylabel '\$$\backslash$exp(x)$\backslash$sin(1/x)\$'}\newline
 \noindent{\tt plot exp(x)*sin(1/x), 0}
 \nlscf
-\centerline{\includegraphics[width=9cm]{examples/eps/ex_axistics.eps}}
+\centerline{\includegraphics[width=9cm]{examples/eps/ex_axistics}}
 }
 
 \subsection{Configuring how Tick Marks are Labelled}
@@ -986,7 +986,7 @@ set xformat "%s$\pi$"%(x/pi)
 plot [-pi:2*pi] sin(x)
 \end{verbatim}
 
-\noindent\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2.eps}}
+\noindent\centerline{\includegraphics[width=8cm]{examples/eps/ex_axistics2}}
 
 Note that where possible, PyXPlot intelligently changes the positions along
 axes where it places the ticks to reflect significant points in the chosen
@@ -1111,7 +1111,7 @@ wavelength of light, frequency of light and photon energy.
 \noindent{\tt \phantom{xx}bb(x,1000) title "\$T=1000\$$\backslash$,K", $\backslash$}\newline
 \noindent{\tt \phantom{xx}bb(x,3000) title "\$T=3000\$$\backslash$,K"}
 \nlscf
-\centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes.eps}}
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes}}
 }
 
 \example{ex:cmbrtemp}{A plot of the temperature of the CMB as a function of redshift demonstrating non-linear axis linkage}{
@@ -1138,7 +1138,7 @@ we plot is using this function against axis {\tt x2}.
 \noindent{\tt set x2label "Redshift \$z\$"}\newline
 \noindent{\tt plot unit(2.73*K)*(1+x) axes x2y1}
 \nlscf
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_cmbrtemp.eps}}
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_cmbrtemp}}
 }
 
 \section{Gridlines}
@@ -1439,7 +1439,7 @@ Princeton, 1998).
 }
 \nlscf
 \begin{center}
-\includegraphics[width=11cm]{examples/eps/ex_hlines.eps}
+\includegraphics[width=11cm]{examples/eps/ex_hlines}
 \end{center}
 }
 
@@ -1492,7 +1492,7 @@ installation tarball in the directory {\tt doc/\-examples/}.
 }
 \nlscf
 \begin{center}
-\includegraphics[width=\textwidth]{examples/eps/ex_map.eps}
+\includegraphics[width=\textwidth]{examples/eps/ex_map}
 \end{center}
 }
 

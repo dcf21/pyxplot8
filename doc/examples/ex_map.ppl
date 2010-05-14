@@ -23,11 +23,9 @@
 
 # Call common initialisation script
 reset
+title = "ex_map"
 load "examples/fig_init.ppl"
 set term colour
-
-# Set output destination
-set output "examples/eps/ex_map.eps"
 
 # Main body of figure script
 se width 20
@@ -67,4 +65,7 @@ set label 20 '{\Huge \sf \slshape Australia}' 117,-42
 # Plot the coastline and cities
 plot [][-45:] 'examples/ex_map_1.dat.gz' every ::1 with lines, \
      'examples/ex_map_2.dat' with points pointtype 10 pointsize 2
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

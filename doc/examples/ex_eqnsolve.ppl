@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_eqnsolve"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_eqnsolve.eps"
 
 # Main body of figure script
 T = 5800*unit(K)
@@ -41,4 +39,7 @@ set xlabel "Frequency"
 set ylabel "%s / $\mathrm{erg}\,\mathrm{s}^{-1}\,\mathrm{Hz}^{-1}\,\mathrm{cm}^{-2}\,\mathrm{sterad}^{-1}$"%(texify(Bv(nu,T)))
 set key bottom right
 plot Bv(x,T) / unit(erg/s/Hz/cm**2/sterad) title "Blackbody at %s"%(T)
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 

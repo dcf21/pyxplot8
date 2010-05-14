@@ -69,6 +69,7 @@ for x,y,name in item_list:
 for box in boxes: c.insert(box) # ... and then label it
 
 c.writeEPSfile("pyx_colours.eps")
+c.writePDFfile("pyx_colours.pdf")
 
 # --------------
 # Figure 2: A list of colours, sorted alphabetically
@@ -85,7 +86,9 @@ for i in range(len(colours2)):
  shell = path.circle(x,y,0.2)
  c.fill(shell, [ pyx.color.cmyk.__dict__[name] ])
  c.text(x+0.5,y,name, [ text.halign.boxleft, text.valign.middle ] )
+
 c.writeEPSfile("pyx_colours2.eps")
+c.writePDFfile("pyx_colours2.pdf")
 
 # ------------
 # Figure 3: A list of colours, sorted by hue
@@ -101,5 +104,7 @@ for i in range(len(colours3)):
  shell = path.circle(x,y,0.2)
  c.fill(shell, [ pyx.color.cmyk.__dict__[name] ])
  c.text(x+0.5,y,name, [ text.halign.boxleft, text.valign.middle ] )
+
 c.writeEPSfile("pyx_colours3.eps")
+c.writePDFfile("pyx_colours3.pdf")
 

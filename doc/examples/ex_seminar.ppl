@@ -23,13 +23,15 @@
 
 # Call common initialisation script
 reset
+title = "ex_seminar"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_seminar.eps"
 
 # Main body of figure script
 set xlabel "This is the X axis"
 set ylabel "This is the Y axis"
 set title "A plot of sin(x)"
 plot sin(x)
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
+

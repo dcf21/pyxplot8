@@ -23,10 +23,8 @@
 
 # Call common initialisation script
 reset
+title = "ex_funcsplice2"
 load "examples/fig_init.ppl"
-
-# Set output destination
-set output "examples/eps/ex_funcsplice2.eps"
 
 # Main body of figure script
 set numeric errors quiet
@@ -43,4 +41,7 @@ set xlabel "$x/l$"
 set ylabel "$F(x)/kl$"
 set key top right
 plot F(x)
+
+# Call common cleanup script
+load "examples/fig_end.ppl"
 
