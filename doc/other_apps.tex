@@ -26,18 +26,19 @@
 In this chapter we present a short cookbook describing a few common yet
 miscellaneous tasks for which PyXPlot may prove useful.
 
-\section{Conversion of JPEG Images to Postscript}
+\section{Conversion of JPEG Images to PostScript}
 \index{jpeg images}
 
 The need to convert bitmap images -- for example, those in jpeg format -- into
-postscript representations is commonly encountered by users of the \LaTeX\
+PostScript representations is commonly encountered by users of the \LaTeX\
 typesetting system, since \LaTeX's {\tt includegraphics} command can only
-incorporate encapsulated postscript images into documents.  A small number of
-graphics packages provide facilities for making such conversions, including
-ImageMagick\index{ImageMagick}'s {\tt convert} command, but these almost
-invariable produce excessively large postscript files on account of their
-failure to use postscript's native facilities for image compression. PyXPlot's
-\indcmdt{image} can in many cases perform much more efficient conversion:
+incorporate Encapsulated PostScript (EPS) images into documents.  A small
+number of graphics packages provide facilities for making such conversions,
+including ImageMagick\index{ImageMagick}'s {\tt convert} command, but these
+almost invariable produce excessively large PostScript files on account of
+their failure to use PostScript's native facilities for image compression.
+PyXPlot's \indcmdt{image} can in many cases perform much more efficient
+conversion:
 
 \begin{verbatim}
 set output image.eps
@@ -58,7 +59,7 @@ characters, but especially for those who work in mathematical and
 equation-centric disciplines.
 
 It is possible to import graphic images into {\it Powerpoint}, but it cannot
-read images in postscript format, the format in which \LaTeX\ usually produces
+read images in PostScript format, the format in which \LaTeX\ usually produces
 its output.  PyXPlot's {\tt gif} and {\tt png} terminals provide a fix for this
 problem, as the following example demonstrates:
 

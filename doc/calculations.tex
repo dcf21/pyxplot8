@@ -24,7 +24,7 @@
 
 The previous chapter described how PyXPlot can be used to plot data directly
 from \datafile s onto graphs. Often, however, calculations need to be performed
-on data before it is plotted. This chapter describes the mathematical
+on data before they are plotted. This chapter describes the mathematical
 environment which PyXPlot provides for performing calculations either upon
 single numerical values or upon whole datasets.  For simplicity, most of the
 examples in this chapter will act upon single numerical values, displaying the
@@ -39,7 +39,7 @@ Variables can be assigned to hold numerical values using syntax of the form
 
 \begin{verbatim} a = 5.2 * sqrt(64) \end{verbatim}
 
-\noindent which may optionally be written as:\indcmd{let}
+\noindent which may optionally be written as\indcmd{let}
 
 \begin{verbatim} let a = 5.2 * sqrt(64) \end{verbatim}
 
@@ -119,11 +119,11 @@ PyXPlot code to be executed whenever a function is evaluated.
 functions}
 
 The definitions of functions can be declared to be valid only within a certain
-domain of argument space, allowing for error-checking when models are evaluated
+domain of argument space, allowing for error checking when models are evaluated
 outside their domain of applicability. Furthermore, functions can be given
 multiple definitions which are specified to be valid in different parts of
 argument space. We term this {\it function splicing}, since multiple algebraic
-definitions for a functions are spliced together at the boundaries between
+definitions for a function are spliced together at the boundaries between
 their various domains.  The following example would define a function which is
 only valid within the range
 $-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$:\footnote{The syntax {\tt
@@ -135,7 +135,7 @@ truncated_cos(x)[-pi/2:pi/2] = cos(x)
 
 \noindent Attempts to evaluate this function outside of the range in which it
 is defined would return an error that the function is not defined at the
-requested ordinate value. Thus, if the above function were to be plotted, no
+requested argument value. Thus, if the above function were to be plotted, no
 line would be drawn outside of the range
 $-\nicefrac{\pi}{2}<x<\nicefrac{\pi}{2}$. A similar effect could also have been
 achieved using the {\tt select} keyword (see
@@ -149,7 +149,7 @@ f(x) = 0
 f(x)[-pi/2:pi/2] = cos(x)
 \end{verbatim}
 
-\noindent Plotting this function would yield the result:
+\noindent Plotting this function would yield the following result:
 
 \begin{center}
 \includegraphics[width=8cm]{examples/eps/ex_intro_func_splice}
@@ -219,8 +219,8 @@ k}. Plotting these functions yields the result:
 Attempting to plot this function with an {\tt x}-axis which extends outside of
 the range of values of $x$ for which $F(x)$ is defined, as above, will result
 in error messages being returned that the function could not be evaluated at
-all ordinate values. These can be suppressed by typing (see
-Section~\ref{sec:num_errs}):
+all argument values. These can be suppressed by typing (see
+Section~\ref{sec:num_errs})\vspace{2mm}
 \newline\noindent {\tt set numeric errors quiet}
 }
 
@@ -241,7 +241,7 @@ immediate predecessors:
 \nlfcf
 This method is highly inefficient because each evaluation spawns two further
 evaluations of the function, and so the number of operations required to
-evaluated {\tt f(x)} scales as $2^x$.  It is inadvisable to evaluate it for
+evaluate {\tt f(x)} scales as $2^x$.  It is inadvisable to evaluate it for
 $x\gtrsim25$ unless you're prepared for a long wait.
 \nlnp
 A much more efficient method of calculating the Fibonacci numbers is to use Binet's formula,
@@ -315,8 +315,8 @@ set numeric errors explicit
 
 In all of the examples given thus far, algebraic expressions have only been
 allowed to return real numbers: PyXPlot has not been handling any complex
-numbers. Since there are many circumstances in which you may be analysing data
-which you are certain is real, complex arithmetic is disabled by default.
+numbers. Since there are many circumstances in which the data being analysed
+may be known for certain to be real, complex arithmetic is disabled by default.
 Expressions such as {\tt sqrt(-1)} will return either an error or {\tt NaN}.
 The most obvious example of this is the built-in variable {\tt i}, which is set
 to equal {\tt sqrt(-1)}:
@@ -384,7 +384,7 @@ these functions:
 \noindent{\tt pyxplot> {\bf print cos(x)}~~~~~~~~{\it \# This equals the above}}\newline
 \noindent{\tt 0.87758256}\newline
 \noindent{\tt pyxplot> {\bf print arg(exp(i*x))}~{\it \# This equals x}}\newline
-\noindent{\tt 0.5 rad}
+\noindent{\tt 0.5}
 \vspace{3mm}
 
 \section{Working with Physical Units}
@@ -398,10 +398,10 @@ imperial and metric units -- and for doing simple back-of-the-envelope
 calculations.
 
 All numerical variables in PyXPlot have not only a magnitude, but also a
-physical unit associated with them. In the case a pure number such as~2, the
-quantity is said to be dimensionless: it has no physical unit. The special
-function \indfunt{unit()} is used to specify the physical unit associated with a
-quantity. For example, the expression
+physical unit associated with them. In the case of a pure number such as~2, the
+quantity is said to be dimensionless. The special function \indfunt{unit()} is
+used to specify the physical unit associated with a quantity. For example, the
+expression
 
 \begin{verbatim}
 print 2*unit(s)
@@ -417,7 +417,7 @@ print 2*unit(s)/unit(hr)
 \end{verbatim}
 
 Compound units such as miles per hour, which is defined in terms of two other
-units, can be used thus:
+units, can be used as in
 
 \begin{verbatim}
 print 2*unit(miles/hour)
@@ -451,7 +451,8 @@ recognises by default, together with all of their recognised names can be found
 in Appendix~\ref{ch:unit_list}.
 
 SI units may also be preceded with SI prefixes\index{units!SI prefixes}, as in
-the examples:
+the examples\footnote{As the first of these examples demonstrates, the letter
+{\tt u} is used as a Roman-alphabet substitute for the Greek letter $\upmu$.}:
 
 \begin{verbatim}
 a = 2*unit(um)
@@ -462,7 +463,7 @@ When quantities with physical units are substituted into algebraic expressions,
 PyXPlot automatically checks that the expression is dimensionally correct
 before evaluating it. For example, the following expression is not
 dimensionally correct and would return an error because the first term in the
-sum has dimensions of velocity, meanwhile the second term is a length:
+sum has dimensions of velocity, whereas the second term is a length:
 \index{units!dimensional analysis}
 
 \begin{dontdo}
@@ -508,11 +509,12 @@ in order to be strictly dimensionally correct.
 
 However, it also has some disadvantages since some physical quantities such as
 fluxes per steradian are measured per unit angle or per unit solid angle, and
-the SI system offers no way to dimensionally distinguish these from one another
-or from quantities with no angular dependence. Thus, in some branches of
-science, it is very useful to be able to keep track of dimensions of angle in a
-way incompatible with the traditional SI view that angles are fundamentally
-dimensionless.
+the SI system traditionally\footnote{Radians are sometimes treated in the SI
+system as {\it supplementary} or derived units.} offers no way to dimensionally
+distinguish these from one another or from quantities with no angular
+dependence. Thus, in some branches of science, it is very useful to be able to
+keep track of dimensions of angle in a way incompatible with a system in which
+angles are fundamentally dimensionless.
 
 In order to be useful in both mathematical and physical contexts, PyXPlot
 provides a switch which can be changed using the commands:
@@ -541,8 +543,8 @@ However, these conversions have some subtleties, unique to temperature
 conversions, which mean that they should be used with some caution. Consider
 the following two questions:
 \begin{itemize}
-\item How many degrees Kelvin corresponds to a temperature of $20^\circ$C?
-\item How many degrees Kelvin corresponds to a temperature {\it rise} of $20^\circ$C?
+\item How many Kelvin corresponds to a temperature of $20^\circ$C?
+\item How many Kelvin corresponds to a temperature {\it rise} of $20^\circ$C?
 \end{itemize}
 The answers to these two questions are 293\,K and 20\,K respectively: although
 we are converting from $20^\circ$C in both cases, the corresponding number of
@@ -715,7 +717,7 @@ set unit preferred N*m
 The latter two examples are particularly useful when working with spectral
 densities (powers per unit frequency) or torques (forces multiplied by
 distances). Unfortunately, both of these units are dimensionally equal to
-powers, and so are displayed by PyXPlot in Joules by default. The above
+energies, and so are displayed by PyXPlot in Joules by default. The above
 statement overrides such behaviour. Having set a particular unit to be
 preferred, this can be unset as in the following example:
 \begin{verbatim}
@@ -810,7 +812,7 @@ different ways in which numbers can be displayed:
 \noindent{\tt 299792*unit(km/s)}\newline
 \noindent{\tt pyxplot> {\bf set numerics display latex}}\newline
 \noindent{\tt pyxplot> {\bf print phy\_c}}\newline
-\noindent{\tt $299792\,\mathrm{km}/\mathrm{s}$}
+\noindent{\tt 299792 km/s}
 \vspace{3mm}
 
 The first case is the default way in which PyXPlot displays numbers. The second
@@ -821,9 +823,9 @@ pasted into another PyXPlot calculation. The final case produces a string of
 \section{Numerical Integration and Differentiation}
 
 \index{differentiation}\index{integration} Two special functions,
-\indfunt{int\_dx()} and \indfunt{diff\_dx()}, may be used to numerically
-integrate or differentiate algebraic expressions.  In each case, the letter
-{\tt x} is the dummy variable which is to be used in the integration or
+\indfunt{int\_dx()} and \indfunt{diff\_dx()}, may be used to integrate or
+differentiate algebraic expressions numerically.  In each case, the letter {\tt
+x} is the dummy variable which is to be used in the integration or
 differentiation and may be replaced by any valid variable name of up to
 16~characters in length.
 
@@ -870,7 +872,7 @@ implemented using the {\tt gsl\_\-integration\_\-qags()} function of the Gnu
 Scientific Library\index{GSL} (GSL), and the \indfunt{diff\_dx()} function is
 implemented using the {\tt gsl\_\-deriv\_\-central()} function of the same library.
 Any caveats which apply to the use of these routines also apply to PyXPlot's
-numerical calculus routines.
+numerical calculus.
 
 \example{ex:calculus}{Integrating the function $\mathrm{sinc}(x)$}{
 The function $\mathrm{sinc}(x)$ cannot be integrated analytically, but it can be shown that
@@ -881,7 +883,7 @@ In the following script, we use PyXPlot's facilities for numerical integration t
 \begin{displaymath}
 y=\int_0^{x} \mathrm{sinc}(x)\,\mathrm{d}x .
 \end{displaymath}
-We reduce the number of samples taken along the ordinate axis to~80, as
+We reduce the number of samples taken along the abscissa axis to~80, as
 evaluation of the numerical integral may be time consuming on older computers.
 We use the \indcmdt{set xformat} (see Section~\ref{sec:set_xformat}) to demark
 both the {\tt x}- and {\tt y}-axes in fractions of $\pi$:
@@ -901,7 +903,7 @@ both the {\tt x}- and {\tt y}-axes in fractions of $\pi$:
 The \indcmdt{solve} can be used to solve simple systems of one or more
 equations numerically. It takes as its arguments a comma-separated list of the
 equations which are to be solved, and a comma-separated list of the variables
-which are to be solved for. The latter should be prefixed by the word {\tt
+which are to be found. The latter should be prefixed by the word {\tt
 via}, to separate it from the list of equations:
 
 \begin{verbatim}
@@ -909,9 +911,9 @@ solve <equation 1>,... via <variable 1>, ...
 \end{verbatim}
 
 Note that the time taken by the solver dramatically increases with the number
-of variables which are simultaneously solved for, meanwhile the accuracy
-achieved simultaneously decreases. The following example solves a simple pair
-of simultaneous equations of two variables:
+of variables which are simultaneously found, whereas the accuracy achieved
+simultaneously decreases. The following example solves a simple pair of
+simultaneous equations of two variables:
 
 \vspace{3mm}
 \noindent{\tt pyxplot> {\bf solve x+y=10, x-y=3 via x,y}}\newline
@@ -923,10 +925,10 @@ of simultaneous equations of two variables:
 
 \noindent No output is returned to the terminal if the numerical solver
 succeeds, otherwise an error message is displayed. If any of the fitting
-variables are already defined prior to the \indcmdt{solve} being called, their
-values are used as initial guesses, otherwise an initial guess of unity for
-each fitting variable is assumed. Thus, the same \indcmdt{solve} returns two
-different values in the following two cases:
+variables are already defined prior to the {\tt solve} command's being called,
+their values are used as initial guesses, otherwise an initial guess of unity
+for each fitting variable is assumed. Thus, the same \indcmdt{solve} returns
+two different values in the following two cases:
 
 \vspace{3mm}
 \noindent{\tt pyxplot> {\bf x=} {\it \# Undefine x}}\newline
@@ -990,9 +992,9 @@ the following example:
 The \indcmd{minimise}\indcmd{maximise} {\tt minimise} and {\tt maximise}
 commands can be used to find the minima or maxima of algebraic expressions. In
 each case, a single algebraic expression should be supplied for optimisation,
-together with a comma-separated list of the variables which it should be
-optimised with respect to. In the following example, a minimum of the
-sinusoidal function $\cos(x)$ is sought:
+together with a comma-separated list of the variables with respect to which it
+should be optimised. In the following example, a minimum of the sinusoidal
+function $\cos(x)$ is sought:
 
 \vspace{3mm}
 \noindent{\tt pyxplot> {\bf set numerics real}}\newline
@@ -1004,15 +1006,14 @@ sinusoidal function $\cos(x)$ is sought:
 
 \noindent Note that this particular example doesn't work when complex
 arithmetic is enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty
-i$, and this is correctly identified by PyXPlot as the global minimum of the
-function when complex numbers are allowed.
+i$.
 
 Various caveats apply both to the {\tt minimise} and {\tt maximise} commands,
 as well as to the {\tt solve} command.  All of these commands operate by
 searching numerically for optimal sets of input parameters to meet the criteria
 set by the user. As with all numerical algorithms, there is no guarantee that
 the {\it locally} optimum solutions returned are the {\it globally} optimum
-solutions. It is always advisable to double-check that the answered returned
+solutions. It is always advisable to double-check that the answers returned
 agree with common sense.
 
 These commands can often find solutions to equations when these solutions are
@@ -1021,7 +1022,7 @@ they are looking for is roughly of order unity.  PyXPlot does have mechanisms
 which attempt to correct cases where the supplied initial guess turns out to be
 many orders of magnitude different from the true solution, but it cannot be
 guaranteed not to wildly overshoot and produce unexpected results in such
-cases.  To reiterate, it is always advisable to double-check that the answered
+cases.  To reiterate, it is always advisable to double-check that the answers
 returned agree with common sense.
 
 \example{ex:eqnsolve}{Finding the maximum of a blackbody curve}{
@@ -1067,14 +1068,18 @@ This can be done as follows:
 \noindent {\tt .......> {\bf ~~~~~~~~~unit(0*W/Hz**2/m**2) via nu}}\newline
 \noindent {\tt pyxplot> {\bf print nu}}\newline
 \noindent {\tt 340.9781 THz}
+\nlnp
+Finally, this maximum could also be found using PyXPlot's built-in function {\tt Bvmax(T)}:\vspace{2mm}\newline
+\noindent {\tt pyxplot> {\bf print Bvmax(5800*unit(K))}}\newline
+\noindent {\tt 340.9781 THz}
 }
 
 \section{Working with Time-Series Data}
 \label{sec:time_series}
 
-Time-series data often needs special consideration when intervals of days or
+Time-series data often need special consideration when intervals of days or
 months are spanned. Given a series of times and calendar dates, it is not
-straightforward to calculate the ellapsed times between the datapoints since
+straightforward to calculate the elapsed times between the datapoints since
 the non-uniform lengths of the months must be accounted for, as well as the
 occurance of leap years. Similarly, given datapoints spread over a period of
 days from some start point, it may be desirable to label a time axis with
@@ -1108,8 +1113,8 @@ Day number at midnight on 1st~January 2000:
 By default, the {\tt time\_juliandate()} function makes a transition from the
 Julian calendar to the Gregorian calendar at midnight on 14th~September 1752
 (Gregorian calendar), when Britain and the British Empire switched calendars.
-Thus, inputted dates between 2nd~September and 14th~September 1752 return
-errors, since they days never occured in the British calendar. This behaviour
+Thus, dates between 2nd~September and 14th~September 1752 are not valid input
+dates, since they days never occured in the British calendar. This behaviour
 may be changed using the \indcmdt{set calendar}, which offers a choice of nine
 different calendars listed in Table~\ref{tab:calendars}.
 
@@ -1121,9 +1126,6 @@ different calendars listed in Table~\ref{tab:calendars}.
 \hline
 British &
 Use the Gregorian calendar from 14th~September 1752 (Gregorian), and the Julian calendar prior to 2nd~September 1752 (Julian). \\
-Catholic &
-Use the Gregorian calendar from 15th~October 1582 (Gregorian), and the Julian
-calendar prior to 4th~October 1582 (Julian). \\
 French &
 Use the Gregorian calendar from 20th~December 1582 (Gregorian), and the Julian
 calendar prior to 9th~December 1582 (Julian). \\
@@ -1138,6 +1140,9 @@ Islamic &
 Use the Islamic (Muslim) calendar. Note that the Islamic calendar is undefined prior to 1st~Muharram {\footnotesize AH}\,1, corresponding to 18th~July {\footnotesize AD}\,622. \\
 Julian &
 Use the Julian calendar for all dates. \\
+Papal &
+Use the Gregorian calendar from 15th~October 1582 (Gregorian), and the Julian
+calendar prior to 4th~October 1582 (Julian). \\
 Russian &
 Use the Gregorian calendar from 14th~February 1918 (Gregorian), and the Julian
 calendar prior to 31st~January 1918 (Julian). \\
@@ -1296,7 +1301,7 @@ should be represented. If no format is supplied, then the following verbose
 format is used:\vspace{3mm}\newline
 \noindent {\tt "\%Y years \%d days \%h hours \%m minutes and \%s seconds"}\vspace{3mm}\newline
 Table~\ref{tab:time_diff_string_subs} lists the tokens which are substituted
-for various parts of the time interval. The following examples demonstrates the
+for various parts of the time interval. The following examples demonstrate the
 use of the function:
 
 \begin{table}
@@ -1335,8 +1340,8 @@ Token & Substitution value \\
 In this example, we use PyXPlot's facilities for handling dates and times to
 produce a plot of the rate of downloads from an Apache webserver based upon the
 download log which it stores in the file {\tt /var/log/apache2/access.log}.
-This file contain a lines of the form for each page or file requested from the
-webserver:
+This file contain a line of the following form for each page or file requested
+from the webserver:
 \vspace{3mm}\newline\noindent{\tt\footnotesize 127.0.0.1 - - [14/Apr/2010:16:05:36 +0100] "GET / HTTP/1.1" 200 2623 "-" "Mozilla/5.0 (X11; U; Linux x86\_64; en-GB; rv:1.9.1.9) Gecko/20100402 Ubuntu/9.10 (karmic) Firefox/3.5.9"}\vspace{3mm}\newline
 However, PyXPlot's default input filter for {\tt .log} files (see Section~\ref{sec:filters}) manipulates the dates in strings such as these into the form
 \vspace{3mm}\newline\noindent{\tt\footnotesize 127.0.0.1 - -~~[~14~~4~~2010~16~05~36~+0100~]~~"GET~~~HTTP 1.1" 200 2623 "-" "Mozilla 5.0 (X11; U; Linux x86\_64; en-GB; rv 1.9.1.9) Gecko 20100402 Ubuntu 9.10 (karmic) Firefox 3.5.9"}\vspace{3mm}\newline
@@ -1347,7 +1352,7 @@ these components into Julian Days, and the \indcmdt{histogram} (see
 Section~\ref{sec:histogram}) is used to sort each of the web accesses recorded
 in the Apache logfile into hour-sized bins.  Because this may be a
 time-consuming process for large logfiles on busy servers, we use the
-\indcmdt{tabulate} (see Section~\ref{sec:tabulate}) to store this data into a
+\indcmdt{tabulate} (see Section~\ref{sec:tabulate}) to store the data into a
 temporary datafile on disk before deciding how to plot it:
 \nlscf
 \noindent{\tt set output 'apache.dat'}\newline
@@ -1355,7 +1360,7 @@ temporary datafile on disk before deciding how to plot it:
 \noindent{\tt \phantom{xxxxx} using time\_julianday(\$7,\$6,\$5,\$8,\$9,\$10) binwidth 1/24}\newline
 \noindent{\tt tabulate f(x) with format "\%16f \%16f"}
 \nlscf
-Having stored our histogram to the file {\tt apache.dat}, we
+Having stored our histogram in the file {\tt apache.dat}, we
 now plot the resulting histogram, labelling the horizontal axis with the days
 of the week.  The commands used to achieve this will be introduced in
 Chapter~\ref{ch:plotting}. Note that the major axis ticks along the horizontal

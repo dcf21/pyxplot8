@@ -303,7 +303,7 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                {\bf Analogous set command:} \indcmdts{set binorigin}
 
-               Sets the point along the ordinate axis from which the bins used by the \indcmdt{histogram} originate.
+               Sets the point along the abscissa axis from which the bins used by the \indcmdt{histogram} originate.
                \\
 {\tt BinWidth} & {\bf Possible values:} Any floating-point number.
 
@@ -323,13 +323,13 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                Sets the default width of boxes on barcharts. If negative, then the boxes have automatically selected widths, so that the interfaces between bars occur at the horizontal midpoints between the specified datapoints.
                \\
-{\tt CalendarIn} & {\bf Possible values:} {\tt British}, {\tt Catholic}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt Islamic}, {\tt Julian}, {\tt Russian}.
+{\tt CalendarIn} & {\bf Possible values:} {\tt British}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt Islamic}, {\tt Julian}, {\tt Papal}, {\tt Russian}.
 
                {\bf Analogous set command:} \indcmdts{set calendar}
 
                Sets the default calendar for the input of dates from day, month and year representation into Julian Date representation. See Section~\ref{sec:time_series} for more details.
                \\
-{\tt CalendarOut} & {\bf Possible values:} {\tt British}, {\tt Catholic}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt Islamic}, {\tt Julian}, {\tt Russian}.
+{\tt CalendarOut} & {\bf Possible values:} {\tt British}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt Islamic}, {\tt Julian}, {\tt Papal}, {\tt Russian}.
 
                {\bf Analogous set command:} \indcmdts{set calendar}
 
@@ -507,19 +507,19 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
-               Sets the height of the papersize for postscript output in millimetres.
+               Sets the height of the papersize for PostScript output in millimetres.
                \\
 {\tt PaperName} & {\bf Possible values:} A string matching any of the papersizes listed in Chapter~\ref{ch:paper_sizes}.
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
-               Sets the papersize for postscript output to one of the pre-defined papersizes listed in Chapter~\ref{ch:paper_sizes}.
+               Sets the papersize for PostScript output to one of the pre-defined papersizes listed in Chapter~\ref{ch:paper_sizes}.
                \\
 {\tt PaperWidth} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set papersize}
 
-               Sets the width of the papersize for postscript output in millimetres.
+               Sets the width of the papersize for PostScript output in millimetres.
                \\
 {\tt PointLineWidth} & {\bf Possible values:} Any floating-point number.
 
@@ -543,7 +543,7 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
-               Sets the number of samples (datapoints) to be evaluated along the ordinate axis when plotting a function.
+               Sets the number of samples (datapoints) to be evaluated along the abscissa axis when plotting a function.
                \\
 {\tt TermAntiAlias} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
@@ -720,7 +720,7 @@ The {\tt styling} section can contain any of the following settings in any order
                \\
 {\tt Baseline\_LineWidth} & {\bf Possible values:} Any floating-point number.
 
-               Sets the postscript line width which corresponds to a {\tt linewidth} of 1.0. A value of 1.0 corresponds to PyXPlot's default line width of $0.2\,\mathrm{mm}$; other values differ from this multiplicatively.
+               Sets the PostScript line width which corresponds to a {\tt linewidth} of 1.0. A value of 1.0 corresponds to PyXPlot's default line width of $0.2\,\mathrm{mm}$; other values differ from this multiplicatively.
                \\
 {\tt Baseline\_PointSize} & {\bf Possible values:} Any floating-point number.
 

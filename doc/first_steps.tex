@@ -40,19 +40,19 @@ chapter to show how to produce more advanced plots.
 The simplest way to start PyXPlot is to type {\tt pyxplot} at a shell prompt.
 This starts an interactive session, and a PyXPlot command-line prompt into
 which commands can be typed will appear. PyXPlot can be exited either by typing
-\indcmdts{exit}, \indcmdts{quit}, or by pressing CTRL-D. Various switches can
+\indcmdts{exit} or \indcmdts{quit}, or by pressing CTRL-D. Various switches can
 be specified on the shell command line to modify PyXPlot's behaviour; these are
 listed in Box~\ref{box:CommandSwitches}.  Of especial interest may be the
 switches {\tt -c} and {\tt -m}, which change between the use of
 colour-highlighted (default) and non-coloured text.
 
 Typing commands into interactive terminals will probably be a sufficient way to
-drive PyXPlot to begin with, but as you begin to plot increasingly complicated
-graphs, the number of commands required to set them up will grow. You are
-likely to find that it soon becomes preferable to store these commands in text
-files called scripts.  Once such a script has been written, it can be executed
-automatically by passing the filename of the command script to PyXPlot on the
-shell command line, for example:\index{command-line syntax}
+drive PyXPlot to begin with, but as the number of commands required to set up
+plots grows with the complexity of the task, it is likely to become rapidly
+more preferable to store these commands in text files called scripts.  Once
+such a script has been written, it can be executed automatically by passing the
+filename of the command script to PyXPlot on the shell command line, for
+example:\index{command-line syntax}
 
 \begin{verbatim}
 pyxplot foo.ppl
@@ -68,18 +68,18 @@ modify its behaviour:\index{command line syntax}
 {\tt -v --version} & Display the current version number of PyXPlot.\\
 {\tt -q --quiet} & Turn off the display of the welcome message on startup. \\
 {\tt -V --verbose} & Display the welcome message on startup, as happens by default. \\
-{\tt -c --colour} & Use colour highlighting\footnote{This will only function on terminals which support colour output.} to display output in green, warning messages in amber, and error messages in red.\footnote{The authors apologise to those members of the population who are red/green colour blind, but draws their attention to the following sentence.} These colours can be changed in the {\tt terminal} section of the configuration file; see Section~\ref{sec:configfile_terminal} for more details. \\
-{\tt -m --monochrome} & Do not use colour highlighting, as happens by default. \\
+{\tt -c --colour} & Use colour highlighting\footnote{This will only function on terminals which support colour output.}, as is the default behaviour, to display output in green, warning messages in amber, and error messages in red.\footnote{The authors apologise to those members of the population who are red/green colour blind, but draw their attention to the following sentence.} These colours can be changed in the {\tt terminal} section of the configuration file; see Section~\ref{sec:configfile_terminal} for more details. \\
+{\tt -m --monochrome} & Do not use colour highlighting. \\
 \end{tabular}
 }
 
-\noindent In this case, PyXPlot would execute all of the commands in the file
-{\tt foo.ppl} and then exit. By convention, we choose to suffix the filenames
-of PyXPlot command scripts with {\tt .ppl}. This is not strictly necessary, but
-allows PyXPlot scripts to be easily distinguished from other text files in a
-filing system. The filenames of several command scripts may be passed to
-PyXPlot on a single command line, indicating that they should be executed in
-sequence:
+\noindent In this case, PyXPlot would execute the commands in the file {\tt
+foo.ppl} and then exit. By convention, we choose to affix the suffix {\tt
+.ppl} to the filenames of all PyXPlot command scripts. This is not strictly
+necessary, but allows PyXPlot scripts to be easily distinguished from other
+text files in a filing system. The filenames of several command scripts may be
+passed to PyXPlot on a single command line, indicating that they should be
+executed in sequence, as in the example:
 
 \begin{verbatim}
 pyxplot foo1.ppl foo2.ppl foo3.ppl
@@ -95,11 +95,11 @@ as in the example
 pyxplot foo1.ppl -- foo2.ppl
 \end{verbatim}
 
-\noindent where the {\tt --} represents an interactive session which
-commences after the execution of {\tt foo1.ppl} and should be terminated by
-the user in the usual way after use, using either the \indcmdts{exit} or
-\indcmdts{quit} commands. After the interactive session is finished, PyXPlot
-will automatically execute the command script {\tt foo2.ppl}.
+\noindent where the {\tt --} represents an interactive session which commences
+after the execution of {\tt foo1.ppl} and should be terminated by the user in
+the usual way, using either the \indcmdts{exit} or \indcmdts{quit} commands.
+After the interactive session is finished, PyXPlot will automatically execute
+the command script {\tt foo2.ppl}.
 
 From within an interactive session, it is possible to run a command script
 using the \indcmdt{load}, as in the example:
@@ -122,16 +122,16 @@ used to repeat or modify previously executed commands. Each user's command
 history is stored in his homespace in a history file called {\tt
 .pyxplot\_history}; this file is used by PyXPlot to remember command histories
 between sessions. PyXPlot's \indcmdt{save} allows the user to save to a text
-file a list of the commands which have been typed into the present session; it
-has the following syntax:\vspace{3mm}
+file a list of the commands which have been typed into the present session, as
+in the following example:\vspace{3mm}
 
 \noindent {\tt save 'output\_filename.ppl' }\vspace{3mm}
 
-The related \indcmdt{history} outputs to the terminal a history of all of the
+The related \indcmdt{history} displays on the terminal a history of all of the
 commands which have been typed into this and previous interactive sessions. The
 total history can stretch to several hundred lines long, in which case it can
-be useful to follow the \indcmdt{history} by an optional number, in which case
-it displays the last $n$ commands, e.g.:\vspace{3mm}
+be useful to follow the \indcmdt{history} by an optional number, whereupon it
+only displays the last $n$ commands, e.g.:\vspace{3mm}
 
 \noindent {\tt history 20 }
 }
@@ -155,8 +155,8 @@ plot sin(x)
 which are built into PyXPlot. We will meet more of these in due course, but a
 complete list can be found in Appendix~\ref{ch:function_list}.
 
-As well as plotting functions, it is also possible to plot data stored in files
-on disk. The following would plot data from a file {\tt data.dat}, taking the
+As well as plotting functions, it is also possible to plot data stored in
+files. The following would plot data from a file {\tt data.dat}, taking the
 $x$-coordinate of each point from the first column of the \datafile, and the
 $y$-coordinate from the second.  The \datafile\ is assumed to be in plain text
 format\footnote{If the filename of a \datafile\ ends with a {\tt .gz} suffix,
@@ -256,16 +256,16 @@ example, the expression {\tt x**y**z} is evaluated as {\tt (x**(y**z))}.}
 \section{Comments}
 
 As in any programming language, it is good practice to include comments in
-PyXPlot command scripts to explain what each command or block is commands is
-doing. Comment lines should begin with a hash character, for
-example:\index{comment lines}\index{command scripts!comment lines}
+PyXPlot command scripts to explain what each command or block of commands is
+doing. Comment lines should begin with a hash character, as in the
+example\index{comment lines}\index{command scripts!comment lines}
 
 \begin{verbatim}
 # This is a comment
 \end{verbatim}
 
-\noindent Comments may also be placed on the same line as commands, for
-example:
+\noindent Comments may also be placed on the same line as commands, as in the
+example
 
 \begin{verbatim}
 set nokey # I'll have no key on _my_ plot
@@ -276,9 +276,9 @@ ignored.
 
 \section{Splitting Long Commands}
 
-Long commands may be split over multiple lines in the script by terminating
-each line of it with a backslash character, whereupon the following line will
-be appended to it, as in this example:
+Long commands may be split over multiple lines in scripts provided that each
+line of the command is terminated with a backslash character, whereupon the
+following line will be appended to it, as in this example:
 
 \vspace{3mm}
 \noindent{\tt pyxplot> {\bf print~~2~$\backslash$}}\newline
@@ -318,7 +318,7 @@ operator, {\tt \%}\index{\% operator@{\tt \%} operator}\index{string
 operators!substitution}.  The operator is preceeded by a format string, in
 which the places where numbers and strings are to be substituted are marked by
 tokens such as {\tt \%e} and {\tt \%s}. The substitution operator is followed
-by a bracketed list of the quantities which are to be substituted into the
+by a ()-bracketed list of the quantities which are to be substituted into the
 format string. This behaviour is similar to that of the Python programming
 language's \% operator\footnote{Unlike in Python, the brackets are obligatory;
 {\tt '\%d'\%2} is {\it not} valid in PyXPlot, and should be written as {\tt
@@ -342,7 +342,7 @@ Section~\ref{sec:stringsubop}.
 
 Labels can be added to the axes of a plot, and a title put at the top.  Labels
 should be placed between either single (') or double (") quotes, as in the
-examples:
+following example script:
 
 \begin{verbatim}
 set xlabel "Horizontal axis"
@@ -359,7 +359,7 @@ plot
 produced by PyXPlot -- are rendered using the \LaTeX\ typesetting system, and
 so any \LaTeX\ commands can be used to produce custom formatting. This allows
 great flexibility, but means that care needs to be taken to escape any of
-\LaTeX's reserved characters -- i.e.: $\backslash$~\&~\%~\#~\{~\}~\$~\_~\^{} or
+\LaTeX's reserved characters -- i.e. $\backslash$~\&~\%~\#~\{~\}~\$~\_~\^{} or
 $\sim$.
 
 Because of the use of quotes to delimit text labels, special care needs to be
@@ -436,7 +436,8 @@ As the previous section has demonstrated, the \indcmdt{set} is used in a wide
 range of ways to configure the way in which plots appear; we will meet many
 more in due course. The corresponding \indcmdt{show} can be used to query the
 current values of settings. To query the value of one particular setting, the
-\indcmdt{show} should be followed by the name of the setting:
+\indcmdt{show} should be followed by the name of the setting, as in the
+example:
 
 \begin{verbatim}
 show title
@@ -492,8 +493,8 @@ file, are shown in green.
 \label{sec:plot_datafiles}
 
 In the simple example of the previous section, we plotted the first column of a
-\datafile\ against the second. It is also possible to plot any arbitrary column
-of a \datafile\ against any other; the syntax for doing this is:\indmod{using}
+\datafile\ against the second. It is possible to plot any arbitrary column of a
+\datafile\ against any other; the syntax for doing this is:\indmod{using}
 
 \begin{verbatim}
 plot 'data.dat' using 3:5
@@ -675,9 +676,9 @@ to vertically-displaced blocks of \datapoint s, separated by single blank
 lines. The row numbers passed to the {\tt using} modifier are counted from the
 top of the current block.
 
-However, the line-numbers specified in the \indmodt{every} modifier -- i.e.\
+However, the line numbers specified in the \indmodt{every} modifier -- i.e.\
 variables $a$, $c$ and $e$ in the system introduced in the previous section --
-now refer to horizontal columns, rather than lines. For example,
+now refer to vertical column numbers. For example,
 
 \begin{verbatim}
 plot 'data.dat' using rows 1:2 every 2::3::9
@@ -692,7 +693,7 @@ values in every other column, between columns~3 and~9.
 The final modifier which the {\tt plot} command takes to allow the user to
 specify which subset(s) of a \datafile\ should be plotted is \indmodt{select}.
 This can be used to plot only those \datapoint s in a \datafile\ which specify
-some given criterion, as in the examples:
+some given criterion, as in the following examples:
 
 \begin{verbatim}
 plot 'data.dat' select ($8>5)
@@ -749,14 +750,14 @@ replot [0:1][0:1]
 \label{sec:directing_output}
 
 By default, when PyXPlot is used interactively, all plots are displayed on the
-screen. It is also possible to produce postscript output, to be read into other
+screen. It is also possible to produce PostScript output, to be read into other
 programs or embedded into \LaTeX\ documents, as well as a variety of other
 graphical formats. The \indcmdt{set terminal}\footnote{Gnuplot users should
 note that the syntax of the {\tt set terminal} command in PyXPlot is somewhat
-different from that which they are used to; see
-Section~\ref{sec:set_terminal}.} is used to specify the output format that is
-required, and the \indcmdt{set output} is used to specify the file to which
-output should be directed. For example,
+different from that used by Gnuplot; see Section~\ref{sec:set_terminal}.} is
+used to specify the output format that is required, and the \indcmdt{set
+output} is used to specify the file to which output should be directed. For
+example,
 
 \begin{verbatim}
 set terminal postscript
@@ -764,7 +765,7 @@ set output 'myplot.eps'
 plot 'datafile.dat'
 \end{verbatim}
 
-\noindent would output a postscript plot of data from the file {\tt datafile.dat} to the file
+\noindent would output a PostScript plot of data from the file {\tt datafile.dat} to the file
 {\tt myplot.eps}.
 
 The \indcmdt{set terminal} can also be used to configure various output options
@@ -779,13 +780,13 @@ set terminal colour
 \noindent The former is useful for preparing plots for black-and-white
 publications, the latter for preparing plots for colourful presentations.
 
-Both encapsulated and non-encapsulated postscript can be produced. The former
-is recommended for producing figures to embed into documents, the latter for
-plots which are to be printed without further processing. The
-{\tt postscript} terminal produces the latter; the {\tt eps} terminal
-should be used to produce the former.  Similarly the {\tt pdf} terminal
-produces files in the portable document format (pdf)\index{pdf format} read by
-Adobe Acrobat\index{Adobe Acrobat}:
+Both PostScript and Encapsulated PostScript can be produced. The former is
+recommended for producing figures to embed into documents, the latter for plots
+which are to be printed without further processing. The {\tt postscript}
+terminal produces the latter; the {\tt eps} terminal should be used to produce
+the former.  Similarly the {\tt pdf} terminal produces files in the Portable
+Document Format (PDF)\index{pdf format} read by Adobe Acrobat\index{Adobe
+Acrobat}:
 
 \begin{verbatim}
 set terminal postscript
@@ -817,15 +818,15 @@ terminal should be selected:
 set terminal x11
 \end{verbatim}
 
-After changing terminals, the \indcmdt{refresh}\footnote{The {\tt refresh}
-command is very similar in effect to issuing the {\tt replot} command with no
+After changing terminals, the \indcmdt{refresh}\footnote{The effect of the {\tt
+refresh} command is very similar to that of the {\tt replot} command with no
 arguments. The latter simply repeats the last {\tt plot} command. We will see
 in Chapter~\ref{ch:vector_graphics} that the {\tt refresh} command is to be
-preferred in the current context because it is more generally applicable to
-vector graphics as well as to graphs.} is especially useful; it reproduces  the
-last plot to have been generated in the newly-selected graphical format.  For
-more details of the \indcmdt{set terminal}, including how to produce gif and
-png images with transparent backgrounds, see Chapter~\ref{ch:image_formats}.
+preferred in the current context because it is applicable to vector graphics as
+well as to graphs.} is especially useful; it reproduces the last plot to have
+been generated in the newly-selected graphical format.  For more details of the
+\indcmdt{set terminal}, including how to produce gif and png images with
+transparent backgrounds, see Chapter~\ref{ch:image_formats}.
 
 \section{Setting the Size of Output}
 
@@ -879,14 +880,14 @@ plot 'data.dat' with lines
 
 A variety of other styles are available. The \indpst{linespoints} plot style
 combines both the \indpst{points} and \indpst{lines} styles, drawing lines
-through points. Errorbars can also be drawn as follows:\indps{yerrorbars}
+through points. Error bars can also be drawn as follows:\indps{yerrorbars}
 
 \begin{verbatim}
 plot 'data.dat' with yerrorbars
 \end{verbatim}
 
 \noindent In this case, three columns of data need to be specified: the $x$-
-and $y$-coordinates of each \datapoint, plus the size of the vertical errorbar
+and $y$-coordinates of each \datapoint, plus the size of the vertical error bar
 on that \datapoint. By default, the first three columns of the \datafile\ are
 used, but as elsewhere (see Section~\ref{sec:plot_datafiles}), the {\tt using}
 modifier can be used:
@@ -1077,19 +1078,24 @@ In addition to this {\it Users' Guide}, PyXPlot also has a \indcmdt{help},
 which provides a hierarchical source of information. Typing {\tt help} alone
 gives a brief introduction to the help system, as well as a list of topics on
 which help is available. To display help on any given topic, type {\tt help}
-followed by the name of the topic. For example:
+followed by the name of the topic. For example,
 
 \begin{verbatim}
-help commands
+help datafile
 \end{verbatim}
 
-\noindent provides information on PyXPlot's commands. Some topics have
+\noindent provides information on the format in which PyXPlot expects to read
+\datafile s and
+
+\begin{verbatim}
+help plot
+\end{verbatim}
+
+\noindent provides information on the {\tt plot} command.  Some topics have
 sub-topics, which are listed at the end of each page. To view them, add further
-words to the end of your help request -- an example might be:
+words to the end of your help request -- an example might be
 
 \begin{verbatim}
-help commands help
+help set title
 \end{verbatim}
-
-\noindent which would display help on the {\tt help} command itself.
 

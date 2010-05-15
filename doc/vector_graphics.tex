@@ -28,7 +28,7 @@ In the previous two chapters, we have seen how the \indcmdt{plot} may be used to
 produce single graphs of functions and \datafile s, how the \indcmdt{set
 terminal} can be used to produce graphical output in a wide range of different
 image formats (see Section~\ref{sec:set_terminal}), and the \indcmdt{set
-papersize} can be used to produce postscript output to fit on different sizes
+papersize} can be used to produce PostScript output to fit on different sizes
 of paper (see Section~\ref{sec:set_papersize}). Often, however, there is a need
 to produce more sophisticated vector graphics.  For example, a figure with
 several plots side-by-side may be required, some line-art may be wanted to
@@ -86,7 +86,7 @@ commands \indcmdts{set multiplot} and \indcmdts{set nomultiplot}. The
 \indcmdt{set origin} is required for multiplot mode to be particularly useful
 when placing plots side-by-side: it sets the position on the page of the
 lower-left corner of the next plot to be produced. It takes a comma-separated
-$(x,y)$ co-ordinate pair, which may have units of length, or, if dimensionless,
+$(x,y)$ coordinate pair, which may have units of length, or, if dimensionless,
 are assumed to be measured in centimetres. The following example plots a graph
 of $\sin(x)$ to the left of a plot of $\cos(x)$:
 \begin{verbatim}
@@ -334,7 +334,7 @@ canvases:
 \item Rectangular boxes (the \indcmdt{box}).
 \item Circles (the \indcmdt{circle}).
 \item Ellipses (the \indcmdt{ellipse}).
-\item Encapsulated postscript images (the \indcmdt{eps}).
+\item Encapsulated PostScript images (the \indcmdt{eps}).
 \item Graphical images in {\tt bmp}, {\tt gif}, {\tt jpeg} or {\tt png} formats (the \indcmdt{image}).
 \item Lines (the \indcmdt{line}).
 \item Piecharts (the \indcmdt{piechart}).
@@ -590,8 +590,8 @@ specified, using the analogous \indkeyt{height} keyword.  An optional angle can
 also be specified using the \indkeyt{rotate} keyword; this causes the included
 image to be rotated counter-clockwise by a specified angle, measured in
 degrees.  The keyword {\tt smooth} may optionally be supplied to cause the
-pixels of the image to be interpolated\footnote{Many commonly-used postscript
-display engines, including GhostScript, do not support this functionality.}.
+pixels of the image to be interpolated\footnote{Many commonly-used PostScript
+display engines, including Ghostscript, do not support this functionality.}.
 
 Images which include transparency are supported. The optional keyword {\tt
 notransparent} may be supplied to the \indcmdt{image} to cause transparent

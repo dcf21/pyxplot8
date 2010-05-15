@@ -43,9 +43,9 @@ PyXPlot has five input filters installed, as the {\tt show filters} command
 reveals:
 
 \begin{verbatim}
-set filter "*.fits"   "/usr/local/bin/pyxplot_fitshelper"
+set filter "*.fits"   "/usr/local/lib/pyxplot/pyxplot_fitshelper"
 set filter "*.gz"     "/bin/gunzip -c"
-set filter "*.log"    "/usr/local/bin/pyxplot_timehelper"
+set filter "*.log"    "/usr/local/lib/pyxplot/pyxplot_timehelper"
 set filter "ftp://*"  "/usr/bin/wget -O -"
 set filter "http://*" "/usr/bin/wget -O -"
 \end{verbatim}
@@ -53,12 +53,12 @@ set filter "http://*" "/usr/bin/wget -O -"
 Each filter takes the form of a program which is launched by PyXPlot whenever a
 \datafile\ with matching filename is read. The program is passed the filename of
 the \datafile\ as a command line argument immediately following any arguments
-specified in the filter's definition. It is then expected to output the data
+specified in the filter's definition. It is then expected to return the data
 contained in the file to PyXPlot in plaintext format using its {\tt stdout}
 stream. Any errors which such a program returns to {\tt stderr} are passed to
 the user as error messages.
 
-The above set of filters allow PyXPlot to read data from gzipped plaintext
+The above set of filters allows PyXPlot to read data from gzipped plaintext
 \datafile s, data tables in FITS format\index{FITS format}, and from \datafile
 s available over the web via HTTP\index{HTTP} or FTP\index{FTP}. Finally, a
 filter is provided for converting textual dates in log files into numbers
@@ -120,8 +120,8 @@ following four strings are parsed:
 # Rows:
 # RowUnits:
 \end{verbatim}
-The first pair of special comments effect the behaviour of PyXPlot when
-plotting {\tt using columns}, while the second pair effect the behaviour of
+The first pair of special comments affect the behaviour of PyXPlot when
+plotting {\tt using columns}, while the second pair affect the behaviour of
 PyXPlot when plotting {\tt using rows} (see
 Section~\ref{sec:horizontal_datafiles}). Within each pair, the first may be
 used to tell PyXPlot the names of each of the columns/rows in the \datafile,
@@ -151,10 +151,10 @@ Section~\ref{sec:set_axisunitstyle}).
 \label{sec:tabulate}
 
 PyXPlot's \indcmdt{tabulate} is similar to its {\tt plot} command, but instead
-of plotting a series of \datapoint s onto a graph, it outputs them to \datafile
+of plotting a series of \datapoint s onto a graph, it writes them to \datafile
 s. This can be used to produce text files containing samples of functions, to
 rearrange/filter the columns in \datafile s, to change the units in which data
-is expressed in \datafile s, and so forth.  The following example would produce
+are expressed in \datafile s, and so forth.  The following example would produce
 a \datafile\ called {\tt gamma.dat} containing a list of values of the gamma
 function:
 
@@ -167,7 +167,7 @@ tabulate [1:5] gamma(x)
 using the \indmodt{using} modifier, as in the example
 
 \begin{verbatim}
-tabulate [0:2*pi] sin(x):cos(x):tan(x) u 1:2:3:4
+tabulate [0:2*pi] sin(x):cos(x):tan(x) using 1:2:3:4
 \end{verbatim}
 
 \noindent or by placing them in a comma-separated list, as in the {\tt plot}
@@ -190,19 +190,19 @@ plot} command:\indcmd{set samples}
 set samples 200
 \end{verbatim}
 
-\noindent If the ordinate axis is set to be logarithmic then the points at which
+\noindent If the abscissa axis is set to be logarithmic then the points at which
 functions are evaluated are spaced logarithmically, otherwise they are spaced
 linearly.
 
 The \indmodt{select}, \indmodt{using} and \indmodt{every} modifiers operate in
 the same manner in the {\tt tabulate} command as in the {\tt plot} command.
-Thus, the following example would write out the third, sixth and ninth columns
+Thus the following example would write out the third, sixth and ninth columns
 of the \datafile\ {\tt input.dat}, but only when the arcsine of the value in the
 fourth column is positive:
 
 \begin{verbatim}
 set output 'filtered.dat'
-tabulate 'input.dat' u 3:6:9 select (asin($4)>0)
+tabulate 'input.dat' using 3:6:9 select (asin($4)>0)
 \end{verbatim}
 
 The numerical display format used in each column of the output file is chosen
@@ -229,7 +229,7 @@ x = 1.666667 ; x**2 =  2.77777777777778167589e+00
 
 The data produced by the {\tt tabulate} command can be sorted in order of any
 arbitrary metric by supplying an expression after the {\tt sortby} modifier;
-where such expressions are supplied, the data is sorted in order from the
+where such expressions are supplied, the data are sorted in order from the
 smallest value of the expression to the largest.
 
 
@@ -305,8 +305,8 @@ correspond to the values of each of the $n$ inputs to the function, plus
 finally the value which the output from the function is aiming to match.
 \item If an additional column is specified, then this is taken to contain the
 standard error in the value that the output from the function is aiming to
-match, and can be used to weight the \datapoint s which are input into the
-{\tt fit} command.
+match, and can be used to weight the \datapoint s which are being used to
+constrain the fit.
 \item By default, the starting values for each of the fitting parameters is
 $1.0$. However, if the variables to be used in the fitting process are already
 set before the {\tt fit} command is called, these initial values are used
@@ -345,7 +345,7 @@ fit [0:10] f() 'data.dat' via a
 \end{verbatim}
 
 \item For those interested in the mathematical details, the workings of the
-{\tt fit} command is discussed in more detail in Appendix~\ref{ch:fit_maths}.
+{\tt fit} command are discussed in more detail in Appendix~\ref{ch:fit_maths}.
 
 \end{itemize}
 
@@ -403,7 +403,7 @@ interpolate spline f() 'data1.dat'
 
 \example{ex:interpolation}{A demonstration of the {\tt linear}, {\tt spline} and {\tt akima} modes of interpolation}{
 In this example, we demonstrate the {\tt linear}, {\tt spline} and {\tt akima}
-modes of interpolation using an example \datafile with non-smooth data
+modes of interpolation using an example \datafile\ with non-smooth data
 generated using the {\tt tabulate} command (see Section~\ref{sec:tabulate}):
 \nlscf
 \noindent{\tt f(x) = 0}\newline
@@ -412,10 +412,10 @@ generated using the {\tt tabulate} command (see Section~\ref{sec:tabulate}):
 \noindent{\tt set samples 20}\newline
 \noindent{\tt tabulate [0:4] f(x)}
 \nlscf
-Having set three functions to interpolate this non-smooth data in different
+Having set three functions to interpolate these non-smooth data in different
 ways, we plot them with a vertical offset of~$0.1$ between them for clarity.
 The interpolated \datafile is plotted with points three times to show where
-each of the interpolation functions are pinned.
+each of the interpolation functions is pinned.
 \nlscf
 \noindent{\tt interpolate linear f\_linear() "data.dat"}\newline
 \noindent{\tt interpolate spline f\_spline() "data.dat"}\newline
@@ -439,7 +439,7 @@ The resulting plot is shown below:
 
 The {\tt fft} and {\tt ifft} commands\indcmd{fft}\indcmd{ifft} take Fourier
 transforms and inverse Fourier transforms respectively of data supplied either
-from a file or from a function. In each case, a regular grid of ordinate values
+from a file or from a function. In each case, a regular grid of abscissa values
 must be specified on which to take the discrete Fourier transform, which can
 extend over an arbitrary number of dimensions. The following example
 demonstrates the syntax of these commands as applied to a two-dimensional
@@ -467,14 +467,14 @@ f}$(\omega_x,\omega_y)$ at
 analogously defined. These samples are interpolated stepwise, such that an
 evaluation of the function {\tt f}$(\omega_x,\omega_y)$ for general inputs
 yields the nearest sample, or zero outside the rectangular grid where samples
-are available. The Fourier transforms of even real functions are, in general,
+are available. In general, even the Fourier transforms of real functions are
 complex, and their evaluation when complex arithmetic is not enabled (see
 Section~\ref{sec:complex_numbers}) is likely to fail. For this reason, a
 warning is issued if complex arithmetic is disabled when a Fourier transform
 function is evaluated.
 
 In the example above, we go on to convert this set of samples back into the
-function we started with by instructing the \indcmdt{ifft} to take
+function with which we started by instructing the \indcmdt{ifft} to take
 $N_x=100$~equally-spaced samples along the $\omega_x$-axis between
 $\omega_{x,\mathrm{min}}=-{N_x}/{2\Delta x}$ and
 $\omega_{x,\mathrm{max}}=(N_x-1)/{2\Delta x}$, with similar sampling along the
@@ -500,9 +500,9 @@ I_j = \sum_{m=0}^{N-1} F_m e^{ 2\pi ijm/N} \,\delta \omega_x,\;\textrm{for}\; -\
 \begin{tabular}{rcp{9cm}}
 $I(x)$        & = & Function being Fourier transformed. \\
 $F(\omega_x)$ & = & Fourier transform of $I()$. \\
-$N$           & = & The number of values sampled along the ordinate axis. \\
-$\delta x$    & = & Spacing of values sampled along the ordinate axis. \\
-$\delta \omega_x$ & = & Spacing of ordinate values sampled along the $\omega_x$ axis. \\
+$N$           & = & The number of values sampled along the abscissa axis. \\
+$\delta x$    & = & Spacing of values sampled along the abscissa axis. \\
+$\delta \omega_x$ & = & Spacing of abscissa values sampled along the $\omega_x$ axis. \\
 $i$           & = & $\sqrt{-1}$. \\
 \end{tabular}
 \vspace{2mm}
@@ -527,9 +527,9 @@ fft [-10:10:0.1] f() of 'datafile.dat'
 \noindent In such cases, the data read from the \datafile\ for an
 $N$-dimensional FFT must be arranged in $N+1$ columns\footnote{The {\tt using},
 {\tt every}, {\tt index} and {\tt select} modifiers can be used to arrange it
-into this form.}, with the first $N$ containing the ordinate values for each of
+into this form.}, with the first $N$ containing the abscissa values for each of
 the $N$ dimensions, and the final column containing the data to be Fourier
-transformed. The ordinate values must strictly match those in the raster
+transformed. The abscissa values must strictly match those in the raster
 specified in the {\tt fft} or {\tt ifft} command, and must be arranged strictly
 in row-major order.
 
@@ -563,7 +563,7 @@ in practice any numerical Fourier transform will yield a small imaginary
 component at the level of the accuracy of the numerical method used. Although
 the calculated numerical Fourier transform is defined throughout the range
 $-50\leq x<50$, discretised with steps of size $\Updelta x=0.5$, we only plot
-the central region in order to clearly show the stepping of the function:
+the central region in order to show clearly the stepping of the function:
 \nlscf
 \begin{center}
 \includegraphics{examples/eps/ex_fft}
@@ -708,8 +708,8 @@ should be multiplied by the bin width used.
 
 Second, if the function produced by the {\tt histogram} command is plotted
 using the {\tt plot} command, samples are automatically taken not at evenly
-spaced intervals along the ordinate axis, but at the centres of each bin. If
-the \indpst{boxes} plot style is used, the box boundaries are be conveniently
+spaced intervals along the abscissa axis, but at the centres of each bin. If
+the \indpst{boxes} plot style is used, the box boundaries are conveniently
 drawn to coincide with the bins into which the data were sorted.
 
 \section{Random Data Generation}
@@ -751,7 +751,7 @@ lie within the unit circle equals the ratio of these two areas: $\pi/4$.
 \nlnp
 The following script performs this calculation using $N=5000$~randomly placed
 samples. Firstly, the positions of the random samples are generated using the
-{\tt random()} function, and output to a file called {\tt random.dat} using the
+{\tt random()} function, and written to a file called {\tt random.dat} using the
 {\tt tabulate} command. Then, the {\tt foreach datum} command -- which will be
 introduced in Section~\ref{sec:foreach_datum} -- is used to loop over these,
 counting how many lie within the unit circle.

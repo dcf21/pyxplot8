@@ -26,17 +26,17 @@
 
 This chapter contains an alphabetically ordered list of all of PyXPlot's
 commands. The syntax of each is specified in a variant of Backus-Naur notation,
-in which angle brackets {\tt <>} are used to indicate replaceable tokens, curly
-brackets {\tt ()} are used to indicate mutually-exclusive options which are
+in which angle brackets {\tt <>} are used to indicate replaceable tokens,
+parentheses {\tt ()} are used to indicate mutually-exclusive options which are
 separated by vertical lines {\tt |}, square brackets {\tt []} are used to
 indicate optional items, and braces {\tt \{\}} are used to indicate items which
 may be repeated. Dots {\tt ...} are used to indicate arbitrary strings of text.
 Where any of these punctuation marks appear as a part of PyXPlot's syntax, they
 are placed in double quotes, as in {\tt "\{"}. Strings, such as filenames,
-which should be placed in quotes are placed in single quotes, as in {\tt
-'<filename>'}, though in practice, double quotes can always be used
-interchangeably with single quotes. In cases where there is likely to be any
-ambiguity, worked examples are usually shown beneath the syntax specification.
+which should be placed in quotes are shown in single quotes, as in {\tt
+'<filename>'}, though in practice, double and single quotes can always be used
+interchangeably. In cases where there is likely to be any ambiguity, worked
+examples are usually shown beneath the syntax specification.
 
 \section{?}\indcmd{?}
 
@@ -431,7 +431,7 @@ eps [ item <id> ] '<filename>' [at <x>, <y>] [rotate <angle>]
                             [width <width>] [height <height>]
 \end{verbatim}
 
-The \indcmdt{eps} allows encapsulated postscript (eps) images to be inserted
+The \indcmdt{eps} allows Encapsulated PostScript (EPS) images to be inserted
 onto multiplot canvases.  The {\tt at} modifier can be used to specify where
 the bottom-left corner of the image should be placed; if it is not, then the
 image is placed at the origin. The {\tt rotate} modifier can be used to rotate
@@ -439,8 +439,8 @@ the image by any angle, measured in degrees counter-clockwise.  The {\tt width}
 or {\tt height} modifiers can be used to specify the width or height with which
 the image should be rendered; both should be specified in centimetres. If
 neither is specified then the image will be rendered with the native dimensions
-specified within the postscript.  The {\tt eps} command is often useful in
-multiplot mode, allowing postscript images to be combined with plots, text
+specified within the PostScript.  The {\tt eps} command is often useful in
+multiplot mode, allowing PostScript images to be combined with plots, text
 labels, etc.
 
 All vector graphics objects placed on multiplot canvases receive unique
@@ -830,8 +830,8 @@ dimensions specified within the metadata present in the image file (if any). If
 both are specified, then the aspect ratio of the image is changed.
 
 The keyword {\tt smooth} may optionally be supplied to cause the pixels of
-images to be interpolated\footnote{Many commonly-used postscript display
-engines, including GhostScript, do not support this functionality.}.  Images
+images to be interpolated\footnote{Many commonly-used PostScript display
+engines, including Ghostscript, do not support this functionality.}.  Images
 which include transparency are supported. The optional keyword {\tt
 notransparent} may be supplied to cause transparent regions to be filled with
 the image's default background colour. Alternatively, an RGB colour may be
@@ -970,8 +970,8 @@ maximise <expression> via <variable> {, variable}
 
 The \indcmdt{maximise} can be used to find the maxima of algebraic expressions.
 A single algebraic expression should be supplied for optimisation, together
-with a comma-separated list of the variables which it should be optimised with
-respect to. In the following example, a maximum of the sinusoidal function
+with a comma-separated list of the variables with respect to which it should be
+optimised.  In the following example, a maximum of the sinusoidal function
 $\cos(x)$ is sought:
 
 \vspace{3mm}
@@ -983,16 +983,14 @@ $\cos(x)$ is sought:
 \vspace{3mm}
 
 \noindent Note that this particular example doesn't work when complex
-arithmetic is enabled, since $\cos(x)$ diverges to $\infty$ at $x=\infty
-i$, and this is correctly identified by PyXPlot as the global maximum of the
-function when complex numbers are allowed.
+arithmetic is enabled, since $\cos(x)$ diverges to $\infty$ at $x=\infty i$.
 
 Various caveats apply the {\tt maximise} command, as well as to the {\tt
 minimise} and {\tt solve} commands.  All of these commands operate by searching
 numerically for optimal sets of input parameters to meet the criteria set by
 the user. As with all numerical algorithms, there is no guarantee that the {\it
 locally} optimum solutions returned are the {\it globally} optimum solutions.
-It is always advisable to double-check that the answered returned agree with
+It is always advisable to double-check that the answers returned agree with
 common sense.
 
 These commands can often find solutions to equations when these solutions are
@@ -1001,7 +999,7 @@ they are looking for is roughly of order unity.  PyXPlot does have mechanisms
 which attempt to correct cases where the supplied initial guess turns out to be
 many orders of magnitude different from the true solution, but it cannot be
 guaranteed not to wildly overshoot and produce unexpected results in such
-cases.  To reiterate, it is always advisable to double-check that the answered
+cases.  To reiterate, it is always advisable to double-check that the answers
 returned agree with common sense.
 
 
@@ -1013,8 +1011,8 @@ minimise <expression> via <variable> {, variable}
 
 The \indcmdt{minimise} can be used to find the minima of algebraic expressions.
 A single algebraic expression should be supplied for optimisation, together
-with a comma-separated list of the variables which it should be optimised with
-respect to. In the following example, a minimum of the sinusoidal function
+with a comma-separated list of the variables with respect to which it should be
+optimised. In the following example, a minimum of the sinusoidal function
 $\cos(x)$ is sought:
 
 \vspace{3mm}
@@ -1027,15 +1025,14 @@ $\cos(x)$ is sought:
 
 \noindent Note that this particular example doesn't work when complex
 arithmetic is enabled, since $\cos(x)$ diverges to $-\infty$ at $x=\pi+\infty
-i$, and this is correctly identified by PyXPlot as the global minimum of the
-function when complex numbers are allowed.
+i$.
 
 Various caveats apply the {\tt minimise} command, as well as to the {\tt
 maximise} and {\tt solve} commands.  All of these commands operate by searching
 numerically for optimal sets of input parameters to meet the criteria set by
 the user. As with all numerical algorithms, there is no guarantee that the {\it
 locally} optimum solutions returned are the {\it globally} optimum solutions.
-It is always advisable to double-check that the answered returned agree with
+It is always advisable to double-check that the answers returned agree with
 common sense.
 
 These commands can often find solutions to equations when these solutions are
@@ -1044,7 +1041,7 @@ they are looking for is roughly of order unity.  PyXPlot does have mechanisms
 which attempt to correct cases where the supplied initial guess turns out to be
 many orders of magnitude different from the true solution, but it cannot be
 guaranteed not to wildly overshoot and produce unexpected results in such
-cases.  To reiterate, it is always advisable to double-check that the answered
+cases.  To reiterate, it is always advisable to double-check that the answers
 returned agree with common sense.
 
 
@@ -1725,8 +1722,8 @@ between calendar dates and Julian Day numbers. PyXPlot uses two separate
 calendars which may be different: an input calendar for processing dates that
 the user inputs as calendar dates, and an output calendar that controls how
 dates are displayed or written on plots.  The available calendars are {\tt
-British}, {\tt Catholic} {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt
-Hebrew}, {\tt Islamic}, {\tt Jewish}, {\tt Julian}, {\tt Muslim} and {\tt
+British}, {\tt French}, {\tt Greek}, {\tt Gregorian}, {\tt Hebrew}, {\tt
+Islamic}, {\tt Jewish}, {\tt Julian}, {\tt Muslim}, {\tt Papal} and {\tt
 Russian}, where {\tt Jewish} is an alias for {\tt Hebrew} and {\tt Muslim} is
 an alias for {\tt Islamic}.
 
@@ -2544,7 +2541,7 @@ set samples 100
 
 \noindent would cause functions to be evaluated at 100~points along the
 ordinate axis.  Increasing this value will cause functions to be plotted more
-smoothly, but also more slowly, and the postscript files generated will also be
+smoothly, but also more slowly, and the PostScript files generated will also be
 larger. When functions are plotted with the {\tt points} plot style, this
 setting controls the number of points plotted.
 
@@ -2756,7 +2753,7 @@ allows for the production of immediately-printable output.
 
 \subsubsection{eps}\index{set terminal command!eps modifier@{\tt eps} modifier}
 
-Sends output to encapsulated postscript ({\tt eps}) files.  The filename to
+Sends output to Encapsulated PostScript ({\tt eps}) files.  The filename to
 which output should be sent can be set using the {\tt set output} command; the
 default is {\tt pyxplot.eps}.  This terminal produces images suitable for
 including in, for example, \LaTeX\ documents.
@@ -2828,8 +2825,8 @@ This is the opposite of the {\tt inverse} option.
 \subsubsection{pdf}\index{set terminal command!pdf modifier@{\tt pdf}
 modifier}
 
-The {\tt pdf} terminal renders output in Adobe's portable document format
-(pdf).
+The {\tt pdf} terminal renders output in Adobe's Portable Document Format
+(PDF).
 
 
 \subsubsection{png}\index{set terminal command!png modifier@{\tt png} modifier}
@@ -2850,10 +2847,10 @@ upright (normal) orientation; it is the converse of the {\tt landscape} option.
 
 \subsubsection{postscript}\index{set terminal command!postscript modifier@{\tt postscript} modifier}
 
-The {\tt postscript} terminal renders output as postscript files. The filename
+The {\tt postscript} terminal renders output as PostScript files. The filename
 to which output should be sent can be set using the {\tt set output} command;
 the default is {\tt pyxplot.ps}.  This terminal produces non-encapsulated
-postscript suitable for sending directly to a printer; it should not be used
+PostScript suitable for sending directly to a printer; it should not be used
 for producing images to be embedded in documents, for which the {\tt eps}
 terminal should be used.
 
@@ -3026,7 +3023,7 @@ set unit preferred N*m
 The latter two examples are particularly useful when working with spectral
 densities (powers per unit frequency) or torques (forces multiplied by
 distances). Unfortunately, both of these units are dimensionally equal to
-powers, and so are displayed by PyXPlot in Joules by default. The above
+energies, and so are displayed by PyXPlot in Joules by default. The above
 statement overrides such behaviour. Having set a particular unit to be
 preferred, this can be unset as in the following example:
 \begin{verbatim}
@@ -3037,7 +3034,7 @@ By default, units are displayed in their abbreviated forms, for example {\tt A}
 instead of {\tt amperes} and {\tt W} instead of {\tt watts}. Furthermore, SI
 prefixes such as milli- and kilo- are applied to SI units where they are
 appropriate. Both of these behaviours can be turned on or off, in the former
-case with the commands:
+case with the commands
 
 \begin{verbatim}
 set unit display abbreviated
@@ -3058,7 +3055,7 @@ set unit display noprefix
 set viewer ( auto | <command> )
 \end{verbatim}
 
-The \indcmdt{set viewer} is used to select which external postscript viewing
+The \indcmdt{set viewer} is used to select which external PostScript viewing
 application is used to display PyXPlot output on screen in the {\tt X11}
 terminals. If the option {\tt auto} is selected, then either \ghostview\ or
 {\tt ggv} is used, if installed. Alternatively, any other application such as
@@ -3346,13 +3343,13 @@ solve <equation> {, <equation>}
 The \indcmdt{solve} can be used to solve simple systems of one or more
 equations numerically. It takes as its arguments a comma-separated list of the
 equations which are to be solved, and a comma-separated list of the variables
-which are to be solved for. The latter should be prefixed by the word {\tt
+which are to be found. The latter should be prefixed by the word {\tt
 via}, to separate it from the list of equations.
 
 Note that the time taken by the solver dramatically increases with the number
-of variables which are simultaneously solved for, meanwhile the accuracy
-achieved simultaneously decreases. The following example solves a simple pair
-of simultaneous equations of two variables:
+of variables which are simultaneously found, whereas the accuracy achieved
+simultaneously decreases. The following example solves a simple pair of
+simultaneous equations of two variables:
 
 \begin{verbatim}
 pyxplot> solve x+y=10, x-y=3 via x,y
@@ -3364,10 +3361,10 @@ pyxplot> print y
 
 \noindent No output is returned to the terminal if the numerical solver
 succeeds, otherwise an error message is displayed. If any of the fitting
-variables are already defined prior to the \indcmdt{solve} being called, their
-values are used as initial guesses, otherwise an initial guess of unity for
-each fitting variable is assumed. Thus, the same \indcmdt{solve} returns two
-different values in the following two cases:
+variables are already defined prior to the {\tt solve} command's being called,
+their values are used as initial guesses, otherwise an initial guess of unity
+for each fitting variable is assumed. Thus, the same \indcmdt{solve} returns
+two different values in the following two cases:
 
 \begin{verbatim}
 pyxplot> x= # Undefine x

@@ -25,8 +25,8 @@
 
 \label{ch:installation}
 
-In this chapter we outline how to install PyXPlot on a range of UNIX-like
-operating systems.
+In this chapter we describe in outline how to install PyXPlot on a range of
+UNIX-like operating systems.
 
 \section{System Requirements}
 
@@ -43,7 +43,7 @@ installed:\index{system requirements}
 \item Ghostscript \index{Ghostscript}
 \item The Gnu Scientific Library (version 1.10+) \index{gsl}
 \item ImageMagick \index{ImageMagick}
-\item latex (version $2\epsilon$; a full installation is likely to be required in distributions which offer a choice) \index{latex}
+\item \LaTeX\ (version $2\epsilon$; a full installation is likely to be required in distributions which offer a choice) \index{latex}
 \item libkpathsea \index{libkpathsea}
 \item libpng (version 1.2+) \index{libpng}
 \item libxml2 (version 2.6+) \index{libxml}
@@ -61,10 +61,10 @@ reinstalled to take advantage of their presence.
 \vspace{0.5cm}
 \begin{itemize}
 \item cfitsio -- required for PyXPlot to be able to plot \datafile s in FITS format.
-\item Ghostview \index{Ghostview} (or {\tt ggv}) -- required for PyXPlot to be able to display plots live on the screen; PyXPlot remains able to generate image files on disk without it. Alternatively, the \indcmdt{set viewer} within PyXPlot allows a different postscript viewer to be used.
+\item Ghostview \index{Ghostview} (or {\tt ggv}) -- required for PyXPlot to be able to display plots live on the screen; PyXPlot remains able to generate image files on disk without it. Alternatively, the \indcmdt{set viewer} within PyXPlot allows a different PostScript viewer to be used.
 \item gunzip \index{gunzip} -- required for PyXPlot to be able to plot compressed \datafile s in {\tt .gz} format.
 \item The Gnu Readline Library (version 5+) \index{readline} -- required for PyXPlot to be able to provide tab completion and command histories in PyXPlot's interactive command-line interface.
-\item wget \index{wget} -- required for PyXPlot to be able to plot \datafile s directly from the internet.
+\item wget \index{wget} -- required for PyXPlot to be able to plot \datafile s directly from the Internet.
 \end{itemize}
 \vspace{0.5cm}
 
@@ -96,6 +96,12 @@ Users of MacOS~X can find the above software in the following MacPorts packages:
 \noindent {\tt libxml2}, {\tt readline-5}, {\tt texlive}, {\tt wget}, {\tt zlib}.
 \vspace{2mm}
 
+It may then be necessary to run the command
+\begin{verbatim}
+CFLAGS=-I/opt/local/include
+\end{verbatim}
+before running the {\tt configure} script below.
+
 \section{Installation}
 \index{installation}
 
@@ -112,7 +118,7 @@ described in this manual are not available in previous versions.
 
 Under Debian and Ubuntu Linux, version~0.8.0 may be manually installed by
 downloading the appropriate {\tt .deb} file for your distribution from the
-PyXPlot website and typing:
+PyXPlot website and typing
 
 \begin{verbatim}
 dpkg -i <filename>.deb
@@ -167,7 +173,7 @@ If desired, this installation path may be modified in the file {\tt
 Makefile.skel}, by changing the variable {\tt USRDIR} in the first line to an
 alternative desired installation location.
 
-PyXPlot may now be started by any system user, simply by typing:
+PyXPlot may now be started by any system user, simply by typing
 
 \begin{verbatim}
 pyxplot

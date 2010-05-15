@@ -28,7 +28,7 @@ repetitive tasks. We begin by introducing string variables, which can be useful
 for auto-generating titles and labels for graphs which are being produced in
 batch jobs. We then discuss the loop constructs which make it possible to run
 such batch jobs, producing similar plots of many different \datafile s or
-performs calculations in an iterative fashion. Finally, we turn to PyXPlot's
+performing calculations in an iterative fashion. Finally, we turn to PyXPlot's
 interaction with the shell and filing system in which it operates, introducing
 a simple framework for automatically re-executing PyXPlot scripts whenever they
 change, allowing plots to be automatically regenerated whenever the scripts
@@ -69,8 +69,8 @@ operators!concatenation}
 c = "%s%s"%(a,b)
 \end{verbatim}
 
-One example application of this operator would be to label plots with the title
-of the \datafile\ being plotted, as in:
+One application of this operator might be to label plots with the title of the
+\datafile\ being plotted, as in the following example:
 \begin{verbatim}
 filename="data_file.dat"
 title="A plot of the data in {\tt %s}."%(filename)
@@ -97,7 +97,7 @@ physical units are provided, the physical units are not displayed unless the
 {\tt \%s} token is used. Although it is not an error to pass a quantity with
 physical units to, for example, the {\tt \%f} substitution token, it is good
 practice to divide the quantity by a suitable unit first to make it
-dimensionless, to be certain of what unit it will be displayed in.
+dimensionless, to be certain of the unit in which it will be displayed.
 
 \begin{table}
 \begin{center}
@@ -185,7 +185,7 @@ recognised by the =$\sim$ operator.
 {\tt m} & When specified, the pattern character {\tt \^{}} matches the beginning of the string and the beginning of each line immediately following each newline. The pattern character {\tt \$} matches at the end of the string and the end of each line immediately preceding each newline. By default, {\tt \^{}} matches only the beginning of the string, and {\tt \$} only the end of the string and immediately before the newline, if present, at the end of the string. \\
 {\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
 {\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
-{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class or preceded by an unescaped backslash, all characters from the leftmost such {\tt \#} through to the end of the line are ignored. \\
+{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class nor preceded by an unescaped backslash, all characters from the left-most such {\tt \#} through to the end of the line are ignored. \\
 \hline
 \end{tabular}}
 \caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
@@ -357,7 +357,8 @@ will be introduced in Section~\ref{sec:breakcontinue}.
 
 Foreach loops may be used to run a script block once for each item in a list.
 The list may either take the form of an explicit bracketed comma-separated list
-of items, or the form of one or more filename wildcards, as in the examples:
+of items, or the form of one or more filename wildcards, as in the following
+examples:
 
 \begin{verbatim}
 foreach x in (-1,pi,10)
@@ -532,8 +533,8 @@ following pair of examples:
 Note that if several loops are nested, the {\tt break} and {\tt continue}
 statements only act upon the innermost loop. If either statement is encountered
 outside of a loop structure, an error results. Optionally, the {\tt for}, {\tt
-foreach}, {\tt do} and {\tt while}, may be supplied with a name for the loop,
-prefixed by the word {\tt loopname}, as in the examples:
+foreach}, {\tt do} and {\tt while} commands may be supplied with a name for the
+loop, prefixed by the word {\tt loopname}, as in the examples:
 
 \begin{verbatim}
 for i=0 to 4 loopname iloop
@@ -653,9 +654,9 @@ done analytically, but the solution can be written in the form
 \end{equation}
 \\ \noindent
 where $\mathrm{sn}(u,m)$ is a Jacobi elliptic function and
-$k=\sin\left(\omega/2\right)$.  The Jacobi elliptic function cannot be exactly
-computed, but can be numerically approximated using the {\tt jacobi\_\-sn(u,m)}
-function in PyXPlot.
+$k=\sin\left(\omega/2\right)$.  The Jacobi elliptic function cannot be
+analytically computed, but can be numerically approximated using the {\tt
+jacobi\_\-sn(u,m)} function in PyXPlot.
 \nlnp
 Below, we produce a plot of Equations~(\ref{eq:pendulum_approx}) and
 (\ref{eq:pendulum_exact}).  The horizontal axis is demarked in units of the
@@ -741,8 +742,9 @@ shell command on the same line.
 \end{dontdo}
 
 It is also possible to substitute the output of a shell command into a PyXPlot
-command. To do this, the shell command should be enclosed in back-quotes (`).
-For example:\index{backquote character}\index{shell commands!substituting}
+command. To do this, the shell command should be enclosed in back-quotes (`),
+as in the following example:\index{backquote character}\index{shell
+commands!substituting}
 
 \begin{verbatim}
 a=`ls -l *.ppl | wc -l`
@@ -750,7 +752,7 @@ print "The current directory contains %d PyXPlot scripts."%(a)
 \end{verbatim}
 
 It should be noted that back-quotes can only be used outside quotes. For
-example:
+example,
 
 \begin{dontdo}
 set xlabel '`ls`'
@@ -806,7 +808,7 @@ which {\it will} pick up any newly created files.}
 
 This is especially useful when combined with \ghostview's\index{Ghostview}
 watch facility. For example, suppose that a script {\tt foo.ppl} produces
-postscript output {\tt foo.ps}. The following two commands could be used to
+PostScript output {\tt foo.ps}. The following two commands could be used to
 give a live view of the result of executing this script:
 
 \begin{verbatim}

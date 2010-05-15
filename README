@@ -32,7 +32,7 @@ physical units in which data are expressed, and to convert data between
 different units of measurement, mean that it can be used as a powerful desktop
 calculator.
 
-PyXPlot's interface bears some striking similarities with that of Gnuplot.
+PyXPlot's interface bears some striking similarities to that of Gnuplot.
 Specifically, the commands used for plotting simple graphs in the two programs
 are virtually identical, though the syntax used for more advanced plotting
 often differs and PyXPlot's mathematical environment is hugely extended over
@@ -57,7 +57,7 @@ software packages (not included) be installed:
 - Ghostscript
 - The Gnu Scientific Library (version 1.10+)
 - ImageMagick
-- latex                      (version 2e)
+- LaTeX                      (version 2e)
 - libkpathsea
 - libpng                     (version 1.2+)
 - libxml2                    (version 2.6+)
@@ -81,7 +81,7 @@ advantage of their presence.
   provide tab completion and command histories in PyXPlot's interactive
   command-line interface.
 - wget -- required for PyXPlot to be able to plot datafiles directly from the
-  internet.
+  Internet.
 
 Debian and Ubuntu users can find the above software in the following packages:
 
@@ -99,6 +99,12 @@ Users of MacOS X can find the above software in the following MacPorts packages:
 
 cfitsio, fftw-3, ghostscript, gsl-devel, gv, ImageMagick, libpng, libxml2,
 readline-5, texlive, wget, zlib.
+
+It may then be necessary to run the command
+
+CFLAGS=-I/opt/local/include
+
+before running the configure script below.
 
 
 3. INSTALLATION
