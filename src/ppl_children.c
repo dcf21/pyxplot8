@@ -221,7 +221,6 @@ void CSPCheckForNewCommands()
   int             pos, TrialNumber;
   char linebuffer[SSTR_LENGTH];
 
-ppl_log(PipeOutputBuffer);
   TrialNumber=1;
   while (1)
    {
