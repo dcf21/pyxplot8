@@ -28,10 +28,10 @@ load "examples/fig_init.ppl"
 
 # Main body of figure script
 text '\parbox[t]{6cm}{\setlength{\parindent}{1cm} \
-\noindent There once was a lady from Hyde, \\ \
-Who ate a green apple and died, \\ \
-\indent While her lover lamented, \\ \
-\indent The apple fermented, \\ \
+\noindent There once was a lady from Hyde, \newline \
+Who ate a green apple and died, \newline \
+\indent While her lover lamented, \newline \
+\indent The apple fermented, \newline \
 and made cider inside her inside.}'
 
 # Call common cleanup script

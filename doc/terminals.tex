@@ -160,7 +160,7 @@ is used non-interactively -- i.e.\ one or more command scripts are specified on
 the command line, and PyXPlot exits as soon as it finishes executing them. In
 this case, the {\tt X11\_SingleWindow} would not be a very sensible terminal to
 use as any plot window would close as soon as PyXPlot exited. The default
-terminal in this case changes to {\tt postscript}.
+terminal in this case changes to {\tt eps}.
 
 This rule does not apply when the special `--' filename is specified in a list
 of command scripts on the command line, where an interactive terminal will
@@ -169,7 +169,7 @@ the session will be interactive, and defaults to the usual {\tt
 X11\_SingleWindow} terminal. Conversely, on machines where the {\tt DISPLAY}
 environment variable\index{display environment variable@{\tt DISPLAY}
 environment variable} is not set, PyXPlot detects that it has access to no
-X-terminal on which to display plots, and defaults to the {\tt postscript}
+X-terminal on which to display plots, and defaults to the {\tt eps}
 terminal.
 
 \section{PostScript Output}
@@ -181,12 +181,12 @@ paper size, minus a small margin. The aspect ratio of the plot is preserved.
 \subsection{Paper Sizes}
 \label{sec:set_papersize}
 
-By default, when the PostScript terminal produces printable, i.e.\ not
-encapsulated, output, the paper size for this output is read from the user's
-system locale settings. It may be changed, however, with \indcmdt{set
-papersize}, which may be followed either by the name of a recognised paper
-size, or by the dimensions of a user-defined size, specified as a {\tt height},
-{\tt width} pair, both being measured in millimetres. For example:
+By default, the {\tt postscript} terminal, and the {\tt enlarge} terminal
+option, read the paper size for their output from the user's system locale
+settings. It may be changed, however, with \indcmdt{set papersize}, which may
+be followed either by the name of a recognised paper size, or by the dimensions
+of a user-defined size, specified as a {\tt height}, {\tt width} pair, both
+being measured in millimetres. For example:
 
 \begin{verbatim}
 set papersize a4
@@ -204,10 +204,10 @@ Marcus}\index{paper sizes}
 \section{Backing Up Over-Written Files}
 \index{overwriting files}\index{backup files}\label{sec:file_backup}
 
-By default, when graphical output is sent to a file -- i.e.\ a PostScript file or
-a bitmap image -- pre-existing files are overwritten if their filenames match
-that of the file which PyXPlot generates. This behaviour may be changed with
-the \indcmdt{set backup}, which has the syntax:
+By default, when graphical output is sent to a file -- i.e.\ a PostScript file
+or a bitmap image -- any pre-existing file is overwritten if its filename
+matches that of the file which PyXPlot generates. This behaviour may be changed
+with the \indcmdt{set backup}, which has the syntax:
 
 \begin{verbatim}
 set backup
@@ -215,5 +215,5 @@ set nobackup
 \end{verbatim}
 
 When this switch is turned on, pre-existing files will be renamed with a tilde
-appended to their filenames, rather than being overwritten.
+($\sim$) appended to their filenames, rather than being overwritten.
 

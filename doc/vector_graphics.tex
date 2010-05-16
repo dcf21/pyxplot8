@@ -24,17 +24,16 @@
 \chapter{Producing Vector Graphics}
 \label{ch:vector_graphics}
 
-In the previous two chapters, we have seen how the \indcmdt{plot} may be used to
-produce single graphs of functions and \datafile s, how the \indcmdt{set
+In the previous two chapters, we have seen how the \indcmdt{plot} may be used
+to produce single graphs of functions and \datafile s, how the \indcmdt{set
 terminal} can be used to produce graphical output in a wide range of different
-image formats (see Section~\ref{sec:set_terminal}), and the \indcmdt{set
+image formats (see Section~\ref{sec:set_terminal}), and how the \indcmdt{set
 papersize} can be used to produce PostScript output to fit on different sizes
 of paper (see Section~\ref{sec:set_papersize}). Often, however, there is a need
-to produce more sophisticated vector graphics.  For example, a figure with
-several plots side-by-side may be required, some line-art may be wanted to
-superimpose on top of or next to a graph, or what may be wanted may not be a
-graph at all, but rather a high-precision technical diagram. In this chapter,
-we turn our attention to such cases.
+to produce more sophisticated vector graphics.  For example, several plots may
+be wanted side-by-side, or some line-art annotations may be wanted on top of a
+graph. Additionally, PyXPlot can also produce technical diagrams as well as
+graphs. In this chapter, we turn our attention to such cases.
 
 Several of the vector graphics commands described in this chapter take rotation
 angles as one of their inputs.  It should be stressed that PyXPlot has two
@@ -47,17 +46,17 @@ quantities with physical dimensions of angle. Thus, the following ways of
 specifying angles are all valid:
 
 \begin{dodo}
-set unit angle nodimensionless
-text "foo" rotate unit(pi*rad)
-text "foo" rotate 180
+set unit angle nodimensionless\newline
+text "foo" rotate unit(pi*rad)\newline
+text "foo" rotate 180\newline
 text "foo" rotate unit(0.25*revolution)
 \end{dodo}
 
 \noindent as are these ways:
 
 \begin{dodo}
-set unit angle dimensionless
-text "foo" rotate 180
+set unit angle dimensionless\newline
+text "foo" rotate 180\newline
 text "foo" rotate degrees(pi)
 \end{dodo}
 
@@ -65,7 +64,7 @@ text "foo" rotate degrees(pi)
 passed to the {\tt text} command in radians:
 
 \begin{dontdo}
-set unit angle dimensionless
+set unit angle dimensionless\newline
 text "foo" rotate unit(180*deg)
 \end{dontdo}
 
@@ -83,12 +82,12 @@ side-by-side.
 
 The user can switch between these two modes of operation by issuing the
 commands \indcmdts{set multiplot} and \indcmdts{set nomultiplot}. The
-\indcmdt{set origin} is required for multiplot mode to be particularly useful
-when placing plots side-by-side: it sets the position on the page of the
-lower-left corner of the next plot to be produced. It takes a comma-separated
-$(x,y)$ coordinate pair, which may have units of length, or, if dimensionless,
-are assumed to be measured in centimetres. The following example plots a graph
-of $\sin(x)$ to the left of a plot of $\cos(x)$:
+\indcmdt{set origin} is required for multiplot mode to be useful when placing
+plots side-by-side: it sets the position on the page of the lower-left corner
+of the next plot. It takes a comma-separated $(x,y)$ coordinate pair, which may
+have units of length, or, if dimensionless, are assumed to be measured in
+centimetres. The following example plots a graph of $\sin(x)$ to the left of a
+plot of $\cos(x)$:
 \begin{verbatim}
 set multiplot
 set width 8
@@ -705,7 +704,7 @@ z_{n+1} = z_n^2 + c,
 \end{displaymath}
 subject to the starting condition $z_0=0$, remains bounded. In practice, the
 sequence is certain to diverge if $|z_n|$ ever exceeds~2.  It cannot generally
-be proven not to diverge at any particular point, but is declared to remain
+be proven not to diverge at any particular point, but is considered to remain
 bounded in our algorithm if $|z_n|$ has not exceeded~2 within a certain number
 {\tt StepsMax} of steps. To increase the aesthetic appeal of the fractal,
 pixels outside of the fractal are assigned different colours depending upon how
@@ -751,12 +750,12 @@ The resulting image is shown below:
 \subsection{The {\tt arc} Command}
 \label{sec:arc}
 
-Partial arcs of circles may be drawn using \indcmdt{arc}. This has similar
-syntax to \indcmdt{circle}, but takes two additional angle, measured clockwise
-from the upward vertical direction, which specify the extent of the arc to be
-drawn. The arc is drawn clockwise from start to end, and hence the following
-two instructions draw two complementary arcs which together form a complete
-circle:
+Partial arcs of circles may be drawn using the \indcmdt{arc}. This has similar
+syntax to the \indcmdt{circle}, but takes two additional angles, measured
+clockwise from the upward vertical direction, which specify the extent of the
+arc to be drawn. The arc is drawn clockwise from start to end, and hence the
+following two instructions draw two complementary arcs which together form a
+complete circle:
 
 \begin{verbatim}
 set multiplot
@@ -1071,7 +1070,7 @@ wedges themselves are taken sequentially from the current palette, as set by
 the {\tt set palette} command. Note that PyXPlot's default palette is optimised
 more for producing plots with datasets in different and distinct colours than
 for producing piecharts in asthetically pleasing shades, where a little more
-subtly may be desirable. A suitable call to the {\tt set palette} command is
+subtlely may be desirable. A suitable call to the {\tt set palette} command is
 highly recommended before the \indcmdt{piechart} is used.
 
 As with the {\tt plot} command, the position and size of the piechart are
@@ -1117,10 +1116,10 @@ label}.}. For example:
 
 \begin{verbatim}
 text '\parbox[t]{6cm}{\setlength{\parindent}{1cm} \
-\noindent There once was a lady from Hyde, \\ \
-Who ate a green apple and died, \\ \
-\indent While her lover lamented, \\ \
-\indent The apple fermented, \\ \
+\noindent There once was a lady from Hyde, \newline \
+Who ate a green apple and died, \newline \
+\indent While her lover lamented, \newline \
+\indent The apple fermented, \newline \
 and made cider inside her inside.}'
 \end{verbatim}
 

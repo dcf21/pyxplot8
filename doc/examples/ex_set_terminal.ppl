@@ -92,7 +92,7 @@ END
 
 plot
 
-text "\parbox{10cm}{$\bf\dagger$ -- Although the {\tt gif} image format is not lossy in the traditional sense, it reduces the number of colours to a palette of no more than 256~unique colours. Thus, whilst it is lossless for images which only contain small numbers of unique colours, some colour distortion may result in colourful images.\vspace{2mm}\newline$\bf\ddagger$ -- The {\tt svg} terminal is experimental and may be unstable. It relies upon the use of the {\tt svg} output device in Ghostscript, which may not be present on all systems.}" at -4,-0.5 hal l val t
+text "\parbox{10cm}{$\bf\dagger$ -- Although the {\tt gif} image format is not lossy in the traditional sense, it reduces the number of colours to a palette of no more than 256~unique colours. Thus, whilst it is lossless for images which only contain small numbers of unique colours, some colour distortion may occur in colourful images.\vspace{2mm}\newline$\bf\ddagger$ -- The {\tt svg} terminal is experimental and may be unstable. It relies upon the use of the {\tt svg} output device in Ghostscript, which may not be present on all systems.}" at -4,-0.5 hal l val t
 
 set display
 refresh
