@@ -1191,9 +1191,9 @@ appearance of various plot styles. A complete list of these is as follows:
 \item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb0.1:\-0.2:\-0.3}, {\tt hsb0.1:\-0.2:\-0.3} or {\tt cmyk0.4:\-0.3:\-0.2:\-0.1}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
 \item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
 \item \indmodt{linetype} -- used to numerically select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
-\item \indmodt{linewidth} -- used to select the width of line, where one represents the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
-\item \indmodt{pointlinewidth} -- used to select the width of line, where one represents the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
-\item \indmodt{pointsize} -- used to select the size of drawn points, where one represents the default size. May be abbreviated {\tt ps}.
+\item \indmodt{linewidth} -- used to select the width of line which should be used in line-based plot styles, where unity represents the default width. May be abbreviated {\tt lw}.
+\item \indmodt{pointlinewidth} -- used to select the width of line which should be used to stroke points in point-based plot styles, where unity represents the default width. May be abbreviated {\tt plw}.
+\item \indmodt{pointsize} -- used to select the size of drawn points, where unity represents the default size. May be abbreviated {\tt ps}.
 \item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
 \end{itemize}
 
@@ -3245,9 +3245,9 @@ size between ticks. If two values are specified, then the first is taken to be
 as a multiplicative step size.
 
 Alternatively, if a bracketed list of quoted tick labels and tick positions are
-provided, then ticks can manually be placed on an axis individually, and each
-given its own textual label. The quoted tick labels may be omitted, in which
-case they are automatically generated:
+provided, then ticks can be placed on an axis manually and each given its own
+textual label. The quoted tick labels may be omitted, in which case they are
+automatically generated:
 \begin{verbatim}
 set xtics ("a" 1, "b" 2, "c" 3)
 set xtics (1,2,3)

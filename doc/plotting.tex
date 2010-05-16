@@ -25,27 +25,27 @@
 \label{ch:plotting}
 
 Having described PyXPlot's mathematical environment and data-processing
-facilities in detail, this part of the manual now returns to the subject of how
+facilities in detail, this part of the manual returns to the subject of how
 PyXPlot may be used to produce graphs and other vector graphics. In this
-chapter we return to the \indcmdt{plot} to provide a more systematic survey of
-how the appearance of plots can be configured, continuing from the brief
-overview already given in Chapter~\ref{ch:first_steps}.  In the subsequent
-chapters of this part, we will go on to describe how to produce graphical
-output in a range of image formats (Chapter~\ref{ch:image_formats}) and how to
-produce galleries of multiple plots side-by-side together with more
-sophisticated vector graphics (Chapter~\ref{ch:vector_graphics}).
+chapter we provide a systematic survey of how the appearance of plots can be
+configured, continuing from the brief overview of the \indcmdt{plot} given in
+Chapter~\ref{ch:first_steps}.  In the subsequent chapters of this part, we will
+go on to describe how to produce graphical output in a range of image formats
+(Chapter~\ref{ch:image_formats}) and how to produce galleries of multiple plots
+side-by-side together with more sophisticated vector graphics
+(Chapter~\ref{ch:vector_graphics}).
 
 \section{The {\tt with} modifier}
 
 Chapter~\ref{ch:first_steps} provided an overview of the syntax of the
 \indcmdt{plot}, including the {\tt every}, {\tt index}, {\tt select} and {\tt
-using} modifiers which can be used to control {\tt which} data, read from a
+using} modifiers which can be used to control {\it which} data, read from a
 \datafile\ or sampled from a function, should be plotted. The {\tt with}
-modifier controls {\tt how} data should be plotted. For example, the statement
+modifier controls {\it how} data should be plotted. For example, the statement
 \begin{verbatim}
 plot "data.dat" index 1 using 4:5 with lines
 \end{verbatim}
-specifies that data should be plotted using lines connecting each \datapoint to
+specifies that data should be plotted using lines connecting each \datapoint\ to
 its neighbours. More generally, the {\tt with} modifier can be followed by a
 range of settings which fine-tune the manner in which the data are displayed;
 for example, the statement
@@ -63,9 +63,9 @@ as follows:
 \item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb0.1:\-0.2:\-0.3}, {\tt hsb0.1:\-0.2:\-0.3} or {\tt cmyk0.4:\-0.3:\-0.2:\-0.1}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
 \item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
 \item \indmodt{linetype} -- used to numerically select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
-\item \indmodt{linewidth} -- used to select the width of line, where one represents the default width, which should be used in line-based plot styles. May be abbreviated {\tt lw}.
-\item \indmodt{pointlinewidth} -- used to select the width of line, where one represents the default width, which should be used to stroke points in point-based plot styles. May be abbreviated {\tt plw}.
-\item \indmodt{pointsize} -- used to select the size of drawn points, where one represents the default size. May be abbreviated {\tt ps}.
+\item \indmodt{linewidth} -- used to select the width of line which should be used in line-based plot styles, where unity represents the default width. May be abbreviated {\tt lw}.
+\item \indmodt{pointlinewidth} -- used to select the width of line which should be used to stroke points in point-based plot styles, where unity represents the default width. May be abbreviated {\tt plw}.
+\item \indmodt{pointsize} -- used to select the size of drawn points, where unity represents the default size. May be abbreviated {\tt ps}.
 \item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
 \end{itemize}
 
@@ -106,7 +106,7 @@ plot styles.
 
 \index{palette}\index{colours!setting the palette} As indicated above, colours
 may be referred to either specifically by name or RGB components, or by their
-numbers in the current palette. By default, PyXPlot's palette contains a series
+locations in the current palette. By default, PyXPlot's palette contains a series
 of visually distinctive colours which are insofar as possible are also
 distinctive to users with most common forms of colour blindness. The current
 palette may be queried using the \indcmdt{show palette}, and changed using the
@@ -172,13 +172,13 @@ positions of each point:
 \item \indpst{linespoints} -- a combination of both lines and points.
 \item \indpst{lowerlimits} -- places a lower-limit sign (\includegraphics{examples/eps/ex_lowerlimit}) at each datum.\index{lower-limit datapoints}
 \item \indpst{points} -- places a marker symbol at each datum.
-\item \indpst{stars} -- similar to {\tt points}, but uses a different set of marker symbols, based upon the stars drawn in Johann Bayer's highly ornate star atlas {\tt Uranometria} of 1603.
+\item \indpst{stars} -- similar to {\tt points}, but uses a different set of marker symbols, based upon the stars drawn in Johann Bayer's highly ornate star atlas {\it Uranometria} of 1603.
 \item \indpst{upperlimits} -- places an upper-limit sign (\includegraphics{examples/eps/ex_upperlimit}) at each datum.\index{upper-limit datapoints}
 \end{itemize}
 
 \example{ex:hrdiagram}{A Hertzsprung-Russell Diagram}{
 Hertzsprung-Russell (HR) Diagrams are scatter-plots of the luminosities of
-stars plotted against their colour which reveal that most normal stars lie
+stars plotted against their colours which reveal that most normal stars lie
 along a tight line called the main sequence, whilst unusual classes of stars --
 giants and dwarfs -- can be readily identified on account of their not lying
 along this main sequence. The principal difficulty in constructing accurate HR
@@ -213,7 +213,7 @@ milli-arcseconds:
 \nlscf
 The resultant four columns of data can then be plotted in the {\tt dots} style
 using the following PyXPlot script. Because the catalogue is very large, and
-many of the parallax datapoints in it have large errorbars producing large
+many of the parallax datapoints have large errorbars producing large
 uncertainties in their vertical positions on the plot, we use the {\tt select}
 statement to pick out those datapoints with parallax signal-to-noise ratios of
 better than~20.
@@ -522,7 +522,7 @@ plot f(x):g(x) using 2:3
 \end{verbatim}
 
 \noindent though this example is not sensible. $g(x)$ would be plotted on the
-$y$-axis, against $f(x)$ on the {\tt x}-axis. However, this is unlikely to be
+{\tt y}-axis, against $f(x)$ on the {\tt x}-axis. However, this is unlikely to be
 sensible because the range of values of $x$ substituting into these expressions
 would correspond to the range of the plot's horizontal axis. The result might
 be particularly unexpected if the above were attempted with an autoscaling
@@ -537,15 +537,14 @@ upon the range of the {\tt x}-axis. In this case, the user should have used the
 Parametric functions are functions expressed in forms such as
 \begin{eqnarray*}
 x & = & r \sin(t)  \\
-y & = & r \cos(t) ,\\
+y & = & r \cos(t) ,
 \end{eqnarray*}
-where separate expression are supplied for the horizontal and vertical
-positions which correspond to the value of the function as a function of some
-free parameter $t$. The above example is a parametric representation of a
-circle of radius $r$. Before PyXPlot can usefully plot parametric functions, it
-is generally necessary to stipulate the range of values of $t$ over which the
-function should be sampled. This may be done using the \indcmdt{set trange}, as
-in the example
+where separate expressions are supplied for the ordinate and abscissa values as
+a function of some free parameter $t$. The above example is a parametric
+representation of a circle of radius $r$. Before PyXPlot can usefully plot
+parametric functions, it is generally necessary to stipulate the range of
+values of $t$ over which the function should be sampled. This may be done using
+the \indcmdt{set trange}, as in the example
 \begin{verbatim}
 set trange [unit(0*rad):unit(2*pi*rad)]
 \end{verbatim}
@@ -896,9 +895,9 @@ size between ticks. If two values are specified, then the first is taken to be
 as a multiplicative step size.
 
 Alternatively, if a bracketed list of quoted tick labels and tick positions are
-provided, then ticks can manually be placed on an axis individually, and each
-given its own textual label. The quoted tick labels may be omitted, in which
-case they are automatically generated:
+provided, then ticks can be placed on an axis manually and each given its own
+textual label. The quoted tick labels may be omitted, in which case they are
+automatically generated:
 \begin{verbatim}
 set xtics ("a" 1, "b" 2, "c" 3)
 set xtics (1,2,3)
@@ -994,21 +993,28 @@ labelling system.  The extent to which this is possible depends upon the format
 string supplied. It is generally easier when continuous-varying numerical
 values are substituted into strings, rather than discretely-varying values or
 strings. Thus, rather than
+
 \begin{dontdo}
-set xformat "%d"%(floor(x))
+set xformat "\%d"\%(floor(x))
 \end{dontdo}
-the following is preferred
+
+\noindent the following is preferred
+
+\begin{dodo}
+set xformat "\%d"\%(x)
+\end{dodo}
+
+\noindent and rather than
+
 \begin{dontdo}
-set xformat "%d"%(x)
+set xformat "\%s"\%time\_string(x)
 \end{dontdo}
-and rather than
-\begin{dontdo}
-set xformat "%s"%time_string(x)
-\end{dontdo}
-the following is preferred
-\begin{dontdo}
-set xformat "%d/%02d/%d"%(time_day(x),time_monthnum(x),time_daymonth(x))
-\end{dontdo}
+
+\noindent the following is preferred
+
+\begin{dodo}
+set xformat "\%d/\%02d/\%d"\%(time\_day(x), $\backslash$\newline time\_monthnum(x),time\_daymonth(x))
+\end{dodo}
 
 \subsubsection{Changing the Slant of Axis Labels}
 
@@ -1123,8 +1129,8 @@ x2}-axis.  The specialist cosmology function
 is used to make the highly non-linear conversion between time $t$ and redshift
 $z$, adopting some standard values for the cosmological parameters $H_0$,
 $\Omega_\mathrm{M}$ and $\Omega_\Uplambda$. Because the temperature of the CMBR
-is easiest expressed as a function of redshift as $T=2.73\,\mathrm{K}/(1+z)$,
-we plot is using this function against axis {\tt x2}.
+is most easily expressed as a function of redshift as $T=2.73\,\mathrm{K}/(1+z)$,
+we plot this function against axis {\tt x2}.
 \nlscf
 \noindent{\tt h0 = 70}\newline
 \noindent{\tt omega\_m = 0.27}\newline
@@ -1319,7 +1325,6 @@ set label} command, but also to plot titles, axis labels, keys, etc. The value
 supplied should be a multiplicative factor greater than zero; a
 value of~{\tt 2} would cause text to be rendered at twice its normal size, and
 a value of~{\tt 0.5} would cause text to be rendered at half its normal size.
-The default value is one.
 
 \index{text!colour}\index{colours!text} The \indcmdt{set textcolour} can be
 used to globally set the colour of all text output, and applies to all of the
