@@ -49,6 +49,8 @@
 #include "EPSMaker/eps_settings.h"
 #include "EPSMaker/eps_text.h"
 
+#include "ListTools/lt_memory.h"
+
 #include "StringTools/asciidouble.h"
 
 #include "EPSMaker/eps_style.h"
@@ -397,7 +399,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
 void canvas_CallLaTeX(EPSComm *x)
  {
   int   linecount=1, i, j, pid, LatexStatus, LatexStdIn, LatexOut;
-  char  filename[FNAME_LENGTH];
+  char  filename[FNAME_LENGTH], *str_buffer;
   FILE *output;
   ListIterator *ListIter;
   CanvasTextItem *TempTextItem, *SuspectTextItem=NULL;
@@ -423,6 +425,10 @@ void canvas_CallLaTeX(EPSComm *x)
 
   // chdir into temporary directory so that LaTeX's mess goes into /tmp
   if (chdir(settings_session_default.tempdir) < 0) { ppl_error(ERR_INTERNAL, -1, -1,"Could not chdir into temporary directory."); *(x->status)=1; return; }
+
+  // Make string buffer
+  str_buffer = (char *)lt_malloc(LSTR_LENGTH);
+  if (str_buffer==NULL) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); return; }
 
   // Start writing LaTeX document
   sprintf(filename, "%s.tex", x->TeXFilename);
@@ -479,16 +485,16 @@ void canvas_CallLaTeX(EPSComm *x)
     if (!FD_ISSET(LatexOut , &readable)) { LatexStatus=1; if (DEBUG) ppl_log("latex's output pipe has not become readable within time limit"); break; }
     else
      {
-      if ((NCharsRead = read(LatexOut, temp_err_string, LSTR_LENGTH)) > 0)
+      if ((NCharsRead = read(LatexOut, str_buffer, LSTR_LENGTH)) > 0)
        {
         for (j=0; j<NCharsRead; j++)
          {
-          if (temp_err_string[j]=='\n')
+          if (str_buffer[j]=='\n')
            {
-            if (ErrReadState==2) { TempErrMsg[ErrReadPos]='\0'; strcpy(ErrFilename, TempErrFilename); strcpy(ErrMsg, TempErrMsg); ErrLineNo = (int)GetFloat(TempErrLineNo, NULL); }
+            if (ErrReadState==2) { TempErrMsg[ErrReadPos]='\0'; strcpy(ErrFilename, TempErrFilename); strcpy(ErrMsg, TempErrMsg); ErrLineNo = (int)GetFloat(TempErrLineNo, NULL); if (DEBUG) { sprintf(temp_err_string,"Received LaTeX error on line %d of file <%s>",ErrLineNo,ErrFilename); ppl_log(temp_err_string); sprintf(temp_err_string,"Error message: <%s>",ErrMsg); ppl_log(temp_err_string); } }
             ErrReadState = ErrReadPos = 0;
            }
-          else if (temp_err_string[j]==':')
+          else if (str_buffer[j]==':')
            {
             if      (ErrReadState==0)
              {
@@ -500,18 +506,19 @@ void canvas_CallLaTeX(EPSComm *x)
                 strcpy(TempErrLineNo  , "-1");
                 ErrReadState = 2;
                 ReadErrorState = 1;
+                if (DEBUG) ppl_log("Encountered line beginning \"! LaTeX Error\"");
                }
               else
                { ErrReadState = 1; }
              }
             else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadPos=0; ErrReadState++; ReadErrorState = 1; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
-            else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=temp_err_string[j]; }
+            else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=str_buffer[j]; }
            }
           else
            {
-            if      (ErrReadState==0) { TempErrFilename[ErrReadPos++] = temp_err_string[j]; }
-            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos++] = temp_err_string[j]; }
-            else if (ErrReadState==2) { TempErrMsg     [ErrReadPos++] = temp_err_string[j]; }
+            if      (ErrReadState==0) { TempErrFilename[ErrReadPos++] = str_buffer[j]; }
+            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos++] = str_buffer[j]; }
+            else if (ErrReadState==2) { TempErrMsg     [ErrReadPos++] = str_buffer[j]; }
            }
           if (ErrReadPos > FNAME_LENGTH-1) ErrReadPos=FNAME_LENGTH-1;
          }
