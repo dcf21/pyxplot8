@@ -457,21 +457,25 @@ void canvas_CallLaTeX(EPSComm *x)
   LatexStatus = 0;
   while (1)
    {
-    TrialNumber=1;
-    while (1)
+    for (j=0; j<5; j++)
      {
-      waitperiod.tv_sec  = FirstIter ? 15 : 4; // Wait 15 seconds first time around; otherwise wait 4 seconds
-      waitperiod.tv_nsec = 0;
-      if (ReadErrorState) { waitperiod.tv_nsec = 500000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
-      FD_ZERO(&readable); FD_SET(LatexOut, &readable);
-      if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
+      for (TrialNumber=1;;)
        {
-        if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
-        LatexStatus=1;
-        if (DEBUG) ppl_log("pselect returned -1");
+        waitperiod.tv_sec  = FirstIter ? 3 : 1; // Wait 15 seconds first time around; otherwise wait 5 seconds
+        waitperiod.tv_nsec = 0;
+        if (ReadErrorState) { waitperiod.tv_nsec = 100000000; waitperiod.tv_sec = 0; } // If we've had an error message, only wait 0.5 sec
+        FD_ZERO(&readable); FD_SET(LatexOut, &readable);
+        if (pselect(LatexOut+1, &readable, NULL, NULL, &waitperiod, NULL) == -1)
+         {
+          if ((errno==EINTR) && (TrialNumber<3)) { TrialNumber++; continue; }
+          LatexStatus=1;
+          if (DEBUG) ppl_log("pselect returned -1");
+          break;
+         }
         break;
        }
-      break;
+      if (LatexStatus) break;
+      if (FD_ISSET(LatexOut , &readable)) break; // latex pipe has become readable
      }
     if (LatexStatus) break;
     FirstIter = 0;
