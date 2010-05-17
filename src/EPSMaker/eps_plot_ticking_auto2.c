@@ -96,7 +96,7 @@ static void GenerateTickSchemes(TickScheme *TickSchemes, int *NTickSchemes, doub
   while (pow(10.0,LevelDescend-1) < (10.0 * TICKS_MAXIMUM))
    {
     double OoMscan = OoM / pow(10.0, LevelDescend);
-    if (IsLog && (OoMscan>0.09) && (OoMscan<1.01))
+    if (IsLog && (OoMscan>0.09) && (OoMscan<0.11))
      {
       GenerateLogTickSchemes(TickSchemes, NTickSchemes, LogBase);
      }
@@ -213,7 +213,7 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
      // Try each tick scheme in turn
      for (i=0; i<NTickSchemes; i++)
       {
-       double ts_min = outer_min + TickSchemes[i].offset;
+       double ts_min = outer_min  + TickSchemes[i].offset;
        TL_trial_len = 0;
        for (j=0; j<((outer_max-outer_min)/TickSchemes[i].ticksep+1.5); j++)
         {
@@ -223,9 +223,9 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
            double x;
            if (TL_trial_len>=TICKS_MAXIMUM) break;
            x = ts_min + j * TickSchemes[i].ticksep;
+           if (fabs(x)<1e-6*TickSchemes[i].ticksep) x=0;
            if (IsLog) x = pow(LogBase, x);
            x *= TickSchemes[i].mantissa[k];
-           if (fabs(x)<1e-6*TickSchemes[i].ticksep) x=0;
            if ((x<axis_min) || (x>axis_max)) continue;
            TL_trial[TL_trial_len] = x;
            TL_trial_len++;

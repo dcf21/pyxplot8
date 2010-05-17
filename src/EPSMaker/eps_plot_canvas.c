@@ -62,7 +62,7 @@ double eps_plot_axis_GetPosition(double xin, settings_axis *xa, int xrn, unsigne
    }
   if ((xa->LogFinal==SW_BOOL_TRUE) && (xin <= 0)) return GSL_NAN;
   if (xa->LogFinal!=SW_BOOL_TRUE) return (xin - xa->MinFinal) / (xa->MaxFinal - xa->MinFinal); // Either linear...
-  else                            return log(xin / xa->MinFinal) / log(xa->MaxFinal / xa->MinFinal); // ... or logarithmic
+  else                            return (log(xin)-log(xa->MinFinal)) / (log(xa->MaxFinal)-log(xa->MinFinal)); // ... or logarithmic
  }
 
 // What is the value of this axis at point xin, in the range 0 (left) to 1 (right)?
