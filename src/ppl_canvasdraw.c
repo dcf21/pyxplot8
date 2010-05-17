@@ -511,7 +511,7 @@ void canvas_CallLaTeX(EPSComm *x)
               else
                { ErrReadState = 1; }
              }
-            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadPos=0; ErrReadState++; ReadErrorState = 1; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; }
+            else if (ErrReadState==1) { TempErrLineNo  [ErrReadPos]='\0'; ErrReadPos=0; ErrReadState++; if (!ValidFloat(TempErrLineNo, NULL)) ErrReadState++; else ReadErrorState = 1; }
             else if (ErrReadState==2) { TempErrMsg[ErrReadPos++]=str_buffer[j]; }
            }
           else
