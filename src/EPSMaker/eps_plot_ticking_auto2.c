@@ -150,8 +150,8 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
   factorise(pow(10.0,FACTOR_MULTIPLY), FactorsTen, MAX_FACTORS, length/tick_sep_minor, &NFactorsTen);
 
   // Work out order of magnitude of axis range
-  axis_min = axis->MinFinal;
-  axis_max = axis->MaxFinal;
+  axis_min = axis->MinFinal * UnitMultiplier;
+  axis_max = axis->MaxFinal * UnitMultiplier;
   if      (axis_min  > axis_max) { double temp; temp = axis_min; axis_min = axis_max; axis_max = temp; }
   else if (axis_min == axis_max) { goto FAIL; }
   if (IsLog && (axis_max < 3*axis_min)) IsLog = 0;
@@ -241,8 +241,8 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
            OverlayMatch = 0;
            for (k=0; k<TL_trial_len; k++)
             {
-             double pos = eps_plot_axis_GetPosition(TL_trial[k], axis, 0, 0);
-             if (pos != axis->TickListPositions[j]) continue;
+             double pos = eps_plot_axis_GetPosition(TL_trial[k]/UnitMultiplier, axis, 0, 0);
+             if (fabs(pos - axis->TickListPositions[j])>1e-4) continue;
              for (k++; k<TL_trial_len; k++) TL_trial[k-1] = TL_trial[k];
              TL_trial_len--;
              OverlayMatch = 1;
@@ -272,9 +272,9 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
      for (i=j=0; i<TL_best_len; i++)
       {
        double xtmp = TL_best[i];
-       TLP[j] = eps_plot_axis_GetPosition(xtmp, axis, 0, 0);
+       TLP[j] = eps_plot_axis_GetPosition(xtmp/UnitMultiplier, axis, 0, 0);
        if (!gsl_finite(TLP[j])) continue;
-       if (major) TickLabelAutoGen(&TLS[j], xtmp * UnitMultiplier, LogBase, OutContext);
+       if (major) TickLabelAutoGen(&TLS[j], xtmp, LogBase, OutContext);
        else       TLS[j] = "";
        j++;
       }
