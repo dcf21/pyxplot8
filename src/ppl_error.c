@@ -185,7 +185,9 @@ void ppl_log(char *msg)
   latch = 1;
   if (logfile==NULL)
    {
-    if ((logfile=fopen("pyxplot.log","w")) == NULL) { ppl_fatal(__FILE__,__LINE__,"Could not open log file to write."); exit(1); }
+    char LogFName[128];
+    sprintf(LogFName,"pyxplot.%d.log",getpid());
+    if ((logfile=fopen(LogFName,"w")) == NULL) { ppl_fatal(__FILE__,__LINE__,"Could not open log file to write."); exit(1); }
     setvbuf(logfile, NULL, _IOLBF, 0); // Set log file to be line-buffered, so that log file is always up-to-date
    }
 
