@@ -96,8 +96,8 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
   // Finalise the physical unit to be associated with data on this axis
   if (!axis->DataUnitSet)
    {
-    if (axis->HardMinSet || axis->HardMaxSet) { axis->DataUnitSet=1; axis->DataUnit=axis->HardUnit; }
-    else                                      { ppl_units_zero(&axis->DataUnit); }
+    if (axis->HardUnitSet) { axis->DataUnitSet=1; axis->DataUnit=axis->HardUnit; }
+    else                   { ppl_units_zero(&axis->DataUnit); }
    }
   CentralValue = axis->DataUnit;
   CentralValue.FlagComplex = 0;
@@ -159,6 +159,16 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
    {
     int OutContext;
     double tick_sep_major , tick_sep_minor;
+
+    // If ticks have been manually specified, check that units are right
+    if ((!ppl_units_DimEqual(&axis->unit,&axis->DataUnit)) && ((axis->TickList!=NULL)||(((axis->log==SW_BOOL_TRUE)?(axis->TickMinSet):(axis->TickStepSet))!=0)||(axis->MTickList!=NULL)||(((axis->log==SW_BOOL_TRUE)?(axis->MTickMinSet):(axis->MTickStepSet))!=0)))
+     {
+      sprintf(temp_err_string, "Cannot put any ticks on axis %c%d because their positions are specified in units of <%s> whilst the axis has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,1,0));
+      ppl_error(ERR_GENERAL,-1,-1,temp_err_string);
+      axis-> TickListPositions = NULL; axis-> TickListStrings = NULL;
+      axis->MTickListPositions = NULL; axis->MTickListStrings = NULL;
+      return;
+     }
 
     OutContext = lt_GetMemContext();
 

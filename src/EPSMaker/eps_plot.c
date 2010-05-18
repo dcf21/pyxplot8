@@ -239,7 +239,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       axes[i].HardMinSet = (axes[i].MinSet==SW_BOOL_TRUE);
       axes[i].HardMaxSet = (axes[i].MaxSet==SW_BOOL_TRUE);
       axes[i].HardUnit   = axes[i].unit;
-      axes[i].HardUnitSet= (axes[i].MinSet==SW_BOOL_TRUE) || (axes->MaxSet==SW_BOOL_TRUE);
+      axes[i].HardUnitSet= (axes[i].MinSet==SW_BOOL_TRUE) || (axes[i].MaxSet==SW_BOOL_TRUE) || (axes[i].TickList!=NULL) || (((axes[i].log==SW_BOOL_TRUE)?(axes[i].TickMinSet):(axes[i].TickStepSet))!=0) || (axes[i].MTickList!=NULL) || (((axes[i].log==SW_BOOL_TRUE)?(axes[i].MTickMinSet):(axes[i].MTickStepSet))!=0);
       axes[i].HardAutoMinSet = axes[i].HardAutoMaxSet = 0;
       axes[i].Mode0BackPropagated = 0;
       axes[i].OrdinateRasterLen = 0;
@@ -276,7 +276,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
 
     // Update axis->HardUnit to be the canonical reference for the units of the range specified for this axis
     if (pr->MinSet || pr->MaxSet) { axis->HardUnitSet=1; axis->HardUnit=pr->unit; }
-    if ((!axis->HardMinSet) && (!axis->HardMaxSet)) { axis->HardUnitSet=0; }
+    if ((!axis->HardMinSet) && (!axis->HardMaxSet) && (axis->TickList==NULL) && (((axis->log==SW_BOOL_TRUE)?(axis->TickMinSet):(axis->TickStepSet))==0) && (axis->MTickList==NULL) && (((axis->log==SW_BOOL_TRUE)?(axis->MTickMinSet):(axis->MTickStepSet))==0)) { axis->HardUnitSet=0; }
 
     pr=pr->next; k++;
    }

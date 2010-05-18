@@ -25,6 +25,7 @@
 reset
 title = "ex_multiaxes"
 load "examples/fig_init.ppl"
+set ytics(1e-18,1e-15,1e-12,1e-9)
 
 # Main body of figure script
 set numeric display latex
