@@ -660,6 +660,7 @@ void directive_set(Dict *command)
             else if (tempstr[0]=='z') { tempaxis = &za[i]; }
             else                      { tempaxis = &xa[i]; }
             tempaxis->enabled = 1;
+            if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; }
             tempaxis->log     = SW_BOOL_TRUE;
             if (tempint!=NULL) tempaxis->LogBase = (double)(*tempint);
            }
@@ -672,9 +673,9 @@ void directive_set(Dict *command)
     else
      {
       sg->Tlog = SW_BOOL_TRUE;
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
      }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"logscale")==0)) /* unset logscale */
@@ -692,9 +693,9 @@ void directive_set(Dict *command)
           i = (int)GetFloat(tempstr+1,NULL);
           if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
            {
-            if      (tempstr[0]=='y') { ya[i].log = YAxesDefault[i].log; ya[i].LogBase = YAxesDefault[i].LogBase; }
-            else if (tempstr[0]=='z') { za[i].log = ZAxesDefault[i].log; za[i].LogBase = ZAxesDefault[i].LogBase; }
-            else                      { xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
+            if      (tempstr[0]=='y') { if (ya[i].log != YAxesDefault[i].log) { ya[i].TickStepSet = ya[i].TickMinSet = ya[i].TickMaxSet = ya[i].MTickStepSet = ya[i].MTickMinSet = ya[i].MTickMaxSet = 0; } ya[i].log = YAxesDefault[i].log; ya[i].LogBase = YAxesDefault[i].LogBase; }
+            else if (tempstr[0]=='z') { if (za[i].log != ZAxesDefault[i].log) { za[i].TickStepSet = za[i].TickMinSet = za[i].TickMaxSet = za[i].MTickStepSet = za[i].MTickMinSet = za[i].MTickMaxSet = 0; } za[i].log = ZAxesDefault[i].log; za[i].LogBase = ZAxesDefault[i].LogBase; }
+            else                      { if (za[i].log != ZAxesDefault[i].log) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; } xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
            }
          } else {
           sg->Tlog = settings_graph_default.Tlog;
@@ -705,9 +706,9 @@ void directive_set(Dict *command)
     else
      {
       sg->Tlog = settings_graph_default.Tlog;
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->log != XAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->log != YAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->log != ZAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
      }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
@@ -778,9 +779,9 @@ void directive_set(Dict *command)
           i = (int)GetFloat(tempstr+1,NULL);
           if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
            {
-            if      (tempstr[0]=='y') { ya[i].enabled=1; ya[i].log = SW_BOOL_FALSE; }
-            else if (tempstr[0]=='z') { za[i].enabled=1; za[i].log = SW_BOOL_FALSE; }
-            else                      { xa[i].enabled=1; xa[i].log = SW_BOOL_FALSE; }
+            if      (tempstr[0]=='y') { ya[i].enabled=1; if (ya[i].log != SW_BOOL_FALSE) { ya[i].TickStepSet = ya[i].TickMinSet = ya[i].TickMaxSet = ya[i].MTickStepSet = ya[i].MTickMinSet = ya[i].MTickMaxSet = 0; } ya[i].log = SW_BOOL_FALSE; }
+            else if (tempstr[0]=='z') { za[i].enabled=1; if (za[i].log != SW_BOOL_FALSE) { za[i].TickStepSet = za[i].TickMinSet = za[i].TickMaxSet = za[i].MTickStepSet = za[i].MTickMinSet = za[i].MTickMaxSet = 0; } za[i].log = SW_BOOL_FALSE; }
+            else                      { xa[i].enabled=1; if (xa[i].log != SW_BOOL_FALSE) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; } xa[i].log = SW_BOOL_FALSE; }
            }
          } else {
           sg->Tlog = SW_BOOL_FALSE;
@@ -791,9 +792,9 @@ void directive_set(Dict *command)
     else
      {
       sg->Tlog = SW_BOOL_FALSE;
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_FALSE; } }
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_FALSE; } }
-      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->enabled) { tempaxis->log=SW_BOOL_FALSE; } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=SW_BOOL_FALSE; } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; }tempaxis->log=SW_BOOL_FALSE; } }
+      for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=SW_BOOL_FALSE; } }
      }
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
@@ -1332,7 +1333,8 @@ void directive_set(Dict *command)
          { \
           if (tempval2 == NULL) { tempval2 = tempval; tempval = NULL; } /* If only one number specified; it is a stepsize */ \
           if      ((tempval  != NULL) && ((tempaxis->MinSet==SW_BOOL_TRUE) || (tempaxis->MaxSet==SW_BOOL_TRUE) || (tempaxis->MTickList!=NULL) || (tempaxis->MTickStepSet!=0)) && (!ppl_units_DimEqual(tempval , &tempaxis->unit))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval ,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
-          else if ((tempval2 != NULL) && ((tempaxis->MinSet==SW_BOOL_TRUE) || (tempaxis->MaxSet==SW_BOOL_TRUE) || (tempaxis->MTickList!=NULL) || (tempaxis->MTickStepSet!=0)) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval2 != NULL) && (tempaxis->log==SW_BOOL_FALSE) && ((tempaxis->MinSet==SW_BOOL_TRUE) || (tempaxis->MaxSet==SW_BOOL_TRUE) || (tempaxis->MTickList!=NULL) || (tempaxis->MTickStepSet!=0)) && (!ppl_units_DimEqual(tempval2, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval2,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
+          else if ((tempval2 != NULL) && (tempaxis->log==SW_BOOL_TRUE) && (!tempval2->dimensionless)) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied (%s) should have been a dimensionless multiplicative step."     , ppl_units_NumericDisplay(tempval2,0,0,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
           else if ((tempval3 != NULL) && ((tempaxis->MinSet==SW_BOOL_TRUE) || (tempaxis->MaxSet==SW_BOOL_TRUE) || (tempaxis->MTickList!=NULL) || (tempaxis->MTickStepSet!=0)) && (!ppl_units_DimEqual(tempval3, &tempaxis->unit))) { sprintf(temp_err_string, "Invalid end value for axis ticks. Value supplied (%s) is not dimensionally compatible with the range set for this axis which has units of <%s>."     , ppl_units_NumericDisplay(tempval3,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
           else if ((tempval  != NULL) && (!gsl_finite(tempval->real))) { sprintf(temp_err_string, "Invalid starting value for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
           else if ((tempval2 != NULL) && (!gsl_finite(tempval2->real))) { sprintf(temp_err_string, "Invalid step size for axis ticks. Value supplied is not finite."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; } \
