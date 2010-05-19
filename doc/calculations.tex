@@ -1095,7 +1095,7 @@ JD~$2451544.5$, and noon on the same day was JD~$2451545.0$.
 
 PyXPlot provides a range of pre-defined functions, all prefixed {\tt time\_}
 for converting between calendar dates and Julian Day numbers. The function {\tt
-time\_juliandate()}\indfun{time\_\-julianday({\it year},\-{\it month},\-{\it
+time\_julianday()}\indfun{time\_\-julianday({\it year},\-{\it month},\-{\it
 day},\-{\it hour},\-{\it min},\-{\it sec})} is used to convert from a calendar
 date to a Julian Day number. It takes six inputs: the year, the month number
 (1--12), the day of the month (1--31), the hour of day (0--24), the number of
@@ -1106,11 +1106,11 @@ minutes (0--59), and the number of seconds (0--59). To enter dates before
 Day number at midnight on 1st~January 2000:
 
 \vspace{3mm}
-\noindent{\tt pyxplot> {\bf time\_juliandate(2000,1,1,0,0,0.0)}}\newline
+\noindent{\tt pyxplot> {\bf print time\_julianday(2000,1,1,0,0,0.0)}}\newline
 \noindent{\tt 2451544.5}
 \vspace{3mm}
 
-By default, the {\tt time\_juliandate()} function makes a transition from the
+By default, the {\tt time\_julianday()} function makes a transition from the
 Julian calendar to the Gregorian calendar at midnight on 14th~September 1752
 (Gregorian calendar), when Britain and the British Empire switched calendars.
 Thus, dates between 2nd~September and 14th~September 1752 are not valid input
@@ -1238,8 +1238,8 @@ numbers, and when converting Julian Day numbers to calendar dates. This is
 useful when converting data from one calendar to another. The syntax used to do
 this is as follows:
 \begin{verbatim}
-set calendar in Julian      # only applies to time_juliandate()
-set calendar out Gregorian  # does not apply to time_juliandate()
+set calendar in Julian      # only applies to time_julianday()
+set calendar out Gregorian  # does not apply to time_julianday()
 set calendar in Julian out Gregorian      # change both
 show calendar               # show calendars currently being used
 \end{verbatim}
