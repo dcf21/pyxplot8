@@ -184,6 +184,7 @@ Token & Value \\
 {\tt \%S} & The number of seconds elapsed.\\
 {\tt \%Y} & The number of years elapsed.\\
 \end{longtable}}
+\funcdef{time\_\-fromunix({\it u})}{returns the Julian Day number corresponding to the specified Unix time $u$.}
 \funcdef{time\_\-hour({\it JD})}{returns the integer hour of the day, in the range 0-23, in which the supplied Julian Day number falls. For more details see the {\tt time\_\-julianday()} function.}
 \funcdef{time\_\-julianday({\it year},\-{\it month},\-{\it day},\-{\it hour},\-{\it min},\-{\it sec})}{returns the Julian Day number corresponding to the supplied time and date. Each field should be supplied numerically as an integer: for example, the {\it month} argument should be an integer in the range 1-12. In the default British calendar, the {\it year} argument should be the number of years elapsed since the Christian epoch. To enter dates before {\footnotesize AD\,1}, $0$ should be passed to indicate the year 1\,{\footnotesize BC}, $-1$ should be passed to indicate the year 2\,{\footnotesize BC}, and so forth. Dates may be entered in other calendars using the {\tt set calendar} command.
 
@@ -221,8 +222,11 @@ Token & Value \\
 {\tt \%y} & Last two digits of year number.\\
 {\tt \%Y} & Year number.\\
 \end{longtable}}
+\funcdef{time\_\-unix({\it JD})}{returns the Unix time corresponding to the specified Julian Day number.}
 \funcdef{time\_\-year({\it JD})}{returns the year in which the supplied Julian Day number falls. For more details see the {\tt time\_\-julianday()} function. The returned value is a dimensionless integer. A value of $0$ corresponds to the year 1\,{\footnotesize BC}; a value of $-1$ corresponds to the year 2\,{\footnotesize BC}, and so forth.}
 \funcdef{tophat($x,\sigma$)}{returns one if $|x| \leq |\sigma|$, and zero otherwise. Both inputs must be real, but may have any physical dimensions so long as they match.}
 \funcdef{unit(\ldots)}{multiplies a number by a physical unit. The string inside the brackets should consist of a string of the names of physical units, multiplied together with the {\tt *} operator, divided using the {\tt /} operator, or raised by numeric powers using the {\tt \^{}} operator. The list may be commenced with a numeric constant, for example: {\tt unit(2*m\^{}2/s)}.}
+\funcdef{zernike($n,m,r,\phi$)}{evaluates the Zernike polynomial $Z^m_n(r,\phi)$, where $m$ and $n$ are non-negative integers with $n\geq m$, $r$ is the radial coordinate in the range $0<r<1$ and $\phi$ is the azimuthal coordinate.}
+\funcdef{zernikeR($n,m,r$)}{evaluates the radial Zernike polynomial $R^m_n(r)$, where $m$ and $n$ are non-negative integers with $n\geq m$ and $r$ is the radial coordinate in the range $0<r<1$.}
 \funcdef{zeta($x$)}{evaluates the Riemann zeta function for any dimensionless number $x$.}
 

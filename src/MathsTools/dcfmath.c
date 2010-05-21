@@ -356,7 +356,7 @@ void dcfmath_besseli(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besseli(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_il_scaled((int)in1->real, in2->real); }
   ENDIF
@@ -368,7 +368,7 @@ void dcfmath_besselI(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besselI(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_In((int)in1->real, in2->real); }
   ENDIF
@@ -380,7 +380,7 @@ void dcfmath_besselj(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besselj(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_jl((int)in1->real, in2->real); }
   ENDIF
@@ -392,7 +392,7 @@ void dcfmath_besselJ(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besselJ(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_Jn((int)in1->real, in2->real); }
   ENDIF
@@ -404,7 +404,7 @@ void dcfmath_besselk(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besselk(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_kl_scaled((int)in1->real, in2->real); }
   ENDIF
@@ -416,7 +416,7 @@ void dcfmath_besselK(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besselK(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_Kn((int)in1->real, in2->real); }
   ENDIF
@@ -428,7 +428,7 @@ void dcfmath_bessely(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "bessely(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_yl((int)in1->real, in2->real); }
   ENDIF
@@ -440,7 +440,7 @@ void dcfmath_besselY(value *in1, value *in2, value *output, int *status, char *e
   char *FunctionDescription = "besselY(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1, "function can only evaluate Bessel functions");
+  CHECK_NEEDINT(in1, "l", "function can only evaluate Bessel functions");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_bessel_Yn((int)in1->real, in2->real); }
   ENDIF
@@ -463,8 +463,8 @@ void dcfmath_binomialPDF(value *in1, value *in2, value *in3, value *output, int 
   char *FunctionDescription = "binomialPDF(k,p,n)";
   CHECK_3NOTNAN;
   CHECK_3INPUT_DIMLESS;
-  CHECK_NEEDINT(in1 , "function's first parameter must be");
-  CHECK_NEEDINT(in3 , "function's 3rd  parameter must be");
+  CHECK_NEEDINT(in1 , "k", "function's first parameter must be");
+  CHECK_NEEDINT(in3 , "n", "function's 3rd  parameter must be");
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_ran_binomial_pdf((unsigned int)in1->real, in2->real, (unsigned int)in3->real); }
   ENDIF
@@ -476,8 +476,8 @@ void dcfmath_binomialCDF(value *in1, value *in2, value *in3, value *output, int 
   char *FunctionDescription = "binomialCDF(k,p,n)";
   CHECK_3NOTNAN;
   CHECK_3INPUT_DIMLESS;
-  CHECK_NEEDINT(in1 , "function's first parameter must be");
-  CHECK_NEEDINT(in3 , "function's 3rd  parameter must be");
+  CHECK_NEEDINT(in1 , "k", "function's first parameter must be");
+  CHECK_NEEDINT(in3 , "n", "function's 3rd  parameter must be");
   IF_3COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_cdf_binomial_P((unsigned int)in1->real, in2->real, (unsigned int)in3->real); }
   ENDIF
@@ -759,7 +759,7 @@ void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *er
   char *FunctionDescription = "expint(n,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDSINT(in1, "function's first argument must be");
+  CHECK_NEEDSINT(in1, "n", "function's first argument must be");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_expint_En((int)in1->real, in2->real); }
   ENDIF
@@ -978,7 +978,7 @@ void dcfmath_ldexp(value *in1, value *in2, value *output, int *status, char *err
   char *FunctionDescription = "ldexp(x,y)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDSINT(in2 , "function's second parameter must be");
+  CHECK_NEEDSINT(in2, "y", "function's second parameter must be");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = ldexp(in1->real, (int)in2->real); }
   ENDIF
@@ -990,7 +990,7 @@ void dcfmath_legendreP(value *in1, value *in2, value *output, int *status, char 
   char *FunctionDescription = "legendreP(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1 , "function's first parameter must be");
+  CHECK_NEEDINT(in1 , "l", "function's first parameter must be");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_legendre_Pl((int)in1->real, in2->real); }
   ENDIF
@@ -1002,7 +1002,7 @@ void dcfmath_legendreQ(value *in1, value *in2, value *output, int *status, char 
   char *FunctionDescription = "legendreQ(l,x)";
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in1 , "function's first parameter must be");
+  CHECK_NEEDINT(in1 , "l", "function's first parameter must be");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_sf_legendre_Ql((int)in1->real, in2->real); }
   ENDIF
@@ -1188,7 +1188,7 @@ void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char
   if (rndgen==NULL) { rndgen = gsl_rng_alloc(gsl_rng_default); gsl_rng_set(rndgen, 0); }
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in2, "function's second argument must be an integer in the range");
+  CHECK_NEEDINT(in2, "n", "function's second argument must be an integer in the range");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = gsl_ran_binomial(rndgen, in1->real, (unsigned int)in2->real); }
   ENDIF
@@ -1456,57 +1456,75 @@ void dcfmath_tophat(value *in1, value *in2, value *output, int *status, char *er
   ENDIF
  }
 
-//void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext)
-// {
-//  char *FunctionDescription = "zernike(n,m,r,phi)";
-//  int i;
-//  CHECK_4NOTNAN;
-//  CHECK_3INPUT_DIMLESS;
-//  CHECK_NEEDINT(in1, "function can only evaluate Zernike polynomials");
-//  CHECK_NEEDINT(in2, "function can only evaluate Zernike polynomials");
-//  CHECK_DIMLESS_OR_HAS_UNIT(in4, "fourth", "an angle", UNIT_ANGLE, 1);
-//  IF_4COMPLEX { QUERY_MUST_BE_REAL }
-//  ELSE_REAL
-//   {
-//    int n,m;
-//    n = in1->real; m = in2->real;
-//    if ((m>n) || (m<-n))
-//     {
-//      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
-//      else { NULL_OUTPUT; }
-//     }
-//    if ((n%2)!=(m%2)) return; // Defined to be zero
-//    output->real = gsl_sf_gamma(n+1) * gsl_sf_hyperg_2F1(-0.5*(fabs(m)+n),0.5*(fabs(m)-n),-n,pow(in3->real,-2.0)) / gsl_sf_gamma(0.5*(2+n+m)) / gsl_sf_gamma(0.5*(2+n-m));
-//    if (m>0) output->real *= cos(m*in4->real);
-//    else     output->real *= sin(m*in4->real);
-//   }
-//  ENDIF
-//  CHECK_OUTPUT_OKAY;
-// }
+void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *output, int *status, char *errtext)
+ {
+  int i;
+  char *FunctionDescription = "zernike(n,m,r,phi)";
+  CHECK_4NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  CHECK_NEEDINT (in1, "n", "function can only evaluate Zernike polynomials");
+  CHECK_NEEDSINT(in2, "m", "function can only evaluate Zernike polynomials");
+  CHECK_DIMLESS_OR_HAS_UNIT(in4, "fourth", "an angle", UNIT_ANGLE, 1);
+  IF_4COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+    int n,m,ms , sgn=1;
+    double r;
+    n  = in1->real;
+    ms = in2->real;
+    m  = abs(ms);
+    r  = in3->real;
+    if (m>n)
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
+      else { NULL_OUTPUT; }
+     }
+    if ((n%2)!=(m%2)) return; // Defined to be zero
+    for (i=0; i<(1+(n-m)/2); i++)
+     {
+      output->real += sgn * gsl_sf_fact(n-i) / ( gsl_sf_fact(i) * gsl_sf_fact((n+m)/2-i) * gsl_sf_fact((n-m)/2-i) ) * pow(r , n-2*i);
+      sgn*=-1;
+     }
+    if (ms>0) output->real *= cos(m*in4->real);
+    else      output->real *= sin(m*in4->real);
+   }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
 
-//void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
-// {
-//  char *FunctionDescription = "zernikeR(n,m,r)";
-//  CHECK_3NOTNAN;
-//  CHECK_3INPUT_DIMLESS;
-//  CHECK_NEEDINT(in1, "function can only evaluate Zernike polynomials");
-//  CHECK_NEEDINT(in2, "function can only evaluate Zernike polynomials");
-//  IF_3COMPLEX { QUERY_MUST_BE_REAL }
-//  ELSE_REAL
-//   {
-//    int n,m;
-//    n = in1->real; m = in2->real;
-//    if ((m>n) || (m<-n))
-//     {
-//      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
-//      else { NULL_OUTPUT; }
-//     }
-//    if ((n%2)!=(m%2)) return; // Defined to be zero
-//    output->real = gsl_sf_gamma(n+1) * gsl_sf_hyperg_2F1(-0.5*(fabs(m)+n),0.5*(fabs(m)-n),-n,pow(in3->real,-2.0)) / gsl_sf_gamma(0.5*(2+n+m)) / gsl_sf_gamma(0.5*(2+n-m));
-//   }
-//  ENDIF
-//  CHECK_OUTPUT_OKAY;
-// }
+void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *status, char *errtext)
+ {
+  int i;
+  char *FunctionDescription = "zernikeR(n,m,r)";
+  CHECK_3NOTNAN;
+  CHECK_3INPUT_DIMLESS;
+  CHECK_NEEDINT (in1, "n", "function can only evaluate Zernike polynomials");
+  CHECK_NEEDSINT(in2, "m", "function can only evaluate Zernike polynomials");
+  IF_3COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+    int n,m,ms , sgn=1;
+    double r;
+    n  = in1->real;
+    ms = in2->real; 
+    m  = abs(ms);
+    r  = in3->real;
+    if (m>n)
+     {
+      if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
+      else { NULL_OUTPUT; }
+     }
+    if ((n%2)!=(m%2)) return; // Defined to be zero
+
+    for (i=0; i<(1+(n-m)/2); i++)
+     {
+      output->real += sgn * gsl_sf_fact(n-i) / ( gsl_sf_fact(i) * gsl_sf_fact((n+m)/2-i) * gsl_sf_fact((n-m)/2-i) ) * pow(r , n-2*i);
+      sgn*=-1;
+     }
+   }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
 
 void dcfmath_zeta(value *in, value *output, int *status, char *errtext)
  {

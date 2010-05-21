@@ -38,6 +38,8 @@ void dcftime_sec(value *in, value *output, int *status, char *errtext);
 void dcftime_string(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
 void dcftime_diff(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcftime_diff_string(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext);
+void dcftime_fromunix(value *in, value *output, int *status, char *errtext);
+void dcftime_unix(value *in, value *output, int *status, char *errtext);
 void dcftime_ordinal(value *in, value *output, int *status, char *errtext);
 
 #endif

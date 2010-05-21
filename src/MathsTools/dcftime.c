@@ -429,12 +429,12 @@ void dcftime_julianday(value *in1, value *in2, value *in3, value *in4, value *in
   char *FunctionDescription = "time_julianday(year,month,day,hour,min,sec)";
   CHECK_6NOTNAN;
   CHECK_6INPUT_DIMLESS;
-  CHECK_NEEDSINT(in1, "function's first input (year) must be an integer");
-  CHECK_NEEDINT (in2, "function's second input (month) must be an integer");
-  CHECK_NEEDINT (in3, "function's third input (day) must be an integer");
-  CHECK_NEEDINT (in4, "function's fourth input (hours) must be an integer");
-  CHECK_NEEDINT (in5, "function's fifth input (minutes) must be an integer");
-  CHECK_NEEDINT (in6, "function's sixth input (seconds) must be an integer");
+  CHECK_NEEDSINT(in1, "year" ,"function's first input (year) must be an integer");
+  CHECK_NEEDINT (in2, "month", "function's second input (month) must be an integer");
+  CHECK_NEEDINT (in3, "day"  , "function's third input (day) must be an integer");
+  CHECK_NEEDINT (in4, "hour" , "function's fourth input (hours) must be an integer");
+  CHECK_NEEDINT (in5, "min"  , "function's fifth input (minutes) must be an integer");
+  CHECK_NEEDINT (in6, "sec"  , "function's sixth input (seconds) must be an integer");
   IF_6COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { output->real = JulianDay((int)in1->real, (int)in2->real, (int)in3->real, (int)in4->real, (int)in5->real, (int)in6->real, status, errtext); }
   ENDIF
@@ -483,7 +483,7 @@ void dcftime_monthname(value *in1, value *in2, value *output, int *status, char 
   int i;
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in2, "function's second input (length) must be an integer");
+  CHECK_NEEDINT(in2, "length", "function's second input (length) must be an integer");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { InvJulianDay(in1->real, NULL, &i, NULL, NULL, NULL, NULL, status, errtext); }
   ENDIF
@@ -523,7 +523,7 @@ void dcftime_dayweekname(value *in1, value *in2, value *output, int *status, cha
   int i;
   CHECK_2NOTNAN;
   CHECK_2INPUT_DIMLESS;
-  CHECK_NEEDINT(in2, "function's second input (length) must be an integer");
+  CHECK_NEEDINT(in2, "length", "function's second input (length) must be an integer");
   IF_2COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL   { i = floor( fmod(in1->real+0.5 , 7) ); }
   ENDIF
@@ -757,13 +757,35 @@ void dcftime_diff(value *in1, value *in2, value *output, int *status, char *errt
   CHECK_OUTPUT_OKAY;
  }
 
+void dcftime_fromunix(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "time_fromunix(u)";
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = 2440587.5 + in->real / 86400.0; }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
+void dcftime_unix(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "time_unix(JD)";
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL   { output->real = 86400.0 * (in->real - 2440587.5); }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
 void dcftime_ordinal(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "ordinal(number)";
   int i;
   CHECK_1NOTNAN;
   CHECK_1INPUT_DIMLESS;
-  CHECK_NEEDINT(in, "function's input must be an integer");
+  CHECK_NEEDINT(in, "number", "function's input must be an integer");
   IF_1COMPLEX { QUERY_MUST_BE_REAL }
   ELSE_REAL
    {

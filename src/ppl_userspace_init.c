@@ -186,16 +186,18 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_time_daymonth = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_daymonth    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_daymonth}@<@1@>", "time_daymonth(JD) returns the day of the calendar month corresponding to the Julian Day number JD"};
   FunctionDescriptor fd_time_dayweeknum={ PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_dayweeknum  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_dayweeknum}@<@1@>", "time_dayweeknum(JD) returns the number (1=Monday - 7=Sunday) of the day of the week corresponding to the Julian Day number JD"};
   FunctionDescriptor fd_time_dayweekname={PPL_USERSPACE_STRFUNC, 0 , 2 , (void *)&dcftime_dayweekname , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_dayweekname{@1,@2}", "time_dayweekname(JD,length) returns the name, truncated to length characters, of the day of the week corresponding to the Julian Day number JD"};
+  FunctionDescriptor fd_time_fromunix = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_fromunix    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_fromunix}@<@1@>", "time_fromunix(u) returns the Julian Day number corresponding to the specified Unix time"};
   FunctionDescriptor fd_time_hour     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_hour        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_hour}@<@1@>", "time_hour(JD) returns the hour of the day corresponding to the Julian Day number JD"};
   FunctionDescriptor fd_time_min      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_min         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_min}@<@1@>", "time_min(JD) returns the minutes within the hour corresponding to the Julian Day number JD"};
   FunctionDescriptor fd_time_sec      = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_sec         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_sec}@<@1@>", "time_sec(JD) returns the seconds within the minute corresponding to the Julian Day number JD"};
   FunctionDescriptor fd_time_string   = { PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcftime_string      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_string@<@0@>", "time_string(JD,format) returns a textual representation of the Julian Day number JD"};
-  FunctionDescriptor fd_time_diff     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcftime_diff        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_diff}@<@1,@2@>", "time_diff(JD1,JD2) returns the time interval elapsed between Julian Day numbers JD1 and JD2."};
-  FunctionDescriptor fd_time_diff_string={PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcftime_diff_string , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_diff\\_string@<@0@>", "time_diff_string(JD1,JD2,JD,format) returns a textual representation of the time interval elapsed between Julian Day numbers JD1 and JD2."};
+  FunctionDescriptor fd_time_diff     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcftime_diff        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_diff}@<@1,@2@>", "time_diff(JD1,JD2) returns the time interval elapsed between Julian Day numbers JD1 and JD2"};
+  FunctionDescriptor fd_time_diff_string={PPL_USERSPACE_STRFUNC, 0 ,-1 , (void *)&dcftime_diff_string , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_diff\\_string@<@0@>", "time_diff_string(JD1,JD2,JD,format) returns a textual representation of the time interval elapsed between Julian Day numbers JD1 and JD2"};
+  FunctionDescriptor fd_time_unix     = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcftime_unix        , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{time\\_unix}@<@1@>", "time_unix(JD) returns the Unix time corresponding to the specified Julian Day number"};
   FunctionDescriptor fd_tophat        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_tophat      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{tophat}@<@1,@2@>", "tophat(x,sigma) returns one if |x| <= |sigma|, and zero otherwise"};
   FunctionDescriptor fd_unit          = { PPL_USERSPACE_UNIT   , 0 ,-1 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{unit}@<@0@>", "unit(...) multiplies a number by a physical unit"};
-//  FunctionDescriptor fd_zernike       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfmath_zernike     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernike}@<@1,@2,@3,@4@>", "zernike(n,m,r,phi) evaluates the (n,m)th Zernike polynomial at radius r and position angle phi"};
-//  FunctionDescriptor fd_zernikeR      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_zernikeR    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernikeR}@<@1,@2,@3@>", "zernikeR(n,m,r) evaluates the (n,m)th radial Zernike polynomial at radius r"};
+  FunctionDescriptor fd_zernike       = { PPL_USERSPACE_SYSTEM , 0 , 4 , (void *)&dcfmath_zernike     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernike}@<@1,@2,@3,@4@>", "zernike(n,m,r,phi) evaluates the (n,m)th Zernike polynomial at radius r and position angle phi"};
+  FunctionDescriptor fd_zernikeR      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcfmath_zernikeR    , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{zernikeR}@<@1,@2,@3@>", "zernikeR(n,m,r) evaluates the (n,m)th radial Zernike polynomial at radius r"};
   FunctionDescriptor fd_zeta          = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_zeta        , NULL, NULL, NULL, NULL, NULL, NULL, "\\zeta@<@1@>", "zeta(x) evaluates the Riemann zeta function at x"};
   FunctionDescriptor fd_int           = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\int_{@2}^{@3}@<@1@>\\,\\mathrm{d}@?", "int_dx(e,min,max) numerically integrates an expression e wrt x between min and max"};
   FunctionDescriptor fd_diff          = { PPL_USERSPACE_INT    , 0 , 3 , NULL                         , NULL, NULL, NULL, NULL, NULL, NULL, "\\left.\\frac{\\mathrm{d}}{\\mathrm{d}@?}\\right|_{@?=@2}@<@1@>", "diff_da(e,x,step) numerically differentiates an expression e wrt a at x, using a step size of step. 'a' can be any variable name with fewer than 16 characters."};
@@ -451,16 +453,18 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_daymonth"  , (void *)&fd_time_daymonth  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_dayweeknum", (void *)&fd_time_dayweeknum, sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_dayweekname",(void *)&fd_time_dayweekname,sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_fromunix"  , (void *)&fd_time_fromunix  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_hour"      , (void *)&fd_time_hour      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_min"       , (void *)&fd_time_min       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_sec"       , (void *)&fd_time_sec       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_string"    , (void *)&fd_time_string    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_diff"      , (void *)&fd_time_diff      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_diff_string",(void *)&fd_time_diff_string,sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "time_unix"      , (void *)&fd_time_unix      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "tophat"         , (void *)&fd_tophat      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "unit"           , (void *)&fd_unit        , sizeof(FunctionDescriptor), DATATYPE_VOID);
-//  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernike"        , (void *)&fd_zernike     , sizeof(FunctionDescriptor), DATATYPE_VOID);
-//  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernikeR"       , (void *)&fd_zernikeR    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernike"        , (void *)&fd_zernike     , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zernikeR"       , (void *)&fd_zernikeR    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "zeta"           , (void *)&fd_zeta        , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs2,"int_d?"         , (void *)&fd_int         , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -1528,7 +1532,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "acres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_ACRE;
-  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1573,7 +1577,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_miles";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = pow(GSL_CONST_MKSA_MILE,2);
-  ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial   = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1585,7 +1589,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_kilometres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e6;
-  ppl_unit_database[ppl_unit_pos].si         = 1;
+  //ppl_unit_database[ppl_unit_pos].si         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1597,7 +1601,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_metres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
-  ppl_unit_database[ppl_unit_pos].si         = 1;
+  //ppl_unit_database[ppl_unit_pos].si         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1609,7 +1613,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_centimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e-4;
-  ppl_unit_database[ppl_unit_pos].cgs        = 1;
+  //ppl_unit_database[ppl_unit_pos].cgs        = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1621,7 +1625,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_feet";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = pow(GSL_CONST_MKSA_FOOT,2);
-  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1633,7 +1637,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "square_inches";
   ppl_unit_database[ppl_unit_pos].quantity   = "area";
   ppl_unit_database[ppl_unit_pos].multiplier = pow(GSL_CONST_MKSA_INCH,2);
-  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=2;
   ppl_unit_pos++;
 
@@ -1645,7 +1649,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_metres";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 1;
-  ppl_unit_database[ppl_unit_pos].si         = 1;
+  //ppl_unit_database[ppl_unit_pos].si         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1657,7 +1661,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_centimetres";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 1e-6;
-  ppl_unit_database[ppl_unit_pos].cgs        = 1;
+  //ppl_unit_database[ppl_unit_pos].cgs        = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1669,7 +1673,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_feet";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = pow(GSL_CONST_MKSA_FOOT,3);
-  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1681,7 +1685,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].nameFp     = "cubic_inches";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = pow(GSL_CONST_MKSA_INCH,3);
-  ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial = ppl_unit_database[ppl_unit_pos].us = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1706,7 +1710,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 28.4130625e-6;
-  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1719,7 +1723,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_FLUID_OUNCE;
-  ppl_unit_database[ppl_unit_pos].us         = 1;
+  //ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1732,7 +1736,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 568.26125e-6;
-  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1745,7 +1749,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_PINT;
-  ppl_unit_database[ppl_unit_pos].us         = 1;
+  //ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1758,7 +1762,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 1136.5225e-6;
-  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1771,7 +1775,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_QUART;
-  ppl_unit_database[ppl_unit_pos].us         = 1;
+  //ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1784,7 +1788,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_UK_GALLON;
-  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1797,7 +1801,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_US_GALLON;
-  ppl_unit_database[ppl_unit_pos].us         = 1;
+  //ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1810,7 +1814,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "UK imperial";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 36.36872e-3;
-  ppl_unit_database[ppl_unit_pos].imperial   = 1;
+  //ppl_unit_database[ppl_unit_pos].imperial   = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1823,7 +1827,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = 35.23907016688e-3;
-  ppl_unit_database[ppl_unit_pos].us         = 1;
+  //ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 
@@ -1836,7 +1840,7 @@ void ppl_units_init()
   ppl_unit_database[ppl_unit_pos].comment    = "US customary";
   ppl_unit_database[ppl_unit_pos].quantity   = "volume";
   ppl_unit_database[ppl_unit_pos].multiplier = GSL_CONST_MKSA_CUP;
-  ppl_unit_database[ppl_unit_pos].us         = 1;
+  //ppl_unit_database[ppl_unit_pos].us         = 1;
   ppl_unit_database[ppl_unit_pos].exponent[UNIT_LENGTH]=3;
   ppl_unit_pos++;
 

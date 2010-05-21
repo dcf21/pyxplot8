@@ -36,20 +36,20 @@
   else { NULL_OUTPUT; } \
  }
 
-#define CHECK_NEEDINT(X, DESCRIPTION) \
+#define CHECK_NEEDINT(X, VAR, DESCRIPTION) \
  { \
   if (((X)->FlagComplex) || ((X)->real < 0) || ((X)->real >= INT_MAX)) \
    { \
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range 0 <= k < %d.",FunctionDescription,DESCRIPTION,INT_MAX); return; } \
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range 0 <= %s < %d.",FunctionDescription,DESCRIPTION,VAR,INT_MAX); return; } \
     else { NULL_OUTPUT; } \
    } \
  }
 
-#define CHECK_NEEDSINT(X, DESCRIPTION) \
+#define CHECK_NEEDSINT(X, VAR, DESCRIPTION) \
  { \
   if (((X)->real <= INT_MIN) || ((X)->real >= INT_MAX)) \
    { \
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range %d <= k < %d.",FunctionDescription,DESCRIPTION,INT_MIN,INT_MAX); return; } \
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range %d <= %s < %d.",FunctionDescription,DESCRIPTION,INT_MIN,VAR,INT_MAX); return; } \
     else { NULL_OUTPUT; } \
    } \
  }
