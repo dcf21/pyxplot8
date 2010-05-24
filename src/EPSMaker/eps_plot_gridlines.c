@@ -35,7 +35,7 @@
 #include "eps_plot_gridlines.h"
 #include "eps_settings.h"
 
-void eps_plot_gridlines(EPSComm *x, double origin_x, double origin_y, double width, double height)
+void eps_plot_gridlines(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
  {
   int            i, j, k, l;
   double         left, right;

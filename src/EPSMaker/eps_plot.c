@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ListTools/lt_memory.h"
 #include "ListTools/lt_list.h"
@@ -196,6 +197,30 @@ int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues,
   return 0;
  }
 
+// Private routines for sorting 3D positions by depth and azimuth when clipping 3D plots
+
+static int SortByDepth(const void *x, const void *y)
+ {
+  const double *xd = (const double *)x;
+  const double *yd = (const double *)y;
+  if (xd[2]>yd[2]) return  1;
+  if (xd[2]<yd[2]) return -1;
+  return 0;
+ }
+
+static double SortByAzimuthXCentre, SortByAzimuthYCentre;
+
+static int SortByAzimuth(const void *x, const void *y)
+ {
+  const double *xd = (const double *)x;
+  const double *yd = (const double *)y;
+  double ax,ay;
+  ax = atan2(xd[0]-SortByAzimuthXCentre , xd[1]-SortByAzimuthYCentre);
+  ay = atan2(yd[0]-SortByAzimuthXCentre , yd[1]-SortByAzimuthYCentre);
+  if (ax>ay) return  1;
+  if (ax<ay) return -1;
+  return 0;
+ }
 
 // Loop through all of the datasets plotted in a single plot command.
 // Initialise the datastructures for the plot command which we will fill in the
@@ -546,7 +571,7 @@ void eps_plot_YieldUpText(EPSComm *x)
 void eps_plot_RenderEPS(EPSComm *x)
  {
   int              i, status, xyzaxis[3];
-  double           origin_x, origin_y, width, height;
+  double           origin_x, origin_y, width, height, zdepth;
   canvas_plotdesc *pd;
   settings_axis   *a1, *a2, *a3, *axissets[3];
 
@@ -565,13 +590,38 @@ void eps_plot_RenderEPS(EPSComm *x)
   width    = x->current->settings.width  .real * M_TO_PS;
   if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
   else                                                height = width * x->current->settings.aspect;
+  zdepth = width;
 
   // Turn on clipping if 'set clip' is set
   if (x->current->settings.clip == SW_ONOFF_ON)
-   fprintf(x->epsbuffer, "gsave\nnewpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nclip newpath\n",origin_x,origin_y,origin_x+width,origin_y,origin_x+width,origin_y+height,origin_x,origin_y+height);
+   {
+    if (x->current->ThreeDim) // 3D clip region is the edge of a cuboidal box
+     {
+      int i;
+      double xap, yap, zap, data[3*8];
+      for (i=0;i<8;i++)
+       {
+        xap=((i&2)!=0);
+        yap=((i&4)!=0);
+        zap=((i&8)!=0);
+        eps_plot_ThreeDimProject(xap,yap,zap,&x->current->settings,origin_x,origin_y,width,height,zdepth,data+3*i,data+3*i+1,data+3*i+2);
+       }
+      SortByAzimuthXCentre = origin_x;
+      SortByAzimuthYCentre = origin_y;
+      qsort((void *)(data  ),8,3*sizeof(double),SortByDepth);
+      qsort((void *)(data+3),6,3*sizeof(double),SortByAzimuth);
+      fprintf(x->epsbuffer, "gsave\nnewpath\n");
+      for (i=1;i<7;i++) fprintf(x->epsbuffer, "%.2f %.2f %sto\n", data[3*i], data[3*i+1], (i==1)?"move":"line");
+      fprintf(x->epsbuffer, "closepath\nclip newpath\n");
+     }
+    else // 2D clip region is a simple rectangular box
+     {
+      fprintf(x->epsbuffer, "gsave\nnewpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nclip newpath\n",origin_x,origin_y,origin_x+width,origin_y,origin_x+width,origin_y+height,origin_x,origin_y+height);
+     }
+   }
 
   // Render gridlines
-  eps_plot_gridlines(x, origin_x, origin_y, width, height);
+  eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);
 
   // Activate three-dimensional buffer if graph is 3D
   if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);
@@ -589,14 +639,14 @@ void eps_plot_RenderEPS(EPSComm *x)
     xyzaxis[pd->axis2xyz] = 1;
     xyzaxis[pd->axis3xyz] = 2;
 
-    status = eps_plot_dataset(x, x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height);
+    status = eps_plot_dataset(x, x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height, zdepth);
     if (status) { *(x->status) = 1; return; }
 
     pd=pd->next; i++;
    }
 
   // Render text labels and arrows
-  eps_plot_labelsarrows(x, origin_x, origin_y, width, height);
+  eps_plot_labelsarrows(x, origin_x, origin_y, width, height, zdepth);
 
   // Turn off clipping if 'set clip' is set
   if (x->current->settings.clip == SW_ONOFF_ON)
@@ -606,10 +656,10 @@ void eps_plot_RenderEPS(EPSComm *x)
   ThreeDimBuffer_Deactivate(x);
 
   // Render axes
-  eps_plot_axespaint(x, origin_x, origin_y, width, height);
+  eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth);
 
   // Render legend
-  GraphLegend_Render(x, width, height);
+  GraphLegend_Render(x, width, height, zdepth);
 
   // Put the title on the top of the graph
   x->LaTeXpageno = x->current->TitleTextID;

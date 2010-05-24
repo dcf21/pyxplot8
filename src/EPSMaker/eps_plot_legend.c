@@ -159,7 +159,7 @@ void GraphLegend_ArrangeToHeight(EPSComm *x, double TrialHeight, double *Attaine
   return;
  }
 
-void GraphLegend_Render(EPSComm *x, double width, double height)
+void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
  {
   double fs=x->current->settings.FontSize, CombinedHeight=0.0, MinimumHeight=0.0;
   double xoff, yoff;

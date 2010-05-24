@@ -105,10 +105,30 @@ int eps_plot_axis_InRange(settings_axis *xa, double xin)
   return 1; // Axis range is not fixed
  }
 
-void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, double *theta_x, double *theta_y, double *theta_z, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds)
+void eps_plot_ThreeDimProject(double xap, double yap, double zap, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, double *xpos, double *ypos, double *depth)
  {
   double x,y,z,x2,y2,z2,x3,y3,z3;
 
+  x = width  * (xap - 0.5);
+  y = height * (yap - 0.5);
+  z = zdepth * (zap - 0.5);
+
+  x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
+  y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
+  z2 = z;
+
+  x3 = x2;
+  y3 = y2*cos(sg->YZview.real) + z2*sin(sg->YZview.real);
+  z3 =-y2*sin(sg->YZview.real) + z2*cos(sg->YZview.real);
+
+  *xpos  = origin_x + x3 + width/2.0;
+  *ypos  = origin_y + z3 + height/2.0;
+  *depth =            y3;
+  return;
+ }
+
+void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap, double *yap, double *zap, double *theta_x, double *theta_y, double *theta_z, unsigned char ThreeDim, double xin, double yin, double zin, settings_axis *xa, settings_axis *ya, settings_axis *za, int xrn, int yrn, int zrn, settings_graph *sg, double origin_x, double origin_y, double width, double height, double zdepth, unsigned char AllowOffBounds)
+ {
   // Convert (xin,yin,zin) to axis positions on the range of 0-1
   *xap = eps_plot_axis_GetPosition(xin, xa, xrn, 1);
   *yap = eps_plot_axis_GetPosition(yin, ya, yrn, 1);
@@ -128,22 +148,7 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap
   // 3D plots
   if (ThreeDim)
    {
-    x = width  * (*xap - 0.5);
-    y = height * (*yap - 0.5);
-    z = zdepth * (*zap - 0.5);
-
-    x2 = x*cos(sg->XYview.real) + y*sin(sg->XYview.real);
-    y2 =-x*sin(sg->XYview.real) + y*cos(sg->XYview.real);
-    z2 = z;
-
-    x3 = x2;
-    y3 = y2*cos(sg->YZview.real) + z2*sin(sg->YZview.real);
-    z3 =-y2*sin(sg->YZview.real) + z2*cos(sg->YZview.real);
-
-    *xpos  = origin_x + x3 + width/2.0;
-    *ypos  = origin_y + z3 + height/2.0;
-    *depth =            y3;
-
+    eps_plot_ThreeDimProject(*xap,*yap,*zap,sg,origin_x,origin_y,width,height,zdepth,xpos,ypos,depth);
     if (theta_x != NULL) *theta_x = atan2( cos(sg->XYview.real) , sin(sg->XYview.real)*sin(sg->YZview.real) );
     if (theta_y != NULL) *theta_y = atan2( sin(sg->XYview.real) ,-cos(sg->XYview.real)*sin(sg->YZview.real) );
     if (theta_z != NULL) *theta_z = 0.0;

@@ -406,7 +406,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
  }
 
 // Render a dataset to postscript
-int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height)
+int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
  {
   int             i, j, Ncolumns, pt, xrn, yrn, zrn;
   double          xpos, ypos, depth, xap, yap, zap, scale_x, scale_y, scale_z;
@@ -421,7 +421,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncolumns)) return 1;
 
   if (!ThreeDim) { scale_x=width; scale_y=height; scale_z=1.0;    }
-  else           { scale_x=width; scale_y=width ; scale_z=height; }
+  else           { scale_x=width; scale_y=height; scale_z=zdepth; }
 
   // If axes have value-turning points, loop over all monotonic regions of axis space
   for (xrn=0; xrn<=a[xn]->AxisValueTurnings; xrn++)

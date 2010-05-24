@@ -24,7 +24,7 @@
 
 #include "eps_comm.h"
 
-void eps_plot_gridlines(EPSComm *x, double origin_x, double origin_y, double width, double height);
+void eps_plot_gridlines(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth);
 
 #endif
 

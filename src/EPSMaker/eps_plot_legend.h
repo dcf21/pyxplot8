@@ -52,7 +52,7 @@
    }
 
 void GraphLegend_YieldUpText(EPSComm *x);
-void GraphLegend_Render(EPSComm *x, double width, double height);
+void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth);
 
 #endif
 

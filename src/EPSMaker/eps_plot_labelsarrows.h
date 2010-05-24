@@ -25,7 +25,7 @@
 #include "eps_comm.h"
 
 void eps_plot_labelsarrows_YieldUpText(EPSComm *x);
-void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double width, double height);
+void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth);
 
 #endif
 

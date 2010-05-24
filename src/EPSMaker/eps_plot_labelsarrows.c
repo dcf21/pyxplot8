@@ -74,7 +74,7 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
        ypos += XIN.real * cos(THETA_X) * M_TO_PS; \
       }
 
-void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double width, double height)
+void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
  {
   int           pageno, hal, val;
   char          ItemName[64];
@@ -115,8 +115,8 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        if ((xa0==xa1)&&(xrn0!=xrn1)) continue;
        if ((ya0==ya1)&&(yrn0!=yrn1)) continue;
        if ((za0==za1)&&(zrn0!=zrn1)) continue;
-       eps_plot_GetPosition(&xpos0, &ypos0, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, width, 0);
-       eps_plot_GetPosition(&xpos1, &ypos1, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, width, 0);
+       eps_plot_GetPosition(&xpos0, &ypos0, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
+       eps_plot_GetPosition(&xpos1, &ypos1, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
        xpos=xpos0; ypos=ypos0;
        ADD_PAGE_COORDINATES(ai->system_x0, ai->x0, theta_x);
        ADD_PAGE_COORDINATES(ai->system_y0, ai->y0, theta_y);
@@ -153,7 +153,7 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
       for (zrn=0; zrn<=((x->current->ThreeDim && (za!=NULL)) ? za->AxisValueTurnings : 0); zrn++)
       {
        double xgap,ygap,xgap2,ygap2;
-       eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin, yin, zin, xa, ya, za, xrn, yrn, zrn, &x->current->settings, origin_x, origin_y, width, height, width, 0);
+       eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin, yin, zin, xa, ya, za, xrn, yrn, zrn, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
        ADD_PAGE_COORDINATES(li->system_x, li->x, theta_x);
        ADD_PAGE_COORDINATES(li->system_y, li->y, theta_y);
        if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(li->system_z, li->z, theta_z); }

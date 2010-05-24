@@ -199,7 +199,7 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
    }
  }
 
-void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height)
+void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
  {
   int            i, j, Naxes[2], FirstAutoMirror[2];
   double         TopPos, BotPos;
