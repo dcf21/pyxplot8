@@ -1178,22 +1178,80 @@ void directive_set(Dict *command)
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The width supplied to the 'set size' command was not finite."); return; }
       sg->width.real = tempval->real;
      }
+    if (DictContains(command,"height"))
+     {
+      double r;
+      DictLookup(command,"height",NULL,(void **)&tempval);
+      if (!(tempval->dimensionless))
+       {
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_LENGTH))
+          {
+           sprintf(temp_err_string, "The heights specified for graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
+           return;
+          }
+       }
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The height supplied to the 'set size' command was not finite."); return; }
+      r = tempval->real / sg->width.real;
+      if ((!gsl_finite(r)) || (fabs(r) < 1e-6) || (fabs(r) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested y/x aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
+      sg->aspect = r;
+      sg->AutoAspect = SW_ONOFF_OFF;
+     }
+    if (DictContains(command,"zsize"))
+     {
+      double r;
+      DictLookup(command,"zsize",NULL,(void **)&tempval);
+      if (!(tempval->dimensionless))
+       {
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_LENGTH))
+          {
+           sprintf(temp_err_string, "The depths specified for 3d graphs must have dimensions of length. Supplied value has units of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
+           ppl_error(ERR_NUMERIC, -1, -1, temp_err_string);
+           return;
+          }
+       }
+      else { tempval->real /= 100; } // By default, dimensionless positions are in centimetres
+      if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The depth supplied to the 'set size' command was not finite."); return; }
+      r = tempval->real / sg->width.real;
+      if ((!gsl_finite(r)) || (fabs(r) < 1e-6) || (fabs(r) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested z/x aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
+      sg->zaspect = r;
+      sg->AutoZAspect = SW_ONOFF_OFF;
+     }
     if (DictContains(command,"ratio"))
      {
       DictLookup(command,"ratio",NULL,(void **)&tempdbl);
-      if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The aspect ratio supplied to the 'set size' command was not finite."); return; }
-      if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
+      if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The y/x aspect ratio supplied to the 'set size' command was not finite."); return; }
+      if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested y/x aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
       sg->aspect = *tempdbl;
       sg->AutoAspect = SW_ONOFF_OFF;
      }
+    if (DictContains(command,"zratio"))
+     {
+      DictLookup(command,"zratio",NULL,(void **)&tempdbl);
+      if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The z/x aspect ratio supplied to the 'set size' command was not finite."); return; }
+      if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested z/x aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
+      sg->zaspect = *tempdbl;
+      sg->AutoZAspect = SW_ONOFF_OFF;
+     }
     if (DictContains(command,"square"))
      {
+      sg->zaspect = 1.0;
+      sg->AutoZAspect = SW_ONOFF_OFF;
       sg->aspect = 1.0;
       sg->AutoAspect = SW_ONOFF_OFF;
      }
     if (DictContains(command,"noratio"))
      {
+      sg->aspect = settings_graph_default.aspect;
       sg->AutoAspect = SW_ONOFF_ON;
+     }
+    if (DictContains(command,"nozratio"))
+     {
+      sg->zaspect = settings_graph_default.zaspect;
+      sg->AutoZAspect = SW_ONOFF_ON;
      }
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"size")==0)) /* unset size */
@@ -1201,6 +1259,8 @@ void directive_set(Dict *command)
     sg->width.real   = settings_graph_default.width.real;
     sg->aspect       = settings_graph_default.aspect;
     sg->AutoAspect   = settings_graph_default.AutoAspect;
+    sg->zaspect      = settings_graph_default.zaspect;
+    sg->AutoZAspect  = settings_graph_default.AutoZAspect;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style data / function */
    {
@@ -2433,7 +2493,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     if (sg->AutoAspect == SW_ONOFF_ON) sprintf(buf, "auto");
     else                               sprintf(buf, "%s", NumericDisplay(sg->aspect, 0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
-    directive_show3(out+i, ItemSet, 1, interactive, "size ratio", buf, ((settings_graph_default.aspect==sg->aspect)&&(settings_graph_default.AutoAspect==sg->AutoAspect)), "The aspect-ratio of graphs");
+    directive_show3(out+i, ItemSet, 1, interactive, "size ratio", buf, ((settings_graph_default.aspect==sg->aspect)&&(settings_graph_default.AutoAspect==sg->AutoAspect)), "The y/x aspect-ratio of graphs");
+    i += strlen(out+i) ; p=1;
+    if (sg->AutoZAspect == SW_ONOFF_ON) sprintf(buf, "auto");
+    else                                sprintf(buf, "%s", NumericDisplay(sg->zaspect, 0,settings_term_current.SignificantFigures,(settings_term_current.NumDisplay==SW_DISPLAY_L)));
+    directive_show3(out+i, ItemSet, 1, interactive, "size zratio", buf, ((settings_graph_default.zaspect==sg->zaspect)&&(settings_graph_default.AutoZAspect==sg->AutoZAspect)), "The z/x aspect-ratio of 3d graphs");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "data", 1)>=0) || (StrAutocomplete(word, "style", 1)>=0))

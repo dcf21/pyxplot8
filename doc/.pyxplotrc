@@ -1,6 +1,7 @@
 [settings]
 Aspect = 1.0
 AutoAspect = On
+AutoZAspect = On
 AxesColour = Black
 AxisUnitStyle = Ratio
 Backup = Off
@@ -66,6 +67,7 @@ UnitScheme = SI
 Width = 8.0
 View_XY = 60
 View_YZ = 30
+ZAspect = 1.0
 
 [terminal]
 Colour = On

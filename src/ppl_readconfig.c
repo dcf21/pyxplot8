@@ -118,6 +118,15 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "AUTOASPECT"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.AutoAspect    = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting AutoAspect."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "ZASPECT"      )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))&&(fl>=1e-6)&&(fl<=1e4)))
+                                                                                               { settings_graph_default.zaspect       = fl;
+                                                                                                 settings_graph_default.AutoZAspect   = SW_ONOFF_OFF;
+                                                                                               }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting ZAspect."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "AUTOZASPECT"  )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.AutoZAspect    = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting AutoZAspect."  , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "AXESCOLOUR"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_COLOUR_INT,SW_COLOUR_STR))>0)                      settings_graph_default.AxesColour    = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Colour."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

@@ -137,6 +137,7 @@ detail.
 [settings]
 Aspect = 1.0
 AutoAspect = On
+AutoZAspect = On
 AxesColour = Black
 AxisUnitStyle = Ratio
 Backup = Off
@@ -202,6 +203,7 @@ UnitScheme = SI
 Width = 8.0
 View_XY = 60
 View_YZ = 30
+ZAspect = 1.0
 
 [terminal]
 Colour = On
@@ -267,13 +269,19 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                {\bf Analogous set command:} \indcmdts{set size ratio}
 
-               Sets the aspect ratio of plots.
+               Sets the $y/x$ aspect ratio of plots.
                \\
 {\tt AutoAspect} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
                {\bf Analogous set command:} {\tt set size ratio}
 
-               Sets whether plots have the automatic aspect ratio, which is the golden ratio. If {\tt On}, then the above setting is ignored.
+               Sets whether plots have the automatic $y/x$ aspect ratio, which is the golden ratio. If {\tt On}, then the above setting is ignored.
+               \\
+{\tt AutoZAspect} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} {\tt set size zratio}
+
+               Sets whether 3d plots have the automatic $z/x$ aspect ratio, which is the golden ratio. If {\tt On}, then the above setting is ignored.
                \\
 {\tt AxesColour} & {\bf Possible values:} Any recognised colour.
 
@@ -670,6 +678,12 @@ The {\tt settings} section can contain any of the following settings in any orde
                {\bf Analogous set commands:} \indcmdts{set view}
 
                Sets the viewing angle of three-dimensional plots in the $y$-$z$ plane in degrees.
+               \\
+{\tt ZAspect} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set size ratio}
+
+               Sets the $z/x$ aspect ratio of 3d plots.
                \\
 \end{longtable}
 

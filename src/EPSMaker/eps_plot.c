@@ -588,9 +588,10 @@ void eps_plot_RenderEPS(EPSComm *x)
   origin_x = x->current->settings.OriginX.real * M_TO_PS;
   origin_y = x->current->settings.OriginY.real * M_TO_PS;
   width    = x->current->settings.width  .real * M_TO_PS;
-  if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
-  else                                                height = width * x->current->settings.aspect;
-  zdepth = width;
+  if (x->current->settings.AutoAspect  == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
+  else                                                 height = width * x->current->settings.aspect;
+  if (x->current->settings.AutoZAspect == SW_ONOFF_ON) zdepth = width * 2.0/(1.0+sqrt(5));
+  else                                                 zdepth = width * x->current->settings.zaspect;
 
   // Turn on clipping if 'set clip' is set
   if (x->current->settings.clip == SW_ONOFF_ON)

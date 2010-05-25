@@ -132,7 +132,9 @@ void ppl_settings_makedefault()
 
   // Default Graph Settings, used when these values are not changed by any configuration files
   settings_graph_default.aspect                = 1.0;
+  settings_graph_default.zaspect               = 1.0;
   settings_graph_default.AutoAspect            = SW_ONOFF_ON;
+  settings_graph_default.AutoZAspect           = SW_ONOFF_ON;
   settings_graph_default.AxesColour            = COLOUR_BLACK;
   settings_graph_default.AxesColour1           = 0.0;
   settings_graph_default.AxesColour2           = 0.0;

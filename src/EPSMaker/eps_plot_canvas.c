@@ -121,8 +121,8 @@ void eps_plot_ThreeDimProject(double xap, double yap, double zap, settings_graph
   y3 = y2*cos(sg->YZview.real) + z2*sin(sg->YZview.real);
   z3 =-y2*sin(sg->YZview.real) + z2*cos(sg->YZview.real);
 
-  *xpos  = origin_x + x3 + width/2.0;
-  *ypos  = origin_y + z3 + height/2.0;
+  *xpos  = origin_x + x3;
+  *ypos  = origin_y + z3;
   *depth =            y3;
   return;
  }
