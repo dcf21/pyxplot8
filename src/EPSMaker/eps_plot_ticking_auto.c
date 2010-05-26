@@ -44,6 +44,7 @@
 #include "eps_plot_canvas.h"
 #include "eps_plot_ticking.h"
 #include "eps_plot_ticking_auto.h"
+#include "eps_plot_ticking_auto2.h"
 
 #define MAX_ARGS 32 /* Maximum number of substitution arguments in 'set format' which we analyse */
 #define STEP_DUPLICITY 100 /* Controls how many steps we divide axis into, multiplied by max number of ticks which fit on axis */
@@ -375,7 +376,7 @@ FAIL:
 // Main entry point for automatic ticking of axes
 void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, unsigned char *AutoTicks, double length, double tick_sep_major, double tick_sep_minor)
  {
-  int    i, j, k, l, start, N, NArgs, OutContext, ContextRough=-1, CommaPositions[MAX_ARGS+2], NFactorsLogBase, LogBase;
+  int    i, j, k, l, start, NArgs, OutContext, ContextRough=-1, CommaPositions[MAX_ARGS+2], NFactorsLogBase, LogBase;
   int    FactorsLogBase[MAX_FACTORS];
   int    N_STEPS;
   char  *format, VarName[2]="\0\0", FormatTemp[32], QuoteType, *DummyStr;
@@ -386,6 +387,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   int NPotTicks, NPotTicksMax;
   unsigned char *TicksAccepted, *TicksAcceptedNew, *TicksAcceptedNewTF, *TicksAcceptedNew2B, *TicksAcceptedRough, *TicksAcceptedRough2;
 
+  if (DEBUG) ppl_log("Using eps_plot_ticking_auto()");
   N_STEPS = (2 + length/tick_sep_major) * STEP_DUPLICITY; // Number of intervals into which we divide axis
 
   // Make temporary rough workspace
@@ -923,26 +925,12 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   goto CLEANUP;
 
 FAIL:
+  if (DEBUG) ppl_log("eps_plot_ticking_auto() has failed");
 
-  // A very simple way of putting ticks on axes when clever logic fails
-  N = 1 + length/tick_sep_major; // Estimate how many ticks we want
-  if (N<  3) N=  3;
-  if (N>100) N=100;
-
-  axis->TickListPositions = (double  *)lt_malloc_incontext((N+1) * sizeof(double), OutContext);
-  axis->TickListStrings   = (char   **)lt_malloc_incontext((N+1) * sizeof(char *), OutContext);
-  if ((axis->TickListPositions==NULL) || (axis->TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
-  for (i=0; i<N; i++)
-   {
-    double x;
-    x = ((double)i)/(N-1);
-    axis->TickListPositions[i] = x;
-    x = eps_plot_axis_InvGetPosition(x, axis);
-    if (axis->format == NULL) TickLabelAutoGen(&axis->TickListStrings[i] , x * UnitMultiplier , axis->LogBase, OutContext);
-    else                      TickLabelFromFormat(&axis->TickListStrings[i], axis->format, x, &axis->DataUnit, xyz, OutContext);
-    if (axis->TickListStrings[i]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); axis->TickListPositions = NULL; axis->TickListStrings = NULL; goto CLEANUP; }
-   }
-  axis->TickListStrings[i] = NULL; // null terminate list
+  // When clever logic fails, revert to PyXPlot 0.7 ticking algorithm
+  if (ContextRough>0) lt_AscendOutOfContext(ContextRough);
+  ContextRough = -1;
+  eps_plot_ticking_auto2(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
 
 CLEANUP:
   // Restore original value of x (or y/z)

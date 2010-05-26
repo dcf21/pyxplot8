@@ -141,9 +141,14 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
   int           NTickSchemes;
   TickScheme   *TickSchemes;
 
+  if (DEBUG) ppl_log("Using eps_plot_ticking_auto2()");
+
   // Make temporary rough workspace
   OutContext   = lt_GetMemContext();
   ContextRough = lt_DescendIntoNewContext();
+
+  // This ticking scheme does not work on axes with non-linear mappings
+  if (axis->linkusing != NULL) goto FAIL;
 
   // Work out factors of log base of axis. In fact, work out factors of log base ** 2, so that ten divides by four.
   LogBase = IsLog ? axis->LogBase : 10;
@@ -274,8 +279,15 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
        double xtmp = TL_best[i];
        TLP[j] = eps_plot_axis_GetPosition(xtmp/UnitMultiplier, axis, 0, 0);
        if (!gsl_finite(TLP[j])) continue;
-       if (major) TickLabelAutoGen(&TLS[j], xtmp, LogBase, OutContext);
-       else       TLS[j] = "";
+       if (major)
+        {
+         if (axis->format==NULL) TickLabelAutoGen(&TLS[j], xtmp, LogBase, OutContext);
+         else                    TickLabelFromFormat(&TLS[j], axis->format, xtmp/UnitMultiplier, &axis->DataUnit, xyz, OutContext);
+        }
+       else
+        {
+         TLS[j] = "";
+        }
        j++;
       }
      TLS[j] = NULL;
@@ -285,6 +297,8 @@ void eps_plot_ticking_auto2(settings_axis *axis, int xyz, double UnitMultiplier,
   goto CLEANUP;
 
 FAIL:
+  if (DEBUG) ppl_log("eps_plot_ticking_auto2() has failed");
+
   // A very simple way of putting ticks on axes when clever logic fails
   N = 1 + length/tick_sep_major; // Estimate how many ticks we want
   if (N<  3) N=  3;

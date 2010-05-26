@@ -120,13 +120,15 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source, int xyz
 void eps_plot_DecideAxisRanges(EPSComm *x)
  {
   int            i, j;
-  double         width, height;
+  double         size[3];
   settings_axis *axes;
 
   // Work out lengths of x and y axes
-  width    = x->current->settings.width.real;
-  if (x->current->settings.AutoAspect == SW_ONOFF_ON) height = width * 2.0/(1.0+sqrt(5));
-  else                                                height = width * x->current->settings.aspect;
+  size[0] = x->current->settings.width.real;
+  if (x->current->settings.AutoAspect  == SW_ONOFF_ON) size[1] = size[0] * 2.0/(1.0+sqrt(5));
+  else                                                 size[1] = size[0] * x->current->settings.aspect;
+  if (x->current->settings.AutoZAspect == SW_ONOFF_ON) size[2] = size[0] * 2.0/(1.0+sqrt(5));
+  else                                                 size[2] = size[0] * x->current->settings.zaspect;
 
   // Decide the range of each axis in turn
   for (j=0; j<3; j++)
@@ -137,7 +139,7 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
     for (i=0; i<MAX_AXES; i++)
      {
       if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], j, i, 1); if (*x->status) return; }
-      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, (j==1)?height:width, x->current->settings.AxisUnitStyle); if (*x->status) return; }
+      if (!axes[i].TickListFinalised) { eps_plot_ticking(&axes[i], j, i, x->current->id, size[j], x->current->settings.AxisUnitStyle); if (*x->status) return; }
      }
    }
   return;
