@@ -1,4 +1,4 @@
-// eps_plot_ticking_auto2.h
+// eps_plot_ticking_auto3.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,12 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_PLOT_TICKING_AUTO2_H
-#define _PPL_EPS_PLOT_TICKING_AUTO2_H 1
+#ifndef _PPL_EPS_PLOT_TICKING_AUTO3_H
+#define _PPL_EPS_PLOT_TICKING_AUTO3_H 1
 
 #include "ppl_settings.h"
 
-void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, double tick_sep_major, double tick_sep_minor, settings_axis *linkedto);
+void eps_plot_ticking_auto3(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, double tick_sep_major, double tick_sep_minor, settings_axis *linkedto);
 
 #endif
 

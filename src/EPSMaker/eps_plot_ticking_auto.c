@@ -19,8 +19,11 @@
 
 // ----------------------------------------------------------------------------
 
-// This file contains routines for working out the ranges of axes, and where to
-// put axis ticks along them
+// This file contain an algorithm for the automatic placement of ticks along axes.
+
+// METHOD 1: Axes which are 'linked using' or which have non-trivial 'format'
+// expressions. The axis is broken up into many small sections and a list of
+// 'significant' points constructed.
 
 #define _PPL_EPS_PLOT_TICKING_AUTO_C 1
 
@@ -45,6 +48,7 @@
 #include "eps_plot_ticking.h"
 #include "eps_plot_ticking_auto.h"
 #include "eps_plot_ticking_auto2.h"
+#include "eps_plot_ticking_auto3.h"
 
 #define MAX_ARGS 32 /* Maximum number of substitution arguments in 'set format' which we analyse */
 #define STEP_DUPLICITY 100 /* Controls how many steps we divide axis into, multiplied by max number of ticks which fit on axis */
@@ -254,7 +258,7 @@ static void AddTickScheme(const PotentialTick *PotTickList, const int NPotTicks,
  }
 
 // Take a list of accepted ticks and convert these into a final TickList to associate with axis
-static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double UnitMultiplier, unsigned char *AutoTicks, value *VarVal, const int NIntervals, char *format, const int start, const int *CommaPositions, const ArgumentInfo *args, const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const unsigned char *TicksAccepted, int OutContext)
+static int AutoTickListFinalise(settings_axis *axis, const double UnitMultiplier, unsigned char *AutoTicks, value *VarVal, const int NIntervals, char *format, const int start, const int *CommaPositions, const ArgumentInfo *args, const PotentialTick *PotTickList, const int NPotTicks, const ArgLeagueTableEntry *TickOrder, const unsigned char *TicksAccepted, int OutContext)
  {
   int    i, jMAJ, jMIN, k, l, Nmajor=0, Nminor=0;
   double axispos, x, x1, x2;
@@ -351,7 +355,7 @@ static int AutoTickListFinalise(settings_axis *axis, const int xyz, const double
       {
        axis->TickListPositions[jMAJ] = axispos;
        if (axis->format == NULL) TickLabelAutoGen   (&axis->TickListStrings[jMAJ], x * UnitMultiplier, axis->LogBase, OutContext);
-       else                      TickLabelFromFormat(&axis->TickListStrings[jMAJ], axis->format, x, &axis->DataUnit, xyz, OutContext);
+       else                      TickLabelFromFormat(&axis->TickListStrings[jMAJ], axis->format, x, &axis->DataUnit, axis->xyz, OutContext);
        if (axis->TickListStrings[jMAJ]==NULL) goto FAIL;
        jMAJ++;
       }
@@ -374,7 +378,7 @@ FAIL:
  }
 
 // Main entry point for automatic ticking of axes
-void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, unsigned char *AutoTicks, double length, double tick_sep_major, double tick_sep_minor)
+void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, double tick_sep_major, double tick_sep_minor, settings_axis *linkedto)
  {
   int    i, j, k, l, start, NArgs, OutContext, ContextRough=-1, CommaPositions[MAX_ARGS+2], NFactorsLogBase, LogBase;
   int    FactorsLogBase[MAX_FACTORS];
@@ -388,7 +392,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   unsigned char *TicksAccepted, *TicksAcceptedNew, *TicksAcceptedNewTF, *TicksAcceptedNew2B, *TicksAcceptedRough, *TicksAcceptedRough2;
 
   if (DEBUG) ppl_log("Using eps_plot_ticking_auto()");
-  N_STEPS = (2 + length/tick_sep_major) * STEP_DUPLICITY; // Number of intervals into which we divide axis
+  N_STEPS = (2 + axis->PhysicalLength/tick_sep_major) * STEP_DUPLICITY; // Number of intervals into which we divide axis
 
   // Make temporary rough workspace
   OutContext   = lt_GetMemContext();
@@ -397,10 +401,10 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
   if (DummyStr==NULL) goto FAIL;
 
   // Work through format string identifying substitution expressions
-  VarName[0] = "xyz"[xyz];
+  VarName[0] = "xyz"[axis->xyz];
   if (axis->format == NULL) { sprintf(FormatTemp, "\"%%s\"%%(%s)", VarName); format=FormatTemp; }
   else                      { format=axis->format; }
-  if ((format==FormatTemp) && (axis->AxisLinearInterpolation==NULL) && (axis->LogFinal==SW_BOOL_TRUE) && (log(axis->MaxFinal / axis->MinFinal) / log(axis->LogBase) > length / tick_sep_major)) { sprintf(FormatTemp, "\"%%s\"%%(logn(%s,%f))", VarName, axis->LogBase); }
+  if ((format==FormatTemp) && (axis->AxisLinearInterpolation==NULL) && (axis->LogFinal==SW_BOOL_TRUE) && (log(axis->MaxFinal / axis->MinFinal) / log(axis->LogBase) > axis->PhysicalLength / tick_sep_major)) { sprintf(FormatTemp, "\"%%s\"%%(logn(%s,%f))", VarName, axis->LogBase); }
   for (i=0; ((format[i]!='\0')&&(format[i]!='\'')&&(format[i]!='\"')); i++);
   QuoteType = format[i];
   if (QuoteType=='\0') goto FAIL;
@@ -504,7 +508,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
 
   // Work out factors of log base of axis. In fact, work out factors of log base ** 2, so that ten divides by four.
   LogBase = (axis->LogFinal == SW_BOOL_TRUE) ? axis->LogBase : 10;
-  factorise(pow(LogBase,FACTOR_MULTIPLY), FactorsLogBase, MAX_FACTORS, length/tick_sep_minor*1.2, &NFactorsLogBase);
+  factorise(pow(LogBase,FACTOR_MULTIPLY), FactorsLogBase, MAX_FACTORS, axis->PhysicalLength/tick_sep_minor*1.2, &NFactorsLogBase);
 
   // Work out throw of each argument (i.e. the spread of values that it takes)
   for (i=0; i<NArgs; i++)
@@ -516,7 +520,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     if ((throw>1e6) || (args[i].MinValue < INT_MIN+10) || (args[i].MaxValue > INT_MAX-10)) args[i].Throw = 0.0;
     else                                                                                   args[i].Throw = throw;
     args[i].MinValue = floor(args[i].MinValue);
-    factorise(args[i].Throw*pow(LogBase,FACTOR_MULTIPLY-1), args[i].FactorsThrow, MAX_FACTORS, length/tick_sep_minor*1.2, &args[i].NFactorsThrow);
+    factorise(args[i].Throw*pow(LogBase,FACTOR_MULTIPLY-1), args[i].FactorsThrow, MAX_FACTORS, axis->PhysicalLength/tick_sep_minor*1.2, &args[i].NFactorsThrow);
    }
 
   // Compile scores of how fast each continuous argument moves
@@ -731,7 +735,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
 
        // Try marking discrete changes to arguments with major ticks
        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, 0, 0, 0, TicksAccepted, TicksAcceptedNew,
-                     1, length, tick_sep_major, &acceptable, &NTicksMajor, &NTicksMinor);
+                     1, axis->PhysicalLength, tick_sep_major, &acceptable, &NTicksMajor, &NTicksMinor);
        if (acceptable)
         {
          if (DEBUG) { sprintf(temp_err_string, "Accepted major ticks to mark changes of argument %d (now %d ticks).", i, NTicksMajor); ppl_log(temp_err_string); }
@@ -741,7 +745,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
 
        // Try marking discrete changes to arguments with minor ticks
        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, 0, 0, 0, TicksAccepted, TicksAcceptedNew,
-                     0, length, tick_sep_minor, &acceptable, &NTicksMajor, &NTicksMinor);
+                     0, axis->PhysicalLength, tick_sep_minor, &acceptable, &NTicksMajor, &NTicksMinor);
        if (acceptable)
         {
          if (DEBUG) { sprintf(temp_err_string, "Accepted minor ticks to mark changes of argument %d (now %d ticks).", i, NTicksMajor); ppl_log(temp_err_string); }
@@ -765,7 +769,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
         {
          acceptable = 1;
          AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAccepted, TicksAcceptedNewTF,
-                       1, length, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
+                       1, axis->PhysicalLength, tick_sep_major, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
          if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d major ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/pow(LogBase,FACTOR_MULTIPLY-1),ThrowFactors_Nticks,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
          if (acceptable) { ThrowFactors_FactNum =  k; break; }
          else            { ThrowFactors_FactNum = -1; ThrowFactors_Nticks  = -1; }
@@ -778,7 +782,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
           {
            acceptable=1;
            AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, k, 0, 0, TicksAcceptedNewTF, TicksAcceptedRough,
-                         0, length, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
+                         0, axis->PhysicalLength, tick_sep_minor, &acceptable, &ThrowFactors_Nticks, &ThrowFactors_Nticks_minor);
          if (DEBUG) { sprintf(temp_err_string, "Dividing throw of %3d into intervals of %.1f produces %d minor ticks [%s].",args[i].Throw,args[i].FactorsThrow[k]/pow(LogBase,FACTOR_MULTIPLY-1),ThrowFactors_Nticks_minor,acceptable?"pass":"fail"); ppl_log(temp_err_string); }
            if (acceptable) { memcpy(TicksAcceptedNewTF, TicksAcceptedRough, NPotTicks); break; }
           }
@@ -803,8 +807,8 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
              if (Nticks_2B>=0) break;
              l_final = l;
              acceptable=1;
-             if (!l2)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1)-1, TicksAcceptedNew, TicksAcceptedRough, 1, length, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
-             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1), l2?TicksAcceptedNew:TicksAcceptedRough, TicksAcceptedRough, 1, length, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (!l2)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1)-1, TicksAcceptedNew, TicksAcceptedRough, 1, axis->PhysicalLength, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l+1), l2?TicksAcceptedNew:TicksAcceptedRough, TicksAcceptedRough, 1, axis->PhysicalLength, tick_sep_major, &acceptable, &Nticks_2B, &Nticks_2B_minor);
              if (DEBUG) { sprintf(temp_err_string, "Dividing OoM %g into intervals of %g produces %d major ticks [%s%s].",pow(LogBase,k),FactorsLogBase[l ]*pow(LogBase,k-FACTOR_MULTIPLY),Nticks_2B,acceptable?"pass":"fail",(Nticks_2B<=NMajorTicksIn)?"; no new ticks":""); ppl_log(temp_err_string); }
              if ((!acceptable) || (Nticks_2B<=NMajorTicksIn)) { Nticks_2B=-1; Nticks_2B_minor=-1; }
             }
@@ -819,8 +823,8 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
                continue; // Minor ticks must mark common factors of log base and major tick interval
               }
              acceptable=1;
-             if (!l4)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1)-1, TicksAcceptedRough, TicksAcceptedRough2, 0, length, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
-             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1), l4?TicksAcceptedRough:TicksAcceptedRough2, TicksAcceptedRough2, 0, length, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (!l4)        AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1)-1, TicksAcceptedRough, TicksAcceptedRough2, 0, axis->PhysicalLength, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
+             if (acceptable) AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, 2*(l3+1), l4?TicksAcceptedRough:TicksAcceptedRough2, TicksAcceptedRough2, 0, axis->PhysicalLength, tick_sep_minor, &acceptable, &Nticks_2B, &Nticks_2B_minor);
              if (DEBUG) { sprintf(temp_err_string, "Dividing OoM %g into intervals of %g produces %d minor ticks [%s%s].",pow(LogBase,k),FactorsLogBase[l3]*pow(LogBase,k-FACTOR_MULTIPLY),Nticks_2B_minor,acceptable?"pass":"fail",(Nticks_2B_minor<=NMinorTicksIn)?"; no new ticks":""); ppl_log(temp_err_string); }
              if (!acceptable) Nticks_2B_minor = NMinorTicksIn;
             }
@@ -844,7 +848,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
            if (k==args[i].OoM_max+1)
             {
              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, INT_MAX, -10, TicksAcceptedNew, TicksAcceptedRough,
-                           1, length, tick_sep_major, &acceptable, &Nticks_new, &Nticks_new_minor); // Must have zero, if present, with highest OoM
+                           1, axis->PhysicalLength, tick_sep_major, &acceptable, &Nticks_new, &Nticks_new_minor); // Must have zero, if present, with highest OoM
              if (acceptable) memcpy(TicksAcceptedNew, TicksAcceptedRough, NPotTicks);
             }
            memcpy(TicksAcceptedRough, TicksAcceptedNew, NPotTicks);
@@ -854,7 +858,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
            for (l=-3; l<=0; l++)
             {
              AddTickScheme(PotTickList, NPotTicks, TickOrder, N_STEPS, i, NOT_THROW, k, l, TicksAcceptedNew, TicksAcceptedRough,
-                           MAJORminor, length, MAJORminor ? tick_sep_major : tick_sep_minor, &acceptable, &Nticks_new, &Nticks_new_minor);
+                           MAJORminor, axis->PhysicalLength, MAJORminor ? tick_sep_major : tick_sep_minor, &acceptable, &Nticks_new, &Nticks_new_minor);
              if (DEBUG) { sprintf(temp_err_string, "OoM %g Priority %2d produces %d %s ticks [%s].",pow(LogBase,k),l,Nticks_new,MAJORminor?"major":"minor",acceptable?"pass":"fail"); ppl_log(temp_err_string); }
              if (acceptable) { Nticks_new_accepted=Nticks_new; Nticks_new_accepted_minor=Nticks_new_minor; memcpy(TicksAcceptedNew, TicksAcceptedRough, NPotTicks); }
              else            { if (MAJORminor) { MAJORminor=0; l--; continue; } else { break; } }
@@ -921,7 +925,7 @@ void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, 
     }
 
   // Finalise list of ticks
-  AutoTickListFinalise(axis, xyz, UnitMultiplier, AutoTicks, VarVal, N_STEPS, format, start, CommaPositions, args, PotTickList, NPotTicks, TickOrder, TicksAccepted, OutContext);
+  AutoTickListFinalise(axis, UnitMultiplier, AutoTicks, VarVal, N_STEPS, format, start, CommaPositions, args, PotTickList, NPotTicks, TickOrder, TicksAccepted, OutContext);
   goto CLEANUP;
 
 FAIL:
@@ -930,7 +934,8 @@ FAIL:
   // When clever logic fails, revert to PyXPlot 0.7 ticking algorithm
   if (ContextRough>0) lt_AscendOutOfContext(ContextRough);
   ContextRough = -1;
-  eps_plot_ticking_auto2(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
+  if (linkedto!=NULL) eps_plot_ticking_auto3(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
+  else                eps_plot_ticking_auto2(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
 
 CLEANUP:
   // Restore original value of x (or y/z)

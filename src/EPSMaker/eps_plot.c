@@ -239,11 +239,18 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   Dict             *tempdict;
   char              errbuffer[LSTR_LENGTH];
   with_words        ww_default;
-  double           *ordinate_raster;
+  double           *ordinate_raster, size[3];
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
   axissets[2] = x->current->ZAxes;
+
+  // Work out lengths of x and y axes
+  size[0] = x->current->settings.width.real;
+  if (x->current->settings.AutoAspect  == SW_ONOFF_ON) size[1] = size[0] * 2.0/(1.0+sqrt(5));
+  else                                                 size[1] = size[0] * x->current->settings.aspect;
+  if (x->current->settings.AutoZAspect == SW_ONOFF_ON) size[2] = size[0] * 2.0/(1.0+sqrt(5));
+  else                                                 size[2] = size[0] * x->current->settings.zaspect;
 
   // First clear all range information from all axes.
   // Also, transfer range information from [Min,Max,unit] to [HardMin,HardMax,HardUnit].
@@ -270,6 +277,10 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       axes[i].OrdinateRasterLen = 0;
       axes[i].OrdinateRaster = NULL;
       axes[i].FinalAxisLabel = NULL;
+      axes[i].PhysicalLength = size[j];
+      axes[i].xyz            = j;
+      axes[i].axis_n         = i;
+      axes[i].canvas_id      = x->current->id;
       axes[i].TickListFinalised = 0;
       axes[i].TickListPositions = axes[i].MTickListPositions = NULL;
       axes[i].TickListStrings   = axes[i].MTickListStrings   = NULL;
@@ -310,7 +321,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   for (j=0; j<3; j++)
    {
     axes = axissets[j];
-    for (i=0; i<MAX_AXES; i++) eps_plot_LinkedAxisForwardPropagate(x, axes+i, j, i, 0);
+    for (i=0; i<MAX_AXES; i++) eps_plot_LinkedAxisForwardPropagate(x, axes+i, 0);
    }
 
   // Count number of datasets which we are plotting
@@ -391,9 +402,9 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         // Update axes to reflect usage
         status=eps_plot_styles_UpdateUsage(x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2], &axissets[pd->axis3xyz][pd->axis3], &x->current->settings, pd->axis1xyz, pd->axis2xyz, pd->axis3xyz, pd->axis1, pd->axis2, pd->axis3, x->current->id);
         if (status) { *(x->status) = 1; return; }
-        eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1], pd->axis1xyz, pd->axis1);
-        eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2], pd->axis2xyz, pd->axis2);
-        eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3], pd->axis3xyz, pd->axis3);
+        eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1]);
+        eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2]);
+        eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3]);
        }
      }
     pd=pd->next; i++;
@@ -442,7 +453,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       // Fix range of ordinate axis
-      eps_plot_LinkedAxisForwardPropagate(x, OrdinateAxis, pd->axis1xyz, pd->axis1, 1);
+      eps_plot_LinkedAxisForwardPropagate(x, OrdinateAxis, 1);
       if (*x->status) return;
 
       // Fetch ordinate raster to plot function along
@@ -493,9 +504,9 @@ void eps_plot_SampleFunctions(EPSComm *x)
       // Update axes to reflect usage
       status=eps_plot_styles_UpdateUsage(x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2], &axissets[pd->axis3xyz][pd->axis3], &x->current->settings, pd->axis1xyz, pd->axis2xyz, pd->axis3xyz, pd->axis1, pd->axis2, pd->axis3, x->current->id);
       if (status) { *(x->status) = 1; return; }
-      eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1], pd->axis1xyz, pd->axis1);
-      eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2], pd->axis2xyz, pd->axis2);
-      eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3], pd->axis3xyz, pd->axis3);
+      eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1]);
+      eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2]);
+      eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3]);
       axissets[pd->axis1xyz][pd->axis1].RangeFinalised = axissets[pd->axis1xyz][pd->axis1].TickListFinalised = 0;
      }
     pd=pd->next; i++;

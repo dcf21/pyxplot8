@@ -24,7 +24,7 @@
 
 #include "ppl_settings.h"
 
-void eps_plot_ticking_auto(settings_axis *axis, int xyz, double UnitMultiplier, unsigned char *AutoTicks, double length, double tick_sep_major, double tick_sep_minor);
+void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, double tick_sep_major, double tick_sep_minor, settings_axis *linkedto);
 
 #endif
 

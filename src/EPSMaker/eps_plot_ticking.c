@@ -42,8 +42,9 @@
 #include "eps_plot_ticking.h"
 #include "eps_plot_ticking_auto.h"
 #include "eps_plot_ticking_auto2.h"
+#include "eps_plot_ticking_auto3.h"
 
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle)
+void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *linkedto)
  {
   int i,j,MajMin,N,xrn;
   const double logmin = 1e-10;
@@ -71,14 +72,14 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     else                        axis->MaxFinal = (axis->LogFinal == SW_BOOL_TRUE) ? 10.0 : 10.0;
 
     // Check that log axes do not venture too close to zero
-    if ((axis->LogFinal == SW_BOOL_TRUE) && (axis->MaxFinal <= 1e-200)) { axis->MaxFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
+    if ((axis->LogFinal == SW_BOOL_TRUE) && (axis->MaxFinal <= 1e-200)) { axis->MaxFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[axis->xyz], axis->axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
     if (!MinSet) axis->MinFinal = (axis->LogFinal == SW_BOOL_TRUE) ? (axis->MaxFinal / 100) : (axis->MaxFinal - 20);
-    if ((axis->LogFinal == SW_BOOL_TRUE) && (axis->MinFinal <= 1e-200)) { axis->MinFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
+    if ((axis->LogFinal == SW_BOOL_TRUE) && (axis->MinFinal <= 1e-200)) { axis->MinFinal = logmin; sprintf(temp_err_string, "Range for logarithmic axis %c%d set below zero; defaulting to 1e-10.", "xyz"[axis->xyz], axis->axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
 
     // If there's no spread of data on the axis, make a spread up
     if ( (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MinFinal)) || (fabs(axis->MinFinal-axis->MaxFinal) <= fabs(1e-14*axis->MaxFinal)) )
      {
-      if (axis->HardMinSet && axis->HardMaxSet) { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[xyz], axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
+      if (axis->HardMinSet && axis->HardMaxSet) { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[axis->xyz], axis->axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
       if (axis->LogFinal != SW_BOOL_TRUE)
        {
         axis->MinFinal -= max(1.0,1e-3*fabs(axis->MinFinal));
@@ -132,7 +133,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     // Print out debugging report
     if (DEBUG)
      {
-      sprintf(temp_err_string,"Determined range for axis %c%d of plot %d. Usage was [", "xyz"[xyz], axis_n, canvas_id);
+      sprintf(temp_err_string,"Determined range for axis %c%d of plot %d. Usage was [", "xyz"[axis->xyz], axis->axis_n, axis->canvas_id);
       i = strlen(temp_err_string);
       if (axis->MinUsedSet) { sprintf(temp_err_string+i, "%f", axis->MinUsed); i+=strlen(temp_err_string+i); }
       else                  temp_err_string[i++] = '*';
@@ -163,7 +164,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     // If ticks have been manually specified, check that units are right
     if ((!ppl_units_DimEqual(&axis->unit,&axis->DataUnit)) && ((axis->TickList!=NULL)||(((axis->log==SW_BOOL_TRUE)?(axis->TickMinSet):(axis->TickStepSet))!=0)||(axis->MTickList!=NULL)||(((axis->log==SW_BOOL_TRUE)?(axis->MTickMinSet):(axis->MTickStepSet))!=0)))
      {
-      sprintf(temp_err_string, "Cannot put any ticks on axis %c%d because their positions are specified in units of <%s> whilst the axis has units of <%s>.", "xyz"[xyz], axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,1,0));
+      sprintf(temp_err_string, "Cannot put any ticks on axis %c%d because their positions are specified in units of <%s> whilst the axis has units of <%s>.", "xyz"[axis->xyz], axis->axis_n, ppl_units_GetUnitStr(&axis->unit,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&axis->DataUnit,NULL,NULL,1,1,0));
       ppl_error(ERR_GENERAL,-1,-1,temp_err_string);
       axis-> TickListPositions = NULL; axis-> TickListStrings = NULL;
       axis->MTickListPositions = NULL; axis->MTickListStrings = NULL;
@@ -173,7 +174,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     OutContext = lt_GetMemContext();
 
     // Work out optimal tick separation
-    if (xyz!=1)
+    if (axis->xyz!=1)
      {
       tick_sep_major = 0.025;
       tick_sep_minor = 0.004;
@@ -226,7 +227,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
            if      (TickStrs[i][0]!='\xFF')    (*TickListStrings)[j] = TickStrs[i];
            else if (MajMin==0)                 (*TickListStrings)[j] = "";
            else if (axis->format == NULL)        TickLabelAutoGen(&(*TickListStrings)[j], TickList[i] * UnitMultiplier, axis->LogBase , OutContext);
-           else                                  TickLabelFromFormat(&(*TickListStrings)[j], axis->format, TickList[i], &axis->DataUnit, xyz, OutContext);
+           else                                  TickLabelFromFormat(&(*TickListStrings)[j], axis->format, TickList[i], &axis->DataUnit, axis->xyz, OutContext);
            j++;
           }
         (*TickListStrings)[j] = NULL; // null terminate list
@@ -283,7 +284,7 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
             if ( (!gsl_finite((*TickListPositions)[j])) || ((*TickListPositions)[j]<0.0) || ((*TickListPositions)[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
             if      (MajMin==0)            (*TickListStrings)[j] = "";
             else if (axis->format == NULL) TickLabelAutoGen(&(*TickListStrings)[j], tmp * UnitMultiplier, axis->LogBase, OutContext);
-            else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, xyz, OutContext);
+            else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, axis->xyz, OutContext);
             if ((*TickListStrings)[j]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
             j++;
             if (axis->LogFinal == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
@@ -301,9 +302,12 @@ void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, d
     if (AutoTicks[1])
      {
       if ((axis->format != NULL) || (axis->linkusing != NULL))
-        eps_plot_ticking_auto (axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
+        eps_plot_ticking_auto (axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
       else
-        eps_plot_ticking_auto2(axis, xyz, UnitMultiplier, AutoTicks, length, tick_sep_major, tick_sep_minor);
+       {
+        if (linkedto!=NULL) eps_plot_ticking_auto3(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
+        else                eps_plot_ticking_auto2(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
+       }
      }
 
     // Set flag to show that we have finalised the ticking of this axis

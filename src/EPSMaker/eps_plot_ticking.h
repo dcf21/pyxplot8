@@ -25,7 +25,7 @@
 #include "ppl_settings.h"
 #include "ppl_units.h"
 
-void eps_plot_ticking(settings_axis *axis, int xyz, int axis_n, int canvas_id, double length, int AxisUnitStyle);
+void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *linkedto);
 void TickLabelAutoGen(char **output, double x, double log_base, int OutContext);
 void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit, int xyz, int OutContext);
 
