@@ -1039,6 +1039,17 @@ Axis labels may also be made to appear at arbitrary rotations using commands suc
 set xlabel "I'm upside down" rotate unit(0.5*revolution)
 \end{verbatim}
 
+\subsubsection{Removing Axis Tick Labels}
+
+Axes may be set to have no textual labels associated with the ticks along them
+using the command:
+\begin{verbatim}
+set xformat ""
+\end{verbatim}
+This is particularly useful when compiling galleries of plots using linked axes
+(see the next section) and the multiplot environment (see
+Chapter~\ref{ch:vector_graphics}).
+
 \subsection{Linked Axes}
 \label{sec:linked_axes}
 
@@ -1505,7 +1516,7 @@ installation tarball in the directory {\tt doc/\-examples/}.
 
 \section{Three-Dimensional Plotting}
 
-PyXPlot 0.8.0 has no facilities for three-dimensional plotting. The ability to
+PyXPlot 0.8.1 has no facilities for three-dimensional plotting. The ability to
 configure axes such as {\tt z} and {\tt z2}, together with various references
 to three-dimensional plotting in this manual, are provided for future
 expansion only.

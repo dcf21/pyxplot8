@@ -56,6 +56,7 @@ void eps_plot_ticking_auto3(settings_axis *axis, double UnitMultiplier, unsigned
   OutContext = lt_GetMemContext();
 
   if (linkedto==NULL) goto FAIL;
+  if (axis->linkusing != NULL) goto FAIL;
   if (linkedto->PhysicalLength != axis->PhysicalLength) goto FAIL;
   if ((linkedto->TickListStrings==NULL)||(linkedto->MTickListStrings==NULL)) goto FAIL;
 

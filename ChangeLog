@@ -1,6 +1,9 @@
-2010 ??? ??: PyXPlot 0.8.1
-	- Mathematical functions time_fromunix(), time_unix(), zernike() and
-	  zernikeR() added.
+2010 Jun  1: PyXPlot 0.8.1
+   - Mathematical functions time_fromunix(), time_unix(), zernike() and
+     zernikeR() added.
+   - Bug fix to the ticking of linked axes.
+   - Bug fix to the ticking of axes with blank axis tick labels.
+   - Makefile and configure script improved for portability.
 2010 May 19: PyXPlot 0.8.0
    - The handling of large datafiles has been streamlined to require around an
      order-of-magnitude less time and memory.

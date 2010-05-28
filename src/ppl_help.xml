@@ -38,7 +38,7 @@ and Colin Kelley and has more recently been developed by many others. PyXPlot's
 graphical output engine was heavily motivated by the PyX graphics library for
 Python, originally written by Joerg Lehmann and Andre Wobst and more recently
 developed by a larger team. Versions of PyXPlot prior to 0.8.0 used PyX to
-produce their graphical output, and though version 0.8.0 uses its own graphics
+produce their graphical output, and though version 0.8.x uses its own graphics
 engine, it continues to bear many similarities to PyX.
 
 Several other people have made very substantial contributions to PyXPlot's
@@ -53,7 +53,7 @@ with us; the implementation of the image command is substantially his work.
 
 We are also very grateful to our team of alpha testers, without whose work this
 release of PyXPlot would doubtless contain many more bugs than it does:
-especial thanks go to Ian Abel and Rachel Holdforth. Of course, the authors
+especial thanks go to Rachel Holdforth and Stuart Prescott. Of course, the authors
 remain solely responsible for any bugs which remain.
 
 Finally, we would like to think all of the users who have got in touch with us

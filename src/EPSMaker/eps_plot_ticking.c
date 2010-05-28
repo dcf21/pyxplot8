@@ -301,7 +301,7 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
     // Do automatic ticking as required
     if (AutoTicks[1])
      {
-      if ((axis->format != NULL) || (axis->linkusing != NULL))
+      if ((axis->format != NULL) || (axis->AxisLinearInterpolation != NULL))
         eps_plot_ticking_auto (axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
       else
        {

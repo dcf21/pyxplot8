@@ -283,6 +283,7 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
   // Translate legend to desired place on canvas (3D case)
   else
    {
+    xoff = yoff = 0.0;
    }
 
   xoff += (x->current->settings.OriginX.real + x->current->settings.KeyXOff.real) * M_TO_PS;

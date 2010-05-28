@@ -149,7 +149,7 @@ void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned
   ContextRough = lt_DescendIntoNewContext();
 
   // This ticking scheme does not work on axes with non-linear mappings
-  if (axis->linkusing != NULL) goto FAIL;
+  if (axis->AxisLinearInterpolation != NULL) goto FAIL;
 
   // Work out factors of log base of axis. In fact, work out factors of log base ** 2, so that ten divides by four.
   LogBase = IsLog ? axis->LogBase : 10;
