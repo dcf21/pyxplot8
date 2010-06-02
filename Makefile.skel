@@ -28,11 +28,11 @@
 # to a location other than /usr/local:
 
 USRDIR=/usr/local
-BINDIR=${USRDIR}/bin
-BINDIR_PRIVATE=${USRDIR}/lib/pyxplot
-SRCDIR=${USRDIR}/share/pyxplot
-DOCDIR=${USRDIR}/share/doc/pyxplot
-MANDIR=${USRDIR}/man/man1
+BINDIR=${DESTDIR}${USRDIR}/bin
+BINDIR_PRIVATE=${DESTDIR}${USRDIR}/lib/pyxplot
+SRCDIR=${DESTDIR}${USRDIR}/share/pyxplot
+DOCDIR=${DESTDIR}${USRDIR}/share/doc/pyxplot
+MANDIR=${DESTDIR}${USRDIR}/share/man/man1
 
 CWD=$(shell pwd)
 

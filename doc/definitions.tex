@@ -26,12 +26,15 @@
 \def\version{0.8.1}
 \def\reldate{June 2010}
 
+\newif\ifplastex
+\plastexfalse
+
 % Put ticks and crosses next to code examples
 \newlength{\dontdowidth}
 \setlength{\dontdowidth}{\textwidth}
 \addtolength{\dontdowidth}{-2.5cm}
-\newenvironment{dontdo}{\vspace{3mm}\noindent\begin{tabular}{p{1cm}p{\dontdowidth}}\noindent{\Large \XSolidBrush  }&\noindent\begin{minipage}{\dontdowidth}\tt}{\end{minipage}\end{tabular}\vspace{3mm}}
-\newenvironment{dodo}  {\vspace{3mm}\noindent\begin{tabular}{p{1cm}p{\dontdowidth}}\noindent{\Large \CheckmarkBold}&\noindent\begin{minipage}{\dontdowidth}\tt}{\end{minipage}\end{tabular}\vspace{3mm}}
+\newenvironment{dontdo}{\vspace{3mm}\noindent\begin{tabular}{p{1cm}p{\dontdowidth}}\noindent{\ifplastex\includegraphics{cross}\else\Large \XSolidBrush\fi }&\noindent\begin{minipage}{\dontdowidth}\tt}{\end{minipage}\end{tabular}\vspace{3mm}}
+\newenvironment{dodo}  {\vspace{3mm}\noindent\begin{tabular}{p{1cm}p{\dontdowidth}}\noindent{\ifplastex\includegraphics{tick}\else\Large \CheckmarkBold\fi}&\noindent\begin{minipage}{\dontdowidth}\tt}{\end{minipage}\end{tabular}\vspace{3mm}}
 
 % Place commands in the index in typewriter face
 \newcommand\indcmd[1]{\index{#1 command@{\tt #1} command}}
