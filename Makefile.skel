@@ -36,8 +36,8 @@ MANDIR=${DESTDIR}${USRDIR}/share/man/man1
 
 CWD=$(shell pwd)
 
-VERSION = 0.8.1
-DATE    = 01/06/2010
+VERSION = 0.8.2
+DATE    = xx/xx/2010
 
 COMPILE = $(CC) -Wall -g `xml2-config --cflags` `gsl-config --cflags` -c -I $(CWD)/src
 LINK    = $(CC) -Wall -g `xml2-config --libs`   `gsl-config --libs`   -lm $(LINK_FFTW) $(LINK_READLINE) -lz -lpng -lkpathsea

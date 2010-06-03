@@ -199,14 +199,15 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
    }
  }
 
-void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
+void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth, int pass)
  {
-  int            i, j, Naxes[2], FirstAutoMirror[2];
+  int            i, j, Naxes[4], FirstAutoMirror[4];
   double         TopPos, BotPos;
   settings_axis *axes;
   with_words     ww;
 
   x->LaTeXpageno = x->current->AxesTextID;
+  if ((pass==0) && (!x->current->ThreeDim)) return; // 2D plots do not have back axes
 
   // Set colour for painting axes
   with_words_zero(&ww,0);
@@ -239,31 +240,55 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       }
    }
 
-  // Three-dimensional axes
-  if (x->current->ThreeDim)
+  // Loop over all axes to draw. First loop over x, y and z directions.
+  for (j=0; j<2+(x->current->ThreeDim!=0); j++)
    {
-   }
+    double theta;
 
-  // 2D Gnomonic axes
-  else if (x->current->settings.projection == SW_PROJ_GNOM)
-   {
-   }
+    Naxes          [0] = Naxes          [1] = Naxes          [2] = Naxes          [3] =  0;
+    FirstAutoMirror[0] = FirstAutoMirror[1] = FirstAutoMirror[2] = FirstAutoMirror[3] = -1;
 
-  // 2D flat axes
-  else
-   {
-    for (j=0; j<2; j++)
+    // Fetch relevant list of axes
+    if      (j==0) axes = x->current->XAxes;
+    else if (j==1) axes = x->current->YAxes;
+    else           axes = x->current->ZAxes;
+
+    // Work out direction of normal to axes running in this direction
+    if (!x->current->ThreeDim)
      {
-      Naxes[0] = Naxes[1] = 0;
-      FirstAutoMirror[0] = FirstAutoMirror[1] = -1;
+      if (j==0) { theta = 0.0;    BotPos = origin_y; TopPos = origin_y + height; }
+      else      { theta = M_PI/2; BotPos = origin_x; TopPos = origin_x + width ; }
+     }
+    else
+     {
+      double tmp_x1, tmp_y1, tmp_z1;
+      double tmp_x2, tmp_y2, tmp_z2;
+      eps_plot_ThreeDimProject((j==0)?0.0:0.5 , (j==1)?0.0:0.5 , (j==2)?0.0:0.5,
+                               &x->current->settings,origin_x,origin_y,width,height,zdepth,&tmp_x1,&tmp_y1,&tmp_z1);
+      eps_plot_ThreeDimProject((j==0)?1.0:0.5 , (j==1)?1.0:0.5 , (j==2)?1.0:0.5,
+                               &x->current->settings,origin_x,origin_y,width,height,zdepth,&tmp_x2,&tmp_y2,&tmp_z2);
+      theta = atan2(tmp_x2-tmp_x1, tmp_y2-tmp_y1) + M_PI/2;
+     }
 
-      if (j==0) { axes = x->current->XAxes; BotPos = origin_y; TopPos = origin_y + height; }
-      else      { axes = x->current->YAxes; BotPos = origin_x; TopPos = origin_x + width ; }
+    // Loop over all axes in this direction and draw any which are active and visible
+    for (i=0; i<MAX_AXES; i++)
+     if ((axes[i].FinalActive) && (!axes[i].invisible))
+      {
+       int pageno = x->LaTeXpageno;
 
-      for (i=0; i<MAX_AXES; i++)
-       if ((axes[i].FinalActive) && (!axes[i].invisible))
+       // Three-dimensional axes
+       if (x->current->ThreeDim)
         {
-         int pageno = x->LaTeXpageno;
+        }
+
+       // 2D Gnomonic axes
+       else if (x->current->settings.projection == SW_PROJ_GNOM)
+        {
+        }
+
+       // 2D flat axes
+       else
+        {
          if (axes[i].atzero)
           {
            settings_axis *PerpAxis = &(((j==0)?(x->current->YAxes):(x->current->XAxes))[1]); // Put axis at zero of either x- or y-axis
@@ -309,31 +334,33 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
             }
           }
         }
+      }
 
-      // If there is no axis on bottom/left, but was an auto-mirrored axis on top/right, mirror it now
-      if ((Naxes[0]==0) && (FirstAutoMirror[1]>=0))
-       {
-        double BotPosInc;
-        i = FirstAutoMirror[1];
-        if (j==0) eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 0, origin_x, BotPos, origin_x+width, BotPos , &BotPosInc, 0); // Axis on bottom
-        else      eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 1, BotPos, origin_y, BotPos, origin_y+height, &BotPosInc, 0); // Axis on left
-        BotPos -= BotPosInc;
-        Naxes[0]++;
-       }
+    // Fudge
+    if (x->current->ThreeDim) return;
 
-      // If there is no axis on top/right, but was an auto-mirrored axis on bottom/left, mirror it now
-      if ((Naxes[1]==0) && (FirstAutoMirror[0]>=0))
-       {
-        double TopPosInc;
-        i = FirstAutoMirror[0];
-        if (j==0) eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 1, origin_x, TopPos, origin_x+width, TopPos , &TopPosInc, 0); // Axis on top
-        else      eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 0, TopPos, origin_y, TopPos, origin_y+height, &TopPosInc, 0); // Axis on right
-        TopPos += TopPosInc;
-        Naxes[0]++;
-       }
+    // If there is no axis on bottom/left, but was an auto-mirrored axis on top/right, mirror it now
+    if ((Naxes[0]==0) && (FirstAutoMirror[1]>=0))
+     {
+      double BotPosInc;
+      i = FirstAutoMirror[1];
+      if (j==0) eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 0, origin_x, BotPos, origin_x+width, BotPos , &BotPosInc, 0); // Axis on bottom
+      else      eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 1, BotPos, origin_y, BotPos, origin_y+height, &BotPosInc, 0); // Axis on left
+      BotPos -= BotPosInc;
+      Naxes[0]++;
+     }
+
+    // If there is no axis on top/right, but was an auto-mirrored axis on bottom/left, mirror it now
+    if ((Naxes[1]==0) && (FirstAutoMirror[0]>=0))
+     {
+      double TopPosInc;
+      i = FirstAutoMirror[0];
+      if (j==0) eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 1, origin_x, TopPos, origin_x+width, TopPos , &TopPosInc, 0); // Axis on top
+      else      eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, 0, TopPos, origin_y, TopPos, origin_y+height, &TopPosInc, 0); // Axis on right
+      TopPos += TopPosInc;
+      Naxes[0]++;
      }
    }
-
   return;
  }
 

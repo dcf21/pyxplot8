@@ -222,6 +222,15 @@ static int SortByAzimuth(const void *x, const void *y)
   return 0;
  }
 
+static void TriSwap(double *a, double *b)
+ {
+  double t[3];
+  memcpy(t,a,3*sizeof(double));
+  memcpy(a,b,3*sizeof(double));
+  memcpy(b,t,3*sizeof(double));
+  return;
+ }
+
 // Loop through all of the datasets plotted in a single plot command.
 // Initialise the datastructures for the plot command which we will fill in the
 // process of deciding how to render the graph. Then read in data from
@@ -613,14 +622,16 @@ void eps_plot_RenderEPS(EPSComm *x)
       double xap, yap, zap, data[3*8];
       for (i=0;i<8;i++)
        {
-        xap=((i&2)!=0);
-        yap=((i&4)!=0);
-        zap=((i&8)!=0);
+        xap=((i&1)!=0);
+        yap=((i&2)!=0);
+        zap=((i&4)!=0);
         eps_plot_ThreeDimProject(xap,yap,zap,&x->current->settings,origin_x,origin_y,width,height,zdepth,data+3*i,data+3*i+1,data+3*i+2);
        }
       SortByAzimuthXCentre = origin_x;
       SortByAzimuthYCentre = origin_y;
       qsort((void *)(data  ),8,3*sizeof(double),SortByDepth);
+      if ((data[3*0+2]==data[3*1+2])&&(hypot(data[3*0+0]-origin_x,data[3*0+1]-origin_y)>hypot(data[3*1+0]-origin_x,data[3*1+1]-origin_y))) TriSwap(data+3*0,data+3*1);
+      if ((data[3*7+2]==data[3*6+2])&&(hypot(data[3*7+0]-origin_x,data[3*7+1]-origin_y)>hypot(data[3*6+0]-origin_x,data[3*6+1]-origin_y))) TriSwap(data+3*7,data+3*6);
       qsort((void *)(data+3),6,3*sizeof(double),SortByAzimuth);
       fprintf(x->epsbuffer, "gsave\nnewpath\n");
       for (i=1;i<7;i++) fprintf(x->epsbuffer, "%.2f %.2f %sto\n", data[3*i], data[3*i+1], (i==1)?"move":"line");
@@ -634,6 +645,9 @@ void eps_plot_RenderEPS(EPSComm *x)
 
   // Render gridlines
   eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);
+
+  // Render axes (back)
+  eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth, 0);
 
   // Activate three-dimensional buffer if graph is 3D
   if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);
@@ -660,15 +674,15 @@ void eps_plot_RenderEPS(EPSComm *x)
   // Render text labels and arrows
   eps_plot_labelsarrows(x, origin_x, origin_y, width, height, zdepth);
 
+  // Deactivate three-dimensional buffer
+  ThreeDimBuffer_Deactivate(x);
+
   // Turn off clipping if 'set clip' is set
   if (x->current->settings.clip == SW_ONOFF_ON)
    { fprintf(x->epsbuffer, "grestore\n"); x->LastLinewidth = -1; x->LastLinetype = -1; x->LastPSColour[0]='\0'; }
 
-  // Deactivate three-dimensional buffer
-  ThreeDimBuffer_Deactivate(x);
-
-  // Render axes
-  eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth);
+  // Render axes (front)
+  eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth, 1);
 
   // Render legend
   GraphLegend_Render(x, width, height, zdepth);

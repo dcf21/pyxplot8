@@ -1711,7 +1711,7 @@ void directive_set(Dict *command)
         }
      }
 
-    DictLookup(command,"prefered_units,",NULL,(void **)&templist);
+    DictLookup(command,"preferred_units,",NULL,(void **)&templist);
     listiter = ListIterateInit(templist);
     while (listiter != NULL)
      {
@@ -2616,14 +2616,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "unit display prefix", buf, (settings_term_default.UnitDisplayPrefix==settings_term_current.UnitDisplayPrefix), "Selects whether SI units are displayed with prefixes");
     i += strlen(out+i) ; p=1;
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.UnitScheme, SW_UNITSCH_INT, (void *)SW_UNITSCH_STR, sizeof(char *)));
-    directive_show3(out+i, ItemSet, 0, interactive, "unit scheme", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the scheme (e.g. SI or Imperial) of prefered units");
+    directive_show3(out+i, ItemSet, 0, interactive, "unit scheme", buf, (settings_term_default.UnitScheme==settings_term_current.UnitScheme), "Selects the scheme (e.g. SI or Imperial) of preferred units");
     i += strlen(out+i) ; p=1;
     for (j=0; j<ppl_unit_pos; j++) if (ppl_unit_database[j].UserSel != 0)
      {
       sprintf(buf, "unit of %s", ppl_unit_database[j].quantity);
       if (settings_term_current.UnitDisplayAbbrev == SW_ONOFF_ON) sprintf(buf2, "%s%s", SIprefixes_abbrev[ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameAs);
       else                                                        sprintf(buf2, "%s%s", SIprefixes_full  [ppl_unit_database[j].UserSelPrefix], ppl_unit_database[j].nameFs);
-      directive_show3(out+i, ItemSet, 0, interactive, buf, buf2, 0, "Selects a user-prefered unit for a particular quantity");
+      directive_show3(out+i, ItemSet, 0, interactive, buf, buf2, 0, "Selects a user-preferred unit for a particular quantity");
       i += strlen(out+i) ; p=1;
      }
 

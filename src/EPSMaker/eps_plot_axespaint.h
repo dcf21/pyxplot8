@@ -24,7 +24,7 @@
 
 #include "eps_comm.h"
 
-void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth);
+void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth, int pass);
 
 #endif
 

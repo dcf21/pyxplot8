@@ -46,8 +46,47 @@
 #include "eps_colours.h"
 #include "eps_comm.h"
 #include "eps_core.h"
+#include "eps_plot_canvas.h"
 #include "eps_plot_legend.h"
 #include "eps_plot_styles.h"
+
+// Private routines for sorting 3D positions by depth and azimuth when working out where to put a legend on a 3D plot
+
+static int SortByDepth(const void *x, const void *y)
+ {
+  const double *xd = (const double *)x;
+  const double *yd = (const double *)y;
+  if (xd[2]>yd[2]) return  1;
+  if (xd[2]<yd[2]) return -1;
+  return 0;
+ }
+
+static double SortByAzimuthXCentre, SortByAzimuthYCentre, SortByAzimuthTarget;
+
+static int SortByAzimuthProximity(const void *x, const void *y)
+ {
+  const double *xd = (const double *)x;
+  const double *yd = (const double *)y;
+  double ax,ay;
+  ax = fabs(atan2(xd[0]-SortByAzimuthXCentre , xd[1]-SortByAzimuthYCentre) - SortByAzimuthTarget);
+  ay = fabs(atan2(yd[0]-SortByAzimuthXCentre , yd[1]-SortByAzimuthYCentre) - SortByAzimuthTarget);
+  while (ax>2*M_PI) ax-=2*M_PI; if (ax>M_PI) ax = 2*M_PI-ax;
+  while (ay>2*M_PI) ay-=2*M_PI; if (ay>M_PI) ay = 2*M_PI-ay;
+  if (ax>ay) return  1;
+  if (ax<ay) return -1;
+  return 0;
+ }
+
+static void TriSwap(double *a, double *b)
+ {
+  double t[3];
+  memcpy(t,a,3*sizeof(double));
+  memcpy(a,b,3*sizeof(double));
+  memcpy(b,t,3*sizeof(double));
+  return;
+ }
+
+// Graph legend API routines
 
 void GraphLegend_YieldUpText(EPSComm *x)
  {
@@ -283,7 +322,54 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
   // Translate legend to desired place on canvas (3D case)
   else
    {
-    xoff = yoff = 0.0;
+    SortByAzimuthTarget = -999;
+
+    switch (kp)
+     {
+      case SW_KEYPOS_TR: SortByAzimuthTarget =  1*M_PI/4; xoff =                      LEGEND_MARGIN; yoff = AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_TM: SortByAzimuthTarget =  0*M_PI/4; xoff = -ColumnX[Ncolumns]/2              ; yoff = AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_TL: SortByAzimuthTarget = -1*M_PI/4; xoff = -ColumnX[Ncolumns]  -LEGEND_MARGIN; yoff = AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_MR: SortByAzimuthTarget =  2*M_PI/4; xoff =                      LEGEND_MARGIN; yoff = AttainedHeight/2               ; break;
+      case SW_KEYPOS_MM:                                  xoff = -ColumnX[Ncolumns]/2              ; yoff = AttainedHeight/2               ; break;
+      case SW_KEYPOS_ML: SortByAzimuthTarget = -2*M_PI/4; xoff = -ColumnX[Ncolumns]  -LEGEND_MARGIN; yoff = AttainedHeight/2               ; break;
+      case SW_KEYPOS_BR: SortByAzimuthTarget =  3*M_PI/4; xoff =                      LEGEND_MARGIN; yoff =                 - LEGEND_MARGIN; break;
+      case SW_KEYPOS_BM: SortByAzimuthTarget =  4*M_PI/4; xoff = -ColumnX[Ncolumns]/2              ; yoff =                 - LEGEND_MARGIN; break;
+      case SW_KEYPOS_BL: SortByAzimuthTarget = -3*M_PI/4; xoff = -ColumnX[Ncolumns]  -LEGEND_MARGIN; yoff =                 - LEGEND_MARGIN; break;
+
+      case SW_KEYPOS_ABOVE:   xoff = -ColumnX[Ncolumns]/2;
+                              yoff = AttainedHeight + LEGEND_MARGIN + x->current->PlotTopMargin    - x->current->settings.OriginY.real*M_TO_PS;
+                              break;
+      case SW_KEYPOS_BELOW:   xoff = -ColumnX[Ncolumns]/2;
+                              yoff =                - LEGEND_MARGIN + x->current->PlotBottomMargin - x->current->settings.OriginY.real*M_TO_PS;
+                              break;
+      case SW_KEYPOS_OUTSIDE: xoff =  LEGEND_MARGIN + x->current->PlotRightMargin - x->current->settings.OriginX.real*M_TO_PS;
+                              yoff = -LEGEND_MARGIN + x->current->PlotTopMargin   - x->current->settings.OriginY.real*M_TO_PS;
+                              break;
+     }
+
+    // Find the vertex of the graph closest to the target azimuth
+    if (SortByAzimuthTarget>-100)
+     {
+      int i;
+      double xap, yap, zap, data[3*8];
+      double origin_x = x->current->settings.OriginX.real*M_TO_PS;
+      double origin_y = x->current->settings.OriginY.real*M_TO_PS;
+      for (i=0;i<8;i++)
+       {
+        xap=((i&1)!=0);
+        yap=((i&2)!=0);
+        zap=((i&4)!=0);
+        eps_plot_ThreeDimProject(xap,yap,zap,&x->current->settings,origin_x,origin_y,width,height,zdepth,data+3*i,data+3*i+1,data+3*i+2);
+       }
+      SortByAzimuthXCentre = origin_x;
+      SortByAzimuthYCentre = origin_y;
+      qsort((void *)(data  ),8,3*sizeof(double),SortByDepth);
+      if ((data[3*0+2]==data[3*1+2])&&(hypot(data[3*0+0]-origin_x,data[3*0+1]-origin_y)>hypot(data[3*1+0]-origin_x,data[3*1+1]-origin_y))) TriSwap(data+3*0,data+3*1);
+      if ((data[3*7+2]==data[3*6+2])&&(hypot(data[3*7+0]-origin_x,data[3*7+1]-origin_y)>hypot(data[3*6+0]-origin_x,data[3*6+1]-origin_y))) TriSwap(data+3*7,data+3*6);
+      qsort((void *)(data+3),6,3*sizeof(double),SortByAzimuthProximity);
+      xoff += data[3*1+0];
+      yoff += data[3*1+1];
+     }
    }
 
   xoff += (x->current->settings.OriginX.real + x->current->settings.KeyXOff.real) * M_TO_PS;

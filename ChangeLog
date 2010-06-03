@@ -1,3 +1,5 @@
+2010 xxx xx: PyxPlot 0.8.2
+   - foo
 2010 Jun  1: PyXPlot 0.8.1
    - Mathematical functions time_fromunix(), time_unix(), zernike() and
      zernikeR() added.
