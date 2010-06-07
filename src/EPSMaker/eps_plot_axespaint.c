@@ -201,7 +201,7 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
 
 void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth, int pass)
  {
-  int            i, j;
+  int            i, j, k;
   settings_axis *axes;
   with_words     ww;
 
@@ -256,9 +256,9 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       int    k=0, l=0;
       if (x->current->ThreeDim) { eps_plot_ThreeDimProject(xap, yap, zap, &x->current->settings,origin_x,origin_y,width,height,zdepth,&tmp_x,&tmp_y,&tmp_z); }
       else                      { tmp_x = origin_x + xap*width; tmp_y = origin_y + yap*height; tmp_z = 0.0; }
+      if (j!=2) k=2*k+zap; else l=zap;
+      if (j!=1) k=2*k+yap; else l=yap;
       if (j!=0) k=2*k+xap; else l=xap;
-      if (j!=2) k=2*k+zap; else l=yap;
-      if (j!=1) k=2*k+yap; else l=zap;
       if (l==0) { xpos1[k] = tmp_x; ypos1[k] = tmp_y; }
       else      { xpos2[k] = tmp_x; ypos2[k] = tmp_y; }
       eps_core_PlotBoundingBox(x, tmp_x, tmp_y, 0.0);
@@ -280,7 +280,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     for (i=0; i<MAX_AXES; i++)
      if ((axes[i].FinalActive) && (!axes[i].invisible))
       {
-       int k, pageno = x->LaTeXpageno;
+       int pageno = x->LaTeXpageno;
 
        // 2D Gnomonic axes
        if (x->current->settings.projection == SW_PROJ_GNOM)
@@ -292,26 +292,47 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
         {
          if (axes[i].atzero)
           {
-           settings_axis *PerpAxis = &(((j==0)?(x->current->YAxes):(x->current->XAxes))[1]); // Put axis at zero of either x- or y-axis
-           int xrn;
-           double ypos=0.5, ypos2, dummy;
-           if (PerpAxis->FinalActive)
+           settings_axis *PerpAxisX = &(x->current->XAxes[1]); // Put axis at zero of perpendicular x1-, y1- and z1-axes
+           settings_axis *PerpAxisY = &(x->current->YAxes[1]);
+           settings_axis *PerpAxisZ = &(x->current->ZAxes[1]);
+           unsigned char  LastX, LastY, LastZ, DoneX, DoneY, DoneZ;
+           int            xrn, yrn, zrn;
+           double         pos[3], xpos1, ypos1, xpos2, ypos2, dummy;
+
+           for (DoneX=LastX=0,xrn=0; !LastX; xrn++)
             {
-             for (xrn=0; xrn<=PerpAxis->AxisValueTurnings; xrn++) // Perhaps more than once if x- or y-axis is non-monotonic
-              {
-               ypos = eps_plot_axis_GetPosition(0.0, PerpAxis, xrn, 0);
-               if (gsl_finite(ypos))
-                {
-                 if (j==0) { ypos2=origin_y+ypos*height; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, j, ypos, 0 ^ (ypos>0.999), origin_x, ypos2   , origin_x+width, ypos2          , &dummy, 1); }
-                 else      { ypos2=origin_x+ypos*width ; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, j, ypos, 1 ^ (ypos>0.999), ypos2   , origin_y, ypos2         , origin_y+height, &dummy, 1); }
-                }
-              }
-            }
-           else
+             pos[0] = 0.5;
+             LastX  = ((j==0)||(!PerpAxisX->FinalActive)||(xrn>PerpAxisX->AxisValueTurnings));
+             if ((j!=0)&&(PerpAxisX->FinalActive)) pos[0] = eps_plot_axis_GetPosition(0.0, PerpAxisX, xrn, 0);
+             if ((!gsl_finite(pos[0])) && (!DoneX) && LastX) pos[0] = 0.5;
+             if  (!gsl_finite(pos[0])) continue;
+
+           for (DoneY=LastY=0,yrn=0; !LastY; yrn++)
             {
-             if (j==0) { ypos2=origin_y+ypos*height; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, j, ypos, 0 ^ (ypos>0.999), origin_x, ypos2   , origin_x+width, ypos2          , &dummy, 1); }
-             else      { ypos2=origin_x+ypos*width ; x->LaTeXpageno=pageno; eps_plot_axispaint(x, &ww, axes+i, j, ypos, 1 ^ (ypos>0.999), ypos2   , origin_y, ypos2         , origin_y+height, &dummy, 1); }
-            }
+             pos[1] = 0.5;
+             LastY  = ((j==1)||(!PerpAxisY->FinalActive)||(yrn>PerpAxisY->AxisValueTurnings));
+             if ((j!=1)&&(PerpAxisY->FinalActive)) pos[1] = eps_plot_axis_GetPosition(0.0, PerpAxisY, yrn, 0);
+             if ((!gsl_finite(pos[1])) && (!DoneY) && LastY) pos[1] = 0.5;
+             if  (!gsl_finite(pos[1])) continue;
+
+           for (DoneZ=LastZ=0,zrn=0; !LastZ; zrn++)
+            {
+             pos[2] = 0.5;
+             LastZ  = ((j==2)||(!x->current->ThreeDim)||(!PerpAxisZ->FinalActive)||(zrn>PerpAxisZ->AxisValueTurnings));
+             if ((j!=2)&&(PerpAxisZ->FinalActive)) pos[2] = eps_plot_axis_GetPosition(0.0, PerpAxisZ, zrn, 0);
+             if ((!gsl_finite(pos[2])) && (!DoneZ) && LastZ) pos[2] = 0.5;
+             if  (!gsl_finite(pos[2])) continue;
+
+           pos[j] = 0.0;
+           if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos1,&ypos1,&dummy); }
+           else                      { xpos1=origin_x+pos[0]*width; ypos1=origin_y+pos[1]*height; }
+           pos[j] = 1.0;
+           if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos2,&ypos2,&dummy); }
+           else                      { xpos2=origin_x+pos[0]*width; ypos2=origin_y+pos[1]*height; }
+
+           x->LaTeXpageno=pageno;
+           eps_plot_axispaint(x, &ww, axes+i, j, pos[j!=0], (j!=0) ^ (pos[j!=0]>0.999), xpos1, ypos1, xpos2, ypos2, &dummy, 1);
+           }}} // Loop over xrn, yrn and zrn
           }
          else // axis is notatzero... i.e. it is either at top or bottom of graph
           {
@@ -324,14 +345,14 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
             if ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
              {
               unsigned char Lr = (j!=0)^(k&1);
-              unsigned char label = ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
+              unsigned char label = ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR));
               double        IncGap, ang;
-              eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, (j!=0)^(k&1), xpos1[k], ypos1[k], xpos2[k], ypos2[k], &BotPosInc, label);
+              eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, (j!=0)^(k&1), xpos1[k], ypos1[k], xpos2[k], ypos2[k], &IncGap, label);
               ang = theta[k] + M_PI/2 * ((Lr!=0)*2-1);
-              xpos1 += IncGap * sin(ang);
-              ypos1 += IncGap * cos(ang);
-              xpos2 += IncGap * sin(ang);
-              ypos2 += IncGap * cos(ang);
+              xpos1[k] += IncGap * sin(ang);
+              ypos1[k] += IncGap * cos(ang);
+              xpos2[k] += IncGap * sin(ang);
+              ypos2[k] += IncGap * cos(ang);
               Naxes[k]++;
              }
           }
@@ -344,7 +365,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       {
        unsigned char Lr = (j!=0)^(k&1);
        double        IncGap, ang;
-       eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, (j!=0)^(k&1), xpos1[k], ypos1[k], xpos2[k], ypos2[k], &BotPosInc, 0);
+       eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, (j!=0)^(k&1), xpos1[k], ypos1[k], xpos2[k], ypos2[k], &IncGap, 0);
        ang = theta[k] + M_PI/2 * ((Lr!=0)*2-1);
        xpos1[k] += IncGap * sin(ang);
        ypos1[k] += IncGap * cos(ang);
