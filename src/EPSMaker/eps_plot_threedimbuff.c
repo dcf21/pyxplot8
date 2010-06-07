@@ -75,8 +75,8 @@ static int ThreeDimBuffer_qsort_slave(const void *x, const void *y)
   const struct DepthArrayEntry *x1 = (const struct DepthArrayEntry *)x;
   const struct DepthArrayEntry *y1 = (const struct DepthArrayEntry *)y;
 
-  if      (x1->depth > y1->depth) return  1.0;
-  else if (x1->depth < y1->depth) return -1.0;
+  if      (x1->depth > y1->depth) return -1.0;
+  else if (x1->depth < y1->depth) return  1.0;
   else                            return  0.0;
  }
 

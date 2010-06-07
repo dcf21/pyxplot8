@@ -52,9 +52,9 @@ void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
   return;
  }
 
-void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double x2, const double y2, double *OutputWidth, const unsigned char PrintLabels)
+void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double x2, const double y2, const double theta_a, const double theta_b, double *OutputWidth, const unsigned char PrintLabels)
  {
-  int    i, l;
+  int    i, l, m;
   double TickMaxHeight = 0.0, height, width, theta_axis;
   int    HALIGN, VALIGN, HALIGN_THIS, VALIGN_THIS;
   double theta, theta_pinpoint; // clockwise rotation
@@ -93,57 +93,65 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
        {
         for (l=0; TLS[l]!=NULL; l++)
          {
+          unsigned char state=0;
           double tic_lab_xoff=0.0;
           double tic_x1 = x1 + (x2-x1) * TLP[l];
           double tic_y1 = y1 + (y2-y1) * TLP[l];
           double tic_x2 , tic_y2, tic_x3, tic_y3;
-          tic_x2 = tic_x1 + (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * (Lr ? -1.0 : 1.0) * sin(theta_axis + M_PI/2) * TLEN * M_TO_PS; // top of tick
-          tic_y2 = tic_y1 + (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * (Lr ? -1.0 : 1.0) * cos(theta_axis + M_PI/2) * TLEN * M_TO_PS;
-          tic_x3 = tic_x1 + (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * (Lr ? -1.0 : 1.0) * sin(theta_axis + M_PI/2) * TLEN * M_TO_PS; // bottom of tick
-          tic_y3 = tic_y1 + (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * (Lr ? -1.0 : 1.0) * cos(theta_axis + M_PI/2) * TLEN * M_TO_PS;
 
-          // Check for special case of ticks at zero on axes crossed by atzero axes
-          HALIGN_THIS = HALIGN;
-          VALIGN_THIS = VALIGN;
-          if ((a->CrossedAtZero) && (a->atzero))
+          for (m=0; ((m<2)&&(!state)); m++)
            {
-            double CP1 = TLP[l];
-            double xl = TLP[l] - 1e-3;
-            double xr = TLP[l] + 1e-3;
-            if (xl<0.0) xl=0.0; if (xl>1.0) xl=1.0;
-            if (xr<0.0) xr=0.0; if (xr>1.0) xr=1.0;
-            xl = eps_plot_axis_InvGetPosition(xl, a);
-            xr = eps_plot_axis_InvGetPosition(xr, a);
-            if ((gsl_finite(xl)) && (gsl_finite(xr)) && ((xl==0)||(xr==0)||((xl<0)&&(xr>0))||((xl>0)&&(xr<0))))
+            double        theta_ab = m ? theta_a : theta_b;
+            if (!gsl_finite(theta_ab)) continue;
+            tic_x2 = tic_x1 + (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * sin(theta_ab) * TLEN * M_TO_PS; // top of tick
+            tic_y2 = tic_y1 + (a->TickDir==SW_TICDIR_IN  ? 0.0 :  1.0) * cos(theta_ab) * TLEN * M_TO_PS;
+            tic_x3 = tic_x1 + (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * sin(theta_ab) * TLEN * M_TO_PS; // bottom of tick
+            tic_y3 = tic_y1 + (a->TickDir==SW_TICDIR_OUT ? 0.0 : -1.0) * cos(theta_ab) * TLEN * M_TO_PS;
+
+            // Check for special case of ticks at zero on axes crossed by atzero axes
+            HALIGN_THIS = HALIGN;
+            VALIGN_THIS = VALIGN;
+            if ((a->CrossedAtZero) && (a->atzero))
              {
-              if (xyz != 0) // y/z-axis -- only put label at zero if axis is at edge of graph
+              double CP1 = TLP[l];
+              double xl = TLP[l] - 1e-3;
+              double xr = TLP[l] + 1e-3;
+              if (xl<0.0) xl=0.0; if (xl>1.0) xl=1.0;
+              if (xr<0.0) xr=0.0; if (xr>1.0) xr=1.0;
+              xl = eps_plot_axis_InvGetPosition(xl, a);
+              xr = eps_plot_axis_InvGetPosition(xr, a);
+              if ((gsl_finite(xl)) && (gsl_finite(xr)) && ((xl==0)||(xr==0)||((xl<0)&&(xr>0))||((xl>0)&&(xr<0))))
                {
-                if (!( ((CP2<1e-3)&&( Lr)) || ((CP2>0.999)&&(!Lr)) )) { if (PrintLabels && (TLS[l][0] != '\0')) x->LaTeXpageno++; continue; }
-               }
-              else // x-axis -- if at edge of graph, put label at zero. If y-axis is labelled at zero, don't put label at zero...
-               {
-                if (!( ((CP2<1e-3)&&(!Lr)) || ((CP2>0.999)&&( Lr)) ))
+                if (xyz != 0) // y/z-axis -- only put label at zero if axis is at edge of graph
                  {
-                  int Lr1 = (xyz==0) ^ (CP1>0.999);
-                  if ( ((CP1<1e-3)&&( Lr1)) || ((CP1>0.999)&&(!Lr1)) ) { if (PrintLabels && (TLS[l][0] != '\0')) x->LaTeXpageno++; continue; }
-                  else // ... otherwise, displace label at zero to one side
+                  if (!( ((CP2<1e-3)&&( Lr)) || ((CP2>0.999)&&(!Lr)) )) { if (PrintLabels && (TLS[l][0] != '\0')) x->LaTeXpageno++; state=1; continue; }
+                 }
+                else // x-axis -- if at edge of graph, put label at zero. If y-axis is labelled at zero, don't put label at zero...
+                 {
+                  if (!( ((CP2<1e-3)&&(!Lr)) || ((CP2>0.999)&&( Lr)) ))
                    {
-                    double theta_pinpoint = theta + 1.5 * M_PI/2 + theta_axis + M_PI*(!Lr); // Angle around textboxes where it is anchored
-                    eps_plot_LabelAlignment(theta_pinpoint, &HALIGN_THIS, &VALIGN_THIS);
-                    tic_lab_xoff = -TLEN; // Move label to the left
+                    int Lr1 = (xyz==0) ^ (CP1>0.999);
+                    if ( ((CP1<1e-3)&&( Lr1)) || ((CP1>0.999)&&(!Lr1)) ) { if (PrintLabels && (TLS[l][0] != '\0')) x->LaTeXpageno++; state=1; continue; }
+                    else // ... otherwise, displace label at zero to one side
+                     {
+                      double theta_pinpoint = theta + 1.5 * M_PI/2 + theta_axis + M_PI*(!Lr); // Angle around textboxes where it is anchored
+                      eps_plot_LabelAlignment(theta_pinpoint, &HALIGN_THIS, &VALIGN_THIS);
+                      tic_lab_xoff = -TLEN; // Move label to the left
+                     }
                    }
                  }
                }
              }
-           }
 
-          // Stroke the tick, unless it is at the end of an axis with an arrowhead
-          if (!( ((TLP[l]<1e-3)&&((a->ArrowType == SW_AXISDISP_BACKA)||(a->ArrowType == SW_AXISDISP_TWOAR))) || ((TLP[l]>0.999)&&((a->ArrowType == SW_AXISDISP_ARROW)||(a->ArrowType == SW_AXISDISP_TWOAR))) ))
-           {
-            fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
-            eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-            eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+            // Stroke the tick, unless it is at the end of an axis with an arrowhead
+            if (!( ((TLP[l]<1e-3)&&((a->ArrowType == SW_AXISDISP_BACKA)||(a->ArrowType == SW_AXISDISP_TWOAR))) || ((TLP[l]>0.999)&&((a->ArrowType == SW_AXISDISP_ARROW)||(a->ArrowType == SW_AXISDISP_TWOAR))) ))
+             {
+              fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
+              eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+              eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+             }
            }
+          if (state) continue;
 
           // Paint the tick label
           if (PrintLabels && (TLS[l][0] != '\0'))
@@ -202,6 +210,7 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
 void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth, int pass)
  {
   int            i, j, k;
+  double         xc, yc, zc, theta[3]={M_PI/2,0,0}; // Coordinates of centre of graph
   settings_axis *axes;
   with_words     ww;
 
@@ -220,6 +229,21 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   // Reset plot bounding box; we're about to make this sensible below by factoring in plot vertices
   x->current->PlotLeftMargin = x->current->PlotRightMargin  = origin_x;
   x->current->PlotTopMargin  = x->current->PlotBottomMargin = origin_y;
+
+  // Fetch coordinates of centre of graph
+  if (x->current->ThreeDim) { eps_plot_ThreeDimProject(0.5,0.5,0.5, &x->current->settings,origin_x,origin_y,width,height,zdepth, &xc,&yc,&zc); }
+  else                      { xc = origin_x + 0.5*width; yc = origin_y + 0.5*height; zc = 0.0; }
+
+  // Work out directions of each of the axes
+  if (x->current->ThreeDim)
+   for (j=0; j<3; j++)
+    {
+     double x1,y1,z1,x2,y2,z2;
+     eps_plot_ThreeDimProject(    0 ,    0 ,    0 , &x->current->settings,origin_x,origin_y,width,height,zdepth, &x1,&y1,&z1);
+     eps_plot_ThreeDimProject((j==0),(j==1),(j==2), &x->current->settings,origin_x,origin_y,width,height,zdepth, &x2,&y2,&z2);
+     theta[j] = atan2(x2-x1,y2-y1);
+     if (!gsl_finite(theta[j])) theta[j] = 0.0;
+    }
 
   // Set CrossedAtZero flags
   for (j=0; j<3; j++)
@@ -241,13 +265,17 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   // Loop over all axes to draw. First loop over x, y and z directions.
   for (j=0; j<2+(x->current->ThreeDim!=0); j++)
    {
-    int    xap, yap, zap, Naxes[4], FirstAutoMirror[4];
-    double xpos1[4], ypos1[4], xpos2[4], ypos2[4], theta[4];
-    int    NDIRS = x->current->ThreeDim ? 4 : 2;
+    int           xap, yap, zap, Naxes[4], FirstAutoMirror[4];
+    unsigned char side_a[4]={0,1,0,1}, side_b[4]={0,0,1,1};
+    double        xpos1[4], ypos1[4], zpos1[4], xpos2[4], ypos2[4], zpos2[4];
+    int           NDIRS   = x->current->ThreeDim ? 4 : 2;
+    double        theta_a = theta[(j==0)?1:0];
+    double        theta_b = theta[(j==2)?1:2];
 
     // Set count of axes to zero
     Naxes          [0] = Naxes          [1] = Naxes          [2] = Naxes          [3] =  0;
     FirstAutoMirror[0] = FirstAutoMirror[1] = FirstAutoMirror[2] = FirstAutoMirror[3] = -1;
+    if (!x->current->ThreeDim) theta_b=GSL_NAN;
 
     // Loop over vertices of graph factoring into bounding box and setting pos1 and pos2
     for (xap=0; xap<=1; xap++) for (yap=0; yap<=1; yap++) for (zap=0; zap<=1; zap++)
@@ -259,16 +287,18 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       if (j!=2) k=2*k+zap; else l=zap;
       if (j!=1) k=2*k+yap; else l=yap;
       if (j!=0) k=2*k+xap; else l=xap;
-      if (l==0) { xpos1[k] = tmp_x; ypos1[k] = tmp_y; }
-      else      { xpos2[k] = tmp_x; ypos2[k] = tmp_y; }
+      if (l==0) { xpos1[k] = tmp_x; ypos1[k] = tmp_y; zpos1[k] = tmp_z; }
+      else      { xpos2[k] = tmp_x; ypos2[k] = tmp_y; zpos2[k] = tmp_z; }
       eps_core_PlotBoundingBox(x, tmp_x, tmp_y, 0.0);
      }
 
-    // Work out direction of each edge of cube
-    for (i=0; i<NDIRS; i++)
+    // Swap edges of cube around to put edges at (x,y)-extremes first
+    if (x->current->ThreeDim)
      {
-      theta[i] = atan2(xpos2[i]-xpos1[i] , ypos2[i]-ypos1[i]);
-      if (!gsl_finite(theta[i])) theta[i] = 0.0;
+      #define TSM(A) hypot(xpos1[A]+xpos2[A] , ypos1[A]+ypos2[A])
+      #define TRY_SWAP(A,B) if (TSM(A)<0.9999999*TSM(B)) { double tmp[6]={xpos1[A],ypos1[A],zpos1[A],xpos2[A],ypos2[A],zpos2[A]}; unsigned char tsa=side_a[A], tsb=side_b[A]; xpos1[A]=xpos1[B]; ypos1[A]=ypos1[B]; zpos1[A]=zpos1[B]; xpos2[A]=xpos2[B]; ypos2[A]=ypos2[B]; zpos2[A]=zpos2[B]; xpos1[B]=tmp[0]; ypos1[B]=tmp[1]; zpos1[B]=tmp[2]; xpos2[B]=tmp[3]; ypos2[B]=tmp[4]; zpos2[B]=tmp[5]; side_a[A]=side_a[B]; side_b[A]=side_b[B]; side_a[B]=tsa; side_b[B]=tsb; }
+      TRY_SWAP(2,3); TRY_SWAP(1,2); TRY_SWAP(0,1);
+      TRY_SWAP(2,3); TRY_SWAP(1,2);
      }
 
     // Fetch relevant list of axes
@@ -331,7 +361,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
            else                      { xpos2=origin_x+pos[0]*width; ypos2=origin_y+pos[1]*height; }
 
            x->LaTeXpageno=pageno;
-           eps_plot_axispaint(x, &ww, axes+i, j, pos[j!=0], (j!=0) ^ (pos[j!=0]>0.999), xpos1, ypos1, xpos2, ypos2, &dummy, 1);
+           eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, xpos2, ypos2, theta_a, theta_b, &dummy, 1);
            }}} // Loop over xrn, yrn and zrn
           }
          else // axis is notatzero... i.e. it is either at top or bottom of graph
@@ -344,11 +374,12 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
            for (k=0; k<NDIRS; k++)
             if ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
              {
-              unsigned char Lr = (j!=0)^(k&1);
+              double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
+              unsigned char Lr = sin(b)<0;
               unsigned char label = ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR));
               double        IncGap, ang;
-              eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, (j!=0)^(k&1), xpos1[k], ypos1[k], xpos2[k], ypos2[k], &IncGap, label);
-              ang = theta[k] + M_PI/2 * ((Lr!=0)*2-1);
+              eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, label);
+              ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
               xpos1[k] += IncGap * sin(ang);
               ypos1[k] += IncGap * cos(ang);
               xpos2[k] += IncGap * sin(ang);
@@ -363,10 +394,11 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     for (k=0; k<NDIRS; k++)
      if ((Naxes[k]==0) && (FirstAutoMirror[k]>=0))
       {
-       unsigned char Lr = (j!=0)^(k&1);
+       double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
+       unsigned char Lr = sin(b)<0;
        double        IncGap, ang;
-       eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, (j!=0)^(k&1), xpos1[k], ypos1[k], xpos2[k], ypos2[k], &IncGap, 0);
-       ang = theta[k] + M_PI/2 * ((Lr!=0)*2-1);
+       eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, 0);
+       ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
        xpos1[k] += IncGap * sin(ang);
        ypos1[k] += IncGap * cos(ang);
        xpos2[k] += IncGap * sin(ang);
