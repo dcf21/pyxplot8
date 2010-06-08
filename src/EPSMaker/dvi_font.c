@@ -25,8 +25,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <kpathsea/kpathsea.h>
-
 #include "ListTools/lt_memory.h"
 #include "StringTools/str_constants.h"
 
@@ -35,6 +33,7 @@
 
 #include "dvi_read.h"
 #include "dvi_font.h"
+#include "kpse_wrap.h"
 
 #define N_BUILTIN_FONTS 5
 #define L_BUILTIN_FNAME 10
@@ -59,7 +58,7 @@ int dviGetTFM(dviFontDetails *font)
   s = (char *)lt_malloc((strlen(font->name)+5)*sizeof(char));
   if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
   sprintf(s, "%s.tfm", font->name);
-  TFMpath = (char *)kpse_find_tfm(s);
+  TFMpath = ppl_kpse_wrap_find_tfm(s);
   if (TFMpath==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Could not find TFM file"); return 1; }
   if (DEBUG) { sprintf(temp_err_string, "Font file %s: TFM path: %s", font->name, TFMpath); ppl_log(temp_err_string); }
   TFMfp = fopen(TFMpath, "r");
@@ -154,7 +153,7 @@ int dviGetPfa(dviFontDetails *font, char *filename)
   sprintf(s, "%s.pfa", filename);
   // Crude lower-casing
   for (i=0; i<strlen(filename); i++) if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
-  PFApath = (char *)kpse_find_file(s, kpse_type1_format, true);
+  PFApath = ppl_kpse_wrap_find_pfa(s);
   if (PFApath != NULL)
    {
     font->pfaPath = PFApath;
@@ -165,7 +164,7 @@ int dviGetPfa(dviFontDetails *font, char *filename)
     sprintf(s, "%s.pfb", filename);
     // Crude lower-casing
     for (i=0; i<strlen(filename); i++) if (s[i] >= 'A' && s[i] <= 'Z') s[i] = s[i] + 'a' - 'A';
-    PFBpath = (char *)kpse_find_file(s, kpse_type1_format, true);
+    PFBpath = ppl_kpse_wrap_find_pfb(s);
     if (PFBpath == NULL)
      {
       snprintf(errStr, SSTR_LENGTH, "dviGetTfm: Cannot find pfa or pfb file for font %s using name %s", font->name, filename);

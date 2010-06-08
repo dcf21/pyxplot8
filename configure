@@ -311,11 +311,26 @@ if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <kpathsea/kpathsea.
 then
  rm -f conf.*
  echo "YES"
+ echo "HAVE_KPATHSEA=-D HAVE_KPATHSEA=1" >> Makefile
+ echo "LINK_KPATHSEA=-lkpathsea" >> Makefile
+ echo "KPSE_COMMAND=/dev/null" >> Makefile
 else
  rm -f conf.*
  echo "NO"
- echo "ERROR: Header files for required library 'libkpathsea-dev' could not be found." >&2
- exit
+ echo "HAVE_KPATHSEA=-D NOHAVE_KPATHSEA=1" >> Makefile
+ echo "LINK_KPATHSEA=" >> Makefile
+
+ # If we don't have libkpathsea, check that we do have kpsewhich
+ echo $ECHO_N "Checking for kpsewhich         ............. $ECHO_C"
+ whichout=`which kpsewhich 2> conf.stderr`
+ rm -f conf.*
+ if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+ if test "$whichout" != "" ; then
+  echo "YES"
+  echo "KPSE_COMMAND=${whichout}" >> Makefile
+ else
+  echo "NO" ; echo "ERROR: Neither the header files for the library 'libkpathsea-dev', nor the program kpsewhich could not be found." >&2 ; exit
+ fi
 fi
 
 # 19. OUTPUT MAKEFILE

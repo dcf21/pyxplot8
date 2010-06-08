@@ -49,6 +49,7 @@ void  PPLKillAllHelpers        ();
 void  ForkSed                  (char *cmd, int *fstdin, int *fstdout);
 void  ForkLaTeX                (char *filename, int *PidOut, int *fstdin, int *fstdout);
 void  ForkInputFilter          (char **cmd, int *fstdout);
+void  ForkKpseWhich            (const char *ftype, int *fstdout);
 
 #endif
 

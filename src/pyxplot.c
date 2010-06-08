@@ -35,9 +35,9 @@
 #include <readline/history.h>
 #endif
 
-#include <kpathsea/kpathsea.h>
-
 #include <gsl/gsl_errno.h>
+
+#include "EPSMaker/kpse_wrap.h"
 
 #include "StringTools/asciidouble.h"
 #include "StringTools/str_constants.h"
@@ -97,10 +97,6 @@ int main(int argc, char **argv)
 
   // Turn off GSL's automatic error handler
   gsl_set_error_handler_off();
-
-  // Set program name within kpathsea
-  kpse_set_program_name("dvips", "dvips");
-  // kpse_init_prog();
 
   // Initialise GNU Readline
 #ifdef HAVE_READLINE
@@ -178,6 +174,9 @@ int main(int argc, char **argv)
   // Launch child process
   if (DEBUG) ppl_log("Launching the Child Support Process.");
   InitialiseCSP();
+
+  // Set program name within kpathsea
+  ppl_kpse_wrap_init();
 
   // Set up SIGINT handler
   if (sigsetjmp(sigjmp_ToMain, 1) == 0)

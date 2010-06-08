@@ -613,3 +613,55 @@ void ForkInputFilter(char **cmd, int *fstdout)
   return;
  }
 
+// NB: Leaves SIGCHLD blocked
+void ForkKpseWhich(const char *ftype, int *fstdout)
+ {
+  char CmdLineOpt[128];
+  int fd0[2];
+  int pid;
+  sigset_t sigs;
+
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
+
+  if (pipe(fd0)<0) ppl_fatal(__FILE__,__LINE__,"Could not open required pipes.");
+
+  sigprocmask(SIG_BLOCK, &sigs, NULL);
+
+  if      ((pid=fork()) < 0) ppl_fatal(__FILE__,__LINE__,"Could not fork a child process for kpsewhich process.");
+  else if ( pid        != 0)
+   {
+    // Parent process
+    close(fd0[1]); *fstdout = fd0[0];
+    ListAppendInt(HelperPIDs, pid);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+    return;
+   }
+  else
+   {
+    // Child process
+    close(fd0[0]);
+    close(PipeCSP2MAIN[0]);
+    close(PipeMAIN2CSP[1]);
+    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+    sprintf(ppl_error_source, "KPS%6d", getpid());
+    settings_session_default.colour = SW_ONOFF_OFF;
+    if (DEBUG) { sprintf(temp_err_string, "New kpsewhich process alive; going to get paths for filetype \"%s\".", ftype); ppl_log(temp_err_string); }
+    if (fd0[1] != STDOUT_FILENO) // Redirect stdout to pipe
+     {
+      if (dup2(fd0[1], STDOUT_FILENO) != STDOUT_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stdout to pipe.");
+      close(fd0[1]);
+     }
+    if (PipeCSP2MAIN[1] != STDERR_FILENO) // Redirect stderr to pipe
+     {
+      if (dup2(PipeCSP2MAIN[1], STDERR_FILENO) != STDERR_FILENO) ppl_fatal(__FILE__,__LINE__,"Could not redirect stderr to pipe.");
+      close(PipeCSP2MAIN[1]);
+     }
+    sprintf(CmdLineOpt, "-show-path=.%s", ftype);
+    if (execl(KPSE_COMMAND, KPSE_COMMAND, CmdLineOpt, NULL)!=0) if (DEBUG) ppl_log("Attempt to execute kpsewhich returned error code."); // Execute kpsewhich
+    ppl_error(ERR_GENERAL, -1, -1, "Execution of helper process 'kpsewhich' failed."); // execlp call should not return
+    exit(1);
+   }
+  return;
+ }
+
