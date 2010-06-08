@@ -130,7 +130,7 @@ static void factorise(int in, int *out, int MaxFactors, int FactorMax, int *NFac
  }
 
 // Main entry point for automatic ticking of axes
-void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, double tick_sep_major, double tick_sep_minor, settings_axis *linkedto)
+void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, settings_axis *linkedto)
  {
   int           i, j, k, N, OutContext, ContextRough=-1, NFactorsTen, LogBase, number_ticks, major, OverlayMatch;
   unsigned char IsLog=(axis->LogFinal == SW_BOOL_TRUE);
@@ -153,7 +153,7 @@ void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned
 
   // Work out factors of log base of axis. In fact, work out factors of log base ** 2, so that ten divides by four.
   LogBase = IsLog ? axis->LogBase : 10;
-  factorise(pow(10.0,FACTOR_MULTIPLY), FactorsTen, MAX_FACTORS, axis->PhysicalLength/tick_sep_minor, &NFactorsTen);
+  factorise(pow(10.0,FACTOR_MULTIPLY), FactorsTen, MAX_FACTORS, axis->PhysicalLengthMinor, &NFactorsTen);
 
   // Work out order of magnitude of axis range
   axis_min = axis->MinFinal * UnitMultiplier;
@@ -209,7 +209,7 @@ void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned
      else       { TLP = axis->MTickListPositions; TLS = axis->MTickListStrings; }
 
      // How many ticks can we fit onto this axis?
-     number_ticks = axis->PhysicalLength / (major ? tick_sep_major : tick_sep_minor) + 1;
+     number_ticks = (major ? axis->PhysicalLengthMajor : axis->PhysicalLengthMinor) + 1;
      if (number_ticks <             2) number_ticks =             2; // Minimum of two ticks along any given axis
      if (number_ticks > TICKS_MAXIMUM) number_ticks = TICKS_MAXIMUM; // Maximum number of ticks along any given axis
 
@@ -301,7 +301,7 @@ FAIL:
   if (DEBUG) ppl_log("eps_plot_ticking_auto2() has failed");
 
   // A very simple way of putting ticks on axes when clever logic fails
-  N = 1 + axis->PhysicalLength/tick_sep_major; // Estimate how many ticks we want
+  N = 1 + axis->PhysicalLengthMajor; // Estimate how many ticks we want
   if (N<  3) N=  3;
   if (N>100) N=100;
 

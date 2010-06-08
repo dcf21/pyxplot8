@@ -48,7 +48,7 @@
 #include "eps_plot_ticking_auto2.h"
 #include "eps_plot_ticking_auto3.h"
 
-void eps_plot_ticking_auto3(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, double tick_sep_major, double tick_sep_minor, settings_axis *linkedto)
+void eps_plot_ticking_auto3(settings_axis *axis, double UnitMultiplier, unsigned char *AutoTicks, settings_axis *linkedto)
  {
   int i, Nticks_maj, Nticks_min, OutContext;
 
@@ -57,7 +57,7 @@ void eps_plot_ticking_auto3(settings_axis *axis, double UnitMultiplier, unsigned
 
   if (linkedto==NULL) goto FAIL;
   if (axis->linkusing != NULL) goto FAIL;
-  if (linkedto->PhysicalLength != axis->PhysicalLength) goto FAIL;
+  if (linkedto->PhysicalLengthMinor != axis->PhysicalLengthMinor) goto FAIL;
   if ((linkedto->TickListStrings==NULL)||(linkedto->MTickListStrings==NULL)) goto FAIL;
 
   for (Nticks_maj=0; linkedto-> TickListStrings[Nticks_maj]!=NULL; Nticks_maj++);
@@ -97,7 +97,7 @@ void eps_plot_ticking_auto3(settings_axis *axis, double UnitMultiplier, unsigned
 
 FAIL:
   if (DEBUG) ppl_log("eps_plot_ticking_auto3() has failed");
-  eps_plot_ticking_auto2(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
+  eps_plot_ticking_auto2(axis, UnitMultiplier, AutoTicks, linkedto);
 
 CLEANUP:
   return;

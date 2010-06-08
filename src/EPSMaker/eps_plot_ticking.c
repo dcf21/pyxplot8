@@ -159,7 +159,6 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
   if (!axis->TickListFinalised)
    {
     int OutContext;
-    double tick_sep_major , tick_sep_minor;
 
     // If ticks have been manually specified, check that units are right
     if ((!ppl_units_DimEqual(&axis->unit,&axis->DataUnit)) && ((axis->TickList!=NULL)||(((axis->log==SW_BOOL_TRUE)?(axis->TickMinSet):(axis->TickStepSet))!=0)||(axis->MTickList!=NULL)||(((axis->log==SW_BOOL_TRUE)?(axis->MTickMinSet):(axis->MTickStepSet))!=0)))
@@ -172,18 +171,6 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
      }
 
     OutContext = lt_GetMemContext();
-
-    // Work out optimal tick separation
-    if (axis->xyz!=1)
-     {
-      tick_sep_major = 0.025;
-      tick_sep_minor = 0.004;
-     }
-    else
-     {
-      tick_sep_major = 0.015;
-      tick_sep_minor = 0.004;
-     }
 
     // Finalise the label to be placed on the axis, quoting a physical unit as necessary
     if ((axis->DataUnit.dimensionless) || (axis->format != NULL))
@@ -302,11 +289,11 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
     if (AutoTicks[1])
      {
       if ((axis->format != NULL) || (axis->AxisLinearInterpolation != NULL))
-        eps_plot_ticking_auto (axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
+        eps_plot_ticking_auto (axis, UnitMultiplier, AutoTicks, linkedto);
       else
        {
-        if (linkedto!=NULL) eps_plot_ticking_auto3(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
-        else                eps_plot_ticking_auto2(axis, UnitMultiplier, AutoTicks, tick_sep_major, tick_sep_minor, linkedto);
+        if (linkedto!=NULL) eps_plot_ticking_auto3(axis, UnitMultiplier, AutoTicks, linkedto);
+        else                eps_plot_ticking_auto2(axis, UnitMultiplier, AutoTicks, linkedto);
        }
      }
 

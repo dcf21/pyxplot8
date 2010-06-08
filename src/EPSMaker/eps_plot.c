@@ -243,29 +243,52 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   int               i, j, k, Ndatasets, Fcounter=0, Dcounter=0, status, ErrCount, NExpect;
   canvas_plotdesc  *pd;
   canvas_plotrange *pr;
-  settings_axis    *axes, *axis, *axissets[3];
+  settings_axis    *axis, *axissets[3];
   List             *UsingList, *EveryList;
   Dict             *tempdict;
   char              errbuffer[LSTR_LENGTH];
   with_words        ww_default;
-  double           *ordinate_raster, size[3];
+  double           *ordinate_raster, size[3], ScreenSize[3], ScreenBearing[3];
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
   axissets[2] = x->current->ZAxes;
 
-  // Work out lengths of x and y axes
+  // Work out lengths of x-, y- and z-axes
   size[0] = x->current->settings.width.real;
   if (x->current->settings.AutoAspect  == SW_ONOFF_ON) size[1] = size[0] * 2.0/(1.0+sqrt(5));
   else                                                 size[1] = size[0] * x->current->settings.aspect;
   if (x->current->settings.AutoZAspect == SW_ONOFF_ON) size[2] = size[0] * 2.0/(1.0+sqrt(5));
   else                                                 size[2] = size[0] * x->current->settings.zaspect;
 
+  // Work out projected lengths of these axes on screen
+  if (!x->current->ThreeDim)
+   {
+    memcpy(ScreenSize, size, 3*sizeof(double));
+    ScreenBearing[0] = M_PI/2;
+    ScreenBearing[1] = 0.0;
+    ScreenBearing[2] = 0.0;
+   }
+  else
+   for (j=0; j<3; j++)
+    {
+     double x1,y1,z1,x2,y2,z2;
+     eps_plot_ThreeDimProject((j==0)?0:0.5,(j==1)?0:0.5,(j==2)?0:0.5,&x->current->settings,0,0,size[0],size[1],size[2],&x1,&y1,&z1);
+     eps_plot_ThreeDimProject((j==0)?1:0.5,(j==1)?1:0.5,(j==2)?1:0.5,&x->current->settings,0,0,size[0],size[1],size[2],&x2,&y2,&z2);
+     ScreenSize   [j] = hypot(x2-x1,y2-y1);
+     ScreenBearing[j] = atan2(x2-x1,y2-y1);
+     if (!gsl_finite(ScreenSize   [j])) ScreenSize   [j] = 0.0;
+     if (!gsl_finite(ScreenBearing[j])) ScreenBearing[j] = 0.0;
+    }
+
   // First clear all range information from all axes.
   // Also, transfer range information from [Min,Max,unit] to [HardMin,HardMax,HardUnit].
   for (j=0; j<3; j++)
    {
-    axes = axissets[j];
+    settings_axis *axes = axissets[j];
+    double PhysicalLengthMajor = ScreenSize[j] / (0.015 + 0.01*fabs(sin(ScreenBearing[j])));
+    double PhysicalLengthMinor = ScreenSize[j] / 0.004;
+
     for (i=0; i<MAX_AXES; i++)
      {
       axes[i].AxisValueTurnings = 0;
@@ -286,7 +309,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       axes[i].OrdinateRasterLen = 0;
       axes[i].OrdinateRaster = NULL;
       axes[i].FinalAxisLabel = NULL;
-      axes[i].PhysicalLength = size[j];
+      axes[i].PhysicalLengthMajor = PhysicalLengthMajor;
+      axes[i].PhysicalLengthMinor = PhysicalLengthMinor;
       axes[i].xyz            = j;
       axes[i].axis_n         = i;
       axes[i].canvas_id      = x->current->id;
@@ -329,7 +353,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   // Proprogate range information to linked axes
   for (j=0; j<3; j++)
    {
-    axes = axissets[j];
+    settings_axis *axes = axissets[j];
     for (i=0; i<MAX_AXES; i++) eps_plot_LinkedAxisForwardPropagate(x, axes+i, 0);
    }
 
