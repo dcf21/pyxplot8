@@ -122,7 +122,7 @@ typedef struct settings_axis {
  unsigned char CrossedAtZero;
  unsigned char MinUsedSet, MaxUsedSet, DataUnitSet, RangeFinalised, FinalActive;
  double        PhysicalLengthMajor, PhysicalLengthMinor;
- int           xyz, axis_n, canvas_id;
+ int           xyz, axis_n, canvas_id, FirstTextID;
  double        MinUsed, MaxUsed, MinFinal, MaxFinal, *OrdinateRaster;
  double        HardMin, HardMax; // Contains ranges set via plot [foo:bar]
  unsigned char HardMinSet, HardMaxSet, HardAutoMinSet, HardAutoMaxSet, HardUnitSet, Mode0BackPropagated;

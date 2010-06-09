@@ -51,7 +51,7 @@ void ppl_kpse_wrap_init()
   kpse_set_program_name("dvips", "dvips");
   #else
   const char     *FileTypes[3] = {"tfm","pfa","pfb"};
-  int             i, j, k, s, TrialNumber, fstdout;
+  int             i, j, k, l, s, TrialNumber, fstdout;
   struct timespec waitperiod; // A time.h timespec specifier for a wait of zero seconds
   fd_set          readable;
   sigset_t        sigs;
@@ -88,7 +88,13 @@ void ppl_kpse_wrap_init()
     for (i=s=k=0; ppl_kpse_FilePaths[j][i]!='\0'; i++)
      {
       if (ppl_kpse_FilePaths[j][i]=='!') continue;
-      if ((ppl_kpse_FilePaths[j][i]==':') || (ppl_kpse_FilePaths[j][i]=='\n')) { s=0; ppl_kpse_FilePaths[j][i]='\0'; continue; }
+      if ((ppl_kpse_FilePaths[j][i]==':') || (ppl_kpse_FilePaths[j][i]=='\n'))
+       {
+        for (l=i-1; ((l>=0)&&(ppl_kpse_FilePaths[j][l]==PATHLINK[0])); l--) ppl_kpse_FilePaths[j][l]='\0';
+        s=0;
+        ppl_kpse_FilePaths[j][i]='\0';
+        continue;
+       }
       if (!s)
        {
         s=1;
@@ -112,12 +118,33 @@ void ppl_kpse_wrap_init()
   return;
  }
 
+#ifndef HAVE_KPATHSEA
+char *ppl_kpse_wrap_find_file(char *s, char **paths)
+ {
+  int i;
+  static char buffer[FNAME_LENGTH];
+  if (DEBUG) { sprintf(temp_err_string, "Searching for file <%s>", s); ppl_log(temp_err_string); }
+  for (i=0; paths[i]!=NULL; i++)
+   {
+    snprintf(buffer, FNAME_LENGTH, "%s%s%s", paths[i], PATHLINK, s);
+    buffer[FNAME_LENGTH-1]='\0';
+    if (DEBUG) { sprintf(temp_err_string, "Trying file <%s>", buffer); ppl_log(temp_err_string); }
+    if (access(buffer, R_OK) == 0)
+     {
+      if (DEBUG) { sprintf(temp_err_string, "KPSE found file <%s>", buffer); ppl_log(temp_err_string); }
+      return buffer;
+     }
+   }
+  return NULL;
+ }
+#endif
+
 char *ppl_kpse_wrap_find_pfa(char *s)
  {
   #ifdef HAVE_KPATHSEA
   return (char *)kpse_find_file(s, kpse_type1_format, true);
   #else
-  return NULL;
+  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[1]);
   #endif
  }
 
@@ -126,7 +153,7 @@ char *ppl_kpse_wrap_find_pfb(char *s)
   #ifdef HAVE_KPATHSEA
   return (char *)kpse_find_file(s, kpse_type1_format, true);
   #else
-  return NULL;
+  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[2]);
   #endif
  }
 
@@ -135,7 +162,7 @@ char *ppl_kpse_wrap_find_tfm(char *s)
   #ifdef HAVE_KPATHSEA
   return (char *)kpse_find_tfm(s);
   #else
-  return NULL;
+  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[0]);
   #endif
  }
 

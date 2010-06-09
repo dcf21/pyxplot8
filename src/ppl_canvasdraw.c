@@ -121,7 +121,7 @@ static char *PS_PROLOG_TEXT = "\
 ";
 
 // Standard commandline flags to pass to ghostscript
-static char *GHOSTSCRIPT_STANDARD_FLAGS = "-dQUIET -dSAFER -dBATCH -dNOPAUSE -dEPSCrop";
+static char *GHOSTSCRIPT_STANDARD_FLAGS = "-dQUIET -dSAFER -P- -dBATCH -dNOPAUSE -dEPSCrop";
 
 // Table of the functions we call for each phase of the canvas drawing process for different object types
 static void(*ArrowHandlers[])(EPSComm *) = {NULL                       , NULL                    , NULL                     , NULL                , NULL                , eps_arrow_RenderEPS, NULL};

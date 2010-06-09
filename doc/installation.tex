@@ -40,11 +40,11 @@ installed:\index{system requirements}
 \vspace{0.5cm}
 \begin{itemize}
 \item fftw (version 2 or, preferably, 3+) \index{fftw}
+\item gcc and make\index{gcc}\index{make}
 \item Ghostscript \index{Ghostscript}
 \item The Gnu Scientific Library (version 1.10+) \index{gsl}
 \item ImageMagick \index{ImageMagick}
 \item \LaTeX\ (version $2\epsilon$; a full installation is likely to be required in distributions which offer a choice) \index{latex}
-\item libkpathsea \index{libkpathsea}
 \item libpng (version 1.2+) \index{libpng}
 \item libxml2 (version 2.6+) \index{libxml}
 \item zlib \index{zlib}
@@ -64,6 +64,7 @@ reinstalled to take advantage of their presence.
 \item Ghostview \index{Ghostview} (or {\tt ggv}) -- required for PyXPlot to be able to display plots live on the screen; PyXPlot remains able to generate image files on disk without it. Alternatively, the \indcmdt{set viewer} within PyXPlot allows a different PostScript viewer to be used.
 \item gunzip \index{gunzip} -- required for PyXPlot to be able to plot compressed \datafile s in {\tt .gz} format.
 \item The Gnu Readline Library (version 5+) \index{readline} -- required for PyXPlot to be able to provide tab completion and command histories in PyXPlot's interactive command-line interface.
+\item libkpathsea \index{libkpathsea} -- required to efficiently find the fonts used by \LaTeX.
 \item wget \index{wget} -- required for PyXPlot to be able to plot \datafile s directly from the Internet.
 \end{itemize}
 \vspace{0.5cm}
@@ -72,20 +73,20 @@ Debian and Ubuntu users can find the above software in the following packages:
 \index{Debian Linux}\index{Ubuntu Linux}\index{installation!under Debian}\index{installation!under Ubuntu}
 
 \vspace{2mm}
-\noindent {\tt fftw3-dev}, {\tt gs}, {\tt gv}, {\tt imagemagick}, {\tt libcfitsio3-dev}, {\tt libgsl0-dev},\newline
-\noindent {\tt libkpathsea-dev}, {\tt libpng12-dev}, {\tt libreadline5-dev}, {\tt libxml2-dev},\newline
-\noindent {\tt texlive-latex-extra}, {\tt texlive-latex-recommended},\newline
+\noindent {\tt fftw3-dev}, {\tt gcc}, {\tt gs}, {\tt gv}, {\tt imagemagick}, {\tt libc6-dev}, {\tt libcfitsio3-dev},\newline
+\noindent {\tt libgsl0-dev}, {\tt libkpathsea-dev}, {\tt libpng12-dev}, {\tt libreadline5-dev},\newline
+\noindent {\tt libxml2-dev}, {\tt make}, {\tt texlive-latex-extra}, {\tt texlive-latex-recommended},\newline
 \noindent {\tt texlive-fonts-recommended}, {\tt texlive-fonts-extra}, {\tt wget}, {\tt zlib1g-dev}.
 \vspace{2mm}
 
 \noindent These packages may be installed from a command prompt by typing, all on one line:
 
 \begin{verbatim}
-sudo apt-get install fftw3-dev gs gv imagemagick libcfitsio3-dev
-       libgsl0-dev libkpathsea-dev libpng12-dev libreadline5-dev
-       libxml2-dev texlive-latex-extra texlive-latex-recommended
-       texlive-fonts-extra texlive-fonts-recommended wget
-       zlib1g-dev
+sudo apt-get install fftw3-dev gcc gs gv imagemagick libc6-dev
+       libcfitsio3-dev libgsl0-dev libkpathsea-dev libpng12-dev
+       libreadline5-dev libxml2-dev make texlive-latex-extra
+       texlive-latex-recommended texlive-fonts-extra
+       texlive-fonts-recommended wget zlib1g-dev
 \end{verbatim}
 
 Users of MacOS~X can find the above software in the following MacPorts packages:
@@ -98,7 +99,7 @@ Users of MacOS~X can find the above software in the following MacPorts packages:
 
 It may then be necessary to run the command
 \begin{verbatim}
-CFLAGS=-I/opt/local/include
+export C_INCLUDE_PATH=/opt/local/include
 \end{verbatim}
 before running the {\tt configure} script below.
 
@@ -116,7 +117,7 @@ PyXPlot~0.7.x. It should be noted that this manual describes PyXPlot~0.8.x,
 which is a very substantial upgrade to version~0.7.x. Many of the features
 described in this manual are not available in previous versions.
 
-Under Debian and Ubuntu Linux, version~0.8.1 may be manually installed by
+Under Debian and Ubuntu Linux, version~0.8.2 may be manually installed by
 downloading the appropriate {\tt .deb} file for your distribution from the
 PyXPlot website and typing
 
@@ -139,7 +140,7 @@ will need to contact your system administrator.\index{installation!user-level}
 \item Unpack the distributed .tar.gz:
 
 \begin{verbatim}
-tar xvfz pyxplot_0.8.1.tar.gz
+tar xvfz pyxplot_0.8.2.tar.gz
 cd pyxplot
 \end{verbatim}
 

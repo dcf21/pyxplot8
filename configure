@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Installation script for PyXPlot version 0.8.0
+# Installation script for PyXPlot version 0.8.2
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -177,7 +177,19 @@ else
  exit
 fi
 
-# 11. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
+# 11. CHECK TO SEE WHETHER THIS SYSTEM HAS GCC INSTALLED
+
+echo $ECHO_N "Checking for gcc               ............. $ECHO_C"
+whichout=`which gcc 2> conf.stderr`
+rm -f conf.*
+if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
+if test "$whichout" != "" ; then
+ echo "YES"
+else
+ echo "NO" ; echo "ERROR: Required program gcc could not be found." >&2 ; exit
+fi
+
+# 12. CHECK TO SEE WHETHER THIS SYSTEM HAS GNU READLINE HEADERS
 
 echo $ECHO_N "Checking for libreadline-dev   ............. $ECHO_C"
 if printf '#include <stdio.h>\n#include <readline/readline.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -193,7 +205,7 @@ else
  echo "LINK_READLINE=" >> Makefile
 fi
 
-# 12. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
+# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS CFITSIO HEADERS
 
 echo $ECHO_N "Checking for libcfitsio-dev    ............. $ECHO_C"
 if printf '#include <fitsio.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -209,7 +221,7 @@ else
  echo "LINK_FITSIO=" >> Makefile
 fi
 
-# 13. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS
+# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS GSL HEADERS
 
 echo $ECHO_N "Checking for libgsl0-dev       ............. $ECHO_C"
 if printf '#include <gsl/gsl_version.h>\nint main() { return 0; }\n' | gcc `gsl-config --cflags` -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -235,7 +247,7 @@ else
  exit
 fi
 
-# 14. CHECK TO SEE WHETHER THIS SYSTEM HAS FFTW HEADERS
+# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS FFTW HEADERS
 
 echo $ECHO_N "Checking for libfftw3-dev      ............. $ECHO_C"
 if printf '#include <fftw3.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -261,7 +273,7 @@ else
  fi
 fi
 
-# 15. CHECK TO SEE WHETHER THIS SYSTEM HAS GUNZIP
+# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS GUNZIP
 
 echo $ECHO_N "Checking for gunzip            ............. $ECHO_C"
 whichout=`which gunzip 2> conf.stderr`
@@ -276,7 +288,7 @@ else
  echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files." >&2
 fi
 
-# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
+# 17. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
 
 echo $ECHO_N "Checking for libxml2-dev       ............. $ECHO_C"
 whichout=`which xml2-config 2> conf.stderr`
@@ -290,7 +302,7 @@ else
  exit
 fi
 
-# 17. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
+# 18. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
 
 echo $ECHO_N "Checking for libpng-dev        ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <png.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -304,7 +316,7 @@ else
  exit
 fi
 
-# 18. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
+# 19. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
 
 echo $ECHO_N "Checking for libkpathsea-dev   ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <kpathsea/kpathsea.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -333,7 +345,7 @@ else
  fi
 fi
 
-# 19. OUTPUT MAKEFILE
+# 20. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 

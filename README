@@ -54,11 +54,11 @@ have no plans for porting it at this time. It requires that the following
 software packages (not included) be installed:
 
 - fftw                       (version 2 or, preferably, 3+)
+- gcc and make
 - Ghostscript
 - The Gnu Scientific Library (version 1.10+)
 - ImageMagick
 - LaTeX                      (version 2e)
-- libkpathsea
 - libpng                     (version 1.2+)
 - libxml2                    (version 2.6+)
 - zlib
@@ -80,20 +80,21 @@ advantage of their presence.
 - The Gnu Readline Library (version 5+) -- required for PyXPlot to be able to
   provide tab completion and command histories in PyXPlot's interactive
   command-line interface.
+- libkpathsea -- required to efficiently find the fonts used by LaTeX.
 - wget -- required for PyXPlot to be able to plot datafiles directly from the
   Internet.
 
 Debian and Ubuntu users can find the above software in the following packages:
 
-fftw3-dev, gs, gv, imagemagick, libcfitsio3-dev, libgsl0-dev, libkpathsea-dev,
-libpng12-dev, libreadline5-dev, libxml2-dev, texlive-latex-extra,
-texlive-latex-recommended, texlive-fonts-extra, texlive-fonts-recommended,
-wget, zlib1g-dev.
+fftw3-dev, gcc, gs, gv, imagemagick, libc6-dev, libcfitsio3-dev, libgsl0-dev,
+libkpathsea-dev, libpng12-dev, libreadline5-dev, libxml2-dev, make,
+texlive-latex-extra, texlive-latex-recommended, texlive-fonts-extra,
+texlive-fonts-recommended, wget, zlib1g-dev.
 
 These packages may be installed from a command prompt by typing, all on one
 line:
 
-sudo apt-get install fftw3-dev gs gv imagemagick libcfitsio3-dev libgsl0-dev libkpathsea-dev libpng12-dev libreadline5-dev libxml2-dev texlive-latex-extra texlive-latex-recommended  texlive-fonts-extra texlive-fonts-recommended wget zlib1g-dev
+sudo apt-get install fftw3-dev gcc gs gv imagemagick libc6-dev libcfitsio3-dev libgsl0-dev libkpathsea-dev libpng12-dev libreadline5-dev libxml2-dev make texlive-latex-extra texlive-latex-recommended texlive-fonts-extra texlive-fonts-recommended wget zlib1g-dev
 
 Users of MacOS X can find the above software in the following MacPorts packages:
 
@@ -102,7 +103,7 @@ readline-5, texlive, wget, zlib.
 
 It may then be necessary to run the command
 
-CFLAGS=-I/opt/local/include
+export C_INCLUDE_PATH=/opt/local/include
 
 before running the configure script below.
 
@@ -119,7 +120,7 @@ you need to contact your system administrator.
 
 * Unpack the distributed .tar.gz:
 
-tar xvfz pyxplot_0.8.1.tar.gz
+tar xvfz pyxplot_0.8.2.tar.gz
 cd pyxplot
 
 * Run the installation script:

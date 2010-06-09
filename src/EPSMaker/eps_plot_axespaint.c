@@ -59,6 +59,7 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
   int    HALIGN, VALIGN, HALIGN_THIS, VALIGN_THIS;
   double theta, theta_pinpoint; // clockwise rotation
 
+  x->LaTeXpageno = a->FirstTextID;
   *OutputWidth = 0.0;
 
   // Draw line of axis
@@ -214,7 +215,6 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   settings_axis *axes;
   with_words     ww;
 
-  x->LaTeXpageno = x->current->AxesTextID;
   if ((pass==0) && (!x->current->ThreeDim)) return; // 2D plots do not have back axes
 
   // Set colour for painting axes
@@ -310,8 +310,6 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     for (i=0; i<MAX_AXES; i++)
      if ((axes[i].FinalActive) && (!axes[i].invisible))
       {
-       int pageno = x->LaTeXpageno;
-
        // 2D Gnomonic axes
        if (x->current->settings.projection == SW_PROJ_GNOM)
         {
@@ -360,8 +358,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
            if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos2,&ypos2,&dummy); }
            else                      { xpos2=origin_x+pos[0]*width; ypos2=origin_y+pos[1]*height; }
 
-           x->LaTeXpageno=pageno;
-           eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, xpos2, ypos2, theta_a, theta_b, &dummy, 1);
+           if (pass==1) eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, xpos2, ypos2, theta_a, theta_b, &dummy, 1);
            }}} // Loop over xrn, yrn and zrn
           }
          else // axis is notatzero... i.e. it is either at top or bottom of graph
@@ -373,19 +370,20 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
 
            for (k=0; k<NDIRS; k++)
             if ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
-             {
-              double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
-              unsigned char Lr = sin(b)<0;
-              unsigned char label = ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR));
-              double        IncGap, ang;
-              eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, label);
-              ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
-              xpos1[k] += IncGap * sin(ang);
-              ypos1[k] += IncGap * cos(ang);
-              xpos2[k] += IncGap * sin(ang);
-              ypos2[k] += IncGap * cos(ang);
-              Naxes[k]++;
-             }
+             if ((!x->current->ThreeDim) || (((zpos1[k]+zpos2[k])>=0.0)==(pass==0)))
+              {
+               double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
+               unsigned char Lr = sin(b)<0;
+               unsigned char label = ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR));
+               double        IncGap, ang;
+               eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, label);
+               ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
+               xpos1[k] += IncGap * sin(ang);
+               ypos1[k] += IncGap * cos(ang);
+               xpos2[k] += IncGap * sin(ang);
+               ypos2[k] += IncGap * cos(ang);
+               Naxes[k]++;
+              }
           }
         }
       }
@@ -393,18 +391,19 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     // If there is no axis on any side, but was an auto-mirrored axis on another side, mirror it now
     for (k=0; k<NDIRS; k++)
      if ((Naxes[k]==0) && (FirstAutoMirror[k]>=0))
-      {
-       double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
-       unsigned char Lr = sin(b)<0;
-       double        IncGap, ang;
-       eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, 0);
-       ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
-       xpos1[k] += IncGap * sin(ang);
-       ypos1[k] += IncGap * cos(ang);
-       xpos2[k] += IncGap * sin(ang);
-       ypos2[k] += IncGap * cos(ang);
-       Naxes[k]++;
-      }
+      if ((!x->current->ThreeDim) || (((zpos1[k]+zpos2[k])>=0.0)==(pass==0)))
+       {
+        double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
+        unsigned char Lr = sin(b)<0;
+        double        IncGap, ang;
+        eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, 0);
+        ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
+        xpos1[k] += IncGap * sin(ang);
+        ypos1[k] += IncGap * cos(ang);
+        xpos2[k] += IncGap * sin(ang);
+        ypos2[k] += IncGap * cos(ang);
+        Naxes[k]++;
+       }
    }
   return;
  }

@@ -549,7 +549,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
 
 void eps_plot_YieldUpText(EPSComm *x)
  {
-  int              j, k, l, m;
+  int              j, k, l;
   canvas_plotdesc *pd;
   DataBlock       *blk;
   settings_axis   *axes;
@@ -584,7 +584,6 @@ void eps_plot_YieldUpText(EPSComm *x)
   GraphLegend_YieldUpText(x);
 
   // Axis labels and titles
-  x->current->AxesTextID = x->NTextItems;
   for (j=0; j<2+(x->current->ThreeDim); j++)
    {
     if      (j==0) axes = x->current->XAxes;
@@ -594,12 +593,10 @@ void eps_plot_YieldUpText(EPSComm *x)
     for (k=0; k<MAX_AXES; k++)
      if ((axes[k].FinalActive) && (!axes[k].invisible))
       {
-       for (m=0; m<1+(axes[k].MirrorType == SW_AXISMIRROR_FULLMIRROR); m++) // Create second copy for mirrored axis if required
-        {
-         if (axes[k]. TickListPositions != NULL) for (l=0; axes[k]. TickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k]. TickListStrings[l]); } // Major tick labels
-         if (axes[k].MTickListPositions != NULL) for (l=0; axes[k].MTickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k].MTickListStrings[l]); } // Minor tick labels
-         YIELD_TEXTITEM(axes[k].FinalAxisLabel);
-        }
+       axes[k].FirstTextID = x->NTextItems;
+       if (axes[k]. TickListPositions != NULL) for (l=0; axes[k]. TickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k]. TickListStrings[l]); } // Major tick labels
+       if (axes[k].MTickListPositions != NULL) for (l=0; axes[k].MTickListStrings[l]!=NULL; l++) { YIELD_TEXTITEM(axes[k].MTickListStrings[l]); } // Minor tick labels
+       YIELD_TEXTITEM(axes[k].FinalAxisLabel);
       }
    }
 
