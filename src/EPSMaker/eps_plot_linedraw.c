@@ -127,6 +127,13 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
 
   LineDraw_FindCrossingPoints(ld->x1, ld->y1, ld->z1, ld->xap1, ld->yap1, ld->zap1, xpos, ypos, depth, xap, yap, zap, &Inside1, &Inside2, &cx1, &cy1, &cz1, &cx2, &cy2, &cz2, &f1, &ap1, &f2, &ap2, &NCrossings);
 
+  // Add in perpendicular offsets
+  cx1 = cx1    + ( ld->xpo1     * cos(theta_x) + ld->ypo1     * cos(theta_y) + ld->zpo1     * cos(theta_z) )*M_TO_PS;
+  cy1 = cy1    + ( ld->xpo1     * sin(theta_x) + ld->ypo1     * sin(theta_y) + ld->zpo1     * sin(theta_z) )*M_TO_PS;
+  cx2 = cx2    + ( x_perpoffset * cos(theta_x) + y_perpoffset * cos(theta_y) + z_perpoffset * cos(theta_z) )*M_TO_PS;
+  cy2 = cy2    + ( x_perpoffset * sin(theta_x) + y_perpoffset * sin(theta_y) + z_perpoffset * sin(theta_z) )*M_TO_PS;
+
+  // Test whether end-points of line are within clip region
   if      ((!Inside1) && (!Inside2)) // Neither point on line segment is inside clip-region
    {
     if (NCrossings>=2) // Check that we haven't crossed clip region during the course of line segment
@@ -136,7 +143,7 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
   else if ((!Inside1) && ( Inside2)) // We have just entered clip region; previous point was outside
    {
     ThreeDimBuffer_linesegment(ld->x, z, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1, 0, 0.0);
-    if ((!ld->x0set)||(ld->x1!=xpos)||(ld->y1!=ypos)) { ld->x0=ld->x1; ld->y0=ld->y1; }
+    if ((!ld->x0set)||(cx1!=cx2)||(cy1!=cy2)) { ld->x0=cx1; ld->y0=cy1; }
     ld->x0set=1;
    }
   else if (( Inside1) && (!Inside2)) // We have just left clip region; previous point was inside
@@ -147,17 +154,9 @@ void LineDraw_Point(LineDrawHandle *ld, double x, double y, double z, double x_o
    }
   else // if (( Inside1) && ( Inside2)) // We are within the clip region
    {
-    double cx0,cy0;
-    cx0 = ld->x0 + ( ld->xpo0     * cos(theta_x) + ld->ypo0     * cos(theta_y) + ld->zpo0     * cos(theta_z) )*M_TO_PS; // Add in perpendicular offset
-    cy0 = ld->y0 + ( ld->xpo0     * sin(theta_x) + ld->ypo0     * sin(theta_y) + ld->zpo0     * sin(theta_z) )*M_TO_PS;
-    cx1 = cx1    + ( ld->xpo1     * cos(theta_x) + ld->ypo1     * cos(theta_y) + ld->zpo1     * cos(theta_z) )*M_TO_PS;
-    cy1 = cy1    + ( ld->xpo1     * sin(theta_x) + ld->ypo1     * sin(theta_y) + ld->zpo1     * sin(theta_z) )*M_TO_PS;
-    cx2 = cx2    + ( x_perpoffset * cos(theta_x) + y_perpoffset * cos(theta_y) + z_perpoffset * cos(theta_z) )*M_TO_PS;
-    cy2 = cy2    + ( x_perpoffset * sin(theta_x) + y_perpoffset * sin(theta_y) + z_perpoffset * sin(theta_z) )*M_TO_PS;
-
-    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, cx0, cy0, cx1, cy1, cx2, cy2, 0, 0, 0.0);
-    else           ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, cx1, cy1, cx1, cy1, cx2, cy2, 1, 0, 0.0);
-    if ((!ld->x0set)||(ld->x1!=xpos)||(ld->y1!=ypos)) { ld->x0=ld->x1; ld->y0=ld->y1; }
+    if (ld->x0set) ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, ld->x0, ld->y0, cx1, cy1, cx2, cy2, 0, 0, 0.0);
+    else           ThreeDimBuffer_linesegment(ld->x, depth, linetype, linewidth, colstr, cx1   , cy1   , cx1, cy1, cx2, cy2, 1, 0, 0.0);
+    if ((!ld->x0set)||(cx1!=cx2)||(cy1!=cy2)) { ld->x0=cx1; ld->y0=cy1; }
     ld->x0set=1;
    }
   ld->x1=xpos; ld->y1=ypos; ld->z1=depth; ld->xap1=xap; ld->yap1=yap; ld->zap1=zap; ld->xpo1=x_perpoffset; ld->ypo1=y_perpoffset; ld->zpo1=z_perpoffset;

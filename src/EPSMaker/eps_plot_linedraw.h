@@ -39,7 +39,7 @@ typedef struct LineDrawHandle {
  unsigned char ThreeDim;
  double origin_x, origin_y, width, height, zdepth;
  unsigned char x0set, x1set;
- double x0, y0, xpo0, ypo0, zpo0;
+ double x0, y0;
  double x1  , y1  , z1  ;
  double xpo1, ypo1, zpo1;
  double xap1, yap1, zap1;

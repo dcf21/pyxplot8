@@ -117,11 +117,12 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
        }
       else
        {
+        ThreeDimBuffer_linepenup(x);
         ThreeDimBuffer_writeps(x, item->depth, item->linetype, item->linewidth, item->pointsize, item->colstr, item->psfrag);
-        ThreeDimBuffer_LineSegmentID = -5;
        }
      }
    }
+  ThreeDimBuffer_linepenup(x);
   ThreeDimBuffer_Reset();
   return 0;
  }
