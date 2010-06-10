@@ -35,14 +35,17 @@
 #include <kpathsea/kpathsea.h>
 #else
 #include <sys/select.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
 #include "ppl_children.h"
 #define MAX_PATHS 256
-char  ppl_kpse_FilePaths[3][LSTR_LENGTH];
-char *ppl_kpse_PathList[3][MAX_PATHS];
+char           ppl_kpse_FilePaths    [3][LSTR_LENGTH];
+char          *ppl_kpse_PathList     [3][MAX_PATHS];
+unsigned char  ppl_kpse_PathRecursive[3][MAX_PATHS];
 #endif
 
 void ppl_kpse_wrap_init()
@@ -56,7 +59,14 @@ void ppl_kpse_wrap_init()
   fd_set          readable;
   sigset_t        sigs;
 
-  for (j=0; j<3; j++) ppl_kpse_PathList[j][0] = NULL;
+  sigemptyset(&sigs);
+  sigaddset(&sigs,SIGCHLD);
+
+  for (j=0; j<3; j++)
+   {
+    ppl_kpse_PathList[j][0] = NULL;
+    for (i=0; i<MAX_PATHS; i++) ppl_kpse_PathRecursive[j][i]=0;
+   }
 
   for (j=0; j<3; j++)
    {
@@ -87,7 +97,11 @@ void ppl_kpse_wrap_init()
     // Split up returned data into a list of paths
     for (i=s=k=0; ppl_kpse_FilePaths[j][i]!='\0'; i++)
      {
-      if (ppl_kpse_FilePaths[j][i]=='!') continue;
+      if (ppl_kpse_FilePaths[j][i]=='!')
+       {
+        if (!s) ppl_kpse_PathRecursive[j][k]=1;
+        continue;
+       }
       if ((ppl_kpse_FilePaths[j][i]==':') || (ppl_kpse_FilePaths[j][i]=='\n'))
        {
         for (l=i-1; ((l>=0)&&(ppl_kpse_FilePaths[j][l]==PATHLINK[0])); l--) ppl_kpse_FilePaths[j][l]='\0';
@@ -109,7 +123,7 @@ void ppl_kpse_wrap_init()
      {
       for (i=0; ppl_kpse_PathList[j][i]!=NULL; i++)
        {
-        sprintf(temp_err_string, "Using path for %s files: <%s>", FileTypes[j], ppl_kpse_PathList[j][i]);
+        sprintf(temp_err_string, "Using path for %s files: <%s> [%srecursive]", FileTypes[j], ppl_kpse_PathList[j][i], ppl_kpse_PathRecursive[j][i]?"":"non-");
         ppl_log(temp_err_string);
        }
      }
@@ -119,21 +133,55 @@ void ppl_kpse_wrap_init()
  }
 
 #ifndef HAVE_KPATHSEA
-char *ppl_kpse_wrap_find_file(char *s, char **paths)
+char *ppl_kpse_wrap_test_path(char *s, char *path, unsigned char recurse)
  {
-  int i;
-  static char buffer[FNAME_LENGTH];
+  int            pos;
+  DIR           *dp;
+  struct dirent *dirp;
+  struct stat    statbuf;
+  static char    buffer[FNAME_LENGTH], next[FNAME_LENGTH];
+  static unsigned char found;
+
+  if (path[0]=='.') return NULL; // Do not look for files in cwd
+  found=0;
+  snprintf(buffer, FNAME_LENGTH, "%s%s%s", path, PATHLINK, s);
+  buffer[FNAME_LENGTH-1]='\0';
+  if (access(buffer, R_OK) == 0)
+   {
+    if (DEBUG) { sprintf(temp_err_string, "KPSE found file <%s>", buffer); ppl_log(temp_err_string); }
+    found=1;
+    return buffer;
+   }
+  if (recurse)
+   {
+    snprintf(buffer, FNAME_LENGTH, "%s%s", path, PATHLINK);
+    buffer[FNAME_LENGTH-1]='\0';
+    pos = strlen(buffer);
+    if ((dp = opendir(buffer))==NULL) return NULL;
+    while (((dirp = readdir(dp))!=NULL)&&(!found))
+     {
+      if ((strcmp(dirp->d_name,".")==0) || (strcmp(dirp->d_name,"..")==0)) continue;
+      buffer[pos]='\0';
+      snprintf(next, FNAME_LENGTH, "%s%s", buffer, dirp->d_name);
+      next[FNAME_LENGTH-1]='\0';
+      if (lstat(next,&statbuf) < 0) continue;
+      if (S_ISDIR(statbuf.st_mode)    == 0) continue;
+      ppl_kpse_wrap_test_path(s, next, 1);
+     }
+    closedir(dp);
+   }
+  return found ? buffer : NULL;
+ }
+
+char *ppl_kpse_wrap_find_file(char *s, char **paths, unsigned char *RecurseList)
+ {
+  int   i;
+  char *output;
   if (DEBUG) { sprintf(temp_err_string, "Searching for file <%s>", s); ppl_log(temp_err_string); }
   for (i=0; paths[i]!=NULL; i++)
    {
-    snprintf(buffer, FNAME_LENGTH, "%s%s%s", paths[i], PATHLINK, s);
-    buffer[FNAME_LENGTH-1]='\0';
-    if (DEBUG) { sprintf(temp_err_string, "Trying file <%s>", buffer); ppl_log(temp_err_string); }
-    if (access(buffer, R_OK) == 0)
-     {
-      if (DEBUG) { sprintf(temp_err_string, "KPSE found file <%s>", buffer); ppl_log(temp_err_string); }
-      return buffer;
-     }
+    output = ppl_kpse_wrap_test_path(s, paths[i], RecurseList[i]);
+    if (output!=NULL) return output;
    }
   return NULL;
  }
@@ -144,7 +192,7 @@ char *ppl_kpse_wrap_find_pfa(char *s)
   #ifdef HAVE_KPATHSEA
   return (char *)kpse_find_file(s, kpse_type1_format, true);
   #else
-  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[1]);
+  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[1], ppl_kpse_PathRecursive[1]);
   #endif
  }
 
@@ -153,7 +201,7 @@ char *ppl_kpse_wrap_find_pfb(char *s)
   #ifdef HAVE_KPATHSEA
   return (char *)kpse_find_file(s, kpse_type1_format, true);
   #else
-  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[2]);
+  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[2], ppl_kpse_PathRecursive[2]);
   #endif
  }
 
@@ -162,7 +210,7 @@ char *ppl_kpse_wrap_find_tfm(char *s)
   #ifdef HAVE_KPATHSEA
   return (char *)kpse_find_tfm(s);
   #else
-  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[0]);
+  return ppl_kpse_wrap_find_file(s, ppl_kpse_PathList[0], ppl_kpse_PathRecursive[0]);
   #endif
  }
 

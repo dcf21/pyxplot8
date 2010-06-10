@@ -358,7 +358,17 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
            if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos2,&ypos2,&dummy); }
            else                      { xpos2=origin_x+pos[0]*width; ypos2=origin_y+pos[1]*height; }
 
-           if (pass==1) eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, xpos2, ypos2, theta_a, theta_b, &dummy, 1);
+           if (pass==1)
+            {
+             if (x->current->ThreeDim)
+              {
+               double        b  = atan2((xpos2+xpos1)/2-xc , (ypos2+ypos1)/2-yc) - theta[j];
+               unsigned char Lr = sin(b)<0;
+               eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1, ypos1, xpos2, ypos2, theta_a+M_PI*((j==0)?(pos[1]<=0.5):(pos[0]<=0.5)), theta_b+M_PI*((j==2)?(pos[1]<=0.5):(pos[2]<=0.5)), &dummy, 1);
+              } else {
+               eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, xpos2, ypos2, theta_a, theta_b, &dummy, 1);
+              }
+            }
            }}} // Loop over xrn, yrn and zrn
           }
          else // axis is notatzero... i.e. it is either at top or bottom of graph
