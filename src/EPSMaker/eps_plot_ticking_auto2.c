@@ -105,11 +105,12 @@ static void GenerateTickSchemes(TickScheme *TickSchemes, int *NTickSchemes, doub
      {
       for (i=NFactors-1; i>=0; i--)
        {
+        double t;
         TickSchemes[*NTickSchemes].mantissa[0] = 1;
         TickSchemes[*NTickSchemes].Nmantissas  = 1;
-        TickSchemes[*NTickSchemes].ticksep     = FactorsTen[i] * OoMscan / pow(10.0, FACTOR_MULTIPLY-1);
+        TickSchemes[*NTickSchemes].ticksep     = t = FactorsTen[i] * OoMscan / pow(10.0, FACTOR_MULTIPLY-1);
         TickSchemes[*NTickSchemes].offset      = 0.0;
-        (*NTickSchemes)++;
+        if ((!IsLog) || (ppl_units_DblEqual(t,floor(t+0.5)))) (*NTickSchemes)++; // Fractional steps (i.e. sqrts) not allowed
        }
      }
     LevelDescend++;
