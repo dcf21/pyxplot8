@@ -114,6 +114,9 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
   else if (style == SW_STYLE_ARROWS_HEAD    ) return 4 + 2*(ThreeDim!=0);
   else if (style == SW_STYLE_ARROWS_NOHEAD  ) return 4 + 2*(ThreeDim!=0);
   else if (style == SW_STYLE_ARROWS_TWOHEAD ) return 4 + 2*(ThreeDim!=0);
+  else if (style == SW_STYLE_SURFACE        ) return 3;
+  else if (style == SW_STYLE_COLOURMAP      ) return 3;
+  else if (style == SW_STYLE_CONTOURMAP     ) return 3;
 
   ppl_fatal(__FILE__,__LINE__,"Unrecognised style type passed to eps_plot_styles_NDataColumns()");
   return -1;
@@ -231,6 +234,9 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
   else if (style == SW_STYLE_ARROWS_HEAD    ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
   else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
   else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
+  else if (style == SW_STYLE_SURFACE        ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); } }
+  else if (style == SW_STYLE_COLOURMAP      ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); } }
+  else if (style == SW_STYLE_CONTOURMAP     ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); } }
 
   // Cycle through data table, ensuring that axis ranges are sufficient to include all data
   Ncolumns = data->Ncolumns;
@@ -339,6 +345,9 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
                                                   { UUC(a1, UUR(0         )); UUC(a2, UUR(1         )); if (ThreeDim) UUC(a3, UUR(2));
                                                     UUD(a1, UUR(2+ThreeDim)); UUC(a2, UUR(3+ThreeDim)); if (ThreeDim) UUC(a3, UUR(5));
                                                     UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
+      else if ((style == SW_STYLE_SURFACE) || (style == SW_STYLE_COLOURMAP) || (style == SW_STYLE_CONTOURMAP))
+                                                  { UUC(a1, UUR(0)); UUC(a2, UUR(1)); if (ThreeDim) UUC(a3, UUR(2));
+                                                    UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
       else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))
        {
         // Boxes and steps need slightly more complicated logic to take into account finite width of boxes/steps
@@ -932,6 +941,18 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     eps_core_SwitchFrom_FillColour(x,1);
    }
 
+  else if (style == SW_STYLE_SURFACE) // SURFACE
+   {
+   }
+
+  else if (style == SW_STYLE_COLOURMAP) // COLOURMAP
+   {
+   }
+
+  else if (style == SW_STYLE_CONTOURMAP) // CONTOURMAP
+   {
+   }
+
   // End looping over monotonic regions of axis space
    }
 
@@ -949,7 +970,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
   style = pd->ww_final.linespoints;
   if ((data==NULL) || (data->Nrows<1)) return; // No data present
 
-  if ((style==SW_STYLE_LINES) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_IMPULSES) || (style==SW_STYLE_BOXES) || (style==SW_STYLE_WBOXES) || (style==SW_STYLE_STEPS) || (style==SW_STYLE_FSTEPS) || (style==SW_STYLE_HISTEPS))
+  if ((style==SW_STYLE_LINES) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_IMPULSES) || (style==SW_STYLE_BOXES) || (style==SW_STYLE_WBOXES) || (style==SW_STYLE_STEPS) || (style==SW_STYLE_FSTEPS) || (style==SW_STYLE_HISTEPS) || (style==SW_STYLE_SURFACE) || (style==SW_STYLE_CONTOURMAP))
    {
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
@@ -1007,7 +1028,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
     IF_NOT_INVISIBLE eps_primitive_arrow(x, ArrowStyle, xpos-scale*0.60/2, ypos, xpos+scale*0.60/2, ypos, &pd->ww_final);
    }
 
-  else if ((style == SW_STYLE_FILLEDREGION) || (style == SW_STYLE_YERRORSHADED))
+  else if ((style == SW_STYLE_FILLEDREGION) || (style == SW_STYLE_YERRORSHADED) || (style == SW_STYLE_COLOURMAP))
    {
     double s=scale*0.45/2;
     eps_core_SetColour(x, &pd->ww_final, 1);

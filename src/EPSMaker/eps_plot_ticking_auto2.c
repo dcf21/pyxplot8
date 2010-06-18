@@ -58,6 +58,25 @@ typedef struct TickScheme {
   double offset;
  } TickScheme;
 
+// Print a ticking scheme for debugging purposes
+static void TickScheme2_sprintf(char *out, const int OutLen, const double UnitMultiplier, const double *TL, const double TL_len)
+ {
+  int i=0,j=0,k=0;
+  out[j++]='(';
+  for (i=0; ((i<TL_len)&&(j<OutLen-8)); i++)
+   {
+    if (k!=0) out[j++]=',';
+    snprintf(out+j,OutLen-j-8,"%g",TL[i]/UnitMultiplier);
+    out[OutLen-7]='\0';
+    j+=strlen(out+j);
+    k++;
+   }
+  out[j++]=')';
+  out[j++]='.';
+  out[j++]='\0';
+  return;
+ }
+
 static void GenerateLogTickSchemes(TickScheme *TickSchemes, int *NTickSchemes, int LogBase)
  {
   unsigned char stopping;
@@ -81,7 +100,7 @@ static void GenerateLogTickSchemes(TickScheme *TickSchemes, int *NTickSchemes, i
    }
   if (*NTickSchemes < TICKS_MAXIMUM)
    {
-    for (i=0; ((i<LogBase)&&(i<TICKS_MAXIMUM)); i++) TickSchemes[*NTickSchemes].mantissa[i] = i;
+    for (i=1; ((i<LogBase)&&(i<TICKS_MAXIMUM)); i++) TickSchemes[*NTickSchemes].mantissa[i] = i;
     TickSchemes[*NTickSchemes].Nmantissas = i;
     TickSchemes[*NTickSchemes].ticksep    = 1.0;
     TickSchemes[*NTickSchemes].offset     = 0.0;
@@ -243,6 +262,14 @@ void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned
        OverlayMatch = 1;
        if (!major)
         {
+         if (DEBUG)
+          {
+           int tmp;
+           sprintf(temp_err_string, "Trying minor tick scheme: ");
+           tmp = strlen(temp_err_string);
+           TickScheme2_sprintf(temp_err_string+tmp, LSTR_LENGTH-tmp, UnitMultiplier, TL_trial, TL_trial_len);
+           ppl_log(temp_err_string);
+          }
          for (j=0; axis->TickListStrings[j]!=NULL; j++)
           {
            OverlayMatch = 0;
@@ -257,16 +284,39 @@ void eps_plot_ticking_auto2(settings_axis *axis, double UnitMultiplier, unsigned
             }
            if (!OverlayMatch) break;
           }
+         if (DEBUG && !OverlayMatch)
+          {
+           sprintf(temp_err_string, "FAIL: Did not overlay major tick at %g (axis pos %.3f)", eps_plot_axis_InvGetPosition(axis->TickListPositions[j],axis), axis->TickListPositions[j]);
+           ppl_log(temp_err_string);
+          }
          if (!OverlayMatch) continue;
+         if (DEBUG) ppl_log("PASS");
         }
 
        // See whether this tick scheme is better than previous
-       if ((IsLog)&&(TickSchemes[i].Nmantissas==LogBase-1)&&(!major))
+       if ((IsLog)&&(TickSchemes[i].Nmantissas>=LogBase-1)&&(!major))
         {
-         if (TL_trial_len > 3*number_ticks) break;
+         if (TL_trial_len > 3*number_ticks)
+          {
+           if (DEBUG)
+            {
+             sprintf(temp_err_string, "Minor tick scheme with %d mantissas rejected because it has too many ticks (%d when we wanted ** %d)", TickSchemes[i].Nmantissas, TL_trial_len, number_ticks);
+             ppl_log(temp_err_string);
+            }
+           break;
+          }
+         if (DEBUG) ppl_log("Accepted minor tick scheme which marks every mantissa value");
          TL_best_len = TL_trial_len; for (j=0; j<TL_trial_len; j++) TL_best[j] = TL_trial[j];
         }
-       else if ((IsLog)&&(TickSchemes[i].Nmantissas>1)&&(TL_trial_len>number_ticks)) continue;
+       else if ((IsLog)&&(TickSchemes[i].Nmantissas>1)&&(TL_trial_len>number_ticks))
+        {
+         if (DEBUG)
+          {
+           sprintf(temp_err_string, "Tick scheme with %d mantissas rejected because it has too many ticks (%d when we wanted %d)", TickSchemes[i].Nmantissas, TL_trial_len, number_ticks);
+           ppl_log(temp_err_string);
+          }
+         continue;
+        }
        else if (TL_trial_len > number_ticks) break;
        else if (TL_trial_len > TL_best_len )
         {
