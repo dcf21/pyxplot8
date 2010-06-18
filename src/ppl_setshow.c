@@ -411,6 +411,87 @@ void directive_set(Dict *command)
    {
     sg->clip = settings_graph_default.clip;
    }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"colmap")==0)) /* set colmap */
+   {
+    char *cR, *cG, *cB, *cH, *cS, *cC, *cM, *cY, *cK;
+    DictLookup(command,"colourR",NULL,(void **)&cR);
+    DictLookup(command,"colourG",NULL,(void **)&cG);
+    DictLookup(command,"colourB",NULL,(void **)&cB);
+    DictLookup(command,"colourH",NULL,(void **)&cH);
+    DictLookup(command,"colourS",NULL,(void **)&cS);
+    DictLookup(command,"colourC",NULL,(void **)&cC);
+    DictLookup(command,"colourM",NULL,(void **)&cM);
+    DictLookup(command,"colourY",NULL,(void **)&cY);
+    DictLookup(command,"colourK",NULL,(void **)&cK);
+    if      (cR!=NULL)
+     {
+      sg->ColMapColSpace = SW_COLSPACE_RGB;
+      snprintf(sg->ColMapExpr1, FNAME_LENGTH, "%s", cR);
+      snprintf(sg->ColMapExpr2, FNAME_LENGTH, "%s", cG);
+      snprintf(sg->ColMapExpr3, FNAME_LENGTH, "%s", cB);
+      sg->ColMapExpr4[0] = '\0';
+     }
+    else if (cH!=NULL)
+     {
+      sg->ColMapColSpace = SW_COLSPACE_HSB;
+      snprintf(sg->ColMapExpr1, FNAME_LENGTH, "%s", cH);
+      snprintf(sg->ColMapExpr2, FNAME_LENGTH, "%s", cS);
+      snprintf(sg->ColMapExpr3, FNAME_LENGTH, "%s", cB);
+      sg->ColMapExpr4[0] = '\0';
+     }
+    else if (cC!=NULL)
+     {
+      sg->ColMapColSpace = SW_COLSPACE_CMYK;
+      snprintf(sg->ColMapExpr1, FNAME_LENGTH, "%s", cC);
+      snprintf(sg->ColMapExpr2, FNAME_LENGTH, "%s", cM);
+      snprintf(sg->ColMapExpr3, FNAME_LENGTH, "%s", cY);
+      snprintf(sg->ColMapExpr4, FNAME_LENGTH, "%s", cK);
+     }
+    sg->ColMapExpr1[FNAME_LENGTH-1] = sg->ColMapExpr2[FNAME_LENGTH-1] = sg->ColMapExpr3[FNAME_LENGTH-1] = sg->ColMapExpr4[FNAME_LENGTH-1] = '\0';
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"colmap")==0)) /* unset colmap */
+   {
+    strcpy(sg->ColMapExpr1 , settings_graph_default.ColMapExpr1);
+    strcpy(sg->ColMapExpr2 , settings_graph_default.ColMapExpr2);
+    strcpy(sg->ColMapExpr3 , settings_graph_default.ColMapExpr3);
+    strcpy(sg->ColMapExpr4 , settings_graph_default.ColMapExpr4);
+    sg->ColMapColSpace = settings_graph_default.ColMapColSpace;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"contour")==0)) /* set contour */
+   {
+    DictLookup(command,"contours",NULL,(void **)&tempint);
+    if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
+    sg->NContours = *tempint;
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"contour")==0)) /* unset contour */
+   {
+    sg->NContours = settings_graph_default.NContours;
+   }
+  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"crange")==0)) /* set crange */
+   {
+    DictLookup(command,"minauto",NULL,(void **)&tempstr);
+    DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
+    DictLookup(command,"min",NULL,(void **)&tempval);
+    DictLookup(command,"max",NULL,(void **)&tempval2);
+    if ((tempstr ==NULL)&&(tempval ==NULL)&&(sg->Cminauto==SW_BOOL_FALSE)) tempval = &sg->Cmin;
+    if ((tempstr2==NULL)&&(tempval2==NULL)&&(sg->Cmaxauto==SW_BOOL_FALSE)) tempval2= &sg->Cmax;
+    if ((tempval !=NULL)&&(!gsl_finite(tempval ->real))) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set crange' command had non-finite limits."); return; }
+    if ((tempval2!=NULL)&&(!gsl_finite(tempval2->real))) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set crange' command had non-finite limits."); return; }
+    if ((tempval !=NULL)&&(tempval2!=NULL)&&(!ppl_units_DimEqual(tempval,tempval2))) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set crange with dimensionally incompatible minimum and maximum."); return; }
+    if (tempval !=NULL) { sg->Cmin = *tempval;  sg->Cminauto = SW_BOOL_FALSE; }
+    if (tempval2!=NULL) { sg->Cmax = *tempval2; sg->Cmaxauto = SW_BOOL_FALSE; }
+    if (tempstr !=NULL) {                       sg->Cminauto = SW_BOOL_TRUE;  }
+    if (tempstr2!=NULL) {                       sg->Cmaxauto = SW_BOOL_TRUE;  }
+    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { int tmp = sg->Cminauto; sg->Cminauto = sg->Cmaxauto; sg->Cmaxauto = tmp; valobj = sg->Cmin; sg->Cmin = sg->Cmax; sg->Cmax = valobj; }
+   }
+  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"crange")==0)) /* unset crange */
+   {
+    sg->Cmin     = settings_graph_default.Cmin;
+    sg->Cminauto = settings_graph_default.Cminauto;
+    sg->Cmax     = settings_graph_default.Cmax;
+    sg->Cmaxauto = settings_graph_default.Cmaxauto;
+   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"display")==0)) /* set display */
    {
     settings_term_current.display = SW_ONOFF_ON;
@@ -665,13 +746,17 @@ void directive_set(Dict *command)
             if (tempint!=NULL) tempaxis->LogBase = (double)(*tempint);
            }
          } else {
-          sg->Tlog = SW_BOOL_TRUE; // No concept of log base on T axis as it's never drawn as an axis with ticks
+          DictLookup(tempdict,"clog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog = SW_BOOL_TRUE; // No concept of log base on C/T axes as they're never drawn as an axis with ticks
+          DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Tlog = SW_BOOL_TRUE;
          }
         listiter = ListIterate(listiter, NULL);
        }
      }
     else
      {
+      sg->Clog = SW_BOOL_TRUE;
       sg->Tlog = SW_BOOL_TRUE;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis2=&XAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis2=&YAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
@@ -698,13 +783,17 @@ void directive_set(Dict *command)
             else                      { if (xa[i].log != XAxesDefault[i].log) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; xa[i].TickStep = XAxesDefault[i].TickStep; xa[i].TickMin = XAxesDefault[i].TickMin; xa[i].TickMax = XAxesDefault[i].TickMax; xa[i].MTickStep = XAxesDefault[i].MTickStep; xa[i].MTickMin = XAxesDefault[i].MTickMin; xa[i].MTickMax = XAxesDefault[i].MTickMax; } xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
            }
          } else {
-          sg->Tlog = settings_graph_default.Tlog;
+          DictLookup(tempdict,"clog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog = settings_graph_default.Clog;
+          DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Tlog = settings_graph_default.Tlog;
          }
         listiter = ListIterate(listiter, NULL);
        }
      }
     else
      {
+      sg->Clog = settings_graph_default.Clog;
       sg->Tlog = settings_graph_default.Tlog;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->log != XAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->log != YAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
@@ -784,13 +873,17 @@ void directive_set(Dict *command)
             else                      { xa[i].enabled=1; if (xa[i].log != SW_BOOL_FALSE) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; xa[i].TickStep=XAxesDefault[i].TickStep; xa[i].TickMin=XAxesDefault[i].TickMin; xa[i].TickMax=XAxesDefault[i].TickMax; xa[i].MTickStep=XAxesDefault[i].MTickStep; xa[i].MTickMin=XAxesDefault[i].MTickMin; xa[i].MTickMax=XAxesDefault[i].MTickMax; } xa[i].log = SW_BOOL_FALSE; }
            }
          } else {
-          sg->Tlog = SW_BOOL_FALSE;
+          DictLookup(tempdict,"clog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog = SW_BOOL_FALSE;
+          DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Tlog = SW_BOOL_FALSE;
          }
         listiter = ListIterate(listiter, NULL);
        }
      }
     else
      {
+      sg->Clog = SW_BOOL_FALSE;
       sg->Tlog = SW_BOOL_FALSE;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis2=&XAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis2=&YAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
@@ -1136,13 +1229,42 @@ void directive_set(Dict *command)
 //   }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
    {
+    int two=2;
     DictLookup(command,"samples",NULL,(void **)&tempint);
-    if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); return; }
-    sg->samples = *tempint;
+    if (tempint != NULL)
+     {
+      if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); tempint=&two; }
+      sg->samples = *tempint;
+     }
+    DictLookup(command,"samplesX",NULL,(void **)&tempint);
+    if (tempint != NULL)
+     {
+      if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); tempint=&two; }
+      sg->SamplesX     = *tempint;
+      sg->SamplesXAuto = SW_BOOL_FALSE;
+     }
+    DictLookup(command,"samplesXauto",NULL,(void **)&tempstr);
+    if (tempstr != NULL) sg->SamplesXAuto = SW_BOOL_TRUE;
+    DictLookup(command,"samplesY",NULL,(void **)&tempint);
+    if (tempint != NULL)
+     {
+      if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); tempint=&two; }
+      sg->SamplesY     = *tempint;
+      sg->SamplesYAuto = SW_BOOL_FALSE;
+     }
+    DictLookup(command,"samplesYauto",NULL,(void **)&tempstr);
+    if (tempstr != NULL) sg->SamplesYAuto = SW_BOOL_TRUE;
+    DictLookup(command,"method",NULL,(void **)&tempstr);
+    if (tempstr != NULL) sg->Sample2DMethod = FetchSettingByName(tempstr, SW_SAMPLEMETHOD_INT, SW_SAMPLEMETHOD_STR);
    }
   else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
    {
-    sg->samples = settings_graph_default.samples;
+    sg->samples        = settings_graph_default.samples;
+    sg->SamplesX       = settings_graph_default.SamplesX;
+    sg->SamplesXAuto   = settings_graph_default.SamplesXAuto;
+    sg->SamplesY       = settings_graph_default.SamplesY;
+    sg->SamplesYAuto   = settings_graph_default.SamplesYAuto;
+    sg->Sample2DMethod = settings_graph_default.Sample2DMethod;
    }
   else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"seed")==0)) /* set seed */
    {
@@ -2286,6 +2408,40 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "clip", buf, (sg->clip == settings_graph_default.clip), "Selects whether point symbols which extend over the axes of graphs are allowed to do so, or are clipped at the edges");
     i += strlen(out+i) ; p=1;
    }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colmap",1)>=0))
+   {
+    int k;
+    sprintf(buf, "%s", *(char **)FetchSettingName(sg->ColMapColSpace, SW_COLSPACE_INT, (void *)SW_COLSPACE_STR, sizeof(char *)));
+    k =strlen(buf);
+    sprintf(buf+k, "%s:%s:%s", sg->ColMapExpr1, sg->ColMapExpr2, sg->ColMapExpr3);
+    k+=strlen(buf+k);
+    if (sg->ColMapColSpace==SW_COLSPACE_CMYK) sprintf(buf+k, ":%s", sg->ColMapExpr4);
+    k+=strlen(buf+k);
+    directive_show3(out+i, ItemSet, 1, interactive, "colmap", buf, (settings_graph_default.ColMapColSpace==sg->ColMapColSpace)&&(strcmp(sg->ColMapExpr1,settings_graph_default.ColMapExpr1)==0)&&(strcmp(sg->ColMapExpr2,settings_graph_default.ColMapExpr2)==0)&&(strcmp(sg->ColMapExpr3,settings_graph_default.ColMapExpr3)==0)&&(strcmp(sg->ColMapExpr4,settings_graph_default.ColMapExpr4)==0), "The mapping of ordinate value to colour used by the colourmap plot style");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "contour",1)>=0))
+   {
+    sprintf(buf, "%d", sg->NContours);
+    directive_show3(out+i, ItemSet, 1, interactive, "contour", buf, (settings_graph_default.NContours==sg->NContours), "The number of contours drawn by the contourmap plot style");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "crange",1)>=0))
+   {
+    sprintf(buf, "[%s:%s]", (sg->Cminauto==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin), 0, 0, 0),
+                            (sg->Cmaxauto==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax), 1, 0, 0)  );
+    directive_show3(out+i, ItemSet, 1, interactive, "crange", buf, (settings_graph_default.Cminauto==sg->Cminauto)&&(settings_graph_default.Cmaxauto==sg->Cmaxauto)&&((sg->Cminauto==SW_BOOL_TRUE)||((settings_graph_default.Cmin.real==sg->Cmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin),&(sg->Cmin))))&&((sg->Cmaxauto==SW_BOOL_TRUE)||((settings_graph_default.Cmax.real==sg->Cmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax),&(sg->Cmax)))), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || (StrAutocomplete(word, "linearscale", 1)>=0))
+   {
+    if (sg->Clog==SW_BOOL_TRUE) bufp = "logscale";
+    else                        bufp = "nologscale";
+    sprintf(buf, "c");
+    sprintf(buf2, "Sets whether colours in the colourmap plot style, and contours in the contourmap plot style, demark linear or logarithmic intervals");
+    directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (sg->Clog==settings_graph_default.Clog), buf2);
+    i += strlen(out+i) ; p=1;
+   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
    {
     sprintf(buf, "%s", *(char **)FetchSettingName(settings_term_current.display, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
@@ -2473,14 +2629,26 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
 //  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "projection", 1)>=0))
 //   {
-//    sprintf(buf, "%s", *(char **)FetchSettingName(settings_graph_current.projection, SW_PROJ_INT, (void *)SW_PROJ_STR, sizeof(char *)));
-//    directive_show3(out+i, ItemSet, 0, interactive, "projection", buf, (settings_graph_default.projection==settings_graph_current.projection), "The projection used when representing (x,y) data on a graph");
+//    sprintf(buf, "%s", *(char **)FetchSettingName(sg->projection, SW_PROJ_INT, (void *)SW_PROJ_STR, sizeof(char *)));
+//    directive_show3(out+i, ItemSet, 0, interactive, "projection", buf, (settings_graph_default.projection==sg->projection), "The projection used when representing (x,y) data on a graph");
 //    i += strlen(out+i) ; p=1;
 //   }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "samples",1)>=0))
    {
-    sprintf(buf, "%d", sg->samples);
-    directive_show3(out+i, ItemSet, 1, interactive, "samples", buf, (settings_graph_default.samples==sg->samples), "The number of samples taken when functions are plotted");
+    int k;
+    sprintf(buf, "%d grid ", sg->samples);
+    k =strlen(buf);
+    if (sg->SamplesXAuto == SW_BOOL_TRUE) sprintf(buf+k, "* x ");
+    else                                  sprintf(buf+k, "%d x ", sg->SamplesX);
+    k+=strlen(buf+k);
+    if (sg->SamplesYAuto == SW_BOOL_TRUE) sprintf(buf+k, "*");
+    else                                  sprintf(buf+k, "%d", sg->SamplesY);
+    k+=strlen(buf+k);
+    sprintf(buf+k, " interpolate %s", *(char **)FetchSettingName(sg->Sample2DMethod, SW_SAMPLEMETHOD_INT, (void *)SW_SAMPLEMETHOD_STR, sizeof(char *)));
+
+    directive_show3(out+i, ItemSet, 1, interactive, "samples", buf,
+                    ((settings_graph_default.samples==sg->samples) && (settings_graph_default.SamplesXAuto==sg->SamplesXAuto) && (settings_graph_default.SamplesYAuto==sg->SamplesYAuto) && ((sg->SamplesXAuto==SW_BOOL_TRUE)||(settings_graph_default.SamplesX==sg->SamplesX)) && ((sg->SamplesYAuto==SW_BOOL_TRUE)||(settings_graph_default.SamplesY==sg->SamplesY)) && (settings_graph_default.Sample2DMethod==sg->Sample2DMethod)),
+                    "The number of samples taken when functions are plotted");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "seed",1)>=0))
@@ -2598,7 +2766,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     if (sg->Tlog==SW_BOOL_TRUE) bufp = "logscale";
     else                        bufp = "nologscale";
     sprintf(buf, "t");
-    sprintf(buf2, "Sets whether the t axis scales linearly or logarithmically");
+    sprintf(buf2, "Sets whether the t-axis scales linearly or logarithmically");
     directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (sg->Tlog==settings_graph_default.Tlog), buf2);
     i += strlen(out+i) ; p=1;
    }

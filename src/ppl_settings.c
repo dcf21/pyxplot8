@@ -147,6 +147,16 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_graph_default.BoxWidth));
   settings_graph_default.BoxWidthAuto          = 1;
   settings_graph_default.clip                  = SW_ONOFF_OFF;
+  settings_graph_default.Clog                  = SW_BOOL_FALSE;
+  ppl_units_zero(&settings_graph_default.Cmax);
+  settings_graph_default.Cmaxauto              = SW_BOOL_TRUE;
+  ppl_units_zero(&settings_graph_default.Cmin);
+  settings_graph_default.Cminauto              = SW_BOOL_TRUE;
+  settings_graph_default.ColMapColSpace        = SW_COLSPACE_RGB;
+  strcpy(settings_graph_default.ColMapExpr1, "(c)");
+  strcpy(settings_graph_default.ColMapExpr2, "(c)");
+  strcpy(settings_graph_default.ColMapExpr3, "(c)");
+  strcpy(settings_graph_default.ColMapExpr4, "");
   with_words_zero(&(settings_graph_default.DataStyle),1);
   settings_graph_default.DataStyle.linespoints = SW_STYLE_POINTS;
   settings_graph_default.FontSize              = 1.0;
@@ -179,6 +189,7 @@ void ppl_settings_makedefault()
   settings_graph_default.KeyYOff.real  = 0.0;
   settings_graph_default.KeyYOff.dimensionless = 0; settings_graph_default.KeyYOff.exponent[UNIT_LENGTH] = 1;
   settings_graph_default.LineWidth     = 1.0;
+  settings_graph_default.NContours     = 12;
   ppl_units_zero(&(settings_graph_default.OriginX));
   settings_graph_default.OriginX.real  = 0.0;
   settings_graph_default.OriginX.dimensionless = 0; settings_graph_default.OriginX.exponent[UNIT_LENGTH] = 1;
@@ -189,6 +200,11 @@ void ppl_settings_makedefault()
   settings_graph_default.PointLineWidth= 1.0;
   settings_graph_default.projection    = SW_PROJ_FLAT;
   settings_graph_default.samples       = 250;
+  settings_graph_default.SamplesX      = 0;
+  settings_graph_default.SamplesXAuto  = SW_BOOL_TRUE;
+  settings_graph_default.SamplesY      = 0;
+  settings_graph_default.SamplesYAuto  = SW_BOOL_TRUE;
+  settings_graph_default.Sample2DMethod= SW_SAMPLEMETHOD_INVSQ;
   settings_graph_default.TextColour    = COLOUR_BLACK;
   settings_graph_default.TextColour1   = 0;
   settings_graph_default.TextColour2   = 0;

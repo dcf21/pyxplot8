@@ -164,6 +164,24 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "CLIP"         )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.clip          = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Clip."         , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CONTOURS"     )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.NContours     = max((int)fl, 2);
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Contours."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CRANGE_LOG"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                          settings_graph_default.Clog            = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Log."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CRANGE_MIN"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.Cmin.real = fl; settings_graph_default.Cminauto = SW_BOOL_FALSE; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Min."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CRANGE_MIN_AUTO")==0)
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cminauto        = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Min_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CRANGE_MAX"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.Cmax.real = fl; settings_graph_default.Cmaxauto = SW_BOOL_FALSE; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CRANGE_MAX_AUTO")==0)
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cmaxauto        = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Max_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "COLOUR"       )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .colour        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Colour."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
@@ -290,6 +308,21 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "SAMPLES"      )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.samples       = max((int)fl, 2);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Samples."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "SAMPLES_METHOD")==0)
+        if  ((i=FetchSettingByName(setvalue,SW_SAMPLEMETHOD_INT,SW_SAMPLEMETHOD_STR))>0)         settings_graph_default.Sample2DMethod = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Samples_Method." , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "SAMPLES_X"    )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.SamplesX = max((int)fl, 2); settings_graph_default.SamplesXAuto = SW_BOOL_FALSE; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Samples_X."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "SAMPLES_X_AUTO")==0)
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.SamplesXAuto  = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Samples_X_Auto." , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "SAMPLES_Y"    )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.SamplesY = max((int)fl, 2); settings_graph_default.SamplesYAuto = SW_BOOL_FALSE; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Samples_Y."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "SAMPLES_Y_AUTO")==0)
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.SamplesYAuto  = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Samples_Y_Auto." , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "TERMANTIALIAS")==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .TermAntiAlias = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TermAntiAlias.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

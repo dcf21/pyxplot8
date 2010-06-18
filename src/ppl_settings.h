@@ -27,10 +27,6 @@
 #include "ppl_constants.h"
 #include "ppl_units.h"
 
-#define SW_COLSPACE_RGB  10031
-#define SW_COLSPACE_HSB  10032
-#define SW_COLSPACE_CMYK 10033
-
 typedef struct with_words {
  int    colour, fillcolour, linespoints, linetype, pointtype, style; // Core style settings which can be placed after the 'with' modifier
  double linewidth, pointlinewidth, pointsize;
@@ -56,7 +52,7 @@ typedef struct settings_terminal {
  } settings_terminal;
 
 typedef struct settings_graph {
- int           AutoAspect, AutoZAspect, AxesColour, AxesCol1234Space, AxisUnitStyle, clip, Clog, Cminset, Cmaxset, ColMapColSpace, grid, GridMajColour, GridMajCol1234Space, GridMinColour, GridMinCol1234Space, key, KeyColumns, KeyPos, NContours, samples, SamplesX, SamplesY, Sample2DMethod, TextColour, TextCol1234Space, TextHAlign, TextVAlign, Tlog;
+ int           AutoAspect, AutoZAspect, AxesColour, AxesCol1234Space, AxisUnitStyle, clip, Clog, Cminauto, Cmaxauto, ColMapColSpace, grid, GridMajColour, GridMajCol1234Space, GridMinColour, GridMinCol1234Space, key, KeyColumns, KeyPos, NContours, samples, SamplesX, SamplesXAuto, SamplesY, SamplesYAuto, Sample2DMethod, TextColour, TextCol1234Space, TextHAlign, TextVAlign, Tlog;
  double        AxesColour1, AxesColour2, AxesColour3, AxesColour4, GridMajColour1, GridMajColour2, GridMajColour3, GridMajColour4, GridMinColour1, GridMinColour2, GridMinColour3, GridMinColour4, TextColour1, TextColour2, TextColour3, TextColour4;
  double        aspect, zaspect, bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];

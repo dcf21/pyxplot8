@@ -150,6 +150,12 @@ CalendarIn = British
 CalendarOut = British
 Clip = Off
 Colour = On
+Contours = 12
+CRange_Log = False
+CRange_Max = 0
+CRange_Max_Auto = True
+CRange_Min = 0
+CRange_Min_Auto = True
 DataStyle = Points
 Display = On
 DPI = 300
@@ -182,6 +188,11 @@ PaperWidth = 210
 PointLineWidth = 1.0
 PointSize = 1.0
 Samples = 250
+Samples_Method = InverseSquare
+Samples_X = 0
+Samples_X_Auto = True
+Samples_Y = 0
+Samples_Y_Auto = True
 TermAntiAlias = On
 TermEnlarge = Off
 TermInvert = Off
@@ -354,6 +365,42 @@ The {\tt settings} section can contain any of the following settings in any orde
                {\bf Analogous set command:} \indcmdts{set terminal}
 
                Sets whether output should be colour ({\tt On}) or monochrome ({\tt Off}).
+               \\
+{\tt Contour} & {\bf Possible values:} Any integer.
+
+               {\bf Analogous set command:} \indcmdts{set contour}
+
+               Sets the number of contours which are drawn in the \indpst{contourmap} plot style.
+               \\
+{\tt CRange\_Log} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set logscale c}
+
+               Sets whether colour maps are drawn with logarithmic or linear colour scales. Also sets whether contours demark linear or logarithmic intervals on contour maps.\indps{contourmap}\indps{colourmap}
+               \\
+{\tt CRange\_Max} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set crange}
+
+               Sets upper limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps.
+               \\
+{\tt CRange\_Max\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set crange}
+
+               Sets whether the upper limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps, should be automatically scaled to match the data provided.
+               \\
+{\tt CRange\_Min} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set crange}
+
+               Sets lower limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps.
+               \\
+{\tt CRange\_Min\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set crange}
+
+               Sets whether the lower limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps, should be automatically scaled to match the data provided.
                \\
 {\tt DataStyle} & {\bf Possible values:} Any plot style.
 
@@ -552,6 +599,36 @@ The {\tt settings} section can contain any of the following settings in any orde
                {\bf Analogous set command:} \indcmdts{set samples}
 
                Sets the number of samples (datapoints) to be evaluated along the abscissa axis when plotting a function.
+               \\
+{\tt Samples\_Method} & {\bf Possible values:} {\tt Inverse\-Square}, {\tt Nearest\-Neigh\-bour}.
+
+               {\bf Analogous set command:} \indcmdts{set samples}
+
+               Sets the method used to interpolate two-dimensional non-gridded arrays of datapoints from datafiles within the \indcmdt{interpolate} and when plotting using the \indpst{colourmap} and \indpst{contourmap} plot styles.
+               \\
+{\tt Samples\_X} & {\bf Possible values:} Any integer.
+
+               {\bf Analogous set command:} \indcmdts{set samples}
+
+               Sets the number of samples (datapoints) to be evaluated along the first abscissa axis when drawing colour maps and when calculating contour maps.
+               \\
+{\tt Samples\_X\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set samples}
+
+               Sets whether the number of samples (datapoints) to be evaluated along the first abscissa axis when drawing colour maps and when calculating contour maps should follow the number of samples set with the \indcmdts{set samples} command.
+               \\
+{\tt Samples\_Y} & {\bf Possible values:} Any integer.
+
+               {\bf Analogous set command:} \indcmdts{set samples}
+
+               Sets the number of samples (datapoints) to be evaluated along the second abscissa axis when drawing colour maps and when calculating contour maps.
+               \\
+{\tt Samples\_Y\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set samples}
+
+               Sets whether the number of samples (datapoints) to be evaluated along the second abscissa axis when drawing colour maps and when calculating contour maps should follow the number of samples set with the \indcmdts{set samples} command.
                \\
 {\tt TermAntiAlias} & {\bf Possible values:} {\tt On}, {\tt Off}.
 

@@ -51,6 +51,18 @@ extern int   SW_ONOFF_INT[];
 #define SW_VIEWER_NULL   10022
 #define SW_VIEWER_CUSTOM 10023
 
+// Colour spaces
+
+#define SW_COLSPACE_RGB  10031
+#define SW_COLSPACE_HSB  10032
+#define SW_COLSPACE_CMYK 10033
+
+#ifndef _PPL_SETTING_TYPES_C
+extern char *SW_COLSPACE_STR[];
+extern int   SW_COLSPACE_ACL[];
+extern int   SW_COLSPACE_INT[];
+#endif
+
 // Plot Style Switches
 
 #define SW_STYLE_POINTS         10101
@@ -247,6 +259,17 @@ extern int   SW_AXISMIRROR_INT[];
 extern char *SW_PROJ_STR[];
 extern int   SW_PROJ_ACL[];
 extern int   SW_PROJ_INT[];
+#endif
+
+// 2D Sampling Methods
+
+#define SW_SAMPLEMETHOD_NEAREST 15061
+#define SW_SAMPLEMETHOD_INVSQ   15062
+
+#ifndef _PPL_SETTING_TYPES_C
+extern char *SW_SAMPLEMETHOD_STR[];
+extern int   SW_SAMPLEMETHOD_ACL[];
+extern int   SW_SAMPLEMETHOD_INT[];
 #endif
 
 // Text Horizontal Alignment
