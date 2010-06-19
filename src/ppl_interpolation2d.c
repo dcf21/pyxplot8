@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <gsl/gsl_math.h>
+
 #include "StringTools/str_constants.h"
 
 #include "ListTools/lt_dict.h"
@@ -39,17 +41,54 @@
 
 void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataTable *in, const double x, const double y)
  {
+  DataBlock     *blk;
+  int            i;
+
   switch (sg->Sample2DMethod)
    {
     case SW_SAMPLEMETHOD_NEAREST:
+     {
+      double DistBest;
+      unsigned char first=1;
       *output = 0.0;
+      blk = in->first;
+      while (blk != NULL)
+       {
+        for (i=0; i<blk->BlockPosition; i++)
+         {
+          double dist = hypot( blk->data_real[0 + 3*i].d - x , blk->data_real[1 + 3*i].d - y );
+          if (first || (dist<DistBest)) { DistBest=dist; *output = blk->data_real[2 + 3*i].d; first=0; }
+         }
+        blk=blk->next;
+       }
       break;
+     }
     case SW_SAMPLEMETHOD_INVSQ:
+     {
+      double WeightSum = 0.0;
       *output = 0.0;
+      blk = in->first;
+      while (blk != NULL)
+       {
+        for (i=0; i<blk->BlockPosition; i++)
+         {
+          double dist = gsl_pow_2( blk->data_real[0 + 3*i].d - x) + gsl_pow_2(blk->data_real[1 + 3*i].d - y);
+          double weight;
+          if (dist<1e-200) { *output = blk->data_real[2 + 3*i].d; break; }
+          weight = 1.0/dist;
+          *output   += weight * blk->data_real[2 + 3*i].d;
+          WeightSum += weight;
+         }
+        blk=blk->next;
+       }
+      if (WeightSum>0.0) *output /= WeightSum;
       break;
+     }
     default:
+     {
       *output = 0.0;
       break;
+     }
    }
   return;
  }
