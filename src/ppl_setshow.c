@@ -84,6 +84,7 @@ void directive_unseterror(Dict *command, int interactive)
 void directive_set(Dict *command)
  {
   int     i, j, k, l, m, p, pp, *EditNo, errpos, multiplier;
+  unsigned char strcmp_set, strcmp_unset;
   long    li;
   char   *directive, *setoption;
   value   valobj, valobj2;
@@ -130,11 +131,14 @@ void directive_set(Dict *command)
   DictLookup(command,"directive",NULL,(void **)(&directive));
   DictLookup(command,"set_option",NULL,(void **)(&setoption));
 
-  if      ((strcmp(directive,"set")==0) && (strcmp(setoption,"arrow")==0)) /* set arrow */
+  strcmp_set   = (strcmp(directive,"set"  )==0);
+  strcmp_unset = (strcmp(directive,"unset")==0);
+
+  if      (strcmp_set && (strcmp(setoption,"arrow")==0)) /* set arrow */
    {
     if (al != NULL) arrow_add(al, command);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"arrow")==0)) /* unset arrow */
+  else if (strcmp_unset && (strcmp(setoption,"arrow")==0)) /* unset arrow */
    {
     if (al != NULL) arrow_unset(al, command);
    }
@@ -190,7 +194,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"axis")==0)) /* set axis */
+  else if (strcmp_set && (strcmp(setoption,"axis")==0)) /* set axis */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
     listiter = ListIterateInit(templist);
@@ -263,7 +267,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"axis")==0)) /* unset axis */
+  else if (strcmp_unset && (strcmp(setoption,"axis")==0)) /* unset axis */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
     listiter = ListIterateInit(templist);
@@ -281,24 +285,24 @@ void directive_set(Dict *command)
       listiter = ListIterate(listiter, NULL);
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"axisunitstyle")==0)) /* set axisunitstyle */
+  else if (strcmp_set && (strcmp(setoption,"axisunitstyle")==0)) /* set axisunitstyle */
    {
     DictLookup(command,"unitstyle",NULL,(void **)&tempstr);
     sg->AxisUnitStyle = FetchSettingByName(tempstr, SW_AXISUNITSTY_INT, SW_AXISUNITSTY_STR);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"axisunitstyle")==0)) /* unset axisunitstyle */
+  else if (strcmp_unset && (strcmp(setoption,"axisunitstyle")==0)) /* unset axisunitstyle */
    {
     sg->AxisUnitStyle = settings_graph_default.AxisUnitStyle;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"backup")==0)) /* set backup */
+  else if (strcmp_set && (strcmp(setoption,"backup")==0)) /* set backup */
    {
     settings_term_current.backup = SW_ONOFF_ON;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"backup")==0)) /* unset backup */
+  else if (strcmp_unset && (strcmp(setoption,"backup")==0)) /* unset backup */
    {
     settings_term_current.backup = settings_term_default.backup;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"bar")==0)) /* set bar */
+  else if (strcmp_set && (strcmp(setoption,"bar")==0)) /* set bar */
    {
     DictLookup(command,"bar_size"      ,NULL,(void **)&tempdbl );
     DictLookup(command,"bar_size_large",NULL,(void **)&tempstr );
@@ -311,11 +315,11 @@ void directive_set(Dict *command)
     else if (tempstr2 != NULL)  sg->bar = 0.0;
     else                        sg->bar = 1.0;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"bar")==0)) /* unset bar */
+  else if (strcmp_unset && (strcmp(setoption,"bar")==0)) /* unset bar */
    {
     sg->bar = settings_graph_default.bar;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
+  else if (strcmp_set && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
    {
     DictLookup(command,"auto",NULL,(void **)&tempval);
     if (tempval!=NULL)
@@ -328,12 +332,12 @@ void directive_set(Dict *command)
       settings_term_current.BinOriginAuto = 0;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binorigin")==0)) /* unset binorigin */
+  else if (strcmp_unset && (strcmp(setoption,"binorigin")==0)) /* unset binorigin */
    {
     settings_term_current.BinOrigin     = settings_term_default.BinOrigin;
     settings_term_current.BinOriginAuto = settings_term_default.BinOriginAuto;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
+  else if (strcmp_set && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
     DictLookup(command,"auto",NULL,(void **)&tempval);
     if (tempval!=NULL)
@@ -347,12 +351,12 @@ void directive_set(Dict *command)
       settings_term_current.BinWidthAuto = 0;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
+  else if (strcmp_unset && (strcmp(setoption,"binwidth")==0)) /* unset binwidth */
    {
     settings_term_current.BinWidth     = settings_term_default.BinWidth;
     settings_term_current.BinWidthAuto = settings_term_default.BinWidthAuto;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
+  else if (strcmp_set && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
    {
     DictLookup(command,"auto",NULL,(void **)&tempval);
     if (tempval!=NULL)
@@ -365,12 +369,12 @@ void directive_set(Dict *command)
       sg->BoxFromAuto = 0;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxfrom")==0)) /* unset boxfrom */
+  else if (strcmp_unset && (strcmp(setoption,"boxfrom")==0)) /* unset boxfrom */
    {
     sg->BoxFrom     = settings_graph_default.BoxFrom;
     sg->BoxFromAuto = settings_graph_default.BoxFromAuto;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"boxwidth")==0)) /* set boxwidth */
+  else if (strcmp_set && (strcmp(setoption,"boxwidth")==0)) /* set boxwidth */
    {
     DictLookup(command,"auto",NULL,(void **)&tempval);
     if (tempval!=NULL)
@@ -383,12 +387,12 @@ void directive_set(Dict *command)
       sg->BoxWidthAuto = 0;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"boxwidth")==0)) /* unset boxwidth */
+  else if (strcmp_unset && (strcmp(setoption,"boxwidth")==0)) /* unset boxwidth */
    {
     sg->BoxWidth     = settings_graph_default.BoxWidth;
     sg->BoxWidthAuto = settings_graph_default.BoxWidthAuto;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"calendar")==0)) /* set calendar */
+  else if (strcmp_set && (strcmp(setoption,"calendar")==0)) /* set calendar */
    {
     DictLookup(command,"calendar"   ,NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.CalendarIn  =
@@ -398,20 +402,31 @@ void directive_set(Dict *command)
     DictLookup(command,"calendarout",NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.CalendarOut = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"calendar")==0)) /* unset calendar */
+  else if (strcmp_unset && (strcmp(setoption,"calendar")==0)) /* unset calendar */
    {
     settings_term_current.CalendarIn  = settings_term_default.CalendarIn;
     settings_term_current.CalendarOut = settings_term_default.CalendarOut;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"clip")==0)) /* set clip */
+  else if (strcmp_set && (strcmp(setoption,"clip")==0)) /* set clip */
    {
     sg->clip = SW_ONOFF_ON;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"clip")==0)) /* unset clip */
+  else if (strcmp_unset && (strcmp(setoption,"clip")==0)) /* unset clip */
    {
     sg->clip = settings_graph_default.clip;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"colmap")==0)) /* set colmap */
+  else if (strcmp_set && (strcmp(setoption,"colkey")==0)) /* set colkey */
+   {
+    sg->ColKey = SW_ONOFF_ON;
+    DictLookup(command,"pos",NULL,(void **)&tempstr);
+    if (tempstr!=NULL) sg->ColKeyPos = FetchSettingByName(tempstr, SW_COLKEYPOS_INT, SW_COLKEYPOS_STR);
+   }
+  else if (strcmp_unset && (strcmp(setoption,"colkey")==0)) /* unset colkey */
+   {
+    sg->ColKey    = settings_graph_default.ColKey;
+    sg->ColKeyPos = settings_graph_default.ColKeyPos;
+   }
+  else if (strcmp_set && (strcmp(setoption,"colmap")==0)) /* set colmap */
    {
     char *cR, *cG, *cB, *cH, *cS, *cC, *cM, *cY, *cK;
     DictLookup(command,"colourR",NULL,(void **)&cR);
@@ -449,7 +464,7 @@ void directive_set(Dict *command)
      }
     sg->ColMapExpr1[FNAME_LENGTH-1] = sg->ColMapExpr2[FNAME_LENGTH-1] = sg->ColMapExpr3[FNAME_LENGTH-1] = sg->ColMapExpr4[FNAME_LENGTH-1] = '\0';
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"colmap")==0)) /* unset colmap */
+  else if (strcmp_unset && (strcmp(setoption,"colmap")==0)) /* unset colmap */
    {
     strcpy(sg->ColMapExpr1 , settings_graph_default.ColMapExpr1);
     strcpy(sg->ColMapExpr2 , settings_graph_default.ColMapExpr2);
@@ -457,17 +472,17 @@ void directive_set(Dict *command)
     strcpy(sg->ColMapExpr4 , settings_graph_default.ColMapExpr4);
     sg->ColMapColSpace = settings_graph_default.ColMapColSpace;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"contour")==0)) /* set contour */
+  else if (strcmp_set && (strcmp(setoption,"contour")==0)) /* set contour */
    {
     DictLookup(command,"contours",NULL,(void **)&tempint);
     if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
     sg->NContours = *tempint;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"contour")==0)) /* unset contour */
+  else if (strcmp_unset && (strcmp(setoption,"contour")==0)) /* unset contour */
    {
     sg->NContours = settings_graph_default.NContours;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"crange")==0)) /* set crange */
+  else if (strcmp_set && (strcmp(setoption,"crange")==0)) /* set crange */
    {
     DictLookup(command,"minauto",NULL,(void **)&tempstr);
     DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
@@ -485,22 +500,22 @@ void directive_set(Dict *command)
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
     if (tempstr != NULL) { int tmp = sg->Cminauto; sg->Cminauto = sg->Cmaxauto; sg->Cmaxauto = tmp; valobj = sg->Cmin; sg->Cmin = sg->Cmax; sg->Cmax = valobj; }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"crange")==0)) /* unset crange */
+  else if (strcmp_unset && (strcmp(setoption,"crange")==0)) /* unset crange */
    {
     sg->Cmin     = settings_graph_default.Cmin;
     sg->Cminauto = settings_graph_default.Cminauto;
     sg->Cmax     = settings_graph_default.Cmax;
     sg->Cmaxauto = settings_graph_default.Cmaxauto;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"display")==0)) /* set display */
+  else if (strcmp_set && (strcmp(setoption,"display")==0)) /* set display */
    {
     settings_term_current.display = SW_ONOFF_ON;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"display")==0)) /* unset display */
+  else if (strcmp_unset && (strcmp(setoption,"display")==0)) /* unset display */
    {
     settings_term_current.display = settings_term_default.display;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"filter")==0)) /* set filter */
+  else if (strcmp_set && (strcmp(setoption,"filter")==0)) /* set filter */
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
     DictLookup(command,"filter",NULL,(void **)&tempstr2);
@@ -509,27 +524,27 @@ void directive_set(Dict *command)
     valobj.modified = 1;
     DictAppendValue(settings_filters,tempstr,valobj);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"filter")==0)) /* unset filter */
+  else if (strcmp_unset && (strcmp(setoption,"filter")==0)) /* unset filter */
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
     DictLookup(settings_filters,tempstr,NULL,(void **)&tempstr2);
     if (tempstr2 == NULL) { ppl_warning(ERR_GENERAL, "Attempt to unset a filter which did not exist."); return; }
     DictRemoveKey(settings_filters,tempstr);
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
+  else if (strcmp_set && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
    {
     DictLookup(command,"fontsize",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set fontsize' command was not finite."); return; }
     if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Font sizes are not allowed to be less than or equal to zero."); return; }
     sg->FontSize = *tempdbl;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"fontsize")==0)) /* unset fontsize */
+  else if (strcmp_unset && (strcmp(setoption,"fontsize")==0)) /* unset fontsize */
    {
     sg->FontSize = settings_graph_default.FontSize;
    }
   else if ((strcmp(setoption,"axescolour")==0) || (strcmp(setoption,"gridmajcolour")==0) || (strcmp(setoption,"gridmincolour")==0) || (strcmp(setoption,"textcolour")==0)) /* set axescolour | set gridmajcolour | set gridmincolour */
    {
-    if (strcmp(directive,"unset")==0)
+    if (strcmp_unset)
      {
       if (strcmp(setoption,"axescolour"   )==0) { sg->AxesColour=settings_graph_default.AxesColour; sg->AxesCol1234Space=settings_graph_default.AxesCol1234Space; sg->AxesColour1=settings_graph_default.AxesColour1; sg->AxesColour2=settings_graph_default.AxesColour2; sg->AxesColour3=settings_graph_default.AxesColour3; sg->AxesColour4=settings_graph_default.AxesColour4; }
       if (strcmp(setoption,"gridmajcolour")==0) { sg->GridMajColour=settings_graph_default.GridMajColour; sg->GridMajCol1234Space=settings_graph_default.GridMajCol1234Space; sg->GridMajColour1=settings_graph_default.GridMajColour1; sg->GridMajColour2=settings_graph_default.GridMajColour2; sg->GridMajColour3=settings_graph_default.GridMajColour3; sg->GridMajColour4=settings_graph_default.GridMajColour4; }
@@ -542,7 +557,7 @@ void directive_set(Dict *command)
       if (strcmp(setoption,"textcolour"   )==0) colour_fromdict(command,"",&sg->TextColour   ,&sg->TextCol1234Space   ,&sg->TextColour1   ,&sg->TextColour2   ,&sg->TextColour3   ,&sg->TextColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"grid")==0)) /* set grid */
+  else if (strcmp_set && (strcmp(setoption,"grid")==0)) /* set grid */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
     if (ListLen(templist)==0)
@@ -575,14 +590,14 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"grid")==0)) /* unset grid */
+  else if (strcmp_unset && (strcmp(setoption,"grid")==0)) /* unset grid */
    {
     sg->grid = settings_graph_default.grid;
     for (i=0; i<MAX_AXES; i++) sg->GridAxisX[i] = settings_graph_default.GridAxisX[i];
     for (i=0; i<MAX_AXES; i++) sg->GridAxisY[i] = settings_graph_default.GridAxisY[i];
     for (i=0; i<MAX_AXES; i++) sg->GridAxisZ[i] = settings_graph_default.GridAxisZ[i];
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"key")==0)) /* set key */
+  else if (strcmp_set && (strcmp(setoption,"key")==0)) /* set key */
    {
     sg->key = SW_ONOFF_ON; // Turn key on
     DictLookup(command,"x_offset",NULL,(void **)&tempval); // Horizontal offset
@@ -672,14 +687,14 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"key")==0)) /* unset key */
+  else if (strcmp_unset && (strcmp(setoption,"key")==0)) /* unset key */
    {
     sg->key     = settings_graph_default.key;
     sg->KeyPos  = settings_graph_default.KeyPos;
     sg->KeyXOff = settings_graph_default.KeyXOff;
     sg->KeyYOff = settings_graph_default.KeyYOff;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
+  else if (strcmp_set && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
    {
     DictLookup(command,"key_columns",NULL,(void **)&tempint);
     if (tempint == NULL) sg->KeyColumns = 0; // automatic columns
@@ -689,30 +704,30 @@ void directive_set(Dict *command)
       sg->KeyColumns = *tempint;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"keycolumns")==0)) /* unset keycolumns */
+  else if (strcmp_unset && (strcmp(setoption,"keycolumns")==0)) /* unset keycolumns */
    {
     sg->KeyColumns = settings_graph_default.KeyColumns;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"label")==0)) /* set label */
+  else if (strcmp_set && (strcmp(setoption,"label")==0)) /* set label */
    {
     if (ll != NULL) label_add(ll, command);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"label")==0)) /* unset label */
+  else if (strcmp_unset && (strcmp(setoption,"label")==0)) /* unset label */
    {
     if (ll != NULL) label_unset(ll, command);
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
+  else if (strcmp_set && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
    {
     DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set linewidth' command was not finite."); return; }
     if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Line widths are not allowed to be less than or equal to zero."); return; }
     sg->LineWidth = *tempdbl;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
+  else if (strcmp_unset && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
    {
     sg->LineWidth = settings_graph_default.LineWidth;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"logscale")==0))         /* set logscale */
+  else if (strcmp_set && (strcmp(setoption,"logscale")==0))         /* set logscale */
    {
     DictLookup(command,"base",NULL,(void **)&tempint);
     if (tempint!=NULL)
@@ -763,7 +778,7 @@ void directive_set(Dict *command)
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis2=&ZAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"logscale")==0)) /* unset logscale */
+  else if (strcmp_unset && (strcmp(setoption,"logscale")==0)) /* unset logscale */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
     if (templist != NULL)
@@ -800,32 +815,36 @@ void directive_set(Dict *command)
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->log != ZAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
+  else if (strcmp_set && (strcmp(setoption,"multiplot")==0)) /* set multiplot */
    {
     settings_term_current.multiplot = SW_ONOFF_ON;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"multiplot")==0)) /* unset multiplot */
+  else if (strcmp_unset && (strcmp(setoption,"multiplot")==0)) /* unset multiplot */
    {
     if ((settings_term_default.multiplot == SW_ONOFF_OFF) && (settings_term_current.multiplot == SW_ONOFF_ON)) directive_clear();
     settings_term_current.multiplot = settings_term_default.multiplot;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"noarrow")==0)) /* set noarrow */
+  else if (strcmp_set && (strcmp(setoption,"noarrow")==0)) /* set noarrow */
    {
     if (al != NULL) arrow_remove(al, command);
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nobackup")==0)) /* set nobackup */
+  else if (strcmp_set && (strcmp(setoption,"nobackup")==0)) /* set nobackup */
    {
     settings_term_current.backup = SW_ONOFF_OFF;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"noclip")==0)) /* set noclip */
+  else if (strcmp_set && (strcmp(setoption,"noclip")==0)) /* set noclip */
    {
     sg->clip = SW_ONOFF_OFF;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nodisplay")==0)) /* set nodisplay */
+  else if (strcmp_set && (strcmp(setoption,"nocolkey")==0)) /* set nocolkey */
+   {
+    sg->ColKey = SW_ONOFF_OFF;
+   }
+  else if (strcmp_set && (strcmp(setoption,"nodisplay")==0)) /* set nodisplay */
    {
     settings_term_current.display = SW_ONOFF_OFF;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nogrid")==0)) /* set nogrid */
+  else if (strcmp_set && (strcmp(setoption,"nogrid")==0)) /* set nogrid */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
     if (ListLen(templist)==0)
@@ -845,15 +864,15 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nokey")==0)) /* set nokey */
+  else if (strcmp_set && (strcmp(setoption,"nokey")==0)) /* set nokey */
    {
     sg->key = SW_ONOFF_OFF;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nolabel")==0)) /* set nolabel */
+  else if (strcmp_set && (strcmp(setoption,"nolabel")==0)) /* set nolabel */
    {
     if (ll != NULL) label_remove(ll, command);
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
+  else if (strcmp_set && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
    {
     DictLookup(command,"axes",NULL,(void **)&templist);
     if (templist != NULL)
@@ -890,12 +909,12 @@ void directive_set(Dict *command)
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis2=&ZAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
+  else if (strcmp_set && (strcmp(setoption,"nomultiplot")==0)) /* set nomultiplot */
    {
     if (settings_term_current.multiplot != SW_ONOFF_OFF) directive_clear();
     settings_term_current.multiplot = SW_ONOFF_OFF;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notics")==0)) /* set notics */
+  else if (strcmp_set && (strcmp(setoption,"notics")==0)) /* set notics */
    {
 
 #define SET_NOTICS \
@@ -958,7 +977,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"numerics")==0)) /* set numerics */
+  else if (strcmp_set && (strcmp(setoption,"numerics")==0)) /* set numerics */
    {
     DictLookup(command,"complex", NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.ComplexNumbers     = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
@@ -974,30 +993,30 @@ void directive_set(Dict *command)
     DictLookup(command,"display", NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.NumDisplay = FetchSettingByName(tempstr, SW_DISPLAY_INT, SW_DISPLAY_STR);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics")==0)) /* unset numerics */
+  else if (strcmp_unset && (strcmp(setoption,"numerics")==0)) /* unset numerics */
    {
     settings_term_current.ComplexNumbers     = settings_term_default.ComplexNumbers;
     settings_term_current.ExplicitErrors     = settings_term_default.ExplicitErrors;
     settings_term_current.NumDisplay         = settings_term_default.NumDisplay;
     settings_term_current.SignificantFigures = settings_term_default.SignificantFigures;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_sigfig")==0)) /* unset numerics sigfig */
+  else if (strcmp_unset && (strcmp(setoption,"numerics_sigfig")==0)) /* unset numerics sigfig */
    {
     settings_term_current.SignificantFigures = settings_term_default.SignificantFigures;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_errors")==0)) /* unset numerics errors */
+  else if (strcmp_unset && (strcmp(setoption,"numerics_errors")==0)) /* unset numerics errors */
    {
     settings_term_current.ExplicitErrors     = settings_term_default.ExplicitErrors;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_sigfig")==0)) /* unset numerics complex */
+  else if (strcmp_unset && (strcmp(setoption,"numerics_sigfig")==0)) /* unset numerics complex */
    {
     settings_term_current.ComplexNumbers     = settings_term_default.ComplexNumbers;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"numerics_display")==0)) /* unset numerics display */
+  else if (strcmp_unset && (strcmp(setoption,"numerics_display")==0)) /* unset numerics display */
    {
     settings_term_current.NumDisplay         = settings_term_default.NumDisplay;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"origin")==0)) /* set origin */
+  else if (strcmp_set && (strcmp(setoption,"origin")==0)) /* set origin */
    {
     DictLookup(command,"x_origin",NULL,(void **)&tempval);
     DictLookup(command,"y_origin",NULL,(void **)&tempval2);
@@ -1028,23 +1047,23 @@ void directive_set(Dict *command)
     sg->OriginX.real = tempval ->real;
     sg->OriginY.real = tempval2->real;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"origin")==0)) /* unset origin */
+  else if (strcmp_unset && (strcmp(setoption,"origin")==0)) /* unset origin */
    {
     sg->OriginX = settings_graph_default.OriginX;
     sg->OriginY = settings_graph_default.OriginY;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"output")==0)) /* set output */
+  else if (strcmp_set && (strcmp(setoption,"output")==0)) /* set output */
    {
     DictLookup(command,"filename",NULL,(void **)&tempstr);
     strncpy(settings_term_current.output, tempstr, FNAME_LENGTH-4);
     sg->title[FNAME_LENGTH-4]='\0';
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"output")==0)) /* unset output */
+  else if (strcmp_unset && (strcmp(setoption,"output")==0)) /* unset output */
    {
     strncpy(settings_term_current.output, settings_term_default.output, FNAME_LENGTH-4);
     sg->title[FNAME_LENGTH-4]='\0';
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"palette")==0)) /* set palette */
+  else if (strcmp_set && (strcmp(setoption,"palette")==0)) /* set palette */
    {
     DictLookup(command,"palette,",NULL,(void **)&templist);
     listiter = ListIterateInit(templist);
@@ -1119,7 +1138,7 @@ void directive_set(Dict *command)
     if (i==0) { ppl_error(ERR_GENERAL, -1, -1, "The set palette command has been passed a palette which does not contain any colours."); return; }
     settings_palette_current[i] = -1;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"palette")==0)) /* unset palette */
+  else if (strcmp_unset && (strcmp(setoption,"palette")==0)) /* unset palette */
    {
     for (i=0; i<PALETTE_LENGTH; i++)
      {
@@ -1131,7 +1150,7 @@ void directive_set(Dict *command)
       settings_palette4_current[i] = settings_palette4_default[i];
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"papersize")==0)) /* set papersize */
+  else if (strcmp_set && (strcmp(setoption,"papersize")==0)) /* set papersize */
    {
     DictLookup(command,"paper_name",NULL,(void **)&tempstr);
     if (tempstr != NULL)
@@ -1179,55 +1198,55 @@ void directive_set(Dict *command)
       ppl_GetPaperName(settings_term_current.PaperName, &(tempval2->real), &(tempval ->real));
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"papersize")==0)) /* unset papersize */
+  else if (strcmp_unset && (strcmp(setoption,"papersize")==0)) /* unset papersize */
    {
     settings_term_current.PaperHeight.real = settings_term_default.PaperHeight.real;
     settings_term_current.PaperWidth .real = settings_term_default.PaperWidth .real;
     strcpy(settings_term_current.PaperName, settings_term_default.PaperName);
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
+  else if (strcmp_set && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
    {
     DictLookup(command,"pointlinewidth",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointlinewidth' command was not finite."); return; }
     if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point line widths are not allowed to be less than or equal to zero."); return; }
     sg->PointLineWidth = *tempdbl;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
+  else if (strcmp_unset && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
    {
     sg->PointLineWidth = settings_graph_default.PointLineWidth;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
+  else if (strcmp_set && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
    {
     DictLookup(command,"pointsize",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointsize' command was not finite."); return; }
     if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point sizes are not allowed to be less than or equal to zero."); return; }
     sg->PointSize = *tempdbl;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
+  else if (strcmp_unset && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
    {
     sg->PointSize = settings_graph_default.PointSize;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"preamble")==0)) /* set preamble */
+  else if (strcmp_set && (strcmp(setoption,"preamble")==0)) /* set preamble */
    {
     DictLookup(command,"preamble",NULL,(void **)&tempstr);
     strncpy(settings_term_current.LatexPreamble, tempstr, FNAME_LENGTH-4);
     settings_term_current.LatexPreamble[FNAME_LENGTH-4]='\0';
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"preamble")==0)) /* unset preamble */
+  else if (strcmp_unset && (strcmp(setoption,"preamble")==0)) /* unset preamble */
    {
     strncpy(settings_term_current.LatexPreamble, settings_term_default.LatexPreamble, FNAME_LENGTH-4);
     settings_term_current.LatexPreamble[FNAME_LENGTH-4]='\0';
    }
-//  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"projection")==0)) /* set projection */
+//  else if (strcmp_set && (strcmp(setoption,"projection")==0)) /* set projection */
 //   {
 //    DictLookup(command,"projection",NULL,(void **)&tempstr);
 //    sg->projection = FetchSettingByName(tempstr, SW_PROJ_INT, SW_PROJ_STR);
 //   }
-//  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"projection")==0)) /* unset projection */
+//  else if (strcmp_unset && (strcmp(setoption,"projection")==0)) /* unset projection */
 //   {
 //    sg->projection = settings_graph_default.projection;
 //   }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"samples")==0)) /* set samples */
+  else if (strcmp_set && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     int two=2;
     DictLookup(command,"samples",NULL,(void **)&tempint);
@@ -1257,7 +1276,7 @@ void directive_set(Dict *command)
     DictLookup(command,"method",NULL,(void **)&tempstr);
     if (tempstr != NULL) sg->Sample2DMethod = FetchSettingByName(tempstr, SW_SAMPLEMETHOD_INT, SW_SAMPLEMETHOD_STR);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"samples")==0)) /* unset samples */
+  else if (strcmp_unset && (strcmp(setoption,"samples")==0)) /* unset samples */
    {
     sg->samples        = settings_graph_default.samples;
     sg->SamplesX       = settings_graph_default.SamplesX;
@@ -1266,7 +1285,7 @@ void directive_set(Dict *command)
     sg->SamplesYAuto   = settings_graph_default.SamplesYAuto;
     sg->Sample2DMethod = settings_graph_default.Sample2DMethod;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"seed")==0)) /* set seed */
+  else if (strcmp_set && (strcmp(setoption,"seed")==0)) /* set seed */
    {
     DictLookup(command,"seed",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set seed' command was not finite."); return; }
@@ -1276,12 +1295,12 @@ void directive_set(Dict *command)
     settings_term_current.RandomSeed = li;
     dcfmath_SetRandomSeed(li);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"seed")==0)) /* unset seed */
+  else if (strcmp_unset && (strcmp(setoption,"seed")==0)) /* unset seed */
    {
     settings_term_current.RandomSeed = settings_term_default.RandomSeed;
     dcfmath_SetRandomSeed(settings_term_current.RandomSeed);
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"size")==0)) /* set size | set width */
+  else if (strcmp_set && (strcmp(setoption,"size")==0)) /* set size | set width */
    {
     if (DictContains(command,"width"))
      {
@@ -1376,7 +1395,7 @@ void directive_set(Dict *command)
       sg->AutoZAspect = SW_ONOFF_ON;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"size")==0)) /* unset size */
+  else if (strcmp_unset && (strcmp(setoption,"size")==0)) /* unset size */
    {
     sg->width.real   = settings_graph_default.width.real;
     sg->aspect       = settings_graph_default.aspect;
@@ -1384,7 +1403,7 @@ void directive_set(Dict *command)
     sg->zaspect      = settings_graph_default.zaspect;
     sg->AutoZAspect  = settings_graph_default.AutoZAspect;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style")==0)) /* set style data / function */
+  else if (strcmp_set && (strcmp(setoption,"style")==0)) /* set style data / function */
    {
     DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
     if (tempstr[0]=='d') tempstyle = &sg->DataStyle;
@@ -1394,7 +1413,7 @@ void directive_set(Dict *command)
     *tempstyle = ww_temp2;
     tempstyle->malloced = 1;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"style_numbered")==0)) /* set style */
+  else if (strcmp_set && (strcmp(setoption,"style_numbered")==0)) /* set style */
    {
     DictLookup(command,"style_set_number"   ,NULL,(void **)&tempint);
     if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
@@ -1402,7 +1421,7 @@ void directive_set(Dict *command)
     with_words_destroy (&(settings_plot_styles[*tempint]));
     with_words_copy    (&(settings_plot_styles[*tempint]), &ww_temp1);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"style")==0)) /* unset style */
+  else if (strcmp_unset && (strcmp(setoption,"style")==0)) /* unset style */
    {
     DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
     if (tempstr != NULL)
@@ -1426,7 +1445,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"terminal")==0)) /* set terminal */
+  else if (strcmp_set && (strcmp(setoption,"terminal")==0)) /* set terminal */
    {
     DictLookup(command,"term"   ,NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.TermType        = FetchSettingByName(tempstr, SW_TERMTYPE_INT, SW_TERMTYPE_STR);
@@ -1450,7 +1469,7 @@ void directive_set(Dict *command)
     DictLookup(command,"invert" ,NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.TermInvert      = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"terminal")==0)) /* unset terminal */
+  else if (strcmp_unset && (strcmp(setoption,"terminal")==0)) /* unset terminal */
    {
     settings_term_current.colour         = settings_term_default.colour;
     settings_term_current.dpi            = settings_term_default.dpi;
@@ -1461,27 +1480,27 @@ void directive_set(Dict *command)
     settings_term_current.TermInvert     = settings_term_default.TermInvert;
     settings_term_current.TermTransparent= settings_term_default.TermTransparent;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"texthalign")==0)) /* set texthalign */
+  else if (strcmp_set && (strcmp(setoption,"texthalign")==0)) /* set texthalign */
    {
     if (DictContains(command,"left"  )) sg->TextHAlign = SW_HALIGN_LEFT;
     if (DictContains(command,"centre")) sg->TextHAlign = SW_HALIGN_CENT;
     if (DictContains(command,"right" )) sg->TextHAlign = SW_HALIGN_RIGHT;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"texthalign")==0)) /* unset texthalign */
+  else if (strcmp_unset && (strcmp(setoption,"texthalign")==0)) /* unset texthalign */
    {
     settings_graph_default.TextHAlign = sg->TextHAlign;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"textvalign")==0)) /* set textvalign */
+  else if (strcmp_set && (strcmp(setoption,"textvalign")==0)) /* set textvalign */
    {
     if (DictContains(command,"top"   )) sg->TextVAlign = SW_VALIGN_TOP;
     if (DictContains(command,"centre")) sg->TextVAlign = SW_VALIGN_CENT;
     if (DictContains(command,"bottom")) sg->TextVAlign = SW_VALIGN_BOT;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"textvalign")==0)) /* unset textvalign */
+  else if (strcmp_unset && (strcmp(setoption,"textvalign")==0)) /* unset textvalign */
    {
     settings_graph_default.TextVAlign = sg->TextVAlign;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"tics")==0)) /* set tics */
+  else if (strcmp_set && (strcmp(setoption,"tics")==0)) /* set tics */
    {
 
 #define SET_TICS \
@@ -1648,7 +1667,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"tics")==0)) /* unset tics */
+  else if (strcmp_unset && (strcmp(setoption,"tics")==0)) /* unset tics */
    {
 
 #define UNSET_TICS \
@@ -1707,7 +1726,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"title")==0)) /* set title */
+  else if (strcmp_set && (strcmp(setoption,"title")==0)) /* set title */
    {
     DictLookup(command,"title",NULL,(void **)&tempstr);
     strncpy(sg->title, tempstr, FNAME_LENGTH-4);
@@ -1747,11 +1766,11 @@ void directive_set(Dict *command)
     if (tempval != NULL) sg->TitleXOff.real = tempval ->real;
     if (tempval2!= NULL) sg->TitleYOff.real = tempval2->real;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"notitle")==0)) /* set notitle */
+  else if (strcmp_set && (strcmp(setoption,"notitle")==0)) /* set notitle */
    {
     strcpy(sg->title, "");
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"noxformat")==0)) /* set noxformat */
+  else if (strcmp_set && (strcmp(setoption,"noxformat")==0)) /* set noxformat */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
@@ -1765,14 +1784,14 @@ void directive_set(Dict *command)
       tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"title")==0)) /* unset title */
+  else if (strcmp_unset && (strcmp(setoption,"title")==0)) /* unset title */
    {
     strncpy(sg->title, settings_graph_default.title, FNAME_LENGTH-4);
     sg->title[FNAME_LENGTH-4]='\0';
     sg->TitleXOff = settings_graph_default.TitleXOff;
     sg->TitleYOff = settings_graph_default.TitleYOff;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"trange")==0)) /* set trange */
+  else if (strcmp_set && (strcmp(setoption,"trange")==0)) /* set trange */
    {
     DictLookup(command,"min",NULL,(void **)&tempval);
     DictLookup(command,"max",NULL,(void **)&tempval2);
@@ -1786,12 +1805,12 @@ void directive_set(Dict *command)
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
     if (tempstr != NULL) { valobj = sg->Tmin; sg->Tmin = sg->Tmax; sg->Tmax = valobj; }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"trange")==0)) /* unset trange */
+  else if (strcmp_unset && (strcmp(setoption,"trange")==0)) /* unset trange */
    {
     sg->Tmin = settings_graph_default.Tmin;
     sg->Tmax = settings_graph_default.Tmax;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"unit")==0)) /* set unit */
+  else if (strcmp_set && (strcmp(setoption,"unit")==0)) /* set unit */
    {
     DictLookup(command,"angle"    , NULL,(void **)&tempstr);
     if (tempstr != NULL) settings_term_current.UnitAngleDimless    = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
@@ -1903,7 +1922,7 @@ void directive_set(Dict *command)
      }
 
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit")==0)) /* unset unit */
+  else if (strcmp_unset && (strcmp(setoption,"unit")==0)) /* unset unit */
    {
     double temp;
     settings_term_current.UnitAngleDimless    = settings_term_default.UnitAngleDimless;
@@ -1916,20 +1935,20 @@ void directive_set(Dict *command)
     ppl_unit_PreferredUnits = ListCopy(ppl_unit_PreferredUnits_default, 1);
     _lt_SetMemContext(temp);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_angle")==0)) /* unset unit angle */
+  else if (strcmp_unset && (strcmp(setoption,"unit_angle")==0)) /* unset unit angle */
    {
     settings_term_current.UnitAngleDimless    = settings_term_default.UnitAngleDimless;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_display")==0)) /* unset unit display */
+  else if (strcmp_unset && (strcmp(setoption,"unit_display")==0)) /* unset unit display */
    {
     settings_term_current.UnitDisplayAbbrev   = settings_term_default.UnitDisplayAbbrev;
     settings_term_current.UnitDisplayPrefix   = settings_term_default.UnitDisplayPrefix;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_scheme")==0)) /* unset unit scheme */
+  else if (strcmp_unset && (strcmp(setoption,"unit_scheme")==0)) /* unset unit scheme */
    {
     settings_term_current.UnitScheme          = settings_term_default.UnitScheme;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_preferred")==0)) /* unset unit preferred */
+  else if (strcmp_unset && (strcmp(setoption,"unit_preferred")==0)) /* unset unit preferred */
    {
     double temp;
     temp = lt_GetMemContext();
@@ -1937,7 +1956,7 @@ void directive_set(Dict *command)
     ppl_unit_PreferredUnits = ListCopy(ppl_unit_PreferredUnits_default, 1);
     _lt_SetMemContext(temp);
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"unit_of")==0)) /* unset unit of */
+  else if (strcmp_unset && (strcmp(setoption,"unit_of")==0)) /* unset unit of */
    {
     DictLookup(command,"quantity",NULL,(void **)&tempstr);
     i=0; // Quantity recognised
@@ -1951,11 +1970,11 @@ void directive_set(Dict *command)
      }
     if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"width")==0)) /* unset width */
+  else if (strcmp_unset && (strcmp(setoption,"width")==0)) /* unset width */
    {
     sg->width.real = settings_graph_default.width.real;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"view")==0)) /* set view */
+  else if (strcmp_set && (strcmp(setoption,"view")==0)) /* set view */
    {
     DictLookup(command,"xy_angle",NULL,(void **)&tempval);
     DictLookup(command,"yz_angle",NULL,(void **)&tempval2);
@@ -1988,12 +2007,12 @@ void directive_set(Dict *command)
     while (sg->XYview.real < 0.0) sg->XYview.real += 2*M_PI;
     while (sg->YZview.real < 0.0) sg->YZview.real += 2*M_PI;
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"view")==0)) /* unset view */
+  else if (strcmp_unset && (strcmp(setoption,"view")==0)) /* unset view */
    {
     sg->XYview.real = settings_graph_default.XYview.real;
     sg->YZview.real = settings_graph_default.YZview.real;
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"viewer")==0)) /* set viewer */
+  else if (strcmp_set && (strcmp(setoption,"viewer")==0)) /* set viewer */
    {
     unsigned char ChangedViewer = 0;
     DictLookup(command,"auto_viewer",NULL,(void **)&tempstr );
@@ -2014,14 +2033,14 @@ void directive_set(Dict *command)
      }
     if (ChangedViewer) SendCommandToCSP("A\n"); // Clear away SingleWindow viewer
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"viewer")==0)) /* unset viewer */
+  else if (strcmp_unset && (strcmp(setoption,"viewer")==0)) /* unset viewer */
    {
     unsigned char ChangedViewer = ( (settings_term_current.viewer != settings_term_default.viewer) || (strcmp(settings_term_current.ViewerCmd,settings_term_default.ViewerCmd)!=0) );
     settings_term_current.viewer = settings_term_default.viewer;
     strcpy(settings_term_current.ViewerCmd, settings_term_default.ViewerCmd);
     if (ChangedViewer) SendCommandToCSP("A\n"); // Clear away SingleWindow viewer
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"xformat")==0)) /* set xformat */
+  else if (strcmp_set && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
@@ -2062,7 +2081,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"xformat")==0)) /* unset xformat */
+  else if (strcmp_unset && (strcmp(setoption,"xformat")==0)) /* unset xformat */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
@@ -2092,7 +2111,7 @@ void directive_set(Dict *command)
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
       if (tempaxis->label != NULL) { free(tempaxis->label); tempaxis->label = NULL; }
-      if (strcmp(directive,"unset")==0)
+      if (strcmp_unset)
        {
         tempaxis->label       = tempaxis2->label;
         tempaxis->LabelRotate = tempaxis2->LabelRotate;
@@ -2126,7 +2145,7 @@ void directive_set(Dict *command)
        }
      }
    }
-  else if ((strcmp(directive,"set")==0) && (strcmp(setoption,"range")==0)) /* set xrange */
+  else if (strcmp_set && (strcmp(setoption,"range")==0)) /* set xrange */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
@@ -2187,7 +2206,7 @@ void directive_set(Dict *command)
       if (tempstr != NULL) { tempaxis->RangeReversed = 0; }
      }
    }
-  else if ((strcmp(directive,"unset")==0) && (strcmp(setoption,"range")==0)) /* unset xrange */
+  else if (strcmp_unset && (strcmp(setoption,"range")==0)) /* unset xrange */
    {
     DictLookup(command,"axis",NULL,(void **)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
@@ -2275,9 +2294,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
   arrow_object *ai, *ai_default, *ai_default_prev;
   label_object *li, *li_default, *li_default_prev;
 
-  out = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Accumulate our whole output text here
-  buf = (char *)malloc(LSTR_LENGTH*sizeof(char)); // Put the value of each setting in here
-  buf2= (char *)malloc(FNAME_LENGTH*sizeof(char));
+  out = (char *)lt_malloc(8*LSTR_LENGTH *sizeof(char)); // Accumulate our whole output text here
+  buf = (char *)lt_malloc(  LSTR_LENGTH *sizeof(char)); // Put the value of each setting in here
+  buf2= (char *)lt_malloc(  FNAME_LENGTH*sizeof(char));
 
   if ((out==NULL)||(buf==NULL)||(buf2==NULL))
    {
@@ -2406,6 +2425,17 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
     sprintf(buf, "%s", *(char **)FetchSettingName(sg->clip, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
     directive_show3(out+i, ItemSet, 0, interactive, "clip", buf, (sg->clip == settings_graph_default.clip), "Selects whether point symbols which extend over the axes of graphs are allowed to do so, or are clipped at the edges");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colkey",1)>=0))
+   {
+    if (sg->ColKey == SW_ONOFF_OFF)
+     {
+      sprintf(buf, "%s", *(char **)FetchSettingName(sg->ColKey, SW_ONOFF_INT, (void *)SW_ONOFF_STR, sizeof(char *)));
+     } else {
+      sprintf(buf, "%s", *(char **)FetchSettingName(sg->ColKeyPos, SW_COLKEYPOS_INT, (void *)SW_COLKEYPOS_STR, sizeof(char *)));
+     }
+    directive_show3(out+i, ItemSet, 1, interactive, "colkey", buf, (settings_graph_default.ColKey == sg->ColKey)&&((sg->ColKey==SW_ONOFF_OFF)||(settings_graph_default.ColKeyPos == sg->ColKeyPos)), "Selects whether a colour scale is included on colourmap plots");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colmap",1)>=0))
@@ -3369,7 +3399,6 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
 
   if (p!=0) ppl_report(out);
-  free(out); free(buf); free(buf2);
   return p;
  }
 

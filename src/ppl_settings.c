@@ -152,6 +152,8 @@ void ppl_settings_makedefault()
   settings_graph_default.Cmaxauto              = SW_BOOL_TRUE;
   ppl_units_zero(&settings_graph_default.Cmin);
   settings_graph_default.Cminauto              = SW_BOOL_TRUE;
+  settings_graph_default.ColKey                = SW_ONOFF_ON;
+  settings_graph_default.ColKeyPos             = SW_COLKEYPOS_R;
   settings_graph_default.ColMapColSpace        = SW_COLSPACE_RGB;
   strcpy(settings_graph_default.ColMapExpr1, "(c)");
   strcpy(settings_graph_default.ColMapExpr2, "(c)");
@@ -200,10 +202,10 @@ void ppl_settings_makedefault()
   settings_graph_default.PointLineWidth= 1.0;
   settings_graph_default.projection    = SW_PROJ_FLAT;
   settings_graph_default.samples       = 250;
-  settings_graph_default.SamplesX      = 0;
-  settings_graph_default.SamplesXAuto  = SW_BOOL_TRUE;
-  settings_graph_default.SamplesY      = 0;
-  settings_graph_default.SamplesYAuto  = SW_BOOL_TRUE;
+  settings_graph_default.SamplesX      = 40;
+  settings_graph_default.SamplesXAuto  = SW_BOOL_FALSE;
+  settings_graph_default.SamplesY      = 40;
+  settings_graph_default.SamplesYAuto  = SW_BOOL_FALSE;
   settings_graph_default.Sample2DMethod= SW_SAMPLEMETHOD_INVSQ;
   settings_graph_default.TextColour    = COLOUR_BLACK;
   settings_graph_default.TextColour1   = 0;

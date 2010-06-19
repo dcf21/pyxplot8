@@ -1727,6 +1727,7 @@ Islamic}, {\tt Jewish}, {\tt Julian}, {\tt Muslim}, {\tt Papal} and {\tt
 Russian}, where {\tt Jewish} is an alias for {\tt Hebrew} and {\tt Muslim} is
 an alias for {\tt Islamic}.
 
+
 \subsection{clip}\indcmd{set clip}
 
 \begin{verbatim}
@@ -1736,6 +1737,105 @@ set clip
 The \indcmdt{set clip} causes PyXPlot to clip points which extend over the edge
 of plots. The opposite effect is achieved using the {\tt set noclip}
 command.
+
+
+\subsection{colkey}\indcmd{set colkey}
+
+\begin{verbatim}
+set colkey [<position>]
+\end{verbatim}
+
+The setting {\tt colkey} determines whether colour scales are drawn along the
+edges of plots drawn using the \indpst{colourmap} plot style. Issuing the
+command
+
+\begin{verbatim}
+set colkey
+\end{verbatim}
+
+\noindent by itself causes such a scale to be drawn on graphs in the default
+position, usually along the right-hand edge of the graphs. The converse action
+is achieved by:
+
+\begin{verbatim}
+set nocolkey
+\end{verbatim}
+
+\noindent The command
+
+\begin{verbatim}
+unset colkey
+\end{verbatim}
+
+\noindent causes PyXPlot to revert to its default behaviour, as specified in a
+configuration file, if present. A position for the key may optionally be
+specified after the {\tt set colkey} command, as in the example:
+
+\begin{verbatim}
+set colkey bottom
+\end{verbatim}
+
+Recognised positions are {\tt top}, {\tt bottom}, {\tt left} and {\tt right}.
+
+
+\subsection{colmap}\indcmd{set colmap}
+
+\begin{verbatim}
+set colmap ( rgb<r>:<g>:<b> |
+             hsb<h>:<s>:<b> |
+             cmyk<c>:<m>:<y>:<k> )
+\end{verbatim}
+
+The setting {\tt colmap} is used to specify the mapping between ordinate values
+and colours used by the \indpst{colourmap} plot style. As elsewhere in PyXPlot,
+the colour components should be numerical expressions which evaluate to a value
+in the range zero to one. Within these expressions, the variable {\tt c} refers
+to the renormalised ordinate values supplied as the third column of data,
+varying between zero and one. Thus, the following setting, which is the
+default, produces a greyscale colour mapping:
+
+\begin{verbatim}
+set colmap rgb(c):(c):(c)
+\end{verbatim}
+
+More complex colour mappings, which depend upon more than one data value, are
+allowed using syntax of the form:
+
+\begin{verbatim}
+set colmap hsb(arg($5+i*$6)/pi+0.5):0.5:(c)
+\end{verbatim}
+
+\noindent which would use the complex argument of the expression {\tt
+\$5+i*\$6} to determine the hue to use. Note that when data values are read
+directly in this way, they are not renormalised.
+
+
+\subsection{contours}\indcmd{set contours}
+
+\begin{verbatim}
+set contours <number>
+\end{verbatim}
+
+The setting {\tt contours} sets the number of contours which are drawn when
+using the \indpst{contourmap} plot style. These are evenly spaced -- either
+linearly or logarithmically, depending upon the state of the {\tt logscale c}
+setting -- between the values specified in the {\tt crange} setting.
+
+
+\subsection{crange}\indcmd{set crange}
+
+\begin{verbatim}
+set crange <range>
+\end{verbatim}
+
+The {\tt set crange} command changes the range of ordinate values represented
+by different colours in the \indpst{colourmap} plot style, and by contours in
+the \indpst{contourmap} plot style. In each case, the colours or contours are
+evenly spaced either linearly or logarithmically, depending upon the state of
+the {\tt logscale c} setting.  For more details of the syntax of the range
+specifier, see the {\tt set xrange} command. The {\tt *} character may be used
+to indicate that the scale should automatically be determined to match the data
+provided.
 
 
 \subsection{data style}\indcmd{set data style}
@@ -2178,6 +2278,17 @@ See {\tt backup}.
 See {\tt clip}.
 
 
+\subsection{nocolkey}\indcmd{set nocolkey}
+
+\begin{verbatim}
+set nocolkey
+\end{verbatim}
+
+Issuing the command {\tt set nocolkey} causes plots to be generated with no
+colour scale when the \indpst{contourmap} plot style is used.  See the {\tt set
+colkey} command for more details.
+
+
 \subsection{nodisplay}\indcmd{set nodisplay}
 
 See {\tt display}.
@@ -2529,7 +2640,10 @@ set preamble \def\degrees{$^\circ$}
 \subsection{samples}\indcmd{set samples}
 
 \begin{verbatim}
-set samples <value>
+set samples [<value>]
+            [grid <x_samples> [x] <y_samples>]
+            [interpolate ( inversesquare |
+                           nearestneighbour ) ]
 \end{verbatim}
 
 The setting {\tt samples} determines the number of values along the ordinate
@@ -2544,6 +2658,17 @@ ordinate axis.  Increasing this value will cause functions to be plotted more
 smoothly, but also more slowly, and the PostScript files generated will also be
 larger. When functions are plotted with the {\tt points} plot style, this
 setting controls the number of points plotted.
+
+After the keyword {\tt grid} may be specified the dimensions of the
+two-dimensional grid of samples used in the \indpst{colourmap} and
+\indpst{surface} plot styles, and when calculating the contours to be plotted
+in the \indpst{contourmap} plot style. If a {\tt *} is given in place of either
+of the dimensions, then the same number of samples as are specified in {\tt
+<value>} are taken.
+
+After the keyword {\tt interpolate}, the method used to interpolated
+non-gridded two-dimensional data onto the above-mentioned grid may be
+specified.
 
 
 \subsection{seed}\indcmd{set seed}
@@ -2975,7 +3100,10 @@ set trange <range>
 
 The {\tt set trange} command changes the range of the free parameter {\tt t}
 used when generating parametric plots.  For more details of the syntax of the
-range specifier, see the {\tt set xrange} command.
+range specifier, see the {\tt set xrange} command. Note that {\tt t} is not
+allowed to autoscale, and so the {\tt *} character is not permitted in the
+specified range.
+
 
 \subsection{unit}\indcmd{set unit}
 

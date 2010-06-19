@@ -70,6 +70,10 @@ char *SW_KEYPOS_STR[] = {"top right"  , "top xcentre" , "top left"   , "ycentre 
 int   SW_KEYPOS_ACL[] = {5            , 5             , 5            , 9               , 9                 , 9              , 8              , 8                , 8             , 1               , 2               , 1                 };
 int   SW_KEYPOS_INT[] = {SW_KEYPOS_TR , SW_KEYPOS_TM  , SW_KEYPOS_TL , SW_KEYPOS_MR    , SW_KEYPOS_MM      , SW_KEYPOS_ML   , SW_KEYPOS_BR   , SW_KEYPOS_BM     , SW_KEYPOS_BL  , SW_KEYPOS_ABOVE , SW_KEYPOS_BELOW , SW_KEYPOS_OUTSIDE , -1};
 
+char *SW_COLKEYPOS_STR[] = {"top"          , "bottom"       , "left"         , "right"        };
+int   SW_COLKEYPOS_ACL[] = {1              , 1              , 1              , 1              };
+int   SW_COLKEYPOS_INT[] = {SW_COLKEYPOS_T , SW_COLKEYPOS_B , SW_COLKEYPOS_L , SW_COLKEYPOS_R , -1};
+
 char *SW_TICDIR_STR[] = {"inwards"    , "outwards"    , "both"         };
 int   SW_TICDIR_ACL[] = {1            , 1             , 1              };
 int   SW_TICDIR_INT[] = {SW_TICDIR_IN , SW_TICDIR_OUT , SW_TICDIR_BOTH , -1};

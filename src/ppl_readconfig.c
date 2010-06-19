@@ -164,6 +164,15 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "CLIP"         )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.clip          = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Clip."         , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "COLKEY"       )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.ColKey        = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting ColKey."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "COLKEYPOS"    )==0)
+        if ((i=FetchSettingByName(setvalue,SW_COLKEYPOS_INT,SW_COLKEYPOS_STR))>0)                settings_graph_default.ColKeyPos     = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting ColKeyPos."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "COLOUR"       )==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .colour        = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Colour."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "CONTOURS"     )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.NContours     = max((int)fl, 2);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Contours."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
@@ -182,9 +191,6 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "CRANGE_MAX_AUTO")==0)
         if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cmaxauto        = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Max_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "COLOUR"       )==0)
-        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .colour        = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Colour."       , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "DATASTYLE"    )==0)
         if ((i=FetchSettingByName(setvalue,SW_STYLE_INT, SW_STYLE_STR ))>0)                      settings_graph_default.DataStyle.style = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting DataStyle."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

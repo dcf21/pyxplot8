@@ -200,6 +200,19 @@ extern int   SW_KEYPOS_ACL[];
 extern int   SW_KEYPOS_INT[];
 #endif
 
+// Colour key position switches
+
+#define SW_COLKEYPOS_T 14101
+#define SW_COLKEYPOS_B 14102
+#define SW_COLKEYPOS_L 14103
+#define SW_COLKEYPOS_R 14104
+
+#ifndef _PPL_SETTING_TYPES_C
+extern char *SW_COLKEYPOS_STR[];
+extern int   SW_COLKEYPOS_ACL[];
+extern int   SW_COLKEYPOS_INT[];
+#endif
+
 // Tick Direction Switches
 
 #define SW_TICDIR_IN   15001

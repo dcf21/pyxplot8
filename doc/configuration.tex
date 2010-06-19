@@ -149,6 +149,8 @@ BoxWidth = 0
 CalendarIn = British
 CalendarOut = British
 Clip = Off
+ColKey = On
+ColKeyPos = Right
 Colour = On
 Contours = 12
 CRange_Log = False
@@ -189,10 +191,10 @@ PointLineWidth = 1.0
 PointSize = 1.0
 Samples = 250
 Samples_Method = InverseSquare
-Samples_X = 0
-Samples_X_Auto = True
-Samples_Y = 0
-Samples_Y_Auto = True
+Samples_X_Auto = False
+Samples_X = 40
+Samples_Y_Auto = False
+Samples_Y = 40
 TermAntiAlias = On
 TermEnlarge = Off
 TermInvert = Off
@@ -359,6 +361,18 @@ The {\tt settings} section can contain any of the following settings in any orde
                {\bf Analogous set command:} \indcmdts{set clip}
 
                Sets whether datapoints close to the edges of graphs should be clipped at the edges ({\tt On}) or allowed to overrun the axes ({\tt Off}).
+               \\
+{\tt ColKey} & {\bf Possible values:} {\tt On}, {\tt Off}.
+
+               {\bf Analogous set command:} \indcmdts{set colkey}
+
+               Sets whether \indpst{colourmap} plots have a scale along one side relating colour to ordinate value.
+               \\
+{\tt ColKeyPos} & {\bf Possible values:} {\tt Top}, {\tt Bottom}, {\tt Left}, {\tt Right}.
+
+               {\bf Analogous set command:} \indcmdts{set colkey}
+
+               Sets the side of the plot along which the colour legend should appear on \indpst{colourmap} plots.
                \\
 {\tt Colour} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
@@ -604,31 +618,31 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
-               Sets the method used to interpolate two-dimensional non-gridded arrays of datapoints from datafiles within the \indcmdt{interpolate} and when plotting using the \indpst{colourmap} and \indpst{contourmap} plot styles.
+               Sets the method used to interpolate two-dimensional non-gridded arrays of datapoints from datafiles within the \indcmdt{interpolate} and when plotting using the \indpst{colourmap}, \indpst{contourmap} and \indpst{surface} plot styles.
                \\
 {\tt Samples\_X} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
-               Sets the number of samples (datapoints) to be evaluated along the first abscissa axis when drawing colour maps and when calculating contour maps.
+               Sets the number of samples (datapoints) to be evaluated along the first abscissa axis when drawing colour maps and surfaces, and when calculating contour maps.
                \\
 {\tt Samples\_X\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
-               Sets whether the number of samples (datapoints) to be evaluated along the first abscissa axis when drawing colour maps and when calculating contour maps should follow the number of samples set with the \indcmdts{set samples} command.
+               Sets whether the number of samples (datapoints) to be evaluated along the first abscissa axis when drawing colour maps and surfaces, and when calculating contour maps should follow the number of samples set with the \indcmdts{set samples} command.
                \\
 {\tt Samples\_Y} & {\bf Possible values:} Any integer.
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
-               Sets the number of samples (datapoints) to be evaluated along the second abscissa axis when drawing colour maps and when calculating contour maps.
+               Sets the number of samples (datapoints) to be evaluated along the second abscissa axis when drawing colour maps and surfaces, and when calculating contour maps.
                \\
 {\tt Samples\_Y\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
 
                {\bf Analogous set command:} \indcmdts{set samples}
 
-               Sets whether the number of samples (datapoints) to be evaluated along the second abscissa axis when drawing colour maps and when calculating contour maps should follow the number of samples set with the \indcmdts{set samples} command.
+               Sets whether the number of samples (datapoints) to be evaluated along the second abscissa axis when drawing colour maps and surfaces, and when calculating contour maps should follow the number of samples set with the \indcmdts{set samples} command.
                \\
 {\tt TermAntiAlias} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
