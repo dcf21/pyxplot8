@@ -25,8 +25,8 @@
 #include "ppl_datafile.h"
 #include "ppl_settings.h"
 
-void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataTable *in, const double x, const double y);
-void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settings_graph *sg, const DataTable *in, const double xmin, const double xmax, const unsigned char logx, const double ymin, const double ymax, const unsigned char logy);
+void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *in, const long InSize, const double x, const double y);
+void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settings_graph *sg, const double *in, const long InSize, const double xmin, const double xmax, const unsigned char logx, const double ymin, const double ymax, const unsigned char logy);
 
 #endif
 

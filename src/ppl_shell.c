@@ -371,7 +371,18 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else if (strcmp(directive, "image")==0)
    directive_image(command, interactive);
   else if (strcmp(directive, "interpolate2d")==0)
-   return directive_interpolate(command,INTERP_2D);
+   {
+    int type = INTERP_2D;
+    char *tempstr;
+    DictLookup(command,"bmp",NULL,(void **)(&tempstr));
+    if (tempstr!=NULL) switch (tempstr[4])
+     {
+      case 'r': type = INTERP_BMPR; break;
+      case 'g': type = INTERP_BMPG; break;
+      case 'b': type = INTERP_BMPB; break;
+     }
+    return directive_interpolate(command,type);
+   }
   else if (strcmp(directive, "linear")==0)
    return directive_interpolate(command,INTERP_LINEAR);
   else if (strcmp(directive, "list")==0)

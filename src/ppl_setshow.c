@@ -3256,7 +3256,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
      {
       FDiter = (FunctionDescriptor *)DictIter->data;
       SHOW_HIGHLIGHT((FDiter->modified==0));
-      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) && (FDiter->FunctionType != PPL_USERSPACE_HISTOGRAM) && (FDiter->FunctionType != PPL_USERSPACE_FFT) && (FDiter->FunctionType != PPL_USERSPACE_SUBROUTINE))
+      if ( (FDiter->FunctionType != PPL_USERSPACE_USERDEF) && (FDiter->FunctionType != PPL_USERSPACE_SPLINE) && (FDiter->FunctionType != PPL_USERSPACE_INTERP2D) && (FDiter->FunctionType != PPL_USERSPACE_BMPDATA) && (FDiter->FunctionType != PPL_USERSPACE_HISTOGRAM) && (FDiter->FunctionType != PPL_USERSPACE_FFT) && (FDiter->FunctionType != PPL_USERSPACE_SUBROUTINE))
        {
         sprintf(out+i, "# %-17s: %s.\n", DictIter->key, FDiter->description);
        }
@@ -3306,11 +3306,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           sprintf(out+i,"=%s\n",(char *)FDiter->description); i+=strlen(out+i);
           SHOW_DEHIGHLIGHT;
          }
-        else if (FDiter->FunctionType == PPL_USERSPACE_SPLINE)
+        else if ((FDiter->FunctionType == PPL_USERSPACE_SPLINE) || (FDiter->FunctionType == PPL_USERSPACE_INTERP2D) || (FDiter->FunctionType == PPL_USERSPACE_BMPDATA))
          {
           SHOW_HIGHLIGHT((FDiter->modified==0));
-          sprintf(out+i,"%s(x)= [%s interpolation of data from the file '%s']\n",DictIter->key,
+          sprintf(out+i,"%s(x)= [%s interpolation of data from the %sfile '%s']\n",DictIter->key,
                                                                                 ((SplineDescriptor *)FDiter->FunctionPtr)->SplineType,
+                                                                                (FDiter->FunctionType == PPL_USERSPACE_BMPDATA)?"bitmap ":"",
                                                                                 ((SplineDescriptor *)FDiter->FunctionPtr)->filename );
           i+=strlen(out+i);
           SHOW_DEHIGHLIGHT;

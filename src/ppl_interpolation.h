@@ -33,9 +33,13 @@
 #define INTERP_AKIMA  23004
 #define INTERP_POLYN  23005
 #define INTERP_2D     23006
+#define INTERP_BMPR   23007
+#define INTERP_BMPG   23008
+#define INTERP_BMPB   23009
 
 int  directive_interpolate(Dict *command, int mode);
 void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, value *out, int *status, char *errout);
+void ppl_interp2d_evaluate(const char *FuncName, SplineDescriptor *desc, const value *in1, const value *in2, const unsigned char bmp, value *out, int *status, char *errout);
 
 #endif
 

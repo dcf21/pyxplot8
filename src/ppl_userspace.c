@@ -291,6 +291,13 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
       if (((SplineDescriptor *)in->FunctionPtr)->accelerator != NULL ) gsl_interp_accel_free(((SplineDescriptor *)in->FunctionPtr)->accelerator);
      }
    }
+  else if ((in->FunctionType == PPL_USERSPACE_INTERP2D) || (in->FunctionType == PPL_USERSPACE_BMPDATA))
+   {
+    if (in->FunctionPtr!=NULL)
+     {
+      if (((SplineDescriptor *)in->FunctionPtr)->SplineObj   != NULL ) free(((SplineDescriptor *)in->FunctionPtr)->SplineObj);
+     }
+   }
   else if (in->FunctionType == PPL_USERSPACE_HISTOGRAM)
    {
     if (in->FunctionPtr!=NULL)
@@ -922,6 +929,13 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
         while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
         j=0;
         ppl_spline_evaluate(DictItem->key, (SplineDescriptor *)(((FunctionDescriptor *)DictItem->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos, &j, errtext);
+        if (j>0) { *errpos = start+i; return; }
+       }
+      else if ((FunctionType == PPL_USERSPACE_INTERP2D) || (FunctionType == PPL_USERSPACE_BMPDATA))
+       {
+        while (StatusRow[i]==3) i--; while ((i>0)&&(StatusRow[i]==8)) i--; if (StatusRow[i]!=8) i++; // Rewind back to beginning of f(x) text
+        j=0;
+        ppl_interp2d_evaluate(DictItem->key, (SplineDescriptor *)(((FunctionDescriptor *)DictItem->data)->FunctionPtr) , ResultBuffer+bufpos+2 , ResultBuffer+bufpos+3, (FunctionType == PPL_USERSPACE_BMPDATA), ResultBuffer+bufpos, &j, errtext);
         if (j>0) { *errpos = start+i; return; }
        }
       else if (FunctionType == PPL_USERSPACE_HISTOGRAM)

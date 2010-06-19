@@ -39,10 +39,12 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
-void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataTable *in, const double x, const double y)
+void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *in, const long InSize, const double x, const double y)
  {
-  DataBlock     *blk;
-  int            i;
+  long          i;
+  const double *inX = in;
+  const double *inY = in + 1*InSize;
+  const double *inZ = in + 2*InSize;
 
   switch (sg->Sample2DMethod)
    {
@@ -51,15 +53,10 @@ void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataT
       double DistBest;
       unsigned char first=1;
       *output = 0.0;
-      blk = in->first;
-      while (blk != NULL)
+      for (i=0; i<InSize; i++)
        {
-        for (i=0; i<blk->BlockPosition; i++)
-         {
-          double dist = hypot( blk->data_real[0 + 3*i].d - x , blk->data_real[1 + 3*i].d - y );
-          if (first || (dist<DistBest)) { DistBest=dist; *output = blk->data_real[2 + 3*i].d; first=0; }
-         }
-        blk=blk->next;
+        double dist = hypot( inX[i] - x , inY[i] - y );
+        if (first || (dist<DistBest)) { DistBest=dist; *output = inZ[i]; first=0; }
        }
       break;
      }
@@ -67,19 +64,14 @@ void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataT
      {
       double WeightSum = 0.0;
       *output = 0.0;
-      blk = in->first;
-      while (blk != NULL)
+      for (i=0; i<InSize; i++)
        {
-        for (i=0; i<blk->BlockPosition; i++)
-         {
-          double dist = gsl_pow_2( blk->data_real[0 + 3*i].d - x) + gsl_pow_2(blk->data_real[1 + 3*i].d - y);
-          double weight;
-          if (dist<1e-200) { *output = blk->data_real[2 + 3*i].d; break; }
-          weight = 1.0/dist;
-          *output   += weight * blk->data_real[2 + 3*i].d;
-          WeightSum += weight;
-         }
-        blk=blk->next;
+        double dist = gsl_pow_2(inX[i] - x) + gsl_pow_2(inY[i] - y);
+        double weight;
+        if (dist<1e-200) { *output = inZ[i]; break; }
+        weight = 1.0/dist;
+        *output   += weight * inZ[i];
+        WeightSum += weight;
        }
       if (WeightSum>0.0) *output /= WeightSum;
       break;
@@ -93,7 +85,7 @@ void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataT
   return;
  }
 
-void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settings_graph *sg, const DataTable *in, const double xmin, const double xmax, const unsigned char logx, const double ymin, const double ymax, const unsigned char logy)
+void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settings_graph *sg, const double *in, const long InSize, const double xmin, const double xmax, const unsigned char logx, const double ymin, const double ymax, const unsigned char logy)
  {
   int    i,imax,j,jmax;
   long   p=0, p2, pc;
@@ -127,7 +119,7 @@ void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settin
       if (logx) x=exp(x);
       (*output)->current->data_real[p++].d = x;
       (*output)->current->data_real[p++].d = y;
-      ppl_interp2d_evaluate(&(*output)->current->data_real[p++].d, sg, in, x, y);
+      ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, in, InSize, x, y);
      }
    }
   return;

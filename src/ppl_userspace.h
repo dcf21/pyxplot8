@@ -41,16 +41,19 @@
 #define PPL_USERSPACE_SYSTEM     32051
 #define PPL_USERSPACE_STRFUNC    32052
 #define PPL_USERSPACE_SPLINE     32053
-#define PPL_USERSPACE_HISTOGRAM  32054
-#define PPL_USERSPACE_FFT        32055
-#define PPL_USERSPACE_UNIT       32056
-#define PPL_USERSPACE_INT        32057
-#define PPL_USERSPACE_SUBROUTINE 32058
+#define PPL_USERSPACE_INTERP2D   32054
+#define PPL_USERSPACE_BMPDATA    32055
+#define PPL_USERSPACE_HISTOGRAM  32056
+#define PPL_USERSPACE_FFT        32057
+#define PPL_USERSPACE_UNIT       32058
+#define PPL_USERSPACE_INT        32059
+#define PPL_USERSPACE_SUBROUTINE 32060
 
 typedef struct SplineDescriptor {
  gsl_spline       *SplineObj;
  gsl_interp_accel *accelerator;
- value             UnitX, UnitY;
+ value             UnitX, UnitY, UnitZ;
+ long              SizeX, SizeY;
  unsigned char     LogInterp;
  char             *filename, *SplineType;
  } SplineDescriptor;
