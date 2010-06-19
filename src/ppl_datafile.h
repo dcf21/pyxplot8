@@ -88,6 +88,8 @@ typedef struct DataTable {
 
 // Functions in ppl_datafile.c
 
+DataTable *DataFile_NewDataTable(const int Ncolumns, const int MemoryContext, const int Length);
+
 void DataFile_CreateBackupIfRequired(const char *filename);
 
 void __inline__ DataFile_UsingConvert_FetchColumnByNumber(double ColumnNo, value *output, const int NumericOut, const unsigned char MallocOut, int *status, char *errtext);

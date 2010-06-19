@@ -370,6 +370,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_if(command, IterLevel+1);
   else if (strcmp(directive, "image")==0)
    directive_image(command, interactive);
+  else if (strcmp(directive, "interpolate2d")==0)
+   return directive_interpolate(command,INTERP_2D);
   else if (strcmp(directive, "linear")==0)
    return directive_interpolate(command,INTERP_LINEAR);
   else if (strcmp(directive, "list")==0)

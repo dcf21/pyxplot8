@@ -41,6 +41,7 @@
 #include "ppl_error.h"
 #include "ppl_glob.h"
 #include "ppl_interpolation.h"
+#include "ppl_interpolation2d.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 #include "ppl_units.h"

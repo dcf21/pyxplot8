@@ -1,4 +1,4 @@
-// ppl_interpolation.h
+// ppl_interpolation2d.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,23 +19,14 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_INTERPOLATION_H
-#define _PPL_INTERPOLATION_H 1
+#ifndef _PPL_INTERPOLATION2D_H
+#define _PPL_INTERPOLATION2D_H 1
 
-#include "ListTools/lt_dict.h"
+#include "ppl_datafile.h"
+#include "ppl_settings.h"
 
-#include "ppl_units.h"
-#include "ppl_userspace.h"
-
-#define INTERP_LINEAR 23001
-#define INTERP_LOGLIN 23002
-#define INTERP_SPLINE 23003
-#define INTERP_AKIMA  23004
-#define INTERP_POLYN  23005
-#define INTERP_2D     23006
-
-int  directive_interpolate(Dict *command, int mode);
-void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, value *out, int *status, char *errout);
+void ppl_interp2d_evaluate(double *output, const settings_graph *sg, const DataTable *in, const double x, const double y);
+void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settings_graph *sg, const DataTable *in, const double xmin, const double xmax, const unsigned char logx, const double ymin, const double ymax, const unsigned char logy);
 
 #endif
 
