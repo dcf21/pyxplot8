@@ -440,7 +440,7 @@ void ppl_interp2d_evaluate(const char *FuncName, SplineDescriptor *desc, const v
 
   if (!bmp)
    {
-    ppl_interp2d_eval(&dblout, &settings_graph_current, (double *)desc->SplineObj, desc->SizeX, dblin1, dblin2);
+    ppl_interp2d_eval(&dblout, &settings_graph_current, (double *)desc->SplineObj, 2, desc->SizeX, dblin1, dblin2);
    } else {
     int x = floor(dblin1);
     int y = floor(dblin2);

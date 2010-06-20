@@ -428,7 +428,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
          }
 
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, NULL, 0, NULL, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
       else
@@ -470,15 +470,15 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
 
 void eps_plot_SampleFunctions(EPSComm *x)
  {
-  int              i, j, status, ErrCount, NExpect, OrdinateRasterLen;
+  int              a, i, j, status, ErrCount, NExpect, OrdinateRasterLen, Nsamples, OrdinateRasterLen2;
   canvas_plotdesc *pd;
-  settings_axis   *OrdinateAxis, *axissets[3];
+  settings_axis   *OrdinateAxis, *OrdinateAxis2, *axissets[3];
   List            *UsingList, *EveryList;
   Dict            *tempdict;
   char             errbuffer[LSTR_LENGTH];
-  double          *OrdinateRaster;
+  unsigned char    SampleGrid;
+  double          *OrdinateRaster, *OrdinateRaster2;
   double          *SpecialRaster;
-  int              Nsamples;
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
@@ -500,44 +500,72 @@ void eps_plot_SampleFunctions(EPSComm *x)
 
       if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
-      // Fix range of ordinate axis
-      eps_plot_LinkedAxisForwardPropagate(x, OrdinateAxis, 1);
-      if (*x->status) return;
+      // Check whether we're sampling along one axis, or sampling a grid
+      SampleGrid = (pd->ww_final.linespoints == SW_STYLE_SURFACE) || (pd->ww_final.linespoints == SW_STYLE_COLOURMAP) || (pd->ww_final.linespoints == SW_STYLE_CONTOURMAP);
+      OrdinateAxis2      = SampleGrid ? (&axissets[pd->axis2xyz][pd->axis2]) : NULL;
+      OrdinateRasterLen2 = 0;
+      OrdinateRaster2    = NULL;
 
-      // Fetch ordinate raster to plot function along
-      if ((pd->ww_final.linespoints == SW_STYLE_BOXES) || (pd->ww_final.linespoints == SW_STYLE_HISTEPS))
+      // Loop over one (or two) ordinate axes
+      for (a=0; a<=SampleGrid; a++)
        {
-        // boxes and histeps plot styles have their own special rasters
-        int k;
-        double left, right, left2, right2, width;
-        left           = eps_plot_axis_InvGetPosition(0.0, OrdinateAxis);
-        right          = eps_plot_axis_InvGetPosition(1.0, OrdinateAxis);
-        if (x->current->settings.BoxWidth.real>0) width = x->current->settings.BoxWidth.real;
-        else                                      width = fabs(left-right)/(x->current->settings.samples);
-        left          += width/2 * ((right>left) ? 1.0 : -1.0);
-        right         += width/2 * ((left>right) ? 1.0 : -1.0);
-        for (k=0; k<=OrdinateAxis->AxisValueTurnings; k++) { left2  = eps_plot_axis_GetPosition(left, OrdinateAxis, k, 0); if (gsl_finite(left2 )) break; }
-        for (k=OrdinateAxis->AxisValueTurnings; k>=0; k++) { right2 = eps_plot_axis_GetPosition(right,OrdinateAxis, k, 0); if (gsl_finite(right2)) break; }
-        if ((!gsl_finite(left2))||(!gsl_finite(right2))||(right2<=left2)||(left2<0)||(left2>1)||(right2<0)||(right2>1)) { left2=0.0; right2=1.0; }
+        int *_OrdinateRasterLen; double **_OrdinateRaster; settings_axis **_OrdinateAxis;
 
-        OrdinateRaster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
-        if (OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
-        for (j=0; j<x->current->settings.samples; j++)
-          OrdinateRaster[j] = eps_plot_axis_InvGetPosition(left2 + (right2-left2)*((double)j)/(x->current->settings.samples-1), OrdinateAxis);
-        OrdinateRasterLen = x->current->settings.samples;
-       }
-      else // all other plot styles have rasters running from min -> max
-       {
-        if (OrdinateAxis->OrdinateRaster == NULL) // Make ordinate raster if we don't already have one
+        if (!a) { _OrdinateRasterLen = &OrdinateRasterLen ; _OrdinateRaster = &OrdinateRaster ; _OrdinateAxis = &OrdinateAxis ; }
+        else    { _OrdinateRasterLen = &OrdinateRasterLen2; _OrdinateRaster = &OrdinateRaster2; _OrdinateAxis = &OrdinateAxis2; }
+
+        // Fix range of ordinate axis
+        eps_plot_LinkedAxisForwardPropagate(x, *_OrdinateAxis, 1);
+        if (*x->status) return;
+
+        // Fetch ordinate raster to plot function along
+        if ((pd->ww_final.linespoints == SW_STYLE_BOXES) || (pd->ww_final.linespoints == SW_STYLE_HISTEPS))
          {
-          OrdinateAxis->OrdinateRaster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
-          if (OrdinateAxis->OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
+          // boxes and histeps plot styles have their own special rasters
+          int k;
+          double left, right, left2, right2, width;
+          left           = eps_plot_axis_InvGetPosition(0.0, *_OrdinateAxis);
+          right          = eps_plot_axis_InvGetPosition(1.0, *_OrdinateAxis);
+          if (x->current->settings.BoxWidth.real>0) width = x->current->settings.BoxWidth.real;
+          else                                      width = fabs(left-right)/(x->current->settings.samples);
+          left          += width/2 * ((right>left) ? 1.0 : -1.0);
+          right         += width/2 * ((left>right) ? 1.0 : -1.0);
+          for (k=0; k<=(*_OrdinateAxis)->AxisValueTurnings; k++) { left2  = eps_plot_axis_GetPosition(left, *_OrdinateAxis, k, 0); if (gsl_finite(left2 )) break; }
+          for (k=(*_OrdinateAxis)->AxisValueTurnings; k>=0; k++) { right2 = eps_plot_axis_GetPosition(right,*_OrdinateAxis, k, 0); if (gsl_finite(right2)) break; }
+          if ((!gsl_finite(left2))||(!gsl_finite(right2))||(right2<=left2)||(left2<0)||(left2>1)||(right2<0)||(right2>1)) { left2=0.0; right2=1.0; }
+
+          *_OrdinateRaster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
+          if (*_OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
           for (j=0; j<x->current->settings.samples; j++)
-            OrdinateAxis->OrdinateRaster[j] = eps_plot_axis_InvGetPosition(((double)j)/(x->current->settings.samples-1), OrdinateAxis);
-          OrdinateAxis->OrdinateRasterLen = x->current->settings.samples;
+            (*_OrdinateRaster)[j] = eps_plot_axis_InvGetPosition(left2 + (right2-left2)*((double)j)/(x->current->settings.samples-1), *_OrdinateAxis);
+          *_OrdinateRasterLen = x->current->settings.samples;
          }
-        OrdinateRaster    = OrdinateAxis->OrdinateRaster;
-        OrdinateRasterLen = OrdinateAxis->OrdinateRasterLen;
+        else // all other plot styles have rasters running from min -> max
+         {
+          if (SampleGrid || (*_OrdinateAxis)->OrdinateRaster == NULL) // Make ordinate raster if we don't already have one
+           {
+            int Nsamp = (!SampleGrid) ? x->current->settings.samples :
+                  (a ? (  (x->current->settings.SamplesXAuto == SW_BOOL_TRUE) ?
+                          x->current->settings.samples : x->current->settings.SamplesX )
+                     : (  (x->current->settings.SamplesYAuto == SW_BOOL_TRUE) ?
+                          x->current->settings.samples : x->current->settings.SamplesY ) );
+            *_OrdinateRaster = (double *)lt_malloc(Nsamp * sizeof(double));
+            if (*_OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
+            for (j=0; j<Nsamp; j++)
+              (*_OrdinateRaster)[j] = eps_plot_axis_InvGetPosition(((double)j)/(Nsamp-1), *_OrdinateAxis);
+            *_OrdinateRasterLen = x->current->settings.samples;
+            if (!SampleGrid)
+             {
+              (*_OrdinateAxis)->OrdinateRaster    = *_OrdinateRaster;
+              (*_OrdinateAxis)->OrdinateRasterLen = *_OrdinateRasterLen;
+             }
+           }
+          else
+           {
+            *_OrdinateRaster    = (*_OrdinateAxis)->OrdinateRaster;
+            *_OrdinateRasterLen = (*_OrdinateAxis)->OrdinateRasterLen;
+           }
+         }
        }
 
       if (DEBUG) { sprintf(temp_err_string, "Reading data from functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
@@ -545,8 +573,9 @@ void eps_plot_SampleFunctions(EPSComm *x)
       // Get data from functions
       SpecialRaster = OrdinateRaster;
       Nsamples      = OrdinateRasterLen;
-      DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
-      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+      if (!SampleGrid)
+        DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
+      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, OrdinateRaster2, OrdinateRasterLen2, (OrdinateAxis2==NULL)?NULL:&OrdinateAxis2->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage

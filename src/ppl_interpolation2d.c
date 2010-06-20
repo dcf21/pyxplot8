@@ -39,12 +39,12 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
-void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *in, const long InSize, const double x, const double y)
+void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *in, const long InSize, const int ColNum, const double x, const double y)
  {
   long          i;
   const double *inX = in;
-  const double *inY = in + 1*InSize;
-  const double *inZ = in + 2*InSize;
+  const double *inY = in +        InSize;
+  const double *inZ = in + ColNum*InSize;
 
   switch (sg->Sample2DMethod)
    {
@@ -87,14 +87,15 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
 
 void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *in, settings_axis *axis_x, settings_axis *axis_y, unsigned char SampleToEdge)
  {
-  int        i,imax,j,jmax,TempContext;
-  double    *indata, *d[3];
+  int        i, imax, j, jmax, c, k, TempContext;
+  double    *indata, *d[USING_ITEMS_MAX+4];
   long       p, p2, pc, InSize;
   DataBlock *blk;
   imax = (sg->SamplesXAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesX;
   jmax = (sg->SamplesYAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesY;
 
-  *output = DataFile_NewDataTable(3, lt_GetMemContext(), imax*jmax);
+  k = in->Ncolumns;
+  *output = DataFile_NewDataTable(k, lt_GetMemContext(), imax*jmax);
   if (*output == NULL) return; // Memory fail
 
   InSize = in->Nrows;
@@ -102,24 +103,20 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
   p2 = (*output)->current->BlockPosition = imax*jmax;
   for (pc=0; pc<p2; pc++) (*output)->current->split   [pc] = 0;
   for (pc=0; pc<p2; pc++) (*output)->current->text    [pc] = NULL;
-  for (pc=0; pc<p2; pc++) (*output)->current->FileLine[pc] = -1;
+  for (pc=0; pc<p2; pc++) (*output)->current->FileLine[pc] = 0;
 
   // Extract data into a temporary array
   TempContext = lt_DescendIntoNewContext();
 
-  indata = (double *)lt_malloc(3 * in->Nrows * sizeof(double));
-  d[0] = indata;
-  d[1] = indata +   InSize;
-  d[2] = indata + 2*InSize;
+  indata = (double *)lt_malloc(k * InSize * sizeof(double));
   if (indata==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst resampling data."); *output=NULL; return; }
+  for (c=0; c<k; c++) d[c] = indata + c*InSize;
 
   // Copy input data table into temporary array
   blk = in->first;
   while (blk != NULL)
    {
-    for (j=0; j<blk->BlockPosition; j++) *(d[0]++) = blk->data_real[0 + 3*j].d;
-    for (j=0; j<blk->BlockPosition; j++) *(d[1]++) = blk->data_real[1 + 3*j].d;
-    for (j=0; j<blk->BlockPosition; j++) *(d[2]++) = blk->data_real[2 + 3*j].d;
+    for (c=0; c<k; c++) for (j=0; j<blk->BlockPosition; j++) *(d[c]++) = blk->data_real[c + k*j].d;
     blk=blk->next;
    }
 
@@ -134,7 +131,9 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
                               : eps_plot_axis_InvGetPosition( (((double)i+0.5)/(imax  )) , axis_x);
       (*output)->current->data_real[p++].d = x;
       (*output)->current->data_real[p++].d = y;
-      ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, InSize, x, y);
+
+      for (c=2; c<k; c++)
+        ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, c, InSize, x, y);
      }
    }
 

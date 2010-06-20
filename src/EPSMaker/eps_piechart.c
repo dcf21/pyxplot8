@@ -96,7 +96,7 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
     DataFile_read(x->current->plotdata, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, LabelString, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, &ErrCount);
    } else {
     if (DEBUG) { sprintf(temp_err_string, "Reading data from functions for piechart item %d", x->current->id); ppl_log(temp_err_string); }
-    DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, x->current->plotdata, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, LabelString, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, &ErrCount);
+    DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, NULL, 0, NULL, x->current->plotdata, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, LabelString, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, &ErrCount);
    }
   if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[0]=NULL; }
 

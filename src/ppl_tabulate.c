@@ -430,6 +430,7 @@ int directive_tabulate(Dict *command, char *line)
        }
       DataFile_FromFunctions(ordinate_raster, FlagParametric,
                              NumberOfSamples, (FlagParametric ? &para_Tunit : &raster_units),
+                             NULL, 0, NULL,
                              &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); fclose(output); return 1; }
       status = DataGridDisplay(output, data, NUsingItems, min+1, max+1, format); // First range is for ordinate axis

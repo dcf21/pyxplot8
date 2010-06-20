@@ -1018,7 +1018,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 #define COUNTEDERR2F if (*ErrCounter==0) { sprintf(temp_err_string, "%s: Too many errors: no more errors will be shown.",buffer); ppl_warning(ERR_STACKED, temp_err_string); } }
 
-void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
+void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, double *OrdinateYRaster, int RasterYLen, value *RasterYUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
  {
   unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0;
   int           UsingLen, logi, logj, i, j, k, ContextOutput;
