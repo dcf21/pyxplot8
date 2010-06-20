@@ -29,9 +29,9 @@
 
 #include "StringTools/str_constants.h"
 
-#include "ListTools/lt_dict.h"
-#include "ListTools/lt_list.h"
 #include "ListTools/lt_memory.h"
+
+#include "EPSMaker/eps_plot_canvas.h"
 
 #include "ppl_datafile.h"
 #include "ppl_error.h"
@@ -85,43 +85,61 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
   return;
  }
 
-void ppl_interp2d_grid(DataTable **output, const int MemoryContext, const settings_graph *sg, const double *in, const long InSize, const double xmin, const double xmax, const unsigned char logx, const double ymin, const double ymax, const unsigned char logy)
+void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *in, settings_axis *axis_x, settings_axis *axis_y, unsigned char SampleToEdge)
  {
-  int    i,imax,j,jmax;
-  long   p=0, p2, pc;
-  double xmin2, xmax2, ymin2, ymax2, xgap, ygap;
+  int        i,imax,j,jmax,TempContext;
+  double    *indata, *d[3];
+  long       p, p2, pc, InSize;
+  DataBlock *blk;
   imax = (sg->SamplesXAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesX;
   jmax = (sg->SamplesYAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesY;
 
-  *output = DataFile_NewDataTable(3, MemoryContext, imax*jmax);
+  *output = DataFile_NewDataTable(3, lt_GetMemContext(), imax*jmax);
   if (*output == NULL) return; // Memory fail
 
+  InSize = in->Nrows;
+  (*output)->FirstEntries = in->FirstEntries;
   p2 = (*output)->current->BlockPosition = imax*jmax;
   for (pc=0; pc<p2; pc++) (*output)->current->split   [pc] = 0;
   for (pc=0; pc<p2; pc++) (*output)->current->text    [pc] = NULL;
   for (pc=0; pc<p2; pc++) (*output)->current->FileLine[pc] = -1;
 
-  // Log limits in advance for speed
-  xmin2 = logx ? log(xmin) : xmin;
-  xmax2 = logx ? log(xmax) : xmax;
-  ymin2 = logy ? log(ymin) : ymin;
-  ymax2 = logy ? log(ymax) : ymax;
-  xgap  = xmax2 - xmin2;
-  ygap  = ymax2 - ymin2;
+  // Extract data into a temporary array
+  TempContext = lt_DescendIntoNewContext();
 
-  for (j=0; j<jmax; j++)
+  indata = (double *)lt_malloc(3 * in->Nrows * sizeof(double));
+  d[0] = indata;
+  d[1] = indata +   InSize;
+  d[2] = indata + 2*InSize;
+  if (indata==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst resampling data."); *output=NULL; return; }
+
+  // Copy input data table into temporary array
+  blk = in->first;
+  while (blk != NULL)
    {
-    double y = ymin2 + ygap * (((double)j)/jmax);
-    if (logy) y=exp(y);
+    for (j=0; j<blk->BlockPosition; j++) *(d[0]++) = blk->data_real[0 + 3*j].d;
+    for (j=0; j<blk->BlockPosition; j++) *(d[1]++) = blk->data_real[1 + 3*j].d;
+    for (j=0; j<blk->BlockPosition; j++) *(d[2]++) = blk->data_real[2 + 3*j].d;
+    blk=blk->next;
+   }
+
+  // Resample data into new DataTable
+  for (j=0, p=0; j<jmax; j++)
+   {
+    double y = SampleToEdge ? eps_plot_axis_InvGetPosition( (((double)j    )/(jmax-1)) , axis_y)
+                            : eps_plot_axis_InvGetPosition( (((double)j+0.5)/(jmax  )) , axis_y);
     for (i=0; i<imax; i++)
      {
-      double x = xmin2 + xgap * (((double)i)/imax);
-      if (logx) x=exp(x);
+      double x = SampleToEdge ? eps_plot_axis_InvGetPosition( (((double)i    )/(imax-1)) , axis_x)
+                              : eps_plot_axis_InvGetPosition( (((double)i+0.5)/(imax  )) , axis_x);
       (*output)->current->data_real[p++].d = x;
       (*output)->current->data_real[p++].d = y;
-      ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, in, InSize, x, y);
+      ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, InSize, x, y);
      }
    }
+
+  // Delete temporary array
+  lt_AscendOutOfContext(TempContext);
   return;
  }
 

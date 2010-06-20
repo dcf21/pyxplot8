@@ -34,6 +34,7 @@
 #include "ppl_datafile.h"
 #include "ppl_datafile_rasters.h"
 #include "ppl_error.h"
+#include "ppl_interpolation2d.h"
 #include "ppl_units.h"
 #include "ppl_units_fns.h"
 #include "ppl_userspace.h"
@@ -438,6 +439,20 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1]);
         eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2]);
         eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3]);
+       }
+
+      // If plotting surface, colourmap or contourmap, resample data onto grid
+      if ((pd->ww_final.linespoints==SW_STYLE_SURFACE) || (pd->ww_final.linespoints==SW_STYLE_COLOURMAP) || (pd->ww_final.linespoints==SW_STYLE_CONTOURMAP))
+       {
+        DataTable *tmpdata = x->current->plotdata[i];
+
+        // Fix range of axes
+        eps_plot_LinkedAxisForwardPropagate(x, &axissets[pd->axis1xyz][pd->axis1], 1); if (*x->status) return;
+        eps_plot_LinkedAxisForwardPropagate(x, &axissets[pd->axis1xyz][pd->axis2], 1); if (*x->status) return;
+
+        ppl_interp2d_grid(x->current->plotdata+i, &x->current->settings, tmpdata,
+                          &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2],
+                          (pd->ww_final.linespoints!=SW_STYLE_COLOURMAP)                          );
        }
      }
     pd=pd->next; i++;
