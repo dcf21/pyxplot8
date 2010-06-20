@@ -943,6 +943,35 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if (style == SW_STYLE_SURFACE) // SURFACE
    {
+    long XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
+    long YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+    long X,Y; long j;
+
+#define SURFACE_POINT LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
+
+    if (blk->BlockPosition != XSize * YSize)
+     {
+      ppl_error(ERR_INTERNAL,-1,-1,"Surface plot yielded data grid of the wrong size.");
+     }
+    else
+     {
+      ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
+      last_colstr=NULL;
+
+      for (Y=0; Y<YSize-1; Y++)
+       for (X=0; X<XSize-1; X++)
+        {
+         j = X + Y*XSize;
+         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns); // Work out style information for next point
+         eps_core_SetColour(x, &pd->ww_final, 0);
+         IF_NOT_INVISIBLE
+          {
+           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
+           SURFACE_POINT; j++; SURFACE_POINT; j+=XSize; SURFACE_POINT j--; SURFACE_POINT; // Draw a square
+          }
+         LineDraw_PenUp(ld);
+        }
+     }
    }
 
   else if (style == SW_STYLE_COLOURMAP) // COLOURMAP

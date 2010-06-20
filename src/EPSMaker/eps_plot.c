@@ -553,7 +553,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
             if (*_OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
             for (j=0; j<Nsamp; j++)
               (*_OrdinateRaster)[j] = eps_plot_axis_InvGetPosition(((double)j)/(Nsamp-1), *_OrdinateAxis);
-            *_OrdinateRasterLen = x->current->settings.samples;
+            *_OrdinateRasterLen = Nsamp;
             if (!SampleGrid)
              {
               (*_OrdinateAxis)->OrdinateRaster    = *_OrdinateRaster;

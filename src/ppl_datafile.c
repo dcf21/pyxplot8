@@ -1068,15 +1068,9 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   else if ((UsingLen==1) && (Ncolumns==2)) // Prepend ordinate value if only one number specified in using statement
    {
     UsingItems[1] = UsingItems[0];
-    UsingItems[0] = "0";
+    if ((UsingItems[0] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
+    sprintf(UsingItems[0], "0");
     UsingLen++;
-   }
-  else if ((UsingLen==1) && (Ncolumns=3) && SampleGrid)
-   {
-    UsingItems[2] = UsingItems[0];
-    UsingItems[0] = "0";
-    UsingItems[1] = "1";
-    UsingLen=3;
    }
 
   // Output using list to log file if required
@@ -1104,7 +1098,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
 
   // Keep a record of the memory context we're going to output into
   ContextOutput = lt_GetMemContext();
-  *output = DataFile_NewDataTable(UsingLen, ContextOutput, RasterLen);
+  *output = DataFile_NewDataTable(UsingLen, ContextOutput, SampleGrid ? (RasterLen*RasterYLen) : RasterLen);
   if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
 
   // Get a pointer to the value of the variable 'x' in the user's variable space
@@ -1133,29 +1127,35 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
    }
 
   // Loop over ordinate values
-  for (i=0; i<RasterLen; i++)
+  {
+   int i, ilen = RasterLen, i2, i2len = SampleGrid ? RasterYLen : 1; long p=0;
+   for (i2=0; i2<i2len; i2++) for (i=0; i<ilen; i++, p++)
    {
     OrdinateVar->real = OrdinateRaster[i];
-    sprintf(buffer, "%c=%s", (FlagParametric?'t':'x'), NumericDisplay(OrdinateVar->real, 0, settings_term_current.SignificantFigures, 0));
+    if (SampleGrid) OrdinateVar2->real = OrdinateYRaster[i2];
+    if (SampleGrid) sprintf(buffer, "x=%s; y=%s", NumericDisplay(OrdinateVar->real, 0, settings_term_current.SignificantFigures, 0), NumericDisplay(OrdinateVar2->real, 1, settings_term_current.SignificantFigures, 0));
+    else            sprintf(buffer, "%c=%s", (FlagParametric?'t':'x'), NumericDisplay(OrdinateVar->real, 0, settings_term_current.SignificantFigures, 0));
     ppl_units_zero(ColumnData_val+0);
-    ColumnData_val[0].real = i;
+    ColumnData_val[0].real = p;
     if (!FlagParametric) ColumnData_val[1] = *OrdinateVar;
+    if (SampleGrid     ) ColumnData_val[2] = *OrdinateVar2;
     for (j=0; j<fnlist_len; j++)
      {
       *status=-1; k=-1;
-      ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+1+(!FlagParametric), 0, &k, 0, status, errout, 0);
+      ppl_EvaluateAlgebra(fnlist[j], ColumnData_val+j+1+(!FlagParametric)+SampleGrid, 0, &k, 0, status, errout, 0);
       if (k<strlen(fnlist[j])) { sprintf(errout, "Expression '%s' is not syntactically valid %d %ld", fnlist[j],k,(long)strlen(fnlist[j])); *status=1; if (DEBUG) ppl_log(errout); return; }
       if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); COUNTEDERR2F; *status=1; break; }
       else            { *status=0; }
      }
     if (!(*status))
      {
-      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric), UsingItems, UsingLen, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
+      DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric)+SampleGrid, UsingItems, UsingLen, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      } else {
       discontinuity = 1;
      }
     *status=0;
    }
+  }
 
   // Reset the variable x (and maybe y or t) to its old value
   *OrdinateVar = DummyTemp;
