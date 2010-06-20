@@ -1020,16 +1020,18 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, double *OrdinateYRaster, int RasterYLen, value *RasterYUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
  {
-  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0;
-  int           UsingLen, logi, logj, i, j, k, ContextOutput;
+  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0, SampleGrid;
+  int           UsingLen, logi, logj, a, i, j, k, ContextOutput;
   char         *UsingItems[USING_ITEMS_MAX], buffer[FNAME_LENGTH];
   value         ColumnData_val[USING_ITEMS_MAX+2];
   ListIterator *listiter;
   Dict         *tempdict;
-  value        *OrdinateVar, DummyTemp;
+  value        *OrdinateVar , DummyTemp ;
+  value        *OrdinateVar2, DummyTemp2;
 
   // Init
   if (DEBUG) { sprintf(temp_err_string, "Evaluated supplied set of functions."); ppl_log(temp_err_string); }
+  SampleGrid = (OrdinateYRaster != NULL);
 
   // Read items out of Using List into an array of strings
   UsingLen=0; listiter = ListIterateInit(UsingList);
@@ -1069,6 +1071,13 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
     UsingItems[0] = "0";
     UsingLen++;
    }
+  else if ((UsingLen==1) && (Ncolumns=3) && SampleGrid)
+   {
+    UsingItems[2] = UsingItems[0];
+    UsingItems[0] = "0";
+    UsingItems[1] = "1";
+    UsingLen=3;
+   }
 
   // Output using list to log file if required
   if (DEBUG)
@@ -1087,7 +1096,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   if (UsingLen != Ncolumns) { sprintf(errout,"The supplied using ... clause contains the wrong number of items. We need %d columns of data, but %d have been supplied.", Ncolumns, UsingLen); *status=1; if (DEBUG) ppl_log(errout); return; }
 
   // If SortBy is not NULL, add it to using list
-  if (SortBy!=NULL)
+  if ((!SampleGrid) && (SortBy!=NULL))
    {
     if (strcmp(SortBy, "@")==0) UsingItems[UsingLen++] = UsingItems[0];
     else                        UsingItems[UsingLen++] = SortBy;
@@ -1099,22 +1108,29 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   if (*output == NULL) { strcpy(errout, "Out of memory whilst trying to allocate data table to read data from file."); *status=1; if (DEBUG) ppl_log(errout); return; }
 
   // Get a pointer to the value of the variable 'x' in the user's variable space
-  DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":"x", NULL, (void **)&OrdinateVar);
-  if (OrdinateVar!=NULL)
+  OrdinateVar2 = NULL;
+  for (a=0; a<=SampleGrid; a++)
    {
-    DummyTemp = *OrdinateVar;
-   }
-  else // If variable is not defined, create it now
-   {
-    ppl_units_zero(&DummyTemp);
-    DictAppendValue(_ppl_UserSpace_Vars, FlagParametric?"t":"x", DummyTemp);
-    DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":"x", NULL, (void **)&OrdinateVar);
-    DummyTemp.modified = 2;
-   }
-  *OrdinateVar = *RasterUnits;
-  OrdinateVar->imag        = 0.0;
-  OrdinateVar->FlagComplex = 0;
+    char *v; value **_OrdinateVar , *_DummyTemp, **_RasterUnits;
+    if (!a) { v="x"; _OrdinateVar=&OrdinateVar ; _DummyTemp=&DummyTemp ; _RasterUnits=&RasterUnits ; }
+    else    { v="y"; _OrdinateVar=&OrdinateVar2; _DummyTemp=&DummyTemp2; _RasterUnits=&RasterYUnits; }
 
+    DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":v, NULL, (void **)_OrdinateVar);
+    if (*_OrdinateVar!=NULL)
+     {
+      *_DummyTemp = **_OrdinateVar;
+     }
+    else // If variable is not defined, create it now
+     {
+      ppl_units_zero(_DummyTemp);
+      DictAppendValue(_ppl_UserSpace_Vars, FlagParametric?"t":v, *_DummyTemp);
+      DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":v, NULL, (void **)_OrdinateVar);
+      (*_DummyTemp).modified = 2;
+     }
+    **_OrdinateVar = **_RasterUnits;
+    (*_OrdinateVar)->imag        = 0.0;
+    (*_OrdinateVar)->FlagComplex = 0;
+   }
 
   // Loop over ordinate values
   for (i=0; i<RasterLen; i++)
@@ -1141,11 +1157,12 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
     *status=0;
    }
 
-  // Reset the variable x to its old value
+  // Reset the variable x (and maybe y or t) to its old value
   *OrdinateVar = DummyTemp;
+  if (OrdinateVar2!=NULL) *OrdinateVar2 = DummyTemp2;
 
   // If data is to be sorted, sort it now
-  if (SortBy != NULL)
+  if ((!SampleGrid) && (SortBy != NULL))
    {
     *output = DataTable_sort(*output, UsingLen-1, SortByContinuity==DATAFILE_CONTINUOUS);
    }
