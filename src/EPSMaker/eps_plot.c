@@ -44,6 +44,7 @@
 #include "eps_plot.h"
 #include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_colourmap.h"
 #include "eps_plot_gridlines.h"
 #include "eps_plot_labelsarrows.h"
 #include "eps_plot_legend.h"
@@ -708,6 +709,22 @@ void eps_plot_RenderEPS(EPSComm *x)
      }
    }
 
+  // Render colourmaps
+  for (pd = x->current->plotitems, i=0; pd != NULL; pd=pd->next, i++) // loop over all datasets
+   if (pd->ww_final.linespoints == SW_STYLE_COLOURMAP)
+    {
+     x->LaTeXpageno = x->current->DatasetTextID[i];
+     a1 = &axissets[pd->axis1xyz][pd->axis1];
+     a2 = &axissets[pd->axis2xyz][pd->axis2];
+     a3 = &axissets[pd->axis3xyz][pd->axis3];
+     xyzaxis[pd->axis1xyz] = 0;
+     xyzaxis[pd->axis2xyz] = 1;
+     xyzaxis[pd->axis3xyz] = 2;
+
+     status = eps_plot_colourmap(x, x->current->plotdata[i], x->current->ThreeDim, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height, zdepth);
+     if (status) { *(x->status) = 1; return; }
+    }
+
   // Render gridlines
   eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);
 
@@ -717,10 +734,8 @@ void eps_plot_RenderEPS(EPSComm *x)
   // Activate three-dimensional buffer if graph is 3D
   if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);
 
-  // Render each dataset in turn
-  pd = x->current->plotitems;
-  i  = 0;
-  while (pd != NULL) // loop over all datasets
+  // Render each dataset in turn (except colourmaps, which we've already rendered)
+  for (pd = x->current->plotitems, i=0; pd != NULL; pd=pd->next, i++) // loop over all datasets
    {
     x->LaTeXpageno = x->current->DatasetTextID[i];
     a1 = &axissets[pd->axis1xyz][pd->axis1];
@@ -732,8 +747,6 @@ void eps_plot_RenderEPS(EPSComm *x)
 
     status = eps_plot_dataset(x, x->current->plotdata[i], pd->ww_final.linespoints, x->current->ThreeDim, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height, zdepth);
     if (status) { *(x->status) = 1; return; }
-
-    pd=pd->next; i++;
    }
 
   // Render text labels and arrows

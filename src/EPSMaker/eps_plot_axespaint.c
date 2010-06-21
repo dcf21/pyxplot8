@@ -380,7 +380,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
 
            for (k=0; k<NDIRS; k++)
             if ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_MIRROR) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR))
-             if ((!x->current->ThreeDim) || (((zpos1[k]+zpos2[k])>=0.0)==(pass==0)))
+             if ((!x->current->ThreeDim) || (((zpos1[k]+zpos2[k])>0.0)==(pass==0)))
               {
                double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
                unsigned char Lr = sin(b)<0;
@@ -401,7 +401,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     // If there is no axis on any side, but was an auto-mirrored axis on another side, mirror it now
     for (k=0; k<NDIRS; k++)
      if ((Naxes[k]==0) && (FirstAutoMirror[k]>=0))
-      if ((!x->current->ThreeDim) || (((zpos1[k]+zpos2[k])>=0.0)==(pass==0)))
+      if ((!x->current->ThreeDim) || (((zpos1[k]+zpos2[k])>0.0)==(pass==0)))
        {
         double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
         unsigned char Lr = sin(b)<0;

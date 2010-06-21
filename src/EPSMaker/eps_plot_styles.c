@@ -235,8 +235,8 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
   else if (style == SW_STYLE_ARROWS_NOHEAD  ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
   else if (style == SW_STYLE_ARROWS_TWOHEAD ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); UUAU(xyz1,n1,a1,UURU(2+ThreeDim)); UUAU(xyz2,n2,a2,UURU(3+ThreeDim)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); UUAU(xyz3,n3,a3,UURU(5)); } }
   else if (style == SW_STYLE_SURFACE        ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); } }
-  else if (style == SW_STYLE_COLOURMAP      ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); } }
-  else if (style == SW_STYLE_CONTOURMAP     ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); if (ThreeDim) { UUAU(xyz3,n3,a3,UURU(2)); } }
+  else if (style == SW_STYLE_COLOURMAP      ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
+  else if (style == SW_STYLE_CONTOURMAP     ) { UUAU(xyz1,n1,a1,UURU(0)); UUAU(xyz2,n2,a2,UURU(1)); }
 
   // Cycle through data table, ensuring that axis ranges are sufficient to include all data
   Ncolumns = data->Ncolumns;
@@ -345,9 +345,11 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
                                                   { UUC(a1, UUR(0         )); UUC(a2, UUR(1         )); if (ThreeDim) UUC(a3, UUR(2));
                                                     UUD(a1, UUR(2+ThreeDim)); UUC(a2, UUR(3+ThreeDim)); if (ThreeDim) UUC(a3, UUR(5));
                                                     UUU(a1, UUR(0)); UUU(a2, UUR(1)); UUU(a1, UUR(2+ThreeDim)); UUU(a2, UUR(3+ThreeDim)); if (ThreeDim) { UUU(a3, UUR(2)); UUU(a3, UUR(5)); } }
-      else if ((style == SW_STYLE_SURFACE) || (style == SW_STYLE_COLOURMAP) || (style == SW_STYLE_CONTOURMAP))
-                                                  { UUC(a1, UUR(0)); UUC(a2, UUR(1)); if (ThreeDim) UUC(a3, UUR(2));
+      else if (style == SW_STYLE_SURFACE        ) { UUC(a1, UUR(0)); UUC(a2, UUR(1)); if (ThreeDim) UUC(a3, UUR(2));
                                                     UUU(a1, UUR(0)); UUU(a2, UUR(1)); if (ThreeDim) UUU(a3, UUR(2)); }
+      else if ((style == SW_STYLE_COLOURMAP) || (style == SW_STYLE_CONTOURMAP))
+                                                  { UUC(a1, UUR(0)); UUC(a2, UUR(1));
+                                                    UUU(a1, UUR(0)); UUU(a2, UUR(1)); }
       else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))
        {
         // Boxes and steps need slightly more complicated logic to take into account finite width of boxes/steps
@@ -950,7 +952,10 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     double xap,yap,zap,theta_x,theta_y,theta_z,depth;
     double x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4;
 
-#define SURFACE_POINT(XO,YO,ZO) eps_plot_GetPosition(&XO,&YO,&ZO, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,  a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1);
+#define SURFACE_POINT(XO,YO,ZO) \
+   eps_plot_GetPosition(&XO,&YO,&ZO, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,  a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1); \
+   if ((xap<0)||(xap>1)||(yap<0)||(yap>1)||(zap<0)||(zap>1)) continue; \
+   if ( (!gsl_finite(XO))||(!gsl_finite(YO))||(!gsl_finite(ZO)) ) continue;
 
     if (blk->BlockPosition != XSize * YSize)
      {
@@ -981,7 +986,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             SURFACE_POINT(x1,y1,z1); j++; SURFACE_POINT(x2,y2,z2); j+=XSize; SURFACE_POINT(x3,y3,z3); j--; SURFACE_POINT(x4,y4,z4); // Draw a square
             depth = (z1+z2+z3+z4)/4.0;
             if (fill) depth += 1e-6*fabs(depth);
-            if (!gsl_finite(depth)) continue;
             sprintf(epsbuff, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath %s\n", x1,y1,x2,y2,x3,y3,x4,y4,fill?"eofill":"stroke");
             ThreeDimBuffer_writeps(x, depth, pd->ww_final.linetype, pd->ww_final.linewidth, 1, last_colstr, epsbuff);
            }
@@ -991,6 +995,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if (style == SW_STYLE_COLOURMAP) // COLOURMAP
    {
+    // Dealt with in advance of drawing backmost axes
    }
 
   else if (style == SW_STYLE_CONTOURMAP) // CONTOURMAP
