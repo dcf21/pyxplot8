@@ -943,11 +943,14 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if (style == SW_STYLE_SURFACE) // SURFACE
    {
+    int  fill;
     long XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
     long YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
     long X,Y; long j;
+    double xap,yap,zap,theta_x,theta_y,theta_z,depth;
+    double x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4;
 
-#define SURFACE_POINT LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
+#define SURFACE_POINT(XO,YO,ZO) eps_plot_GetPosition(&XO,&YO,&ZO, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,  a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1);
 
     if (blk->BlockPosition != XSize * YSize)
      {
@@ -955,22 +958,34 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      }
     else
      {
-      ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
       last_colstr=NULL;
-
-      for (Y=0; Y<YSize-1; Y++)
-       for (X=0; X<XSize-1; X++)
-        {
-         j = X + Y*XSize;
-         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns); // Work out style information for next point
-         eps_core_SetColour(x, &pd->ww_final, 0);
-         IF_NOT_INVISIBLE
-          {
-           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
-           SURFACE_POINT; j++; SURFACE_POINT; j+=XSize; SURFACE_POINT j--; SURFACE_POINT; // Draw a square
-          }
-         LineDraw_PenUp(ld);
-        }
+      for (fill=1; fill>=0; fill--)
+       for (Y=0; Y<YSize-1; Y++)
+        for (X=0; X<XSize-1; X++)
+         {
+          j = X + Y*XSize;
+          eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns); // Work out style information for next point
+          if (fill)
+           {
+            eps_core_SetColour(x, &pd->ww_final, 0);
+            eps_core_SetFillColour(x, &pd->ww_final);
+            eps_core_SwitchTo_FillColour(x,0);
+           }
+          else
+           {
+            eps_core_SwitchFrom_FillColour(x,0);
+           }
+          IF_NOT_INVISIBLE
+           {
+            if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
+            SURFACE_POINT(x1,y1,z1); j++; SURFACE_POINT(x2,y2,z2); j+=XSize; SURFACE_POINT(x3,y3,z3); j--; SURFACE_POINT(x4,y4,z4); // Draw a square
+            depth = (z1+z2+z3+z4)/4.0;
+            if (fill) depth += 1e-6*fabs(depth);
+            if (!gsl_finite(depth)) continue;
+            sprintf(epsbuff, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath %s\n", x1,y1,x2,y2,x3,y3,x4,y4,fill?"eofill":"stroke");
+            ThreeDimBuffer_writeps(x, depth, pd->ww_final.linetype, pd->ww_final.linewidth, 1, last_colstr, epsbuff);
+           }
+         }
      }
    }
 
