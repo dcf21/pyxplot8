@@ -1576,10 +1576,10 @@ int directive_plot(Dict *command, int interactive, int replot)
       temp_err_string[0]='\0';
       if ((!ptr->ThreeDim) && (!( (tempstr!=NULL) && (tempstr2!=NULL) && (tempstr3==NULL))))
         sprintf(temp_err_string, "The axes clause in the plot command must contain two perpendicular axes to produce a two-dimensional plot. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
-      if (( ptr->ThreeDim) && (!( (tempstr!=NULL) && (tempstr2!=NULL) && (tempstr3!=NULL))))
+      else if (( ptr->ThreeDim) && (!( (tempstr!=NULL) && (tempstr2!=NULL) && (tempstr3!=NULL))))
         sprintf(temp_err_string, "The axes clause in the plot command must contain three perpendicular axes to produce a three-dimensional plot. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
-      if ( ((!ptr->ThreeDim) && (!( ((tempstr[0]=='x')&&(tempstr2[0]=='y')) || ((tempstr[0]=='y')&&(tempstr2[0]=='x')) ))) ||
-           (( ptr->ThreeDim) && ((tempstr[0]==tempstr2[0])||(tempstr[0]==tempstr3[0])))
+      else if ( ((!ptr->ThreeDim) && (!( ((tempstr[0]=='x')&&(tempstr2[0]=='y')) || ((tempstr[0]=='y')&&(tempstr2[0]=='x')) ))) ||
+                (( ptr->ThreeDim) && ((tempstr[0]==tempstr2[0])||(tempstr[0]==tempstr3[0])))
          )
         sprintf(temp_err_string, "The axes clause in the plot command is not allowed to contain any parallel axes. The supplied string, %s%s%s, is not in the correct form.", (tempstr!=NULL)?tempstr:"", (tempstr2!=NULL)?tempstr2:"", (tempstr3!=NULL)?tempstr3:"");
       if (temp_err_string[0]!='\0')
