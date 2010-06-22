@@ -176,21 +176,28 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "CONTOURS"     )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.NContours     = max((int)fl, 2);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Contours."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "CRANGE_LOG"   )==0)
-        if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                          settings_graph_default.Clog            = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Log."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "CRANGE_MIN"   )==0)
-        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.Cmin.real = fl; settings_graph_default.Cminauto = SW_BOOL_FALSE; }
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Min."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "CRANGE_MIN_AUTO")==0)
-        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cminauto        = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Min_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "CRANGE_MAX"   )==0)
-        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.Cmax.real = fl; settings_graph_default.Cmaxauto = SW_BOOL_FALSE; }
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "CRANGE_MAX_AUTO")==0)
-        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cmaxauto        = i;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting CRange_Max_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+
+
+#define DO_CRANGE(c,X) \
+      else if (strcmp(setkey, "C" X "RANGE_LOG"   )==0) \
+        if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                          settings_graph_default.Clog[c]            = i; \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Log."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
+      else if (strcmp(setkey, "C" X "RANGE_MIN"   )==0) \
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.Cmin[c].real = fl; settings_graph_default.Cminauto[c] = SW_BOOL_FALSE; } \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Min."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
+      else if (strcmp(setkey, "C" X "RANGE_MIN_AUTO")==0) \
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cminauto[c]        = i; \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Min_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
+      else if (strcmp(setkey, "C" X "RANGE_MAX"   )==0) \
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               { settings_graph_default.Cmax[c].real = fl; settings_graph_default.Cmaxauto[c] = SW_BOOL_FALSE; } \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
+      else if (strcmp(setkey, "C" X "RANGE_MAX_AUTO")==0) \
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cmaxauto[c]        = i; \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Max_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+
+
+      DO_CRANGE(0,"1")  DO_CRANGE(1,"2")  DO_CRANGE(2,"3")  DO_CRANGE(3,"4")
+
       else if (strcmp(setkey, "DATASTYLE"    )==0)
         if ((i=FetchSettingByName(setvalue,SW_STYLE_INT, SW_STYLE_STR ))>0)                      settings_graph_default.DataStyle.style = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting DataStyle."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

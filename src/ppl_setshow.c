@@ -484,28 +484,32 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"crange")==0)) /* set crange */
    {
+    char *tempstr_cno; int c;
+    DictLookup(command,"c_number",NULL,(void **)&tempstr_cno); c=(int)(tempstr_cno[0]-'1');
     DictLookup(command,"minauto",NULL,(void **)&tempstr);
     DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
     DictLookup(command,"min",NULL,(void **)&tempval);
     DictLookup(command,"max",NULL,(void **)&tempval2);
-    if ((tempstr ==NULL)&&(tempval ==NULL)&&(sg->Cminauto==SW_BOOL_FALSE)) tempval = &sg->Cmin;
-    if ((tempstr2==NULL)&&(tempval2==NULL)&&(sg->Cmaxauto==SW_BOOL_FALSE)) tempval2= &sg->Cmax;
+    if ((tempstr ==NULL)&&(tempval ==NULL)&&(sg->Cminauto[c]==SW_BOOL_FALSE)) tempval = &sg->Cmin[c];
+    if ((tempstr2==NULL)&&(tempval2==NULL)&&(sg->Cmaxauto[c]==SW_BOOL_FALSE)) tempval2= &sg->Cmax[c];
     if ((tempval !=NULL)&&(!gsl_finite(tempval ->real))) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set crange' command had non-finite limits."); return; }
     if ((tempval2!=NULL)&&(!gsl_finite(tempval2->real))) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set crange' command had non-finite limits."); return; }
     if ((tempval !=NULL)&&(tempval2!=NULL)&&(!ppl_units_DimEqual(tempval,tempval2))) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set crange with dimensionally incompatible minimum and maximum."); return; }
-    if (tempval !=NULL) { sg->Cmin = *tempval;  sg->Cminauto = SW_BOOL_FALSE; }
-    if (tempval2!=NULL) { sg->Cmax = *tempval2; sg->Cmaxauto = SW_BOOL_FALSE; }
-    if (tempstr !=NULL) {                       sg->Cminauto = SW_BOOL_TRUE;  }
-    if (tempstr2!=NULL) {                       sg->Cmaxauto = SW_BOOL_TRUE;  }
+    if (tempval !=NULL) { sg->Cmin[c] = *tempval;  sg->Cminauto[c] = SW_BOOL_FALSE; }
+    if (tempval2!=NULL) { sg->Cmax[c] = *tempval2; sg->Cmaxauto[c] = SW_BOOL_FALSE; }
+    if (tempstr !=NULL) {                          sg->Cminauto[c] = SW_BOOL_TRUE;  }
+    if (tempstr2!=NULL) {                          sg->Cmaxauto[c] = SW_BOOL_TRUE;  }
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
-    if (tempstr != NULL) { int tmp = sg->Cminauto; sg->Cminauto = sg->Cmaxauto; sg->Cmaxauto = tmp; valobj = sg->Cmin; sg->Cmin = sg->Cmax; sg->Cmax = valobj; }
+    if (tempstr != NULL) { int tmp = sg->Cminauto[c]; sg->Cminauto[c] = sg->Cmaxauto[c]; sg->Cmaxauto[c] = tmp; valobj = sg->Cmin[c]; sg->Cmin[c] = sg->Cmax[c]; sg->Cmax[c] = valobj; }
    }
   else if (strcmp_unset && (strcmp(setoption,"crange")==0)) /* unset crange */
    {
-    sg->Cmin     = settings_graph_default.Cmin;
-    sg->Cminauto = settings_graph_default.Cminauto;
-    sg->Cmax     = settings_graph_default.Cmax;
-    sg->Cmaxauto = settings_graph_default.Cmaxauto;
+    char *tempstr_cno; int c;
+    DictLookup(command,"c_number",NULL,(void **)&tempstr_cno); c=(int)(tempstr_cno[0]-'1');
+    sg->Cmin[c]     = settings_graph_default.Cmin[c];
+    sg->Cminauto[c] = settings_graph_default.Cminauto[c];
+    sg->Cmax[c]     = settings_graph_default.Cmax[c];
+    sg->Cmaxauto[c] = settings_graph_default.Cmaxauto[c];
    }
   else if (strcmp_set && (strcmp(setoption,"display")==0)) /* set display */
    {
@@ -761,8 +765,15 @@ void directive_set(Dict *command)
             if (tempint!=NULL) tempaxis->LogBase = (double)(*tempint);
            }
          } else {
-          DictLookup(tempdict,"clog",NULL,(void **)&tempstr);
-          if (tempstr != NULL) sg->Clog = SW_BOOL_TRUE; // No concept of log base on C/T axes as they're never drawn as an axis with ticks
+          DictLookup(tempdict,"c1log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[0] = SW_BOOL_TRUE; // No concept of log base on C/T axes as they're never drawn as an axis with ticks
+          DictLookup(tempdict,"c2log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[1] = SW_BOOL_TRUE;
+          DictLookup(tempdict,"c3log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[2] = SW_BOOL_TRUE;
+          DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[3] = SW_BOOL_TRUE;
+
           DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Tlog = SW_BOOL_TRUE;
          }
@@ -771,8 +782,7 @@ void directive_set(Dict *command)
      }
     else
      {
-      sg->Clog = SW_BOOL_TRUE;
-      sg->Tlog = SW_BOOL_TRUE;
+      sg->Clog[0] = sg->Clog[1] = sg->Clog[2] = sg->Clog[3] = sg->Tlog = SW_BOOL_TRUE;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis2=&XAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis2=&YAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis2=&ZAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
@@ -798,8 +808,14 @@ void directive_set(Dict *command)
             else                      { if (xa[i].log != XAxesDefault[i].log) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; xa[i].TickStep = XAxesDefault[i].TickStep; xa[i].TickMin = XAxesDefault[i].TickMin; xa[i].TickMax = XAxesDefault[i].TickMax; xa[i].MTickStep = XAxesDefault[i].MTickStep; xa[i].MTickMin = XAxesDefault[i].MTickMin; xa[i].MTickMax = XAxesDefault[i].MTickMax; } xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
            }
          } else {
-          DictLookup(tempdict,"clog",NULL,(void **)&tempstr);
-          if (tempstr != NULL) sg->Clog = settings_graph_default.Clog;
+          DictLookup(tempdict,"c1log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[0] = settings_graph_default.Clog[0];
+          DictLookup(tempdict,"c2log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[1] = settings_graph_default.Clog[1];
+          DictLookup(tempdict,"c3log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[2] = settings_graph_default.Clog[2];
+          DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[3] = settings_graph_default.Clog[3];
           DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Tlog = settings_graph_default.Tlog;
          }
@@ -808,8 +824,11 @@ void directive_set(Dict *command)
      }
     else
      {
-      sg->Clog = settings_graph_default.Clog;
-      sg->Tlog = settings_graph_default.Tlog;
+      sg->Clog[0] = settings_graph_default.Clog[0];
+      sg->Clog[1] = settings_graph_default.Clog[1];
+      sg->Clog[2] = settings_graph_default.Clog[2];
+      sg->Clog[3] = settings_graph_default.Clog[3];
+      sg->Tlog    = settings_graph_default.Tlog;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->log != XAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->log != YAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->log != ZAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
@@ -892,8 +911,14 @@ void directive_set(Dict *command)
             else                      { xa[i].enabled=1; if (xa[i].log != SW_BOOL_FALSE) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; xa[i].TickStep=XAxesDefault[i].TickStep; xa[i].TickMin=XAxesDefault[i].TickMin; xa[i].TickMax=XAxesDefault[i].TickMax; xa[i].MTickStep=XAxesDefault[i].MTickStep; xa[i].MTickMin=XAxesDefault[i].MTickMin; xa[i].MTickMax=XAxesDefault[i].MTickMax; } xa[i].log = SW_BOOL_FALSE; }
            }
          } else {
-          DictLookup(tempdict,"clog",NULL,(void **)&tempstr);
-          if (tempstr != NULL) sg->Clog = SW_BOOL_FALSE;
+          DictLookup(tempdict,"c1log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[0] = SW_BOOL_FALSE;
+          DictLookup(tempdict,"c2log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[1] = SW_BOOL_FALSE;
+          DictLookup(tempdict,"c3log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[2] = SW_BOOL_FALSE;
+          DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Clog[3] = SW_BOOL_FALSE;
           DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Tlog = SW_BOOL_FALSE;
          }
@@ -902,8 +927,7 @@ void directive_set(Dict *command)
      }
     else
      {
-      sg->Clog = SW_BOOL_FALSE;
-      sg->Tlog = SW_BOOL_FALSE;
+      sg->Clog[0] = sg->Clog[1] = sg->Clog[2] = sg->Clog[3] = sg->Tlog = SW_BOOL_FALSE;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis2=&XAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis2=&YAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis2=&ZAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
@@ -2456,21 +2480,35 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "contour", buf, (settings_graph_default.NContours==sg->NContours), "The number of contours drawn by the contourmap plot style");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "crange",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c1range",1)>=0))
    {
-    sprintf(buf, "[%s:%s]", (sg->Cminauto==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin), 0, 0, 0),
-                            (sg->Cmaxauto==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax), 1, 0, 0)  );
-    directive_show3(out+i, ItemSet, 1, interactive, "crange", buf, (settings_graph_default.Cminauto==sg->Cminauto)&&(settings_graph_default.Cmaxauto==sg->Cmaxauto)&&((sg->Cminauto==SW_BOOL_TRUE)||((settings_graph_default.Cmin.real==sg->Cmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin),&(sg->Cmin))))&&((sg->Cmaxauto==SW_BOOL_TRUE)||((settings_graph_default.Cmax.real==sg->Cmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax),&(sg->Cmax)))), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style");
+
+#define SHOW_CRANGE(c,X) \
+    sprintf(buf, "[%s:%s]", (sg->Cminauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin[c]), 0, 0, 0), \
+                            (sg->Cmaxauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax[c]), 1, 0, 0)  ); \
+    directive_show3(out+i, ItemSet, 1, interactive, "c" X "range", buf, (settings_graph_default.Cminauto[c]==sg->Cminauto[c])&&(settings_graph_default.Cmaxauto[c]==sg->Cmaxauto[c])&&((sg->Cminauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmin[c].real==sg->Cmin[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin[c]),&(sg->Cmin[c]))))&&((sg->Cmaxauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmax[c].real==sg->Cmax[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax[c]),&(sg->Cmax[c])))), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style"); \
     i += strlen(out+i) ; p=1;
+
+    SHOW_CRANGE(0,"1");
    }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c2range",1)>=0))
+   { SHOW_CRANGE(1,"2"); }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c3range",1)>=0))
+   { SHOW_CRANGE(2,"3"); }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c4range",1)>=0))
+   { SHOW_CRANGE(3,"4"); }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || (StrAutocomplete(word, "linearscale", 1)>=0))
    {
-    if (sg->Clog==SW_BOOL_TRUE) bufp = "logscale";
-    else                        bufp = "nologscale";
-    sprintf(buf, "c");
-    sprintf(buf2, "Sets whether colours in the colourmap plot style, and contours in the contourmap plot style, demark linear or logarithmic intervals");
-    directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (sg->Clog==settings_graph_default.Clog), buf2);
-    i += strlen(out+i) ; p=1;
+    int c;
+    for (c=0; c<4; c++)
+     {
+      if (sg->Clog[c]==SW_BOOL_TRUE) bufp = "logscale";
+      else                           bufp = "nologscale";
+      sprintf(buf, "c%d",c+1);
+      sprintf(buf2, "Sets whether colours in the colourmap plot style, and contours in the contourmap plot style, demark linear or logarithmic intervals");
+      directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (sg->Clog[c]==settings_graph_default.Clog[c]), buf2);
+      i += strlen(out+i) ; p=1;
+     }
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "display", 1)>=0))
    {

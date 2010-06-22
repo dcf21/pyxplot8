@@ -127,7 +127,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   // Get pointer to variable c in the user's variable space
   for (i=0; i<4; i++)
    {
-    char v[2]={'c'+i,'\0'};
+    char v[3]={'c','1'+i,'\0'};
     DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar[i]);
     if (CVar[i]!=NULL)
      {
@@ -140,22 +140,19 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
       DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar[i]);
       CDummy[i].modified = 2;
      }
-    if (i<Ncol-2) *CVar[i] = data->FirstEntries[i+2];
-    else          ppl_units_zero(CVar[i]);
-    CVar[i]->imag        = 0.0;
-    CVar[i]->FlagComplex = 0;
+    ppl_units_zero(CVar[i]); // c1...c4 are dimensionless numbers in range 0-1, regardless of units of input data
    }
 
-  // Work out normalisation of variables c,d,e,f
+  // Work out normalisation of variables c1...c4
   for (c=0; ((c<4)&&(c<Ncol-2)); c++)
    {
-    CMinAuto[c] = (c!=0) ? 1   : (sg->Cminauto==SW_BOOL_TRUE);
+    CMinAuto[c] = (sg->Cminauto[c]==SW_BOOL_TRUE);
     CMinSet [c] = !CMinAuto[c];
-    CMin    [c] = (c!=0) ? 0.0 : sg->Cmin.real;
-    CMaxAuto[c] = (c!=0) ? 1   : (sg->Cmaxauto==SW_BOOL_TRUE);
+    CMin    [c] = sg->Cmin[c].real;
+    CMaxAuto[c] = (sg->Cmaxauto[c]==SW_BOOL_TRUE);
     CMaxSet [c] = !CMaxAuto[c];
-    CMax    [c] = (c!=0) ? 0.0 : sg->Cmax.real;
-    CLog    [c] = (c!=0) ? 0   : (sg->Clog==SW_BOOL_TRUE);
+    CMax    [c] = sg->Cmax[c].real;
+    CLog    [c] = (sg->Clog[c]==SW_BOOL_TRUE);
 
     // Find extremal values
     if (CMinAuto[c] || CMaxAuto[c])
@@ -170,13 +167,14 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
    }
   cmax = c-1;
 
-  // Check that variable c has appropriate units
-  if ( ((!CMinAuto[0])||(!CMaxAuto[0])) && (!ppl_units_DimEqual(CVar[0] , (sg->Cminauto==SW_BOOL_TRUE)?(&sg->Cmax):(&sg->Cmin))) )
-   {
-    sprintf(temp_err_string, "Third column of data supplied to the colourmap plot style has conflicting units with those set in the 'set crange' command. The former has units of <%s> whilst the latter has units of <%s>.", ppl_units_GetUnitStr(CVar[0], NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr((sg->Cminauto==SW_BOOL_TRUE)?(&sg->Cmax):(&sg->Cmin), NULL, NULL, 1, 1, 0));
-    ppl_error(ERR_NUMERIC,-1,-1,temp_err_string);
-    return 1;
-   }
+  // Check that variables c1...c4 has appropriate units
+  for (c=0; c<=cmax; c++)
+   if ( ((!CMinAuto[c])||(!CMaxAuto[c])) && (!ppl_units_DimEqual(CVar[c] , (sg->Cminauto[c]==SW_BOOL_TRUE)?(&sg->Cmax[c]):(&sg->Cmin[c]))) )
+    {
+     sprintf(temp_err_string, "Column %d of data supplied to the colourmap plot style has conflicting units with those set in the 'set crange' command. The former has units of <%s> whilst the latter has units of <%s>.", c+3, ppl_units_GetUnitStr(CVar[c], NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr((sg->Cminauto[c]==SW_BOOL_TRUE)?(&sg->Cmax[c]):(&sg->Cmin[c]), NULL, NULL, 1, 1, 0));
+     ppl_error(ERR_NUMERIC,-1,-1,temp_err_string);
+     return 1;
+    }
 
   // Populate bitmap data array
   for (j=0,p=0; j<YSize; j++)
@@ -249,7 +247,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
      img.data[p++] = (unsigned char)floor(comp[2] * 255.99);
     }
 
-  // Restore variable c in the user's variable space
+  // Restore variables c1...c4 in the user's variable space
   for (i=0; i<4; i++) *CVar[i] = CDummy[i];
 
   // Consider converting RGB data into a paletted image

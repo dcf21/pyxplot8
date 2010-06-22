@@ -147,17 +147,20 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_graph_default.BoxWidth));
   settings_graph_default.BoxWidthAuto          = 1;
   settings_graph_default.clip                  = SW_ONOFF_OFF;
-  settings_graph_default.Clog                  = SW_BOOL_FALSE;
-  ppl_units_zero(&settings_graph_default.Cmax);
-  settings_graph_default.Cmaxauto              = SW_BOOL_TRUE;
-  ppl_units_zero(&settings_graph_default.Cmin);
-  settings_graph_default.Cminauto              = SW_BOOL_TRUE;
+  for (i=0; i<4; i++)
+   {
+    settings_graph_default.Clog[i]             = SW_BOOL_FALSE;
+    ppl_units_zero(&settings_graph_default.Cmax[i]);
+    settings_graph_default.Cmaxauto[i]         = SW_BOOL_TRUE;
+    ppl_units_zero(&settings_graph_default.Cmin[i]);
+    settings_graph_default.Cminauto[i]         = SW_BOOL_TRUE;
+   }
   settings_graph_default.ColKey                = SW_ONOFF_ON;
   settings_graph_default.ColKeyPos             = SW_COLKEYPOS_R;
   settings_graph_default.ColMapColSpace        = SW_COLSPACE_RGB;
-  strcpy(settings_graph_default.ColMapExpr1, "(c)");
-  strcpy(settings_graph_default.ColMapExpr2, "(c)");
-  strcpy(settings_graph_default.ColMapExpr3, "(c)");
+  strcpy(settings_graph_default.ColMapExpr1, "(c1)");
+  strcpy(settings_graph_default.ColMapExpr2, "(c1)");
+  strcpy(settings_graph_default.ColMapExpr3, "(c1)");
   strcpy(settings_graph_default.ColMapExpr4, "");
   with_words_zero(&(settings_graph_default.DataStyle),1);
   settings_graph_default.DataStyle.linespoints = SW_STYLE_POINTS;
