@@ -51,13 +51,15 @@ typedef struct settings_terminal {
  char   ViewerCmd[FNAME_LENGTH];
  } settings_terminal;
 
+#define MAX_CONTOURS 128
+
 typedef struct settings_graph {
- int           AutoAspect, AutoZAspect, AxesColour, AxesCol1234Space, AxisUnitStyle, clip, Clog[4], Cminauto[4], Cmaxauto[4], ColKey, ColKeyPos, ColMapColSpace, grid, GridMajColour, GridMajCol1234Space, GridMinColour, GridMinCol1234Space, key, KeyColumns, KeyPos, NContours, samples, SamplesX, SamplesXAuto, SamplesY, SamplesYAuto, Sample2DMethod, TextColour, TextCol1234Space, TextHAlign, TextVAlign, Tlog;
+ int           AutoAspect, AutoZAspect, AxesColour, AxesCol1234Space, AxisUnitStyle, clip, Clog[4], Cminauto[4], Cmaxauto[4], ColKey, ColKeyPos, ColMapColSpace, ContoursListLen, ContoursN, grid, GridMajColour, GridMajCol1234Space, GridMinColour, GridMinCol1234Space, key, KeyColumns, KeyPos, samples, SamplesX, SamplesXAuto, SamplesY, SamplesYAuto, Sample2DMethod, TextColour, TextCol1234Space, TextHAlign, TextVAlign, Tlog;
  double        AxesColour1, AxesColour2, AxesColour3, AxesColour4, GridMajColour1, GridMajColour2, GridMajColour3, GridMajColour4, GridMinColour1, GridMinColour2, GridMinColour3, GridMinColour4, TextColour1, TextColour2, TextColour3, TextColour4;
- double        aspect, zaspect, bar, FontSize, LineWidth, PointSize, PointLineWidth, projection;
+ double        aspect, zaspect, bar, ContoursList[MAX_CONTOURS], FontSize, LineWidth, PointSize, PointLineWidth, projection;
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
- value         BoxFrom, BoxWidth, Cmin[4], Cmax[4], KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width, XYview, YZview;
+ value         BoxFrom, BoxWidth, Cmin[4], Cmax[4], ContoursUnit, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width, XYview, YZview;
  char          title[FNAME_LENGTH], ColMapExpr1[FNAME_LENGTH], ColMapExpr2[FNAME_LENGTH], ColMapExpr3[FNAME_LENGTH], ColMapExpr4[FNAME_LENGTH];
  with_words    DataStyle, FuncStyle;
  } settings_graph;

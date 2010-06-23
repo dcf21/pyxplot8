@@ -1202,6 +1202,8 @@ DataTable *DataTable_sort(DataTable *in, int SortColumn, int IgnoreContinuity)
   DataTable_sorter *sorter;
   DataTable        *output;
 
+  if (in==NULL) return NULL;
+
   Nc = in->Ncolumns;
   Nco= Nc-1;
   Nr = in->Nrows;

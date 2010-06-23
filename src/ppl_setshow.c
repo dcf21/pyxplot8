@@ -475,12 +475,40 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"contour")==0)) /* set contour */
    {
     DictLookup(command,"contours",NULL,(void **)&tempint);
-    if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
-    sg->NContours = *tempint;
+    if (tempint != NULL)
+     {
+      if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
+      if (*tempint > MAX_CONTOURS) { sprintf(temp_err_string, "Contour maps cannot be constucted with fewer than %d contours.", MAX_CONTOURS); ppl_error(ERR_GENERAL,-1,-1,temp_err_string); return; }
+      sg->ContoursN       = *tempint;
+      memcpy((void*)sg->ContoursList, (void*)settings_graph_default.ContoursList, MAX_CONTOURS*sizeof(double));
+      sg->ContoursListLen = -1;
+      sg->ContoursUnit    = settings_graph_default.ContoursUnit;
+     }
+    else
+     {
+      int n=0;
+      sg->ContoursN = settings_graph_default.ContoursN;
+      ppl_units_zero(&sg->ContoursUnit);
+      DictLookup(command,"contour_list,",NULL,(void **)&templist);
+      for (listiter = ListIterateInit(templist); listiter!=NULL; listiter = ListIterate(listiter, NULL), n++)
+       {
+        tempdict = (Dict *)listiter->data;
+        DictLookup(tempdict,"contour",NULL,(void **)&tempval);
+        if (n==0) { sg->ContoursUnit = *tempval; sg->ContoursUnit.real = 1.0; }
+        else      { if (!ppl_units_DimEqual(tempval, &sg->ContoursUnit)) { sprintf(temp_err_string, "Items in list of contours have conflicting units. First item has units of <%s>, but subsequent item has units of <%s>.", ppl_units_GetUnitStr(&sg->ContoursUnit, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); break; } }
+        if (!gsl_finite(tempval->real)) { ppl_warning(ERR_NUMERIC,"Ignoring non-finite value in list of contours."); continue; }
+        if (n==MAX_CONTOURS) { sprintf(temp_err_string, "Too many contours specified. A maximum of %d are permitted.", MAX_CONTOURS); ppl_error(ERR_GENERAL,-1,-1,temp_err_string); break; }
+        sg->ContoursList[n] = tempval->real;
+       }
+      sg->ContoursListLen = n;
+     }
    }
   else if (strcmp_unset && (strcmp(setoption,"contour")==0)) /* unset contour */
    {
-    sg->NContours = settings_graph_default.NContours;
+    sg->ContoursN       = settings_graph_default.ContoursN;
+    memcpy((void*)sg->ContoursList, (void*)settings_graph_default.ContoursList, MAX_CONTOURS*sizeof(double));
+    sg->ContoursListLen = settings_graph_default.ContoursListLen;
+    sg->ContoursUnit    = settings_graph_default.ContoursUnit;
    }
   else if (strcmp_set && (strcmp(setoption,"crange")==0)) /* set crange */
    {
@@ -2476,8 +2504,25 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "contour",1)>=0))
    {
-    sprintf(buf, "%d", sg->NContours);
-    directive_show3(out+i, ItemSet, 1, interactive, "contour", buf, (settings_graph_default.NContours==sg->NContours), "The number of contours drawn by the contourmap plot style");
+    if (sg->ContoursListLen < 0)
+     {
+      sprintf(buf, "%d", sg->ContoursN);
+     }
+    else
+     {
+      int p,q;
+      value v = sg->ContoursUnit;
+      sprintf(buf, "("); p=strlen(buf);
+      for (q=0; q<sg->ContoursListLen; q++)
+       {
+        if (q!=0) { sprintf(buf+p, ", "); p+=strlen(buf+p); }
+        v.real = sg->ContoursList[q];
+        sprintf(buf+p, "%s", ppl_units_NumericDisplay(&v, 0, 0, 0));
+        p+=strlen(buf+p);
+       }
+      sprintf(buf+p, ")"); p+=strlen(buf+p);
+     }
+    directive_show3(out+i, ItemSet, 1, interactive, "contour", buf, (settings_graph_default.ContoursN==sg->ContoursN)&&(settings_graph_default.ContoursListLen==sg->ContoursListLen)&&ppl_units_DimEqual(&settings_graph_default.ContoursUnit,&sg->ContoursUnit)&&((sg->ContoursListLen<0)||(memcmp((void *)settings_graph_default.ContoursList,(void *)sg->ContoursList,sg->ContoursListLen*sizeof(double))==0)), "The number of contours drawn by the contourmap plot style");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c1range",1)>=0))

@@ -56,7 +56,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   DataBlock     *blk;
   int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
-  int            i, j, c, cmax, errpos, Ncol=data->Ncolumns;
+  int            i, j, c, cmax, errpos, Ncol;
   long           p;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, comp[4], CMin[4], CMax[4];
   value         *CVar[4], CDummy[4], outval;
@@ -66,6 +66,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   bitmap_data    img;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
+  Ncol = data->Ncolumns;
   if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncol)) return 1;
   if (!ThreeDim) { scale_x=width; scale_y=height; scale_z=1.0;    }
   else           { scale_x=width; scale_y=height; scale_z=zdepth; }

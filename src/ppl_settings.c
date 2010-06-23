@@ -162,6 +162,10 @@ void ppl_settings_makedefault()
   strcpy(settings_graph_default.ColMapExpr2, "(c1)");
   strcpy(settings_graph_default.ColMapExpr3, "(c1)");
   strcpy(settings_graph_default.ColMapExpr4, "");
+  settings_graph_default.ContoursListLen       = -1;
+  for (i=0; i<MAX_CONTOURS; i++) settings_graph_default.ContoursList[i] = 0.0;
+  settings_graph_default.ContoursN             = 12;
+  ppl_units_zero(&settings_graph_default.ContoursUnit);
   with_words_zero(&(settings_graph_default.DataStyle),1);
   settings_graph_default.DataStyle.linespoints = SW_STYLE_POINTS;
   settings_graph_default.FontSize              = 1.0;
@@ -194,7 +198,6 @@ void ppl_settings_makedefault()
   settings_graph_default.KeyYOff.real  = 0.0;
   settings_graph_default.KeyYOff.dimensionless = 0; settings_graph_default.KeyYOff.exponent[UNIT_LENGTH] = 1;
   settings_graph_default.LineWidth     = 1.0;
-  settings_graph_default.NContours     = 12;
   ppl_units_zero(&(settings_graph_default.OriginX));
   settings_graph_default.OriginX.real  = 0.0;
   settings_graph_default.OriginX.dimensionless = 0; settings_graph_default.OriginX.exponent[UNIT_LENGTH] = 1;
