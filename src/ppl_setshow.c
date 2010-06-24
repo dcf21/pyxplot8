@@ -529,6 +529,10 @@ void directive_set(Dict *command)
     if (tempstr2!=NULL) {                          sg->Cmaxauto[c] = SW_BOOL_TRUE;  }
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
     if (tempstr != NULL) { int tmp = sg->Cminauto[c]; sg->Cminauto[c] = sg->Cmaxauto[c]; sg->Cmaxauto[c] = tmp; valobj = sg->Cmin[c]; sg->Cmin[c] = sg->Cmax[c]; sg->Cmax[c] = valobj; }
+    DictLookup(command,"renormalise",NULL,(void **)&tempstr);
+    if (tempstr != NULL) sg->Crenorm[c] = SW_BOOL_TRUE;
+    DictLookup(command,"norenormalise",NULL,(void **)&tempstr);
+    if (tempstr != NULL) sg->Crenorm[c] = SW_BOOL_FALSE;
    }
   else if (strcmp_unset && (strcmp(setoption,"crange")==0)) /* unset crange */
    {
@@ -538,6 +542,7 @@ void directive_set(Dict *command)
     sg->Cminauto[c] = settings_graph_default.Cminauto[c];
     sg->Cmax[c]     = settings_graph_default.Cmax[c];
     sg->Cmaxauto[c] = settings_graph_default.Cmaxauto[c];
+    sg->Crenorm[c]  = settings_graph_default.Crenorm[c];
    }
   else if (strcmp_set && (strcmp(setoption,"display")==0)) /* set display */
    {
@@ -2529,9 +2534,10 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
 
 #define SHOW_CRANGE(c,X) \
-    sprintf(buf, "[%s:%s]", (sg->Cminauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin[c]), 0, 0, 0), \
-                            (sg->Cmaxauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax[c]), 1, 0, 0)  ); \
-    directive_show3(out+i, ItemSet, 1, interactive, "c" X "range", buf, (settings_graph_default.Cminauto[c]==sg->Cminauto[c])&&(settings_graph_default.Cmaxauto[c]==sg->Cmaxauto[c])&&((sg->Cminauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmin[c].real==sg->Cmin[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin[c]),&(sg->Cmin[c]))))&&((sg->Cmaxauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmax[c].real==sg->Cmax[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax[c]),&(sg->Cmax[c])))), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style"); \
+    sprintf(buf, "[%s:%s] %s", (sg->Cminauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin[c]), 0, 0, 0), \
+                               (sg->Cmaxauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax[c]), 1, 0, 0), \
+                               (sg->Crenorm [c]==SW_BOOL_TRUE) ? "renormalise" : "norenormalise"  ); \
+    directive_show3(out+i, ItemSet, 1, interactive, "c" X "range", buf, (settings_graph_default.Cminauto[c]==sg->Cminauto[c])&&(settings_graph_default.Cmaxauto[c]==sg->Cmaxauto[c])&&((sg->Cminauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmin[c].real==sg->Cmin[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin[c]),&(sg->Cmin[c]))))&&((sg->Cmaxauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmax[c].real==sg->Cmax[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax[c]),&(sg->Cmax[c]))))&&(settings_graph_default.Crenorm[c]==sg->Crenorm[c]), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style"); \
     i += strlen(out+i) ; p=1;
 
     SHOW_CRANGE(0,"1");

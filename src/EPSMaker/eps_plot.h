@@ -37,7 +37,7 @@ void eps_plot_YieldUpText(EPSComm *x);
 void eps_plot_RenderEPS(EPSComm *x);
 
 void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolumns);
-int  eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns);
+int  eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns, int *NDataCols);
 
 #endif
 

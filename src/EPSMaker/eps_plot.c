@@ -179,7 +179,7 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
  i--; \
  if (i<0) i=0;
 
-int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns)
+int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns, int *NDataCols)
  {
   int i = Ncolumns-1;
 
@@ -196,6 +196,7 @@ int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues,
   if (ww->STRpointlinewidth != NULL) { WWCUID("point line width"); }
   if (ww->STRlinewidth      != NULL) { WWCUID("line width"); }
   if (ww->STRlinetype       != NULL) { WWCUID("line type"); }
+  if (NDataCols!=NULL) *NDataCols=i+1; // The number of columns which contain data which is not from with .... expressions
   return 0;
  }
 
@@ -408,6 +409,13 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
       ErrCount = DATAFILE_NERRS;
       NExpect  = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
 
+      if (pd->ww_final.linespoints==SW_STYLE_COLOURMAP)
+       {
+        int ll = ListLen(UsingList);
+        if ((ll>=3)&&(ll<=6)) NExpect=ll; // Colour maps can take 3,4,5 or 6 columns of data
+        else if ((pd->function)&&(pd->NFunctions>=1)&&(pd->NFunctions<=4)) NExpect=pd->NFunctions+2;
+       }
+
       if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       if (pd->function == 0) // Read data from file
@@ -498,6 +506,13 @@ void eps_plot_SampleFunctions(EPSComm *x)
       ErrCount     = DATAFILE_NERRS;
       NExpect      = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
       OrdinateAxis = &axissets[pd->axis1xyz][pd->axis1];
+
+      if (pd->ww_final.linespoints==SW_STYLE_COLOURMAP)
+       {
+        int ll = ListLen(UsingList);
+        if ((ll>=3)&&(ll<=6)) NExpect=ll; // Colour maps can take 3,4,5 or 6 columns of data
+        else if ((pd->function)&&(pd->NFunctions>=1)&&(pd->NFunctions<=4)) NExpect=pd->NFunctions+2;
+       }
 
       if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 

@@ -56,7 +56,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   DataBlock     *blk;
   int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
-  int            i, j, c, cmax, errpos, Ncol;
+  int            i, j, c, cmax, errpos, Ncol, NcolsData;
   long           p;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, comp[4], CMin[4], CMax[4];
   value         *CVar[4], CDummy[4], outval;
@@ -67,7 +67,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
   Ncol = data->Ncolumns;
-  if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncol)) return 1;
+  if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncol, &NcolsData)) return 1;
   if (!ThreeDim) { scale_x=width; scale_y=height; scale_z=1.0;    }
   else           { scale_x=width; scale_y=height; scale_z=zdepth; }
   blk = data->first;
@@ -141,11 +141,12 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
       DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar[i]);
       CDummy[i].modified = 2;
      }
-    ppl_units_zero(CVar[i]); // c1...c4 are dimensionless numbers in range 0-1, regardless of units of input data
+    if ((i<NcolsData-2)&&(sg->Crenorm[i]==SW_BOOL_FALSE)) { *CVar[i] = data->FirstEntries[i+2]; CVar[i]->FlagComplex=0; CVar[i]->imag=0.0; }
+    else ppl_units_zero(CVar[i]); // c1...c4 are dimensionless numbers in range 0-1, regardless of units of input data
    }
 
   // Work out normalisation of variables c1...c4
-  for (c=0; ((c<4)&&(c<Ncol-2)); c++)
+  for (c=0; ((c<4)&&(c<NcolsData-2)); c++)
    {
     CMinAuto[c] = (sg->Cminauto[c]==SW_BOOL_TRUE);
     CMinSet [c] = !CMinAuto[c];
@@ -165,6 +166,14 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
         if ((CMinAuto[c]) && ((!CMinSet[c]) || (CMin[c]>val)) && ((!CLog[c])||(val>0.0))) { CMin[c]=val; CMinSet[c]=1; }
         if ((CMaxAuto[c]) && ((!CMaxSet[c]) || (CMax[c]<val)) && ((!CLog[c])||(val>0.0))) { CMax[c]=val; CMaxSet[c]=1; }
        }
+
+    // Output result to debugging output
+    if (DEBUG)
+     {
+      int SF = settings_term_current.SignificantFigures;
+      sprintf(temp_err_string, "Range for variable c%d if [%s:%s]", c+1, NumericDisplay(CMin[c],0,SF,0), NumericDisplay(CMax[c],1,SF,0));
+      ppl_log(temp_err_string);
+     }
    }
   cmax = c-1;
 
@@ -181,12 +190,13 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   for (j=0,p=0; j<YSize; j++)
    for (i=0; i<XSize; i++)
     {
-     // Set values of c,d,e,f
+     // Set values of c1...c4
      for (c=0;c<4; c++)
-      if      (c>cmax)           { *CVar[c]       = CDummy[c]; }
-      else if (CMax[c]==CMin[c]) {  CVar[c]->real = 0.5; }
-      else if (!CLog[c])         {  CVar[c]->real = (blk->data_real[c+2 + Ncol*(i+XSize*j)].d - CMin[c]) / (CMax[c] - CMin[c]); }
-      else                       {  CVar[c]->real = log(blk->data_real[c+2 + Ncol*(i+XSize*j)].d / CMin[c]) / log(CMax[c] / CMin[c]); }
+      if      (c>cmax)  /* No c<c> */         { *CVar[c]       = CDummy[c]; }
+      else if (sg->Crenorm[c]==SW_BOOL_FALSE) {  CVar[c]->real = blk->data_real[c+2 + Ncol*(i+XSize*j)].d; } // No renormalisation
+      else if (CMax[c]==CMin[c])  /* Ooops */ {  CVar[c]->real = 0.5; }
+      else if (!CLog[c]) /* Linear */         {  CVar[c]->real = (blk->data_real[c+2 + Ncol*(i+XSize*j)].d - CMin[c]) / (CMax[c] - CMin[c]); }
+      else               /* Logarithmic */    {  CVar[c]->real = log(blk->data_real[c+2 + Ncol*(i+XSize*j)].d / CMin[c]) / log(CMax[c] / CMin[c]); }
 
      // Compute RGB, HSB or CMYK components
      for (c=0; c<3+(sg->ColMapColSpace==SW_COLSPACE_CMYK); c++)
