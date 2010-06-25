@@ -1023,6 +1023,7 @@ int dviTypeset(dviInterpreterState *interp)
   width  = 0.0;
   height = 0.0;
   depth  = 0.0;
+  italic = 0.0;
   while (*s != '\0')
    {
     if ((err=dviGetCharSize(interp, (unsigned char) *s, size))!=0) return err;
