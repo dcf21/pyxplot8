@@ -1151,7 +1151,15 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
      {
       DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric)+SampleGrid, UsingItems, UsingLen, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      } else {
-      discontinuity = 1;
+      if (!SampleGrid) discontinuity = 1;
+      else
+       {
+        int i;
+        for (i=0; i<(*output)->Ncolumns; i++)
+         (*output)->current->data_real[i + (*output)->current->BlockPosition * (*output)->Ncolumns].d = GSL_NAN;
+        (*output)->current->text[(*output)->current->BlockPosition] = NULL;
+        DataFile_DataTable_AddRow(*output);
+       }
      }
     *status=0;
    }
