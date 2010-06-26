@@ -193,7 +193,13 @@ void ReadConfigFile(char *ConfigFname)
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
       else if (strcmp(setkey, "C" X "RANGE_MAX_AUTO")==0) \
         if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Cmaxauto[c]        = i; \
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Max_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Max_Auto.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
+      else if (strcmp(setkey, "C" X "RANGE_RENORM")==0) \
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Crenorm[c]         = i; \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Renorm.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; } \
+      else if (strcmp(setkey, "C" X "RANGE_REVERSE")==0) \
+        if  ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                         settings_graph_default.Creverse[c]        = i; \
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting C" X "Range_Reverse.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
 
 
       DO_CRANGE(0,"1")  DO_CRANGE(1,"2")  DO_CRANGE(2,"3")  DO_CRANGE(3,"4")
@@ -262,7 +268,7 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0) settings_term_default .landscape     = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Landscape."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "LINEWIDTH"    )==0)
-        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.LineWidth     = fl;
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.LineWidth     = fabs(fl);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting LineWidth."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "MULTIPLOT"    )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .multiplot     = i;

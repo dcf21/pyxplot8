@@ -155,6 +155,7 @@ void ppl_settings_makedefault()
     ppl_units_zero(&settings_graph_default.Cmin[i]);
     settings_graph_default.Cminauto[i]         = SW_BOOL_TRUE;
     settings_graph_default.Crenorm[i]          = SW_BOOL_TRUE;
+    settings_graph_default.Creverse[i]         = SW_BOOL_FALSE;
    }
   settings_graph_default.ColKey                = SW_ONOFF_ON;
   settings_graph_default.ColKeyPos             = SW_COLKEYPOS_R;

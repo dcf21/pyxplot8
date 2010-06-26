@@ -49,6 +49,11 @@
 #include "eps_settings.h"
 #include "eps_style.h"
 
+// Random shade of purple to use as mask colour
+#define TRANS_R 35
+#define TRANS_G 2
+#define TRANS_B 20
+
 // Render a colourmap to postscript
 int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
  {
@@ -63,6 +68,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   uLongf         zlen; // Length of buffer passed to zlib
   unsigned char *imagez, CMinAuto[4], CMinSet[4], CMaxAuto[4], CMaxSet[4], CLog[4];
   char          *ColExpr[4] = {sg->ColMapExpr1 , sg->ColMapExpr2 , sg->ColMapExpr3 , sg->ColMapExpr4 }, *errtext;
+  unsigned char  component_r, component_g, component_b, transparent[3] = {TRANS_R, TRANS_G, TRANS_B};
   bitmap_data    img;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
@@ -116,7 +122,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   img.colour   = BMP_COLOUR_RGB;
   img.pal_len  = 0;
   img.palette  = NULL;
-  img.trans    = NULL;
+  img.trans    = transparent;
   img.height   = YSize;
   img.width    = XSize;
   img.depth    = 24;
@@ -167,6 +173,18 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
         if ((CMaxAuto[c]) && ((!CMaxSet[c]) || (CMax[c]<val)) && ((!CLog[c])||(val>0.0))) { CMax[c]=val; CMaxSet[c]=1; }
        }
 
+    // Reverse range of colour scale if requested
+    if (sg->Creverse[c]==SW_BOOL_TRUE)
+     {
+      double td=CMin[c]; unsigned char tc=CMinSet[c], tc2=CMinAuto[c];
+      CMinAuto[c] = CMaxAuto[c];
+      CMinSet [c] = CMaxSet [c];
+      CMin    [c] = CMax    [c];
+      CMaxAuto[c] = tc2;
+      CMaxSet [c] = tc;
+      CMax    [c] = td;
+     }
+
     // Output result to debugging output
     if (DEBUG)
      {
@@ -187,7 +205,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
     }
 
   // Populate bitmap data array
-  for (j=0,p=0; j<YSize; j++)
+  for (p=0, j=YSize-1; j>=0; j--) // Postscript images are top-first. Data block is bottom-first.
    for (i=0; i<XSize; i++)
     {
      // Set values of c1...c4
@@ -206,7 +224,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
        if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate colour expression <%s>. The error, encountered at character position %d, was: '%s'", ColExpr[c], errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
        if (!outval.dimensionless) { sprintf(temp_err_string, "Expression <%s> for colour component %d returns result with units of <%s>; this should be a dimensionless number in the range 0-1.",ColExpr[c], c+1, ppl_units_GetUnitStr(&outval, NULL, NULL, 0, 1, 0)); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
        if (outval.FlagComplex) { sprintf(temp_err_string, "Expression <%s> for colour component %d returns a complex result.", ColExpr[c], c+1); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
-       if (!gsl_finite(outval.real)) outval.real=0.0;
+       if (!gsl_finite(outval.real)) { component_r = TRANS_R; component_g = TRANS_G; component_b = TRANS_B; goto write_rgb; }
        comp[c]=outval.real;
       }
 
@@ -235,7 +253,8 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
            case 2 : comp[0]=0 ; comp[1]=ch; comp[2]=x ; break;
            case 3 : comp[0]=0 ; comp[1]=x ; comp[2]=ch; break;
            case 4 : comp[0]=x ; comp[1]=0 ; comp[2]=ch; break;
-           case 5 : comp[0]=ch; comp[1]=0 ; comp[2]=x ; break;
+           case 5 :
+           case 6 : comp[0]=ch; comp[1]=0 ; comp[2]=x ; break; // case 6 is for hue=1.0 only
            default: comp[0]=0 ; comp[1]=0 ; comp[2]=0 ; break;
           }
          comp[0]+=m; comp[1]+=m; comp[2]+=m;
@@ -253,9 +272,15 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
      CLIP_COMPS;
 
      // Store RGB components
-     img.data[p++] = (unsigned char)floor(comp[0] * 255.99);
-     img.data[p++] = (unsigned char)floor(comp[1] * 255.99);
-     img.data[p++] = (unsigned char)floor(comp[2] * 255.99);
+     component_r = (unsigned char)floor(comp[0] * 255.99);
+     component_g = (unsigned char)floor(comp[1] * 255.99);
+     component_b = (unsigned char)floor(comp[2] * 255.99);
+     if ((component_r==TRANS_R)&&(component_g==TRANS_G)&&(component_b==TRANS_B)) component_b++;
+
+write_rgb:
+     img.data[p++] = component_r;
+     img.data[p++] = component_g;
+     img.data[p++] = component_b;
     }
 
   // Restore variables c1...c4 in the user's variable space
@@ -307,12 +332,18 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
     fprintf(x->epsbuffer, "] setcolorspace\n\n");
    }
 
-  fprintf(x->epsbuffer, "<<\n /ImageType 1\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", img.width, img.height, img.width, -img.height, img.height);
+  fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", (img.trans==NULL)?1:4, img.width, img.height, img.width, -img.height, img.height);
   fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter"); // Image data is stored in currentfile, but need to apply filters to decode it
   if (img.TargetCompression == BMP_ENCODING_FLATE) fprintf(x->epsbuffer, " /FlateDecode filter");
   fprintf(x->epsbuffer, "\n /BitsPerComponent %d\n /Decode [0 %d%s]\n", (img.colour==BMP_COLOUR_RGB)?(img.depth/3):(img.depth),
                                                                         (img.type==BMP_COLOUR_PALETTE)?((1<<img.depth)-1):1,
                                                                         (img.colour==BMP_COLOUR_RGB)?" 0 1 0 1":"");
+  if (img.trans != NULL)
+   {
+    fprintf(x->epsbuffer," /MaskColor [");
+    if (img.colour == BMP_COLOUR_RGB) fprintf(x->epsbuffer, "%d %d %d]\n",(int)img.trans[0], (int)img.trans[1], (int)img.trans[2]);
+    else                              fprintf(x->epsbuffer, "%d]\n"      ,(int)img.trans[0]);
+   }
   fprintf(x->epsbuffer, ">> image\n");
   bmp_A85(x->epsbuffer, img.data, img.data_len);
   fprintf(x->epsbuffer, "grestore\n");

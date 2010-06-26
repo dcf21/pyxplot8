@@ -528,7 +528,9 @@ void directive_set(Dict *command)
     if (tempstr !=NULL) {                          sg->Cminauto[c] = SW_BOOL_TRUE;  }
     if (tempstr2!=NULL) {                          sg->Cmaxauto[c] = SW_BOOL_TRUE;  }
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
-    if (tempstr != NULL) { int tmp = sg->Cminauto[c]; sg->Cminauto[c] = sg->Cmaxauto[c]; sg->Cmaxauto[c] = tmp; valobj = sg->Cmin[c]; sg->Cmin[c] = sg->Cmax[c]; sg->Cmax[c] = valobj; }
+    if (tempstr != NULL) { sg->Creverse[c] = SW_BOOL_TRUE; }
+    DictLookup(command,"noreverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { sg->Creverse[c] = SW_BOOL_FALSE; }
     DictLookup(command,"renormalise",NULL,(void **)&tempstr);
     if (tempstr != NULL) sg->Crenorm[c] = SW_BOOL_TRUE;
     DictLookup(command,"norenormalise",NULL,(void **)&tempstr);
@@ -543,6 +545,7 @@ void directive_set(Dict *command)
     sg->Cmax[c]     = settings_graph_default.Cmax[c];
     sg->Cmaxauto[c] = settings_graph_default.Cmaxauto[c];
     sg->Crenorm[c]  = settings_graph_default.Crenorm[c];
+    sg->Creverse[c] = settings_graph_default.Creverse[c];
    }
   else if (strcmp_set && (strcmp(setoption,"display")==0)) /* set display */
    {
@@ -757,7 +760,7 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set linewidth' command was not finite."); return; }
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Line widths are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl < 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Line widths are not allowed to be less than zero."); return; }
     sg->LineWidth = *tempdbl;
    }
   else if (strcmp_unset && (strcmp(setoption,"linewidth")==0)) /* unset linewidth */
@@ -1265,7 +1268,7 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"pointlinewidth",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointlinewidth' command was not finite."); return; }
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point line widths are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl < 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point line widths are not allowed to be less than zero."); return; }
     sg->PointLineWidth = *tempdbl;
    }
   else if (strcmp_unset && (strcmp(setoption,"pointlinewidth")==0)) /* unset pointlinewidth */
@@ -1276,7 +1279,7 @@ void directive_set(Dict *command)
    {
     DictLookup(command,"pointsize",NULL,(void **)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointsize' command was not finite."); return; }
-    if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point sizes are not allowed to be less than or equal to zero."); return; }
+    if (*tempdbl < 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point sizes are not allowed to be less than zero."); return; }
     sg->PointSize = *tempdbl;
    }
   else if (strcmp_unset && (strcmp(setoption,"pointsize")==0)) /* unset pointsize */
@@ -2484,7 +2487,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 0, interactive, "clip", buf, (sg->clip == settings_graph_default.clip), "Selects whether point symbols which extend over the axes of graphs are allowed to do so, or are clipped at the edges");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colkey",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colkey",1)>=0) || (StrAutocomplete(word, "colourkey",1)>=0) || (StrAutocomplete(word, "colorkey",1)>=0))
    {
     if (sg->ColKey == SW_ONOFF_OFF)
      {
@@ -2495,7 +2498,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "colkey", buf, (settings_graph_default.ColKey == sg->ColKey)&&((sg->ColKey==SW_ONOFF_OFF)||(settings_graph_default.ColKeyPos == sg->ColKeyPos)), "Selects whether a colour scale is included on colourmap plots");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colmap",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "colmap",1)>=0) || (StrAutocomplete(word, "colourmap",1)>=0) || (StrAutocomplete(word, "colormap",1)>=0))
    {
     int k;
     sprintf(buf, "%s", *(char **)FetchSettingName(sg->ColMapColSpace, SW_COLSPACE_INT, (void *)SW_COLSPACE_STR, sizeof(char *)));
@@ -2534,10 +2537,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    {
 
 #define SHOW_CRANGE(c,X) \
-    sprintf(buf, "[%s:%s] %s", (sg->Cminauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin[c]), 0, 0, 0), \
-                               (sg->Cmaxauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax[c]), 1, 0, 0), \
-                               (sg->Crenorm [c]==SW_BOOL_TRUE) ? "renormalise" : "norenormalise"  ); \
-    directive_show3(out+i, ItemSet, 1, interactive, "c" X "range", buf, (settings_graph_default.Cminauto[c]==sg->Cminauto[c])&&(settings_graph_default.Cmaxauto[c]==sg->Cmaxauto[c])&&((sg->Cminauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmin[c].real==sg->Cmin[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin[c]),&(sg->Cmin[c]))))&&((sg->Cmaxauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmax[c].real==sg->Cmax[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax[c]),&(sg->Cmax[c]))))&&(settings_graph_default.Crenorm[c]==sg->Crenorm[c]), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style"); \
+    sprintf(buf, "[%s:%s] %s %s", (sg->Cminauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmin[c]), 0, 0, 0), \
+                                 (sg->Cmaxauto[c]==SW_BOOL_TRUE) ? "*" : ppl_units_NumericDisplay(&(sg->Cmax[c]), 1, 0, 0), \
+                                 (sg->Crenorm [c]==SW_BOOL_TRUE) ? "renormalise" : "norenormalise", \
+                                 (sg->Creverse[c]==SW_BOOL_TRUE) ? "reverse" : "noreverse" ); \
+    directive_show3(out+i, ItemSet, 1, interactive, "c" X "range", buf, (settings_graph_default.Cminauto[c]==sg->Cminauto[c])&&(settings_graph_default.Cmaxauto[c]==sg->Cmaxauto[c])&&((sg->Cminauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmin[c].real==sg->Cmin[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmin[c]),&(sg->Cmin[c]))))&&((sg->Cmaxauto[c]==SW_BOOL_TRUE)||((settings_graph_default.Cmax[c].real==sg->Cmax[c].real)&&ppl_units_DimEqual(&(settings_graph_default.Cmax[c]),&(sg->Cmax[c]))))&&(settings_graph_default.Crenorm[c]==sg->Crenorm[c])&&(settings_graph_default.Creverse[c]==sg->Creverse[c]), "The range of values represented by different colours in the colourmap plot style, and by contours in the contourmap plot style"); \
     i += strlen(out+i) ; p=1;
 
     SHOW_CRANGE(0,"1");
@@ -2944,7 +2948,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "view", 1)>=0))
    {
-    sprintf(buf, "%s,%s", ppl_units_NumericDisplay(&(sg->XYview), 0, 0, 0), ppl_units_NumericDisplay(&(sg->YZview), 1, 0, 0));
+    int SF = settings_term_current.SignificantFigures;
+    int TY = (settings_term_current.NumDisplay==SW_DISPLAY_L);
+    sprintf(buf,"%s,%s",NumericDisplay(sg->XYview.real/M_PI*180,0,SF,TY),NumericDisplay(sg->YZview.real/M_PI*180,1,SF,TY));
     directive_show3(out+i, ItemSet, 1, interactive, "view", buf, (settings_graph_default.XYview.real==sg->XYview.real)&&(settings_graph_default.YZview.real==sg->YZview.real), "The rotation angle of 3d graphs");
     i += strlen(out+i) ; p=1;
    }

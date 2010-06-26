@@ -89,17 +89,17 @@ Error: Unrecognised command.\n\
 
 sprintf(txt_valid_set_options, "\n\
 'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
-'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'data\n\
-style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
-'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale',\n\
-'linewidth', 'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup',\n\
-'nodisplay', 'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot',\n\
-'nostyle', 'notitle', 'no<m>[xyz]<n>format', 'no<m>[xyz]<n>tics', 'numerics',\n\
-'origin', 'output', 'palette', 'papersize', 'pointlinewidth', 'pointsize',\n\
-'preamble', 'projection', 'samples', 'seed', 'size', 'size noratio', 'size\n\
-ratio', 'size square', 'style', 'terminal', 'textcolour', 'texthalign',\n\
-'textvalign', 'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format',\n\
-'[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'colmap',\n\
+'colkey', 'contours', 'c<n>range', 'data style', 'display', 'filter',\n\
+'fontsize', 'function style', 'grid', 'gridmajcolour', 'gridmincolour', 'key',\n\
+'keycolumns', 'label', 'linearscale', 'linewidth', 'logscale', 'multiplot',\n\
+'noarrow', 'noaxis', 'nobackup', 'nodisplay', 'nogrid', 'nokey', 'nolabel',\n\
+'nologscale', 'nomultiplot', 'nostyle', 'notitle', 'no<m>[xyz]<n>format',\n\
+'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette', 'papersize',\n\
+'pointlinewidth', 'pointsize', 'preamble', 'samples', 'seed', 'size', 'size\n\
+noratio', 'size ratio', 'size square', 'style', 'terminal', 'textcolour',\n\
+'texthalign', 'textvalign', 'title', 'trange', 'unit', 'view', 'viewer',\n\
+'width', '[xyz]<n>format', '[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set_noword, "\n\
@@ -111,15 +111,15 @@ sprintf(txt_unset_noword, "\n\
 Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 \n\
 'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
-'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'data\n\
-style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
-'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linewidth',\n\
-'logscale', 'multiplot', 'noarrow', 'noaxis', 'nobackup', 'nodisplay',\n\
-'nogrid', 'nokey', 'nolabel', 'nologscale', 'nomultiplot', 'notitle',\n\
-'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output', 'palette', 'papersize',\n\
-'pointlinewidth', 'pointsize', 'preamble', 'projection', 'samples', 'size',\n\
-'style', 'terminal', 'textcolour', 'texthalign', 'textvalign', 'title',\n\
-'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'colmap',\n\
+'colkey', 'contours', 'c<n>range', 'data style', 'display', 'filter',\n\
+'fontsize', 'function style', 'grid', 'gridmajcolour', 'gridmincolour', 'key',\n\
+'keycolumns', 'label', 'linewidth', 'logscale', 'multiplot', 'noarrow',\n\
+'noaxis', 'nobackup', 'nodisplay', 'nogrid', 'nokey', 'nolabel', 'nologscale',\n\
+'nomultiplot', 'notitle', 'no<m>[xyz]<n>tics', 'numerics', 'origin', 'output',\n\
+'palette', 'papersize', 'pointlinewidth', 'pointsize', 'preamble', 'samples',\n\
+'size', 'style', 'terminal', 'textcolour', 'texthalign', 'textvalign', 'title',\n\
+'trange', 'unit', 'view', 'viewer', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
 '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
@@ -141,15 +141,15 @@ Valid 'show' options are:\n\
 \n\
 or any of the following set options:\n\
 'arrow', 'autoscale', 'axescolour', 'axis', 'axisunitstyle', 'backup', 'bar',\n\
-'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'data\n\
-style', 'display', 'filter', 'fontsize', 'function style', 'grid',\n\
-'gridmajcolour', 'gridmincolour', 'key', 'keycolumns', 'label', 'linearscale',\n\
-'linewidth', 'logscale', 'multiplot', 'numerics', 'origin', 'output',\n\
-'palette', 'papersize', 'pointlinewidth', 'pointsize', 'preamble',\n\
-'projection', 'samples', 'seed', 'size', 'size noratio', 'size ratio',\n\
-'size square', 'style', 'terminal', 'textcolour', 'texthalign', 'textvalign',\n\
-'title', 'trange', 'unit', 'view', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
-'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'binorigin', 'binwidth', 'boxfrom', 'boxwidth', 'calendar', 'clip', 'colmap',\n\
+'colkey', 'contours', 'c<n>range', 'data style', 'display', 'filter',\n\
+'fontsize', 'function style', 'grid', 'gridmajcolour', 'gridmincolour', 'key',\n\
+'keycolumns', 'label', 'linearscale', 'linewidth', 'logscale', 'multiplot',\n\
+'numerics', 'origin', 'output', 'palette', 'papersize', 'pointlinewidth',\n\
+'pointsize', 'preamble', 'samples', 'seed', 'size', 'size noratio', 'size\n\
+ratio', 'size square', 'style', 'terminal', 'textcolour', 'texthalign',\n\
+'textvalign', 'title', 'trange', 'unit', 'view', 'viewer', 'width',\n\
+'[xyz]<n>format', '[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 }
 

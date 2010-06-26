@@ -68,7 +68,7 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
        {
         double dist = gsl_pow_2(inX[i] - x) + gsl_pow_2(inY[i] - y);
         double weight;
-        if (dist<1e-200) { *output = inZ[i]; break; }
+        if (dist<1e-200) { *output = inZ[i]; WeightSum=1.0; break; }
         weight = 1.0/dist;
         *output   += weight * inZ[i];
         WeightSum += weight;

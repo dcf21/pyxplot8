@@ -158,21 +158,29 @@ C1Range_Max = 0
 C1Range_Max_Auto = True
 C1Range_Min = 0
 C1Range_Min_Auto = True
+C1Range_Renorm = True
+C1Range_Reverse = False
 C2Range_Log = False
 C2Range_Max = 0
 C2Range_Max_Auto = True
 C2Range_Min = 0
 C2Range_Min_Auto = True
+C2Range_Renorm = True
+C2Range_Reverse = False
 C3Range_Log = False
 C3Range_Max = 0
 C3Range_Max_Auto = True
 C3Range_Min = 0
 C3Range_Min_Auto = True
+C3Range_Renorm = True
+C3Range_Reverse = False
 C4Range_Log = False
 C4Range_Max = 0
 C4Range_Max_Auto = True
 C4Range_Min = 0
 C4Range_Min_Auto = True
+C4Range_Renorm = True
+C4Range_Reverse = False
 DataStyle = Points
 Display = On
 DPI = 300
@@ -401,35 +409,47 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                Sets the number of contours which are drawn in the \indpst{contourmap} plot style.
                \\
-{\tt CRange\_Log} & {\bf Possible values:} {\tt True}, {\tt False}.
+{\tt C?Range\_Log} & {\bf Possible values:} {\tt True}, {\tt False}.
 
                {\bf Analogous set command:} \indcmdts{set logscale c}
 
-               Sets whether colour maps are drawn with logarithmic or linear colour scales. Also sets whether contours demark linear or logarithmic intervals on contour maps.\indps{contourmap}\indps{colourmap}
+               When the variables {\tt c1}--{\tt c4} are set to renormalise in the {\tt C?Range\_Renorm} setting, this setting determines whether colour maps are drawn with logarithmic or linear colour scales. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively in the expressions supplied to the {\tt colmap} setting. In the case of {\tt c1}, this setting also determines whether contours demark linear or logarithmic intervals on contour maps.\indps{contourmap}\indps{colourmap}
                \\
-{\tt CRange\_Max} & {\bf Possible values:} Any floating-point number.
+{\tt C?Range\_Max} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set crange}
 
-               Sets upper limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps.
+               When the variables {\tt c1}--{\tt c4} are set to renormalise in the {\tt C?Range\_Renorm} setting, this setting determines the upper limit of the range of values demarked by differing colours on colour maps. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively in the expressions supplied to the {\tt colmap} setting. In the case of {\tt c1}, this setting also determines the range of ordinate values for which contours are drawn on contour maps.
                \\
-{\tt CRange\_Max\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
+{\tt C?Range\_Max\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
 
                {\bf Analogous set command:} \indcmdts{set crange}
 
-               Sets whether the upper limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps, should be automatically scaled to match the data provided.
+               When the variables {\tt c1}--{\tt c4} are set to renormalise in the {\tt C?Range\_Renorm} setting, this setting determines whether the upper limit of the range of values demarked by differing colours on colour maps should autoscale to fit the data, or be a fixed value as specified in the {\tt C?Range\_Max} setting. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively. In the case of {\tt c1}, this setting also affects the range of ordinate values for which contours are drawn on contour maps.
                \\
-{\tt CRange\_Min} & {\bf Possible values:} Any floating-point number.
+{\tt C?Range\_Min} & {\bf Possible values:} Any floating-point number.
 
                {\bf Analogous set command:} \indcmdts{set crange}
 
-               Sets lower limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps.
+               When the variables {\tt c1}--{\tt c4} are set to renormalise in the {\tt C?Range\_Renorm} setting, this setting determines the lower limit of the range of values demarked by differing colours on colour maps. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively in the expressions supplied to the {\tt colmap} setting. In the case of {\tt c1}, this setting also determines the range of ordinate values for which contours are drawn on contour maps.
                \\
-{\tt CRange\_Min\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
+{\tt C?Range\_Min\_Auto} & {\bf Possible values:} {\tt True}, {\tt False}.
 
                {\bf Analogous set command:} \indcmdts{set crange}
 
-               Sets whether the lower limit of the range of values demarked by differing colours on colour maps, and by contours on contour maps, should be automatically scaled to match the data provided.
+               When the variables {\tt c1}--{\tt c4} are set to renormalise in the {\tt C?Range\_Renorm} setting, this setting determines whether the lower limit of the range of values demarked by differing colours on colour maps should autoscale to fit the data, or be a fixed value as specified in the {\tt C?Range\_Min} setting. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively. In the case of {\tt c1}, this setting also affects the range of ordinate values for which contours are drawn on contour maps.
+               \\
+{\tt C?Range\_Renorm} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set crange}
+
+               Sets whether the variables {\tt c1}--{\tt c4}, used in the construction of colour maps, should be renormalised into the range 0--1 before being passed to the expressions supplied to the {\tt set colmap} command, or whether they should contain the exact data values supplied in the 3rd--6th columns of data to the {\tt colourmap} plot style. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively.
+               \\
+{\tt C?Range\_Reverse} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set crange}
+
+               When the variables {\tt c1}--{\tt c4} are set to renormalise in the {\tt C?Range\_Renorm} setting, this setting determines whether the renormalisation into the range 0--1 is inverted such that the maximum value maps to zero and the minimum value maps to one. The {\tt ?} wildcard should be replaced with an integer in the range 1--4 to alter the renormalisation of the variables {\tt c1} through {\tt c4} respectively.
                \\
 {\tt DataStyle} & {\bf Possible values:} Any plot style.
 
@@ -537,7 +557,7 @@ The {\tt settings} section can contain any of the following settings in any orde
 
                {\bf Analogous set command:} \indcmdts{set linewidth}
 
-               Sets the width of lines on plots, as a  multiple of the default.
+               Sets the width of lines on plots, as a multiple of the default.
                \\
 {\tt MultiPlot} & {\bf Possible values:} {\tt On}, {\tt Off}.
 
