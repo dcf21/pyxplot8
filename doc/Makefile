@@ -38,6 +38,8 @@ $(EPSDIR)/%.eps: $(EXAMPLEDIR)/%.ppl $(PYXPLOT) .pyxplotrc
 	mkdir -p $(EPSDIR)
 	$(PYXPLOT) $< > /dev/null
 
+$(EPSDIR)/%.pdf: $(EPSDIR)/%.eps
+
 pyxplot-plain.pdf: pyxplot-plain.ps
 	echo "Making plain pdf documentation..."
 	ps2pdf $< $@ > /dev/null 2> /dev/null

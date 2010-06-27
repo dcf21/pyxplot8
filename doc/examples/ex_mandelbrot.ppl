@@ -27,28 +27,12 @@ title = "ex_mandelbrot"
 load "examples/fig_init.ppl"
 
 # Main body of figure script
-set multiplot
-set nodisplay
 set numerics complex
-StepsMax=10
-yn=0
-for y=2 to -2 step -0.04
- {
-  xn=0
-  for x=-2 to 2 step 0.04
-   {
-    zi = x+i*y; z=zi; iter=0;
-    while (abs(z)<2) and (iter<StepsMax) { ; z = z**2 + zi ; iter=iter+1 ; }
-    cd = iter/StepsMax
-    rect from xn,yn to xn+0.21,yn+0.21 with col null fillc rgb(cd):(cd):(cd)
-    xn=xn+0.2
-   }
-  yn=yn+0.2
- }
-
-# Display output
-set display
-refresh
+set sample grid 500x500
+set size square
+set nokey
+set log c1
+plot [-2:2][-2:2] fractal_mandelbrot(x+i*y,70)+1 with colourmap
 
 # Call common cleanup script
 load "examples/fig_end.ppl"

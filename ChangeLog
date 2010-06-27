@@ -1,5 +1,13 @@
 2010 xxx xx: PyxPlot 0.8.2
-   - foo
+   - 3D plotting implemented.
+   - New plot styles colourmap, contourmap and surface added.
+   - Interpolation of 2D datagrids and bitmap images implemented.
+   - Dependency on libkpathsea relaxed to make installation under MacOS easier;
+     linking to the library is still strongly recommended on systems where it
+     is readily available.
+   - Bug fix to the ticking of logarithmic axes.
+   - Mathematical functions fractal_julia(), fractal_mandelbrot() and prime()
+     added.
 2010 Jun  1: PyXPlot 0.8.1
    - Mathematical functions time_fromunix(), time_unix(), zernike() and
      zernikeR() added.

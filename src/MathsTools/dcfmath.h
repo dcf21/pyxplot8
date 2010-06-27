@@ -123,6 +123,7 @@ void dcfmath_mod(value *in1, value *in2, value *output, int *status, char *errte
 void dcfmath_poissonPDF(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_poissonCDF(value *in1, value *in2, value *output, int *status, char *errtext);
 void dcfmath_pow(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_prime(value *in, value *output, int *status, char *errtext);
 void dcfmath_radians(value *in, value *output, int *status, char *errtext);
 void dcfmath_frandom(value *output, int *status, char *errtext);
 void dcfmath_frandombin(value *in1, value *in2, value *output, int *status, char *errtext);

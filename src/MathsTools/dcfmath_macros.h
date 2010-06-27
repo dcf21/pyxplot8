@@ -36,6 +36,15 @@
   else { NULL_OUTPUT; } \
  }
 
+#define CHECK_NEEDLONG(X, VAR, DESCRIPTION) \
+ { \
+  if (((X)->FlagComplex) || ((X)->real < 0) || ((X)->real >= LONG_MAX)) \
+   { \
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status = 1; sprintf(errtext, "The %s %s in the range 0 <= %s < %ld.",FunctionDescription,DESCRIPTION,VAR,LONG_MAX); return; } \
+    else { NULL_OUTPUT; } \
+   } \
+ }
+
 #define CHECK_NEEDINT(X, VAR, DESCRIPTION) \
  { \
   if (((X)->FlagComplex) || ((X)->real < 0) || ((X)->real >= INT_MAX)) \
@@ -95,11 +104,17 @@
   if ((!gsl_finite(in4->real)) || (!gsl_finite(in4->imag))) { NAN_CHECK_FAIL; } \
  }
 
-#define CHECK_6NOTNAN \
+#define CHECK_5NOTNAN \
  { \
   CHECK_4NOTNAN; \
-  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && ((in5->FlagComplex) || (in6->FlagComplex))) { NAN_CHECK_FAIL; } \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in5->FlagComplex)) { NAN_CHECK_FAIL; } \
   if ((!gsl_finite(in5->real)) || (!gsl_finite(in5->imag))) { NAN_CHECK_FAIL; } \
+ }
+
+#define CHECK_6NOTNAN \
+ { \
+  CHECK_5NOTNAN; \
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in6->FlagComplex)) { NAN_CHECK_FAIL; } \
   if ((!gsl_finite(in6->real)) || (!gsl_finite(in6->imag))) { NAN_CHECK_FAIL; } \
  }
 
@@ -143,7 +158,15 @@
    } \
  }
 
-
+#define CHECK_5INPUT_DIMLESS \
+ { \
+  if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless && in4->dimensionless && in5->dimensionless)) \
+   { \
+    *status = 1; \
+    sprintf(errtext, "The %s function can only act upon dimensionless inputs.", FunctionDescription); \
+    return; \
+   } \
+ }
 #define CHECK_6INPUT_DIMLESS \
  { \
   if (!(in1->dimensionless && in2->dimensionless && in3->dimensionless && in4->dimensionless && in5->dimensionless && in6->dimensionless)) \
@@ -180,6 +203,7 @@
 #define IF_2COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex)) {
 #define IF_3COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex)) {
 #define IF_4COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex) || (in4->FlagComplex)) {
+#define IF_5COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex) || (in4->FlagComplex) || (in5->FlagComplex)) {
 #define IF_6COMPLEX if ((in1->FlagComplex) || (in2->FlagComplex) || (in3->FlagComplex) || (in4->FlagComplex) || (in5->FlagComplex) || (in6->FlagComplex)) {
 #define ELSE_REAL   } else {
 #define ENDIF       }

@@ -1154,6 +1154,34 @@ void dcfmath_pow (value *in1, value *in2, value *output, int *status, char *errt
   ppl_units_pow(in1, in2, output, status, errtext);
  }
 
+void dcfmath_prime(value *in, value *output, int *status, char *errtext)
+ {
+  char *FunctionDescription = "prime(x)";
+  CHECK_1NOTNAN;
+  CHECK_1INPUT_DIMLESS;
+  CHECK_NEEDINT(in, "x", "function's argument must be an integer in the range");
+  IF_1COMPLEX { QUERY_MUST_BE_REAL }
+  ELSE_REAL
+   {
+    long x = floor(in->real), m, n;
+    if (x<53) // Hardcode primes less than 53
+     {
+      if ((x==2)||(x==3)||(x==5)||(x==7)||(x==11)||(x==13)||(x==17)||(x==19)||(x==23)||(x==29)||(x==31)||(x==37)||(x==41)||(x==43)||(x==47)) { output->real = 1; return; }
+      else return;
+     }
+    if (((x%2)==0)||((x%3)==0)||((x%5)==0)||((x%7)==0)) return;
+    m = sqrt(x);
+    for (n=11; n<=m; n+=6)
+     {
+      if ((x% n   )==0) return;
+      if ((x%(n+2))==0) return;
+     }
+    output->real = 1;
+   }
+  ENDIF
+  CHECK_OUTPUT_OKAY;
+ }
+
 void dcfmath_radians(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "radians(x)";

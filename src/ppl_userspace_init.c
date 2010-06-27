@@ -31,6 +31,7 @@
 #include <gsl/gsl_sf.h>
 
 #include "MathsTools/dcfast.h"
+#include "MathsTools/dcffract.h"
 #include "MathsTools/dcfmath.h"
 #include "MathsTools/dcfstr.h"
 #include "MathsTools/dcftime.h"
@@ -117,6 +118,8 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_expm1         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_expm1       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expm1}@<@1@>", "expm1(x) accurately evaluates exp(x)-1"};
   FunctionDescriptor fd_expint        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_expint      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expint}@<@1,@2@>", "expint(n,x) evaluates the integral of exp(-xt)/t**n between one and infinity"};
   FunctionDescriptor fd_floor         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_floor       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{floor}@<@1@>", "floor(x) returns the largest integer value smaller than or equal to x"};
+  FunctionDescriptor fd_fr_julia      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcffract_julia      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{fractal\\_julia}@<@1,@2,@3@>", "fractal_julia(z,cz,MaxIter) returns the number of iterations required before the Julia set iterator diverges outside the circle |z'|<2"};
+  FunctionDescriptor fd_fr_mandelbrot = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcffract_mandelbrot , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{fractal\\_mandelbrot}@<@1,@2@>", "fractal_mandelbrot(z,MaxIter) returns the number of iterations required before the Mandelbrot set iterator diverges outside the circle |z'|<2"};
   FunctionDescriptor fd_gamma         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_gamma       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{\\Gamma}@<@1@>", "gamma(x) evaluates the gamma function at x"};
   FunctionDescriptor fd_gaussianPDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianPDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianPDF}@<@1,@2@>", "gaussianPDF(x,sigma) evaluates the Gaussian probability density function of standard deviation sigma at x"};
   FunctionDescriptor fd_gaussianCDF   = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_gaussianCDF , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{gaussianCDF}@<@1,@2@>", "gaussianCDF(x,sigma) evaluates the Gaussian cumulative distribution function of standard deviation sigma at x"};
@@ -151,6 +154,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_poissonPDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonPDF  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{poissonPDF}@<@1,@2@>", "poissonPDF(x,mu) returns the probability of getting x from a Poisson distribution with mean mu"};
   FunctionDescriptor fd_poissonCDF    = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_poissonCDF  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{poissonCDF}@<@1,@2@>", "poissonCDF(x,mu) returns the probability of getting <= x from a Poisson distribution with mean mu"};
   FunctionDescriptor fd_pow           = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_pow         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{pow}@<@1,@2@>", "pow(x,y) returns x to the power of y"};
+  FunctionDescriptor fd_prime         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_prime       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{prime}@<@1@>", "prime(x) returns one if floor(x) is a prime number; zero otherwise"};
   FunctionDescriptor fd_radians       = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_radians     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{radians}@<@1@>", "radians(x) converts angles measured in degrees into radians"};
   FunctionDescriptor fd_random        = { PPL_USERSPACE_SYSTEM , 0 , 0 , (void *)&dcfmath_frandom     , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random}@<@1@>", "random(x) returns a random number between 0 and 1"};
   FunctionDescriptor fd_randombin     = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_frandombin  , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{random\\_binomial}@<@1,@2@>", "random_binomial(p,n) returns a random sample from a binomial distribution with n independent trials and a success probability p"};
@@ -384,6 +388,8 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "expm1"          , (void *)&fd_expm1       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "expint"         , (void *)&fd_expint      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "floor"          , (void *)&fd_floor       , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "fractal_julia"  , (void *)&fd_fr_julia    , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs,"fractal_mandelbrot",(void *)&fd_fr_mandelbrot,sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gamma"          , (void *)&fd_gamma       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gaussianPDF"    , (void *)&fd_gaussianPDF , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "gaussianCDF"    , (void *)&fd_gaussianCDF , sizeof(FunctionDescriptor), DATATYPE_VOID);
@@ -418,6 +424,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "poissonPDF"     , (void *)&fd_poissonPDF  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "poissonCDF"     , (void *)&fd_poissonCDF  , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "pow"            , (void *)&fd_pow         , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "prime"          , (void *)&fd_prime       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "radians"        , (void *)&fd_radians     , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "random"         , (void *)&fd_random      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "random_binomial", (void *)&fd_randombin   , sizeof(FunctionDescriptor), DATATYPE_VOID);
