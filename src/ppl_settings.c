@@ -164,6 +164,7 @@ void ppl_settings_makedefault()
   strcpy(settings_graph_default.ColMapExpr2, "(c1)");
   strcpy(settings_graph_default.ColMapExpr3, "(c1)");
   strcpy(settings_graph_default.ColMapExpr4, "");
+  strcpy(settings_graph_default.MaskExpr   , "");
   settings_graph_default.ContoursListLen       = -1;
   for (i=0; i<MAX_CONTOURS; i++) settings_graph_default.ContoursList[i] = 0.0;
   settings_graph_default.ContoursN             = 12;
@@ -1496,7 +1497,7 @@ void CopyAxis(settings_axis *out, const settings_axis *in)
 
 void CopyAxisTics(settings_axis *out, const settings_axis *in)
  {
-  int   i,j;
+  int   i=0,j;
   void *tmp;
   if (in->TickStrs != NULL)
    {
@@ -1515,7 +1516,7 @@ void CopyAxisTics(settings_axis *out, const settings_axis *in)
 
 void CopyAxisMTics(settings_axis *out, const settings_axis *in)
  {
-  int   i,j;
+  int   i=0,j;
   void *tmp;
   if (in->MTickStrs != NULL)
    {

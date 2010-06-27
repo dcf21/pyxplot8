@@ -60,7 +60,7 @@ typedef struct settings_graph {
  unsigned char GridAxisX[MAX_AXES], GridAxisY[MAX_AXES], GridAxisZ[MAX_AXES];
  unsigned char BoxFromAuto, BoxWidthAuto;
  value         BoxFrom, BoxWidth, Cmin[4], Cmax[4], ContoursUnit, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width, XYview, YZview;
- char          title[FNAME_LENGTH], ColMapExpr1[FNAME_LENGTH], ColMapExpr2[FNAME_LENGTH], ColMapExpr3[FNAME_LENGTH], ColMapExpr4[FNAME_LENGTH];
+ char          title[FNAME_LENGTH], ColMapExpr1[FNAME_LENGTH], ColMapExpr2[FNAME_LENGTH], ColMapExpr3[FNAME_LENGTH], ColMapExpr4[FNAME_LENGTH], MaskExpr[FNAME_LENGTH];
  with_words    DataStyle, FuncStyle;
  } settings_graph;
 

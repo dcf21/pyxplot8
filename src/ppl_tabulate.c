@@ -52,7 +52,7 @@
 static int DataGridDisplay(FILE *output, DataTable *data, int Ncolumns, value **min, value **max, char *format)
  {
   DataBlock *blk;
-  char *cptr, tmpchr;
+  char *cptr, tmpchr='\0';
   double tmpdbl, multiplier[USING_ITEMS_MAX];
   unsigned char InRange, split, AllInts[USING_ITEMS_MAX], AllSmall[USING_ITEMS_MAX];
   long int i,k;

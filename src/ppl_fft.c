@@ -69,7 +69,7 @@ int directive_fft(Dict *command)
   double        TempDbl, pos[USING_ITEMS_MAX], norm;
   value        *min[USING_ITEMS_MAX], *max[USING_ITEMS_MAX], *step[USING_ITEMS_MAX], x, FirstVal;
   unsigned char inverse;
-  char         *cptr, *tempstr, *filename, *outfunc, *infunc, *scratchpad, *errtext, *SelectCrit=NULL;
+  char         *cptr, *tempstr, *filename=NULL, *outfunc, *infunc, *scratchpad, *errtext, *SelectCrit=NULL;
   void (*WindowType)(value *,int,int *,int *);
   List         *RangeList=NULL, *UsingList=NULL, *EveryList=NULL;
   ListIterator *ListIter;

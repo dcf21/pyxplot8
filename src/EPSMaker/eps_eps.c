@@ -67,7 +67,7 @@ void eps_eps_RenderEPS(EPSComm *x)
    {
     sprintf(tmpdata, "%s%s%s", settings_session_default.tempdir, PATHLINK, "bbox_in"); // Temporary file for gs to output bounding box into
     sprintf(command, "%s -dQUIET -dSAFER -dBATCH -dNOPAUSE -sDEVICE=bbox %s > %s 2> %s", GHOSTSCRIPT_COMMAND, filename, tmpdata, tmpdata);
-    system(command);
+    if (system(command)) if (DEBUG) { ppl_log("Ghostscript returned non-zero return value."); }
     inf = fopen(tmpdata, "r");
     if (inf==NULL) { sprintf(temp_err_string, "Could not open temporary file '%s'.", tmpdata); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
     eps_eps_ExtractBBox(inf, &bb_left, &bb_bottom, &bb_right, &bb_top, &GotBBox);

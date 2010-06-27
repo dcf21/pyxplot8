@@ -84,7 +84,7 @@ double eps_plot_axis_InvGetPosition(double xin, settings_axis *xa)
 int eps_plot_axis_InRange(settings_axis *xa, double xin)
  {
   int xrn, swapI, xminset=0, xmaxset=0;
-  double xmin, xmax, swapD;
+  double xmin=0, xmax=0, swapD;
 
   if (xa->AxisLinearInterpolation != NULL)
    {

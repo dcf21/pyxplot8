@@ -60,12 +60,12 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
 
   if ((buff == NULL)||(header == NULL)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
-  fread(buff,3,1,jpeg);
+  if (fread(buff,3,1,jpeg)!=1) { ppl_error(ERR_FILE, -1, -1,"This JPEG image file appears to be corrupted"); return; }
   i=buff[0];
   if (i<0xe0) { ppl_error(ERR_FILE, -1, -1, "In supplied JPEG image, first marker is not APPn. Aborting."); return; }
   len=buff[1]*256+buff[2]-2;
 
-  fread(buff,len,1,jpeg);
+  if (fread(buff,len,1,jpeg)!=1) { ppl_error(ERR_FILE, -1, -1,"This JPEG image file appears to be corrupted"); return; }
 
   if (DEBUG)
    {
@@ -110,11 +110,11 @@ void bmp_jpegread(FILE *jpeg, bitmap_data *image)
 
   while ((type!=0xda) && fread(buff,1,1,jpeg) && (buff[0]=0xff))
    {
-    fread(buff,3,1,jpeg);
+    if (fread(buff,3,1,jpeg)!=1) { ppl_error(ERR_FILE, -1, -1,"This JPEG image file appears to be corrupted"); return; }
     type = buff[0];
     len  = buff[1]*256+buff[2]-2;
     save = 0;
-    fread(buff,len,1,jpeg);
+    if (fread(buff,len,1,jpeg)!=1) { ppl_error(ERR_FILE, -1, -1,"This JPEG image file appears to be corrupted"); return; }
 
     if (DEBUG) { sprintf(temp_err_string, "Entry type %x length 0x%x",(int)type,(int)len+2); ppl_log(temp_err_string); }
 

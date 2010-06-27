@@ -579,7 +579,7 @@ void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned 
          const double OoM_m  = log(fabs(args[i].NumericValues[j  ])) / log(LogBase);
          const int    Nsteps = fabs(log(1e-15) / log(LogBase));
          double OoM, nd;
-         int    n,m,ZeroInInterval=0;
+         int    n=0,m,ZeroInInterval=0;
          if      (!gsl_finite(OoM_n)) OoM = floor(OoM_m);
          else if (!gsl_finite(OoM_m)) OoM = floor(OoM_n);
          else                         OoM = floor(max(OoM_n , OoM_m));
@@ -604,6 +604,7 @@ void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned 
             )
          {
           ADDTICK(i,NOT_THROW,INT_MAX,-10,0.0,j); // Zero should be marked in this interval
+          n=0;
           ZeroInInterval = 1;
          }
          else if ((args[i].NumericValues[j-1]!=0)||(args[i].NumericValues[j]!=0))
@@ -657,7 +658,6 @@ void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned 
          }
 
          // Ticks which mark the passing of fractions of the Nth significant digit
-         if (ZeroInInterval) n=0;
          if (n<Nsteps)
            for (m=n; m>=n-((ZeroInInterval||(j==1))?Nsteps:3); m--)
             {
@@ -760,7 +760,7 @@ void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned 
        int Nticks_new, Nticks_new_minor, Nticks_new_accepted, Nticks_new_accepted_minor;
        int Nticks_new_prev, Nticks_new_prev_minor, Nticks_2B, Nticks_2B_minor;
        int Nticks_2B_best=-1, Nticks_2B_minor_best=-1;
-       int l, l2, l3, l4, l_final;
+       int l, l2, l3, l4, l_final=0;
        int NMajorTicksIn, NMinorTicksIn;
        unsigned char MAJORminor;
 

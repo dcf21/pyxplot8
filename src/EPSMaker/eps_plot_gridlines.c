@@ -78,7 +78,7 @@ void eps_plot_gridlines(EPSComm *x, double origin_x, double origin_y, double wid
    {
     if ((j==2) && (!x->current->ThreeDim)) continue;
 
-    if      (j==2) { axes = x->current->ZAxes; GridLines = x->current->settings.GridAxisZ; }
+    if      (j==2) { axes = x->current->ZAxes; GridLines = x->current->settings.GridAxisZ; left = right = GSL_NAN; }
     else if (j==1) { axes = x->current->YAxes; GridLines = x->current->settings.GridAxisY; left = origin_y; right = origin_y+height; }
     else           { axes = x->current->XAxes; GridLines = x->current->settings.GridAxisX; left = origin_x; right = origin_x+width;  }
 

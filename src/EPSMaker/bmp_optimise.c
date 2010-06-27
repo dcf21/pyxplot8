@@ -90,7 +90,7 @@ void bmp_colour_count(bitmap_data *image)
   if (image->trans != NULL)
    {
     p = image->trans;
-    colour= (((int)p[3*i])<<16) + (((int)p[3*i+1])<<8) + p[3*i+2];
+    colour= (((int)p[0])<<16) + (((int)p[1])<<8) + p[2];
     for (j=0; j<ncols; j++) if (colour == palette[j]) break;
     if (j==ncols) image->trans=NULL; // Transparent colour not present in image
     else          p[0]=j;

@@ -58,7 +58,7 @@ int directive_histogram(Dict *command)
   long int   i, j, k, Nrows;
   int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=DATAFILE_NERRS;
   char       errtext[LSTR_LENGTH], *cptr, *filename=NULL, *histfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
-  double    *xdata, xbinmin, xbinmax, BinOriginDbl, BinWidthDbl;
+  double    *xdata, xbinmin, xbinmax, BinOriginDbl=0, BinWidthDbl;
   List      *UsingList=NULL, *EveryList=NULL, *templist;
   Dict      *tempdict;
   ListIterator *listiter;

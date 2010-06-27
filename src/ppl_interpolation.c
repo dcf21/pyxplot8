@@ -67,11 +67,11 @@ int directive_interpolate(Dict *command, int mode)
   DataTable *data;
   DataBlock *blk;
   bitmap_data bmpdata;
-  long int   i, j, k, Nrows, SizeX, SizeY;
+  long int   i=0, j, k, Nrows=0, SizeX=0, SizeY=0;
   int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=DATAFILE_NERRS;
   char       errtext[LSTR_LENGTH], *cptr, *filename=NULL, *fitfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
-  unsigned char *bmpchars;
-  double    *xdata, *ydata, *zdata;
+  unsigned char *bmpchars = NULL;
+  double    *xdata=NULL, *ydata=NULL, *zdata=NULL;
   List      *UsingList=NULL, *EveryList=NULL;
   FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   value      v, FirstEntries[3];
@@ -84,7 +84,7 @@ int directive_interpolate(Dict *command, int mode)
   Dict         *TempDict;
   value        *xmin=NULL, *ymin=NULL, *xmax=NULL, *ymax=NULL;
 
-  const gsl_interp_type *SplineType;
+  const gsl_interp_type *SplineType= NULL;
   gsl_spline            *SplineObj = NULL;
   gsl_interp_accel      *accel     = NULL;
 

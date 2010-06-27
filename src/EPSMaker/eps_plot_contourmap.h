@@ -1,4 +1,4 @@
-// eps_plot_colourmap.h
+// eps_plot_contourmap.h
 //
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
@@ -19,12 +19,12 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _PPL_EPS_PLOT_COLOURMAP_H
-#define _PPL_EPS_PLOT_COLOURMAP_H 1
+#ifndef _PPL_EPS_PLOT_CONTOURMAP_H
+#define _PPL_EPS_PLOT_CONTOURMAP_H 1
 
 #include "ppl_settings.h"
 
-int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth);
+int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth);
 
 #endif
 

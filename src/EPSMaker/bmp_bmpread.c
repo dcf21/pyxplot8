@@ -49,7 +49,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   off2=3;
 
   // Read rest of first header
-  fread(buff,11,1,in);
+  if (fread(buff,11,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
   off2 += 11;
 
   if ((buff[3])||(buff[4])||(buff[5])||(buff[6])) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
@@ -57,7 +57,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   offset = buff[7] + (buff[8]<<8) + (buff[9]<<16) + (buff[10]<<24);
 
   // Read info header
-  fread(buff,12,1,in);
+  if (fread(buff,12,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
   off2 += 12;
 
   if ((buff[0]==12)&&(buff[1]==0)) // OS/2 bitmap
@@ -75,7 +75,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     os2=0;
     if ((buff[0]!=40)||(buff[1])||(buff[2])||(buff[3])) { ppl_error(ERR_FILE, -1, -1,"This Windows bitmap file appears to be corrupted"); return; }
 
-    fread(buff+12,40-12,1,in);
+    if (fread(buff+12,40-12,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
     off2 += 40-12;
 
     width  = buff[4] + ((unsigned)buff[5]<<8) + ((unsigned)buff[ 6]<<16) + ((unsigned)buff[ 7]<<24);
@@ -115,7 +115,8 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     p = image->palette;
     for (i=0; i<image->pal_len; i+=2)
      {
-      fread(buff,8-2*os2,1,in);  // MS Windows uses BGR0, OS/2 uses BGR
+      // MS Windows uses BGR0, OS/2 uses BGR
+      if (fread(buff,8-2*os2,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
       *(p++)=buff[2];
       *(p++)=buff[1];
       *(p++)=buff[0];
@@ -132,7 +133,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
 
   if ((depth==16)&&(encode==3)) // Must read 12 byte pseudopalette
    {
-    fread(buff+40,12,1,in);
+    if (fread(buff+40,12,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
     off2 += 12;
    }
 
@@ -162,8 +163,8 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     if (image->data==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
     for (i=1 ; i<=height ; i++)
      {
-      fread(image->data+(height-i)*dw,dw,1,in);
-      if (dw&3) fread(buff,4-(dw&3),1,in); // Lines are dword aligned
+      if (fread(image->data+(height-i)*dw,dw,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
+      if (dw&3) { if (fread(buff,4-(dw&3),1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; } } // Lines are dword aligned
     }
 
     if (depth==24) // BMP is BGR not RGB
@@ -183,7 +184,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
    } else {  // if (rle)
     p = lt_malloc(size);
     if (p==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); image->data = NULL; return; }
-    fread(p,size,1,in);
+    if (fread(p,size,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
     if (bmp_demsrle(image,p,size) != 0) { image->data = NULL; return; }
    }
   return;
@@ -229,7 +230,7 @@ void bmp_bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
 
   for (i=1; i<=height; i++)
    {
-    fread(rowptr,2*width,1,in);
+    if (fread(rowptr,2*width,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
     ptr = image->data+(height-i)*3*width;
     for (j=0; j<width; j++)
      {
@@ -245,7 +246,7 @@ void bmp_bmp16read(FILE *in, unsigned char *header, bitmap_data *image)
       *ptr = (colour&0x7c00)>>7;  // red
       ptr += 3;
      }
-    if (width&1) fread(rowptr,2,1,in); // rows are dword aligned
+    if (width&1) { if (fread(rowptr,2,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; } } // rows are dword aligned
    }
   return;
  }

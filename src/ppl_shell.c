@@ -304,7 +304,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   if      (strcmp(directive, "pling")==0)
    {
     DictLookup(command,"cmd",NULL,(void **)(&directive));
-    system(directive);
+    if (system(directive)) { if (DEBUG) ppl_log("Pling command received non-zero return value."); }
    }
   else if (strcmp(directive, "var_set")==0)
    {

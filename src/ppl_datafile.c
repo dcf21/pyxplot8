@@ -627,7 +627,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   Dict         *tempdict;
   int           linestep=1, blockstep=1, linefirst=-1, blockfirst=-1, linelast=-1, blocklast=-1;
   long int      index_number, linenumber_count, linenumber_stepcnt, block_count, block_stepcnt, prev_blanklines, file_linenumber, ItemsOnLine;
-  FILE         *filtered_input;
+  FILE         *filtered_input=NULL;
   char          linebuffer[LSTR_LENGTH], *lineptr, *cptr;
 
   int i, j, k, l, m, *intptr;

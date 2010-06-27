@@ -457,7 +457,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
 
         // Fix range of axes
         eps_plot_LinkedAxisForwardPropagate(x, &axissets[pd->axis1xyz][pd->axis1], 1); if (*x->status) return;
-        eps_plot_LinkedAxisForwardPropagate(x, &axissets[pd->axis1xyz][pd->axis2], 1); if (*x->status) return;
+        eps_plot_LinkedAxisForwardPropagate(x, &axissets[pd->axis2xyz][pd->axis2], 1); if (*x->status) return;
 
         ppl_interp2d_grid(x->current->plotdata+i, &x->current->settings, tmpdata,
                           &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2],
@@ -539,7 +539,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
          {
           // boxes and histeps plot styles have their own special rasters
           int k;
-          double left, right, left2, right2, width;
+          double left, right, left2=GSL_NAN, right2=GSL_NAN, width;
           left           = eps_plot_axis_InvGetPosition(0.0, *_OrdinateAxis);
           right          = eps_plot_axis_InvGetPosition(1.0, *_OrdinateAxis);
           if (x->current->settings.BoxWidth.real>0) width = x->current->settings.BoxWidth.real;

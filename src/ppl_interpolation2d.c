@@ -50,7 +50,7 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
    {
     case SW_SAMPLEMETHOD_NEAREST:
      {
-      double DistBest;
+      double DistBest=0;
       unsigned char first=1;
       *output = 0.0;
       for (i=0; i<InSize; i++)
@@ -100,7 +100,7 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
 
   InSize = in->Nrows;
   (*output)->FirstEntries = in->FirstEntries;
-  p2 = (*output)->current->BlockPosition = imax*jmax;
+  p2 = (*output)->current->BlockPosition = (*output)->Nrows = imax*jmax;
   for (pc=0; pc<p2; pc++) (*output)->current->split   [pc] = 0;
   for (pc=0; pc<p2; pc++) (*output)->current->text    [pc] = NULL;
   for (pc=0; pc<p2; pc++) (*output)->current->FileLine[pc] = 0;

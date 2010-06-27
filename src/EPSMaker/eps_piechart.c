@@ -326,12 +326,11 @@ void eps_pie_RenderEPS(EPSComm *x)
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
+        size = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 2 * M_PI; // Angular size of wedge
         if ((blk->text[j]!=NULL)&&(blk->text[j][0]!='\0'))
          {
           int    ArrowType;
-          double a;
-          size             = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 2 * M_PI; // Angular size of wedge
-          a                = angle+size/2; // Central angle of wedge
+          double a = angle+size/2; // Central angle of wedge
 
           // Test different radii where label can be placed
           best_label_rpos   = 0.7;

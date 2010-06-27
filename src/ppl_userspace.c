@@ -338,7 +338,7 @@ void ppl_UserSpace_FuncDuplicate(FunctionDescriptor *in, int modified)
   if (in->FunctionType != PPL_USERSPACE_USERDEF) ppl_fatal(__FILE__,__LINE__,"Attempt to duplicate a function descriptor which is not a user-defined function.");
 
   Nargs=in->NumberArguments;
-  for (j=0,i=0;i<Nargs;i++) while (in->ArgList[j++]!='\0')
+  for (j=0,i=0;i<Nargs;i++) while (in->ArgList[j++]!='\0');
 
   if ((NewFuncPtr = (FunctionDescriptor *)lt_malloc_incontext(sizeof(FunctionDescriptor),0))==NULL) return;
        NewFuncPtr->FunctionType    = PPL_USERSPACE_USERDEF;
@@ -386,7 +386,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
   FunctionDescriptor *FuncDefn = NULL;
   value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
 
-  int    arg1i, arg2i; // Integers for passing to sprintf
+  int    arg1i=0, arg2i=0; // Integers for passing to sprintf
   value  arg1v, arg2v, argtemp; // Doubles (well, actually values with units) for passing to sprintf
   struct {double d,d2; int i,i2; char *s; unsigned int u,u2; value v; } argf; // We pass this lump of memory to sprintf
 
@@ -792,7 +792,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
   int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
   unsigned char ci,cj;
   char dummy[DUMMYVAR_MAXLEN];
-  char ck, *integrand;
+  char ck, *integrand=NULL;
   int bufpos = 0;
   value  *VarData  = NULL;
   FunctionDescriptor *FuncDef = NULL;

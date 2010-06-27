@@ -428,7 +428,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"colmap")==0)) /* set colmap */
    {
-    char *cR, *cG, *cB, *cH, *cS, *cC, *cM, *cY, *cK;
+    char *cR, *cG, *cB, *cH, *cS, *cC, *cM, *cY, *cK, *mask, *nomask;
     DictLookup(command,"colourR",NULL,(void **)&cR);
     DictLookup(command,"colourG",NULL,(void **)&cG);
     DictLookup(command,"colourB",NULL,(void **)&cB);
@@ -438,6 +438,8 @@ void directive_set(Dict *command)
     DictLookup(command,"colourM",NULL,(void **)&cM);
     DictLookup(command,"colourY",NULL,(void **)&cY);
     DictLookup(command,"colourK",NULL,(void **)&cK);
+    DictLookup(command,"mask"   ,NULL,(void **)&mask);
+    DictLookup(command,"nomask" ,NULL,(void **)&nomask);
     if      (cR!=NULL)
      {
       sg->ColMapColSpace = SW_COLSPACE_RGB;
@@ -462,7 +464,20 @@ void directive_set(Dict *command)
       snprintf(sg->ColMapExpr3, FNAME_LENGTH, "%s", cY);
       snprintf(sg->ColMapExpr4, FNAME_LENGTH, "%s", cK);
      }
-    sg->ColMapExpr1[FNAME_LENGTH-1] = sg->ColMapExpr2[FNAME_LENGTH-1] = sg->ColMapExpr3[FNAME_LENGTH-1] = sg->ColMapExpr4[FNAME_LENGTH-1] = '\0';
+    if (mask!=NULL)
+     {
+      snprintf(sg->MaskExpr, FNAME_LENGTH, "%s", mask);
+     }
+    else if (nomask!=NULL)
+     {
+      sg->MaskExpr[0]='\0';
+     }
+    sg->ColMapExpr1[FNAME_LENGTH-1] = sg->ColMapExpr2[FNAME_LENGTH-1] = sg->ColMapExpr3[FNAME_LENGTH-1] = sg->ColMapExpr4[FNAME_LENGTH-1] = sg->MaskExpr[FNAME_LENGTH-1] = '\0';
+    StrStrip(sg->ColMapExpr1, sg->ColMapExpr1);
+    StrStrip(sg->ColMapExpr2, sg->ColMapExpr2);
+    StrStrip(sg->ColMapExpr3, sg->ColMapExpr3);
+    StrStrip(sg->ColMapExpr4, sg->ColMapExpr4);
+    StrStrip(sg->MaskExpr   , sg->MaskExpr   );
    }
   else if (strcmp_unset && (strcmp(setoption,"colmap")==0)) /* unset colmap */
    {
@@ -470,6 +485,7 @@ void directive_set(Dict *command)
     strcpy(sg->ColMapExpr2 , settings_graph_default.ColMapExpr2);
     strcpy(sg->ColMapExpr3 , settings_graph_default.ColMapExpr3);
     strcpy(sg->ColMapExpr4 , settings_graph_default.ColMapExpr4);
+    strcpy(sg->MaskExpr    , settings_graph_default.MaskExpr   );
     sg->ColMapColSpace = settings_graph_default.ColMapColSpace;
    }
   else if (strcmp_set && (strcmp(setoption,"contour")==0)) /* set contour */
@@ -2507,7 +2523,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     k+=strlen(buf+k);
     if (sg->ColMapColSpace==SW_COLSPACE_CMYK) sprintf(buf+k, ":%s", sg->ColMapExpr4);
     k+=strlen(buf+k);
-    directive_show3(out+i, ItemSet, 1, interactive, "colmap", buf, (settings_graph_default.ColMapColSpace==sg->ColMapColSpace)&&(strcmp(sg->ColMapExpr1,settings_graph_default.ColMapExpr1)==0)&&(strcmp(sg->ColMapExpr2,settings_graph_default.ColMapExpr2)==0)&&(strcmp(sg->ColMapExpr3,settings_graph_default.ColMapExpr3)==0)&&(strcmp(sg->ColMapExpr4,settings_graph_default.ColMapExpr4)==0), "The mapping of ordinate value to colour used by the colourmap plot style");
+    sprintf(buf+k, " %smask %s", (sg->MaskExpr[0]=='\0')?"no":"", sg->MaskExpr);
+    k+=strlen(buf+k);
+    directive_show3(out+i, ItemSet, 1, interactive, "colmap", buf, (settings_graph_default.ColMapColSpace==sg->ColMapColSpace)&&(strcmp(sg->ColMapExpr1,settings_graph_default.ColMapExpr1)==0)&&(strcmp(sg->ColMapExpr2,settings_graph_default.ColMapExpr2)==0)&&(strcmp(sg->ColMapExpr3,settings_graph_default.ColMapExpr3)==0)&&(strcmp(sg->ColMapExpr4,settings_graph_default.ColMapExpr4)==0)&&(strcmp(sg->MaskExpr,settings_graph_default.MaskExpr)==0), "The mapping of ordinate value to colour used by the colourmap plot style");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "contour",1)>=0))

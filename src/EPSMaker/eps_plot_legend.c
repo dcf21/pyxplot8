@@ -201,7 +201,7 @@ void GraphLegend_ArrangeToHeight(EPSComm *x, double TrialHeight, double *Attaine
 void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
  {
   double fs=x->current->settings.FontSize, CombinedHeight=0.0, MinimumHeight=0.0;
-  double xoff, yoff;
+  double xoff=0, yoff=0;
   double ColumnX[MAX_LEGEND_COLUMNS], ColumnHeight[MAX_LEGEND_COLUMNS];
   double BestHeight, AttainedHeight, TrialHeight;
   int    NDataSet, Ncolumns, ColumnNItems[MAX_LEGEND_COLUMNS];

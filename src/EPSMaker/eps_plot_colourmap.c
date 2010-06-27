@@ -189,7 +189,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
     if (DEBUG)
      {
       int SF = settings_term_current.SignificantFigures;
-      sprintf(temp_err_string, "Range for variable c%d if [%s:%s]", c+1, NumericDisplay(CMin[c],0,SF,0), NumericDisplay(CMax[c],1,SF,0));
+      sprintf(temp_err_string, "Range for variable c%d is [%s:%s]", c+1, NumericDisplay(CMin[c],0,SF,0), NumericDisplay(CMax[c],1,SF,0));
       ppl_log(temp_err_string);
      }
    }
@@ -215,6 +215,15 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
       else if (CMax[c]==CMin[c])  /* Ooops */ {  CVar[c]->real = 0.5; }
       else if (!CLog[c]) /* Linear */         {  CVar[c]->real = (blk->data_real[c+2 + Ncol*(i+XSize*j)].d - CMin[c]) / (CMax[c] - CMin[c]); }
       else               /* Logarithmic */    {  CVar[c]->real = log(blk->data_real[c+2 + Ncol*(i+XSize*j)].d / CMin[c]) / log(CMax[c] / CMin[c]); }
+
+     // Check if mask criterion is satisfied
+     if (sg->MaskExpr[0]!='\0')
+      {
+       errpos=-1;
+       ppl_EvaluateAlgebra(sg->MaskExpr, &outval, 0, NULL, 0, &errpos, errtext, 0);
+       if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate mask expression <%s>. The error, encountered at character position %d, was: '%s'", sg->MaskExpr, errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
+       if (outval.real==0) { component_r = TRANS_R; component_g = TRANS_G; component_b = TRANS_B; goto write_rgb; }
+      }
 
      // Compute RGB, HSB or CMYK components
      for (c=0; c<3+(sg->ColMapColSpace==SW_COLSPACE_CMYK); c++)

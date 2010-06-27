@@ -43,6 +43,7 @@
 #include "eps_colours.h"
 #include "eps_plot.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_contourmap.h"
 #include "eps_plot_filledregion.h"
 #include "eps_plot_linedraw.h"
 #include "eps_plot_styles.h"
@@ -194,7 +195,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
  {
   int i, j, Ncolumns;
   double z;
-  double ptAx, ptBx, ptCx, lasty;
+  double ptAx, ptBx=0, ptCx=0, lasty=0;
   unsigned char ptAset=0, ptBset=0, ptCset=0;
   unsigned char InRange, PartiallyInRange, InRangeMemory;
   DataBlock *blk;
@@ -419,7 +420,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
 // Render a dataset to postscript
 int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char ThreeDim, settings_axis *a1, settings_axis *a2, settings_axis *a3, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
  {
-  int             i, j, Ncolumns, pt, xrn, yrn, zrn;
+  int             i, j, Ncolumns, pt=0, xrn, yrn, zrn;
   double          xpos, ypos, depth, xap, yap, zap, scale_x, scale_y, scale_z;
   char            epsbuff[FNAME_LENGTH], *last_colstr=NULL;
   LineDrawHandle *ld;
@@ -693,7 +694,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if ((style == SW_STYLE_BOXES) || (style == SW_STYLE_WBOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS)) // BOXES, WBOXES, STEPS, FSTEPS, HISTEPS
    {
-    double ptAx, ptAy, ptBx, ptBy, ptCx, ptCy;
+    double ptAx, ptAy, ptBx=0, ptBy=0, ptCx=0, ptCy=0;
     unsigned char ptAset=0, ptBset=0, ptCset=0;
 
     ld = LineDraw_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z);
@@ -943,7 +944,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     eps_core_SwitchFrom_FillColour(x,1);
    }
 
-  else if (style == SW_STYLE_SURFACE) // SURFACE
+  else if ((style == SW_STYLE_SURFACE)&&(xrn==0)&&(yrn==0)&&(zrn==0)) // SURFACE
    {
     int  fill;
     long XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
@@ -998,8 +999,9 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
     // Dealt with in advance of drawing backmost axes
    }
 
-  else if (style == SW_STYLE_CONTOURMAP) // CONTOURMAP
+  else if ((style == SW_STYLE_CONTOURMAP)&&(xrn==0)&&(yrn==0)&&(zrn==0)) // CONTOURMAP
    {
+    eps_plot_contourmap(x, data, ThreeDim, xn, yn, zn, sg, pd, origin_x, origin_y, width, height, zdepth);
    }
 
   // End looping over monotonic regions of axis space

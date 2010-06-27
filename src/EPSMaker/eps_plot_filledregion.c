@@ -180,7 +180,7 @@ static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPo
  {
   unsigned char face, sense, inside_ahead, FillSide, CurrentFace, first_point=1, first_subpath=1, fail=0;
   int i, inew, j, k, l, dir_x, dir_y;
-  ListItem *li, *lil;
+  ListItem *li, *lil=NULL;
   FilledRegionPoint *p;
 
   // Clear used flags

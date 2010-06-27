@@ -242,7 +242,7 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
 
 void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status, char *errtext, int RecursionDepth, int *BracketLevel)
  {
-  int i, j, k, l, m, outpos=0, CalculatedEnd, OpenBracketPos, bufpos=0, BracketType, OldBracketLevel=0;
+  int i, j, k, l, m, outpos=0, CalculatedEnd, OpenBracketPos=0, bufpos=0, BracketType, OldBracketLevel=0;
   int prev_start, prev_end, next_start, next_end, prev_bufno, next_bufno;
   int PowLevel = 0;
   unsigned char ci,cj;
@@ -250,10 +250,10 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
   unsigned char OpList[OPLIST_LEN];                  // A list of what operations this expression contains
   unsigned char StatusRow       [ALGEBRA_MAXLENGTH]; // Describes the atoms at each position in the expression
   unsigned char StatusRowInitial[ALGEBRA_MAXLENGTH];
-  char          dummy[DUMMYVAR_MAXLEN], GreekifiedDummy[DUMMYVAR_MAXLEN+10], *LaTeXModel, DummyLaTeXModel[FNAME_LENGTH], *FunctionName;
+  char          dummy[DUMMYVAR_MAXLEN], GreekifiedDummy[DUMMYVAR_MAXLEN+10], *LaTeXModel, DummyLaTeXModel[FNAME_LENGTH], *FunctionName=NULL;
   int           CommaPositions[MAX_STR_FORMAT_ITEMS], Nargs, RequiredNargs;
-  int           LastItemStartPos;
-  unsigned char LastItemContainedSuperscript;
+  int           LastItemStartPos=0;
+  unsigned char LastItemContainedSuperscript=0;
   value ResultBuffer[ALGEBRA_MAXITEMS];       // A buffer of temporary numerical results
   DictIterator *DictIter;
 

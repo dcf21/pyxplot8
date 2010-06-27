@@ -35,7 +35,7 @@
 int main(int argc, char **argv)
  {
   char  help_string[LSTR_LENGTH], version_string[FNAME_LENGTH], version_string_underline[FNAME_LENGTH], warntext[FNAME_LENGTH];
-  char *filename;
+  char *filename=NULL;
   int   i, HaveFilename=0;
 #ifdef HAVE_FITSIO
   fitsfile *fptr=NULL;

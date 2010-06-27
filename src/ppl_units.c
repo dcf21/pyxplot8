@@ -149,7 +149,7 @@ char *ppl_units_NumericDisplay(value *in, int N, int typeable, int NSigFigs)
 
 void ppl_units_FindOptimalNextUnit(value *in, unsigned char first, unit **best, double *pow)
  {
-  int i,j,k,score,found=0,BestScore;
+  int i,j,k,score,found=0,BestScore=0;
   double power;
 
   for (i=0; i<ppl_unit_pos; i++)
@@ -207,7 +207,7 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
  {
   int     i,j;
   double  NewValueReal, NewValueImag, PrefixBestVal, NewMagnitude, OldMagnitude;
-  int     PrefixBestPos, BestPrefix;
+  int     PrefixBestPos, BestPrefix=0;
 
   // Apply unit multipliers to the value we're going to display
   for (i=0; i<Nunits; i++)
@@ -287,9 +287,9 @@ char *ppl_units_GetUnitStr(const value *in, double *NumberOutReal, double *Numbe
   double        UnitPow [UNITS_MAX_BASEUNITS];
   int           UnitPref[UNITS_MAX_BASEUNITS];
   unsigned char UnitDisp[UNITS_MAX_BASEUNITS];
-  double        ExpMax;
+  double        ExpMax=0;
   int           pos=0, OutputPos=0;
-  int           i, j, k, l, found, first;
+  int           i, j=0, k, l, found, first;
   ListIterator *listiter;
   PreferredUnit *pu;
 

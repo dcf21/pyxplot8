@@ -47,20 +47,20 @@ void bmp_gifread(FILE *in, bitmap_data *image)
 
   if (DEBUG) ppl_log("Beginning to decode GIF image file");
 
-  fread(buff,3,1,in);
+  if (fread(buff,3,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
   buff[3]=0;
 
   if      (!strcmp((char *)buff,"87a")) { if (DEBUG) ppl_log("GIF image in format GIF87a"); }
   else if (!strcmp((char *)buff,"89a")) { if (DEBUG) ppl_log("GIF image in format GIF89a"); }
   else                                  { ppl_error(ERR_FILE, -1, -1,"GIF image file is in an unrecognised format"); return; }
 
-  fread(buff,4,1,in);
+  if (fread(buff,4,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
   width  = ((unsigned)buff[1]<<8) + buff[0];
   height = ((unsigned)buff[3]<<8) + buff[2];
 
   if (DEBUG) { sprintf(temp_err_string, "Size %ldx%ld",width,height); ppl_log(temp_err_string); }
 
-  fread(&flags,1,1,in);
+  if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
 
   if (DEBUG) { sprintf(temp_err_string, "Global colour map=%d",(flags&0x80)>>7); ppl_log(temp_err_string); }
   if (DEBUG) { sprintf(temp_err_string, "Colour resolution=%d",(flags&0x70)>>4); ppl_log(temp_err_string); }
@@ -71,37 +71,37 @@ void bmp_gifread(FILE *in, bitmap_data *image)
 
   if (DEBUG) { sprintf(temp_err_string, "Global number of colours=%d",ncols); ppl_log(temp_err_string); }
 
-  fread(buff,2,1,in);
+  if (fread(buff,2,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
 
   if (gcm)
    {
     image->palette = (unsigned char *)lt_malloc(ncols*3);
     if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
-    fread(image->palette,ncols*3,1,in);
+    if (fread(image->palette,ncols*3,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
     image->pal_len = ncols;
    }
 
-  fread(&flags,1,1,in);
+  if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
 
   while (flags==0x21)
    {
-    fread(&flags,1,1,in);
+    if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
     if (DEBUG) { sprintf(temp_err_string, "Extension block %d",(int)flags); ppl_log(temp_err_string); }
     if ((int)flags==249){
-      fread(&flags,1,1,in);
+      if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
       if (flags!=4) { ppl_error(ERR_FILE, -1, -1, "GIF image file has an unexpected extension length"); return; }
-      fread(&flags,1,1,in);
+      if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
       if (flags&1)
        {
         image->trans = &trans;
         fseek(in,2,SEEK_CUR);
-        fread(&flags,1,1,in);
+        if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
         *image->trans = flags;
         if (DEBUG) { sprintf(temp_err_string, "Transparent colour index at %d", (int)flags); ppl_log(temp_err_string); }
        }
       else
        { fseek(in,3,SEEK_CUR); }
-      fread(&flags,1,1,in);
+      if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
       if (flags) { ppl_error(ERR_FILE, -1, -1, "GIF image file has unexpected extension data"); return; }
      }
     else
@@ -113,24 +113,24 @@ void bmp_gifread(FILE *in, bitmap_data *image)
        }
       while(flags);
      }
-    fread(&flags,1,1,in);
+    if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
    }
 
   if ((flags==0x2c) && DEBUG) { sprintf(temp_err_string, "Local descriptor"); ppl_log(temp_err_string); }
 
-  fread(buff,4,1,in);
+  if (fread(buff,4,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
   lxoff = ((unsigned)buff[1]<<8) + buff[0];
   lyoff = ((unsigned)buff[3]<<8) + buff[2];
 
   if (DEBUG) { sprintf(temp_err_string, "Local offset %ldx%ld",lxoff,lyoff); ppl_log(temp_err_string); }
 
-  fread(buff,4,1,in);
+  if (fread(buff,4,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
   lw = ((unsigned)buff[1]<<8) + buff[0];
   lh = ((unsigned)buff[3]<<8) + buff[2];
 
   if (DEBUG) { sprintf(temp_err_string, "Local size %ldx%ld",lw,lh); ppl_log(temp_err_string); }
 
-  fread(&flags,1,1,in);
+  if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
 
   if (flags&0x80)
    {
@@ -140,7 +140,7 @@ void bmp_gifread(FILE *in, bitmap_data *image)
     if (gcm) free (image->palette);
     image->palette=malloc(ncols*3);
     if (image->palette == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
-    fread(image->palette,ncols*3,1,in);
+    if (fread(image->palette,ncols*3,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
     image->pal_len=ncols;
    }
 
@@ -150,7 +150,7 @@ void bmp_gifread(FILE *in, bitmap_data *image)
 
   if (lxoff || lyoff || (lw!=width) || (lh!=height)) { ppl_error(ERR_FILE, -1, -1, "GIF image file cannot be processed because local and global sizes differ; file appears to be corrupt"); return; }
 
-  fread(&flags,1,1,in);
+  if (fread(&flags,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
   lzwcs = flags+1;
   if (DEBUG) { sprintf(temp_err_string, "Initial code size=%ld",lzwcs); ppl_log(temp_err_string); }
 
@@ -158,12 +158,12 @@ void bmp_gifread(FILE *in, bitmap_data *image)
   if (rawz == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
 
   datalen = 0;
-  fread(&len,1,1,in);
+  if (fread(&len,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
   while(len)
    {
-    fread(rawz+datalen,len,1,in);
+    if (fread(rawz+datalen,len,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
     datalen += len;
-    fread(&len,1,1,in);
+    if (fread(&len,1,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This GIF image file appears to be corrupted"); return; }
    }
   if (DEBUG) { sprintf(temp_err_string, "Total GIF data length=%ld",datalen); ppl_log(temp_err_string); }
 
