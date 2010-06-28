@@ -1784,6 +1784,7 @@ Recognised positions are {\tt top}, {\tt bottom}, {\tt left} and {\tt right}.
 set colmap ( rgb<r>:<g>:<b> |
              hsb<h>:<s>:<b> |
              cmyk<c>:<m>:<y>:<k> )
+           [ mask <expr> ]
 \end{verbatim}
 
 The setting {\tt colmap} is used to specify the mapping between ordinate values
@@ -1813,7 +1814,8 @@ directly in this way, they are not renormalised.
 \subsection{contours}\indcmd{set contours}
 
 \begin{verbatim}
-set contours <number>
+set contours ( <number> |
+               \( <value> {, <value>} \) )
 \end{verbatim}
 
 The setting {\tt contours} sets the number of contours which are drawn when
@@ -1822,10 +1824,12 @@ linearly or logarithmically, depending upon the state of the {\tt logscale c}
 setting -- between the values specified in the {\tt crange} setting.
 
 
-\subsection{crange}\indcmd{set crange}
+\subsection{c<n>range}\indcmd{set crange}
 
 \begin{verbatim}
-set crange <range>
+set c<n>range [ <range> ]
+              [ reversed | noreversed ]
+              [ renormalise | norenormalise ]
 \end{verbatim}
 
 The {\tt set crange} command changes the range of ordinate values represented
@@ -3344,7 +3348,7 @@ set [m]<axis>tics
     [ ( axis | border | inward | outward | both ) ]
     [ ( auto
           | [<minimum>,] <increment> [, <maximum>]
-          | { '<label>' <position> }
+          | \( { '<label>' <position> } \)
          ] )
 \end{verbatim}
 

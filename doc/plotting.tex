@@ -1,4 +1,4 @@
-% PLOTTING.TEX
+%ctal\_mandelbrot($z$,$m$)} PLOTTING.TEX
 %
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
@@ -130,7 +130,7 @@ In addition to setting these parameters on a per-dataset basis, the {\tt
 linewidth}, {\tt pointlinewidth} and {\tt pointsize} settings can also have
 their default values changed for all datasets as in the following examples:
 \begin{verbatim}
-set linewidth 1
+ set linewidth 1
 set pointlinewidth 2
 set pointsize 3
 plot "datafile"
@@ -1512,12 +1512,45 @@ installation tarball in the directory {\tt doc/\-examples/}.
 \end{center}
 }
 
-% \section{Non-Flat Projections}
+\section{Colour Maps and Contour Plots}
+\label{sec:colourmaps}
+
+\example{ex:mandelbrot}{An image of the Mandelbrot Set}{
+The Mandelbrot set is a set of points in the complex plane, whose boundary
+forms a fractal. It is an iconic image of the power of chaos theory to produce
+complicated structure out of simple algorithms, and may be evaluated in PyXPlot
+using the {\tt fractal\_\-mandel\-brot()} function\indfun{fractal\_mandelbrot($z$,$m$)}.
+\nlnp
+A point $c$ in the complex plane is defined to lie within the Mandelbrot set if
+the complex sequence of numbers
+\begin{displaymath}
+z_{n+1} = z_n^2 + c,
+\end{displaymath}
+subject to the starting condition $z_0=0$, remains bounded. In practice, the
+sequence is certain to diverge if $|z_n|$ ever exceeds~2.  It cannot generally
+be proven not to diverge at any particular point, but is considered to remain
+bounded in our algorithm if $|z_n|$ has not exceeded~2 within a certain number
+{\tt StepsMax} of steps. To increase the aesthetic appeal of the fractal,
+pixels outside of the fractal are assigned different colours depending upon how
+many iterations were required before the sequence moved outside the circle
+$|z_n|=2$.
+\nlscf
+\noindent {\tt set~multiplot }\newline
+\nlscf
+The resulting image is shown below:
+\nlscf
+\begin{center}
+\includegraphics[width=8cm]{examples/eps/ex_mandelbrot}
+\end{center}
+}
 
 \section{Three-Dimensional Plotting}
+\label{sec:threedim}
 
 PyXPlot 0.8.1 has no facilities for three-dimensional plotting. The ability to
 configure axes such as {\tt z} and {\tt z2}, together with various references
 to three-dimensional plotting in this manual, are provided for future
 expansion only.
+
+% \section{Non-Flat Projections}
 
