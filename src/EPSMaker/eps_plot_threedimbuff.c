@@ -237,7 +237,7 @@ int ThreeDimBuffer_linepenup(EPSComm *x)
   if (!ThreeDimBuffer_ACTIVE)
    {
     if (ThreeDimBuffer_LineSegmentID > 0) fprintf(x->epsbuffer, "stroke\n");
-    ThreeDimBuffer_LineSegmentID = 0;
+    ThreeDimBuffer_LineSegmentID = -5;
    }
   return 0;
  }

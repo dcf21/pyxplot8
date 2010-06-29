@@ -1022,6 +1022,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
  {
   unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0, SampleGrid;
   int           UsingLen, logi, logj, a, i, j, k, ContextOutput;
+  long          ExpectedNrows;
   char         *UsingItems[USING_ITEMS_MAX], buffer[FNAME_LENGTH];
   value         ColumnData_val[USING_ITEMS_MAX+2];
   ListIterator *listiter;
@@ -1147,19 +1148,20 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
       if (*status>=0) { COUNTEDERR1; sprintf(temp_err_string, "%s: Could not evaluate expression <%s>. The error, encountered at character position %d, was: '%s'", buffer, fnlist[j], *status, errout); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); COUNTEDERR2F; *status=1; break; }
       else            { *status=0; }
      }
+    ExpectedNrows = (*output)->Nrows+1;
     if (!(*status))
      {
       DataFile_ApplyUsingList(*output, ContextOutput, NULL, ColumnData_val, fnlist_len+(!FlagParametric)+SampleGrid, UsingItems, UsingLen, buffer, 0, NULL, i, 0, 0, DATAFILE_COL, "column", NULL, 0, NULL, 0, LabelStr, SelectCriterion, continuity, &discontinuity, ErrCounter, status, errout);
      } else {
       if (!SampleGrid) discontinuity = 1;
-      else
-       {
-        int i;
-        for (i=0; i<(*output)->Ncolumns; i++)
-         (*output)->current->data_real[i + (*output)->current->BlockPosition * (*output)->Ncolumns].d = GSL_NAN;
-        (*output)->current->text[(*output)->current->BlockPosition] = NULL;
-        DataFile_DataTable_AddRow(*output);
-       }
+     }
+    if (SampleGrid && ((*output)->Nrows<ExpectedNrows)) // If sampling a grid, MUST have entry for every point
+     {
+      int i;
+      for (i=0; i<(*output)->Ncolumns; i++)
+       (*output)->current->data_real[i + (*output)->current->BlockPosition * (*output)->Ncolumns].d = GSL_NAN;
+      (*output)->current->text[(*output)->current->BlockPosition] = NULL;
+      DataFile_DataTable_AddRow(*output);
      }
     *status=0;
    }

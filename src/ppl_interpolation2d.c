@@ -133,7 +133,7 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
       (*output)->current->data_real[p++].d = y;
 
       for (c=2; c<k; c++)
-        ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, c, InSize, x, y);
+        ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, InSize, c, x, y);
      }
    }
 
