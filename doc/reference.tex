@@ -849,7 +849,8 @@ commands respectively.
 \section{interpolate}\indcmd{interpolate}
 
 \begin{verbatim}
-interpolate ( akima | linear | loglinear | polynomial | spline )
+interpolate ( akima | linear | loglinear | polynomial | spline |
+              2d [( bmp_r | bmp_g | bmp_b )] )
             [<range specification>] <function name>"()"
             '<filename>'
             [ every <expression> {:<expression} ]
@@ -1739,18 +1740,21 @@ of plots. The opposite effect is achieved using the {\tt set noclip}
 command.
 
 
-\subsection{colkey}\indcmd{set colkey}
+\subsection{colourkey}\indcmd{set colourkey}
 
 \begin{verbatim}
-set colkey [<position>]
+set colourkey [<position>]
 \end{verbatim}
 
-The setting {\tt colkey} determines whether colour scales are drawn along the
-edges of plots drawn using the \indpst{colourmap} plot style. Issuing the
-command
+The setting {\tt colourkey} determines whether colour scales are drawn along
+the edges of plots drawn using the \indpst{colourmap} plot style, indicating
+the mapping between ordinate values and colours. Note that such scales are only
+ever drawn when the \indpst{colourmap} plot style is supplied with only three
+columns of data, since the colour mappings are themselves multi-dimensional
+when more columns are supplied. Issuing the command
 
 \begin{verbatim}
-set colkey
+set colourkey
 \end{verbatim}
 
 \noindent by itself causes such a scale to be drawn on graphs in the default
@@ -1758,57 +1762,53 @@ position, usually along the right-hand edge of the graphs. The converse action
 is achieved by:
 
 \begin{verbatim}
-set nocolkey
+set nocolourkey
 \end{verbatim}
 
 \noindent The command
 
 \begin{verbatim}
-unset colkey
+unset colourkey
 \end{verbatim}
 
 \noindent causes PyXPlot to revert to its default behaviour, as specified in a
 configuration file, if present. A position for the key may optionally be
-specified after the {\tt set colkey} command, as in the example:
+specified after the {\tt set colourkey} command, as in the example:
 
 \begin{verbatim}
-set colkey bottom
+set colourkey bottom
 \end{verbatim}
 
 Recognised positions are {\tt top}, {\tt bottom}, {\tt left} and {\tt right}.
 
 
-\subsection{colmap}\indcmd{set colmap}
+\subsection{colourmap}\indcmd{set colourmap}
 
 \begin{verbatim}
-set colmap ( rgb<r>:<g>:<b> |
-             hsb<h>:<s>:<b> |
-             cmyk<c>:<m>:<y>:<k> )
-           [ mask <expr> ]
+set colourmap ( rgb<r>:<g>:<b> |
+                hsb<h>:<s>:<b> |
+                cmyk<c>:<m>:<y>:<k> )
+              [ mask <expr> ]
 \end{verbatim}
 
-The setting {\tt colmap} is used to specify the mapping between ordinate values
-and colours used by the \indpst{colourmap} plot style. As elsewhere in PyXPlot,
-the colour components should be numerical expressions which evaluate to a value
-in the range zero to one. Within these expressions, the variable {\tt c} refers
-to the renormalised ordinate values supplied as the third column of data,
-varying between zero and one. Thus, the following setting, which is the
-default, produces a greyscale colour mapping:
+The setting {\tt colourmap} is used to specify the mapping between ordinate
+values and colours used by the \indpst{colourmap} plot style. As elsewhere in
+PyXPlot, the colour components should be numerical expressions which evaluate
+to a value in the range zero to one. Within these expressions, the variables
+{\tt c1}, {\tt c2}, {\tt c3} and {\tt c4} refer quantities calculated from the
+third through sixth columns of data supplied to the \indpst{colourmap} plot
+style in a way determined by the {\tt c<n>range} setting.  Thus, the following
+setting, which is the default, produces a greyscale colour mapping of the third
+column of data supplied to the \indpst{colourmap} plot style; further columns
+of data, if supplied, are not used:
 
 \begin{verbatim}
-set colmap rgb(c):(c):(c)
+set c1range [*:*] renormalise
+set colourmap rgb(c1):(c1):(c1)
 \end{verbatim}
 
-More complex colour mappings, which depend upon more than one data value, are
-allowed using syntax of the form:
-
-\begin{verbatim}
-set colmap hsb(arg($5+i*$6)/pi+0.5):0.5:(c)
-\end{verbatim}
-
-\noindent which would use the complex argument of the expression {\tt
-\$5+i*\$6} to determine the hue to use. Note that when data values are read
-directly in this way, they are not renormalised.
+If a mask expression is supplied, then any areas in a colourmap where this
+expression evaluates to zero (i.e.\ false) are made transparent.
 
 
 \subsection{contours}\indcmd{set contours}
@@ -1818,10 +1818,12 @@ set contours ( <number> |
                \( <value> {, <value>} \) )
 \end{verbatim}
 
-The setting {\tt contours} sets the number of contours which are drawn when
-using the \indpst{contourmap} plot style. These are evenly spaced -- either
-linearly or logarithmically, depending upon the state of the {\tt logscale c}
-setting -- between the values specified in the {\tt crange} setting.
+The setting {\tt contours} is used to define the set of ordinate values for
+which contours are drawn when using the \indpst{contourmap} plot style. If {\tt
+<number>} is specified, the contours are evenly spaced -- either linearly or
+logarithmically, depending upon the state of the {\tt logscale c1} setting --
+between the values specified in the {\tt c1range} setting. Otherwise, the list
+of ordinate values may be specified as a ()-bracketed comma-separated list.
 
 
 \subsection{c<n>range}\indcmd{set crange}
@@ -1832,14 +1834,52 @@ set c<n>range [ <range> ]
               [ renormalise | norenormalise ]
 \end{verbatim}
 
-The {\tt set crange} command changes the range of ordinate values represented
-by different colours in the \indpst{colourmap} plot style, and by contours in
-the \indpst{contourmap} plot style. In each case, the colours or contours are
-evenly spaced either linearly or logarithmically, depending upon the state of
-the {\tt logscale c} setting.  For more details of the syntax of the range
-specifier, see the {\tt set xrange} command. The {\tt *} character may be used
-to indicate that the scale should automatically be determined to match the data
-provided.
+The {\tt set c<n>range} command changes the range of ordinate values
+represented by different colours in the \indpst{colourmap} plot style, and in
+the case of the {\tt set c1range} command, also by contours in the
+\indpst{contourmap} plot style. The value {\tt <n>} should be an integer in the
+range 1--4.
+
+\subsubsection{Contour Maps}
+
+The effect of the {\tt set c1range} command upon the set of ordinate values for
+which contours are drawn in the {\tt contourmap} plot style is dependent upon
+whether the {\tt set contours} command has been supplied with a number of
+contours to draw, or a list of explicit ordinate values for which they should
+be drawn. In the latter case, the {\tt set c1range} command has no effect. In
+the former case, the contours are evenly spaced, either linearly or
+logarithmically depending upon the state of the {\tt logscale c1} setting,
+between the minimum and maximum ordinate values supplied to the {\tt set
+c1range} command.  If an asterisk ({\tt *}) is supplied in place of either the
+minimum and/or the maximum, then the range of values used is automatically
+scaled to fit the range of the data supplied.
+
+\subsubsection{Colour Maps}
+
+The colour of each pixel in a colour map is determined by the {\tt colourmap}
+setting, which should contain an expression of the form {\tt
+rgb(c1):(c2):(c3)}, specifying the components of a colour in either RGB, HSB or
+CMYK space, as a function of the variables {\tt c1}, {\tt c2}, {\tt c3} and
+{\tt c4}. The {\tt colourmap} plot style should be supplied with between three
+and six columns of data, the first two of which contain the $x$- and
+$y$-positions of points, and the remainder of which are used to set the values
+of the variables {\tt c1}, {\tt c2}, {\tt c3} and {\tt c4} when calculating the
+colour with which that point should be represented. If fewer than six columns
+of data are supplied, then not all of these variables will be set.
+
+The {\tt set c<n>range} command is used to determine how the raw data values
+are mapped to the values of the variables {\tt c1}--{\tt c4}. If the {\tt
+no\-renor\-malise} option is specified, then the raw values are passed directly
+to the expression. Otherwise, they are first scaled into the range zero to one.
+If an explicit range is specified to the {\tt set c<n>range} command, then the
+upper limit of this range maps to the value one, and the lower limit maps to
+the value zero. This mapping is inverted if the {\tt reverse} option is
+specified, such that the upper limit maps to zero, and the lower limit maps to
+one. If an asterisk ({\tt *}) is supplied in place of either the upper and/or
+lower limit, then the range automatically scales to fit the data supplied.
+Intermediate values are scaled, either linearly or logarithmically, depending
+upon the state of the {\tt logscale c<n>} setting. For more details of the
+syntax of the range specifier, see the {\tt set xrange} command.
 
 
 \subsection{data style}\indcmd{set data style}
@@ -2201,8 +2241,17 @@ unset log x1y2
 \end{verbatim}
 
 Optionally, a base may be specified at the end of the {\tt set logscale}
-command, to produce axes labelled in logarithms of arbitrary bases.  The default
-base is~10.
+command, to produce axes labelled in logarithms of arbitrary bases.  The
+default base is~10.
+
+In addition to acting upon any combination of $x$-, $y$- and $z$-axes, the {\tt
+set logscale} command may also be requested to set the {\tt c1}, {\tt c2}, {\tt
+c3}, {\tt c4} and/or {\tt t} axes to scale logatharithmically. The first four
+of these options affect whether the colours on colourmaps scale linearly or
+logarithmically with input ordinate values; see the {\tt set c<n>range} command
+for more details. The last of these options specifies whether parametric
+functions are sampled linearly or logarithmically in the variable {\tt t}; see
+the {\tt set trange} command for more details.
 
 
 \subsection{multiplot}\indcmd{set multiplot}
@@ -2282,15 +2331,15 @@ See {\tt backup}.
 See {\tt clip}.
 
 
-\subsection{nocolkey}\indcmd{set nocolkey}
+\subsection{nocolourkey}\indcmd{set nocolourkey}
 
 \begin{verbatim}
-set nocolkey
+set nocolourkey
 \end{verbatim}
 
-Issuing the command {\tt set nocolkey} causes plots to be generated with no
-colour scale when the \indpst{contourmap} plot style is used.  See the {\tt set
-colkey} command for more details.
+Issuing the command {\tt set nocolourkey} causes plots to be generated with no
+colour scale when the \indpst{colourmap} plot style is used. See the {\tt set
+colourkey} command for more details.
 
 
 \subsection{nodisplay}\indcmd{set nodisplay}
@@ -2651,7 +2700,8 @@ set samples [<value>]
 \end{verbatim}
 
 The setting {\tt samples} determines the number of values along the ordinate
-axis at which functions are evaluated when they are plotted. For example:
+axis at which functions are evaluated when they are plotted. For example, the
+command
 
 \begin{verbatim}
 set samples 100
@@ -2665,14 +2715,15 @@ setting controls the number of points plotted.
 
 After the keyword {\tt grid} may be specified the dimensions of the
 two-dimensional grid of samples used in the \indpst{colourmap} and
-\indpst{surface} plot styles, and when calculating the contours to be plotted
-in the \indpst{contourmap} plot style. If a {\tt *} is given in place of either
-of the dimensions, then the same number of samples as are specified in {\tt
-<value>} are taken.
+\indpst{surface} plot styles, and internally when calculating the contours to
+be plotted in the \indpst{contourmap} plot style. If a {\tt *} is given in
+place of either of the dimensions, then the same number of samples as are
+specified in {\tt <value>} are taken.
 
-After the keyword {\tt interpolate}, the method used to interpolated
+After the keyword {\tt interpolate}, the method used for interpolating
 non-gridded two-dimensional data onto the above-mentioned grid may be
-specified.
+specified. The available options are {\tt inversesquare} and {\tt
+nearestneighbour}.
 
 
 \subsection{seed}\indcmd{set seed}
@@ -2691,17 +2742,26 @@ issuing the command {\tt set seed~0}.
 \subsection{size}\indcmd{set size}
 
 \begin{verbatim}
-set size ( <width> | ratio <ratio> | noratio | square )
+set size [<width>]
+         [( ratio <ratio> | noratio  | square)]
+         [(zratio <ratio> | nozratio )]
 \end{verbatim}
 
 The setting {\tt size} is used to set the width or aspect ratio of the next
 graph to be generated. If a width is specified, then it may either take the
 form of a dimensionless number implicitly measured in centimetres, or a
-quantity with physical dimensions of length such as {\tt unit(50*mm)}. When the
-keyword {\tt ratio} is specified, it should be followed by the ratio of the
-graph's height to its width. The keyword {\tt noratio} returns the aspect ratio
-to its default value of the golden ratio, and the keyword {\tt square} sets the
-aspect ratio to one.
+quantity with physical dimensions of length such as {\tt unit(50*mm)}.
+
+When the keyword {\tt ratio} is specified, it should be followed by the ratio
+of the graph's height to its width, i.e.\ of the length of its $y$-axes to that
+of its $x$-axes. The keyword {\tt noratio} returns the aspect ratio to its
+default value of the golden ratio, and the keyword {\tt square} sets the aspect
+ratio to one.
+
+When the keyword {\tt zratio} is specified, it should be followed by the ratio
+of the length of three-dimensional graphs' $z$-axes to that of their $x$-axes.
+The keyword {\tt nozratio} returns this aspect ratio to its default value of
+the golden ratio.
 
 
 \subsubsection{noratio}\index{set size command!noratio modifier@{\tt noratio} modifier}
