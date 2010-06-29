@@ -631,7 +631,63 @@ as in the example:
 \vspace{3mm}
 
 \example{ex:newton}{An image of a Newton fractal}{
-A Newton fractal is
+Newton fractals are formed by iterating the equation
+\begin{displaymath}
+z_{n+1} = z_n - \frac{f(z_n)}{f^\prime(z_n)},
+\end{displaymath}
+subject to the starting condition that $z_0=c$, where $c$ is any complex number
+$c$ and $f(z)$ is any mathematical function. This series is the Newton-Raphson
+method for numerically finding solutions to the equation $f(z)=0$, and with
+time usually converges towards one such solution for well-behaved functions.
+The complex number $c$ represents the initial guess at the position of the
+solution being sought. The Newton fractal is formed by asking which solution
+the iteration converges upon, as a function of the position of the initial
+guess $c$ in the complex plane. In the case of the cubic polynomial
+$f(z)=z^3-1$, which has three solutions, a map might be generated with points
+coloured red, green or blue to represent convergence towards the three roots.
+\nlnp
+If $c$ is close to one of the roots, then convergence towards that particular
+root is guaranteed, but further afield the map develops a fractal structure. In
+this example, we define a PyXPlot subroutine to produce such a map as a
+function of $c=x+iy$, and then plot the resulting map using the {\tt colourmap}
+plot style (see Section~\ref{sec:colourmaps}).  To make the fractal prettier --
+it contains, after all, only three colours in its strict definition -- we vary
+the brightness of each point depending upon how many iterations are required
+before the series ventures within a distance of $|z_n-r_i|<10^{-2}$ of any of
+the roots $r_i$.
+\nlscf
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt set unit angle nodimensionless}\newline
+\\
+\noindent{\tt Root1 = exp(i*unit(  0*deg))}\newline
+\noindent{\tt Root2 = exp(i*unit(120*deg))}\newline
+\noindent{\tt Root3 = exp(i*unit(240*deg))}\newline
+\\
+\noindent{\tt Tolerance = 1e-2}\newline
+\\
+\noindent{\tt subroutine NewtonFractal(x,y)}\newline
+\noindent{\tt \phantom{x}\{}\newline
+\noindent{\tt \phantom{xx}z = x+i*y;}\newline
+\noindent{\tt \phantom{xx}iter = 0}\newline
+\noindent{\tt \phantom{xx}while (1)}\newline
+\noindent{\tt \phantom{xxx}\{}\newline
+\noindent{\tt \phantom{xxxx}z = z - (z**3-1)/(3*z**2)}\newline
+\noindent{\tt \phantom{xxxx}if abs(z-Root1)$<$Tolerance \{ ; return 1 ; \}}\newline
+\noindent{\tt \phantom{xxxx}if abs(z-Root2)$<$Tolerance \{ ; return 2 ; \}}\newline
+\noindent{\tt \phantom{xxxx}if abs(z-Root3)$<$Tolerance \{ ; return 3 ; \}}\newline
+\noindent{\tt \phantom{xxxx}iter = iter + 1}\newline
+\noindent{\tt \phantom{xxx}\}}\newline
+\noindent{\tt \phantom{x}\}}\newline
+\\
+\noindent{\tt \# Plot Newton fractal}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt set key below}\newline
+\noindent{\tt set xrange [-1.5:1.5]}\newline
+\noindent{\tt set yrange [-1.5:1.5]}\newline
+\noindent{\tt set sample grid 250x250}\newline
+\noindent{\tt set colmap hsb(c1*0.667):(0.8+0.2*c2):(1.0-0.8*c2)}\newline
+\noindent{\tt set log c2}\newline
+\noindent{\tt plot NewtonFractal(x,y):iter+2 with colourmap}
 \nlscf
 \begin{center}
 \includegraphics[width=8cm]{examples/eps/ex_newton}

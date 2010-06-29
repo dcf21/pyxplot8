@@ -80,17 +80,17 @@ void InteractiveSession()
   if (DEBUG) ppl_log("Starting an interactive session.");
   PPL_FLOWCTRL_LOOPNAME[0] = NULL;
 
-  // Set up SIGINT handler
-  if (sigsetjmp(sigjmp_ToInteractive, 1) == 0)
+  if ((isatty(STDIN_FILENO) == 1) && (settings_session_default.splash == SW_ONOFF_ON)) ppl_report(txt_init);
+
+  PPL_SHELL_EXITING = 0;
+  ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
+  while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
-    sigjmp_FromSigInt = &sigjmp_ToInteractive;
-
-    if ((isatty(STDIN_FILENO) == 1) && (settings_session_default.splash == SW_ONOFF_ON)) ppl_report(txt_init);
-
-    PPL_SHELL_EXITING = 0;
-    ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
-    while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
+    // Set up SIGINT handler
+    if (sigsetjmp(sigjmp_ToInteractive, 1) == 0)
      {
+      sigjmp_FromSigInt = &sigjmp_ToInteractive;
+
       CheckForGvOutput();
       if (isatty(STDIN_FILENO) == 1) SetInputSourceReadline(&linenumber);
       else                           SetInputSourcePipe(&linenumber, "piped input");
@@ -99,24 +99,24 @@ void InteractiveSession()
       ProcessDirective(line_ptr, isatty(STDIN_FILENO), 0);
       ppl_error_setstreaminfo(-1, "");
       PPLKillAllHelpers();
+     } else {
+      sigemptyset(&sigs); // SIGINT longjmps return here
+      sigaddset(&sigs,SIGCHLD);
+      sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+      fprintf(stdout,"\n");
+      if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir out of temporary directory
      }
-
-    if (isatty(STDIN_FILENO) == 1)
-     {
-      if (settings_session_default.splash == SW_ONOFF_ON) ppl_report("\nGoodbye. Have a nice day.");
-      else                                                ppl_report(""); // Make a new line
-     }
-   } else {
-    sigemptyset(&sigs);
-    sigaddset(&sigs,SIGCHLD);
-    sigprocmask(SIG_UNBLOCK, &sigs, NULL);
-    ppl_error(ERR_PREFORMED, -1, -1, "\nReceived CTRL-C. Terminating session."); // SIGINT longjmps return here
-    if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); } // chdir out of temporary directory
    }
-  PPL_SHELL_EXITING = 0;
-  ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
 
   sigjmp_FromSigInt = &sigjmp_ToMain; // SIGINT now drops back through to main().
+  PPL_SHELL_EXITING = 0;
+  ClearInputSource(OldLB,OldLBP,OldLBA,NULL,NULL,NULL);
+  if (isatty(STDIN_FILENO) == 1)
+   {
+    if (settings_session_default.splash == SW_ONOFF_ON) ppl_report("\nGoodbye. Have a nice day.");
+    else                                                ppl_report(""); // Make a new line
+   }
+
   return;
  }
 

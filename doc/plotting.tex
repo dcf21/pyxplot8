@@ -1,4 +1,4 @@
-%ctal\_mandelbrot($z$,$m$)} PLOTTING.TEX
+% PLOTTING.TEX
 %
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
@@ -1516,26 +1516,34 @@ installation tarball in the directory {\tt doc/\-examples/}.
 \label{sec:colourmaps}
 
 \example{ex:mandelbrot}{An image of the Mandelbrot Set}{
-The Mandelbrot set is a set of points in the complex plane, whose boundary
-forms a fractal. It is an iconic image of the power of chaos theory to produce
-complicated structure out of simple algorithms, and may be evaluated in PyXPlot
-using the {\tt fractal\_\-mandel\-brot()} function\indfun{fractal\_mandelbrot($z$,$m$)}.
-\nlnp
-A point $c$ in the complex plane is defined to lie within the Mandelbrot set if
-the complex sequence of numbers
+The Mandelbrot set is a set of points in the complex plane whose boundary forms
+a fractal with a Hausdorff dimension of two.  A point $c$ in the complex plane
+is defined to lie within the Mandelbrot set if the complex sequence of numbers
 \begin{displaymath}
 z_{n+1} = z_n^2 + c,
 \end{displaymath}
-subject to the starting condition $z_0=0$, remains bounded. In practice, the
-sequence is certain to diverge if $|z_n|$ ever exceeds~2.  It cannot generally
-be proven not to diverge at any particular point, but is considered to remain
-bounded in our algorithm if $|z_n|$ has not exceeded~2 within a certain number
-{\tt StepsMax} of steps. To increase the aesthetic appeal of the fractal,
-pixels outside of the fractal are assigned different colours depending upon how
-many iterations were required before the sequence moved outside the circle
-$|z_n|=2$.
+subject to the starting condition $z_0=0$, remains bounded.
+\nlnp
+The map of this set of points has become a widely-used image of the power of
+chaos theory to produce complicated structure out of simple algorithms. To
+produce a more pleasing image, points in the complex plane are often coloured
+differently, depending upon how many iterations $n$ of the above series are
+required for $|z_n|$ to exceed~2. This is the point of no return, beyond which
+it can be shown that $|z_{n+1}|>|z_n|$ and that divergence is guaranteed. In
+numerical implementations of the above iteration, in the absense of any better
+way to prove that the iteration remains bounded for a certain value of $c$,
+some maximum number of iterations $m$ is chosen, and the series is deemed to
+have remained bounded if $|z_m|<2$.  This is implemented in PyXPlot by the
+built-in mathematical function {\tt
+fractal\_\-mandel\-brot(z,m)}\indfun{fractal\_mandelbrot($z$,$m$)}, which
+returns an integer in the range $0\leq i\leq m$.
 \nlscf
-\noindent {\tt set~multiplot }\newline
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt set sample grid 500x500}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set log c1}\newline
+\noindent{\tt plot [-2:2][-2:2] fractal\_mandelbrot(x+i*y,70)+1 with colourmap}
 \nlscf
 The resulting image is shown below:
 \nlscf
@@ -1543,6 +1551,8 @@ The resulting image is shown below:
 \includegraphics[width=8cm]{examples/eps/ex_mandelbrot}
 \end{center}
 }
+
+\section{Contour Maps}
 
 \section{Three-Dimensional Plotting}
 \label{sec:threedim}
