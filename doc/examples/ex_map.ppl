@@ -28,7 +28,9 @@ load "examples/fig_init.ppl"
 set term colour
 
 # Main body of figure script
-se width 20
+set size 20 ratio (45-10)/(154-112)*cos(radians(25))
+set xrange [112:154]
+set yrange [-45:-10]
 
 # We want a plot without axes or key
 set nokey
@@ -63,7 +65,7 @@ set label 17 '{\sf Canberra}' 145, -35.25
 set label 20 '{\Huge \sf \slshape Australia}' 117,-42
 
 # Plot the coastline and cities
-plot [][-45:] 'examples/ex_map_1.dat.gz' every ::1 with lines, \
+plot 'examples/ex_map_1.dat.gz' every ::1 with lines, \
      'examples/ex_map_2.dat' with points pointtype 10 pointsize 2
 
 # Call common cleanup script
