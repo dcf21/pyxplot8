@@ -540,7 +540,7 @@ void ReadConfigFile(char *ConfigFname)
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLs  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFp  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAp  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , ':' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAp  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLp  , ppl_unit_database[ppl_unit_pos].nameAp  , "unit"    , ':' );
       GET_UNITNAME( ppl_unit_database[ppl_unit_pos].quantity, ppl_unit_database[ppl_unit_pos].quantity, "quantity", ' ' );
 
