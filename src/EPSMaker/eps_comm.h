@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 
+#include "ListTools/lt_list.h"
+
 #include "ppl_canvasitems.h"
 
 #include "dvi_read.h"

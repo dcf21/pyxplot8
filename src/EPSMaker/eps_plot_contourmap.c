@@ -28,6 +28,8 @@
 
 #include "ListTools/lt_memory.h"
 
+#include "MathsTools/dcfmath.h"
+
 #include "ppl_canvasdraw.h"
 #include "ppl_canvasitems.h"
 #include "ppl_error.h"
@@ -45,6 +47,76 @@
 #include "eps_settings.h"
 #include "eps_style.h"
 
+// Yield up text items which label contours on a contourmap
+void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
+ {
+  DataBlock     *blk;
+  int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
+  int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+  int            i, j, Ncol;
+  double         CMin, CMax;
+  unsigned char  CMinAuto, CMinSet, CMaxAuto, CMaxSet, CLog;
+
+  // Check that we have some data
+  if ((data==NULL) || (data->Nrows<1)) return; // No data present
+  Ncol = data->Ncolumns;
+  blk = data->first;
+
+  // Work out normalisation of variable c1
+  CMinAuto = (sg->Cminauto[0]==SW_BOOL_TRUE);
+  CMinSet  = !CMinAuto;
+  CMin     = sg->Cmin[0].real;
+  CMaxAuto = (sg->Cmaxauto[0]==SW_BOOL_TRUE);
+  CMaxSet  = !CMaxAuto;
+  CMax     = sg->Cmax[0].real;
+  CLog     = (sg->Clog[0]==SW_BOOL_TRUE);
+
+  // Find extremal values
+  if (CMinAuto || CMaxAuto)
+   for (j=0; j<YSize; j++)
+    for (i=0; i<XSize; i++)
+     {
+      double val = blk->data_real[2 + Ncol*(i+XSize*j)].d;
+      if (!gsl_finite(val)) continue;
+      if ((CMinAuto) && ((!CMinSet) || (CMin>val)) && ((!CLog)||(val>0.0))) { CMin=val; CMinSet=1; }
+      if ((CMaxAuto) && ((!CMaxSet) || (CMax<val)) && ((!CLog)||(val>0.0))) { CMax=val; CMaxSet=1; }
+     }
+
+  // If no data present, stop now
+  if ((!CMinSet)||(!CMaxSet)) return;
+
+  // If log spacing, make sure range is strictly positive
+  if (CLog && (CMin<1e-200)) CMin=1e-200;
+  if (CLog && (CMax<1e-200)) CMax=1e-200;
+
+  // If there's no spread of data, make a spread up
+  if ( (fabs(CMax) <= fabs(CMin)) || (fabs(CMin-CMax) <= fabs(1e-14*CMax)) )
+   {
+    if (!CLog)
+     {
+      double step = max(1.0,1e-3*fabs(CMin));
+      CMin -= step; CMax += step;
+     }
+    else
+     {
+      if (CMin > 1e-300) CMin /= 10.0;
+      if (CMax <  1e300) CMax *= 10.0;
+     }
+   }
+
+  // Work out units in which contours will be labelled
+
+  // Round range outwards to round endpoints
+
+  // Loop over all contours submitting labels
+
+  // Store range of values for which contours will be drawn
+  pd->CMinFinal     = CMin;
+  pd->CMaxFinal     = CMax;
+  pd->CRangeUnit    = data->FirstEntries[2];
+  return;
+ }
+
 // Render a contourmap to postscript
 int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
  {
@@ -54,7 +126,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
   int            i, j, Ncol;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax;
-  unsigned char  CMinAuto, CMinSet, CMaxAuto, CMaxSet, CLog;
+  unsigned char  CLog, CMinAuto, CMaxAuto;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
   Ncol = data->Ncolumns;
@@ -99,25 +171,19 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     if (!gsl_finite(ThetaY)) ThetaY = 0.0;
    }
 
-  // Work out normalisation of variable c1
-  CMinAuto = (sg->Cminauto[0]==SW_BOOL_TRUE);
-  CMinSet  = !CMinAuto;
-  CMin     = sg->Cmin[0].real;
-  CMaxAuto = (sg->Cmaxauto[0]==SW_BOOL_TRUE);
-  CMaxSet  = !CMaxAuto;
-  CMax     = sg->Cmax[0].real;
+  // Look up normalisation of variable c1
   CLog     = (sg->Clog[0]==SW_BOOL_TRUE);
+  CMin     = pd->CMinFinal;
+  CMax     = pd->CMaxFinal;
+  CMinAuto = (sg->Cminauto[0]==SW_BOOL_TRUE);
+  CMaxAuto = (sg->Cmaxauto[0]==SW_BOOL_TRUE);
 
-  // Find extremal values
-  if (CMinAuto || CMaxAuto)
-   for (j=0; j<YSize; j++)
-    for (i=0; i<XSize; i++)
-     {
-      double val = blk->data_real[2 + Ncol*(i+XSize*j)].d;
-      if (!gsl_finite(val)) continue;
-      if ((CMinAuto) && ((!CMinSet) || (CMin>val)) && ((!CLog)||(val>0.0))) { CMin=val; CMinSet=1; }
-      if ((CMaxAuto) && ((!CMaxSet) || (CMax<val)) && ((!CLog)||(val>0.0))) { CMax=val; CMaxSet=1; }
-     }
+  // If no data present, stop now
+  if ((CMin==0)&&(CMax==0))
+   {
+    sprintf(temp_err_string, "No data supplied to determine range for variable c1");
+    return 0;
+   }
 
   // Output result to debugging output
   if (DEBUG)
@@ -134,6 +200,14 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     ppl_error(ERR_NUMERIC,-1,-1,temp_err_string);
     return 1;
    }
+
+  // Loop over contours
+
+    // Reset contour map usage flags
+    for (j=0; j<YSize; j++)
+     for (i=0; i<XSize; i++)
+      blk->split[i+XSize*j] = 0;
+
 
   return 0;
  }

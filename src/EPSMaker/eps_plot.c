@@ -45,6 +45,7 @@
 #include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
 #include "eps_plot_colourmap.h"
+#include "eps_plot_contourmap.h"
 #include "eps_plot_gridlines.h"
 #include "eps_plot_labelsarrows.h"
 #include "eps_plot_legend.h"
@@ -622,9 +623,18 @@ void eps_plot_YieldUpText(EPSComm *x)
   k  = 0;
   while (pd != NULL) // loop over all datasets
    {
-    if (x->current->plotdata[k] != NULL)
+    pd->CRangeDisplay = 0;
+    x->current->DatasetTextID[k] = x->NTextItems;
+    if (pd->ww_final.linespoints == SW_STYLE_COLOURMAP)
      {
-      x->current->DatasetTextID[k] = x->NTextItems;
+      eps_plot_colourmap_YieldText(x, x->current->plotdata[k], &x->current->settings, pd);
+     }
+    else if (pd->ww_final.linespoints == SW_STYLE_CONTOURMAP)
+     {
+      eps_plot_contourmap_YieldText(x, x->current->plotdata[k], &x->current->settings, pd);
+     }
+    else if (x->current->plotdata[k] != NULL)
+     {
       blk = x->current->plotdata[k]->first;
       while (blk != NULL)
        {

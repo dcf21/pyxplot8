@@ -176,6 +176,9 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "CONTOURS"     )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.ContoursN     = max((int)fl, 2);
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Contours."     , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "CONTOURS_LABEL")==0)
+        if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_graph_default.ContoursLabel = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Contours_Label.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
 
 
 #define DO_CRANGE(c,X) \

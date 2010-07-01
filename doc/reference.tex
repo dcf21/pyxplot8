@@ -1814,8 +1814,9 @@ expression evaluates to zero (i.e.\ false) are made transparent.
 \subsection{contours}\indcmd{set contours}
 
 \begin{verbatim}
-set contours ( <number> |
-               \( <value> {, <value>} \) )
+set contours [ ( <number> |
+               \( <value> {, <value>} \) ) ]
+             [ (label | nolabel) ]
 \end{verbatim}
 
 The setting {\tt contours} is used to define the set of ordinate values for
@@ -1824,6 +1825,10 @@ which contours are drawn when using the \indpst{contourmap} plot style. If {\tt
 logarithmically, depending upon the state of the {\tt logscale c1} setting --
 between the values specified in the {\tt c1range} setting. Otherwise, the list
 of ordinate values may be specified as a ()-bracketed comma-separated list.
+
+If the option {\tt label} is specified, then each contour is labelled with the
+ordinate value that it follows. If the option {\tt nolabel} is specified, then
+the contours are not labelled.
 
 
 \subsection{c<n>range}\indcmd{set crange}

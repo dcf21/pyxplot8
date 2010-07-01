@@ -54,6 +54,67 @@
 #define TRANS_G 2
 #define TRANS_B 20
 
+// Yield up text items which label colour scale of a colourmap
+void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
+ {
+  DataBlock     *blk;
+  int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
+  int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+  int            i, j, Ncol;
+  double         CMin, CMax;
+  unsigned char  CMinAuto, CMinSet, CMaxAuto, CMaxSet, CLog;
+
+  // Check that we have some data
+  if ((data==NULL) || (data->Nrows<1)) return; // No data present
+  Ncol = data->Ncolumns;
+  blk = data->first;
+
+  // Work out normalisation of variable c1
+  CMinAuto = (sg->Cminauto[0]==SW_BOOL_TRUE);
+  CMinSet  = !CMinAuto;
+  CMin     = sg->Cmin[0].real;
+  CMaxAuto = (sg->Cmaxauto[0]==SW_BOOL_TRUE);
+  CMaxSet  = !CMaxAuto;
+  CMax     = sg->Cmax[0].real;
+  CLog     = (sg->Clog[0]==SW_BOOL_TRUE);
+
+  // Find extremal values
+  if (CMinAuto || CMaxAuto)
+   for (j=0; j<YSize; j++)
+    for (i=0; i<XSize; i++)
+     {
+      double val = blk->data_real[2 + Ncol*(i+XSize*j)].d;
+      if (!gsl_finite(val)) continue;
+      if ((CMinAuto) && ((!CMinSet) || (CMin>val)) && ((!CLog)||(val>0.0))) { CMin=val; CMinSet=1; }
+      if ((CMaxAuto) && ((!CMaxSet) || (CMax<val)) && ((!CLog)||(val>0.0))) { CMax=val; CMaxSet=1; }
+     }
+
+  // If no data present, stop now
+  if ((!CMinSet)||(!CMaxSet)) return;
+
+  // If log spacing, make sure range is strictly positive
+  if (CLog && (CMin<1e-200)) CMin=1e-200;
+  if (CLog && (CMax<1e-200)) CMax=1e-200;
+
+  // DITTO THE ABOVE BELOW
+
+  // Work out units in which colour key will be labelled
+
+  // Estimate length of colour key
+
+  // Submit axis labels for colour key
+
+  // If we have three columns of data, consider drawing a colour scale bar
+  if ((Ncol==3)&&(sg->ColKey==SW_ONOFF_ON))
+   {
+    pd->CRangeDisplay = 1;
+    pd->CMinFinal     = CMin;
+    pd->CMaxFinal     = CMax;
+    pd->CRangeUnit    = data->FirstEntries[2];
+   }
+
+  return;
+ }
 // Render a colourmap to postscript
 int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
  {
@@ -183,6 +244,14 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
       CMaxAuto[c] = tc2;
       CMaxSet [c] = tc;
       CMax    [c] = td;
+     }
+
+    // If no data present, stop now
+    if ((!CMinSet[c])||(!CMaxSet[c]))
+     {
+      sprintf(temp_err_string, "No data supplied to determine range for variable c%d", c+1);
+      for (i=0; i<4; i++) *CVar[i] = CDummy[i];
+      return 0;
      }
 
     // Output result to debugging output

@@ -488,9 +488,10 @@ void directive_set(Dict *command)
     strcpy(sg->MaskExpr    , settings_graph_default.MaskExpr   );
     sg->ColMapColSpace = settings_graph_default.ColMapColSpace;
    }
-  else if (strcmp_set && (strcmp(setoption,"contour")==0)) /* set contour */
+  else if (strcmp_set && (strcmp(setoption,"contours")==0)) /* set contours */
    {
     DictLookup(command,"contours",NULL,(void **)&tempint);
+    DictLookup(command,"contour_list,",NULL,(void **)&templist);
     if (tempint != NULL)
      {
       if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
@@ -500,12 +501,11 @@ void directive_set(Dict *command)
       sg->ContoursListLen = -1;
       sg->ContoursUnit    = settings_graph_default.ContoursUnit;
      }
-    else
+    else if (templist != NULL)
      {
       int n=0;
       sg->ContoursN = settings_graph_default.ContoursN;
       ppl_units_zero(&sg->ContoursUnit);
-      DictLookup(command,"contour_list,",NULL,(void **)&templist);
       for (listiter = ListIterateInit(templist); listiter!=NULL; listiter = ListIterate(listiter, NULL), n++)
        {
         tempdict = (Dict *)listiter->data;
@@ -518,13 +518,18 @@ void directive_set(Dict *command)
        }
       sg->ContoursListLen = n;
      }
+    DictLookup(command,"label"  ,NULL,(void **)&tempstr );
+    DictLookup(command,"nolabel",NULL,(void **)&tempstr2);
+    if (tempstr !=NULL) sg->ContoursLabel = SW_ONOFF_ON;
+    if (tempstr2!=NULL) sg->ContoursLabel = SW_ONOFF_OFF;
    }
-  else if (strcmp_unset && (strcmp(setoption,"contour")==0)) /* unset contour */
+  else if (strcmp_unset && (strcmp(setoption,"contours")==0)) /* unset contours */
    {
     sg->ContoursN       = settings_graph_default.ContoursN;
     memcpy((void*)sg->ContoursList, (void*)settings_graph_default.ContoursList, MAX_CONTOURS*sizeof(double));
     sg->ContoursListLen = settings_graph_default.ContoursListLen;
     sg->ContoursUnit    = settings_graph_default.ContoursUnit;
+    sg->ContoursLabel   = settings_graph_default.ContoursLabel;
    }
   else if (strcmp_set && (strcmp(setoption,"crange")==0)) /* set crange */
    {
@@ -2528,11 +2533,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     directive_show3(out+i, ItemSet, 1, interactive, "colmap", buf, (settings_graph_default.ColMapColSpace==sg->ColMapColSpace)&&(strcmp(sg->ColMapExpr1,settings_graph_default.ColMapExpr1)==0)&&(strcmp(sg->ColMapExpr2,settings_graph_default.ColMapExpr2)==0)&&(strcmp(sg->ColMapExpr3,settings_graph_default.ColMapExpr3)==0)&&(strcmp(sg->ColMapExpr4,settings_graph_default.ColMapExpr4)==0)&&(strcmp(sg->MaskExpr,settings_graph_default.MaskExpr)==0), "The mapping of ordinate value to colour used by the colourmap plot style");
     i += strlen(out+i) ; p=1;
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "contour",1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "contours",1)>=0))
    {
     if (sg->ContoursListLen < 0)
      {
-      sprintf(buf, "%d", sg->ContoursN);
+      sprintf(buf, "%d %slabel", sg->ContoursN, (sg->ContoursLabel==SW_ONOFF_ON)?"":"no");
      }
     else
      {
@@ -2546,9 +2551,9 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         sprintf(buf+p, "%s", ppl_units_NumericDisplay(&v, 0, 0, 0));
         p+=strlen(buf+p);
        }
-      sprintf(buf+p, ")"); p+=strlen(buf+p);
+      sprintf(buf+p, ") %slabel", (sg->ContoursLabel==SW_ONOFF_ON)?"":"no"); p+=strlen(buf+p);
      }
-    directive_show3(out+i, ItemSet, 1, interactive, "contour", buf, (settings_graph_default.ContoursN==sg->ContoursN)&&(settings_graph_default.ContoursListLen==sg->ContoursListLen)&&ppl_units_DimEqual(&settings_graph_default.ContoursUnit,&sg->ContoursUnit)&&((sg->ContoursListLen<0)||(memcmp((void *)settings_graph_default.ContoursList,(void *)sg->ContoursList,sg->ContoursListLen*sizeof(double))==0)), "The number of contours drawn by the contourmap plot style");
+    directive_show3(out+i, ItemSet, 1, interactive, "contour", buf, (settings_graph_default.ContoursN==sg->ContoursN)&&(settings_graph_default.ContoursLabel==sg->ContoursLabel)&&(settings_graph_default.ContoursListLen==sg->ContoursListLen)&&ppl_units_DimEqual(&settings_graph_default.ContoursUnit,&sg->ContoursUnit)&&((sg->ContoursListLen<0)||(memcmp((void *)settings_graph_default.ContoursList,(void *)sg->ContoursList,sg->ContoursListLen*sizeof(double))==0)), "The number of contours drawn by the contourmap plot style");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c1range",1)>=0))

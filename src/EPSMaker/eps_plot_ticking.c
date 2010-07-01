@@ -82,8 +82,8 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
       if (axis->HardMinSet && axis->HardMaxSet) { sprintf(temp_err_string, "Specified minimum and maximum range limits for axis %c%d are equal; reverting to alternative limits.", "xyz"[axis->xyz], axis->axis_n); ppl_warning(ERR_NUMERIC, temp_err_string); }
       if (axis->LogFinal != SW_BOOL_TRUE)
        {
-        axis->MinFinal -= max(1.0,1e-3*fabs(axis->MinFinal));
-        axis->MaxFinal += max(1.0,1e-3*fabs(axis->MinFinal));
+        double step = max(1.0,1e-3*fabs(axis->MinFinal));
+        axis->MinFinal -= step; axis->MaxFinal += step;
        }
       else
        {
