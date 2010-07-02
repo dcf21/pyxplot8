@@ -45,6 +45,7 @@
 #include "eps_colours.h"
 #include "eps_image.h"
 #include "eps_plot.h"
+#include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
 #include "eps_plot_legend.h"
 #include "eps_plot_ticking.h"
@@ -57,7 +58,8 @@
 #define TRANS_B 20
 
 // Width of colour scale
-#define SCALE_WIDTH 5e-3
+#define SCALE_MARGIN 3e-3 * M_TO_PS
+#define SCALE_WIDTH  4e-3 * M_TO_PS
 
 // Yield up text items which label colour scale of a colourmap
 void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
@@ -136,8 +138,8 @@ void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *s
 
   horizontal     = ((sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_B));
   PhysicalLength = fabs( horizontal ? (xmax-xmin) : (ymax-ymin) ) / M_TO_PS;
-  PhysicalLengthMinor = PhysicalLength / 0.04;
-  PhysicalLengthMajor = PhysicalLength / (horizontal ? 0.25 : 0.15);
+  PhysicalLengthMinor = PhysicalLength / 0.004;
+  PhysicalLengthMajor = PhysicalLength / (horizontal ? 0.025 : 0.015);
 
   // Set format string for colour map scale axis which includes physical units
   strcpy(FormatString,"\"%s\"%(x)");
@@ -516,6 +518,17 @@ void eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
   double           xmin,xmax,ymin,ymax;
   canvas_plotdesc *pd;
   settings_graph  *sg= &x->current->settings;
+  with_words       ww;
+
+  // Set colour for painting axes
+  with_words_zero(&ww,0);
+  if (x->current->settings.AxesColour > 0) { ww.colour = x->current->settings.AxesColour; ww.USEcolour = 1; }
+  else                                     { ww.Col1234Space = x->current->settings.AxesCol1234Space; ww.colour1 = x->current->settings.AxesColour1; ww.colour2 = x->current->settings.AxesColour2; ww.colour3 = x->current->settings.AxesColour3; ww.colour4 = x->current->settings.AxesColour4; ww.USEcolour1234 = 1; }
+  ww.linewidth = EPS_AXES_LINEWIDTH; ww.USElinewidth = 1;
+  ww.linetype  = 1;                  ww.USElinetype  = 1;
+  eps_core_SetColour(x, &ww, 1);
+  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
+  else return;
 
   // Find extrema of box filled by graph canvas
   if (!x->current->ThreeDim)
@@ -545,27 +558,31 @@ void eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
    {
     if (pd->CRangeDisplay)
      {
-      double x1,y1,x2,y2  ,  x3,y3,x4,y4;
-      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotTopMargin; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotBottomMargin; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotLeftMargin; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotRightMargin; }
+      double x1,y1,x2,y2  ,  x3,y3,x4,y4  ,  theta,dummy;
+      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotTopMargin   +SCALE_MARGIN; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotBottomMargin-SCALE_MARGIN; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotLeftMargin  -SCALE_MARGIN; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotRightMargin +SCALE_MARGIN; }
 
-      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x3 = x1; x4 = x2; y3 = y4 = y1 + SCALE_WIDTH*M_TO_PS; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x3 = x1; x4 = x2; y3 = y4 = y1 - SCALE_WIDTH*M_TO_PS; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y3 = y1; y4 = y2; x3 = x4 = x1 - SCALE_WIDTH*M_TO_PS; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y3 = y1; y4 = y2; x3 = x4 = x1 + SCALE_WIDTH*M_TO_PS; }
+      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x3 = x1; x4 = x2; y3 = y4 = y1 + SCALE_WIDTH; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x3 = x1; x4 = x2; y3 = y4 = y1 - SCALE_WIDTH; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y3 = y1; y4 = y2; x3 = x4 = x1 - SCALE_WIDTH; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y3 = y1; y4 = y2; x3 = x4 = x1 + SCALE_WIDTH; }
 
       // Paint bitmap image portion of colourscale
-fprintf(x->epsbuffer, "%% Colourscale\n");
 
       // Paint inner-facing scale
+      theta = ((sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_B))?0:(M_PI/2);
+      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, (sg->ColKeyPos==SW_COLKEYPOS_B)||(sg->ColKeyPos==SW_COLKEYPOS_R),
+                         x1, y1, x2, y2,-theta,-theta, &dummy, 0);
 
       // Paint lines at top/bottom of scale
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", x1, y1, x3, y3);
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", x2, y2, x4, y4);
 
       // Paint outer-facing scale
+      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, (sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_L),
+                         x3, y3, x4, y4, theta, theta, &dummy, 1);
      }
     pd=pd->next; k++;
    }
