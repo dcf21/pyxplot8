@@ -63,6 +63,7 @@ typedef struct canvas_plotdesc {
  value                   CRangeUnit;
  unsigned char           CRangeDisplay;
  double                  CMinFinal, CMaxFinal;
+ settings_axis           C1Axis;
  double                  PieChart_total;
 } canvas_plotdesc;
 

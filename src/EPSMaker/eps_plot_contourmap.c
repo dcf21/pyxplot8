@@ -44,6 +44,7 @@
 #include "eps_colours.h"
 #include "eps_plot.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_legend.h"
 #include "eps_settings.h"
 #include "eps_style.h"
 
@@ -53,9 +54,10 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
   DataBlock     *blk;
   int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
-  int            i, j, Ncol;
-  double         CMin, CMax;
+  int            i, j, k, Ncol;
+  double         CMin, CMax, min_prelim, max_prelim, OoM, UnitMultiplier;
   unsigned char  CMinAuto, CMinSet, CMaxAuto, CMaxSet, CLog;
+  char          *UnitString;
 
   // Check that we have some data
   if ((data==NULL) || (data->Nrows<1)) return; // No data present
@@ -105,15 +107,53 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
    }
 
   // Work out units in which contours will be labelled
+  pd->CRangeUnit             = data->FirstEntries[2];
+  pd->CRangeUnit.FlagComplex = 0;
+  pd->CRangeUnit.imag        = 0.0;
+  pd->CRangeUnit.real        = CLog ?  (CMin * sqrt(CMax/CMin))
+                                    : ((CMin + CMax)/2);
+  UnitString = ppl_units_GetUnitStr(&pd->CRangeUnit,&UnitMultiplier,NULL,0,0,SW_DISPLAY_L);
+  UnitMultiplier /= pd->CRangeUnit.real;
+  if (!gsl_finite(UnitMultiplier)) UnitMultiplier=1.0;
 
   // Round range outwards to round endpoints
+  min_prelim = CMin * UnitMultiplier;
+  max_prelim = CMax * UnitMultiplier;
+
+  if (CLog) { min_prelim = log10(min_prelim); max_prelim = log10(max_prelim); }
+
+  OoM = pow(10.0, floor(log10(fabs(max_prelim - min_prelim)/5)));
+  min_prelim = floor(min_prelim / OoM) * OoM;
+  max_prelim = ceil (max_prelim / OoM) * OoM;
+
+  if (CLog) { min_prelim = pow(10.0,min_prelim); max_prelim = pow(10.0,max_prelim); }
+
+  min_prelim /= UnitMultiplier;
+  max_prelim /= UnitMultiplier;
+
+  if (gsl_finite(min_prelim) && (CLog||(min_prelim>1e-300))) CMin = min_prelim;
+  if (gsl_finite(max_prelim) && (CLog||(min_prelim>1e-300))) CMax = max_prelim;
 
   // Loop over all contours submitting labels
+  for (k=0;
+       (k<MAX_CONTOURS) && (  ((sg->ContoursListLen< 0) && (k<sg->ContoursN))  ||
+                              ((sg->ContoursListLen>=0) && (k<sg->ContoursListLen))  );
+       k++)
+   {
+    CanvasTextItem *i;
+    value           v = pd->CRangeUnit;
+
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)))
+                                             :(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))));
+    else                        v.real = sg->ContoursList[j];
+
+    sprintf(UnitString,"%s",ppl_units_NumericDisplay(&v,0,SW_DISPLAY_L,-1));
+    YIELD_TEXTITEM(UnitString);
+   }
 
   // Store range of values for which contours will be drawn
   pd->CMinFinal     = CMin;
   pd->CMaxFinal     = CMax;
-  pd->CRangeUnit    = data->FirstEntries[2];
   return;
  }
 
@@ -124,7 +164,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   DataBlock     *blk;
   int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
-  int            i, j, Ncol;
+  int            i, j, k, Ncol;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax;
   unsigned char  CLog, CMinAuto, CMaxAuto;
 
@@ -202,12 +242,23 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
    }
 
   // Loop over contours
+  for (k=0;
+       (k<MAX_CONTOURS) && (  ((sg->ContoursListLen< 0) && (k<sg->ContoursN))  ||
+                              ((sg->ContoursListLen>=0) && (k<sg->ContoursListLen))  );
+       k++)
+   {
+    value v = pd->CRangeUnit;
+
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)))
+                                             :(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))));
+    else                        v.real = sg->ContoursList[j];
 
     // Reset contour map usage flags
     for (j=0; j<YSize; j++)
      for (i=0; i<XSize; i++)
       blk->split[i+XSize*j] = 0;
 
+   }
 
   return 0;
  }

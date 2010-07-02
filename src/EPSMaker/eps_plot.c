@@ -787,6 +787,9 @@ void eps_plot_RenderEPS(EPSComm *x)
   // Render axes (front)
   eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth, 1);
 
+  // Render colourmap scales
+  eps_plot_colourmap_DrawScales(x, origin_x, origin_y, width, height, zdepth);
+
   // Render legend
   GraphLegend_Render(x, width, height, zdepth);
 
