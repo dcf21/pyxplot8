@@ -57,9 +57,11 @@
 #define TRANS_G 2
 #define TRANS_B 20
 
-// Width of colour scale
-#define SCALE_MARGIN 3e-3 * M_TO_PS
-#define SCALE_WIDTH  4e-3 * M_TO_PS
+#define CLIP_COMPS \
+  comp[0] = (comp[0] < 0.0) ? 0.0 : ((comp[0]>1.0) ? 1.0 : comp[0] ); \
+  comp[1] = (comp[1] < 0.0) ? 0.0 : ((comp[1]>1.0) ? 1.0 : comp[1] ); \
+  comp[2] = (comp[2] < 0.0) ? 0.0 : ((comp[2]>1.0) ? 1.0 : comp[2] ); \
+  comp[3] = (comp[3] < 0.0) ? 0.0 : ((comp[3]>1.0) ? 1.0 : comp[3] );
 
 // Yield up text items which label colour scale of a colourmap
 void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
@@ -369,156 +371,165 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
       else if (!CLog[c]) /* Linear */         {  CVar[c]->real = (blk->data_real[c+2 + Ncol*(i+XSize*j)].d - CMin[c]) / (CMax[c] - CMin[c]); }
       else               /* Logarithmic */    {  CVar[c]->real = log(blk->data_real[c+2 + Ncol*(i+XSize*j)].d / CMin[c]) / log(CMax[c] / CMin[c]); }
 
-     // Check if mask criterion is satisfied
-     if (sg->MaskExpr[0]!='\0')
-      {
-       errpos=-1;
-       ppl_EvaluateAlgebra(sg->MaskExpr, &outval, 0, NULL, 0, &errpos, errtext, 0);
-       if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate mask expression <%s>. The error, encountered at character position %d, was: '%s'", sg->MaskExpr, errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
-       if (outval.real==0) { component_r = TRANS_R; component_g = TRANS_G; component_b = TRANS_B; goto write_rgb; }
-      }
+#define SET_RGB_COLOUR \
+     /* Check if mask criterion is satisfied */ \
+     if (sg->MaskExpr[0]!='\0') \
+      { \
+       errpos=-1; \
+       ppl_EvaluateAlgebra(sg->MaskExpr, &outval, 0, NULL, 0, &errpos, errtext, 0); \
+       if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate mask expression <%s>. The error, encountered at character position %d, was: '%s'", sg->MaskExpr, errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; } \
+       if (outval.real==0) { component_r = TRANS_R; component_g = TRANS_G; component_b = TRANS_B; goto write_rgb; } \
+      } \
+ \
+     /* Compute RGB, HSB or CMYK components */ \
+     for (c=0; c<3+(sg->ColMapColSpace==SW_COLSPACE_CMYK); c++) \
+      { \
+       errpos=-1; \
+       ppl_EvaluateAlgebra(ColExpr[c], &outval, 0, NULL, 0, &errpos, errtext, 0); \
+       if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate colour expression <%s>. The error, encountered at character position %d, was: '%s'", ColExpr[c], errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; } \
+       if (!outval.dimensionless) { sprintf(temp_err_string, "Expression <%s> for colour component %d returns result with units of <%s>; this should be a dimensionless number in the range 0-1.",ColExpr[c], c+1, ppl_units_GetUnitStr(&outval, NULL, NULL, 0, 1, 0)); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; } \
+       if (outval.FlagComplex) { sprintf(temp_err_string, "Expression <%s> for colour component %d returns a complex result.", ColExpr[c], c+1); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; } \
+       if (!gsl_finite(outval.real)) { component_r = TRANS_R; component_g = TRANS_G; component_b = TRANS_B; goto write_rgb; } \
+       comp[c]=outval.real; \
+      } \
+ \
+     /* Convert to RGB */ \
+     switch (sg->ColMapColSpace) \
+      { \
+       case SW_COLSPACE_RGB: /* Convert RGB --> RGB */ \
+        break; \
+       case SW_COLSPACE_HSB: /* Convert HSB --> RGB */ \
+        { \
+         double h2, ch, x, m; int h2i; \
+         CLIP_COMPS; \
+         ch  = comp[1]*comp[2]; \
+         h2i = (int)(h2 = comp[0] * 6); \
+         x   = ch*(1.0-fabs(fmod(h2,2)-1.0)); \
+         m   = comp[2] - ch; \
+         switch (h2i) \
+          { \
+           case 0 : comp[0]=ch; comp[1]=x ; comp[2]=0 ; break; \
+           case 1 : comp[0]=x ; comp[1]=ch; comp[2]=0 ; break; \
+           case 2 : comp[0]=0 ; comp[1]=ch; comp[2]=x ; break; \
+           case 3 : comp[0]=0 ; comp[1]=x ; comp[2]=ch; break; \
+           case 4 : comp[0]=x ; comp[1]=0 ; comp[2]=ch; break; \
+           case 5 : \
+           case 6 : comp[0]=ch; comp[1]=0 ; comp[2]=x ; break; /* case 6 is for hue=1.0 only */ \
+           default: comp[0]=0 ; comp[1]=0 ; comp[2]=0 ; break; \
+          } \
+         comp[0]+=m; comp[1]+=m; comp[2]+=m; \
+         break; \
+        } \
+       case SW_COLSPACE_CMYK: /* Convert CMYK --> RGB */ \
+        comp[0] = 1.0 - (comp[0]+comp[3]); \
+        comp[1] = 1.0 - (comp[1]+comp[3]); \
+        comp[2] = 1.0 - (comp[2]+comp[3]); \
+        break; \
+       default: /* Unknown colour space */ \
+        comp[0] = comp[1] = comp[2] = 0.0; \
+        break; \
+      } \
+     CLIP_COMPS; \
+ \
+     /* Store RGB components */ \
+     component_r = (unsigned char)floor(comp[0] * 255.99); \
+     component_g = (unsigned char)floor(comp[1] * 255.99); \
+     component_b = (unsigned char)floor(comp[2] * 255.99); \
+     if ((component_r==TRANS_R)&&(component_g==TRANS_G)&&(component_b==TRANS_B)) component_b++; \
+ \
+write_rgb: \
+     img.data[p++] = component_r; \
+     img.data[p++] = component_g; \
+     img.data[p++] = component_b; \
 
-     // Compute RGB, HSB or CMYK components
-     for (c=0; c<3+(sg->ColMapColSpace==SW_COLSPACE_CMYK); c++)
-      {
-       errpos=-1;
-       ppl_EvaluateAlgebra(ColExpr[c], &outval, 0, NULL, 0, &errpos, errtext, 0);
-       if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate colour expression <%s>. The error, encountered at character position %d, was: '%s'", ColExpr[c], errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
-       if (!outval.dimensionless) { sprintf(temp_err_string, "Expression <%s> for colour component %d returns result with units of <%s>; this should be a dimensionless number in the range 0-1.",ColExpr[c], c+1, ppl_units_GetUnitStr(&outval, NULL, NULL, 0, 1, 0)); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
-       if (outval.FlagComplex) { sprintf(temp_err_string, "Expression <%s> for colour component %d returns a complex result.", ColExpr[c], c+1); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); return 1; }
-       if (!gsl_finite(outval.real)) { component_r = TRANS_R; component_g = TRANS_G; component_b = TRANS_B; goto write_rgb; }
-       comp[c]=outval.real;
-      }
-
-     // Convert to RGB
-#define CLIP_COMPS \
-  comp[0] = (comp[0] < 0.0) ? 0.0 : ((comp[0]>1.0) ? 1.0 : comp[0] ); \
-  comp[1] = (comp[1] < 0.0) ? 0.0 : ((comp[1]>1.0) ? 1.0 : comp[1] ); \
-  comp[2] = (comp[2] < 0.0) ? 0.0 : ((comp[2]>1.0) ? 1.0 : comp[2] ); \
-  comp[3] = (comp[3] < 0.0) ? 0.0 : ((comp[3]>1.0) ? 1.0 : comp[3] );
-     switch (sg->ColMapColSpace)
-      {
-       case SW_COLSPACE_RGB: // Convert RGB --> RGB
-        break;
-       case SW_COLSPACE_HSB: // Convert HSB --> RGB
-        {
-         double h2, ch, x, m; int h2i;
-         CLIP_COMPS;
-         ch  = comp[1]*comp[2];
-         h2i = (int)(h2 = comp[0] * 6);
-         x   = ch*(1.0-fabs(fmod(h2,2)-1.0));
-         m   = comp[2] - ch;
-         switch (h2i)
-          {
-           case 0 : comp[0]=ch; comp[1]=x ; comp[2]=0 ; break;
-           case 1 : comp[0]=x ; comp[1]=ch; comp[2]=0 ; break;
-           case 2 : comp[0]=0 ; comp[1]=ch; comp[2]=x ; break;
-           case 3 : comp[0]=0 ; comp[1]=x ; comp[2]=ch; break;
-           case 4 : comp[0]=x ; comp[1]=0 ; comp[2]=ch; break;
-           case 5 :
-           case 6 : comp[0]=ch; comp[1]=0 ; comp[2]=x ; break; // case 6 is for hue=1.0 only
-           default: comp[0]=0 ; comp[1]=0 ; comp[2]=0 ; break;
-          }
-         comp[0]+=m; comp[1]+=m; comp[2]+=m;
-         break;
-        }
-       case SW_COLSPACE_CMYK: // Convert CMYK --> RGB
-        comp[0] = 1.0 - (comp[0]+comp[3]);
-        comp[1] = 1.0 - (comp[1]+comp[3]);
-        comp[2] = 1.0 - (comp[2]+comp[3]);
-        break;
-       default: // Unknown colour space
-        comp[0] = comp[1] = comp[2] = 0.0;
-        break;
-      }
-     CLIP_COMPS;
-
-     // Store RGB components
-     component_r = (unsigned char)floor(comp[0] * 255.99);
-     component_g = (unsigned char)floor(comp[1] * 255.99);
-     component_b = (unsigned char)floor(comp[2] * 255.99);
-     if ((component_r==TRANS_R)&&(component_g==TRANS_G)&&(component_b==TRANS_B)) component_b++;
-
-write_rgb:
-     img.data[p++] = component_r;
-     img.data[p++] = component_g;
-     img.data[p++] = component_b;
+     SET_RGB_COLOUR;
     }
 
   // Restore variables c1...c4 in the user's variable space
   for (i=0; i<4; i++) *CVar[i] = CDummy[i];
 
-  // Consider converting RGB data into a paletted image
-  if ((img.depth == 24) && (img.type==BMP_COLOUR_BMP    )) bmp_colour_count(&img);  // Check full colour image to ensure more than 256 colours
-  if ((img.depth ==  8) && (img.type==BMP_COLOUR_PALETTE)) bmp_grey_check(&img);    // Check paletted images for greyscale conversion
-  if ((img.type == BMP_COLOUR_PALETTE) && (img.pal_len <= 16) && (img.depth == 8)) bmp_compact(&img); // Compact images with few palette entries
+#define COMPRESS_POSTSCRIPT_IMAGE \
+  /* Consider converting RGB data into a paletted image */ \
+  if ((img.depth == 24) && (img.type==BMP_COLOUR_BMP    )) bmp_colour_count(&img);  /* Check full colour image to ensure more than 256 colours */ \
+  if ((img.depth ==  8) && (img.type==BMP_COLOUR_PALETTE)) bmp_grey_check(&img);    /* Check paletted images for greyscale conversion */ \
+  if ((img.type == BMP_COLOUR_PALETTE) && (img.pal_len <= 16) && (img.depth == 8)) bmp_compact(&img); /* Compact images with few palette entries */ \
+ \
+  /* Apply compression to image data */ \
+  switch (img.TargetCompression) \
+   { \
+    case BMP_ENCODING_FLATE: \
+     zlen   = img.data_len*1.01+12; /* Nasty guess at size of buffer needed. */ \
+     imagez = (unsigned char *)lt_malloc(zlen); \
+     if (imagez == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); img.TargetCompression = BMP_ENCODING_NULL; break; } \
+     if (DEBUG) { ppl_log("Calling zlib to compress image data."); } \
+     j = compress2(imagez,&zlen,img.data,img.data_len,9); /* Call zlib to do deflation */ \
+ \
+     if (j!=0) \
+      { \
+       if (DEBUG) { sprintf(temp_err_string, "zlib returned error code %d\n",j); ppl_log(temp_err_string); } \
+       img.TargetCompression = BMP_ENCODING_NULL; /* Give up trying to compress data */ \
+       break; \
+      } \
+     if (DEBUG) { sprintf(temp_err_string, "zlib has completed compression. Before flate: %ld bytes. After flate: %ld bytes.", img.data_len, (long)zlen); ppl_log(temp_err_string); } \
+     if (zlen >= img.data_len) \
+      { \
+       if (DEBUG) { ppl_log("Using original uncompressed data since zlib made it bigger than it was to start with."); } \
+       img.TargetCompression = BMP_ENCODING_NULL; /* Give up trying to compress data; result was larger than original data size */ \
+       break; \
+      } \
+     img.data = imagez; /* Replace old data with new compressed data */ \
+     img.data_len = zlen; \
+     break; \
+   } \
 
-  // Apply compression to image data
-  switch (img.TargetCompression)
-   {
-    case BMP_ENCODING_FLATE:
-     zlen   = img.data_len*1.01+12; // Nasty guess at size of buffer needed.
-     imagez = (unsigned char *)lt_malloc(zlen);
-     if (imagez == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); img.TargetCompression = BMP_ENCODING_NULL; break; }
-     if (DEBUG) { ppl_log("Calling zlib to compress image data."); }
-     j = compress2(imagez,&zlen,img.data,img.data_len,9); // Call zlib to do deflation
-
-     if (j!=0)
-      {
-       if (DEBUG) { sprintf(temp_err_string, "zlib returned error code %d\n",j); ppl_log(temp_err_string); }
-       img.TargetCompression = BMP_ENCODING_NULL; // Give up trying to compress data
-       break;
-      }
-     if (DEBUG) { sprintf(temp_err_string, "zlib has completed compression. Before flate: %ld bytes. After flate: %ld bytes.", img.data_len, (long)zlen); ppl_log(temp_err_string); }
-     if (zlen >= img.data_len)
-      {
-       if (DEBUG) { ppl_log("Using original uncompressed data since zlib made it bigger than it was to start with."); }
-       img.TargetCompression = BMP_ENCODING_NULL; // Give up trying to compress data; result was larger than original data size
-       break;
-      }
-     img.data = imagez; // Replace old data with new compressed data
-     img.data_len = zlen;
-     break;
-   }
+  COMPRESS_POSTSCRIPT_IMAGE;
 
   // Write out postscript image
   fprintf(x->epsbuffer, "gsave\n");
   fprintf(x->epsbuffer, "[ %.2f %.2f %.2f %.2f %.2f %.2f ] concat\n", Lx*sin(ThetaX), Lx*cos(ThetaX), Ly*sin(ThetaY), Ly*cos(ThetaY), xo, yo);
 
-  if      (img.colour == BMP_COLOUR_RGB ) fprintf(x->epsbuffer, "/DeviceRGB setcolorspace\n");  // RGB palette
-  else if (img.colour == BMP_COLOUR_GREY) fprintf(x->epsbuffer, "/DeviceGray setcolorspace\n"); // Greyscale palette
-  else if (img.colour == BMP_COLOUR_PALETTE) // Indexed palette
-   {
-    fprintf(x->epsbuffer, "[/Indexed /DeviceRGB %d <~\n", img.pal_len-1);
-    bmp_A85(x->epsbuffer, img.palette, 3*img.pal_len);
-    fprintf(x->epsbuffer, "] setcolorspace\n\n");
-   }
+#define WRITE_POSTSCRIPT_IMAGE \
+  if      (img.colour == BMP_COLOUR_RGB ) fprintf(x->epsbuffer, "/DeviceRGB setcolorspace\n");  /* RGB palette */ \
+  else if (img.colour == BMP_COLOUR_GREY) fprintf(x->epsbuffer, "/DeviceGray setcolorspace\n"); /* Greyscale palette */ \
+  else if (img.colour == BMP_COLOUR_PALETTE) /* Indexed palette */ \
+   { \
+    fprintf(x->epsbuffer, "[/Indexed /DeviceRGB %d <~\n", img.pal_len-1); \
+    bmp_A85(x->epsbuffer, img.palette, 3*img.pal_len); \
+    fprintf(x->epsbuffer, "] setcolorspace\n\n"); \
+   } \
+ \
+  fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", (img.trans==NULL)?1:4, img.width, img.height, img.width, -img.height, img.height); \
+  fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter"); /* Image data is stored in currentfile, but need to apply filters to decode it */ \
+  if (img.TargetCompression == BMP_ENCODING_FLATE) fprintf(x->epsbuffer, " /FlateDecode filter"); \
+  fprintf(x->epsbuffer, "\n /BitsPerComponent %d\n /Decode [0 %d%s]\n", (img.colour==BMP_COLOUR_RGB)?(img.depth/3):(img.depth), \
+                                                                        (img.type==BMP_COLOUR_PALETTE)?((1<<img.depth)-1):1, \
+                                                                        (img.colour==BMP_COLOUR_RGB)?" 0 1 0 1":""); \
+  if (img.trans != NULL) \
+   { \
+    fprintf(x->epsbuffer," /MaskColor ["); \
+    if (img.colour == BMP_COLOUR_RGB) fprintf(x->epsbuffer, "%d %d %d]\n",(int)img.trans[0], (int)img.trans[1], (int)img.trans[2]); \
+    else                              fprintf(x->epsbuffer, "%d]\n"      ,(int)img.trans[0]); \
+   } \
+  fprintf(x->epsbuffer, ">> image\n"); \
+  bmp_A85(x->epsbuffer, img.data, img.data_len); \
 
-  fprintf(x->epsbuffer, "<<\n /ImageType %d\n /Width %d\n /Height %d\n /ImageMatrix [%d 0 0 %d 0 %d]\n", (img.trans==NULL)?1:4, img.width, img.height, img.width, -img.height, img.height);
-  fprintf(x->epsbuffer, " /DataSource currentfile /ASCII85Decode filter"); // Image data is stored in currentfile, but need to apply filters to decode it
-  if (img.TargetCompression == BMP_ENCODING_FLATE) fprintf(x->epsbuffer, " /FlateDecode filter");
-  fprintf(x->epsbuffer, "\n /BitsPerComponent %d\n /Decode [0 %d%s]\n", (img.colour==BMP_COLOUR_RGB)?(img.depth/3):(img.depth),
-                                                                        (img.type==BMP_COLOUR_PALETTE)?((1<<img.depth)-1):1,
-                                                                        (img.colour==BMP_COLOUR_RGB)?" 0 1 0 1":"");
-  if (img.trans != NULL)
-   {
-    fprintf(x->epsbuffer," /MaskColor [");
-    if (img.colour == BMP_COLOUR_RGB) fprintf(x->epsbuffer, "%d %d %d]\n",(int)img.trans[0], (int)img.trans[1], (int)img.trans[2]);
-    else                              fprintf(x->epsbuffer, "%d]\n"      ,(int)img.trans[0]);
-   }
-  fprintf(x->epsbuffer, ">> image\n");
-  bmp_A85(x->epsbuffer, img.data, img.data_len);
+  WRITE_POSTSCRIPT_IMAGE;
   fprintf(x->epsbuffer, "grestore\n");
   return 0;
  }
 
-void eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
+int  eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
  {
-  int              k;
+  int              i, j, c, k, errpos;
+  long             p;
   double           xmin,xmax,ymin,ymax;
+  char            *errtext;
   canvas_plotdesc *pd;
   settings_graph  *sg= &x->current->settings;
   with_words       ww;
+
+  errtext = lt_malloc(LSTR_LENGTH);
+  if (errtext==NULL) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); return 1; }
 
   // Set colour for painting axes
   with_words_zero(&ww,0);
@@ -528,7 +539,7 @@ void eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
   ww.linetype  = 1;                  ww.USElinetype  = 1;
   eps_core_SetColour(x, &ww, 1);
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
-  else return;
+  else return 0;
 
   // Find extrema of box filled by graph canvas
   if (!x->current->ThreeDim)
@@ -556,36 +567,118 @@ void eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
   k  = 0;
   while (pd != NULL) // loop over all datasets
    {
+    DataTable *data = x->current->plotdata[k];
     if (pd->CRangeDisplay)
      {
-      double x1,y1,x2,y2  ,  x3,y3,x4,y4  ,  theta,dummy;
-      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotTopMargin   +SCALE_MARGIN; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotBottomMargin-SCALE_MARGIN; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotLeftMargin  -SCALE_MARGIN; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotRightMargin +SCALE_MARGIN; }
+      double              XSize = 1024, YSize = 1; // Dimensions of bitmap image
+      unsigned char       component_r, component_g, component_b, transparent[3] = {TRANS_R, TRANS_G, TRANS_B};
+      char                v[3]="c1";
+      double              x1,y1,x2,y2  ,  x3,y3,x4,y4  ,  theta,dummy  ,  comp[4],CMin,CMax;
+      double              Lx, Ly, ThetaX, ThetaY;
+      unsigned char       CLog;
+      const double        MARGIN = EPS_COLOURSCALE_MARGIN * M_TO_PS;
+      const double        WIDTH  = EPS_COLOURSCALE_WIDTH * M_TO_PS;
+      const unsigned char Lr = (sg->ColKeyPos==SW_COLKEYPOS_B)||(sg->ColKeyPos==SW_COLKEYPOS_R);
+      uLongf              zlen; // Length of buffer passed to zlib
+      unsigned char      *imagez;
+      char               *ColExpr[4] = {sg->ColMapExpr1 , sg->ColMapExpr2 , sg->ColMapExpr3 , sg->ColMapExpr4 };
+      bitmap_data         img;
+      value              *CVar=NULL, CDummy, outval;
 
-      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x3 = x1; x4 = x2; y3 = y4 = y1 + SCALE_WIDTH; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x3 = x1; x4 = x2; y3 = y4 = y1 - SCALE_WIDTH; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y3 = y1; y4 = y2; x3 = x4 = x1 - SCALE_WIDTH; }
-      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y3 = y1; y4 = y2; x3 = x4 = x1 + SCALE_WIDTH; }
+      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotTopMargin   +MARGIN; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x1 = xmin; x2 = xmax; y1 = y2 = x->current->PlotBottomMargin-MARGIN; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotLeftMargin  -MARGIN; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y1 = ymin; y2 = ymax; x1 = x2 = x->current->PlotRightMargin +MARGIN; }
+      else                                    { continue; }
+
+      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { x3 = x1; x4 = x2; y3 = y4 = y1 + WIDTH; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { x3 = x1; x4 = x2; y3 = y4 = y1 - WIDTH; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { y3 = y1; y4 = y2; x3 = x4 = x1 - WIDTH; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { y3 = y1; y4 = y2; x3 = x4 = x1 + WIDTH; }
+      else                                    { continue; }
+
+      if      (sg->ColKeyPos==SW_COLKEYPOS_T) { Lx = xmax-xmin; Ly = WIDTH; ThetaX =   M_PI/2; ThetaY =   M_PI  ; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_B) { Lx = xmax-xmin; Ly = WIDTH; ThetaX =   M_PI/2; ThetaY =   0     ; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_L) { Lx = ymax-ymin; Ly = WIDTH; ThetaX =   0     ; ThetaY =   M_PI/2; }
+      else if (sg->ColKeyPos==SW_COLKEYPOS_R) { Lx = ymax-ymin; Ly = WIDTH; ThetaX =   0     ; ThetaY = 3*M_PI/2; }
+      else                                    { continue; }
 
       // Paint bitmap image portion of colourscale
+      img.type     = BMP_COLOUR_BMP;
+      img.colour   = BMP_COLOUR_RGB;
+      img.pal_len  = 0;
+      img.palette  = NULL;
+      img.trans    = transparent;
+      img.height   = YSize;
+      img.width    = XSize;
+      img.depth    = 24;
+      img.data_len = 3*XSize*YSize;
+      img.data     = lt_malloc(3*XSize*YSize);
+      img.TargetCompression = BMP_ENCODING_FLATE;
+      if (img.data==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); goto POST_BITMAP; }
+
+      // Set CMin, CMax
+      CMin = pd->CMinFinal;
+      CMax = pd->CMaxFinal;
+      CLog = (sg->Clog[0]==SW_BOOL_TRUE);
+
+      // Get pointer to variable c1 in the user's variable space
+      DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar);
+      if (CVar!=NULL)
+       {
+        CDummy = *CVar;
+       }
+      else // If variable is not defined, create it now
+       {
+        ppl_units_zero(&CDummy);
+        DictAppendValue(_ppl_UserSpace_Vars, v, CDummy);
+        DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar);
+        CDummy.modified = 2;
+       }
+      if (sg->Crenorm[0]==SW_BOOL_FALSE) { *CVar = data->FirstEntries[2]; CVar->FlagComplex=0; CVar->imag=0.0; }
+      else ppl_units_zero(CVar); // c1...c4 are dimensionless numbers in range 0-1, regardless of units of input data
+
+      // Populate bitmap data array
+      for (p=0, j=YSize-1; j>=0; j--) // Postscript images are top-first. Data block is bottom-first.
+       for (i=0; i<XSize; i++)
+        {
+         // Set value of c1
+         if (sg->Crenorm[0]==SW_BOOL_FALSE)
+          {
+           if (!CLog) CVar->real = CMin+(CMax-CMin)*((double)i)/(XSize-1);
+           else       CVar->real = CMin*pow(CMax/CMin,((double)i)/(XSize-1));
+          }
+         else         CVar->real = ((double)i)/(XSize-1);
+
+         SET_RGB_COLOUR;
+        }
+       COMPRESS_POSTSCRIPT_IMAGE;
+
+       // Write postscript image
+       fprintf(x->epsbuffer, "gsave\n");
+       fprintf(x->epsbuffer, "[ %.2f %.2f %.2f %.2f %.2f %.2f ] concat\n", Lx*sin(ThetaX), Lx*cos(ThetaX), Ly*sin(ThetaY), Ly*cos(ThetaY), x3, y3);
+       WRITE_POSTSCRIPT_IMAGE;
+       fprintf(x->epsbuffer, "grestore\n");
+
+POST_BITMAP:
+      // Restore variables c1 in the user's variable space
+      if (CVar!=NULL) *CVar = CDummy;
 
       // Paint inner-facing scale
-      theta = ((sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_B))?0:(M_PI/2);
-      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, (sg->ColKeyPos==SW_COLKEYPOS_B)||(sg->ColKeyPos==SW_COLKEYPOS_R),
-                         x1, y1, x2, y2,-theta,-theta, &dummy, 0);
+      theta = ((sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_B))?M_PI:(M_PI/2);
+      if (Lr) theta=theta+M_PI;
+      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, Lr, x1, y1, x2, y2, theta, theta, &dummy, 0);
 
       // Paint lines at top/bottom of scale
+      eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", x1, y1, x3, y3);
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", x2, y2, x4, y4);
 
       // Paint outer-facing scale
-      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, (sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_L),
-                         x3, y3, x4, y4, theta, theta, &dummy, 1);
+      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, !Lr, x3, y3, x4, y4, theta+M_PI, theta+M_PI, &dummy, 1);
      }
     pd=pd->next; k++;
    }
-  return;
+  return 0;
  }
 

@@ -654,9 +654,12 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "AXES_MAJTICKLEN"     )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue)))) EPS_AXES_MAJTICKLEN   = fl * EPS_BASE_AXES_MAJTICKLEN;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_MajTickLen."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
-      else if (strcmp(setkey, "AXES_MINTICKLEN"     )==0)
-        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue)))) EPS_AXES_MINTICKLEN   = fl * EPS_BASE_AXES_MINTICKLEN;
-        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Axes_MinTickLen."      , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "COLOURSCALE_MARGIN"  )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue)))) EPS_COLOURSCALE_MARGIN= fl * EPS_BASE_COLOURSCALE_MARG;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting ColourScale_Margin."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "COLOURSCALE_WIDTH"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue)))) EPS_COLOURSCALE_WIDTH = fl * EPS_BASE_COLOURSCALE_WIDTH;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting ColourScale_Width."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "GRID_MAJLINEWIDTH"      )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue)))) EPS_GRID_MAJLINEWIDTH    = fl * EPS_BASE_GRID_MAJLINEWIDTH;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Grid_MajLineWidth."    , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

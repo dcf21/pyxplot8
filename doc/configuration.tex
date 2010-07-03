@@ -257,6 +257,8 @@ Axes_MajTickLen = 1.0
 Axes_MinTickLen = 1.0
 Axes_Separation = 1.0
 Axes_TextGap = 1.0
+ColourScale_Margin = 1.0
+ColourScale_Width = 1.0
 Grid_MajLineWidth = 1.0
 Grid_MinLineWidth = 0.5
 Baseline_LineWidth = 1.0
@@ -849,6 +851,14 @@ The {\tt styling} section can contain any of the following settings in any order
 {\tt Axes\_TextGap} & {\bf Possible values:} Any floating-point number.
 
                Sets the separation between axes and the text labels which are associated with them. A value of 1.0 corresponds to PyXPlot's default spacing of $3\,\mathrm{mm}$; other values differ from this multiplicatively.
+               \\
+{\tt ColourScale\_Margin} & {\bf Possible values:} Any floating-point number.
+
+               Sets the separation left between the axes of plots drawn using the {\tt colourmap} plot style, and of the colour scales drawn alongside them. A value of 1.0 corresponds to PyXPlot's default spacing; other values differ from this multiplicatively.
+               \\
+{\tt ColourScale\_Width} & {\bf Possible values:} Any floating-point number.
+
+               Sets the width of the colour scale bars drawn alonside plots drawn using the {\tt colourmap} plot style. A value of 1.0 corresponds to PyXPlot's width; other values differ from this multiplicatively.
                \\
 {\tt Grid\_MajLineWidth} & {\bf Possible values:} Any floating-point number.
 
