@@ -159,7 +159,7 @@ RANGES_DONE:
   // Read input data
   if (bmp<0)
    {
-    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NcolRequired, SelectCrit, continuity, NULL, -1, &ErrCount);
+    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NcolRequired, SelectCrit, continuity, NULL, -1, &ErrCount);
 
     // Transfer data from multiple data tables into single vectors
     if (NcolRequired<3) xdata = (double *)lt_malloc_incontext(NcolRequired * data->Nrows * sizeof(double), ContextLocalVec);

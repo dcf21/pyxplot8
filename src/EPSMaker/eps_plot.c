@@ -61,12 +61,13 @@
 // wrong length, we do nothing; it will fail in due course in ppl_datafile
 // anyway. If the list is empty, we auto-generate a default list.
 
-int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *UsingList)
+int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, unsigned char *AutoUsingList, List *UsingList)
  {
   int i, UsingLen;
   char *AutoItem, *temp, *temp2;
   Dict *tempdict;
 
+  *AutoUsingList = 0;
   UsingLen = ListLen(UsingList);
 
   // If using list was empty, generate an automatic list before we start
@@ -82,6 +83,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *Using
       ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID);
      }
     UsingLen = *NExpect;
+    *AutoUsingList = 1;
    }
   else if ((UsingLen==1) && (*NExpect==2)) // Prepend data point number if only one number specified in using statement
    {
@@ -249,6 +251,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   canvas_plotrange *pr;
   settings_axis    *axis, *axissets[3];
   List             *UsingList, *EveryList;
+  unsigned char     AutoUsingList=0;
   Dict             *tempdict;
   char              errbuffer[LSTR_LENGTH];
   with_words        ww_default;
@@ -417,12 +420,12 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         else if ((pd->function)&&(pd->NFunctions>=1)&&(pd->NFunctions<=4)) NExpect=pd->NFunctions+2;
        }
 
-      if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
+      if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, &AutoUsingList, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       if (pd->function == 0) // Read data from file
        {
         if (DEBUG) { sprintf(temp_err_string, "Reading data from file '%s' for dataset %d in plot item %d", pd->filename, i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+        DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
        } else {
         double *special_raster = ordinate_raster;
         int     Nsamples       = x->current->settings.samples;
@@ -438,7 +441,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
          }
 
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, NULL, 0, NULL, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, NULL, 0, NULL, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
       else
@@ -484,6 +487,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
   canvas_plotdesc *pd;
   settings_axis   *OrdinateAxis, *OrdinateAxis2, *axissets[3];
   List            *UsingList, *EveryList;
+  unsigned char    AutoUsingList=0;
   Dict            *tempdict;
   char             errbuffer[LSTR_LENGTH];
   unsigned char    SampleGrid;
@@ -515,7 +519,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
         else if ((pd->function)&&(pd->NFunctions>=1)&&(pd->NFunctions<=4)) NExpect=pd->NFunctions+2;
        }
 
-      if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
+      if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, &AutoUsingList, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
 
       // Check whether we're sampling along one axis, or sampling a grid
       SampleGrid = (pd->ww_final.linespoints == SW_STYLE_SURFACE) || (pd->ww_final.linespoints == SW_STYLE_COLOURMAP) || (pd->ww_final.linespoints == SW_STYLE_CONTOURMAP);
@@ -592,7 +596,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
       Nsamples      = OrdinateRasterLen;
       if (!SampleGrid)
         DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
-      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, OrdinateRaster2, OrdinateRasterLen2, (OrdinateAxis2==NULL)?NULL:&OrdinateAxis2->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+      DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, OrdinateRaster2, OrdinateRasterLen2, (OrdinateAxis2==NULL)?NULL:&OrdinateAxis2->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage

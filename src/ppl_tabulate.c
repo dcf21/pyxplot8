@@ -302,7 +302,7 @@ int directive_tabulate(Dict *command, char *line)
         ContextDataTab = lt_DescendIntoNewContext();
 
         // Read data from file
-        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
+        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
         if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); ppl_glob_close(glob_handle); fclose(output); return 1; }
         status = DataGridDisplay(output, data, NUsingItems, min, max, format);
         if (status) { ppl_glob_close(glob_handle); fclose(output); return 1; }
@@ -431,7 +431,7 @@ int directive_tabulate(Dict *command, char *line)
       DataFile_FromFunctions(ordinate_raster, FlagParametric,
                              NumberOfSamples, (FlagParametric ? &para_Tunit : &raster_units),
                              NULL, 0, NULL,
-                             &data, &status, errtext, fnlist, k, UsingList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
+                             &data, &status, errtext, fnlist, k, UsingList, 0, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); fclose(output); return 1; }
       status = DataGridDisplay(output, data, NUsingItems, min+1, max+1, format); // First range is for ordinate axis
       if (status) { fclose(output); return 1; }

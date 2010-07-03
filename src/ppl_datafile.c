@@ -618,9 +618,9 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
 // DataFile_read is the main entry point for reading a table of data from a data file
 // ----------------------------------------------------------------------------------
 
-void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
+void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, unsigned char AutoUsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
  {
-  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma, OneColumnInput=1;
+  unsigned char HadNonNullUsingItem=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma, OneColumnInput=1;
   int           UsingLen, logi, logj, ContextOutput, ContextRough, ContextRaw;
   char         *UsingItems[USING_ITEMS_MAX], LineNumberStr[32];
   ListIterator *listiter;
@@ -978,7 +978,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
       // Add line numbers as first column to one-column datafiles
       if  (ItemsOnLine >  1) OneColumnInput=0;
-      if ((ItemsOnLine == 1) && (OneColumnInput))
+      if ((ItemsOnLine == 1) && AutoUsingList && OneColumnInput)
        {
         ColumnData[ItemsOnLine++]=ColumnData[0];
         ColumnData[0]=LineNumberStr;
@@ -1018,9 +1018,9 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
 
 #define COUNTEDERR2F if (*ErrCounter==0) { sprintf(temp_err_string, "%s: Too many errors: no more errors will be shown.",buffer); ppl_warning(ERR_STACKED, temp_err_string); } }
 
-void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, double *OrdinateYRaster, int RasterYLen, value *RasterYUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
+void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric, int RasterLen, value *RasterUnits, double *OrdinateYRaster, int RasterYLen, value *RasterYUnits, DataTable **output, int *status, char *errout, char **fnlist, int fnlist_len, List *UsingList, unsigned char AutoUsingList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
  {
-  unsigned char AutoUsingList=0, HadNonNullUsingItem=0, discontinuity=0, SampleGrid;
+  unsigned char HadNonNullUsingItem=0, discontinuity=0, SampleGrid;
   int           UsingLen, logi, logj, a, i, j, k, ContextOutput;
   long          ExpectedNrows;
   char         *UsingItems[USING_ITEMS_MAX], buffer[FNAME_LENGTH];

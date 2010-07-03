@@ -28,7 +28,7 @@
 
 #include "eps_comm.h"
 
-int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, List *UsingList);
+int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, unsigned char *AutoUsingList, List *UsingList);
 
 void eps_plot_ReadAccessibleData(EPSComm *x);
 void eps_plot_SampleFunctions(EPSComm *x);

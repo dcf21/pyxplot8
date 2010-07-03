@@ -412,7 +412,7 @@ int directive_fit(Dict *command)
   ContextDataTab = lt_DescendIntoNewContext();
 
   // Read data from file
-  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, NExpect, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, &ErrCount);
+  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NExpect, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, &ErrCount);
   if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
 
   // Check that the FirstEntries above have the same units as any supplied ranges

@@ -98,7 +98,7 @@ int directive_histogram(Dict *command)
   ContextLocalVec= lt_DescendIntoNewContext();
   ContextDataTab = lt_DescendIntoNewContext();
 
-  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, EveryList, NULL, 1, SelectCrit, continuity, NULL, -1, &ErrCount);
+  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, 1, SelectCrit, continuity, NULL, -1, &ErrCount);
   if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
   if (data->Nrows<3) { ppl_error(ERR_NUMERIC, -1, -1, "Histogram construction is only possible on data sets with members at at least three values of x."); return 1; }
 
