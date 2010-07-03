@@ -43,7 +43,6 @@
 #include "eps_colours.h"
 #include "eps_plot.h"
 #include "eps_plot_canvas.h"
-#include "eps_plot_contourmap.h"
 #include "eps_plot_filledregion.h"
 #include "eps_plot_linedraw.h"
 #include "eps_plot_styles.h"
@@ -1001,7 +1000,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if ((style == SW_STYLE_CONTOURMAP)&&(xrn==0)&&(yrn==0)&&(zrn==0)) // CONTOURMAP
    {
-    eps_plot_contourmap(x, data, ThreeDim, xn, yn, zn, sg, pd, origin_x, origin_y, width, height, zdepth);
+    // Dealt with in advance of drawing backmost axes
    }
 
   // End looping over monotonic regions of axis space

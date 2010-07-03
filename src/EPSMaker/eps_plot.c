@@ -685,7 +685,7 @@ void eps_plot_YieldUpText(EPSComm *x)
 
 void eps_plot_RenderEPS(EPSComm *x)
  {
-  int              i, status, xyzaxis[3];
+  int              i, j, status, xyzaxis[3];
   double           origin_x, origin_y, width, height, zdepth;
   canvas_plotdesc *pd;
   settings_axis   *a1, *a2, *a3, *axissets[3];
@@ -738,21 +738,25 @@ void eps_plot_RenderEPS(EPSComm *x)
      }
    }
 
-  // Render colourmaps
-  for (pd = x->current->plotitems, i=0; pd != NULL; pd=pd->next, i++) // loop over all datasets
-   if (pd->ww_final.linespoints == SW_STYLE_COLOURMAP)
-    {
-     x->LaTeXpageno = x->current->DatasetTextID[i];
-     a1 = &axissets[pd->axis1xyz][pd->axis1];
-     a2 = &axissets[pd->axis2xyz][pd->axis2];
-     a3 = &axissets[pd->axis3xyz][pd->axis3];
-     xyzaxis[pd->axis1xyz] = 0;
-     xyzaxis[pd->axis2xyz] = 1;
-     xyzaxis[pd->axis3xyz] = 2;
+  // Render colourmaps and then contourmaps
+  for (j=0; j<2; j++)
+   {
+    int style = j ? SW_STYLE_CONTOURMAP : SW_STYLE_COLOURMAP;
+    for (pd = x->current->plotitems, i=0; pd != NULL; pd=pd->next, i++) // loop over all datasets
+     if (pd->ww_final.linespoints == style)
+      {
+       x->LaTeXpageno = x->current->DatasetTextID[i];
+       a1 = &axissets[pd->axis1xyz][pd->axis1];
+       a2 = &axissets[pd->axis2xyz][pd->axis2];
+       a3 = &axissets[pd->axis3xyz][pd->axis3];
+       xyzaxis[pd->axis1xyz] = 0;
+       xyzaxis[pd->axis2xyz] = 1;
+       xyzaxis[pd->axis3xyz] = 2;
 
-     status = eps_plot_colourmap(x, x->current->plotdata[i], x->current->ThreeDim, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height, zdepth);
-     if (status) { *(x->status) = 1; return; }
-    }
+       status = (j?eps_plot_contourmap:eps_plot_colourmap)(x, x->current->plotdata[i], x->current->ThreeDim, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height, zdepth);
+       if (status) { *(x->status) = 1; return; }
+      }
+   }
 
   // Render gridlines
   eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);

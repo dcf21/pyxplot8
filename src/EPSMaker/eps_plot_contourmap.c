@@ -48,6 +48,13 @@
 #include "eps_settings.h"
 #include "eps_style.h"
 
+// Codes for the four sides of a cell
+#define FACE_ALL -1
+#define FACE_T    1
+#define FACE_R    2
+#define FACE_B    3
+#define FACE_L    4
+
 // Yield up text items which label contours on a contourmap
 void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
  {
@@ -157,6 +164,121 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
   return;
  }
 
+// Routines for tracking the paths of contours
+
+// -----+-----+-----+-----+
+//      |     |     |     |  blk->split[X] contains flags indicating whether crossing points on lines
+//      |     |     |     |  A (in bit 1) and B (in bit 2) have been used.
+//      |     |--A--|     |  on successive passes, bits (3,4), (5,6) are used, etc.
+// -----+-----X-----+-----+
+//      |    ||     |     |
+//      |    B|     |     |
+//      |    ||     |     |
+// -----+-----+-----+-----+
+//      |     |     |     |
+//      |     |     |     |
+//      |     |     |     |
+// -----+-----+-----+-----+
+
+
+static int IsBetween(double x, double a, double b, double *f)
+ {
+  *f=0.5;
+  if  (a==b)                  {                 return x==a; }
+  if ((a< b)&&(x>=a)&&(x<=b)) { *f=(x-a)/(b-a); return 1;    }
+  if ((a> b)&&(x<=a)&&(x>=b)) { *f=(x-a)/(b-a); return 1;    }
+  return 0;
+ }
+
+// See whether cell X contains any unused starting points for contours
+static int GetStartPoint(double c1, DataTable *data, int pass, int XSize, int YSize, int x0, int y0, int EntryFace, int *ExitFace, int *xcell, int *ycell, double *Xout, double *Yout)
+ {
+  DataBlock *blk  = data->first;
+  int        Ncol = data->Ncolumns;
+  double     f;
+
+  *xcell = x0;
+  *ycell = y0;
+
+  if (((EntryFace<0)||(EntryFace==FACE_T)) && (x0<=XSize-2) && (x0>= 0) && (y0>= 0) && (y0<=YSize-1) &&
+       (((blk->split[(x0  )+(y0  )*XSize]>>(0+2*pass))&1)==0) &&
+       IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0  )*XSize)].d,&f))
+   { blk->split[(x0  )+(y0  )*XSize] |= 1<<(0+2*pass); *ExitFace=FACE_T; *Xout=x0+f; *Yout=y0; return 1; }
+
+  if (((EntryFace<0)||(EntryFace==FACE_R)) && (x0<=XSize-2) && (x0>=-1) && (y0>= 0) && (y0<=YSize-2) &&
+       (((blk->split[(x0+1)+(y0  )*XSize]>>(1+2*pass))&1)==0) &&
+       IsBetween(c1, blk->data_real[2+Ncol*((x0+1)+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0+1)*XSize)].d,&f))
+   { blk->split[(x0+1)+(y0  )*XSize] |= 1<<(1+2*pass); *ExitFace=FACE_R; *Xout=x0+1; *Yout=y0+f; return 1; }
+
+  if (((EntryFace<0)||(EntryFace==FACE_B)) && (x0<=XSize-2) && (x0>= 0) && (y0>=-1) && (y0<=YSize-2) &&
+       (((blk->split[(x0  )+(y0+1)*XSize]>>(0+2*pass))&1)==0) &&
+       IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0+1)*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0+1)*XSize)].d,&f))
+   { blk->split[(x0  )+(y0+1)*XSize] |= 1<<(0+2*pass); *ExitFace=FACE_B; *Xout=x0+f; *Yout=y0+1; return 1; }
+
+  if (((EntryFace<0)||(EntryFace==FACE_L)) && (x0<=XSize-1) && (x0>= 0) && (y0>= 0) && (y0<=YSize-2) &&
+       (((blk->split[(x0  )+(y0  )*XSize]>>(1+2*pass))&1)==0) &&
+       IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0  )+(y0+1)*XSize)].d,&f))
+   { blk->split[(x0  )+(y0  )*XSize] |= 1<<(1+2*pass); *ExitFace=FACE_L; *Xout=x0; *Yout=y0+f; return 1; }
+  return 0;
+ }
+
+// Given a contour already tracking through cell X from a given face, where to go next?
+static int GetNextPoint(double c1, DataTable *data, int pass, int XSize, int YSize, int x0, int y0, int EntryFace, int *ExitFace, int *xcell, int *ycell, double *Xout, double *Yout)
+ {
+  DataBlock *blk  = data->first;
+  int        Ncol = data->Ncolumns;
+  int        j;
+  double     f;
+
+  for (j=0; j<2; j++)
+   {
+    if (((j==1       )||(EntryFace==FACE_B)) && (x0<=XSize-2) && (x0>= 0) && (y0>= 0) && (y0<=YSize-1) &&
+         (((blk->split[(x0  )+(y0  )*XSize]>>(0+2*pass))&1)==0) &&
+         IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0  )*XSize)].d,&f))
+     { blk->split[(x0  )+(y0  )*XSize] |= 1<<(0+2*pass); *ExitFace=FACE_T; *xcell=x0; *ycell=y0-1; *Xout=x0+f; *Yout=y0; return 1; }
+
+    if (((j==1       )||(EntryFace==FACE_L)) && (x0<=XSize-2) && (x0>=-1) && (y0>= 0) && (y0<=YSize-2) &&
+         (((blk->split[(x0+1)+(y0  )*XSize]>>(1+2*pass))&1)==0) &&
+         IsBetween(c1, blk->data_real[2+Ncol*((x0+1)+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0+1)*XSize)].d,&f))
+     { blk->split[(x0+1)+(y0  )*XSize] |= 1<<(1+2*pass); *ExitFace=FACE_R; *xcell=x0+1; *ycell=y0; *Xout=x0+1; *Yout=y0+f; return 1; }
+
+    if (((j==1       )||(EntryFace==FACE_T)) && (x0<=XSize-2) && (x0>= 0) && (y0>=-1) && (y0<=YSize-2) &&
+         (((blk->split[(x0  )+(y0+1)*XSize]>>(0+2*pass))&1)==0) &&
+         IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0+1)*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0+1)*XSize)].d,&f))
+     { blk->split[(x0  )+(y0+1)*XSize] |= 1<<(0+2*pass); *ExitFace=FACE_B; *xcell=x0; *ycell=y0+1; *Xout=x0+f; *Yout=y0+1; return 1; }
+
+    if (((j==1       )||(EntryFace==FACE_R)) && (x0<=XSize-1) && (x0>= 0) && (y0>= 0) && (y0<=YSize-2) &&
+         (((blk->split[(x0  )+(y0  )*XSize]>>(1+2*pass))&1)==0) &&
+         IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0  )+(y0+1)*XSize)].d,&f))
+     { blk->split[(x0  )+(y0  )*XSize] |= 1<<(1+2*pass); *ExitFace=FACE_L; *xcell=x0-1; *ycell=y0; *Xout=x0; *Yout=y0+f; return 1; }
+   }
+  return 0;
+ }
+
+#define XPOS_TO_POSTSCRIPT \
+ { \
+  xps = xo + Lx*xpos/(XSize-1)*sin(ThetaX) + Ly*ypos/(YSize-1)*sin(ThetaY); \
+  yps = yo + Lx*xpos/(XSize-1)*cos(ThetaX) + Ly*ypos/(YSize-1)*cos(ThetaY); \
+ }
+
+#define FOLLOW_CONTOUR \
+ { \
+  int c; \
+  double xps,yps; \
+  XPOS_TO_POSTSCRIPT; \
+  fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps); \
+  do \
+   { \
+    if ((c = GetNextPoint(v.real, data, 0, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos))!=0) \
+     { \
+      XPOS_TO_POSTSCRIPT; \
+      fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps); \
+     } \
+   } \
+  while (c); \
+  fprintf(x->epsbuffer, "%sstroke\n", closepath?"closepath ":""); \
+ }
+
 // Render a contourmap to postscript
 int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
  {
@@ -164,9 +286,9 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   DataBlock     *blk;
   int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
-  int            i, j, k, Ncol;
-  double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax;
-  unsigned char  CLog, CMinAuto, CMaxAuto;
+  int            i, j, k, Ncol, face, xcell, ycell;
+  double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax, xpos, ypos;
+  unsigned char  CLog, CMinAuto, CMaxAuto, closepath;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
   Ncol = data->Ncolumns;
@@ -249,15 +371,41 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
    {
     value v = pd->CRangeUnit;
 
-    if (sg->ContoursListLen< 0) v.real = CLog?(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)))
-                                             :(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))));
-    else                        v.real = sg->ContoursList[j];
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))))
+                                             :(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)));
+    else                        v.real = sg->ContoursList[k];
+
+    // Write debugging output
+    if (DEBUG)
+     {
+      sprintf(temp_err_string, "Beginning to draw contour at c1=%g.", v.real);
+      ppl_log(temp_err_string);
+     }
 
     // Reset contour map usage flags
     for (j=0; j<YSize; j++)
      for (i=0; i<XSize; i++)
       blk->split[i+XSize*j] = 0;
 
+    // Scan edges of plot looking for contour start points
+    closepath=0;
+    for (i=0; i<XSize-1; i++) // Top face
+     if (GetStartPoint(v.real, data, 0, XSize, YSize, i        , 0        , FACE_T,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+    for (i=0; i<YSize-1; i++) // Right face
+     if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2  , i        , FACE_R,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+    for (i=0; i<XSize-1; i++) // Bottom face
+     if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2-i, YSize-2  , FACE_B,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+    for (i=0; i<YSize-1; i++) // Left face
+     if (GetStartPoint(v.real, data, 0, XSize, YSize, 0        , YSize-2-i, FACE_L,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+
+    // Scan body of plot looking for undrawn contours
+    closepath=1;
+    for (j=0; j<YSize-1; j++)
+     for (i=0; i<XSize-1; i++)
+      if (GetStartPoint(v.real, data, 0, XSize, YSize, i, j, FACE_ALL,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+
+    // Advance plot styles before drawing next contour
+    // !!! need to sort out Dcounter and Fcounter first
    }
 
   return 0;
