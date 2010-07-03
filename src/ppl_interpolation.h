@@ -27,15 +27,16 @@
 #include "ppl_units.h"
 #include "ppl_userspace.h"
 
-#define INTERP_LINEAR 23001
-#define INTERP_LOGLIN 23002
-#define INTERP_SPLINE 23003
-#define INTERP_AKIMA  23004
-#define INTERP_POLYN  23005
-#define INTERP_2D     23006
-#define INTERP_BMPR   23007
-#define INTERP_BMPG   23008
-#define INTERP_BMPB   23009
+#define INTERP_AKIMA    23001
+#define INTERP_LINEAR   23002
+#define INTERP_LOGLIN   23003
+#define INTERP_POLYN    23004
+#define INTERP_SPLINE   23005
+#define INTERP_STEPWISE 23006
+#define INTERP_2D       23007
+#define INTERP_BMPR     23008
+#define INTERP_BMPG     23009
+#define INTERP_BMPB     23010
 
 int  directive_interpolate(Dict *command, int mode);
 void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, value *out, int *status, char *errout);

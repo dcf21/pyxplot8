@@ -31,6 +31,7 @@ set numerics complex
 set sample grid 500x500
 set size square
 set nokey
+set nocolkey
 set log c1
 plot [-2:2][-2:2] fractal_mandelbrot(x+i*y,70)+1 with colourmap
 

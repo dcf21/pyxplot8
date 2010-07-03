@@ -2,6 +2,7 @@
    - 3D plotting implemented.
    - New plot styles colourmap, contourmap and surface added.
    - Interpolation of 2D datagrids and bitmap images implemented.
+   - Stepwise interpolation mode added.
    - Dependency on libkpathsea relaxed to make installation under MacOS easier;
      linking to the library is still strongly recommended on systems where it
      is readily available.

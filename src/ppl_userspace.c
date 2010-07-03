@@ -285,34 +285,45 @@ void ppl_UserSpace_FuncDestroy(FunctionDescriptor *in)
    }
   else if (in->FunctionType == PPL_USERSPACE_SPLINE)
    {
-    if (in->FunctionPtr!=NULL)
+    SplineDescriptor *d = (SplineDescriptor *)in->FunctionPtr;
+    if (d!=NULL)
      {
-      if (((SplineDescriptor *)in->FunctionPtr)->SplineObj   != NULL ) gsl_spline_free      (((SplineDescriptor *)in->FunctionPtr)->SplineObj  );
-      if (((SplineDescriptor *)in->FunctionPtr)->accelerator != NULL ) gsl_interp_accel_free(((SplineDescriptor *)in->FunctionPtr)->accelerator);
+      if (d->SplineType[1]!='t') // Not stepwise interpolation
+       {
+        if (d->SplineObj   != NULL) gsl_spline_free      (d->SplineObj  );
+        if (d->accelerator != NULL) gsl_interp_accel_free(d->accelerator);
+       }
+      else
+       {
+        if (d->SplineObj   != NULL) free(d->SplineObj);
+       }
      }
    }
   else if ((in->FunctionType == PPL_USERSPACE_INTERP2D) || (in->FunctionType == PPL_USERSPACE_BMPDATA))
    {
-    if (in->FunctionPtr!=NULL)
+    SplineDescriptor *d = (SplineDescriptor *)in->FunctionPtr;
+    if (d!=NULL)
      {
-      if (((SplineDescriptor *)in->FunctionPtr)->SplineObj   != NULL ) free(((SplineDescriptor *)in->FunctionPtr)->SplineObj);
+      if (d->SplineObj != NULL ) free(d->SplineObj);
      }
    }
   else if (in->FunctionType == PPL_USERSPACE_HISTOGRAM)
    {
-    if (in->FunctionPtr!=NULL)
+    HistogramDescriptor *h = (HistogramDescriptor *)in->FunctionPtr;
+    if (h!=NULL)
      {
-      if (((HistogramDescriptor *)in->FunctionPtr)->bins   != NULL ) free(((HistogramDescriptor *)in->FunctionPtr)->bins   );
-      if (((HistogramDescriptor *)in->FunctionPtr)->binvals!= NULL ) free(((HistogramDescriptor *)in->FunctionPtr)->binvals);
+      if (h->bins   != NULL ) free(h->bins   );
+      if (h->binvals!= NULL ) free(h->binvals);
      }
    }
   else if (in->FunctionType == PPL_USERSPACE_FFT)
    {
-    if (in->FunctionPtr!=NULL)
+    FFTDescriptor *f = (FFTDescriptor *)in->FunctionPtr;
+    if (f!=NULL)
      {
-      if (((FFTDescriptor *)in->FunctionPtr)->XSize    != NULL )      free(((FFTDescriptor *)in->FunctionPtr)->XSize   );
-      if (((FFTDescriptor *)in->FunctionPtr)->range    != NULL )      free(((FFTDescriptor *)in->FunctionPtr)->range   );
-      if (((FFTDescriptor *)in->FunctionPtr)->datagrid != NULL ) fftw_free(((FFTDescriptor *)in->FunctionPtr)->datagrid);
+      if (f->XSize    != NULL )      free(f->XSize   );
+      if (f->range    != NULL )      free(f->range   );
+      if (f->datagrid != NULL ) fftw_free(f->datagrid);
      }
    }
   else

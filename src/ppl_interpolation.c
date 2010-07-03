@@ -124,15 +124,16 @@ RANGES_DONE:
 
   continuity = DATAFILE_CONTINUOUS;
 
-  if      (mode == INTERP_LINEAR ) { SplineType = gsl_interp_linear;     NcolRequired = 2; NxRequired = 2; }
-  else if (mode == INTERP_LOGLIN ) { SplineType = gsl_interp_linear;     NcolRequired = 2; NxRequired = 2; }
-  else if (mode == INTERP_SPLINE ) { SplineType = gsl_interp_cspline;    NcolRequired = 2; NxRequired = 3; }
-  else if (mode == INTERP_AKIMA  ) { SplineType = gsl_interp_akima;      NcolRequired = 2; NxRequired = 5; }
-  else if (mode == INTERP_POLYN  ) { SplineType = gsl_interp_polynomial; NcolRequired = 2; NxRequired = 3; }
-  else if (mode == INTERP_2D     ) {                                     NcolRequired = 3; NxRequired = 1; }
-  else if (mode == INTERP_BMPR   ) { bmp = 0;                            NcolRequired = 3; NxRequired = 1; }
-  else if (mode == INTERP_BMPG   ) { bmp = 1;                            NcolRequired = 3; NxRequired = 1; }
-  else if (mode == INTERP_BMPB   ) { bmp = 2;                            NcolRequired = 3; NxRequired = 1; }
+  if      (mode == INTERP_AKIMA   ) { SplineType = gsl_interp_akima;      NcolRequired = 2; NxRequired = 5; }
+  else if (mode == INTERP_LINEAR  ) { SplineType = gsl_interp_linear;     NcolRequired = 2; NxRequired = 2; }
+  else if (mode == INTERP_LOGLIN  ) { SplineType = gsl_interp_linear;     NcolRequired = 2; NxRequired = 2; }
+  else if (mode == INTERP_POLYN   ) { SplineType = gsl_interp_polynomial; NcolRequired = 2; NxRequired = 3; }
+  else if (mode == INTERP_SPLINE  ) { SplineType = gsl_interp_cspline;    NcolRequired = 2; NxRequired = 3; }
+  else if (mode == INTERP_STEPWISE) { SplineType = NULL;                  NcolRequired = 2; NxRequired = 1; }
+  else if (mode == INTERP_2D      ) {                                     NcolRequired = 3; NxRequired = 1; }
+  else if (mode == INTERP_BMPR    ) { bmp = 0;                            NcolRequired = 3; NxRequired = 1; }
+  else if (mode == INTERP_BMPG    ) { bmp = 1;                            NcolRequired = 3; NxRequired = 1; }
+  else if (mode == INTERP_BMPB    ) { bmp = 2;                            NcolRequired = 3; NxRequired = 1; }
   else                            { ppl_error(ERR_INTERNAL, -1, -1, "interpolate command requested to perform unknown type of interpolation."); return 1; }
 
   // Check that the function we're about to replace isn't a system function
@@ -145,15 +146,16 @@ RANGES_DONE:
   ContextDataTab = lt_DescendIntoNewContext();
 
   // Fetch string name of interpolation type
-  if      (mode == INTERP_LINEAR ) SplineTypeName="Linear";
-  else if (mode == INTERP_LOGLIN ) SplineTypeName="Power-law";
-  else if (mode == INTERP_SPLINE ) SplineTypeName="Cubic spline";
-  else if (mode == INTERP_AKIMA  ) SplineTypeName="Akima spline";
-  else if (mode == INTERP_POLYN  ) SplineTypeName="Polynomial";
-  else if (mode == INTERP_2D     ) SplineTypeName="Two-dimensional";
-  else if (mode == INTERP_BMPR   ) SplineTypeName="Bitmap (red component)";
-  else if (mode == INTERP_BMPG   ) SplineTypeName="Bitmap (green component)";
-  else if (mode == INTERP_BMPB   ) SplineTypeName="Bitmap (blue component)";
+  if      (mode == INTERP_AKIMA   ) SplineTypeName="Akima spline";
+  else if (mode == INTERP_LINEAR  ) SplineTypeName="Linear";
+  else if (mode == INTERP_LOGLIN  ) SplineTypeName="Power-law";
+  else if (mode == INTERP_POLYN   ) SplineTypeName="Polynomial";
+  else if (mode == INTERP_SPLINE  ) SplineTypeName="Cubic spline";
+  else if (mode == INTERP_STEPWISE) SplineTypeName="Stepwise";
+  else if (mode == INTERP_2D      ) SplineTypeName="Two-dimensional";
+  else if (mode == INTERP_BMPR    ) SplineTypeName="Bitmap (red component)";
+  else if (mode == INTERP_BMPG    ) SplineTypeName="Bitmap (green component)";
+  else if (mode == INTERP_BMPB    ) SplineTypeName="Bitmap (blue component)";
   else                            { ppl_error(ERR_INTERNAL, -1, -1, "interpolate command requested to perform unknown type of interpolation."); return 1; }
 
   // Read input data
@@ -162,8 +164,8 @@ RANGES_DONE:
     DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NcolRequired, SelectCrit, continuity, NULL, -1, &ErrCount);
 
     // Transfer data from multiple data tables into single vectors
-    if (NcolRequired<3) xdata = (double *)lt_malloc_incontext(NcolRequired * data->Nrows * sizeof(double), ContextLocalVec);
-    else                xdata = (double *)malloc             (NcolRequired * data->Nrows * sizeof(double));
+    if ((NcolRequired<3)&&(mode!=INTERP_STEPWISE)) xdata = (double *)lt_malloc_incontext(NcolRequired * data->Nrows * sizeof(double), ContextLocalVec);
+    else                                           xdata = (double *)malloc             (NcolRequired * data->Nrows * sizeof(double));
     ydata = xdata +   data->Nrows;
     zdata = xdata + 2*data->Nrows;
     Nrows = data->Nrows;
@@ -291,12 +293,20 @@ RANGES_DONE:
     if (k<NxRequired) { sprintf(temp_err_string,"%s interpolation is only possible on data sets with members at at least %d distinct values of x.",SplineTypeName,NxRequired); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); if (NcolRequired>=3) free(xdata); return 1; }
 
     // Create GSL interpolation object
-    SplineObj = gsl_spline_alloc(SplineType, k);
-    accel     = gsl_interp_accel_alloc();
-    if (SplineObj==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Failed to make interpolation object."); return 1; }
-    if (accel    ==NULL) { ppl_error(ERR_MEMORY  , -1, -1, "Failed to make GSL interpolation accelerator."); return 1; }
-    status    = gsl_spline_init(SplineObj, xdata, ydata, k);
-    if (status) { sprintf(temp_err_string, "Error whilst creating interpolation object: %s", gsl_strerror(status)); ppl_error(ERR_INTERNAL, -1, -1, temp_err_string); return 1; }
+    if (SplineType!=NULL)
+     {
+      SplineObj = gsl_spline_alloc(SplineType, k);
+      accel     = gsl_interp_accel_alloc();
+      if (SplineObj==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Failed to make interpolation object."); return 1; }
+      if (accel    ==NULL) { ppl_error(ERR_MEMORY  , -1, -1, "Failed to make GSL interpolation accelerator."); return 1; }
+      status    = gsl_spline_init(SplineObj, xdata, ydata, k);
+      if (status) { sprintf(temp_err_string, "Error whilst creating interpolation object: %s", gsl_strerror(status)); ppl_error(ERR_INTERNAL, -1, -1, temp_err_string); return 1; }
+     }
+    else
+     {
+      SplineObj = (gsl_spline *)xdata;
+      SizeX     = k;
+     }
    }
   else if (bmp<0) // 2D interpolation
    {
@@ -361,36 +371,52 @@ void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, valu
 
   if (!ppl_units_DimEqual(in, &desc->UnitX))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 1, 0)); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "The %s(x) function expects an argument with dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in, NULL, NULL, 1, 1, 0)); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
   if (in->FlagComplex)
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x) function expects a real argument, but the supplied argument has an imaginary component.", FuncName); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "The %s(x) function expects a real argument, but the supplied argument has an imaginary component.", FuncName); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
 
+  // If loglinear interpolation, log input value
   dblin = in->real;
   if (desc->LogInterp) dblin = log(dblin);
-  *status = gsl_spline_eval_e(desc->SplineObj, dblin, desc->accelerator, &dblout);
+
+  if (desc->SplineType[1]!='t') // Not stepwise interpolation
+   {
+    *status = gsl_spline_eval_e(desc->SplineObj, dblin, desc->accelerator, &dblout);
+   }
+  else // Stepwise interpolation
+   {
+    long          i, imax=desc->SizeX;
+    double        BestScore=DBL_MAX;
+    double       *data = (double *)desc->SplineObj;
+    for (dblout=0, i=0; i<imax; i++)
+     {
+      double dist = abs(dblin - data[i]);
+      if ((i==0)||(dist<BestScore)) { BestScore=dist; dblout=data[i+imax]; }
+     }
+   }
+
+  // Catch interpolation failure
   if (*status!=0)
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error whilst evaluating the %s(x) function: %s", FuncName, gsl_strerror(*status)); }
-    else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "Error whilst evaluating the %s(x) function: %s", FuncName, gsl_strerror(*status)); }
+    else { *status=0; ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
     return;
    }
+
+  // If loglinear interpolation, unlog output value
   if (desc->LogInterp) dblout = exp(dblout);
 
   if (!gsl_finite(dblout))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error whilst evaluating the %s(x) function: result was not a finite number.", FuncName); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "Error whilst evaluating the %s(x) function: result was not a finite number.", FuncName); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
 
@@ -407,31 +433,27 @@ void ppl_interp2d_evaluate(const char *FuncName, SplineDescriptor *desc, const v
 
   if (!ppl_units_DimEqual(in1, &desc->UnitX))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x,y) function expects its first argument to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in1, NULL, NULL, 1, 1, 0)); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "The %s(x,y) function expects its first argument to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitX, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in1, NULL, NULL, 1, 1, 0)); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
   if (in1->FlagComplex)
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x,y) function expects real arguments, but first supplied argument has an imaginary component.", FuncName); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "The %s(x,y) function expects real arguments, but first supplied argument has an imaginary component.", FuncName); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
 
   if (!ppl_units_DimEqual(in2, &desc->UnitY))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x,y) function expects its second argument to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitY, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 1, 0)); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "The %s(x,y) function expects its second argument to have dimensions of <%s>, but has instead received an argument with dimensions of <%s>.", FuncName, ppl_units_GetUnitStr(&desc->UnitY, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(in2, NULL, NULL, 1, 1, 0)); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
   if (in2->FlagComplex)
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "The %s(x,y) function expects real arguments, but second supplied argument has an imaginary component.", FuncName); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "The %s(x,y) function expects real arguments, but second supplied argument has an imaginary component.", FuncName); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
 
@@ -450,9 +472,8 @@ void ppl_interp2d_evaluate(const char *FuncName, SplineDescriptor *desc, const v
 
   if (!gsl_finite(dblout))
    {
-    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { sprintf(errout, "Error whilst evaluating the %s(x,y) function: result was not a finite number.", FuncName); }
+    if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errout, "Error whilst evaluating the %s(x,y) function: result was not a finite number.", FuncName); }
     else { ppl_units_zero(out); out->real = GSL_NAN; out->imag = 0; }
-    *status=1;
     return;
    }
 

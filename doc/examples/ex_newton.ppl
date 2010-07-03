@@ -57,6 +57,7 @@ set xrange [-1.5:1.5]
 set yrange [-1.5:1.5]
 set sample grid 250x250
 set colmap hsb(c1*0.667):(0.8+0.2*c2):(1.0-0.8*c2)
+set nocolkey
 set log c2
 plot NewtonFractal(x,y):iter+2 with colourmap
 
