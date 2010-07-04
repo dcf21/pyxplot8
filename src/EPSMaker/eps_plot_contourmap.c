@@ -387,22 +387,30 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
      for (i=0; i<XSize; i++)
       blk->split[i+XSize*j] = 0;
 
-    // Scan edges of plot looking for contour start points
-    closepath=0;
-    for (i=0; i<XSize-1; i++) // Top face
-     if (GetStartPoint(v.real, data, 0, XSize, YSize, i        , 0        , FACE_T,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-    for (i=0; i<YSize-1; i++) // Right face
-     if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2  , i        , FACE_R,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-    for (i=0; i<XSize-1; i++) // Bottom face
-     if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2-i, YSize-2  , FACE_B,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-    for (i=0; i<YSize-1; i++) // Left face
-     if (GetStartPoint(v.real, data, 0, XSize, YSize, 0        , YSize-2-i, FACE_L,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+    // Work out style information for next contour
+    eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
+    IF_NOT_INVISIBLE
+     {
 
-    // Scan body of plot looking for undrawn contours
-    closepath=1;
-    for (j=0; j<YSize-1; j++)
-     for (i=0; i<XSize-1; i++)
-      if (GetStartPoint(v.real, data, 0, XSize, YSize, i, j, FACE_ALL,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+      // Scan edges of plot looking for contour start points
+      closepath=0;
+      for (i=0; i<XSize-1; i++) // Top face
+       if (GetStartPoint(v.real, data, 0, XSize, YSize, i        , 0        , FACE_T,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+      for (i=0; i<YSize-1; i++) // Right face
+       if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2  , i        , FACE_R,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+      for (i=0; i<XSize-1; i++) // Bottom face
+       if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2-i, YSize-2  , FACE_B,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+      for (i=0; i<YSize-1; i++) // Left face
+       if (GetStartPoint(v.real, data, 0, XSize, YSize, 0        , YSize-2-i, FACE_L,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+
+      // Scan body of plot looking for undrawn contours
+      closepath=1;
+      for (j=0; j<YSize-1; j++)
+       for (i=0; i<XSize-1; i++)
+        if (GetStartPoint(v.real, data, 0, XSize, YSize, i, j, FACE_ALL,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
+
+     }
 
     // Advance plot styles before drawing next contour
     // !!! need to sort out Dcounter and Fcounter first

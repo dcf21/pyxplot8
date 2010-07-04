@@ -392,14 +392,18 @@ void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, valu
    }
   else // Stepwise interpolation
    {
-    long          i, imax=desc->SizeX;
-    double        BestScore=DBL_MAX;
+    long          i, pos, ss, len=desc->SizeX, Nsteps = (long)ceil(log(desc->SizeX)/log(2));
     double       *data = (double *)desc->SplineObj;
-    for (dblout=0, i=0; i<imax; i++)
+    for (pos=i=0; i<Nsteps; i++)
      {
-      double dist = abs(dblin - data[i]);
-      if ((i==0)||(dist<BestScore)) { BestScore=dist; dblout=data[i+imax]; }
+      ss = 1<<(Nsteps-1-i);
+      if (pos+ss>=len) continue;
+      if (data[pos+ss]<=dblin) pos+=ss;
      }
+    if      (data[pos]>dblin)                               dblout=data[pos  +len]; // Off left end
+    else if (pos==len-1)                                    dblout=data[pos  +len]; // Off right end
+    else if (fabs(dblin-data[pos])<fabs(dblin-data[pos+1])) dblout=data[pos  +len];
+    else                                                    dblout=data[pos+1+len];
    }
 
   // Catch interpolation failure
