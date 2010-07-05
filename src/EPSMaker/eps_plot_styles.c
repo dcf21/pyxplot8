@@ -972,13 +972,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns); // Work out style information for next point
           if (fill)
            {
-            eps_core_SetColour(x, &pd->ww_final, 0);
             eps_core_SetFillColour(x, &pd->ww_final);
             eps_core_SwitchTo_FillColour(x,0);
            }
           else
            {
-            eps_core_SwitchFrom_FillColour(x,0);
+            eps_core_SetColour(x, &pd->ww_final, 0);
            }
           IF_NOT_INVISIBLE
            {
