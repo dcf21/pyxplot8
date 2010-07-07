@@ -392,6 +392,78 @@ void directive_set(Dict *command)
     sg->BoxWidth     = settings_graph_default.BoxWidth;
     sg->BoxWidthAuto = settings_graph_default.BoxWidthAuto;
    }
+  else if (strcmp_set && (strcmp(setoption,"c1format")==0)) /* set c1format */
+   {
+    DictLookup(command,"format_string",NULL,(void **)&tempstr2);
+    if (tempstr2 != NULL)
+     {
+      snprintf(sg->c1format, FNAME_LENGTH, "%s", tempstr2);
+      sg->c1format[FNAME_LENGTH-1]='\0';
+      sg->c1formatset = 1;
+     }
+    DictLookup(command,"orient",NULL,(void **)&tempstr2);
+    if (tempstr2 != NULL)
+     {
+      sg->c1TickLabelRotation = FetchSettingByName(tempstr2, SW_TICLABDIR_INT, SW_TICLABDIR_STR);
+      sg->c1TickLabelRotate   = settings_graph_default.c1TickLabelRotate;
+     }
+    DictLookup(command,"rotation",NULL,(void **)&tempval);
+    if (tempval != NULL)
+     {
+      if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set c1format' command was not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
+      if (!(tempval->dimensionless))
+       {
+        for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+         if (tempval->exponent[i] != (i==UNIT_ANGLE))
+          {
+           sprintf(temp_err_string, "The rotation argument to the 'set c1format' command must have dimensions of angle. Supplied input has dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
+           ppl_error(ERR_SYNTAX, -1, -1, temp_err_string);
+           return;
+          }
+        sg->c1TickLabelRotate = tempval->real;
+       } else { sg->c1TickLabelRotate = tempval->real * M_PI / 180; }
+     }
+   }
+  else if (strcmp_unset && (strcmp(setoption,"c1format")==0)) /* unset c1format */
+   {
+    strcpy(sg->c1format, settings_graph_default.c1format);
+    sg->c1formatset         = settings_graph_default.c1formatset;
+    sg->c1TickLabelRotate   = settings_graph_default.c1TickLabelRotate;
+    sg->c1TickLabelRotation = settings_graph_default.c1TickLabelRotation;
+   }
+  else if ((strcmp(setoption,"c1label")==0)) /* set c1label / unset c1label */
+   {
+    if (strcmp_unset)
+     {
+      strcpy(sg->c1label, settings_graph_default.c1label);
+      sg->c1LabelRotate = settings_graph_default.c1LabelRotate;
+     }
+    else
+     {
+      DictLookup(command,"label_text",NULL,(void **)&tempstr2);
+      if (tempstr2!=NULL)
+       {
+        snprintf(sg->c1label, FNAME_LENGTH, "%s", tempstr2);
+        sg->c1label[FNAME_LENGTH-1]='\0';
+       }
+      DictLookup(command,"rotation",NULL,(void **)&tempval);
+      if (tempval!=NULL)
+       {
+        if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set c1label' command was not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
+        if (!(tempval->dimensionless))
+         {
+          for (i=0; i<UNITS_MAX_BASEUNITS; i++)
+           if (tempval->exponent[i] != (i==UNIT_ANGLE))
+            {
+             sprintf(temp_err_string, "The rotation argument to the 'set c1label' command must have dimensions of angle. Supplied input has dimensions of <%s>.", ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0));
+             ppl_error(ERR_SYNTAX, -1, -1, temp_err_string);
+             return;
+            }
+          sg->c1LabelRotate = tempval->real;
+         } else { sg->c1LabelRotate = tempval->real * M_PI / 180; }
+       }
+     }
+   }
   else if (strcmp_set && (strcmp(setoption,"calendar")==0)) /* set calendar */
    {
     DictLookup(command,"calendar"   ,NULL,(void **)&tempstr);
@@ -908,6 +980,11 @@ void directive_set(Dict *command)
    {
     settings_term_current.backup = SW_ONOFF_OFF;
    }
+  else if (strcmp_set && (strcmp(setoption,"noc1format")==0)) /* set noc1format */
+   {
+    strcpy(sg->c1format, "");
+    sg->c1formatset = 0;
+   }
   else if (strcmp_set && (strcmp(setoption,"noclip")==0)) /* set noclip */
    {
     sg->clip = SW_ONOFF_OFF;
@@ -1056,6 +1133,24 @@ void directive_set(Dict *command)
         for (i=0; i<MAX_AXES; i++) { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; if (tempaxis->enabled) { SET_NOTICS; } }
         for (i=0; i<MAX_AXES; i++) { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; if (tempaxis->enabled) { SET_NOTICS; } }
        }
+     }
+   }
+  else if (strcmp_set && (strcmp(setoption,"notitle")==0)) /* set notitle */
+   {
+    strcpy(sg->title, "");
+   }
+  else if (strcmp_set && (strcmp(setoption,"noxformat")==0)) /* set noxformat */
+   {
+    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    i = (int)GetFloat(tempstr+1,NULL);
+    if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
+     {
+      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
+      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
+      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
+      if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
+      tempaxis->TickLabelRotation = tempaxis2->TickLabelRotation;
+      tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
      }
    }
   else if (strcmp_set && (strcmp(setoption,"numerics")==0)) /* set numerics */
@@ -1847,24 +1942,6 @@ void directive_set(Dict *command)
     if (tempval != NULL) sg->TitleXOff.real = tempval ->real;
     if (tempval2!= NULL) sg->TitleYOff.real = tempval2->real;
    }
-  else if (strcmp_set && (strcmp(setoption,"notitle")==0)) /* set notitle */
-   {
-    strcpy(sg->title, "");
-   }
-  else if (strcmp_set && (strcmp(setoption,"noxformat")==0)) /* set noxformat */
-   {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
-    i = (int)GetFloat(tempstr+1,NULL);
-    if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
-     {
-      if      (tempstr[0]=='y') { tempaxis = &ya[i]; tempaxis2 = &YAxesDefault[i]; }
-      else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
-      else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
-      if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
-      tempaxis->TickLabelRotation = tempaxis2->TickLabelRotation;
-      tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
-     }
-   }
   else if (strcmp_unset && (strcmp(setoption,"title")==0)) /* unset title */
    {
     strncpy(sg->title, settings_graph_default.title, FNAME_LENGTH-4);
@@ -2488,6 +2565,38 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
                       bufp
                      );
      }
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c1format",1)>=0))
+   {
+    if (sg->c1formatset) sprintf(buf, "%s ", sg->c1format);
+    else                         buf[0]='\0';
+    m = strlen(buf);
+    sprintf(buf+m, "%s", *(char **)FetchSettingName(sg->c1TickLabelRotation, SW_TICLABDIR_INT, (void *)SW_TICLABDIR_STR, sizeof(char *))); m += strlen(buf+m);     
+    if (sg->c1TickLabelRotation == SW_TICLABDIR_ROT)
+     {
+      ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = sg->c1TickLabelRotate;
+      sprintf(buf+m, " %s", ppl_units_NumericDisplay(&valobj,0,0,0));
+     }
+    directive_show3(out+i, ItemSet, 1, interactive, "c1format", buf,
+                    (  ( sg->c1TickLabelRotate   == settings_graph_default.c1TickLabelRotate  ) &&
+                       ( sg->c1TickLabelRotation == settings_graph_default.c1TickLabelRotation) &&
+                       ( sg->c1formatset         == settings_graph_default.c1formatset        ) &&
+                      ((!sg->c1formatset) || (strcmp(sg->c1format,settings_graph_default.c1format)==0))
+                    ) ,
+                    "Format string for the tick labels on the c1 axis");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "c1label",1)>=0))
+   {
+    StrEscapify(sg->c1label , buf); m = strlen(buf);
+    ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = sg->c1LabelRotate;
+    sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
+    directive_show3(out+i, ItemSet, 1, interactive, "c1label", buf,
+                    (  ( sg->c1LabelRotate == settings_graph_default.c1LabelRotate) &&
+                       ( strcmp(sg->c1label,settings_graph_default.c1label)==0)
+                    ) ,
+                    "Textual label for the c1 axis");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "calendarin",1)>=0))

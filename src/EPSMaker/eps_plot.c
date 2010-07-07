@@ -69,6 +69,7 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, unsigned ch
 
   *AutoUsingList = 0;
   UsingLen = ListLen(UsingList);
+  if (ww->linespoints == SW_STYLE_CONTOURMAP) return 0; // Contourplot evaluate expressions in terms of c1
 
   // If using list was empty, generate an automatic list before we start
   if (UsingLen==0)
@@ -160,6 +161,8 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
   int i = Ncolumns-1;
   double dbl;
 
+  if (ww->linespoints == SW_STYLE_CONTOURMAP) return; // Contourplot evaluate expressions in terms of c1
+
   if (ww->STRfillcolour4    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour4    = dbl; }
   if (ww->STRfillcolour3    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour3    = dbl; }
   if (ww->STRfillcolour2    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour2    = dbl; }
@@ -246,7 +249,7 @@ static void TriSwap(double *a, double *b)
 
 void eps_plot_ReadAccessibleData(EPSComm *x)
  {
-  int               i, j, k, Ndatasets, Fcounter=0, Dcounter=0, status, ErrCount, NExpect;
+  int               i, j, k, Ndatasets, Ccounter=0, LTcounter=0, PTcounter=0, status, ErrCount, NExpect;
   canvas_plotdesc  *pd;
   canvas_plotrange *pr;
   settings_axis    *axis, *axissets[3];
@@ -395,9 +398,10 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
     pd->TitleFinal_height = pd->TitleFinal_width = pd->TitleFinal_xpos = pd->TitleFinal_ypos = 0;
 
     // Merge together with words to form a final set
-    eps_withwords_default(&ww_default, &x->current->settings, pd->function, Fcounter, Dcounter, settings_term_current.colour==SW_ONOFF_ON);
-    if (pd->function != 0) { Fcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
-    else                   { Dcounter++; with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.DataStyle, &ww_default, NULL, NULL, 1); }
+    eps_withwords_default(&ww_default, &x->current->settings, pd->function, Ccounter, LTcounter, PTcounter, settings_term_current.colour==SW_ONOFF_ON);
+    if (pd->function != 0) { with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1); }
+    else                   { with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.DataStyle, &ww_default, NULL, NULL, 1); }
+    eps_withwords_default_counterinc(&Ccounter, &LTcounter, &PTcounter, settings_term_current.colour==SW_ONOFF_ON, &pd->ww_final, &x->current->settings);
 
     // Mark up axes which are going to be used for any dataset, from datafile or functions
     axissets[pd->axis1xyz][pd->axis1].FinalActive = 1;

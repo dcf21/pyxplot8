@@ -288,7 +288,9 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
   int            i, j, k, Ncol, face, xcell, ycell;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax, xpos, ypos;
-  unsigned char  CLog, CMinAuto, CMaxAuto, closepath;
+  unsigned char  CLog, CMinAuto, CMaxAuto, CRenorm, closepath;
+  char          *errtext, c1name[]="c1";
+  value         *CVar=NULL, CDummy;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
   Ncol = data->Ncolumns;
@@ -296,6 +298,9 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   if (!ThreeDim) { scale_x=width; scale_y=height; scale_z=1.0;    }
   else           { scale_x=width; scale_y=height; scale_z=zdepth; }
   blk = data->first;
+
+  errtext = lt_malloc(LSTR_LENGTH);
+  if (errtext==NULL) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); return 1; }
 
   // Work out orientation of contourmap
   if (!ThreeDim)
@@ -339,6 +344,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   CMax     = pd->CMaxFinal;
   CMinAuto = (sg->Cminauto[0]==SW_BOOL_TRUE);
   CMaxAuto = (sg->Cmaxauto[0]==SW_BOOL_TRUE);
+  CRenorm  = (sg->Crenorm [0]==SW_BOOL_TRUE);
 
   // If no data present, stop now
   if ((CMin==0)&&(CMax==0))
@@ -363,6 +369,22 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     return 1;
    }
 
+  // Get pointer to variable c1 in the user's variable space
+  DictLookup(_ppl_UserSpace_Vars, c1name, NULL, (void **)&CVar);
+  if (CVar!=NULL)
+   {
+    CDummy = *CVar;
+   }
+  else // If variable is not defined, create it now
+   {
+    ppl_units_zero(&CDummy);
+    DictAppendValue(_ppl_UserSpace_Vars, c1name, CDummy);
+    DictLookup(_ppl_UserSpace_Vars, c1name, NULL, (void **)&CVar);
+    CDummy.modified = 2;
+   }
+  if (!CRenorm) { *CVar = pd->CRangeUnit; CVar->FlagComplex=0; CVar->imag=0.0; }
+  else ppl_units_zero(CVar); // c1 is a dimensionless number in range 0-1, regardless of units of input data
+
   // Loop over contours
   for (k=0;
        (k<MAX_CONTOURS) && (  ((sg->ContoursListLen< 0) && (k<sg->ContoursN))  ||
@@ -371,7 +393,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
    {
     value v = pd->CRangeUnit;
 
-    if (sg->ContoursListLen< 0) v.real = CLog?(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))))
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))))
                                              :(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)));
     else                        v.real = sg->ContoursList[k];
 
@@ -386,6 +408,45 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     for (j=0; j<YSize; j++)
      for (i=0; i<XSize; i++)
       blk->split[i+XSize*j] = 0;
+
+    // Set value of c1
+    if (CRenorm)
+     {
+      if (sg->ContoursListLen< 0)  CVar->real = ((double)(k+1)/(sg->ContoursN+1));
+      else                         CVar->real = CLog?(log(v.real/CMin) / log(CMax/CMin))
+                                                    :((v.real-CMin)/(CMax-CMin));
+      if (CVar->real<0.0)          CVar->real=0.0;
+      if (CVar->real>1.0)          CVar->real=1.0;
+      if (!gsl_finite(CVar->real)) CVar->real=0.5;
+     }
+    else                           CVar->real = v.real;
+
+    // Evaluate any expressions in style information for next contour
+    for (i=0 ; ; i++)
+     {
+      char          *expr[] = { pd->ww_final.STRlinetype,  pd->ww_final.STRlinewidth,  pd->ww_final.STRpointlinewidth,  pd->ww_final.STRpointsize,  pd->ww_final.STRpointtype,  pd->ww_final.STRcolour1   ,  pd->ww_final.STRcolour2   ,  pd->ww_final.STRcolour3   ,  pd->ww_final.STRcolour4   ,  pd->ww_final.STRfillcolour1   ,  pd->ww_final.STRfillcolour2   ,  pd->ww_final.STRfillcolour3   ,  pd->ww_final.STRfillcolour4   , NULL};
+      double        *outD[] = { NULL                    , &pd->ww_final.linewidth   , &pd->ww_final.pointlinewidth   , &pd->ww_final.pointsize   ,  NULL                     , &pd->ww_final.colour1      , &pd->ww_final.colour2      , &pd->ww_final.colour3      , &pd->ww_final.colour4      , &pd->ww_final.fillcolour1      , &pd->ww_final.fillcolour2      , &pd->ww_final.fillcolour3      , &pd->ww_final.fillcolour4      , NULL};
+      int           *outI[] = {&pd->ww_final.linetype   ,  NULL                     ,  NULL                          ,  NULL                     , &pd->ww_final.pointtype   ,  NULL                      ,  NULL                      ,  NULL                      ,  NULL                      ,  NULL                          ,  NULL                          ,  NULL                          ,  NULL                          , NULL};
+      unsigned char *flag[] = {&pd->ww_final.USElinetype, &pd->ww_final.USElinewidth, &pd->ww_final.USEpointlinewidth, &pd->ww_final.USEpointsize, &pd->ww_final.USEpointtype, &pd->ww_final.USEcolour1234, &pd->ww_final.USEcolour1234, &pd->ww_final.USEcolour1234, &pd->ww_final.USEcolour1234, &pd->ww_final.USEfillcolour1234, &pd->ww_final.USEfillcolour1234, &pd->ww_final.USEfillcolour1234, &pd->ww_final.USEfillcolour1234, NULL};
+      unsigned char  clip[] = {0,0,0,0,0,1,1,1,1,1,1,1,1,-1};
+      value outval; double dbl; int end=-1, errpos=-1;
+
+      if (flag[i]==NULL) break;
+      if (expr[i]==NULL) continue;
+
+      ppl_EvaluateAlgebra(expr[i], &outval, 0, &end, 0, &errpos, errtext, 1);
+
+      if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate the style expression <%s>. The error, encountered at character position %d, was: '%s'", expr[i], errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+      if (!outval.dimensionless) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was not a dimensionless number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+      if (outval.FlagComplex) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was a complex number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+      if (!gsl_finite(outval.real)) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was not a finite number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+      dbl = outval.real;
+
+      if (clip[i]) { if (dbl<0.0) dbl=0.0; if (dbl>1.0) dbl=1.0; }
+      if (outD[i]!=NULL) *outD[i] = dbl;
+      if (outI[i]!=NULL) { if (dbl<INT_MIN) dbl=INT_MIN+1; if (dbl>INT_MAX) dbl=INT_MAX-1; *outI[i] = (int)dbl; }
+      *flag[i] = 1;
+     }
 
     // Work out style information for next contour
     eps_core_SetColour(x, &pd->ww_final, 1);
@@ -413,8 +474,20 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
      }
 
     // Advance plot styles before drawing next contour
-    // !!! need to sort out Dcounter and Fcounter first
+    if (pd->ww_final.AUTOcolour)
+     {
+      int i,j;
+      for (j=0; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break; // j now contains length of palette
+      i = (++pd->ww_final.AUTOcolour-5) % j; // i is now the palette colour number to use
+      while (i<0) i+=j;
+      if (settings_palette_current[i] > 0) { pd->ww_final.colour  = settings_palette_current[i]; pd->ww_final.USEcolour = 1; }
+      else                                 { pd->ww_final.Col1234Space = settings_paletteS_current[i]; pd->ww_final.colour1 = settings_palette1_current[i]; pd->ww_final.colour2 = settings_palette2_current[i]; pd->ww_final.colour3 = settings_palette3_current[i]; pd->ww_final.colour4 = settings_palette4_current[i]; pd->ww_final.USEcolour1234 = 1; }
+     }
+    else if (pd->ww_final.AUTOlinetype) pd->ww_final.linetype++;
    }
+
+  // Reset value of variable c1
+  if (CVar!=NULL) *CVar = CDummy;
 
   return 0;
  }

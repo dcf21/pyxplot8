@@ -74,7 +74,6 @@ void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *s
   double         origin_x, origin_y, width, height, zdepth;
   double         xmin, xmax, ymin, ymax;
   unsigned char  CMinAuto, CMinSet, CMaxAuto, CMaxSet, CLog, horizontal;
-  static char    FormatString[16];
 
   // Check that we have some data
   if ((data==NULL) || (data->Nrows<1)) return; // No data present
@@ -143,12 +142,13 @@ void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *s
   PhysicalLengthMinor = PhysicalLength / 0.004;
   PhysicalLengthMajor = PhysicalLength / (horizontal ? 0.025 : 0.015);
 
-  // Set format string for colour map scale axis which includes physical units
-  strcpy(FormatString,"\"%s\"%(x)");
-
   // Set up axis object
   pd->C1Axis = settings_axis_default;
-  pd->C1Axis.format = FormatString;
+  pd->C1Axis.label = sg->c1label;
+  pd->C1Axis.LabelRotate = sg->c1LabelRotate;
+  pd->C1Axis.format = sg->c1formatset ? sg->c1format : NULL;
+  pd->C1Axis.TickLabelRotation = sg->c1TickLabelRotation;
+  pd->C1Axis.TickLabelRotate = sg->c1TickLabelRotate;
   pd->C1Axis.enabled = pd->C1Axis.FinalActive = pd->C1Axis.RangeFinalised = 1;
   pd->C1Axis.TickListFinalised = 0;
   pd->C1Axis.topbottom = (sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_R);
@@ -179,11 +179,14 @@ void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *s
   eps_plot_ticking(&pd->C1Axis, SW_AXISUNITSTY_RATIO, NULL);
 
   // Submit axis labels for colour key
-  for (l=0; pd->C1Axis.TickListStrings[l]!=NULL; l++)
-   {
-    CanvasTextItem *i;
-    YIELD_TEXTITEM(pd->C1Axis.TickListStrings[l]);
-   }
+  pd->C1Axis.FirstTextID = x->NTextItems;
+  if (pd->C1Axis.TickListStrings!=NULL)
+   for (l=0; pd->C1Axis.TickListStrings[l]!=NULL; l++)
+    {
+     CanvasTextItem *i;
+     YIELD_TEXTITEM(pd->C1Axis.TickListStrings[l]);
+    }
+  { CanvasTextItem *i; YIELD_TEXTITEM(pd->C1Axis.FinalAxisLabel); }
 
   // If we have three columns of data, consider drawing a colour scale bar
   if ((Ncol==3)&&(sg->ColKey==SW_ONOFF_ON))
@@ -661,7 +664,7 @@ int  eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
        fprintf(x->epsbuffer, "grestore\n");
 
 POST_BITMAP:
-      // Restore variables c1 in the user's variable space
+      // Restore variable c1 in the user's variable space
       if (CVar!=NULL) *CVar = CDummy;
 
       // Paint inner-facing scale

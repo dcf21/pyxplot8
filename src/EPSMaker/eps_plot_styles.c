@@ -51,7 +51,7 @@
 #include "eps_style.h"
 
 // Work out the default set of with words for a plot item
-void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char functions, int Fcounter, int Dcounter, unsigned char colour)
+void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char functions, int Ccounter, int LTcounter, int PTcounter, unsigned char colour)
  {
   int i,j;
 
@@ -60,22 +60,44 @@ void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char
   else
    {
     for (j=0; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break; // j now contains length of palette
-    i = (functions ? Fcounter : Dcounter) % j; // i is now the palette colour number to use
+    i = Ccounter % j; // i is now the palette colour number to use
     while (i<0) i+=j;
     if (settings_palette_current[i] > 0) { output->colour  = settings_palette_current[i]; output->USEcolour = 1; }
     else                                 { output->Col1234Space = settings_paletteS_current[i]; output->colour1 = settings_palette1_current[i]; output->colour2 = settings_palette2_current[i]; output->colour3 = settings_palette3_current[i]; output->colour4 = settings_palette4_current[i]; output->USEcolour1234 = 1; }
+    output->AUTOcolour = Ccounter+5;
    }
   output->linespoints    = (functions ? SW_STYLE_LINES : SW_STYLE_POINTS);
   output->USElinespoints = 1;
   output->fillcolour     = COLOUR_NULL;
   output->USEfillcolour  = 1;
-  output->linetype       = colour ? 1 : (functions ? Fcounter+1 : Dcounter+1);
-  output->pointtype      =              (functions ? Fcounter+1 : Dcounter+1);
-  output->USElinetype    = output->USEpointtype = 1;
+  output->linetype       = colour ? 1 : LTcounter+1;
+  output->pointtype      =              PTcounter+1;
+  output->USElinetype    = output->USEpointtype  = 1;
+  output->AUTOlinetype   = output->AUTOpointtype = 1;
   output->linewidth      = sg->LineWidth;
   output->pointlinewidth = sg->PointLineWidth;
   output->pointsize      = sg->PointSize;
   output->USElinewidth   = output->USEpointlinewidth = output->USEpointsize = 1;
+  return;
+ }
+
+void eps_withwords_default_counterinc(int *Ccounter, int *LTcounter, int *PTcounter, unsigned char colour, with_words *ww_final, settings_graph *sg)
+ {
+  int style = ww_final->linespoints;
+
+  if (ww_final->AUTOcolour && (style!=SW_STYLE_COLOURMAP) && (style!=SW_STYLE_CONTOURMAP)) { (*Ccounter)++; }
+
+  if (ww_final->AUTOlinetype && ((style==SW_STYLE_ARROWS_HEAD)||(style==SW_STYLE_ARROWS_NOHEAD)||(style==SW_STYLE_ARROWS_TWOHEAD)||(style==SW_STYLE_BOXES)||(style==SW_STYLE_FILLEDREGION)||(style==SW_STYLE_FSTEPS)||(style==SW_STYLE_HISTEPS)||(style==SW_STYLE_IMPULSES)||(style==SW_STYLE_LINES)||(style==SW_STYLE_LINESPOINTS)||(style==SW_STYLE_STEPS)||(style==SW_STYLE_SURFACE)||(style==SW_STYLE_WBOXES)||(style==SW_STYLE_XERRORBARS)||(style==SW_STYLE_XERRORRANGE)||(style==SW_STYLE_XYERRORBARS)||(style==SW_STYLE_XYERRORRANGE)||(style==SW_STYLE_XYZERRORBARS)||(style==SW_STYLE_XYZERRORRANGE)||(style==SW_STYLE_YERRORBARS)||(style==SW_STYLE_YERRORRANGE)||(style==SW_STYLE_YZERRORBARS)||(style==SW_STYLE_YZERRORRANGE)||(style==SW_STYLE_ZERRORBARS)||(style==SW_STYLE_ZERRORRANGE))) { (*LTcounter)++; }
+
+  if (ww_final->AUTOpointtype && ((style==SW_STYLE_LINESPOINTS)||(style==SW_STYLE_POINTS)||(style==SW_STYLE_STARS))) { (*PTcounter)++; }
+
+  if (style==SW_STYLE_CONTOURMAP)
+   {
+    int Ncontours = (sg->ContoursListLen>=0) ? sg->ContoursListLen : sg->ContoursN;
+    if (ww_final->AUTOcolour)   { (*Ccounter )+=Ncontours; }
+    if (ww_final->AUTOlinetype) { (*LTcounter)+=Ncontours; }
+   }
+
   return;
  }
 

@@ -77,7 +77,7 @@ void eps_point_RenderEPS(EPSComm *x)
   ypos =  x->current->ypos  * M_TO_PS;
 
   // Expand any numbered styles which may appear in the with words we are passed
-  eps_withwords_default(&ww_default, &x->current->settings, 0, 0, 0, 0);
+  eps_withwords_default(&ww_default, &x->current->settings, 0, 0, 0, 0, 0);
   with_words_merge(&ww, &x->current->with_data, &ww_default, NULL, NULL, NULL, 1);
 
   // Display point

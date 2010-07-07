@@ -36,6 +36,7 @@ typedef struct with_words {
  char  *STRlinetype, *STRlinewidth, *STRpointlinewidth, *STRpointsize, *STRpointtype; // Alternatives to the above, where expressions are evaluated per use, e.g. $4
  char  *STRcolour1, *STRcolour2, *STRcolour3, *STRcolour4, *STRfillcolour1, *STRfillcolour2, *STRfillcolour3, *STRfillcolour4;
  unsigned char USEcolour, USEfillcolour, USElinespoints, USElinetype, USElinewidth, USEpointlinewidth, USEpointsize, USEpointtype, USEstyle, USEcolour1234, USEfillcolour1234; // Set to 1 to indicate settings to be used
+ int    AUTOcolour, AUTOlinetype, AUTOpointtype;
  unsigned char malloced; // Indicates whether we need to free strings
  } with_words;
 
@@ -61,6 +62,9 @@ typedef struct settings_graph {
  unsigned char BoxFromAuto, BoxWidthAuto;
  value         BoxFrom, BoxWidth, Cmin[4], Cmax[4], ContoursUnit, KeyXOff, KeyYOff, OriginX, OriginY, TitleXOff, TitleYOff, Tmin, Tmax, width, XYview, YZview;
  char          title[FNAME_LENGTH], ColMapExpr1[FNAME_LENGTH], ColMapExpr2[FNAME_LENGTH], ColMapExpr3[FNAME_LENGTH], ColMapExpr4[FNAME_LENGTH], MaskExpr[FNAME_LENGTH];
+ char          c1label[FNAME_LENGTH], c1format[FNAME_LENGTH], c1formatset;
+ double        c1LabelRotate, c1TickLabelRotate;
+ int           c1TickLabelRotation;
  with_words    DataStyle, FuncStyle;
  } settings_graph;
 

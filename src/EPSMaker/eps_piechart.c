@@ -70,8 +70,9 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
   if (x->current->plotdata == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
 
   // Merge together with words to form a final set
-  eps_withwords_default(&ww_default, &x->current->settings, 1, 0, 0, settings_term_current.colour==SW_ONOFF_ON);
+  eps_withwords_default(&ww_default, &x->current->settings, 1, 0, 0, 0, settings_term_current.colour==SW_ONOFF_ON);
   with_words_merge(&pd->ww_final, &pd->ww, &x->current->settings.FuncStyle, &ww_default, NULL, NULL, 1);
+  pd->ww_final.linespoints = SW_STYLE_LINES; // In case FuncStyle is something bonkers like contourplot
 
   // Make raster on which to evaluate parametric functions
   ordinate_raster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
