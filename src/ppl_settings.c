@@ -1347,23 +1347,23 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
         out->style = x->style; out->USEstyle = 1;
        }
      }
-    if (x->STRcolour1       !=NULL) { out->STRcolour1 = x->STRcolour1; out->STRcolour2 = x->STRcolour2; out->STRcolour3 = x->STRcolour3; out->STRcolour4 = x->STRcolour4; out->Col1234Space = x->Col1234Space; out->USEcolour1234 = 0; out->USEcolour = 0; out->AUTOcolour = x->AUTOcolour; }
     if (x->USEcolour1234          ) { out->colour1 = x->colour1; out->colour2 = x->colour2; out->colour3 = x->colour3; out->colour4 = x->colour4; out->Col1234Space = x->Col1234Space; out->USEcolour1234 = 1; out->USEcolour = 0; out->STRcolour1 = out->STRcolour2 = out->STRcolour3 = out->STRcolour4 = NULL; out->AUTOcolour = x->AUTOcolour; }
     if (x->USEcolour              ) { out->colour = x->colour; out->USEcolour = 1; out->USEcolour1234 = 0; out->STRcolour1 = out->STRcolour2 = out->STRcolour3 = out->STRcolour4 = NULL; out->AUTOcolour = x->AUTOcolour; }
+    if (x->STRcolour1       !=NULL) { out->STRcolour1 = x->STRcolour1; out->STRcolour2 = x->STRcolour2; out->STRcolour3 = x->STRcolour3; out->STRcolour4 = x->STRcolour4; out->Col1234Space = x->Col1234Space; }
     if (x->STRfillcolour1   !=NULL) { out->STRfillcolour1 = x->STRfillcolour1; out->STRfillcolour2 = x->STRfillcolour2; out->STRfillcolour3 = x->STRfillcolour3; out->STRfillcolour4 = x->STRfillcolour4; out->FillCol1234Space = x->FillCol1234Space; out->USEfillcolour1234 = 0; out->USEfillcolour = 0; }
     if (x->USEfillcolour1234      ) { out->fillcolour1 = x->fillcolour1; out->fillcolour2 = x->fillcolour2; out->fillcolour3 = x->fillcolour3; out->fillcolour4 = x->fillcolour4; out->FillCol1234Space = x->FillCol1234Space; out->USEfillcolour1234 = 1; out->USEfillcolour = 0; out->STRfillcolour1 = out->STRfillcolour2 = out->STRfillcolour3 = out->STRfillcolour4 = NULL; }
     if (x->USEfillcolour          ) { out->fillcolour = x->fillcolour; out->USEfillcolour = 1; out->USEfillcolour1234 = 0; out->STRfillcolour1 = out->STRfillcolour2 = out->STRfillcolour3 = out->STRfillcolour4 = NULL; }
     if (x->USElinespoints         ) { out->linespoints = x->linespoints; out->USElinespoints = 1; }
-    if (x->STRlinetype      !=NULL) { out->STRlinetype = x->STRlinetype; out->USElinetype = 0; out->AUTOlinetype = x->AUTOlinetype; }
     if (x->USElinetype            ) { out->linetype = x->linetype; out->USElinetype = 1; out->STRlinetype = NULL; out->AUTOlinetype = x->AUTOlinetype; }
+    if (x->STRlinetype      !=NULL) { out->STRlinetype = x->STRlinetype; }
     if (x->STRlinewidth     !=NULL) { out->STRlinewidth = x->STRlinewidth; out->USElinewidth = 0; }
     if (x->USElinewidth           ) { out->linewidth = x->linewidth; out->USElinewidth = 1; out->STRlinewidth = NULL; }
     if (x->STRpointlinewidth!=NULL) { out->STRpointlinewidth = x->STRpointlinewidth; out->USEpointlinewidth = 0; }
     if (x->USEpointlinewidth      ) { out->pointlinewidth = x->pointlinewidth; out->USEpointlinewidth = 1; out->STRpointlinewidth = NULL; }
-    if (x->STRpointsize     !=NULL) { out->STRpointsize = x->STRpointsize; out->USEpointsize = 0; }
+    if (x->STRpointsize     !=NULL) { out->STRpointsize = x->STRpointsize; }
     if (x->USEpointsize           ) { out->pointsize = x->pointsize; out->USEpointsize = 1; out->STRpointsize = NULL; }
-    if (x->STRpointtype     !=NULL) { out->STRpointtype = x->STRpointtype; out->USEpointtype = 0; out->AUTOpointtype = x->AUTOpointtype; }
     if (x->USEpointtype           ) { out->pointtype = x->pointtype; out->USEpointtype = 1; out->STRpointtype = NULL; out->AUTOpointtype = x->AUTOpointtype; }
+    if (x->STRpointtype     !=NULL) { out->STRpointtype = x->STRpointtype; }
    }
   return;
  }

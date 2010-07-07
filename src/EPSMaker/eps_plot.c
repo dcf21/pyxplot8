@@ -167,15 +167,15 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
   if (ww->STRfillcolour3    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour3    = dbl; }
   if (ww->STRfillcolour2    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour2    = dbl; }
   if (ww->STRfillcolour1    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour1    = dbl; }
-  if (ww->STRcolour4        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour4        = dbl; }
-  if (ww->STRcolour3        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour3        = dbl; }
-  if (ww->STRcolour2        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour2        = dbl; }
-  if (ww->STRcolour1        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour1        = dbl; }
-  if (ww->STRpointtype      != NULL) { PROJ_INT ; ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; }
+  if (ww->STRcolour4        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour4        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
+  if (ww->STRcolour3        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour3        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
+  if (ww->STRcolour2        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour2        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
+  if (ww->STRcolour1        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour1        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
+  if (ww->STRpointtype      != NULL) { PROJ_INT ; ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; ww->AUTOpointtype = 0; }
   if (ww->STRpointsize      != NULL) { PROJ_DBL ; ww->USEpointsize      = 1; ww->pointsize      = dbl; }
   if (ww->STRpointlinewidth != NULL) { PROJ_DBL ; ww->USEpointlinewidth = 1; ww->pointlinewidth = dbl; }
   if (ww->STRlinewidth      != NULL) { PROJ_DBL ; ww->USElinewidth      = 1; ww->linewidth      = dbl; }
-  if (ww->STRlinetype       != NULL) { PROJ_INT ; ww->USElinetype       = 1; ww->linetype       = (int)dbl; }
+  if (ww->STRlinetype       != NULL) { PROJ_INT ; ww->USElinetype       = 1; ww->linetype       = (int)dbl; ww->AUTOlinetype  = 0; }
 
   return;
  }
@@ -188,6 +188,8 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
 int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues, int Ncolumns, int *NDataCols)
  {
   int i = Ncolumns-1;
+
+  if (ww->linespoints == SW_STYLE_CONTOURMAP) return 0; // Contourplot evaluate expressions in terms of c1
 
   if (ww->STRfillcolour4    != NULL) { WWCUID("fourth component of the fillcolour"); }
   if (ww->STRfillcolour3    != NULL) { WWCUID("third component of the fillcolour"); }

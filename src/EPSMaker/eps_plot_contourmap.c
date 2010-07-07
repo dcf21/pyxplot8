@@ -288,13 +288,14 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
   int            i, j, k, Ncol, face, xcell, ycell;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax, xpos, ypos;
+  double         col1=-1,col2=-1,col3=-1,col4=-1,fc1=-1,fc2=-1,fc3=-1,fc4=-1;
   unsigned char  CLog, CMinAuto, CMaxAuto, CRenorm, closepath;
   char          *errtext, c1name[]="c1";
   value         *CVar=NULL, CDummy;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
   Ncol = data->Ncolumns;
-  if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncol, NULL)) return 1;
+  // if (eps_plot_WithWordsCheckUsingItemsDimLess(&pd->ww_final, data->FirstEntries, Ncol, NULL)) return 1;
   if (!ThreeDim) { scale_x=width; scale_y=height; scale_z=1.0;    }
   else           { scale_x=width; scale_y=height; scale_z=zdepth; }
   blk = data->first;
@@ -424,14 +425,15 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     // Evaluate any expressions in style information for next contour
     for (i=0 ; ; i++)
      {
-      char          *expr[] = { pd->ww_final.STRlinetype,  pd->ww_final.STRlinewidth,  pd->ww_final.STRpointlinewidth,  pd->ww_final.STRpointsize,  pd->ww_final.STRpointtype,  pd->ww_final.STRcolour1   ,  pd->ww_final.STRcolour2   ,  pd->ww_final.STRcolour3   ,  pd->ww_final.STRcolour4   ,  pd->ww_final.STRfillcolour1   ,  pd->ww_final.STRfillcolour2   ,  pd->ww_final.STRfillcolour3   ,  pd->ww_final.STRfillcolour4   , NULL};
-      double        *outD[] = { NULL                    , &pd->ww_final.linewidth   , &pd->ww_final.pointlinewidth   , &pd->ww_final.pointsize   ,  NULL                     , &pd->ww_final.colour1      , &pd->ww_final.colour2      , &pd->ww_final.colour3      , &pd->ww_final.colour4      , &pd->ww_final.fillcolour1      , &pd->ww_final.fillcolour2      , &pd->ww_final.fillcolour3      , &pd->ww_final.fillcolour4      , NULL};
-      int           *outI[] = {&pd->ww_final.linetype   ,  NULL                     ,  NULL                          ,  NULL                     , &pd->ww_final.pointtype   ,  NULL                      ,  NULL                      ,  NULL                      ,  NULL                      ,  NULL                          ,  NULL                          ,  NULL                          ,  NULL                          , NULL};
-      unsigned char *flag[] = {&pd->ww_final.USElinetype, &pd->ww_final.USElinewidth, &pd->ww_final.USEpointlinewidth, &pd->ww_final.USEpointsize, &pd->ww_final.USEpointtype, &pd->ww_final.USEcolour1234, &pd->ww_final.USEcolour1234, &pd->ww_final.USEcolour1234, &pd->ww_final.USEcolour1234, &pd->ww_final.USEfillcolour1234, &pd->ww_final.USEfillcolour1234, &pd->ww_final.USEfillcolour1234, &pd->ww_final.USEfillcolour1234, NULL};
-      unsigned char  clip[] = {0,0,0,0,0,1,1,1,1,1,1,1,1,-1};
+      char          *expr [] = { pd->ww_final.STRlinetype ,  pd->ww_final.STRlinewidth ,  pd->ww_final.STRpointlinewidth ,  pd->ww_final.STRpointsize ,  pd->ww_final.STRpointtype ,  pd->ww_final.STRcolour1    ,  pd->ww_final.STRcolour2    ,  pd->ww_final.STRcolour3    ,  pd->ww_final.STRcolour4    ,  pd->ww_final.STRfillcolour1    ,  pd->ww_final.STRfillcolour2    ,  pd->ww_final.STRfillcolour3    ,  pd->ww_final.STRfillcolour4    , NULL};
+      double        *outD [] = { NULL                     , &pd->ww_final.linewidth    , &pd->ww_final.pointlinewidth    , &pd->ww_final.pointsize    ,  NULL                      , &col1                       , &col2                       , &col3                       , &col4                       , &fc1                            , &fc2                            , &fc3                            , &fc4                            , NULL};
+      int           *outI [] = {&pd->ww_final.linetype    ,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.pointtype    ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+      unsigned char *flagU[] = {&pd->ww_final.USElinetype , &pd->ww_final.USElinewidth , &pd->ww_final.USEpointlinewidth , &pd->ww_final.USEpointsize , &pd->ww_final.USEpointtype ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+      int           *flagA[] = {&pd->ww_final.AUTOlinetype,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.AUTOpointtype,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+      unsigned char  clip [] = {0,0,0,0,0,1,1,1,1,1,1,1,1,2};
       value outval; double dbl; int end=-1, errpos=-1;
 
-      if (flag[i]==NULL) break;
+      if (clip[i]>1) break;
       if (expr[i]==NULL) continue;
 
       ppl_EvaluateAlgebra(expr[i], &outval, 0, &end, 0, &errpos, errtext, 1);
@@ -445,8 +447,12 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
       if (clip[i]) { if (dbl<0.0) dbl=0.0; if (dbl>1.0) dbl=1.0; }
       if (outD[i]!=NULL) *outD[i] = dbl;
       if (outI[i]!=NULL) { if (dbl<INT_MIN) dbl=INT_MIN+1; if (dbl>INT_MAX) dbl=INT_MAX-1; *outI[i] = (int)dbl; }
-      *flag[i] = 1;
+      if (flagU[i]!=NULL) *flagU[i] = 1;
+      if (flagA[i]!=NULL) *flagA[i] = 0;
      }
+
+    if ((col1>=0.0)&&(col2>=0.0)&&(col3>=0.0)&&((pd->ww_final.    Col1234Space!=SW_COLSPACE_CMYK)||(col4>=0.0))) { pd->ww_final.colour1=col1; pd->ww_final.colour2=col2; pd->ww_final.colour3=col3; pd->ww_final.colour4=col4; pd->ww_final.USEcolour=0; pd->ww_final.USEcolour1234=1; pd->ww_final.AUTOcolour=0; }
+    if ((fc1 >=0.0)&&(fc2 >=0.0)&&(fc3 >=0.0)&&((pd->ww_final.FillCol1234Space!=SW_COLSPACE_CMYK)||(fc4 >=0.0))) { pd->ww_final.fillcolour1=fc1; pd->ww_final.fillcolour2=fc2; pd->ww_final.fillcolour3=fc3; pd->ww_final.fillcolour4=fc4; pd->ww_final.USEfillcolour=0; pd->ww_final.USEfillcolour1234=1; }
 
     // Work out style information for next contour
     eps_core_SetColour(x, &pd->ww_final, 1);
