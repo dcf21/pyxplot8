@@ -118,7 +118,7 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
       else
        {
         ThreeDimBuffer_linepenup(x);
-        ThreeDimBuffer_writeps(x, item->depth, item->linetype, item->linewidth, item->pointsize, item->colstr, item->psfrag);
+        ThreeDimBuffer_writeps(x, item->depth, item->linetype, item->linewidth, item->offset, item->pointsize, item->colstr, item->psfrag);
        }
      }
    }
@@ -127,7 +127,7 @@ int ThreeDimBuffer_Deactivate(EPSComm *x)
   return 0;
  }
 
-int ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth, double pointsize, char *colstr, char *psfrag)
+int ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth, double offset, double pointsize, char *colstr, char *psfrag)
  {
   ThreeDimBufferItem *item;
   char               *tempstr;
@@ -138,7 +138,7 @@ int ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth,
     colstr_old = colstr;
     strcpy(x->CurrentColour, colstr);
     eps_core_WritePSColour(x);
-    eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype, 0.0);
+    eps_core_SetLinewidth(x, linewidth * EPS_DEFAULT_LINEWIDTH, linetype, offset);
     fprintf(x->epsbuffer, "%s\n", psfrag);
    }
   else
@@ -150,6 +150,7 @@ int ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth,
     item->FlagLineSegment = item->FirstLineSegment = 0;
     item->linetype        = linetype;
     item->linewidth       = linewidth;
+    item->offset          = offset;
     item->pointsize       = pointsize;
     item->colstr          = colstr;
     item->psfrag          = tempstr;

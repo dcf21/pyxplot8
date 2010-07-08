@@ -27,7 +27,7 @@
 typedef struct ThreeDimBufferItem {
  unsigned char FlagLineSegment, FirstLineSegment;
  int           linetype;
- double        linewidth, pointsize;
+ double        linewidth, offset, pointsize;
  char         *colstr, *psfrag;
  double        depth, LineLength, x0,y0,x1,y1,x2,y2;
  long          LineSegmentID;
@@ -40,7 +40,7 @@ extern unsigned char ThreeDimBuffer_ACTIVE;
 void ThreeDimBuffer_Reset();
 int  ThreeDimBuffer_Activate(EPSComm *x);
 int  ThreeDimBuffer_Deactivate(EPSComm *x);
-int  ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth, double pointsize, char *colstr, char *psfrag);
+int  ThreeDimBuffer_writeps(EPSComm *x, double z, int linetype, double linewidth, double offset, double pointsize, char *colstr, char *psfrag);
 int  ThreeDimBuffer_linesegment(EPSComm *x, double z, int linetype, double linewidth, char *colstr, double x0, double y0, double x1, double y1, double x2, double y2, unsigned char FirstSegment, unsigned char broken, double LengthOffset);
 int  ThreeDimBuffer_linepenup(EPSComm *x);
 

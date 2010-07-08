@@ -26,7 +26,7 @@
 
 #include "eps_comm.h"
 
-void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double x2, const double y2, const double theta_a, const double theta_b, double *OutputWidth, const unsigned char PrintLabels);
+void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double *z1, const double x2, const double y2, const double *z2, const double theta_a, const double theta_b, double *OutputWidth, const unsigned char PrintLabels);
 void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth, int pass);
 
 #endif

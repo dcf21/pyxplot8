@@ -24,13 +24,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
+#include "ListTools/lt_memory.h"
+
+#include "ppl_error.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
 #include "eps_comm.h"
 #include "eps_core.h"
 #include "eps_arrow.h"
+#include "eps_plot_threedimbuff.h"
 #include "eps_settings.h"
 
 void eps_arrow_RenderEPS(EPSComm *x)
@@ -52,7 +57,7 @@ void eps_arrow_RenderEPS(EPSComm *x)
   with_words_merge(&ww, &x->current->with_data, NULL, NULL, NULL, NULL, 1);
 
   // Call primitive routine
-  eps_primitive_arrow(x, x->current->ArrowType, x1, y1, x2, y2, &ww);
+  eps_primitive_arrow(x, x->current->ArrowType, x1, y1, NULL, x2, y2, NULL, &ww);
 
   // Final newline at end of canvas item
   fprintf(x->epsbuffer, "\n");
@@ -60,13 +65,21 @@ void eps_arrow_RenderEPS(EPSComm *x)
  }
 
 // Primitive routine for drawing arrow, suitable for use elsewhere in the EPS library
-void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double x2, double y2, with_words *with_data)
+void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, const double *z1, double x2, double y2, const double *z2, with_words *with_data)
  {
-  int    lt;
-  double lw, lw_scale, x3, y3, x4, y4, x5, y5, xstart, ystart, xend, yend, direction;
+  int           lt;
+  double        lw, lw_scale, x3, y3, x4, y4, x5, y5, xstart, ystart, xend, yend, direction;
+  unsigned char ThreeDim = (z1!=NULL)&&(z2!=NULL);
+  char         *last_colstr=NULL;
 
   // Set colour of arrow
-  eps_core_SetColour(x, with_data, 1);
+  eps_core_SetColour(x, with_data, !ThreeDim);
+  if (ThreeDim)
+  {
+   last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1);
+   if (last_colstr==NULL) return;
+   strcpy(last_colstr, x->CurrentColour);
+  }
 
   // Set linewidth and linetype
   if (with_data->USElinewidth) lw_scale = with_data->linewidth;
@@ -76,7 +89,7 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
   if (with_data->USElinetype)  lt = with_data->linetype;
   else                         lt = 1;
 
-  IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0);
+  if (!ThreeDim) { IF_NOT_INVISIBLE eps_core_SetLinewidth(x, lw, lt, 0.0); }
 
   // Factor two ends of arrow into EPS file's bounding box
   IF_NOT_INVISIBLE
@@ -102,7 +115,9 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
 
     IF_NOT_INVISIBLE
      {
-      fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x1,y1,x5,y5);
+      sprintf(temp_err_string,"newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x1,y1,x5,y5);
+      if (!ThreeDim) fprintf(x->epsbuffer, "%s", temp_err_string);
+      else           ThreeDimBuffer_writeps(x, *z1, lt, lw, 0.0, 1, last_colstr, temp_err_string);
       eps_core_PlotBoundingBox(x, x3, y3, lw);
       eps_core_PlotBoundingBox(x, x5, y5, lw);
      }
@@ -126,7 +141,9 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
 
     IF_NOT_INVISIBLE
      {
-      fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
+      sprintf(temp_err_string,"newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
+      if (!ThreeDim) fprintf(x->epsbuffer, "%s", temp_err_string);
+      else           ThreeDimBuffer_writeps(x, *z2, lt, lw, 0.0, 1, last_colstr, temp_err_string);
       eps_core_PlotBoundingBox(x, x3, y3, lw);
       eps_core_PlotBoundingBox(x, x5, y5, lw);
      }
@@ -138,7 +155,24 @@ void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double
    }
 
   // Draw stalk of arrow
-  IF_NOT_INVISIBLE fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nstroke\n", xstart, ystart, xend, yend);
+  IF_NOT_INVISIBLE
+   {
+    if (!ThreeDim) { fprintf(x->epsbuffer, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nstroke\n", xstart, ystart, xend, yend); }
+    else
+     {
+      int i;
+      const int Nsteps=100;
+      double path=0.0, element=hypot(xend-xstart,yend-ystart)/Nsteps;
+      for (i=0;i<Nsteps;i++)
+       {
+        sprintf(temp_err_string,"newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\nstroke\n",
+                xstart+(xend-xstart)/Nsteps* i   , ystart+(yend-ystart)/Nsteps* i   ,
+                xstart+(xend-xstart)/Nsteps*(i+1), ystart+(yend-ystart)/Nsteps*(i+1)     );
+        ThreeDimBuffer_writeps(x, *z1 + (*z2-*z1)/Nsteps*i, lt, lw, path, 1, last_colstr, temp_err_string);
+        path += element;
+       }
+     }
+   }
   return;
  }
 

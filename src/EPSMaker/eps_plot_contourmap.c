@@ -154,7 +154,7 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
                                              :(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))));
     else                        v.real = sg->ContoursList[j];
 
-    sprintf(UnitString,"%s",ppl_units_NumericDisplay(&v,0,SW_DISPLAY_L,-1));
+    sprintf(UnitString,"$%s$",ppl_units_NumericDisplay(&v,0,SW_DISPLAY_L,-1));
     YIELD_TEXTITEM(UnitString);
    }
 

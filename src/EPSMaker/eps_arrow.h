@@ -27,7 +27,7 @@
 #include "eps_comm.h"
 
 void eps_arrow_RenderEPS(EPSComm *x);
-void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, double x2, double y2, with_words *with_data);
+void eps_primitive_arrow(EPSComm *x, int ArrowType, double x1, double y1, const double *z1, double x2, double y2, const double *z2, with_words *with_data);
 
 #endif
 

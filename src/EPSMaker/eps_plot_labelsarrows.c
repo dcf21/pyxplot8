@@ -95,7 +95,7 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
    {
     settings_axis *xa0, *ya0, *za0=NULL, *xa1, *ya1, *za1=NULL;
     double         xin0, yin0, zin0=0.5, xin1, yin1, zin1=0.5;
-    double         xpos, ypos, xpos0, ypos0, xpos1, ypos1, depth, xap, yap, zap, theta_x, theta_y, theta_z;
+    double         xpos, ypos, xpos0, ypos0, xpos1, ypos1, depth0, depth1, xap, yap, zap, theta_x, theta_y, theta_z;
     int            status=0, xrn0, yrn0, zrn0, xrn1, yrn1, zrn1;
     sprintf(ItemName, "arrow %d on plot %d", ai->id, x->current->id);
     FETCH_AXES(ai->system_x0, xa0, x->current->XAxes, ai->axis_x0, ai->x0, xin0);
@@ -115,8 +115,8 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        if ((xa0==xa1)&&(xrn0!=xrn1)) continue;
        if ((ya0==ya1)&&(yrn0!=yrn1)) continue;
        if ((za0==za1)&&(zrn0!=zrn1)) continue;
-       eps_plot_GetPosition(&xpos0, &ypos0, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
-       eps_plot_GetPosition(&xpos1, &ypos1, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
+       eps_plot_GetPosition(&xpos0, &ypos0, &depth0, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
+       eps_plot_GetPosition(&xpos1, &ypos1, &depth1, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
        xpos=xpos0; ypos=ypos0;
        ADD_PAGE_COORDINATES(ai->system_x0, ai->x0, theta_x);
        ADD_PAGE_COORDINATES(ai->system_y0, ai->y0, theta_y);
@@ -127,7 +127,8 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        xpos1=xpos; ypos1=ypos;
        if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(ai->system_z1, ai->z1, theta_z); }
        with_words_merge(&ww, &ai->style, &ww_default, NULL, NULL, NULL, 1);
-       if ((gsl_finite(xpos0))&&(gsl_finite(ypos0))&&(gsl_finite(xpos1))&&(gsl_finite(ypos1))) eps_primitive_arrow(x, ai->arrow_style, xpos0, ypos0, xpos1, ypos1, &ww);
+       if ((gsl_finite(xpos0))&&(gsl_finite(ypos0))&&(gsl_finite(xpos1))&&(gsl_finite(ypos1)))
+         eps_primitive_arrow(x, ai->arrow_style, xpos0, ypos0, x->current->ThreeDim?&depth0:NULL, xpos1, ypos1, x->current->ThreeDim?&depth1:NULL, &ww);
       }
    }
 

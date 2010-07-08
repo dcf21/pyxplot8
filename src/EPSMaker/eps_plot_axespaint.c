@@ -52,7 +52,7 @@ void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
   return;
  }
 
-void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double x2, const double y2, const double theta_a, const double theta_b, double *OutputWidth, const unsigned char PrintLabels)
+void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double *z1, const double x2, const double y2, const double *z2, const double theta_a, const double theta_b, double *OutputWidth, const unsigned char PrintLabels)
  {
   int    i, l, m;
   double TickMaxHeight = 0.0, height, width, theta_axis;
@@ -65,10 +65,10 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
   // Draw line of axis
   IF_NOT_INVISIBLE
    {
-    if      (a->ArrowType == SW_AXISDISP_NOARR) eps_primitive_arrow(x, SW_ARROWTYPE_NOHEAD, x1, y1, x2, y2, ww);
-    else if (a->ArrowType == SW_AXISDISP_ARROW) eps_primitive_arrow(x, SW_ARROWTYPE_HEAD  , x1, y1, x2, y2, ww);
-    else if (a->ArrowType == SW_AXISDISP_TWOAR) eps_primitive_arrow(x, SW_ARROWTYPE_TWOWAY, x1, y1, x2, y2, ww);
-    else if (a->ArrowType == SW_AXISDISP_BACKA) eps_primitive_arrow(x, SW_ARROWTYPE_HEAD  , x2, y2, x1, y1, ww);
+    if      (a->ArrowType == SW_AXISDISP_NOARR) eps_primitive_arrow(x, SW_ARROWTYPE_NOHEAD, x1, y1, z1, x2, y2, z2, ww);
+    else if (a->ArrowType == SW_AXISDISP_ARROW) eps_primitive_arrow(x, SW_ARROWTYPE_HEAD  , x1, y1, z1, x2, y2, z2, ww);
+    else if (a->ArrowType == SW_AXISDISP_TWOAR) eps_primitive_arrow(x, SW_ARROWTYPE_TWOWAY, x1, y1, z1, x2, y2, z2, ww);
+    else if (a->ArrowType == SW_AXISDISP_BACKA) eps_primitive_arrow(x, SW_ARROWTYPE_HEAD  , x2, y2, z2, x1, y1, z1, ww);
 
     theta_axis = atan2(x2-x1,y2-y1);
     if (!gsl_finite(theta_axis)) theta_axis=0.0;
@@ -325,7 +325,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
            settings_axis *PerpAxisZ = &(x->current->ZAxes[1]);
            unsigned char  LastX, LastY, LastZ, DoneX, DoneY, DoneZ;
            int            xrn, yrn, zrn;
-           double         pos[3], xpos1, ypos1, xpos2, ypos2, dummy;
+           double         pos[3], xpos1, ypos1, zpos1, xpos2, ypos2, zpos2, dummy;
 
            for (DoneX=LastX=0,xrn=0; !LastX; xrn++)
             {
@@ -352,22 +352,19 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
              if  (!gsl_finite(pos[2])) continue;
 
            pos[j] = 0.0;
-           if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos1,&ypos1,&dummy); }
+           if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos1,&ypos1,&zpos1); }
            else                      { xpos1=origin_x+pos[0]*width; ypos1=origin_y+pos[1]*height; }
            pos[j] = 1.0;
-           if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos2,&ypos2,&dummy); }
+           if (x->current->ThreeDim) { eps_plot_ThreeDimProject(pos[0],pos[1],pos[2],&x->current->settings,origin_x,origin_y,width,height,zdepth,&xpos2,&ypos2,&zpos2); }
            else                      { xpos2=origin_x+pos[0]*width; ypos2=origin_y+pos[1]*height; }
 
-           if (pass==1)
+           if ((pass==0)&&(x->current->ThreeDim))
             {
-             if (x->current->ThreeDim)
-              {
-               double        b  = atan2((xpos2+xpos1)/2-xc , (ypos2+ypos1)/2-yc) - theta[j];
-               unsigned char Lr = sin(b)<0;
-               eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1, ypos1, xpos2, ypos2, theta_a+M_PI*((j==0)?(pos[1]<=0.5):(pos[0]<=0.5)), theta_b+M_PI*((j==2)?(pos[1]<=0.5):(pos[2]<=0.5)), &dummy, 1);
-              } else {
-               eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, xpos2, ypos2, theta_a, theta_b, &dummy, 1);
-              }
+             double        b  = atan2((xpos2+xpos1)/2-xc , (ypos2+ypos1)/2-yc) - theta[j];
+             unsigned char Lr = sin(b)<0;
+             eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1, ypos1, &zpos1, xpos2, ypos2, &zpos2, theta_a+M_PI*((j==0)?(pos[1]<=0.5):(pos[0]<=0.5)), theta_b+M_PI*((j==2)?(pos[1]<=0.5):(pos[2]<=0.5)), &dummy, 1);
+            } else if ((pass==1)&&(!x->current->ThreeDim)) {
+             eps_plot_axispaint(x, &ww, axes+i, j, pos[j==0], (j!=0) ^ (pos[j==0]>0.999), xpos1, ypos1, NULL, xpos2, ypos2, NULL, theta_a, theta_b, &dummy, 1);
             }
            }}} // Loop over xrn, yrn and zrn
           }
@@ -386,7 +383,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
                unsigned char Lr = sin(b)<0;
                unsigned char label = ((k==axes[i].topbottom) || (axes[i].MirrorType == SW_AXISMIRROR_FULLMIRROR));
                double        IncGap, ang;
-               eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, label);
+               eps_plot_axispaint(x, &ww, axes+i, j, GSL_NAN, Lr, xpos1[k], ypos1[k], NULL, xpos2[k], ypos2[k], NULL, theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, label);
                ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
                xpos1[k] += IncGap * sin(ang);
                ypos1[k] += IncGap * cos(ang);
@@ -406,7 +403,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
         double        b  = atan2((xpos2[k]+xpos1[k])/2-xc , (ypos2[k]+ypos1[k])/2-yc) - theta[j];
         unsigned char Lr = sin(b)<0;
         double        IncGap, ang;
-        eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, Lr, xpos1[k], ypos1[k], xpos2[k], ypos2[k], theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, 0);
+        eps_plot_axispaint(x, &ww, axes+FirstAutoMirror[k], j, GSL_NAN, Lr, xpos1[k], ypos1[k], NULL, xpos2[k], ypos2[k], NULL, theta_a+(side_a[k]?0:M_PI), theta_b+(side_b[k]?0:M_PI), &IncGap, 0);
         ang = theta[j] + M_PI/2 * ((Lr==0)*2-1);
         xpos1[k] += IncGap * sin(ang);
         ypos1[k] += IncGap * cos(ang);

@@ -767,11 +767,11 @@ void eps_plot_RenderEPS(EPSComm *x)
   // Render gridlines
   eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);
 
-  // Render axes (back)
-  eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth, 0);
-
   // Activate three-dimensional buffer if graph is 3D
   if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);
+
+  // Render axes (back)
+  eps_plot_axespaint(x, origin_x, origin_y, width, height, zdepth, 0);
 
   // Render each dataset in turn (except colourmaps, which we've already rendered)
   for (pd = x->current->plotitems, i=0; pd != NULL; pd=pd->next, i++) // loop over all datasets

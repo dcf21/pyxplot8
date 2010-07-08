@@ -670,7 +670,7 @@ POST_BITMAP:
       // Paint inner-facing scale
       theta = ((sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_B))?M_PI:(M_PI/2);
       if (Lr) theta=theta+M_PI;
-      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, Lr, x1, y1, x2, y2, theta, theta, &dummy, 0);
+      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, Lr, x1, y1, NULL, x2, y2, NULL, theta, theta, &dummy, 0);
 
       // Paint lines at top/bottom of scale
       eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
@@ -678,7 +678,7 @@ POST_BITMAP:
       fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", x2, y2, x4, y4);
 
       // Paint outer-facing scale
-      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, !Lr, x3, y3, x4, y4, theta+M_PI, theta+M_PI, &dummy, 1);
+      eps_plot_axispaint(x, &ww, &pd->C1Axis, 0, GSL_NAN, !Lr, x3, y3, NULL, x4, y4, NULL, theta+M_PI, theta+M_PI, &dummy, 1);
      }
     pd=pd->next; k++;
    }

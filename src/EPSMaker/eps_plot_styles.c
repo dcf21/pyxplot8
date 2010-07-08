@@ -524,7 +524,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             sprintf(epsbuff, "/angle { 40 } def %.2f %.2f st%d", xpos, ypos, pt+1);
             eps_core_BoundingBox(x, xpos, ypos, 2 * final_pointsize * eps_StarSize[pt] * EPS_DEFAULT_PS);
            }
-          ThreeDimBuffer_writeps(x, depth, 1, pd->ww_final.pointlinewidth, final_pointsize, last_colstr, epsbuff);
+          ThreeDimBuffer_writeps(x, depth, 1, pd->ww_final.pointlinewidth, 0.0, final_pointsize, last_colstr, epsbuff);
          }
 
         // label point if instructed to do so
@@ -701,7 +701,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           x4 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
           y4 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
           sprintf(epsbuff, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
-          ThreeDimBuffer_writeps(x, depth, 1, lw, 1.0, last_colstr, epsbuff);
+          ThreeDimBuffer_writeps(x, depth, 1, lw, 0.0, 1.0, last_colstr, epsbuff);
          }
 
         // label point if instructed to do so
@@ -881,7 +881,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             x4 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
             y4 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
             sprintf(epsbuff, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
-            ThreeDimBuffer_writeps(x, depth, 1, lw, 1.0, last_colstr, epsbuff);
+            ThreeDimBuffer_writeps(x, depth, 1, lw, 0.0, 1.0, last_colstr, epsbuff);
            }
 
           if (((style == SW_STYLE_ARROWS_TWOHEAD) || (style == SW_STYLE_ARROWS_HEAD)) && (xap2>=0.0)&&(xap2<=1.0)&&(yap2>=0.0)&&(yap2<=1.0)&&((!ThreeDim)||((zap2>=0.0)&&(zap2<=1.0))))
@@ -894,7 +894,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             x4 = x2 - EPS_ARROW_HEADSIZE * lw * sin(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
             y4 = y2 - EPS_ARROW_HEADSIZE * lw * cos(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
             sprintf(epsbuff, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
-            ThreeDimBuffer_writeps(x, depth2, 1, lw, 1.0, last_colstr, epsbuff);
+            ThreeDimBuffer_writeps(x, depth2, 1, lw, 0.0, 1.0, last_colstr, epsbuff);
            }
          }
 
@@ -1009,7 +1009,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             depth = (z1+z2+z3+z4)/4.0;
             if (fill) depth += 1e-6*fabs(depth);
             sprintf(epsbuff, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath %s\n", x1,y1,x2,y2,x3,y3,x4,y4,fill?"eofill":"stroke");
-            ThreeDimBuffer_writeps(x, depth, pd->ww_final.linetype, pd->ww_final.linewidth, 1, last_colstr, epsbuff);
+            ThreeDimBuffer_writeps(x, depth, pd->ww_final.linetype, pd->ww_final.linewidth, 0.0, 1, last_colstr, epsbuff);
            }
          }
      }
@@ -1084,7 +1084,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
       eps_core_BoundingBox(x, xpos-ps, ypos-ps*sgn, pd->ww_final.linewidth);
       eps_core_BoundingBox(x, xpos+ps, ypos-ps*sgn, pd->ww_final.linewidth);
       EPS_ARROW_HEADSIZE /=2;
-      eps_primitive_arrow(x, SW_ARROWTYPE_HEAD, xpos, ypos-ps*sgn, xpos, ypos+ps*sgn, &pd->ww_final);
+      eps_primitive_arrow(x, SW_ARROWTYPE_HEAD, xpos, ypos-ps*sgn, NULL, xpos, ypos+ps*sgn, NULL, &pd->ww_final);
       EPS_ARROW_HEADSIZE = eah_old;
      }
    }
@@ -1097,7 +1097,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
     else                                     ArrowStyle = SW_ARROWTYPE_HEAD;
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, pd->ww_final.linetype, 0);
-    IF_NOT_INVISIBLE eps_primitive_arrow(x, ArrowStyle, xpos-scale*0.60/2, ypos, xpos+scale*0.60/2, ypos, &pd->ww_final);
+    IF_NOT_INVISIBLE eps_primitive_arrow(x, ArrowStyle, xpos-scale*0.60/2, ypos, NULL, xpos+scale*0.60/2, ypos, NULL, &pd->ww_final);
    }
 
   else if ((style == SW_STYLE_FILLEDREGION) || (style == SW_STYLE_YERRORSHADED) || (style == SW_STYLE_COLOURMAP))
