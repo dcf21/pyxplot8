@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "ListTools/lt_memory.h"
+
 #include "ppl_canvasdraw.h"
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
@@ -35,6 +37,7 @@
 #include "eps_core.h"
 #include "eps_plot_axespaint.h"
 #include "eps_plot_canvas.h"
+#include "eps_plot_threedimbuff.h"
 #include "eps_settings.h"
 
 void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
@@ -54,13 +57,23 @@ void eps_plot_LabelAlignment(double theta_pinpoint, int *HALIGN, int *VALIGN)
 
 void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int xyz, const double CP2, const unsigned char Lr, const double x1, const double y1, const double *z1, const double x2, const double y2, const double *z2, const double theta_a, const double theta_b, double *OutputWidth, const unsigned char PrintLabels)
  {
-  int    i, l, m;
+  int    i, l, m, lt;
   double TickMaxHeight = 0.0, height, width, theta_axis;
   int    HALIGN, VALIGN, HALIGN_THIS, VALIGN_THIS;
   double theta, theta_pinpoint; // clockwise rotation
+  double lw, lw_scale;
+  char  *last_colstr=NULL;
 
   x->LaTeXpageno = a->FirstTextID;
   *OutputWidth = 0.0;
+
+  // Set linewidth and linetype
+  if (ww->USElinewidth) lw_scale = ww->linewidth;
+  else                  lw_scale = x->current->settings.LineWidth;
+  lw = EPS_DEFAULT_LINEWIDTH * lw_scale;
+
+  if (ww->USElinetype)  lt = ww->linetype;
+  else                  lt = 1;
 
   // Draw line of axis
   IF_NOT_INVISIBLE
@@ -147,7 +160,17 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
             // Stroke the tick, unless it is at the end of an axis with an arrowhead
             if (!( ((TLP[l]<1e-3)&&((a->ArrowType == SW_AXISDISP_BACKA)||(a->ArrowType == SW_AXISDISP_TWOAR))) || ((TLP[l]>0.999)&&((a->ArrowType == SW_AXISDISP_ARROW)||(a->ArrowType == SW_AXISDISP_TWOAR))) ))
              {
-              fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
+              if (z1==NULL) fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
+              else
+               {
+                if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1);
+                if (last_colstr!=NULL)
+                 {
+                  strcpy(last_colstr, x->CurrentColour);
+                  sprintf(temp_err_string, "newpath %.2f %.2f moveto %.2f %.2f lineto stroke\n", tic_x2, tic_y2, tic_x3, tic_y3);
+                  ThreeDimBuffer_writeps(x, *z1 + (*z2-*z1)*TLP[l], lt, lw, 0.0, 1, last_colstr, temp_err_string);
+                 }
+               }
               eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
               eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
              }
@@ -165,7 +188,21 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
 
             IF_NOT_INVISIBLE
              {
-              canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN_THIS, VALIGN_THIS, x->CurrentColour, x->current->settings.FontSize, theta, &width, &height);
+              char *text=NULL;
+              canvas_EPSRenderTextItem(x, &text, pageno, xlab, ylab, HALIGN_THIS, VALIGN_THIS, x->CurrentColour, x->current->settings.FontSize, theta, &width, &height);
+              if (text!=NULL)
+               {
+                if (z1==NULL) fprintf(x->epsbuffer, "%s", text);
+                else
+                 {
+                  if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1);
+                  if (last_colstr!=NULL)
+                   {
+                    strcpy(last_colstr, x->CurrentColour);
+                    ThreeDimBuffer_writeps(x, *z1 + (*z2-*z1)*TLP[l], lt, lw, 0.0, 1, last_colstr, text);
+                   }
+                 }
+               }
               height = height*fabs(cos(theta_pinpoint)) + width*fabs(sin(theta_pinpoint));
               if (height > TickMaxHeight) TickMaxHeight = height;
              }
@@ -192,14 +229,28 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
 
       IF_NOT_INVISIBLE
        {
+        char *text=NULL;
         double theta_text = theta + M_PI/2 - theta_axis;
         theta_text = fmod(theta_text , 2*M_PI);
         if (theta_text < -M_PI  ) theta_text += 2*M_PI;
         if (theta_text >  M_PI  ) theta_text -= 2*M_PI;
         if (theta_text >  M_PI/2) theta_text -=   M_PI;
         if (theta_text < -M_PI/2) theta_text +=   M_PI;
-        canvas_EPSRenderTextItem(x, pageno, xlab, ylab, HALIGN, VALIGN, x->CurrentColour, x->current->settings.FontSize, theta_text, &width, &height);
+        canvas_EPSRenderTextItem(x, &text, pageno, xlab, ylab, HALIGN, VALIGN, x->CurrentColour, x->current->settings.FontSize, theta_text, &width, &height);
         *OutputWidth += (EPS_AXES_TEXTGAP * M_TO_PS + height*fabs(cos(theta_pinpoint)) + width*fabs(sin(theta_pinpoint)) ); // Allow gap after label
+        if (text!=NULL)
+         {
+          if (z1==NULL) fprintf(x->epsbuffer, "%s", text);
+          else
+           {
+            if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1);
+            if (last_colstr!=NULL)
+             {
+              strcpy(last_colstr, x->CurrentColour);
+              ThreeDimBuffer_writeps(x, (*z2+*z1)/2, lt, lw, 0.0, 1, last_colstr, text);
+             }
+           }
+         }
        }
      }
 

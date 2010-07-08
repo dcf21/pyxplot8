@@ -530,10 +530,13 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++,
+          char *text=NULL;
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
+          canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++,
              xpos/M_TO_PS - (x->current->settings.TextHAlign - SW_HALIGN_CENT) * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
              ypos/M_TO_PS + (x->current->settings.TextVAlign - SW_VALIGN_CENT) * final_pointsize * eps_PointSize[pt] * EPS_DEFAULT_PS / M_TO_PS * 1.1,
              x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
          }
        }
       blk=blk->next;
@@ -613,9 +616,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
+          char *text=NULL;
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
           if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
          }
        }
       blk=blk->next;
@@ -651,9 +657,12 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           // label point if instructed to do so
           if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
            {
+            char *text=NULL;
+            if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
             eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
             if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
-            canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+            if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
            }
          }
         blk=blk->next;
@@ -707,7 +716,10 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          char *text=NULL;
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
+          canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
          }
        }
       blk=blk->next;
@@ -901,7 +913,10 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         // label point if instructed to do so
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
-          canvas_EPSRenderTextItem(x, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          char *text=NULL;
+          if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
+          canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
          }
        }
       blk=blk->next;

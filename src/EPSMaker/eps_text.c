@@ -86,7 +86,7 @@ void eps_text_RenderEPS(EPSComm *x)
   xgap2 = xgap*cos(x->current->rotation) - ygap*sin(x->current->rotation);
   ygap2 = xgap*sin(x->current->rotation) + ygap*cos(x->current->rotation);
 
-  canvas_EPSRenderTextItem(x, pageno, x->current->xpos + xgap2, x->current->ypos + ygap2,
+  canvas_EPSRenderTextItem(x, NULL, pageno, x->current->xpos + xgap2, x->current->ypos + ygap2,
       x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, x->current->rotation, NULL, NULL);
 
   // Final newline at end of canvas item

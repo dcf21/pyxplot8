@@ -765,16 +765,24 @@ void canvas_EPSWrite(EPSComm *x)
  }
 
 // Write a text item out from dvi buffer
-void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, int halign, int valign, char *colstr, double fontsize, double rotate, double *width, double *height)
+void canvas_EPSRenderTextItem(EPSComm *x, char **strout, int pageno, double xpos, double ypos, int halign, int valign, char *colstr, double fontsize, double rotate, double *width, double *height)
  {
   postscriptPage *dviPage;
   ListIterator *ListIter;
-  char *cptr;
+  char *cptr, *out;
+  static char *buffer=NULL;
+  const long   BUFLEN=131072;
+  long         bufpos=0;
   double bb_left, bb_right, bb_top, bb_bottom, xanchor, yanchor;
   double ab_left, ab_right, ab_top, ab_bottom; // The align box is different from the bounding box in that it gives the baseline height of the lowest line of text and the cap height of the highest line of text
 
   // If colstr is blank, we are painting with null ink
   if (colstr[0]=='\0') return;
+
+  // Write output to text buffer initially
+  if (buffer==NULL) buffer = lt_malloc_incontext(BUFLEN,0);
+  if (buffer==NULL) return;
+  out=buffer;
 
   if (x->dvi == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Attempting to display a text item before latex has generated it"); return; }
 
@@ -816,11 +824,11 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
 
 
   // Perform translation such that postscript text appears in the right place on the page
-  fprintf(x->epsbuffer, "gsave\n");
-  fprintf(x->epsbuffer, "%.2f %.2f translate\n", xpos * M_TO_PS, ypos * M_TO_PS);
-  fprintf(x->epsbuffer, "%.2f rotate\n", rotate * 180 / M_PI);
-  fprintf(x->epsbuffer, "%f %f scale\n", fontsize, fontsize);
-  fprintf(x->epsbuffer, "%.2f %.2f translate\n", -xanchor, -yanchor);
+  snprintf(out+bufpos, BUFLEN-bufpos, "gsave\n"); bufpos+=strlen(out+bufpos);
+  snprintf(out+bufpos, BUFLEN-bufpos, "%.2f %.2f translate\n", xpos * M_TO_PS, ypos * M_TO_PS); bufpos+=strlen(out+bufpos);
+  snprintf(out+bufpos, BUFLEN-bufpos, "%.2f rotate\n", rotate * 180 / M_PI); bufpos+=strlen(out+bufpos);
+  snprintf(out+bufpos, BUFLEN-bufpos, "%f %f scale\n", fontsize, fontsize); bufpos+=strlen(out+bufpos);
+  snprintf(out+bufpos, BUFLEN-bufpos, "%.2f %.2f translate\n", -xanchor, -yanchor); bufpos+=strlen(out+bufpos);
 
   // Copy postscript description of page out of dvi buffer
   ListIter = ListIterateInit(dviPage->text);
@@ -829,15 +837,20 @@ void canvas_EPSRenderTextItem(EPSComm *x, int pageno, double xpos, double ypos, 
     cptr = (char *)ListIter->data;
     while (*cptr!='\0')
      {
-      if (*cptr!='\x01') fprintf(x->epsbuffer, "%c", *cptr);
-      else               fprintf(x->epsbuffer, "%s", colstr); // ASCII x01 is a magic code to tell us to revert to default colour
+      if (*cptr!='\x01') snprintf(out+bufpos, BUFLEN-bufpos, "%c", *cptr);
+      else               snprintf(out+bufpos, BUFLEN-bufpos, "%s", colstr); // ASCII x01 is a magic code to tell us to revert to default colour
+      bufpos+=strlen(out+bufpos);
       cptr++;
      }
     ListIter = ListIterate(ListIter, NULL);
    }
 
   // Undo translation and we're finished
-  fprintf(x->epsbuffer, "grestore\n");
+  snprintf(out+bufpos, BUFLEN-bufpos, "grestore\n"); bufpos+=strlen(out+bufpos);
+
+  // Either return string, or write output to file
+  if (strout==NULL) fprintf(x->epsbuffer, "%s", buffer);
+  else              *strout=buffer;
   return;
  }
 

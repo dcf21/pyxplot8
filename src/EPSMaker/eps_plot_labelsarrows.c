@@ -40,6 +40,7 @@
 #include "eps_plot_canvas.h"
 #include "eps_plot_labelsarrows.h"
 #include "eps_plot_legend.h"
+#include "eps_plot_threedimbuff.h"
 #include "eps_settings.h"
 
 void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
@@ -167,9 +168,18 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        xgap2 = xgap*cos(li->rotation) - ygap*sin(li->rotation);
        ygap2 = xgap*sin(li->rotation) + ygap*cos(li->rotation);
        with_words_merge(&ww, &li->style, &ww_default, NULL, NULL, NULL, 1);
-       eps_core_SetColour(x, &ww, 1);
-       IF_NOT_INVISIBLE if ((gsl_finite(xpos))&&(gsl_finite(ypos)))
-           canvas_EPSRenderTextItem(x, pageno, xpos/M_TO_PS+xgap2, ypos/M_TO_PS+ygap2, hal, val, x->CurrentColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
+       eps_core_SetColour(x, &ww, 0);
+       IF_NOT_INVISIBLE if ((gsl_finite(xpos))&&(gsl_finite(ypos))&&(gsl_finite(depth)))
+        {
+         char *colstr=NULL, *text=NULL;
+         colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1);
+         if (colstr!=NULL)
+          {
+           strcpy(colstr, x->CurrentColour);
+           canvas_EPSRenderTextItem(x, &text, pageno, xpos/M_TO_PS+xgap2, ypos/M_TO_PS+ygap2, hal, val, x->CurrentColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
+           if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, colstr, text);
+          }
+        }
       }
      pageno++;
     }

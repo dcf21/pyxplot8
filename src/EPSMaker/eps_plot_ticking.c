@@ -241,27 +241,30 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
             RegionMin = axis->AxisLinearInterpolation[axis->AxisTurnings[xrn  ]];
             RegionMax = axis->AxisLinearInterpolation[axis->AxisTurnings[xrn+1]];
             if (RegionMax<RegionMin) { tmp=RegionMin; RegionMin=RegionMax; RegionMax=tmp; }
-
-            if (!TickMaxSet) TMax = RegionMax;
-            if (!TickMinSet)
-             {
-              if (axis->LogFinal == SW_BOOL_TRUE) TMin = first - floor((TMin-RegionMin)/TStep) * TStep;
-              else                                TMin = exp(log(first) - floor((log(TMin)-log(RegionMin))/log(TStep)) * log(TStep));
-             }
             if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
+            if (TMin < RegionMin)
+             {
+              if (axis->LogFinal == SW_BOOL_TRUE) TMin *= exp(ceil ((log(RegionMin / TMin))/log(TStep)) * log(TStep));
+              else                                TMin +=     ceil ((    RegionMin - TMin )/    TStep ) *     TStep  ;
+             }
+            if (TMax > RegionMax)
+             {
+              if (axis->LogFinal == SW_BOOL_TRUE) TMax /= exp(floor((log(TMax / RegionMax))/log(TStep)) * log(TStep));
+              else                                TMax -=     floor((    TMax - RegionMax )/    TStep ) *     TStep  ;
+             }
            }
           else
            {
             if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
             if (TMin < axis->MinFinal)
              {
-              if (axis->LogFinal == SW_BOOL_TRUE) TMin += exp(ceil ((log(axis->MinFinal)-log(TMin))/log(TStep)) * log(TStep));
-              else                                TMin +=     ceil ((    axis->MinFinal -    TMin )/    TStep ) *     TStep  ;
+              if (axis->LogFinal == SW_BOOL_TRUE) TMin *= exp(ceil ((log(axis->MinFinal / TMin))/log(TStep)) * log(TStep));
+              else                                TMin +=     ceil ((    axis->MinFinal - TMin )/    TStep ) *     TStep  ;
              }
             if (TMax > axis->MaxFinal)
              {
-              if (axis->LogFinal == SW_BOOL_TRUE) TMax -= exp(floor((log(TMax)-log(axis->MaxFinal))/log(TStep)) * log(TStep));
-              else                                TMax -=     floor((    TMax -    axis->MaxFinal )/    TStep ) *     TStep  ;
+              if (axis->LogFinal == SW_BOOL_TRUE) TMax /= exp(floor((log(TMax / axis->MaxFinal))/log(TStep)) * log(TStep));
+              else                                TMax -=     floor((    TMax - axis->MaxFinal )/    TStep ) *     TStep  ;
              }
            }
           tmp = TMin;

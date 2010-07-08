@@ -817,7 +817,7 @@ void eps_plot_RenderEPS(EPSComm *x)
     if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
     else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
     eps_core_SetColour(x, &ww, 1);
-    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, pageno, (x->current->ThreeDim ? origin_x : (origin_x+width/2))/M_TO_PS, x->current->PlotTopMargin/M_TO_PS+4e-3, SW_HALIGN_CENT, SW_VALIGN_BOT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+    IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, NULL, pageno, (x->current->ThreeDim ? origin_x : (origin_x+width/2))/M_TO_PS, x->current->PlotTopMargin/M_TO_PS+4e-3, SW_HALIGN_CENT, SW_VALIGN_BOT, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
    }
 
   // Final newline at end of canvas item
