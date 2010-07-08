@@ -33,6 +33,8 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
+#include <gsl/gsl_math.h>
+
 #include "EPSMaker/dvi_read.h"
 #include "EPSMaker/eps_comm.h"
 #include "EPSMaker/eps_core.h"
@@ -614,6 +616,12 @@ void canvas_EPSWrite(EPSComm *x)
   char LandscapifyText[FNAME_LENGTH], EnlargementText[FNAME_LENGTH], *PaperName, *PFAfilename;
   ListIterator *ListIter;
 
+  // Check that we have a bounding box
+  if (!x->bb_set)
+   {
+    x->bb_left = x->bb_right = x->bb_bottom = x->bb_top = 0.0;
+   }
+
   // Apply enlarge and landscape terminals as required
   LandscapifyText[0] = EnlargementText[0] = '\0';
   if  (settings_term_current.landscape   == SW_ONOFF_ON)                                     canvas_EPSLandscapify(x, LandscapifyText);
@@ -882,6 +890,7 @@ void canvas_EPSEnlarge(EPSComm *x, char *transform)
   // Calculate dimensions of EPS image
   EPSwidth  = x->bb_right - x->bb_left;
   EPSheight = x->bb_top   - x->bb_bottom;
+  if ((EPSwidth<=0.0)||(EPSheight<=0.0)) return; // Don't attempt to enlarge pages of size zero
 
   // Work out some sensible margins for page
   margin_left = PAGEwidth / 10;
@@ -894,6 +903,7 @@ void canvas_EPSEnlarge(EPSComm *x, char *transform)
   // Work out what scaling factors will make page fit
   scaling_x = (PAGEwidth  - margin_left - margin_right ) / EPSwidth  * M_TO_PS;
   scaling_y = (PAGEheight - margin_top  - margin_bottom) / EPSheight * M_TO_PS;
+  if ((!gsl_finite(scaling_x))||(!gsl_finite(scaling_y))) return; // Don't attempt to enlarge pages of size zero
   if (scaling_y < scaling_x) scaling_x = scaling_y; // Lowest scaling factor is biggest enlargement we can do
 
   // Work out how to translate origin to (0,0)
