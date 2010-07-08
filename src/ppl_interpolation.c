@@ -170,7 +170,7 @@ RANGES_DONE:
     zdata = xdata + 2*data->Nrows;
     Nrows = data->Nrows;
 
-    if ((xdata==NULL)||(ydata==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst reading data from input file."); return 1; }
+    if (xdata==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst reading data from input file."); return 1; }
 
     // Copy data table into an array of x values, and an array of y values
     blk = data->first; i=0;
@@ -306,6 +306,7 @@ RANGES_DONE:
      {
       SplineObj = (gsl_spline *)xdata;
       SizeX     = k;
+      SizeY     = i;
      }
    }
   else if (bmp<0) // 2D interpolation
@@ -392,7 +393,7 @@ void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, valu
    }
   else // Stepwise interpolation
    {
-    long          i, pos, ss, len=desc->SizeX, Nsteps = (long)ceil(log(desc->SizeX)/log(2));
+    long          i, pos, ss, len=desc->SizeX, xystep=desc->SizeY, Nsteps = (long)ceil(log(desc->SizeX)/log(2));
     double       *data = (double *)desc->SplineObj;
     for (pos=i=0; i<Nsteps; i++)
      {
@@ -400,10 +401,10 @@ void ppl_spline_evaluate(char *FuncName, SplineDescriptor *desc, value *in, valu
       if (pos+ss>=len) continue;
       if (data[pos+ss]<=dblin) pos+=ss;
      }
-    if      (data[pos]>dblin)                               dblout=data[pos  +len]; // Off left end
-    else if (pos==len-1)                                    dblout=data[pos  +len]; // Off right end
-    else if (fabs(dblin-data[pos])<fabs(dblin-data[pos+1])) dblout=data[pos  +len];
-    else                                                    dblout=data[pos+1+len];
+    if      (data[pos]>dblin)                               dblout=data[pos  +xystep]; // Off left end
+    else if (pos==len-1)                                    dblout=data[pos  +xystep]; // Off right end
+    else if (fabs(dblin-data[pos])<fabs(dblin-data[pos+1])) dblout=data[pos  +xystep];
+    else                                                    dblout=data[pos+1+xystep];
    }
 
   // Catch interpolation failure
