@@ -149,7 +149,8 @@ char *NumericDisplay(double in, int N, int SigFig, int latex)
          {
           for (j=i,k=i+32;output[j]!='\0';j++) output[j+32]=output[j];
           output[j+32]='\0';
-          strcpy(output+i,"\\times10^{"); i+=strlen(output+i); // Replace e with times ten to the...
+          if ((i==1)&&(output[0]=='1')) { strcpy(output  ,       "10^{"); i =strlen(output  ); } // Don't output 1 times 10^3
+          else                          { strcpy(output+i,"\\times10^{"); i+=strlen(output+i); } // Replace e with times ten to the...
           k++; // FFW over the E
           if (output[k]=='+') k++; // We don't need to say +8... 8 will do
           for (l=0,j=k;output[j]!='\0';j++) { if ((output[j]>'0')&&(output[j]<='9')) l=1; if ((l==1)||(output[j]!='0')) output[i++]=output[j]; } // Turn -08 into -8

@@ -315,7 +315,7 @@ void TickLabelAutoGen(char **output, double x, double log_base, int OutContext)
   ApproxMargin = pow(10,-SF+1);
   if (ApproxMargin < 1e-15) ApproxMargin = 1e-15;
 
-  if ((fabs(x)<DBL_MIN*100) || ((fabs(x)>=1e-3) && (fabs(x)<1e5))) { sprintf(temp_err_string,"%s",NumericDisplay(x,0,SF,1)); }
+  if ((fabs(x)<DBL_MIN*100) || ((fabs(x)>1e-3) && (fabs(x)<1e5))) { sprintf(temp_err_string,"%s",NumericDisplay(x,0,SF,1)); }
   else
    {
     double e,m;
