@@ -759,7 +759,7 @@ void eps_plot_RenderEPS(EPSComm *x)
        xyzaxis[pd->axis2xyz] = 1;
        xyzaxis[pd->axis3xyz] = 2;
 
-       status = (j?eps_plot_contourmap:eps_plot_colourmap)(x, x->current->plotdata[i], x->current->ThreeDim, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, origin_x, origin_y, width, height, zdepth);
+       status = (j?eps_plot_contourmap:eps_plot_colourmap)(x, x->current->plotdata[i], x->current->ThreeDim, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, i, origin_x, origin_y, width, height, zdepth);
        if (status) { *(x->status) = 1; return; }
       }
    }

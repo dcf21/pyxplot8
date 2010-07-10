@@ -201,7 +201,7 @@ void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *s
  }
 
 // Render a colourmap to postscript
-int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
+int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, int pdn, double origin_x, double origin_y, double width, double height, double zdepth)
  {
   double         scale_x, scale_y, scale_z;
   DataBlock     *blk;

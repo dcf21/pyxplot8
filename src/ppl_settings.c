@@ -171,7 +171,7 @@ void ppl_settings_makedefault()
   strcpy(settings_graph_default.ColMapExpr3, "(c1)");
   strcpy(settings_graph_default.ColMapExpr4, "");
   strcpy(settings_graph_default.MaskExpr   , "");
-  settings_graph_default.ContoursLabel         = SW_ONOFF_ON;
+  settings_graph_default.ContoursLabel         = SW_ONOFF_OFF;
   settings_graph_default.ContoursListLen       = -1;
   for (i=0; i<MAX_CONTOURS; i++) settings_graph_default.ContoursList[i] = 0.0;
   settings_graph_default.ContoursN             = 12;

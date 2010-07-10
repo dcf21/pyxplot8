@@ -91,7 +91,7 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
   // Check that we have some data
   if ((data==NULL) || (data->Nrows<1)) return; // No data present
   Ncol = data->Ncolumns;
-  blk = data->first;
+  blk  = data->first;
 
   // Work out normalisation of variable c1
   CMinAuto = (sg->Cminauto[0]==SW_BOOL_TRUE);
@@ -169,15 +169,17 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
                               ((sg->ContoursListLen>=0) && (k<sg->ContoursListLen))  );
        k++)
    {
+    char *text;
     CanvasTextItem *i;
     value           v = pd->CRangeUnit;
 
-    if (sg->ContoursListLen< 0) v.real = CLog?(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)))
-                                             :(CMin+pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))));
-    else                        v.real = sg->ContoursList[j];
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,(k+1.0)/(sg->ContoursN+1.0)))
+                                             :(CMin+(CMax-CMin)*(k+1.0)/(sg->ContoursN+1.0));
+    else                        v.real = sg->ContoursList[k];
 
-    sprintf(UnitString,"$%s$",ppl_units_NumericDisplay(&v,0,SW_DISPLAY_L,-1));
-    YIELD_TEXTITEM(UnitString);
+    sprintf(UnitString,"%s",ppl_units_NumericDisplay(&v,0,SW_DISPLAY_L,0));
+    text = lt_malloc(strlen(UnitString+1));
+    if (text!=NULL) { strcpy(text, UnitString); YIELD_TEXTITEM(text); }
    }
 
   // Store range of values for which contours will be drawn
@@ -323,7 +325,7 @@ static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v
  }
 
 // Render a contourmap to postscript
-int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, double origin_x, double origin_y, double width, double height, double zdepth)
+int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int xn, int yn, int zn, settings_graph *sg, canvas_plotdesc *pd, int pdn, double origin_x, double origin_y, double width, double height, double zdepth)
  {
   double         scale_x, scale_y, scale_z;
   DataBlock     *blk;
@@ -440,8 +442,8 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
    {
     value v = pd->CRangeUnit;
 
-    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,((double)(k+1)/(sg->ContoursN+1))))
-                                             :(CMin+(CMax-CMin)*((double)(k+1)/(sg->ContoursN+1)));
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,(k+1.0)/(sg->ContoursN+1)))
+                                             :(CMin+(CMax-CMin)*(k+1.0)/(sg->ContoursN+1));
     else                        v.real = sg->ContoursList[k];
 
     // Write debugging output
@@ -620,7 +622,7 @@ GOT_CONTOURS:
   qsort((void *)clist, cpos, sizeof(ContourDesc), ContourCmp);
 
   // Now loop over the contours that we have traced, drawing them
-  for (pass=0; pass<3; pass++) // Fill contour, Stroke contour, Label contour
+  for (pass=1; pass<4; pass++) // Fill contour, Stroke contour, Label contour
   for (cn=0; cn<cpos; cn++)
    {
     // Set value of c1
@@ -671,7 +673,7 @@ GOT_CONTOURS:
      }
     else if (pd->ww_final.AUTOlinetype) pd->ww_final.linetype = pd->ww_final.AUTOlinetype + clist[cn].i;
 
-    // Fill path, if required
+    // PASS 1: Fill path, if required
     if (pass==1)
      {
       eps_core_SetFillColour(x, &pd->ww_final);
@@ -694,7 +696,7 @@ GOT_CONTOURS:
        }
      }
 
-    // Stroke path
+    // PASS 2: Stroke path
     else if (pass==2)
      {
       eps_core_SetColour(x, &pd->ww_final, 1);
@@ -702,6 +704,42 @@ GOT_CONTOURS:
       IF_NOT_INVISIBLE
        {
         double xps, yps; long c=0;
+        long   n=clist[cn].Nvertices_max;
+
+        if (sg->ContoursLabel==SW_ONOFF_ON)
+         {
+          int    page = x->current->DatasetTextID[pdn]+clist[cn].i;
+          long   i    = clist[cn].segment_flatest;
+          double xlab = (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
+          double ylab = (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
+          double wlab, hlab;
+          double height1,height2,bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
+          postscriptPage *dviPage;
+
+          fprintf(x->epsbuffer, "gsave\n");
+
+          xlab = xo + Lx*xlab/(XSize-1)*sin(ThetaX) + Ly*ylab/(YSize-1)*sin(ThetaY);
+          ylab = yo + Lx*xlab/(XSize-1)*cos(ThetaX) + Ly*ylab/(YSize-1)*cos(ThetaY);
+          if (x->dvi == NULL) { goto CLIP_FAIL; }
+          dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, page+1);
+          if (dviPage== NULL) { goto CLIP_FAIL; }
+          bb_left   = dviPage->boundingBox[0];
+          bb_bottom = dviPage->boundingBox[1];
+          bb_right  = dviPage->boundingBox[2];
+          bb_top    = dviPage->boundingBox[3];
+          ab_left   = dviPage->textSizeBox[0];
+          ab_bottom = dviPage->textSizeBox[1];
+          ab_right  = dviPage->textSizeBox[2];
+          ab_top    = dviPage->textSizeBox[3];
+          height1   = fabs(ab_top - ab_bottom) * AB_ENLARGE_FACTOR;
+          height2   = fabs(bb_top - bb_bottom) * BB_ENLARGE_FACTOR;
+          hlab      = ((height2<height1) ? height2 : height1) * x->current->settings.FontSize;
+          wlab      = ((ab_right - ab_left) + MARGIN_HSIZE  ) * x->current->settings.FontSize;
+
+          fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath %.2f %.2f %.2f 0 360 arc closepath eoclip\n", xlab-wlab/2, ylab-hlab/2, xlab+wlab/2, ylab-hlab/2, xlab+wlab/2, ylab+hlab/2, xlab-wlab/2, ylab+hlab/2, xlab, ylab, 2*(Lx+Ly));
+         }
+
+CLIP_FAIL:
         xpos = clist[cn].posdata[c++];
         ypos = clist[cn].posdata[c++];
         XPOS_TO_POSTSCRIPT;
@@ -714,6 +752,31 @@ GOT_CONTOURS:
           fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
          }
         fprintf(x->epsbuffer, "%sstroke\n", clist[cn].closepath?"closepath ":"");
+        if (sg->ContoursLabel==SW_ONOFF_ON) fprintf(x->epsbuffer, "grestore\n");
+       }
+     }
+
+    // PASS 3: Label contours
+    else if ((pass==3) && (sg->ContoursLabel==SW_ONOFF_ON))
+     {
+      long   i = clist[cn].segment_flatest;
+      long   n = clist[cn].Nvertices_max;
+      with_words ww;
+
+      with_words_zero(&ww,0);
+      if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
+      else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
+      eps_core_SetColour(x, &ww, 1);
+
+      IF_NOT_INVISIBLE
+       {
+        double xlab = (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
+        double ylab = (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
+        canvas_EPSRenderTextItem(x, NULL, x->current->DatasetTextID[pdn]+clist[cn].i,
+                                 (xo + Lx*xlab/(XSize-1)*sin(ThetaX) + Ly*ylab/(YSize-1)*sin(ThetaY))/M_TO_PS,
+                                 (yo + Lx*xlab/(XSize-1)*cos(ThetaX) + Ly*ylab/(YSize-1)*cos(ThetaY))/M_TO_PS,
+                                 SW_HALIGN_CENT, SW_VALIGN_CENT, x->CurrentColour, x->current->settings.FontSize,
+                                 0.0, NULL, NULL);
        }
      }
    }
