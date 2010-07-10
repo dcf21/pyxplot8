@@ -74,7 +74,7 @@ void eps_withwords_default(with_words *output, settings_graph *sg, unsigned char
   output->pointtype      =              PTcounter+1;
   output->USElinetype    = output->USEpointtype  = 1;
   output->AUTOlinetype   = !colour;
-  output->AUTOpointtype  = 1;
+  output->AUTOpointtype  = PTcounter+6;
   output->linewidth      = sg->LineWidth;
   output->pointlinewidth = sg->PointLineWidth;
   output->pointsize      = sg->PointSize;

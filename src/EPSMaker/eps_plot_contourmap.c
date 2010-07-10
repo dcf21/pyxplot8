@@ -55,6 +55,28 @@
 #define FACE_B    3
 #define FACE_L    4
 
+#define MAX_CONTOUR_PATHS 1024
+
+typedef struct ContourDesc
+ {
+  long           Nvertices_min, Nvertices_max;
+  long           i, segment_flatest;
+  unsigned char  closepath;
+  double        *posdata;
+  double         area;
+  double         vreal;
+ } ContourDesc;
+
+static int ContourCmp(const void *xv, const void *yv)
+ {
+  const ContourDesc *x = (const ContourDesc *)xv;
+  const ContourDesc *y = (const ContourDesc *)yv;
+
+  if      (x->area < y->area) return  1.0;
+  else if (x->area > y->area) return -1.0;
+  else                        return  0.0;
+ }
+
 // Yield up text items which label contours on a contourmap
 void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
  {
@@ -191,10 +213,11 @@ static int IsBetween(double x, double a, double b, double *f)
  }
 
 // See whether cell X contains any unused starting points for contours
-static int GetStartPoint(double c1, DataTable *data, int pass, int XSize, int YSize, int x0, int y0, int EntryFace, int *ExitFace, int *xcell, int *ycell, double *Xout, double *Yout)
+static int GetStartPoint(double c1, DataTable *data, unsigned char **flags, int XSize, int YSize, int x0, int y0, int EntryFace, int *ExitFace, int *xcell, int *ycell, double *Xout, double *Yout)
  {
   DataBlock *blk  = data->first;
   int        Ncol = data->Ncolumns;
+  const int  pass = 0;
   double     f;
 
   *xcell = x0;
@@ -203,22 +226,22 @@ static int GetStartPoint(double c1, DataTable *data, int pass, int XSize, int YS
   if (((EntryFace<0)||(EntryFace==FACE_T)) && (x0<=XSize-2) && (x0>= 0) && (y0>= 0) && (y0<=YSize-1) &&
        (((blk->split[(x0  )+(y0  )*XSize]>>(0+2*pass))&1)==0) &&
        IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0  )*XSize)].d,&f))
-   { blk->split[(x0  )+(y0  )*XSize] |= 1<<(0+2*pass); *ExitFace=FACE_T; *Xout=x0+f; *Yout=y0; return 1; }
+   { *flags = &blk->split[(x0  )+(y0  )*XSize]; *ExitFace=FACE_T; *Xout=x0+f; *Yout=y0; return 1; }
 
   if (((EntryFace<0)||(EntryFace==FACE_R)) && (x0<=XSize-2) && (x0>=-1) && (y0>= 0) && (y0<=YSize-2) &&
        (((blk->split[(x0+1)+(y0  )*XSize]>>(1+2*pass))&1)==0) &&
        IsBetween(c1, blk->data_real[2+Ncol*((x0+1)+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0+1)*XSize)].d,&f))
-   { blk->split[(x0+1)+(y0  )*XSize] |= 1<<(1+2*pass); *ExitFace=FACE_R; *Xout=x0+1; *Yout=y0+f; return 1; }
+   { *flags = &blk->split[(x0+1)+(y0  )*XSize]; *ExitFace=FACE_R; *Xout=x0+1; *Yout=y0+f; return 1; }
 
   if (((EntryFace<0)||(EntryFace==FACE_B)) && (x0<=XSize-2) && (x0>= 0) && (y0>=-1) && (y0<=YSize-2) &&
        (((blk->split[(x0  )+(y0+1)*XSize]>>(0+2*pass))&1)==0) &&
        IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0+1)*XSize)].d, blk->data_real[2+Ncol*((x0+1)+(y0+1)*XSize)].d,&f))
-   { blk->split[(x0  )+(y0+1)*XSize] |= 1<<(0+2*pass); *ExitFace=FACE_B; *Xout=x0+f; *Yout=y0+1; return 1; }
+   { *flags = &blk->split[(x0  )+(y0+1)*XSize]; *ExitFace=FACE_B; *Xout=x0+f; *Yout=y0+1; return 1; }
 
   if (((EntryFace<0)||(EntryFace==FACE_L)) && (x0<=XSize-1) && (x0>= 0) && (y0>= 0) && (y0<=YSize-2) &&
        (((blk->split[(x0  )+(y0  )*XSize]>>(1+2*pass))&1)==0) &&
        IsBetween(c1, blk->data_real[2+Ncol*((x0  )+(y0  )*XSize)].d, blk->data_real[2+Ncol*((x0  )+(y0+1)*XSize)].d,&f))
-   { blk->split[(x0  )+(y0  )*XSize] |= 1<<(1+2*pass); *ExitFace=FACE_L; *Xout=x0; *Yout=y0+f; return 1; }
+   { *flags = &blk->split[(x0  )+(y0  )*XSize]; *ExitFace=FACE_L; *Xout=x0; *Yout=y0+f; return 1; }
   return 0;
  }
 
@@ -255,28 +278,48 @@ static int GetNextPoint(double c1, DataTable *data, int pass, int XSize, int YSi
   return 0;
  }
 
-#define XPOS_TO_POSTSCRIPT \
- { \
-  xps = xo + Lx*xpos/(XSize-1)*sin(ThetaX) + Ly*ypos/(YSize-1)*sin(ThetaY); \
-  yps = yo + Lx*xpos/(XSize-1)*cos(ThetaX) + Ly*ypos/(YSize-1)*cos(ThetaY); \
- }
+static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v, unsigned char *flags, int XSize, int YSize, int xcell, int ycell, int face, double xpos, double ypos)
+ {
+  long   i, j, i_flatest=0;
+  int    xcelli=xcell, ycelli=ycell;
+  double xposi =xpos , yposi =ypos , grad_flatest = 1e100;
+  int    facei =face;
+  double xold=xpos, yold=ypos;
 
-#define FOLLOW_CONTOUR \
- { \
-  int c; \
-  double xps,yps; \
-  XPOS_TO_POSTSCRIPT; \
-  fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps); \
-  do \
-   { \
-    if ((c = GetNextPoint(v.real, data, 0, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos))!=0) \
-     { \
-      XPOS_TO_POSTSCRIPT; \
-      fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps); \
-     } \
-   } \
-  while (c); \
-  fprintf(x->epsbuffer, "%sstroke\n", closepath?"closepath ":""); \
+  // Starting point has been used on pass zero
+  *flags |= 1<<(((face==FACE_L)||(face==FACE_R)) + 0);
+
+  // Trace path, looking for flattest segment and counting length
+  for (i=0; (GetNextPoint(v->real, data, 0, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos)!=0); i++)
+   {
+    double grad;
+    if (xpos!=xold)
+     {
+      grad = fabs((ypos-yold)/(xpos-xold));
+      if (grad<grad_flatest) { grad_flatest=grad; i_flatest=i; }
+     }
+    xold=xpos; yold=ypos;
+   }
+
+  // Fill out information in contour descriptor
+  cd->Nvertices_min = cd->Nvertices_max = i;
+  cd->segment_flatest = i_flatest;
+  cd->posdata = (double *)lt_malloc((i+8) * 2 * sizeof(double));
+  if (cd->posdata==NULL) return;
+
+  // Begin pass one
+  xcell=xcelli; ycell=ycelli; xpos=xposi; ypos=yposi; face=facei;
+
+  // Starting point has been used on pass one
+  *flags |= 1<<(((face==FACE_L)||(face==FACE_R)) + 2);
+
+  // Trace path, looking for flattest segment and counting length
+  for (j=0; (GetNextPoint(v->real, data, 1, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos)!=0); j++)
+   {
+    cd->posdata[2*j  ] = xpos;
+    cd->posdata[2*j+1] = ypos;
+   }
+  return;
  }
 
 // Render a contourmap to postscript
@@ -286,12 +329,14 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   DataBlock     *blk;
   int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
-  int            i, j, k, Ncol, face, xcell, ycell;
+  int            i, j, k, cn, pass, Ncol, face, xcell, ycell;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax, xpos, ypos;
   double         col1=-1,col2=-1,col3=-1,col4=-1,fc1=-1,fc2=-1,fc3=-1,fc4=-1;
-  unsigned char  CLog, CMinAuto, CMaxAuto, CRenorm, closepath;
+  unsigned char  CLog, CMinAuto, CMaxAuto, CRenorm, *flags;
   char          *errtext, c1name[]="c1";
   value         *CVar=NULL, CDummy;
+  ContourDesc   *clist;
+  int            cpos=0;
 
   if ((data==NULL) || (data->Nrows<1)) return 0; // No data present
   Ncol = data->Ncolumns;
@@ -300,8 +345,9 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   else           { scale_x=width; scale_y=height; scale_z=zdepth; }
   blk = data->first;
 
+  clist   = (ContourDesc *)lt_malloc(MAX_CONTOUR_PATHS * sizeof(ContourDesc));
   errtext = lt_malloc(LSTR_LENGTH);
-  if (errtext==NULL) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); return 1; }
+  if ((clist==NULL)||(errtext==NULL)) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); return 1; }
 
   // Work out orientation of contourmap
   if (!ThreeDim)
@@ -401,7 +447,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     // Write debugging output
     if (DEBUG)
      {
-      sprintf(temp_err_string, "Beginning to draw contour at c1=%g.", v.real);
+      sprintf(temp_err_string, "Beginning to trace path of contour at c1=%g.", v.real);
       ppl_log(temp_err_string);
      }
 
@@ -421,6 +467,165 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
       if (!gsl_finite(CVar->real)) CVar->real=0.5;
      }
     else                           CVar->real = v.real;
+
+    // Scan edges of plot looking for contour start points
+    for (i=0; i<XSize-1; i++) // Top face
+     if (GetStartPoint(v.real, data, &flags, XSize, YSize, i        , 0        , FACE_T,&face,&xcell,&ycell,&xpos,&ypos))
+      {
+       clist[cpos].i=k; clist[cpos].vreal=CVar->real;
+       clist[cpos].closepath = 0;
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
+      }
+    for (i=0; i<YSize-1; i++) // Right face
+     if (GetStartPoint(v.real, data, &flags, XSize, YSize, XSize-2  , i        , FACE_R,&face,&xcell,&ycell,&xpos,&ypos))
+      {
+       clist[cpos].i=k; clist[cpos].vreal=CVar->real;
+       clist[cpos].closepath = 0;
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
+      }
+    for (i=0; i<XSize-1; i++) // Bottom face
+     if (GetStartPoint(v.real, data, &flags, XSize, YSize, XSize-2-i, YSize-2  , FACE_B,&face,&xcell,&ycell,&xpos,&ypos))
+      {
+       clist[cpos].i=k; clist[cpos].vreal=CVar->real;
+       clist[cpos].closepath = 0;
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
+      }
+    for (i=0; i<YSize-1; i++) // Left face
+     if (GetStartPoint(v.real, data, &flags, XSize, YSize, 0        , YSize-2-i, FACE_L,&face,&xcell,&ycell,&xpos,&ypos))
+      {
+       clist[cpos].i=k; clist[cpos].vreal=CVar->real;
+       clist[cpos].closepath = 0;
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
+      }
+
+    // Scan body of plot looking for undrawn contours
+    for (j=0; j<YSize-1; j++)
+     for (i=0; i<XSize-1; i++)
+      if (GetStartPoint(v.real, data, &flags, XSize, YSize, i, j, FACE_ALL,&face,&xcell,&ycell,&xpos,&ypos))
+       {
+        clist[cpos].i=k; clist[cpos].vreal=CVar->real;
+        clist[cpos].closepath = 1;
+        FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+        if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
+       }
+   } // Finish looping over contours we are to trace
+
+GOT_CONTOURS:
+
+#define XPOS_TO_POSTSCRIPT \
+ { \
+  xps = xo + Lx*xpos/(XSize-1)*sin(ThetaX) + Ly*ypos/(YSize-1)*sin(ThetaY); \
+  yps = yo + Lx*xpos/(XSize-1)*cos(ThetaX) + Ly*ypos/(YSize-1)*cos(ThetaY); \
+ }
+
+  // Add corners of plot to paths of non-closed contours
+  for (cn=0; cn<cpos; cn++)
+  if (!clist[cn].closepath)
+   {
+    int    faceA, faceB;
+    int    n  = clist[cn].Nvertices_min;
+    if (clist[cn].posdata==NULL) continue;
+
+    if      (clist[cn].posdata[          0] <        0.0001 ) faceA = FACE_L;
+    else if (clist[cn].posdata[          0] > (XSize-0.0001)) faceA = FACE_R;
+    else if (clist[cn].posdata[          1] <        0.0001 ) faceA = FACE_T;
+    else                                                      faceA = FACE_B;
+
+    if      (clist[cn].posdata[2*(n-1) + 0] <        0.0001 ) faceB = FACE_L;
+    else if (clist[cn].posdata[2*(n-1) + 0] > (XSize-0.0001)) faceB = FACE_R;
+    else if (clist[cn].posdata[2*(n-1) + 1] <        0.0001 ) faceB = FACE_T;
+    else                                                      faceB = FACE_B;
+
+    if      ( ((faceA==FACE_L)&&(faceB==FACE_T)) || ((faceA==FACE_T)&&(faceB==FACE_L)) )
+     {
+      clist[cn].posdata[2*n+0] = 0;
+      clist[cn].posdata[2*n+1] = 0;
+      clist[cn].Nvertices_max += 1;
+     }
+    else if ( ((faceA==FACE_R)&&(faceB==FACE_T)) || ((faceA==FACE_T)&&(faceB==FACE_R)) )
+     {
+      clist[cn].posdata[2*n+0] = XSize;
+      clist[cn].posdata[2*n+1] = 0;
+      clist[cn].Nvertices_max += 1;
+     }
+    else if ( ((faceA==FACE_L)&&(faceB==FACE_B)) || ((faceA==FACE_B)&&(faceB==FACE_L)) )
+     {
+      clist[cn].posdata[2*n+0] = 0;
+      clist[cn].posdata[2*n+1] = YSize;
+      clist[cn].Nvertices_max += 1;
+     }
+    else if ( ((faceA==FACE_R)&&(faceB==FACE_B)) || ((faceA==FACE_B)&&(faceB==FACE_R)) )
+     {
+      clist[cn].posdata[2*n+0] = XSize;
+      clist[cn].posdata[2*n+1] = YSize;
+      clist[cn].Nvertices_max += 1;
+     }
+    else if ((faceA==FACE_L)&&(faceB==FACE_R))
+     {
+      clist[cn].posdata[2*n+0] = XSize;
+      clist[cn].posdata[2*n+1] = 0;
+      clist[cn].posdata[2*n+3] = 0;
+      clist[cn].posdata[2*n+4] = 0;
+      clist[cn].Nvertices_max += 2;
+     }
+    else if ((faceA==FACE_R)&&(faceB==FACE_L))
+     {
+      clist[cn].posdata[2*n+0] = 0;
+      clist[cn].posdata[2*n+1] = 0;
+      clist[cn].posdata[2*n+3] = XSize;
+      clist[cn].posdata[2*n+4] = 0;
+      clist[cn].Nvertices_max += 2;
+     }
+    else if ((faceA==FACE_T)&&(faceB==FACE_B))
+     {
+      clist[cn].posdata[2*n+0] = 0;
+      clist[cn].posdata[2*n+1] = YSize;
+      clist[cn].posdata[2*n+3] = 0;
+      clist[cn].posdata[2*n+4] = 0;
+      clist[cn].Nvertices_max += 2;
+     }
+    else if ((faceA==FACE_B)&&(faceB==FACE_T))
+     {
+      clist[cn].posdata[2*n+0] = 0;
+      clist[cn].posdata[2*n+1] = 0;
+      clist[cn].posdata[2*n+3] = 0;
+      clist[cn].posdata[2*n+4] = YSize;
+      clist[cn].Nvertices_max += 2;
+     }
+   }
+
+  // Calculate area of each contour
+  for (cn=0; cn<cpos; cn++)
+   {
+    int i;
+    double area=0.0;
+    if (clist[cn].posdata!=NULL)
+     {
+      for (i=0; i<clist[cn].Nvertices_max-1; i++)
+       {
+        area +=   clist[cn].posdata[2*(i  )+0] * clist[cn].posdata[2*(i+1)+1]
+                - clist[cn].posdata[2*(i+1)+0] * clist[cn].posdata[2*(i  )+1];
+       }
+      area +=   clist[cn].posdata[2*(i  )+0] * clist[cn].posdata[2*(0  )+1]
+              - clist[cn].posdata[2*(0  )+0] * clist[cn].posdata[2*(i  )+1]; // Close sum around a closed path
+     }
+    clist[cn].area=fabs(area/2);
+   }
+
+  // Sort contours into order of descending enclosed area
+  qsort((void *)clist, cpos, sizeof(ContourDesc), ContourCmp);
+
+  // Now loop over the contours that we have traced, drawing them
+  for (pass=0; pass<3; pass++) // Fill contour, Stroke contour, Label contour
+  for (cn=0; cn<cpos; cn++)
+   {
+    // Set value of c1
+    if (clist[cn].posdata==NULL) continue;
+    CVar->real = clist[cn].vreal;
 
     // Evaluate any expressions in style information for next contour
     for (i=0 ; ; i++)
@@ -454,42 +659,63 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
     if ((col1>=0.0)&&(col2>=0.0)&&(col3>=0.0)&&((pd->ww_final.    Col1234Space!=SW_COLSPACE_CMYK)||(col4>=0.0))) { pd->ww_final.colour1=col1; pd->ww_final.colour2=col2; pd->ww_final.colour3=col3; pd->ww_final.colour4=col4; pd->ww_final.USEcolour=0; pd->ww_final.USEcolour1234=1; pd->ww_final.AUTOcolour=0; }
     if ((fc1 >=0.0)&&(fc2 >=0.0)&&(fc3 >=0.0)&&((pd->ww_final.FillCol1234Space!=SW_COLSPACE_CMYK)||(fc4 >=0.0))) { pd->ww_final.fillcolour1=fc1; pd->ww_final.fillcolour2=fc2; pd->ww_final.fillcolour3=fc3; pd->ww_final.fillcolour4=fc4; pd->ww_final.USEfillcolour=0; pd->ww_final.USEfillcolour1234=1; }
 
-    // Work out style information for next contour
-    eps_core_SetColour(x, &pd->ww_final, 1);
-    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
-    IF_NOT_INVISIBLE
-     {
-
-      // Scan edges of plot looking for contour start points
-      closepath=0;
-      for (i=0; i<XSize-1; i++) // Top face
-       if (GetStartPoint(v.real, data, 0, XSize, YSize, i        , 0        , FACE_T,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-      for (i=0; i<YSize-1; i++) // Right face
-       if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2  , i        , FACE_R,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-      for (i=0; i<XSize-1; i++) // Bottom face
-       if (GetStartPoint(v.real, data, 0, XSize, YSize, XSize-2-i, YSize-2  , FACE_B,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-      for (i=0; i<YSize-1; i++) // Left face
-       if (GetStartPoint(v.real, data, 0, XSize, YSize, 0        , YSize-2-i, FACE_L,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-
-      // Scan body of plot looking for undrawn contours
-      closepath=1;
-      for (j=0; j<YSize-1; j++)
-       for (i=0; i<XSize-1; i++)
-        if (GetStartPoint(v.real, data, 0, XSize, YSize, i, j, FACE_ALL,&face,&xcell,&ycell,&xpos,&ypos)) { FOLLOW_CONTOUR; }
-
-     }
-
-    // Advance plot styles before drawing next contour
+    // Advance automatic plot styles
     if (pd->ww_final.AUTOcolour)
      {
       int i,j;
       for (j=0; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break; // j now contains length of palette
-      i = (++pd->ww_final.AUTOcolour-5) % j; // i is now the palette colour number to use
+      i = ((pd->ww_final.AUTOcolour+clist[cn].i)-5) % j; // i is now the palette colour number to use
       while (i<0) i+=j;
       if (settings_palette_current[i] > 0) { pd->ww_final.colour  = settings_palette_current[i]; pd->ww_final.USEcolour = 1; }
       else                                 { pd->ww_final.Col1234Space = settings_paletteS_current[i]; pd->ww_final.colour1 = settings_palette1_current[i]; pd->ww_final.colour2 = settings_palette2_current[i]; pd->ww_final.colour3 = settings_palette3_current[i]; pd->ww_final.colour4 = settings_palette4_current[i]; pd->ww_final.USEcolour1234 = 1; }
      }
-    else if (pd->ww_final.AUTOlinetype) pd->ww_final.linetype++;
+    else if (pd->ww_final.AUTOlinetype) pd->ww_final.linetype = pd->ww_final.AUTOlinetype + clist[cn].i;
+
+    // Fill path, if required
+    if (pass==1)
+     {
+      eps_core_SetFillColour(x, &pd->ww_final);
+      eps_core_SwitchTo_FillColour(x,1);
+      IF_NOT_INVISIBLE
+       {
+        double xps, yps; long c=0;
+        xpos = clist[cn].posdata[c++];
+        ypos = clist[cn].posdata[c++];
+        XPOS_TO_POSTSCRIPT;
+        fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
+        while (c<2*clist[cn].Nvertices_max)
+         {
+          xpos = clist[cn].posdata[c++];
+          ypos = clist[cn].posdata[c++];
+          XPOS_TO_POSTSCRIPT;
+          fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+         }
+        fprintf(x->epsbuffer, "closepath fill\n");
+       }
+     }
+
+    // Stroke path
+    else if (pass==2)
+     {
+      eps_core_SetColour(x, &pd->ww_final, 1);
+      eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
+      IF_NOT_INVISIBLE
+       {
+        double xps, yps; long c=0;
+        xpos = clist[cn].posdata[c++];
+        ypos = clist[cn].posdata[c++];
+        XPOS_TO_POSTSCRIPT;
+        fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
+        while (c<2*clist[cn].Nvertices_min)
+         {
+          xpos = clist[cn].posdata[c++];
+          ypos = clist[cn].posdata[c++];
+          XPOS_TO_POSTSCRIPT;
+          fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+         }
+        fprintf(x->epsbuffer, "%sstroke\n", clist[cn].closepath?"closepath ":"");
+       }
+     }
    }
 
   // Reset value of variable c1
