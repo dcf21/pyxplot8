@@ -849,7 +849,8 @@ commands respectively.
 \section{interpolate}\indcmd{interpolate}
 
 \begin{verbatim}
-interpolate ( akima | linear | loglinear | polynomial | spline |
+interpolate ( akima | linear | loglinear | polynomial |
+              spline | stepwise |
               2d [( bmp_r | bmp_g | bmp_b )] )
             [<range specification>] <function name>"()"
             '<filename>'
@@ -861,14 +862,35 @@ interpolate ( akima | linear | loglinear | polynomial | spline |
 
 The \indcmdt{interpolate} can be used to generate a special function within
 PyXPlot's mathematical environment which interpolates a set of \datapoint s
-supplied from a \datafile.  Various different types of interpolation are
-supported: linear interpolation, power-law interpolation, polynomial
-interpolation, cubic-spline interpolation and akima-spline interpolation. The
-use of polynomial interpolation with large datasets is strongly discouraged, as
-polynomial fits tend to show severe oscillations between \datapoint s.
-Extrapolation is not permitted; if an attempt is made to evaluate an
-interpolated function beyond the limits of the \datapoint s which it
-interpolates, PyXPlot returns an error or value of not-a-number.
+supplied from a \datafile. Either one- or two-dimensional interpolation is
+possible.
+
+In the case of one-dimensional interpolation, various different types of
+interpolation are supported: linear interpolation, power-law interpolation,
+polynomial interpolation, cubic-spline interpolation and akima-spline
+interpolation. Stepwise interpolation returns the value of the datapoint
+nearest to the requested point in argument space. The use of polynomial
+interpolation with large datasets is strongly discouraged, as polynomial fits
+tend to show severe oscillations between \datapoint s.  Except in the case of
+stepwise interpolation, extrapolation is not permitted; if an attempt is made
+to evaluate an interpolated function beyond the limits of the \datapoint s
+which it interpolates, PyXPlot returns an error or value of not-a-number.
+
+In the case of two-dimensional interpolation, the type of interpolation to be
+used is set using the {\tt interpolate} modifier to the \indcmdt{set samples},
+and may be changed at any time after the interpolation function has been
+created.  The options available are nearest-neighbour interpolation -- which is
+the two-dimensional equivalent of stepwise interpolation -- and inverse-square
+interpolation -- which returns a weighted average of the supplied \datapoint s,
+using the inverse squares of their distances from the requested point in
+argument space as weights. These are selected as follows:
+
+\begin{verbatim}
+set samples interpolate nearestneighbour
+set samples interpolate inversesquare
+\end{verbatim}
+
+Finally, data can be imported from graphical images in bitmap ({\tt .bmp}) format.
 
 A very common application of the \indcmdt{interpolate} is to perform arithmetic
 functions such as addition or subtraction on datasets which are not sampled at

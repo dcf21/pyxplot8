@@ -368,7 +368,9 @@ it interpolates, PyXPlot returns an error or value of not-a-number.
 The \indcmdt{interpolate} has similar syntax to the \indcmdt{fit}:
 
 \begin{verbatim}
-interpolate ( akima | linear | loglinear | polynomial | spline )
+interpolate ( akima | linear | loglinear | polynomial |
+              spline | stepwise |
+              2d [( bmp_r | bmp_g | bmp_b )] )
             [<range specification>] <function name>"()"
             '<filename>'
             [ every <expression> {:<expression} ]
