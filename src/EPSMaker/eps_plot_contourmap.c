@@ -676,24 +676,24 @@ GOT_CONTOURS:
     // PASS 1: Fill path, if required
     if (pass==1)
      {
-      eps_core_SetFillColour(x, &pd->ww_final);
-      eps_core_SwitchTo_FillColour(x,1);
-      IF_NOT_INVISIBLE
-       {
-        double xps, yps; long c=0;
-        xpos = clist[cn].posdata[c++];
-        ypos = clist[cn].posdata[c++];
-        XPOS_TO_POSTSCRIPT;
-        fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
-        while (c<2*clist[cn].Nvertices_max)
-         {
-          xpos = clist[cn].posdata[c++];
-          ypos = clist[cn].posdata[c++];
-          XPOS_TO_POSTSCRIPT;
-          fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
-         }
-        fprintf(x->epsbuffer, "closepath fill\n");
-       }
+//    eps_core_SetFillColour(x, &pd->ww_final);
+//    eps_core_SwitchTo_FillColour(x,1);
+//    IF_NOT_INVISIBLE
+//     {
+//      double xps, yps; long c=0;
+//      xpos = clist[cn].posdata[c++];
+//      ypos = clist[cn].posdata[c++];
+//      XPOS_TO_POSTSCRIPT;
+//      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
+//      while (c<2*clist[cn].Nvertices_max)
+//       {
+//        xpos = clist[cn].posdata[c++];
+//        ypos = clist[cn].posdata[c++];
+//        XPOS_TO_POSTSCRIPT;
+//        fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+//       }
+//      fprintf(x->epsbuffer, "closepath fill\n");
+//     }
      }
 
     // PASS 2: Stroke path

@@ -67,11 +67,11 @@ int directive_interpolate(Dict *command, int mode)
   DataTable *data;
   DataBlock *blk;
   bitmap_data bmpdata;
-  long int   i=0, j, k, Nrows=0, SizeX=0, SizeY=0;
+  long int   i=0, j, k, ims, jms, Nrows=0, SizeX=0, SizeY=0;
   int        ContextOutput, ContextLocalVec, ContextDataTab, status=0, index=-1, *indexptr, rowcol=DATAFILE_COL, continuity, ErrCount=DATAFILE_NERRS;
   char       errtext[LSTR_LENGTH], *cptr, *filename=NULL, *fitfunc=NULL, *tempstr=NULL, *SelectCrit=NULL;
   unsigned char *bmpchars = NULL;
-  double    *xdata=NULL, *ydata=NULL, *zdata=NULL;
+  double    *xdata=NULL, *ydata=NULL, *zdata=NULL, *MinList=NULL, *MaxList=NULL;
   List      *UsingList=NULL, *EveryList=NULL;
   FunctionDescriptor *FuncPtr, *FuncPtrNext, *FuncPtr2;
   value      v, FirstEntries[3];
@@ -164,11 +164,13 @@ RANGES_DONE:
     DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NcolRequired, SelectCrit, continuity, NULL, -1, &ErrCount);
 
     // Transfer data from multiple data tables into single vectors
-    if ((NcolRequired<3)&&(mode!=INTERP_STEPWISE)) xdata = (double *)lt_malloc_incontext(NcolRequired * data->Nrows * sizeof(double), ContextLocalVec);
-    else                                           xdata = (double *)malloc             (NcolRequired * data->Nrows * sizeof(double));
-    ydata = xdata +   data->Nrows;
-    zdata = xdata + 2*data->Nrows;
-    Nrows = data->Nrows;
+    if ((NcolRequired<3)&&(mode!=INTERP_STEPWISE)) xdata = (double *)lt_malloc_incontext(NcolRequired * (data->Nrows+2) * sizeof(double), ContextLocalVec);
+    else                                           xdata = (double *)malloc             (NcolRequired * (data->Nrows+2) * sizeof(double));
+    ydata   = xdata +   data->Nrows;
+    zdata   = xdata + 2*data->Nrows;
+    Nrows   = data->Nrows;
+    MinList = xdata + NcolRequired* data->Nrows;
+    MaxList = xdata + NcolRequired*(data->Nrows+1);
 
     if (xdata==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst reading data from input file."); return 1; }
 
@@ -184,6 +186,18 @@ RANGES_DONE:
 
     // Check that we have at least minimum number of points to interpolate
     if (i<NxRequired) { sprintf(temp_err_string,"%s interpolation is only possible on data sets with at least %d member%s.",SplineTypeName,NxRequired,(NxRequired>1)?"s":""); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); if (NcolRequired>=3) free(xdata); return 1; }
+
+    // Fill out minimum and maximum of data
+    for (jms=0; jms<NcolRequired; jms++)
+     {
+      MinList[jms] = MaxList[jms] = 0.0;
+      for (ims=0; ims<i; ims++)
+       {
+        if ((ims==0)||(MinList[jms]>xdata[jms*data->Nrows+ims])) MinList[jms] = xdata[jms*data->Nrows+ims];
+        if ((ims==0)||(MaxList[jms]<xdata[jms*data->Nrows+ims])) MaxList[jms] = xdata[jms*data->Nrows+ims];
+       }
+      if (MaxList[jms]<=MinList[jms]) { double t=MinList[jms]; MinList[jms]=t*0.999;  MaxList[jms]=t*1.001; }
+     }
 
     FirstEntries[0] = data->FirstEntries[0];
     FirstEntries[1] = data->FirstEntries[1];
@@ -467,7 +481,7 @@ void ppl_interp2d_evaluate(const char *FuncName, SplineDescriptor *desc, const v
 
   if (!bmp)
    {
-    ppl_interp2d_eval(&dblout, &settings_graph_current, (double *)desc->SplineObj, 2, desc->SizeX, dblin1, dblin2);
+    ppl_interp2d_eval(&dblout, &settings_graph_current, (double *)desc->SplineObj, desc->SizeX, 2, 3, dblin1, dblin2);
    } else {
     int x = floor(dblin1);
     int y = floor(dblin2);

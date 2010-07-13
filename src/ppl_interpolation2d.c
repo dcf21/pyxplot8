@@ -39,12 +39,15 @@
 #include "ppl_settings.h"
 #include "ppl_setting_types.h"
 
-void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *in, const long InSize, const int ColNum, const double x, const double y)
+void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *in, const long InSize, const int ColNum, const int NCols, const double x, const double y)
  {
   long          i;
   const double *inX = in;
   const double *inY = in +        InSize;
   const double *inZ = in + ColNum*InSize;
+
+  const double Xscl = in[NCols*(InSize+1)     ] - in[NCols*InSize     ];
+  const double Yscl = in[NCols*(InSize+1) + 1 ] - in[NCols*InSize + 1 ];
 
   switch (sg->Sample2DMethod)
    {
@@ -55,7 +58,7 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
       *output = 0.0;
       for (i=0; i<InSize; i++)
        {
-        double dist = hypot( inX[i] - x , inY[i] - y );
+        double dist = hypot( (inX[i] - x)/Xscl , (inY[i] - y)/Yscl );
         if (first || (dist<DistBest)) { DistBest=dist; *output = inZ[i]; first=0; }
        }
       break;
@@ -66,7 +69,7 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
       *output = 0.0;
       for (i=0; i<InSize; i++)
        {
-        double dist = gsl_pow_2(inX[i] - x) + gsl_pow_2(inY[i] - y);
+        double dist = gsl_pow_2((inX[i] - x)/Xscl) + gsl_pow_2((inY[i] - y)/Yscl);
         double weight;
         if (dist<1e-200) { *output = inZ[i]; WeightSum=1.0; break; }
         weight = 1.0/dist;
@@ -74,6 +77,23 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
         WeightSum += weight;
        }
       if (WeightSum>0.0) *output /= WeightSum;
+      break;
+     }
+    case SW_SAMPLEMETHOD_ML:
+     {
+      double WeightSum = 0.0;
+      double h = sqrt( 1.0/InSize );
+      *output = 0.0;
+      for (i=0; i<InSize; i++)
+       {
+        double v = hypot( (inX[i] - x)/Xscl , (inY[i] - y)/Yscl ) / h;
+        double w = (v>=2)?0.0:((v>=1)?(0.25*gsl_pow_3(2.0-v)):(1.0-1.5*gsl_pow_2(v)+0.75*gsl_pow_3(v)));
+        if (!gsl_finite(w)) continue;
+        *output   += w * inZ[i];
+        WeightSum += w;
+       }
+      if (WeightSum>0.0) *output /= WeightSum;
+      else               *output = GSL_NAN;
       break;
      }
     default:
@@ -87,8 +107,8 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
 
 void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *in, settings_axis *axis_x, settings_axis *axis_y, unsigned char SampleToEdge)
  {
-  int        i, imax, j, jmax, c, k, TempContext;
-  double    *indata, *d[USING_ITEMS_MAX+4];
+  int        i, imax, j, jmax, ims, jms, c, k, TempContext;
+  double    *indata, *MinList, *MaxList, *d[USING_ITEMS_MAX+4];
   long       p, p2, pc, InSize;
   DataBlock *blk;
   imax = (sg->SamplesXAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesX;
@@ -108,9 +128,11 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
   // Extract data into a temporary array
   TempContext = lt_DescendIntoNewContext();
 
-  indata = (double *)lt_malloc(k * InSize * sizeof(double));
+  indata = (double *)lt_malloc(k * (InSize+2) * sizeof(double));
   if (indata==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory whilst resampling data."); *output=NULL; return; }
   for (c=0; c<k; c++) d[c] = indata + c*InSize;
+  MinList = indata + k* InSize;
+  MaxList = indata + k*(InSize+1);
 
   // Copy input data table into temporary array
   blk = in->first;
@@ -118,6 +140,18 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
    {
     for (c=0; c<k; c++) for (j=0; j<blk->BlockPosition; j++) *(d[c]++) = blk->data_real[c + k*j].d;
     blk=blk->next;
+   }
+
+  // Fill out minimum and maximum of data
+  for (jms=0; jms<k; jms++)
+   {
+    MinList[jms] = MaxList[jms] = 0.0;
+    for (ims=0; ims<InSize; ims++)
+     {
+      if ((ims==0)||(MinList[jms]>indata[jms*InSize+ims])) MinList[jms] = indata[jms*InSize+ims];
+      if ((ims==0)||(MaxList[jms]<indata[jms*InSize+ims])) MaxList[jms] = indata[jms*InSize+ims];
+     }
+    if (MaxList[jms]<=MinList[jms]) { double t=MinList[jms]; MinList[jms]=t*0.999;  MaxList[jms]=t*1.001; }
    }
 
   // Resample data into new DataTable
@@ -133,7 +167,7 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
       (*output)->current->data_real[p++].d = y;
 
       for (c=2; c<k; c++)
-        ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, InSize, c, x, y);
+        ppl_interp2d_eval(&(*output)->current->data_real[p++].d, sg, indata, InSize, c, k, x, y);
      }
    }
 

@@ -222,7 +222,7 @@ void ppl_settings_makedefault()
   settings_graph_default.SamplesXAuto  = SW_BOOL_FALSE;
   settings_graph_default.SamplesY      = 40;
   settings_graph_default.SamplesYAuto  = SW_BOOL_FALSE;
-  settings_graph_default.Sample2DMethod= SW_SAMPLEMETHOD_INVSQ;
+  settings_graph_default.Sample2DMethod= SW_SAMPLEMETHOD_NEAREST;
   settings_graph_default.TextColour    = COLOUR_BLACK;
   settings_graph_default.TextColour1   = 0;
   settings_graph_default.TextColour2   = 0;
