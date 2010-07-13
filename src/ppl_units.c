@@ -517,7 +517,7 @@ void ppl_units_StringEvaluate(char *in, value *out, int *end, int *errpos, char 
 
       for (k=0; k<UNITS_MAX_BASEUNITS; k++) out->exponent[k] += ppl_unit_database[j].exponent[k] * power * powerneg;
       if (ppl_units_DblEqual(out->exponent[UNIT_TEMPERATURE], 0)) out->TempType = 0; // We've lost our temperature dependence
-      out->real *= multiplier * pow( ppl_unit_database[j].multiplier , power*powerneg );
+      out->real *= pow( multiplier * ppl_unit_database[j].multiplier , power*powerneg );
       power = 1.0;
       if      (in[i]=='*') { powerneg= 1.0; i++; }
       else if (in[i]=='/') { powerneg=-1.0; i++; }
