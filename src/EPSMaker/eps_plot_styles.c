@@ -415,7 +415,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
            {
             if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { UUF(a1, ((ptBx+(ptAx+ptCx)/2)/2 - (ptCx-ptAx)/4)); UUF(a1, ((ptBx+(ptAx+ptCx)/2)/2 + (ptCx-ptAx)/4)); UUUBF(a2); }
             else if (style == SW_STYLE_BOXES)                                 { UUF(a1, (ptBx - sg->BoxWidth.real/2)); UUF(a1, (ptBx + sg->BoxWidth.real/2)); UUUBF(a2); }
-            else if (style == SW_STYLE_HISTEPS)                               { UUF(a1, (ptBx - (ptCx-ptAx)/4      )); UUF(a1, (ptBx + (ptCx-ptAx)/4      )); }
+            else if (style == SW_STYLE_HISTEPS)                               { UUF(a1, ((ptBx+(ptAx+ptCx)/2)/2 - (ptCx-ptAx)/4)); UUF(a1, ((ptBx+(ptAx+ptCx)/2)/2 + (ptCx-ptAx)/4)); UUUBF(a2); }
             else if (style == SW_STYLE_STEPS)  { UUF(a1, ((ptAx+ptBx)/2 - (ptBx-ptAx)/2)); UUF(a1, ((ptAx+ptBx)/2 + (ptBx-ptAx)/2)); }
             else if (style == SW_STYLE_FSTEPS) { UUF(a1, ((ptBx+ptCx)/2 - (ptCx-ptBx)/2)); UUF(a1, ((ptBx+ptCx)/2 + (ptCx-ptBx)/2)); }
            }
@@ -830,7 +830,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
              {
               if      ((style == SW_STYLE_BOXES) && (sg->BoxWidth.real<1e-200)) { MAKE_BOX ((ptBx+(ptAx+ptCx)/2)/2, ptBy, (ptCx-ptAx)/4      ); }
               else if (style == SW_STYLE_BOXES)                                 { MAKE_BOX ( ptBx                 , ptBy, sg->BoxWidth.real/2); }
-              else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP( ptBx                 , ptBy, (ptCx-ptAx)/4      ); }
+              else if (style == SW_STYLE_HISTEPS)                               { MAKE_STEP((ptBx+(ptAx+ptCx)/2)/2, ptBy, (ptCx-ptAx)/4      ); }
               else if (style == SW_STYLE_STEPS)  { MAKE_STEP((ptAx+ptBx)/2, ptBy, (ptBx-ptAx)/2); }
               else if (style == SW_STYLE_FSTEPS) { MAKE_STEP((ptBx+ptCx)/2, ptBy, (ptCx-ptBx)/2); }
              }
