@@ -104,6 +104,7 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
   CentralValue.FlagComplex = 0;
   CentralValue.imag = 0.0;
   CentralValue.real = (axis->format==NULL) ? eps_plot_axis_InvGetPosition(0.5, axis) : 1.0;
+  if (CentralValue.real==0.0) CentralValue.real = eps_plot_axis_InvGetPosition(0.25, axis);
   UnitString = ppl_units_GetUnitStr(&CentralValue,&UnitMultiplier,NULL,0,0,SW_DISPLAY_L);
   UnitMultiplier /= CentralValue.real;
   if (!gsl_finite(UnitMultiplier)) UnitMultiplier=1.0;
