@@ -502,7 +502,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
       for (j=0; j<blk->BlockPosition; j++)
        {
         eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
-        if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+        if (!gsl_finite(xpos)) // Position of point is off side of graph
+         {
+          if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0')) x->LaTeXpageno++;
+          continue;
+         }
 
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
@@ -619,7 +623,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           char *text=NULL;
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
-          if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+          if (!gsl_finite(xpos)) { x->LaTeXpageno++; continue; } // Position of point is off side of graph
           canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
           if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
          }
@@ -660,7 +664,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             char *text=NULL;
             if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
             eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
-            if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+            if (!gsl_finite(xpos)) { x->LaTeXpageno++; continue; } // Position of point is off side of graph
             canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
             if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
            }
@@ -691,7 +695,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         IF_NOT_INVISIBLE
          {
           eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, &theta_y, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
-          if (!gsl_finite(xpos)) continue; // Position of point is off side of graph
+          if (!gsl_finite(xpos)) // Position of point is off side of graph
+           {
+            if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0')) x->LaTeXpageno++;
+            continue;
+           }
 
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,-ps,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
