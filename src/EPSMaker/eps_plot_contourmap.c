@@ -173,12 +173,12 @@ void eps_plot_contourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *
     CanvasTextItem *i;
     value           v = pd->CRangeUnit;
 
-    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,(k+1.0)/(sg->ContoursN+1.0)))
-                                             :(CMin+(CMax-CMin)*(k+1.0)/(sg->ContoursN+1.0));
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,(k+0.5*CMinAuto)/(sg->ContoursN-0.5*((!CMinAuto)+(!CMaxAuto)))))
+                                             :(CMin+(CMax-CMin)*(k+0.5*CMinAuto)/(sg->ContoursN-0.5*((!CMinAuto)+(!CMaxAuto))));
     else                        v.real = sg->ContoursList[k];
 
     sprintf(UnitString,"%s",ppl_units_NumericDisplay(&v,0,SW_DISPLAY_L,0));
-    text = lt_malloc(strlen(UnitString+1));
+    text = lt_malloc(strlen(UnitString)+1);
     if (text!=NULL) { strcpy(text, UnitString); YIELD_TEXTITEM(text); }
    }
 
@@ -442,8 +442,8 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
    {
     value v = pd->CRangeUnit;
 
-    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,(k+1.0)/(sg->ContoursN+1)))
-                                             :(CMin+(CMax-CMin)*(k+1.0)/(sg->ContoursN+1));
+    if (sg->ContoursListLen< 0) v.real = CLog?(CMin*pow(CMax/CMin,(k+0.5*CMinAuto)/(sg->ContoursN-0.5*((!CMinAuto)+(!CMaxAuto)))))
+                                             :(CMin+(CMax-CMin)*(k+0.5*CMinAuto)/(sg->ContoursN-0.5*((!CMinAuto)+(!CMaxAuto))));
     else                        v.real = sg->ContoursList[k];
 
     // Write debugging output
@@ -570,32 +570,32 @@ GOT_CONTOURS:
      {
       clist[cn].posdata[2*n+0] = XSize;
       clist[cn].posdata[2*n+1] = 0;
+      clist[cn].posdata[2*n+2] = 0;
       clist[cn].posdata[2*n+3] = 0;
-      clist[cn].posdata[2*n+4] = 0;
       clist[cn].Nvertices_max += 2;
      }
     else if ((faceA==FACE_R)&&(faceB==FACE_L))
      {
       clist[cn].posdata[2*n+0] = 0;
       clist[cn].posdata[2*n+1] = 0;
-      clist[cn].posdata[2*n+3] = XSize;
-      clist[cn].posdata[2*n+4] = 0;
+      clist[cn].posdata[2*n+2] = XSize;
+      clist[cn].posdata[2*n+3] = 0;
       clist[cn].Nvertices_max += 2;
      }
     else if ((faceA==FACE_T)&&(faceB==FACE_B))
      {
       clist[cn].posdata[2*n+0] = 0;
       clist[cn].posdata[2*n+1] = YSize;
+      clist[cn].posdata[2*n+2] = 0;
       clist[cn].posdata[2*n+3] = 0;
-      clist[cn].posdata[2*n+4] = 0;
       clist[cn].Nvertices_max += 2;
      }
     else if ((faceA==FACE_B)&&(faceB==FACE_T))
      {
       clist[cn].posdata[2*n+0] = 0;
       clist[cn].posdata[2*n+1] = 0;
-      clist[cn].posdata[2*n+3] = 0;
-      clist[cn].posdata[2*n+4] = YSize;
+      clist[cn].posdata[2*n+2] = 0;
+      clist[cn].posdata[2*n+3] = YSize;
       clist[cn].Nvertices_max += 2;
      }
    }
@@ -622,90 +622,95 @@ GOT_CONTOURS:
   qsort((void *)clist, cpos, sizeof(ContourDesc), ContourCmp);
 
   // Now loop over the contours that we have traced, drawing them
-  for (pass=1; pass<4; pass++) // Fill contour, Stroke contour, Label contour
-  for (cn=0; cn<cpos; cn++)
+  for (pass=1; pass<=4; pass++) // Fill contour, Stroke contour, Label contour
    {
-    // Set value of c1
-    if (clist[cn].posdata==NULL) continue;
-    CVar->real = clist[cn].vreal;
+    if ((pass==2)&&(sg->ContoursLabel!=SW_ONOFF_ON)) continue;
+    if ((pass==2)&&(sg->ContoursLabel==SW_ONOFF_ON)) fprintf(x->epsbuffer, "gsave\n");
+    if ((pass==4)&&(sg->ContoursLabel==SW_ONOFF_ON)) fprintf(x->epsbuffer, "grestore\n");
 
-    // Evaluate any expressions in style information for next contour
-    for (i=0 ; ; i++)
+    for (cn=0; cn<cpos; cn++)
      {
-      char          *expr [] = { pd->ww_final.STRlinetype ,  pd->ww_final.STRlinewidth ,  pd->ww_final.STRpointlinewidth ,  pd->ww_final.STRpointsize ,  pd->ww_final.STRpointtype ,  pd->ww_final.STRcolour1    ,  pd->ww_final.STRcolour2    ,  pd->ww_final.STRcolour3    ,  pd->ww_final.STRcolour4    ,  pd->ww_final.STRfillcolour1    ,  pd->ww_final.STRfillcolour2    ,  pd->ww_final.STRfillcolour3    ,  pd->ww_final.STRfillcolour4    , NULL};
-      double        *outD [] = { NULL                     , &pd->ww_final.linewidth    , &pd->ww_final.pointlinewidth    , &pd->ww_final.pointsize    ,  NULL                      , &col1                       , &col2                       , &col3                       , &col4                       , &fc1                            , &fc2                            , &fc3                            , &fc4                            , NULL};
-      int           *outI [] = {&pd->ww_final.linetype    ,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.pointtype    ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
-      unsigned char *flagU[] = {&pd->ww_final.USElinetype , &pd->ww_final.USElinewidth , &pd->ww_final.USEpointlinewidth , &pd->ww_final.USEpointsize , &pd->ww_final.USEpointtype ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
-      int           *flagA[] = {&pd->ww_final.AUTOlinetype,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.AUTOpointtype,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
-      unsigned char  clip [] = {0,0,0,0,0,1,1,1,1,1,1,1,1,2};
-      value outval; double dbl; int end=-1, errpos=-1;
+      if (clist[cn].Nvertices_max<1) continue;
 
-      if (clip[i]>1) break;
-      if (expr[i]==NULL) continue;
+      // Set value of c1
+      if (clist[cn].posdata==NULL) continue;
+      CVar->real = clist[cn].vreal;
 
-      ppl_EvaluateAlgebra(expr[i], &outval, 0, &end, 0, &errpos, errtext, 1);
+      if ((pass==1)||(pass==3)) // Set before filling and stroking
+       {
+        // Evaluate any expressions in style information for next contour
+        for (i=0 ; ; i++)
+         {
+          char          *expr [] = { pd->ww_final.STRlinetype ,  pd->ww_final.STRlinewidth ,  pd->ww_final.STRpointlinewidth ,  pd->ww_final.STRpointsize ,  pd->ww_final.STRpointtype ,  pd->ww_final.STRcolour1    ,  pd->ww_final.STRcolour2    ,  pd->ww_final.STRcolour3    ,  pd->ww_final.STRcolour4    ,  pd->ww_final.STRfillcolour1    ,  pd->ww_final.STRfillcolour2    ,  pd->ww_final.STRfillcolour3    ,  pd->ww_final.STRfillcolour4    , NULL};
+          double        *outD [] = { NULL                     , &pd->ww_final.linewidth    , &pd->ww_final.pointlinewidth    , &pd->ww_final.pointsize    ,  NULL                      , &col1                       , &col2                       , &col3                       , &col4                       , &fc1                            , &fc2                            , &fc3                            , &fc4                            , NULL};
+          int           *outI [] = {&pd->ww_final.linetype    ,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.pointtype    ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+          unsigned char *flagU[] = {&pd->ww_final.USElinetype , &pd->ww_final.USElinewidth , &pd->ww_final.USEpointlinewidth , &pd->ww_final.USEpointsize , &pd->ww_final.USEpointtype ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+          int           *flagA[] = {&pd->ww_final.AUTOlinetype,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.AUTOpointtype,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+          unsigned char  clip [] = {0,0,0,0,0,1,1,1,1,1,1,1,1,2};
+          value outval; double dbl; int end=-1, errpos=-1;
 
-      if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate the style expression <%s>. The error, encountered at character position %d, was: '%s'", expr[i], errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
-      if (!outval.dimensionless) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was not a dimensionless number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
-      if (outval.FlagComplex) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was a complex number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
-      if (!gsl_finite(outval.real)) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was not a finite number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
-      dbl = outval.real;
+          if (clip[i]>1) break;
+          if (expr[i]==NULL) continue;
 
-      if (clip[i]) { if (dbl<0.0) dbl=0.0; if (dbl>1.0) dbl=1.0; }
-      if (outD[i]!=NULL) *outD[i] = dbl;
-      if (outI[i]!=NULL) { if (dbl<INT_MIN) dbl=INT_MIN+1; if (dbl>INT_MAX) dbl=INT_MAX-1; *outI[i] = (int)dbl; }
-      if (flagU[i]!=NULL) *flagU[i] = 1;
-      if (flagA[i]!=NULL) *flagA[i] = 0;
-     }
+          ppl_EvaluateAlgebra(expr[i], &outval, 0, &end, 0, &errpos, errtext, 1);
 
-    if ((col1>=0.0)&&(col2>=0.0)&&(col3>=0.0)&&((pd->ww_final.    Col1234Space!=SW_COLSPACE_CMYK)||(col4>=0.0))) { pd->ww_final.colour1=col1; pd->ww_final.colour2=col2; pd->ww_final.colour3=col3; pd->ww_final.colour4=col4; pd->ww_final.USEcolour=0; pd->ww_final.USEcolour1234=1; pd->ww_final.AUTOcolour=0; }
-    if ((fc1 >=0.0)&&(fc2 >=0.0)&&(fc3 >=0.0)&&((pd->ww_final.FillCol1234Space!=SW_COLSPACE_CMYK)||(fc4 >=0.0))) { pd->ww_final.fillcolour1=fc1; pd->ww_final.fillcolour2=fc2; pd->ww_final.fillcolour3=fc3; pd->ww_final.fillcolour4=fc4; pd->ww_final.USEfillcolour=0; pd->ww_final.USEfillcolour1234=1; }
+          if (errpos>=0) { sprintf(temp_err_string, "Could not evaluate the style expression <%s>. The error, encountered at character position %d, was: '%s'", expr[i], errpos, errtext); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+          if (!outval.dimensionless) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was not a dimensionless number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+          if (outval.FlagComplex) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was a complex number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+          if (!gsl_finite(outval.real)) { sprintf(temp_err_string, "The style expression <%s> yielded a result which was not a finite number.", expr[i]); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); continue; }
+          dbl = outval.real;
 
-    // Advance automatic plot styles
-    if (pd->ww_final.AUTOcolour)
-     {
-      int i,j;
-      for (j=0; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break; // j now contains length of palette
-      i = ((pd->ww_final.AUTOcolour+clist[cn].i)-5) % j; // i is now the palette colour number to use
-      while (i<0) i+=j;
-      if (settings_palette_current[i] > 0) { pd->ww_final.colour  = settings_palette_current[i]; pd->ww_final.USEcolour = 1; }
-      else                                 { pd->ww_final.Col1234Space = settings_paletteS_current[i]; pd->ww_final.colour1 = settings_palette1_current[i]; pd->ww_final.colour2 = settings_palette2_current[i]; pd->ww_final.colour3 = settings_palette3_current[i]; pd->ww_final.colour4 = settings_palette4_current[i]; pd->ww_final.USEcolour1234 = 1; }
-     }
-    else if (pd->ww_final.AUTOlinetype) pd->ww_final.linetype = pd->ww_final.AUTOlinetype + clist[cn].i;
+          if (clip[i]) { if (dbl<0.0) dbl=0.0; if (dbl>1.0) dbl=1.0; }
+          if (outD[i]!=NULL) *outD[i] = dbl;
+          if (outI[i]!=NULL) { if (dbl<INT_MIN) dbl=INT_MIN+1; if (dbl>INT_MAX) dbl=INT_MAX-1; *outI[i] = (int)dbl; }
+          if (flagU[i]!=NULL) *flagU[i] = 1;
+          if (flagA[i]!=NULL) *flagA[i] = 0;
+         }
 
-    // PASS 1: Fill path, if required
-    if (pass==1)
-     {
-//    eps_core_SetFillColour(x, &pd->ww_final);
-//    eps_core_SwitchTo_FillColour(x,1);
-//    IF_NOT_INVISIBLE
-//     {
-//      double xps, yps; long c=0;
-//      xpos = clist[cn].posdata[c++];
-//      ypos = clist[cn].posdata[c++];
-//      XPOS_TO_POSTSCRIPT;
-//      fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
-//      while (c<2*clist[cn].Nvertices_max)
+        if ((col1>=0.0)&&(col2>=0.0)&&(col3>=0.0)&&((pd->ww_final.    Col1234Space!=SW_COLSPACE_CMYK)||(col4>=0.0))) { pd->ww_final.colour1=col1; pd->ww_final.colour2=col2; pd->ww_final.colour3=col3; pd->ww_final.colour4=col4; pd->ww_final.USEcolour=0; pd->ww_final.USEcolour1234=1; pd->ww_final.AUTOcolour=0; }
+        if ((fc1 >=0.0)&&(fc2 >=0.0)&&(fc3 >=0.0)&&((pd->ww_final.FillCol1234Space!=SW_COLSPACE_CMYK)||(fc4 >=0.0))) { pd->ww_final.fillcolour1=fc1; pd->ww_final.fillcolour2=fc2; pd->ww_final.fillcolour3=fc3; pd->ww_final.fillcolour4=fc4; pd->ww_final.USEfillcolour=0; pd->ww_final.USEfillcolour1234=1; }
+
+        // Advance automatic plot styles
+        if (pd->ww_final.AUTOcolour)
+         {
+          int i,j;
+          for (j=0; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break; // j now contains length of palette
+          i = ((pd->ww_final.AUTOcolour+clist[cn].i)-5) % j; // i is now the palette colour number to use
+          while (i<0) i+=j;
+          if (settings_palette_current[i] > 0) { pd->ww_final.colour  = settings_palette_current[i]; pd->ww_final.USEcolour = 1; }
+          else                                 { pd->ww_final.Col1234Space = settings_paletteS_current[i]; pd->ww_final.colour1 = settings_palette1_current[i]; pd->ww_final.colour2 = settings_palette2_current[i]; pd->ww_final.colour3 = settings_palette3_current[i]; pd->ww_final.colour4 = settings_palette4_current[i]; pd->ww_final.USEcolour1234 = 1; }
+         }
+        else if (pd->ww_final.AUTOlinetype) pd->ww_final.linetype = pd->ww_final.AUTOlinetype + clist[cn].i;
+       }
+
+      // PASS 1: Fill path, if required
+      if (pass==1)
+       {
+//      eps_core_SetFillColour(x, &pd->ww_final);
+//      eps_core_SwitchTo_FillColour(x,1);
+//      IF_NOT_INVISIBLE
 //       {
+//        double xps, yps; long c=0;
 //        xpos = clist[cn].posdata[c++];
 //        ypos = clist[cn].posdata[c++];
 //        XPOS_TO_POSTSCRIPT;
-//        fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+//        fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
+//        while (c<2*clist[cn].Nvertices_max)
+//         {
+//          xpos = clist[cn].posdata[c++];
+//          ypos = clist[cn].posdata[c++];
+//          XPOS_TO_POSTSCRIPT;
+//          fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+//         }
+//        fprintf(x->epsbuffer, "closepath fill\n");
 //       }
-//      fprintf(x->epsbuffer, "closepath fill\n");
-//     }
-     }
+       }
 
-    // PASS 2: Stroke path
-    else if (pass==2)
-     {
-      eps_core_SetColour(x, &pd->ww_final, 1);
-      eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
-      IF_NOT_INVISIBLE
+      // PASS 2: Set clip path before stroking
+      else if (pass==2)
        {
-        double xps, yps; long c=0;
         long   n=clist[cn].Nvertices_max;
-
+        if (n<1) continue;
         if (sg->ContoursLabel==SW_ONOFF_ON)
          {
           int    page = x->current->DatasetTextID[pdn]+clist[cn].i;
@@ -713,16 +718,14 @@ GOT_CONTOURS:
           double xlab = (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
           double ylab = (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
           double wlab, hlab;
-          double height1,height2,bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
+          double bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
           postscriptPage *dviPage;
-
-          fprintf(x->epsbuffer, "gsave\n");
-
+  
           xlab = xo + Lx*xlab/(XSize-1)*sin(ThetaX) + Ly*ylab/(YSize-1)*sin(ThetaY);
           ylab = yo + Lx*xlab/(XSize-1)*cos(ThetaX) + Ly*ylab/(YSize-1)*cos(ThetaY);
-          if (x->dvi == NULL) { goto CLIP_FAIL; }
+          if (x->dvi == NULL) { continue; }
           dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, page+1);
-          if (dviPage== NULL) { goto CLIP_FAIL; }
+          if (dviPage== NULL) { continue; }
           bb_left   = dviPage->boundingBox[0];
           bb_bottom = dviPage->boundingBox[1];
           bb_right  = dviPage->boundingBox[2];
@@ -731,52 +734,61 @@ GOT_CONTOURS:
           ab_bottom = dviPage->textSizeBox[1];
           ab_right  = dviPage->textSizeBox[2];
           ab_top    = dviPage->textSizeBox[3];
-          height1   = fabs(ab_top - ab_bottom) * AB_ENLARGE_FACTOR;
-          height2   = fabs(bb_top - bb_bottom) * BB_ENLARGE_FACTOR;
-          hlab      = ((height2<height1) ? height2 : height1) * x->current->settings.FontSize;
-          wlab      = ((ab_right - ab_left) + MARGIN_HSIZE  ) * x->current->settings.FontSize;
+          hlab      = (fabs(bb_top - bb_bottom) + 2) * x->current->settings.FontSize;
+          wlab      = (fabs(ab_right - ab_left) + 2) * x->current->settings.FontSize;
 
           fprintf(x->epsbuffer, "newpath %.2f %.2f moveto %.2f %.2f lineto %.2f %.2f lineto %.2f %.2f lineto closepath %.2f %.2f %.2f 0 360 arc closepath eoclip\n", xlab-wlab/2, ylab-hlab/2, xlab+wlab/2, ylab-hlab/2, xlab+wlab/2, ylab+hlab/2, xlab-wlab/2, ylab+hlab/2, xlab, ylab, 2*(Lx+Ly));
          }
+       }
 
-CLIP_FAIL:
-        xpos = clist[cn].posdata[c++];
-        ypos = clist[cn].posdata[c++];
-        XPOS_TO_POSTSCRIPT;
-        fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
-        while (c<2*clist[cn].Nvertices_min)
+      // PASS 3: Stroke path
+      else if (pass==3)
+       {
+        eps_core_SetColour(x, &pd->ww_final, 1);
+        eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.linewidth, pd->ww_final.linetype, 0);
+        IF_NOT_INVISIBLE
          {
+          double xps, yps; long c=0;
+          long   n=clist[cn].Nvertices_max;
+          if (n<1) continue;
           xpos = clist[cn].posdata[c++];
           ypos = clist[cn].posdata[c++];
           XPOS_TO_POSTSCRIPT;
-          fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+          fprintf(x->epsbuffer, "newpath %.2f %.2f moveto\n", xps, yps);
+          while (c<2*clist[cn].Nvertices_min)
+           {
+            xpos = clist[cn].posdata[c++];
+            ypos = clist[cn].posdata[c++];
+            XPOS_TO_POSTSCRIPT;
+            fprintf(x->epsbuffer, "%.2f %.2f lineto\n", xps, yps);
+           }
+          fprintf(x->epsbuffer, "%sstroke\n", clist[cn].closepath?"closepath ":"");
          }
-        fprintf(x->epsbuffer, "%sstroke\n", clist[cn].closepath?"closepath ":"");
-        if (sg->ContoursLabel==SW_ONOFF_ON) fprintf(x->epsbuffer, "grestore\n");
        }
-     }
 
-    // PASS 3: Label contours
-    else if ((pass==3) && (sg->ContoursLabel==SW_ONOFF_ON))
-     {
-      long   i = clist[cn].segment_flatest;
-      long   n = clist[cn].Nvertices_max;
-      with_words ww;
-
-      with_words_zero(&ww,0);
-      if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
-      else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
-      eps_core_SetColour(x, &ww, 1);
-
-      IF_NOT_INVISIBLE
+      // PASS 4: Label contours
+      else if ((pass==4) && (sg->ContoursLabel==SW_ONOFF_ON))
        {
-        double xlab = (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
-        double ylab = (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
-        canvas_EPSRenderTextItem(x, NULL, x->current->DatasetTextID[pdn]+clist[cn].i,
-                                 (xo + Lx*xlab/(XSize-1)*sin(ThetaX) + Ly*ylab/(YSize-1)*sin(ThetaY))/M_TO_PS,
-                                 (yo + Lx*xlab/(XSize-1)*cos(ThetaX) + Ly*ylab/(YSize-1)*cos(ThetaY))/M_TO_PS,
-                                 SW_HALIGN_CENT, SW_VALIGN_CENT, x->CurrentColour, x->current->settings.FontSize,
-                                 0.0, NULL, NULL);
+        long   i = clist[cn].segment_flatest;
+        long   n = clist[cn].Nvertices_max;
+        with_words ww;
+
+        if (n<1) continue;
+        with_words_zero(&ww,0);
+        if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
+        else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
+        eps_core_SetColour(x, &ww, 1);
+
+        IF_NOT_INVISIBLE
+         {
+          double xlab = (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
+          double ylab = (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
+          canvas_EPSRenderTextItem(x, NULL, x->current->DatasetTextID[pdn]+clist[cn].i,
+                                   (xo + Lx*xlab/(XSize-1)*sin(ThetaX) + Ly*ylab/(YSize-1)*sin(ThetaY))/M_TO_PS,
+                                   (yo + Lx*xlab/(XSize-1)*cos(ThetaX) + Ly*ylab/(YSize-1)*cos(ThetaY))/M_TO_PS,
+                                   SW_HALIGN_CENT, SW_VALIGN_CENT, x->CurrentColour, x->current->settings.FontSize,
+                                   0.0, NULL, NULL);
+         }
        }
      }
    }

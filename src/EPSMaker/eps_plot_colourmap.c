@@ -385,6 +385,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
       } \
  \
      /* Compute RGB, HSB or CMYK components */ \
+     comp[3]=0.0; \
      for (c=0; c<3+(sg->ColMapColSpace==SW_COLSPACE_CMYK); c++) \
       { \
        errpos=-1; \
