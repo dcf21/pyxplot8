@@ -139,13 +139,19 @@ void DataFile_FromFunctions_CheckSpecialRaster(char **fnlist, int fnlist_len, ch
     HistogramDescriptor *desc = (HistogramDescriptor *)FuncPtr->FunctionPtr;
     double *OutputRaster;
     int     RasterCount=0;
+    long    NInput = desc->Nbins-1;
+    if (NInput<1) NInput=1;
 
-    OutputRaster = (double *)lt_malloc_incontext(desc->Nbins*sizeof(double), OutContext);
+    OutputRaster = (double *)lt_malloc_incontext(NInput*sizeof(double), OutContext);
     if (OutputRaster == NULL) goto CLEANUP;
 
-    for (i=0; i<desc->Nbins; i++)
-     if ( ((min==NULL)||(*min<=desc->bins[i])) && ((max==NULL)||(*max>=desc->bins[i])) )
-      { OutputRaster[ RasterCount++ ] = desc->bins[i]; }
+    for (i=0; i<(desc->Nbins-1); i++)
+     {
+      double midpoint = desc->log?sqrt(desc->bins[i]*desc->bins[i+1])
+                                 :   ((desc->bins[i]+desc->bins[i+1])/2);
+      if ( ((min==NULL)||(*min<=midpoint)) && ((max==NULL)||(*max>=midpoint)) )
+       { OutputRaster[ RasterCount++ ] = midpoint; }
+     }
 
     *OrdinateRaster = OutputRaster;
     *RasterLen      = RasterCount;

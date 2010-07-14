@@ -162,6 +162,7 @@ int directive_histogram(Dict *command)
   output = (HistogramDescriptor *)lt_malloc_incontext(sizeof(HistogramDescriptor), 0);
   if (output == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return 1; }
   output->unit     = FirstEntry;
+  output->log      = logaxis;
   output->filename = (char *)lt_malloc_incontext(strlen(filename)+1, 0);
   if (output->filename == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return 1; }
   strcpy(output->filename , filename);
@@ -307,7 +308,7 @@ int directive_histogram(Dict *command)
 
 void ppl_histogram_evaluate(char *FuncName, HistogramDescriptor *desc, value *in, value *out, int *status, char *errout)
  {
-  int i;
+  long   i, Nsteps, len, ss, pos;
   double dblin;
 
   if (!ppl_units_DimEqual(in, &desc->unit))
@@ -334,7 +335,18 @@ void ppl_histogram_evaluate(char *FuncName, HistogramDescriptor *desc, value *in
   for (i=0; i<UNITS_MAX_BASEUNITS; i++) if (out->exponent[i]!=0.0) out->exponent[i]*=-1; // Output has units of 'per x'
   if ((desc->Nbins<1) || (dblin<desc->bins[0]) || (dblin>desc->bins[desc->Nbins-1])) return; // Query is outside range of histogram
 
-  for (i=1; i<desc->Nbins; i++) if (desc->bins[i]>dblin) { out->real = desc->binvals[i-1]; return; }
+  len    = desc->Nbins;
+  Nsteps = (long)ceil(log(len)/log(2));
+  for (pos=i=0; i<Nsteps; i++)
+   {
+    ss = 1<<(Nsteps-1-i);
+    if (pos+ss>=len) continue;
+    if (desc->bins[pos+ss]<=dblin) pos+=ss;
+   }
+  if      (desc->bins[pos]>dblin) return; // Off left end
+  else if (pos==len-1)            return; // Off right end
+
+  out->real = desc->binvals[pos];
   return;
  }
 

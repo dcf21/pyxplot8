@@ -59,11 +59,12 @@ typedef struct SplineDescriptor {
  } SplineDescriptor;
 
 typedef struct HistogramDescriptor {
- long int  Nbins;
- double   *bins;
- double   *binvals;
- value     unit;
- char     *filename;
+ long int      Nbins;
+ double       *bins;
+ double       *binvals;
+ unsigned char log;
+ value         unit;
+ char         *filename;
  } HistogramDescriptor;
 
 typedef struct FFTDescriptor {
