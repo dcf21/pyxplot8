@@ -355,15 +355,48 @@ fit [0:10] f() 'data.dat' via a
 
 The \indcmdt{interpolate} can be used to generate a special function within
 PyXPlot's mathematical environment which interpolates a set of \datapoint s
-supplied from a \datafile.  Various different types of interpolation are
-supported: linear interpolation, power-law interpolation\footnote{Power-law
-interpolation is equivalent to linear interpolation in log-log space.},
+supplied from a \datafile. Either one- or two-dimensional interpolation is
+possible.
+
+In the case of one-dimensional interpolation, various different types of
+interpolation are supported: linear interpolation, power-law interpolation,
 polynomial interpolation, cubic-spline interpolation and akima-spline
-interpolation. The use of polynomial interpolation with large datasets is
-strongly discouraged, as polynomial fits tend to show severe oscillations
-between \datapoint s.  Extrapolation is not permitted; if an attempt is made to
-evaluate an interpolated function beyond the limits of the \datapoint s which
-it interpolates, PyXPlot returns an error or value of not-a-number.
+interpolation. Stepwise interpolation returns the value of the datapoint
+nearest to the requested point in argument space. The use of polynomial
+interpolation with large datasets is strongly discouraged, as polynomial fits
+tend to show severe oscillations between \datapoint s.  Except in the case of
+stepwise interpolation, extrapolation is not permitted; if an attempt is made
+to evaluate an interpolated function beyond the limits of the \datapoint s
+which it interpolates, PyXPlot returns an error or value of not-a-number.
+
+In the case of two-dimensional interpolation, the type of interpolation to be
+used is set using the {\tt interpolate} modifier to the \indcmdt{set samples},
+and may be changed at any time after the interpolation function has been
+created.  The options available are nearest-neighbour interpolation -- which is
+the two-dimensional equivalent of stepwise interpolation, inverse-square
+interpolation -- which returns a weighted average of the supplied \datapoint s,
+using the inverse squares of their distances from the requested point in
+argument space as weights, and Monaghan Lattanzio interpolation, which uses the
+kernel (Monaghan \& Lattanzio 1985)
+\begin{eqnarray*}
+w(x) & = 1 - \nicefrac{3}{2}v^2 + \nicefrac{3}{4}v^3 & \,\mathrm{for~}0\leq v\leq 1 \\
+     & = \nicefrac{1}{4}(2-v)^3                      & \,\mathrm{for~}1\leq v\leq 2
+\end{eqnarray*}
+where $v=r/h$ for $h=\sqrt{A/n}$, $A$ is the product
+$(x_\mathrm{max}-x_\mathrm{min})(y_\mathrm{max}-y_\mathrm{min})$ and $n$ is the
+number of input datapoints. These are selected as follows:
+
+\begin{verbatim}
+set samples interpolate NearestNeighbour
+set samples interpolate InverseSquare
+set samples interpolate MonaghanLattanzio
+\end{verbatim}
+
+Finally, data can be imported from graphical images in bitmap ({\tt .bmp})
+format to produce a funcion of two arguments returning a value in the
+range~$0\to1$ which represents the data in one of the image's three colour
+channels. The two arguments are the horizontal and vertical position within the
+bitmap image, as measured in pixels.
 
 The \indcmdt{interpolate} has similar syntax to the \indcmdt{fit}:
 

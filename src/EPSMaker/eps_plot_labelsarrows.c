@@ -71,8 +71,8 @@ void eps_plot_labelsarrows_YieldUpText(EPSComm *x)
 #define ADD_PAGE_COORDINATES(SYSTEM, XIN, THETA_X) \
      if ((SYSTEM==SW_SYSTEM_PAGE)||(SYSTEM==SW_SYSTEM_GRAPH)) \
       { \
-       xpos += XIN.real * sin(THETA_X) * M_TO_PS; \
-       ypos += XIN.real * cos(THETA_X) * M_TO_PS; \
+       xpos_ += XIN.real * sin(THETA_X) * M_TO_PS; \
+       ypos_ += XIN.real * cos(THETA_X) * M_TO_PS; \
       }
 
 void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double width, double height, double zdepth)
@@ -96,8 +96,10 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
    {
     settings_axis *xa0, *ya0, *za0=NULL, *xa1, *ya1, *za1=NULL;
     double         xin0, yin0, zin0=0.5, xin1, yin1, zin1=0.5;
-    double         xpos, ypos, xpos0, ypos0, xpos1, ypos1, depth0, depth1, xap, yap, zap, theta_x, theta_y, theta_z;
+    double         xpos_, ypos_, xpos[2], ypos[2], depth[2];
+    double         xap[2], yap[2], zap[2], theta_x, theta_y, theta_z;
     int            status=0, xrn0, yrn0, zrn0, xrn1, yrn1, zrn1;
+    int            ArrowType=ai->arrow_style;
     sprintf(ItemName, "arrow %d on plot %d", ai->id, x->current->id);
     FETCH_AXES(ai->system_x0, xa0, x->current->XAxes, ai->axis_x0, ai->x0, xin0);
     FETCH_AXES(ai->system_y0, ya0, x->current->YAxes, ai->axis_y0, ai->y0, yin0);
@@ -116,20 +118,78 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        if ((xa0==xa1)&&(xrn0!=xrn1)) continue;
        if ((ya0==ya1)&&(yrn0!=yrn1)) continue;
        if ((za0==za1)&&(zrn0!=zrn1)) continue;
-       eps_plot_GetPosition(&xpos0, &ypos0, &depth0, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
-       eps_plot_GetPosition(&xpos1, &ypos1, &depth1, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
-       xpos=xpos0; ypos=ypos0;
+       eps_plot_GetPosition(&xpos[0], &ypos[0], &depth[0], &xap[0], &yap[0], &zap[0], &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin0, yin0, zin0, xa0, ya0, za0, xrn0, yrn0, zrn0, &x->current->settings, origin_x, origin_y, width, height, zdepth, 1);
+       eps_plot_GetPosition(&xpos[1], &ypos[1], &depth[1], &xap[1], &yap[1], &zap[1], &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin1, yin1, zin1, xa1, ya1, za1, xrn1, yrn1, zrn1, &x->current->settings, origin_x, origin_y, width, height, zdepth, 1);
+       if (((xap[0]<0)||(xap[0]>1)||(yap[0]<0)||(yap[0]>1)||(zap[0]<0)||(zap[0]>1)) && ((xa0==NULL)||(ya0==NULL)||(x->current->ThreeDim&&(za0==NULL))||(xa1==NULL)||(ya1==NULL)||(x->current->ThreeDim&&(za1==NULL)))) continue;
+       xpos_=xpos[0]; ypos_=ypos[0];
        ADD_PAGE_COORDINATES(ai->system_x0, ai->x0, theta_x);
        ADD_PAGE_COORDINATES(ai->system_y0, ai->y0, theta_y);
        if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(ai->system_z0, ai->z0, theta_z); }
-       xpos0=xpos; ypos0=ypos; xpos=xpos1; ypos=ypos1;
+       xpos[0]=xpos_; ypos[0]=ypos_; xpos_=xpos[1]; ypos_=ypos[1];
        ADD_PAGE_COORDINATES(ai->system_x1, ai->x1, theta_x);
        ADD_PAGE_COORDINATES(ai->system_y1, ai->y1, theta_y);
-       xpos1=xpos; ypos1=ypos;
        if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(ai->system_z1, ai->z1, theta_z); }
+       xpos[1]=xpos_; ypos[1]=ypos_;
+
+        {
+         const double grad[3][6] = { // d[x y z xap yap zap]/d[xap yap zap]
+           { (xap[1]==xap[0])?0.0:(xpos[1] -xpos[0] )/(xap[1]-xap[0]),
+             (xap[1]==xap[0])?0.0:(ypos[1] -ypos[0] )/(xap[1]-xap[0]),
+             (xap[1]==xap[0])?0.0:(depth[1]-depth[0])/(xap[1]-xap[0]),
+             1.0,
+             (xap[1]==xap[0])?0.0:(yap[1]  -yap[0]  )/(xap[1]-xap[0]),
+             (xap[1]==xap[0])?0.0:(zap[1]  -zap[0]  )/(xap[1]-xap[0]),
+         },{ (yap[1]==yap[0])?0.0:(xpos[1] -xpos[0] )/(yap[1]-yap[0]),
+             (yap[1]==yap[0])?0.0:(ypos[1] -ypos[0] )/(yap[1]-yap[0]),
+             (yap[1]==yap[0])?0.0:(depth[1]-depth[0])/(yap[1]-yap[0]),
+             (yap[1]==yap[0])?0.0:(xap[1]  -xap[0]  )/(yap[1]-yap[0]),
+             1.0,
+             (yap[1]==yap[0])?0.0:(zap[1]  -zap[0]  )/(yap[1]-yap[0]),
+         },{ (zap[1]==zap[0])?0.0:(xpos[1] -xpos[0] )/(zap[1]-zap[0]),
+             (zap[1]==zap[0])?0.0:(ypos[1] -ypos[0] )/(zap[1]-zap[0]),
+             (zap[1]==zap[0])?0.0:(depth[1]-depth[0])/(zap[1]-zap[0]),
+             (zap[1]==zap[0])?0.0:(xap[1]  -xap[0]  )/(zap[1]-zap[0]),
+             (zap[1]==zap[0])?0.0:(yap[1]  -yap[0]  )/(zap[1]-zap[0]),
+             1.0
+          }};
+
+#define CLIP(XAP, XYZ, XAPV, P) \
+         if (XAPV ? (XAP[P]>1) : (XAP[P]<0) ) \
+          { \
+           const double t=XAP[P]; \
+           if (XAP[1-P]<0.0) continue; \
+           xpos[P]  += grad[XYZ][0]*(XAPV-t); \
+           ypos[P]  += grad[XYZ][1]*(XAPV-t); \
+           depth[P] += grad[XYZ][2]*(XAPV-t); \
+           xap[P]   += grad[XYZ][3]*(XAPV-t); \
+           yap[P]   += grad[XYZ][4]*(XAPV-t); \
+           zap[P]   += grad[XYZ][5]*(XAPV-t); \
+ \
+           if (P==0) \
+            { \
+             if (ArrowType==SW_ARROWTYPE_TWOWAY) ArrowType=SW_ARROWTYPE_HEAD; \
+            } \
+           else \
+            { \
+             if (ArrowType==SW_ARROWTYPE_HEAD  ) ArrowType=SW_ARROWTYPE_NOHEAD; \
+             if (ArrowType==SW_ARROWTYPE_TWOWAY) \
+              { \
+               double t1=xpos[0],t2=ypos[0],t3=depth[0],t4=xap[0],t5=yap[0],t6=zap[0]; \
+               xpos[0]=xpos[1]; ypos[0]=ypos[1]; depth[0]=depth[1]; xap[0]=xap[1]; yap[0]=yap[1]; zap[0]=zap[1]; \
+               xpos[1]=t1;      ypos[1]=t2;      depth[1]=t3;       xap[1]=t4;     yap[1]=t5;     zap[1]=t6; \
+               ArrowType=SW_ARROWTYPE_HEAD; \
+              } \
+            } \
+          }
+
+         CLIP(xap, 0, 0.0, 0); CLIP(xap, 0, 1.0, 0); CLIP(xap, 0, 0.0, 1); CLIP(xap, 0, 1.0, 1);
+         CLIP(yap, 1, 0.0, 0); CLIP(yap, 1, 1.0, 0); CLIP(yap, 1, 0.0, 1); CLIP(yap, 1, 1.0, 1);
+         CLIP(zap, 2, 0.0, 0); CLIP(zap, 2, 1.0, 0); CLIP(zap, 2, 0.0, 1); CLIP(zap, 2, 1.0, 1);
+        }
+
        with_words_merge(&ww, &ai->style, &ww_default, NULL, NULL, NULL, 1);
-       if ((gsl_finite(xpos0))&&(gsl_finite(ypos0))&&(gsl_finite(xpos1))&&(gsl_finite(ypos1)))
-         eps_primitive_arrow(x, ai->arrow_style, xpos0, ypos0, x->current->ThreeDim?&depth0:NULL, xpos1, ypos1, x->current->ThreeDim?&depth1:NULL, &ww);
+       if ((gsl_finite(xpos[0]))&&(gsl_finite(ypos[0]))&&(gsl_finite(xpos[1]))&&(gsl_finite(ypos[1])))
+         eps_primitive_arrow(x, ArrowType, xpos[0], ypos[0], x->current->ThreeDim?&depth[0]:NULL, xpos[1], ypos[1], x->current->ThreeDim?&depth[1]:NULL, &ww);
       }
    }
 
@@ -143,7 +203,7 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
     {
      settings_axis *xa, *ya, *za=NULL;
      double         xin, yin, zin=0.5;
-     double        xpos, ypos, depth, xap, yap, zap, theta_x, theta_y, theta_z;
+     double         xpos_, ypos_, depth, xap, yap, zap, theta_x, theta_y, theta_z;
      int            status=0, xrn, yrn, zrn;
      sprintf(ItemName, "label %d on plot %d", li->id, x->current->id);
      FETCH_AXES(li->system_x, xa, x->current->XAxes, li->axis_x, li->x, xin);
@@ -155,7 +215,7 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
       for (zrn=0; zrn<=((x->current->ThreeDim && (za!=NULL)) ? za->AxisValueTurnings : 0); zrn++)
       {
        double xgap,ygap,xgap2,ygap2;
-       eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin, yin, zin, xa, ya, za, xrn, yrn, zrn, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
+       eps_plot_GetPosition(&xpos_, &ypos_, &depth, &xap, &yap, &zap, &theta_x, &theta_y, &theta_z, x->current->ThreeDim, xin, yin, zin, xa, ya, za, xrn, yrn, zrn, &x->current->settings, origin_x, origin_y, width, height, zdepth, 0);
        ADD_PAGE_COORDINATES(li->system_x, li->x, theta_x);
        ADD_PAGE_COORDINATES(li->system_y, li->y, theta_y);
        if (x->current->ThreeDim) { ADD_PAGE_COORDINATES(li->system_z, li->z, theta_z); }
@@ -169,14 +229,14 @@ void eps_plot_labelsarrows(EPSComm *x, double origin_x, double origin_y, double 
        ygap2 = xgap*sin(li->rotation) + ygap*cos(li->rotation);
        with_words_merge(&ww, &li->style, &ww_default, NULL, NULL, NULL, 1);
        eps_core_SetColour(x, &ww, 0);
-       IF_NOT_INVISIBLE if ((gsl_finite(xpos))&&(gsl_finite(ypos))&&(gsl_finite(depth)))
+       IF_NOT_INVISIBLE if ((gsl_finite(xpos_))&&(gsl_finite(ypos_))&&(gsl_finite(depth)))
         {
          char *colstr=NULL, *text=NULL;
          colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1);
          if (colstr!=NULL)
           {
            strcpy(colstr, x->CurrentColour);
-           canvas_EPSRenderTextItem(x, &text, pageno, xpos/M_TO_PS+xgap2, ypos/M_TO_PS+ygap2, hal, val, x->CurrentColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
+           canvas_EPSRenderTextItem(x, &text, pageno, xpos_/M_TO_PS+xgap2, ypos_/M_TO_PS+ygap2, hal, val, x->CurrentColour, x->current->settings.FontSize, li->rotation, NULL, NULL);
            if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, colstr, text);
           }
         }

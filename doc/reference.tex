@@ -880,17 +880,30 @@ In the case of two-dimensional interpolation, the type of interpolation to be
 used is set using the {\tt interpolate} modifier to the \indcmdt{set samples},
 and may be changed at any time after the interpolation function has been
 created.  The options available are nearest-neighbour interpolation -- which is
-the two-dimensional equivalent of stepwise interpolation -- and inverse-square
+the two-dimensional equivalent of stepwise interpolation, inverse-square
 interpolation -- which returns a weighted average of the supplied \datapoint s,
 using the inverse squares of their distances from the requested point in
-argument space as weights. These are selected as follows:
+argument space as weights, and Monaghan Lattanzio interpolation, which uses the
+kernel (Monaghan \& Lattanzio 1985)
+\begin{eqnarray*}
+w(x) & = 1 - \nicefrac{3}{2}v^2 + \nicefrac{3}{4}v^3 & \,\mathrm{for~}0\leq v\leq 1 \\
+     & = \nicefrac{1}{4}(2-v)^3                      & \,\mathrm{for~}1\leq v\leq 2
+\end{eqnarray*}
+where $v=r/h$ for $h=\sqrt{A/n}$, $A$ is the product
+$(x_\mathrm{max}-x_\mathrm{min})(y_\mathrm{max}-y_\mathrm{min})$ and $n$ is the
+number of input datapoints. These are selected as follows:
 
 \begin{verbatim}
-set samples interpolate nearestneighbour
-set samples interpolate inversesquare
+set samples interpolate NearestNeighbour
+set samples interpolate InverseSquare
+set samples interpolate MonaghanLattanzio
 \end{verbatim}
 
-Finally, data can be imported from graphical images in bitmap ({\tt .bmp}) format.
+Finally, data can be imported from graphical images in bitmap ({\tt .bmp}) 
+format to produce a funcion of two arguments returning a value in the
+range~$0\to1$ which represents the data in one of the image's three colour
+channels. The two arguments are the horizontal and vertical position within the
+bitmap image, as measured in pixels.
 
 A very common application of the \indcmdt{interpolate} is to perform arithmetic
 functions such as addition or subtraction on datasets which are not sampled at
