@@ -1747,6 +1747,12 @@ horizontal midpoints between them. The specified width may have any physical
 units, but must be real and finite.
 
 
+\subsection{c1format}\indcmd{set x1format}
+
+
+\subsection{c1label}\indcmd{set c1label}
+
+
 \subsection{calendar}\indcmd{set calendar}
 
 \begin{verbatim}
@@ -1783,10 +1789,10 @@ set colourkey [<position>]
 
 The setting {\tt colourkey} determines whether colour scales are drawn along
 the edges of plots drawn using the \indpst{colourmap} plot style, indicating
-the mapping between ordinate values and colours. Note that such scales are only
-ever drawn when the \indpst{colourmap} plot style is supplied with only three
-columns of data, since the colour mappings are themselves multi-dimensional
-when more columns are supplied. Issuing the command
+the mapping between represented values and colours. Note that such scales are
+only ever drawn when the \indpst{colourmap} plot style is supplied with only
+three columns of data, since the colour mappings are themselves
+multi-dimensional when more columns are supplied. Issuing the command
 
 \begin{verbatim}
 set colourkey
@@ -1815,6 +1821,8 @@ set colourkey bottom
 \end{verbatim}
 
 Recognised positions are {\tt top}, {\tt bottom}, {\tt left} and {\tt right}.
+{\tt above} is an alias for {\tt top}; {\tt below} is an alias for {\tt bottom}
+and {\tt outside} is an alias for {\tt right}.
 
 
 \subsection{colourmap}\indcmd{set colourmap}
@@ -3446,7 +3454,7 @@ running from right to left, or from top to bottom.
 \begin{verbatim}
 set [m]<axis>tics
     [ ( axis | border | inward | outward | both ) ]
-    [ ( auto
+    [ ( autofreq
           | [<minimum>,] <increment> [, <maximum>]
           | \( { '<label>' <position> } \)
          ] )

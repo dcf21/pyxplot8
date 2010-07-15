@@ -24,24 +24,23 @@
 \chapter{Plotting: A Detailed Survey}
 \label{ch:plotting}
 
-Having described PyXPlot's mathematical environment and data-processing
-facilities in detail, this part of the manual returns to the subject of how
-PyXPlot may be used to produce graphs and other vector graphics. In this
-chapter we provide a systematic survey of how the appearance of plots can be
-configured, continuing from the brief overview of the \indcmdt{plot} given in
-Chapter~\ref{ch:first_steps}.  In the subsequent chapters of this part, we will
-go on to describe how to produce graphical output in a range of image formats
-(Chapter~\ref{ch:image_formats}) and how to produce galleries of multiple plots
-side-by-side together with more sophisticated vector graphics
-(Chapter~\ref{ch:vector_graphics}).
+This part of the manual returns to the subject of how PyXPlot may be used to
+produce graphs and other vector graphics. In this chapter, a systematic survey
+of how the appearance of plots can be configured is provided, continuing from
+the brief overview of the \indcmdt{plot} given in Chapter~\ref{ch:first_steps}.
+In the subsequent chapters, we will describe how to produce graphical output in
+a range of image formats (Chapter~\ref{ch:image_formats}) and how to produce
+galleries of multiple plots side-by-side, together with more sophisticated
+vector graphics (Chapter~\ref{ch:vector_graphics}).
 
 \section{The {\tt with} modifier}
 
-Chapter~\ref{ch:first_steps} provided an overview of the syntax of the
-\indcmdt{plot}, including the {\tt every}, {\tt index}, {\tt select} and {\tt
-using} modifiers which can be used to control {\it which} data, read from a
-\datafile\ or sampled from a function, should be plotted. The {\tt with}
-modifier controls {\it how} data should be plotted. For example, the statement
+In Chapter~\ref{ch:first_steps} an overview of the syntax of the \indcmdt{plot}
+was provided, including a description of the {\tt every}, {\tt index}, {\tt
+select} and {\tt using} modifiers which can be used to control {\it which}
+data, read from a \datafile\ or sampled from a function, should be plotted. The
+{\tt with} modifier controls {\it how} data should be plotted. For example, the
+statement
 \begin{verbatim}
 plot "data.dat" index 1 using 4:5 with lines
 \end{verbatim}
@@ -60,10 +59,10 @@ given. In this section, we list all of the modifiers such as {\tt line\-width}
 which may be used to alter the exact appearance of these plot styles, which are
 as follows:
 \begin{itemize}
-\item \indmodt{colour} -- used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb0.1:\-0.2:\-0.3}, {\tt hsb0.1:\-0.2:\-0.3} or {\tt cmyk0.4:\-0.3:\-0.2:\-0.1}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
-\item \indmodt{fillcolour} -- used to select the colour in which each dataset is filled. This is not applicable to any of the plot styles listed above, but is included here for completeness. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolour}.
-\item \indmodt{linetype} -- used to numerically select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used in line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
-\item \indmodt{linewidth} -- used to select the width of line which should be used in line-based plot styles, where unity represents the default width. May be abbreviated {\tt lw}.
+\item \indmodt{colour} -- used to select the colour in which the dataset is to be plotted. It should be followed either by an integer, to select a colour from the present palette (see Section~\ref{sec:palette}), or by a recognised colour name, a complete list of which can be found in Section~\ref{sec:colour_names}. Alternatively, arbitrary colours may be specified by using one of the forms {\tt rgb<r>:\-<g>:\-<b>}, {\tt hsb<h>:\-<s>:\-<b>} or {\tt cmyk<c>:\-<m>:\-<y>:\-<k>}, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range~0 to~1. This modifier may also be spelt {\tt color}.\index{colours!setting for datasets}
+\item \indmodt{fillcolour} -- used to select the colour in which the dataset is filled. The colour may be specified using any of the styles listed for {\tt colour}. May also be spelt {\tt fillcolor}.
+\item \indmodt{linetype} -- used to numerically select the type of line -- for example, solid, dotted, dashed, etc.\ -- which should be used by line-based plot styles. A complete list of PyXPlot's numbered line types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt lt}.
+\item \indmodt{linewidth} -- used to select the width of line which should be used by line-based plot styles, where unity represents the default width. May be abbreviated {\tt lw}.
 \item \indmodt{pointlinewidth} -- used to select the width of line which should be used to stroke points in point-based plot styles, where unity represents the default width. May be abbreviated {\tt plw}.
 \item \indmodt{pointsize} -- used to select the size of drawn points, where unity represents the default size. May be abbreviated {\tt ps}.
 \item \indmodt{pointtype} -- used to numerically select the type of point -- for example, crosses, circles, etc.\ -- used by point-based plot styles. A complete list of PyXPlot's numbered point types can be found in Chapter~\ref{ch:linetypes_table}. May be abbreviated {\tt pt}.
@@ -105,13 +104,13 @@ plot styles.
 \label{sec:palette}
 
 \index{palette}\index{colours!setting the palette} As indicated above, colours
-may be referred to either specifically by name or RGB components, or by their
-locations in the current palette. By default, PyXPlot's palette contains a series
-of visually distinctive colours which are insofar as possible are also
-distinctive to users with most common forms of colour blindness. The current
-palette may be queried using the \indcmdt{show palette}, and changed using the
-\indcmdt{set palette}, which takes a comma-separated list of colours, as in the
-example:
+may be referred to either specifically by name, by RGB, HSB or CMYK components,
+or by their positions in the current palette. By default, PyXPlot's palette
+contains a series of visually distinctive colours which are, insofar as
+possible, also distinctive to users with most common forms of colour blindness.
+The current palette may be queried using the \indcmdt{show palette}, and
+changed using the \indcmdt{set palette}, which takes a comma-separated list of
+colours, as in the example:
 
 \begin{verbatim}
 set palette BrickRed, LimeGreen, CadetBlue
@@ -143,7 +142,7 @@ monochrome output (see Chapter~\ref{sec:set_terminal}). In the former case
 a graph are drawn sequentially from the currently-selected palette, all lines
 are drawn as solid lines ({\tt line\-type~1}), and the symbols used to draw
 each dataset are drawn sequentially from PyXPlot's available point types. In
-the latter case (monochrome output), all datasets are plotted in black, and
+the latter case (monochrome output), all datasets are plotted in black and
 both the line types and point types used to draw each dataset are drawn
 sequentially from PyXPlot's available options. The following simple example
 demonstrates this:
@@ -178,7 +177,7 @@ positions of each point:
 
 \example{ex:hrdiagram}{A Hertzsprung-Russell Diagram}{
 Hertzsprung-Russell (HR) Diagrams are scatter-plots of the luminosities of
-stars plotted against their colours which reveal that most normal stars lie
+stars plotted against their colours, on which most normal stars lie
 along a tight line called the main sequence, whilst unusual classes of stars --
 giants and dwarfs -- can be readily identified on account of their not lying
 along this main sequence. The principal difficulty in constructing accurate HR
@@ -240,7 +239,7 @@ indicating the uncertainties in either their vertical or horizontal positions:
 \item \indpst{xerrorbars}
 \end{itemize}
 Both of these plot styles take three columns of input data, the first two of
-which represent the $x$- and $y$-coordinates of the positions of each point,
+which represent the $x$- or $y$-coordinates of the positions of each point,
 and the last of which represents the uncertainty in either the $x$- and
 $y$-coordinate.  The plot style \indpst{errorbars} is an alias for
 \indpst{yerrorbars}.  Additionally, the following plot style allows datapoints
@@ -255,8 +254,8 @@ which gives the uncertainty in the $y$-coordinate.
 
 Each of the plot styles listed above has a corresponding partner which takes
 minimum and maximum limit in place of each uncertainty, equivalent to writing
-$5^{+2}_{-3}$ instead of $5\pm2$, except that the limits of~2 and~7 should be
-given in place of $5-3$ and $5+2$:
+$5^{+2}_{-3}$ instead of $5\pm2$, except that the absolute values of~2 and~7
+should be given in the supplied data in place of $-3$ and $+2$:
 \begin{itemize}
 \item \indpst{xerrorrange} -- takes four columns of data.
 \item \indpst{yerrorrange} -- takes four columns of data.
@@ -265,9 +264,7 @@ given in place of $5-3$ and $5+2$:
 The plot style \indpst{errorrange} is an alias of \indpst{yerrorrange}.
 
 Corresponding plot styles also exist to plot data with errorbars along the
-$z$-axes of three-dimensional plots\footnote{These plot styles are currently
-present for future expansion purposes only, as PyXPlot~0.8.0 cannot produce
-three-dimensional plots.}: {\tt zerrorbars}, {\tt zerrorrange}, {\tt
+$z$-axes of three-dimensional plots: {\tt zerrorbars}, {\tt zerrorrange}, {\tt
 xzerrorbars}, {\tt xzerrorrange}, {\tt yzerrorbars}, {\tt yzerrorrange}, {\tt
 xyzerrorbars}, {\tt xyzerrorrange}.
 
@@ -286,7 +283,7 @@ format in which they expect the input data to be arranged. The
 \indpst{yerrorshaded} plot style expects data to be arranged in the same format
 as the \indpst{yerrorrange} plot style, specifying the $x$- and $y$-coordinates
 of a series of \datapoint s in the first two columns, together with the minimum
-and maximum extremes of the vertical errorbar on each \datapoint in the third
+and maximum extremes of the vertical errorbar on each \datapoint\ in the third
 and fourth columns. The region contained between the upper and lower limits of
 the error bars is filled with colour; the $y$-coordinate specified in the
 second column is unused. This plot style provides easy conversion between plots
@@ -312,7 +309,7 @@ The following plot styles allow barcharts to be produced:
 \end{itemize}
 
 \noindent These styles differ in where the horizontal interfaces between the
-bars are placed along the ordinate axis and how wide the bars are.  In the
+bars are placed along the abscissa axis and how wide the bars are.  In the
 \indpst{boxes} plot style, the interfaces between the bars are at the midpoints
 between the specified \datapoint s by default (see, for example,
 Figure~\ref{fig:ex_barchart2}a).  Alternatively, the widths of the bars may be
@@ -356,8 +353,8 @@ set boxfrom 5
 \end{verbatim}
 
 \noindent In this case, all of the bars would now originate from the line
-$y=5$. Figure~\ref{fig:ex_barchart1}(1) shows the kind of effect that is
-achieved; for comparison, Figure~\ref{fig:ex_barchart1}(b) shows the same bar
+$y=5$. Figure~\ref{fig:ex_barchart1}(b) shows the kind of effect that is
+achieved; for comparison, Figure~\ref{fig:ex_barchart1}(a) shows the same bar
 chart with the boxes starting from their default position of $y=0$.
 
 \begin{figure}
@@ -411,11 +408,11 @@ steps associated with each supplied \datapoint:
 \item \indpst{fsteps}
 \item \indpst{histeps}
 \end{itemize}
-Like the {\tt points} plot style, each of these styles take only two columns of
-data as input, containing the $x$- and $y$-coordinates of each \datapoint.  An
-example of their appearance  is shown in Figures~\ref{fig:ex_barchart1}(d), (e)
-and (f); for clarity, the positions of each of the supplied \datapoint s are
-marked by red crosses.  These plot styles differ in their placement of the
+Like the {\tt points} plot style, each of these styles takes only two columns
+of data as input, containing the $x$- and $y$-coordinates of each \datapoint.
+An example of their appearance  is shown in Figures~\ref{fig:ex_barchart1}(d),
+(e) and (f); for clarity, the positions of each of the supplied \datapoint s
+are marked by red crosses.  These plot styles differ in their placement of the
 edges of each of the horizontal steps.  The \indpst{steps} plot style places
 the right-most edge of each step on the \datapoint\ it represents.  The
 \indpst{fsteps} plot style places the left-most edge of each step on the
@@ -435,10 +432,10 @@ The plot style of \indpst{arrows} is an alias for \indpst{arrows\_head}.  Each
 of these plot styles take four columns of data -- $x_1$, $y_1$, $x_2$ and $y_2$
 -- and each \datapoint\ results in an arrow being drawn from the point
 $(x_1,y_1)$ to the point $(x_2,y_2)$. The three plot styles differ in the kinds
-of arrows that they draw. \indpst{arrows\_head} draws an arrow head at the
-point $(x_2,y_2)$; \indpst{arrows\_nohead} draws a simple line without arrow
-heads on either end; \indpst{arrows\_twohead} draws arrow heads on both ends of
-the arrow.
+of arrows that they draw: \indpst{arrows\_head} draws an arrow head on each
+arrow at the point $(x_2,y_2)$; \indpst{arrows\_nohead} draws simple lines
+without arrow heads on either end; \indpst{arrows\_twohead} draws arrow heads
+on both ends of each arrow.
 
 \example{ex:vortex}{A diagram of fluid flow around a vortex}{
 In this example we produce a velocity map of fluid circulating in a vortex. For
@@ -474,6 +471,20 @@ This data can then be plotted using the following PyXPlot script:
 \nlscf
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_vortex}}
 }
+
+\subsection{Colour Maps, Contour Maps and Surface Plots}
+
+The following plot styles
+
+\begin{itemize}
+\item colourmap
+\item contourmap
+\item surface
+\end{itemize}
+
+\section{Labelling Datapoints}
+
+The {\tt label} modifier
 
 \section{The {\tt style} Keyword}
 
@@ -677,10 +688,12 @@ set keycolumns auto
 \end{verbatim}
 
 \section{Configuring Axes}
+
+\subsection{Adding Additional Axes}
 \label{sec:multiple_axes}
 
 By default, plots have only one horizontal {\tt x}-axis and one vertical {\tt
-y}-axis.  Additional axes may be added parallel to these, which are referred to
+y}-axis.  Additional axes may be added parallel to these and are referred to
 as, for example, the {\tt x2} axis, the {\tt x3} axis, and so forth up to a
 maximum of {\tt x127}.  In keeping with this nomenclature, the first axis in
 each direction can be referred to interchangably as, for example, {\tt x} or
@@ -688,7 +701,7 @@ each direction can be referred to interchangably as, for example, {\tt x} or
 when statements such as the following are issued:
 
 \begin{verbatim}
-set x3label 'A second horizontal axis'
+set x2label 'A second horizontal axis'
 \end{verbatim}
 
 \noindent Such axes may alternatively be created explicitly using the
@@ -705,20 +718,20 @@ example
 unset axis x3
 \end{verbatim}
 
-\noindent The first axes {\tt x1} and {\tt y1} -- and {\tt z1} on
-three-dimensional plots -- are unique in that they cannot be removed; all plots
-must have at least one axis in each perpendicular direction.  Thus, the command
-{\tt unset axis x1} does not remove this first axis, but merely returns it to
-its default configuration. In either case, multiple axes can be created or
-removed in a single statement, as in the examples
+\noindent In either case, multiple axes can be created or removed in a single
+statement, as in the examples
 
 \begin{verbatim}
 unset axis x3x5x6 y2
 set axis x2y2
 \end{verbatim}
 
-It should be noted that if the following two commands are typed in succession,
-the second may not entirely negate the first:
+\noindent The first axes {\tt x1} and {\tt y1} -- and {\tt z1} on
+three-dimensional plots -- are unique in that they cannot be removed; all plots
+must have at least one axis in each perpendicular direction.  Thus, the command
+{\tt unset axis x1} does not remove this first axis, but merely returns it to
+its default configuration.  It should be noted that if the following two
+commands are typed in succession, the second may not entirely negate the first:
 
 \begin{verbatim}
 set x3label 'foo'
@@ -745,7 +758,7 @@ using syntax such as:
 plot f(x) axes y3x2
 \end{verbatim}
 Similar syntax is used when plotting three-dimensional graphs, except that
-three axes should be specified.
+three perpendicular axes should be specified.
 
 \subsection{Plotting Quantities with Physical Units}
 \label{sec:set_axisunitstyle}
@@ -755,7 +768,9 @@ for example using any of the statements
 \begin{verbatim}
 plot [0:10] x*unit(m)
 plot [0:10] x using 1:$2*unit(m)
-plot [0:1] asin(x)
+plot [0*unit(m):1*unit(m)] x**2
+
+set unit angle nodimensionless ; plot [0:1] asin(x)
 \end{verbatim}
 the axis is set to share the particular physical dimensions of that unit, and
 thereafter no data with any other physical dimensions may be plotted against
@@ -793,8 +808,8 @@ must include this information in the axis label manually if it is needed.
 By default, the {\tt x1}-axis is placed along the bottom of graphs and the {\tt
 y1}-axis is placed up the left-hand side of graphs. On three-dimensional plots,
 the {\tt z1}-axis is placed at the front of the graph. The second set of axes
-are placed opposite to the first: the {\tt x2}-, {\tt y2}- and {\tt z2}-axes
-are placed respectively along the top, right and back sides of graphs.
+are placed opposite the first: the {\tt x2}-, {\tt y2}- and {\tt z2}-axes are
+placed respectively along the top, right and back sides of graphs.
 Higher-numbered axes are placed alongside the {\tt x1}-, {\tt y1}- and {\tt
 z1}-axes.
 
@@ -855,6 +870,19 @@ plot [0:10][0:20]
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_axisatzero3}}
 
+\subsection{Setting the Colour of Axes}
+
+The colours of axes\index{axes!colour}\index{colours!axes} can be controlled
+via the \indcmdts{set axescolour}.  The following example would set axes to be
+drawn in blue:
+
+\begin{verbatim}
+set axescolour blue
+\end{verbatim}
+
+\noindent Any of the colour names listed in Section~\ref{sec:colour_names} can
+be used.
+
 \subsection{Specifying where Ticks should Appear along Axes}
 
 By default, PyXPlot places a series of tick marks at significant points along
@@ -865,13 +893,12 @@ x}-axis can be configured using the \indcmdt{set xtics}, which has the
 following syntax:
 
 \begin{verbatim}
-set xtics { axis | border | inward | outward | both }
-          {  autofreq
-           | <increment>
-           | { <minimum>, } <increment> { , <maximum> }
-           | (     {"label"} <position>
-               { , {"label"} <position> } .... )
-          }
+set xtics
+    [ ( axis | border | inward | outward | both ) ]
+    [ ( autofreq
+          | [<minimum>,] <increment> [, <maximum>]
+          | \( { '<label>' <position> } \)
+         ] )
 \end{verbatim}
 
 The corresponding {\tt set mxtics} command, which has the same syntax as above,
@@ -915,8 +942,8 @@ show xtics
 \end{verbatim}
 
 \example{ex:axistics}{A plot of the function $\exp(x)\sin(1/x)$}{
-In this example we produce a plot illustrating some of the crossing points of
-the function $\exp(x)\sin(1/x)$.  We set the {\tt x}-axis to have tick marks at
+In this example we produce a plot illustrating some of the zeroes of the
+function $\exp(x)\sin(1/x)$.  We set the {\tt x}-axis to have tick marks at
 $x=0.05$, $0.1$, $0.2$ and $0.4$.  The {\tt x2}-axis has custom labelled ticks
 at $x=1/\pi, 2/\pi$, etc., pointing outwards from the plot.  The left-hand {\tt
 y}-axis has tick marks placed automatically whereas the {\tt y2}-axis has no
@@ -943,7 +970,7 @@ tics at all.
 \label{sec:set_xformat}
 
 By default, the major tick marks along axes are labelled with representations
-of the ordinate values at each point, each accurate to the number of
+of the values represented at each point, each accurate to the number of
 significant figures specified using the \indcmdt{set numerics sigfig}. These
 labels may appear as decimals, such as $3.142$, in scientific notion, as in
 $3\times10^8$, or, on logarithmic axes where a base has been specified for the
@@ -1031,11 +1058,12 @@ set xformat vertical
 \end{verbatim}
 or to be written at any clockwise rotation angle from the horizontal using commands of the form
 \begin{verbatim}
-set xformat rotate unit(10*deg)
+set xformat rotate 10
 \end{verbatim}
 
 Axis labels may also be made to appear at arbitrary rotations using commands such as
 \begin{verbatim}
+set unit angle nodimensionless
 set xlabel "I'm upside down" rotate unit(0.5*revolution)
 \end{verbatim}
 
@@ -1068,8 +1096,8 @@ implement the formulae shown above for the frequency and energy of photons of
 light as a function of their wavelength:
 \begin{verbatim}
 set xrange [200*unit(nm):unit(800*nm)]
-set axis x2 linked x1 using phy\_c/x
-set axis x3 linked x2 using phy\_h*x
+set axis x2 linked x1 using phy_c/x
+set axis x3 linked x2 using phy_h*x
 \end{verbatim}
 As in the {\tt set xformat} command, a dummy variable of {\tt x}, {\tt y} or
 {\tt z} is used in the linkage expression depending upon the direction of the
@@ -1077,10 +1105,10 @@ axis being linked to, but a dummy variable of {\tt x} is still used when
 linking to, for example, the {\tt x2} axis.
 
 As these examples demonstrate, the functions used to link axes need not be
-linear. In fact, axes with any arbitrary mapping between distance and ordinate
-value can be produced by linked in a non-linear fashion to another linear axis,
-which, if desired, can then be hidden using the {\tt set axis invisible}
-command. Multi-valued mappings are also permitted. Any data plotted against the
+linear. In fact, axes with any arbitrary mapping between position and value can
+be produced by linked in a non-linear fashion to another linear axis, which, if
+desired, can then be hidden using the {\tt set axis invisible} command.
+Multi-valued mappings are also permitted. Any data plotted against the
 following {\tt x2}-axis for a suitable range of {\tt x}-axis
 \begin{verbatim}
 set axis x2 linked x1 using x**2
@@ -1131,7 +1159,7 @@ wavelength of light, frequency of light and photon energy.
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes}}
 }
 
-\example{ex:cmbrtemp}{A plot of the temperature of the CMB as a function of redshift demonstrating non-linear axis linkage}{
+\example{ex:cmbrtemp}{A plot of the temperature of the CMBR as a function of redshift demonstrating non-linear axis linkage}{
 In this example we produce a plot of the temperature of the cosmic microwave
 background radiation (CMBR) as a function of time $t$ since the Big Bang, on
 the {\tt x}-axis, and equivalently as a function of redshift $z$, on the {\tt
@@ -1151,7 +1179,7 @@ we plot this function against axis {\tt x2}.
 \noindent{\tt set unit of time Gyr}\newline
 \noindent{\tt set axis x2 linked x using ast\_Lcdm\_z(age-x,h0,omega\_m,omega\_l)}\newline
 \noindent{\tt set xlabel "Time since Big Bang \$t\$"}\newline
-\noindent{\tt set ylabel "CMB Temperature \$T\$"}\newline
+\noindent{\tt set ylabel "CMBR Temperature \$T\$"}\newline
 \noindent{\tt set x2label "Redshift \$z\$"}\newline
 \noindent{\tt plot unit(2.73*K)*(1+x) axes x2y1}
 \nlscf
@@ -1197,10 +1225,12 @@ axes via:
 set nogrid x2x3
 \end{verbatim}
 
+\label{sec:set_colours}
 The colours of gridlines\index{grid!colour}\index{colours!grid} can be
 controlled via the \indcmdts{set gridmajcolour} and \indcmdts{set
 gridmincolour} commands, which control the gridlines emanating from major and
-minor axis ticks respectively. An example would be:
+minor axis ticks respectively. The following example would set the minor grid
+lines on a graph to be drawn in blue:
 
 \begin{verbatim}
 set gridmincolour blue
@@ -1208,10 +1238,6 @@ set gridmincolour blue
 
 \noindent Any of the colour names listed in Section~\ref{sec:colour_names} can
 be used.
-
-A related command\index{axes!colour}\index{colours!axes} is \indcmdts{set
-axescolour}, which has a syntax similar to that above, and sets the colour of
-the graph's axes.\label{sec:set_colours}
 
 \section{Clipping Behaviour}
 
@@ -1223,9 +1249,9 @@ the axes -- specified by {\tt set noclip} and the default behaviour.
 
 \section{Labelling Graphs}
 
-The \indcmdt{set arrow} and \indcmdt{set label}s allow arrows and text labels
-to be added to graphs to label significant points or to add simple vector
-graphics to them.
+The {\tt set arrow}\indcmd{set arrow} and \indcmdt{set label}s allow arrows and
+text labels to be added to graphs to label significant points or to add simple
+vector graphics to them.
 
 \subsection{Arrows}
 
@@ -1237,9 +1263,11 @@ example:
 set arrow 1 from 0,0 to 1,1
 \end{verbatim}
 
-\noindent The number {\tt 1} immediately following \indcmdts{set arrow}
-specifies an identification number for the arrow, allowing it to be
-subsequently removed via the command
+\noindent Optionally, a third coordinate may be specified. On 2D plots, this is
+ignored. If no third coordinate is supplied then a value of $z=0$ is
+substituted when the arrow is plotted on 3D graphs. The number {\tt 1}
+immediately following \indcmdts{set arrow} specifies an identification number
+for the arrow, allowing it to be subsequently removed via the command
 
 \begin{verbatim}
 unset arrow 1
@@ -1275,9 +1303,13 @@ The coordinates for the start and end points of the arrow can be specified in a
 range of coordinate systems. The coordinate system to be used should be
 specified immediately before the coordinate value. The default system,
 \indcot{first} measures the graph using the {\tt x}- and {\tt y}-axes. The
-\indcot{second} system uses the {\tt x2}- and {\tt y2}-axes. The
-\indcot{screen} and \indcot{graph} systems both measure in centimetres from the
-origin of the graph. In the following example, we use these specifiers, and
+\indcot{second} system uses the {\tt x2}- and {\tt y2}-axes. \indcot{axis<n>}
+specifies that the position is to be measured along the $n\,$th horizontal or
+vertical axis -- for example, {\tt axis3}.\indcmd{set arrow} This allows the
+graph to be measured with reference to any arbitrary axis on plots which make
+use of large numbers of parallel axes (see Section~\ref{sec:multiple_axes}).
+The \indcot{page} and \indcot{graph} systems both measure in centimetres from
+the origin of the graph. In the following example, we use these specifiers, and
 specify coordinates using variables rather than doing so explicitly:
 
 \begin{verbatim}
@@ -1289,12 +1321,6 @@ set arrow 1 from first  x0, first  y0 \
             to   screen x1, screen y1 \
             with nohead
 \end{verbatim}
-
-In addition to these four options, \indcot{axis<n>} specifies that the
-position is to be measured along the $n\,$th horizontal or vertical axis -- for
-example, {\tt axis3}.\indcmd{set arrow} This allows the graph to be measured
-with reference to any arbitrary axis on plots which make use of large numbers
-of parallel axes (see Section~\ref{sec:multiple_axes}).
 
 \subsection{Text Labels}
 
@@ -1315,9 +1341,10 @@ unset label 1
 
 \noindent The positional coordinates for the text label, placed after the {\tt
 at} keyword, can be specified in any of the coordinate systems described for
-arrows above. A rotation angle may optionally be specified after the keyword
-\indkeyt{rotate}, to rotate text counter-clockwise by a given angle, measured
-in degrees. For example, the following would produce upward-running text:
+arrows above. As above, either two or three coordinates may be supplied. A
+rotation angle may optionally be specified after the keyword \indkeyt{rotate},
+to rotate text counter-clockwise by a given angle, measured in degrees. For
+example, the following would produce upward-running text:
 
 \begin{verbatim}
 set label 1 'Hello World' at axis3 3.0, axis4 2.7 rotate 90
@@ -1512,8 +1539,19 @@ installation tarball in the directory {\tt doc/\-examples/}.
 \end{center}
 }
 
-\section{Colour Maps and Contour Plots}
+\section{Colour Maps}
 \label{sec:colourmaps}
+
+\begin{itemize}
+\item takes 3 columns
+\item set samples grid
+\item if datafile, use set samples interpolate
+\item set colmap
+\item set crange
+\item --> renormalise --> reverse
+\item set log c1
+\item set colkey
+\end{itemize}
 
 \example{ex:mandelbrot}{An image of the Mandelbrot Set}{
 The Mandelbrot set is a set of points in the complex plane whose boundary forms
@@ -1554,13 +1592,15 @@ The resulting image is shown below:
 
 \section{Contour Maps}
 
+\begin{itemize}
+\item set contour
+\item contour labelling
+\item different linetype \$1 algebra
+\end{itemize}
+
 \section{Three-Dimensional Plotting}
 \label{sec:threedim}
 
-PyXPlot 0.8.1 has no facilities for three-dimensional plotting. The ability to
-configure axes such as {\tt z} and {\tt z2}, together with various references
-to three-dimensional plotting in this manual, are provided for future
-expansion only.
 
 % \section{Non-Flat Projections}
 

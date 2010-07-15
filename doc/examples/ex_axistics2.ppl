@@ -27,7 +27,6 @@ title = "ex_axistics2"
 load "examples/fig_init.ppl"
 
 # Main body of figure script
-set grid
 set xformat "%s$\pi$"%(x/pi)
 plot [-pi:2*pi] sin(x)
 
