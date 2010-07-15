@@ -34,7 +34,7 @@ typedef struct with_words {
  double colour1, colour2, colour3, colour4; // Alternatives to the colour and fillcolour settings, RGB settings
  double fillcolour1, fillcolour2, fillcolour3, fillcolour4;
  char  *STRlinetype, *STRlinewidth, *STRpointlinewidth, *STRpointsize, *STRpointtype; // Alternatives to the above, where expressions are evaluated per use, e.g. $4
- char  *STRcolour1, *STRcolour2, *STRcolour3, *STRcolour4, *STRfillcolour1, *STRfillcolour2, *STRfillcolour3, *STRfillcolour4;
+ char  *STRcolour, *STRcolour1, *STRcolour2, *STRcolour3, *STRcolour4, *STRfillcolour, *STRfillcolour1, *STRfillcolour2, *STRfillcolour3, *STRfillcolour4;
  unsigned char USEcolour, USEfillcolour, USElinespoints, USElinetype, USElinewidth, USEpointlinewidth, USEpointsize, USEpointtype, USEstyle, USEcolour1234, USEfillcolour1234; // Set to 1 to indicate settings to be used
  int    AUTOcolour, AUTOlinetype, AUTOpointtype;
  unsigned char malloced; // Indicates whether we need to free strings
@@ -105,7 +105,7 @@ void  with_words_copy    (with_words *out, const with_words *in);
 
 #define AXISLINEARINTERPOLATION_NPOINTS 2045
 
-int   colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace, double *outcol1, double *outcol2, double *outcol3, double *outcol4, char **outcol1S, char **outcol2S, char **outcol3S, char **outcol4S, unsigned char *USEcol, unsigned char *USEcol1234, int *errpos, unsigned char malloced);
+int   colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace, double *outcol1, double *outcol2, double *outcol3, double *outcol4, char **outcolS, char **outcol1S, char **outcol2S, char **outcol3S, char **outcol4S, unsigned char *USEcol, unsigned char *USEcol1234, int *errpos, unsigned char malloced);
 void  with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNew);
 
 typedef struct settings_axis {

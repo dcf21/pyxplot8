@@ -6,9 +6,9 @@
    - Dependency on libkpathsea relaxed to make installation under MacOS easier;
      linking to the library is still strongly recommended on systems where it
      is readily available.
-   - Bug fix to the ticking of logarithmic axes.
    - Mathematical functions fractal_julia(), fractal_mandelbrot() and prime()
      added.
+   - Many bug fixes, especially to the ticking of axes.
 2010 Jun  1: PyXPlot 0.8.1
    - Mathematical functions time_fromunix(), time_unix(), zernike() and
      zernikeR() added.

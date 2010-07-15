@@ -684,10 +684,10 @@ void directive_set(Dict *command)
       if (strcmp(setoption,"gridmincolour")==0) { sg->GridMinColour=settings_graph_default.GridMinColour; sg->GridMinCol1234Space=settings_graph_default.GridMinCol1234Space; sg->GridMinColour1=settings_graph_default.GridMinColour1; sg->GridMinColour2=settings_graph_default.GridMinColour2; sg->GridMinColour3=settings_graph_default.GridMinColour3; sg->GridMinColour4=settings_graph_default.GridMinColour4; }
       if (strcmp(setoption,"textcolour"   )==0) { sg->TextColour=settings_graph_default.TextColour; sg->TextCol1234Space=settings_graph_default.TextCol1234Space; sg->TextColour1=settings_graph_default.TextColour1; sg->TextColour2=settings_graph_default.TextColour2; sg->TextColour3=settings_graph_default.TextColour3; sg->TextColour4=settings_graph_default.TextColour4; }
      } else {
-      if (strcmp(setoption,"axescolour"   )==0) colour_fromdict(command,"",&sg->AxesColour   ,&sg->AxesCol1234Space   ,&sg->AxesColour1   ,&sg->AxesColour2   ,&sg->AxesColour3   ,&sg->AxesColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
-      if (strcmp(setoption,"gridmajcolour")==0) colour_fromdict(command,"",&sg->GridMajColour,&sg->GridMajCol1234Space,&sg->GridMajColour1,&sg->GridMajColour2,&sg->GridMajColour3,&sg->GridMajColour4,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
-      if (strcmp(setoption,"gridmincolour")==0) colour_fromdict(command,"",&sg->GridMinColour,&sg->GridMinCol1234Space,&sg->GridMinColour1,&sg->GridMinColour2,&sg->GridMinColour3,&sg->GridMinColour4,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
-      if (strcmp(setoption,"textcolour"   )==0) colour_fromdict(command,"",&sg->TextColour   ,&sg->TextCol1234Space   ,&sg->TextColour1   ,&sg->TextColour2   ,&sg->TextColour3   ,&sg->TextColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"axescolour"   )==0) colour_fromdict(command,"",&sg->AxesColour   ,&sg->AxesCol1234Space   ,&sg->AxesColour1   ,&sg->AxesColour2   ,&sg->AxesColour3   ,&sg->AxesColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"gridmajcolour")==0) colour_fromdict(command,"",&sg->GridMajColour,&sg->GridMajCol1234Space,&sg->GridMajColour1,&sg->GridMajColour2,&sg->GridMajColour3,&sg->GridMajColour4,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"gridmincolour")==0) colour_fromdict(command,"",&sg->GridMinColour,&sg->GridMinCol1234Space,&sg->GridMinColour1,&sg->GridMinColour2,&sg->GridMinColour3,&sg->GridMinColour4,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
+      if (strcmp(setoption,"textcolour"   )==0) colour_fromdict(command,"",&sg->TextColour   ,&sg->TextCol1234Space   ,&sg->TextColour1   ,&sg->TextColour2   ,&sg->TextColour3   ,&sg->TextColour4   ,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&errpos,1);
      }
    }
   else if (strcmp_set && (strcmp(setoption,"grid")==0)) /* set grid */

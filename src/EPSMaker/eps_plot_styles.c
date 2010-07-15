@@ -380,7 +380,7 @@ int eps_plot_styles_UpdateUsage(DataTable *data, int style, unsigned char ThreeD
 #define FINISH_FACTORING_BOXES \
  { \
   /* Logic to take account of final boxes/steps */ \
-  if (ptAset && ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))) \
+  if (ptCset && ((style == SW_STYLE_BOXES) || (style == SW_STYLE_STEPS) || (style == SW_STYLE_FSTEPS) || (style == SW_STYLE_HISTEPS))) \
    { \
     unsigned char logaxis = (a1->LogFinal==SW_BOOL_TRUE); \
     UUC_RESET; \

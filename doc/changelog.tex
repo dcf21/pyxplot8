@@ -28,12 +28,18 @@
 
 \subsubsection*{Summary:}
 
-foo
+This release introduces three-dimensional plotting, as well as the ability to plot two-dimensional maps of functions as either colour maps, contour plots, or as three-dimensional surfaces. A large number of bugs have also been fixed.
 
 \subsubsection*{Details:}
 
 \begin{itemize}
-\item bar
+\item 3D plotting implemented.
+\item New plot styles colourmap, contourmap and surface added.
+\item Interpolation of 2D datagrids and bitmap images implemented.
+\item Stepwise interpolation mode added.
+\item Dependency on libkpathsea relaxed to make installation under MacOS easier; linking to the library is still strongly recommended on systems where it is readily available.
+\item Mathematical functions {\tt frac-tal\_\-julia()}, {\tt frac\-tal\_\-man\-del\-brot()} and {\tt prime()} added.
+\item Many bug fixes, especially to the ticking of axes.
 \end{itemize}
 
 \subsection*{2010 June 1: PyXPlot 0.8.1}

@@ -123,10 +123,12 @@ int eps_plot_AddUsingItemsForWithWords(with_words *ww, int *NExpect, unsigned ch
   if (ww->STRpointlinewidth != NULL) ADD_FAKE_USING_ITEM(ww->STRpointlinewidth);
   if (ww->STRpointsize      != NULL) ADD_FAKE_USING_ITEM(ww->STRpointsize     );
   if (ww->STRpointtype      != NULL) ADD_FAKE_USING_ITEM(ww->STRpointtype     );
+  if (ww->STRcolour         != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour        );
   if (ww->STRcolour1        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour1       );
   if (ww->STRcolour2        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour2       );
   if (ww->STRcolour3        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour3       );
   if (ww->STRcolour4        != NULL) ADD_FAKE_USING_ITEM(ww->STRcolour4       );
+  if (ww->STRfillcolour     != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour    );
   if (ww->STRfillcolour1    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour1   );
   if (ww->STRfillcolour2    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour2   );
   if (ww->STRfillcolour3    != NULL) ADD_FAKE_USING_ITEM(ww->STRfillcolour3   );
@@ -163,14 +165,47 @@ void eps_plot_WithWordsFromUsingItems(with_words *ww, double *DataRow, int Ncolu
 
   if (ww->linespoints == SW_STYLE_CONTOURMAP) return; // Contourplot evaluate expressions in terms of c1
 
-  if (ww->STRfillcolour4    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour4    = dbl; }
-  if (ww->STRfillcolour3    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour3    = dbl; }
-  if (ww->STRfillcolour2    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour2    = dbl; }
-  if (ww->STRfillcolour1    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour1    = dbl; }
+  if (ww->STRfillcolour4    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour4    = dbl; ww->USEfillcolour=0; }
+  if (ww->STRfillcolour3    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour3    = dbl; ww->USEfillcolour=0; }
+  if (ww->STRfillcolour2    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour2    = dbl; ww->USEfillcolour=0; }
+  if (ww->STRfillcolour1    != NULL) { PROJ0_1  ; ww->USEfillcolour1234 = 1; ww->fillcolour1    = dbl; ww->USEfillcolour=0; }
+  if (ww->STRfillcolour     != NULL)
+   {
+    int j, palette_index;
+    PROJ_INT;
+    for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
+    palette_index = (((int)dbl)-1)%j;
+    while (palette_index < 0) palette_index+=j;
+    ww->fillcolour        = settings_palette_current [palette_index];
+    ww->FillCol1234Space  = settings_paletteS_current[palette_index];
+    ww->fillcolour1       = settings_palette1_current[palette_index];
+    ww->fillcolour2       = settings_palette2_current[palette_index];
+    ww->fillcolour3       = settings_palette3_current[palette_index];
+    ww->fillcolour4       = settings_palette4_current[palette_index];
+    ww->USEfillcolour1234 = (ww->fillcolour == 0);
+    ww->USEfillcolour     = (ww->fillcolour >  0);
+   }
   if (ww->STRcolour4        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour4        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
   if (ww->STRcolour3        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour3        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
   if (ww->STRcolour2        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour2        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
   if (ww->STRcolour1        != NULL) { PROJ0_1  ; ww->USEcolour1234     = 1; ww->colour1        = dbl;      ww->AUTOcolour = 0; ww->USEcolour=0; }
+  if (ww->STRcolour         != NULL)
+   {
+    int j, palette_index;
+    PROJ_INT;
+    for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
+    palette_index = (((int)dbl)-1)%j;
+    while (palette_index < 0) palette_index+=j;
+    ww->colour        = settings_palette_current [palette_index];
+    ww->Col1234Space  = settings_paletteS_current[palette_index];
+    ww->colour1       = settings_palette1_current[palette_index];
+    ww->colour2       = settings_palette2_current[palette_index];
+    ww->colour3       = settings_palette3_current[palette_index];
+    ww->colour4       = settings_palette4_current[palette_index];
+    ww->USEcolour1234 = (ww->colour == 0);
+    ww->AUTOcolour    = 0;
+    ww->USEcolour     = (ww->colour >  0);
+   }
   if (ww->STRpointtype      != NULL) { PROJ_INT ; ww->USEpointtype      = 1; ww->pointtype      = (int)dbl; ww->AUTOpointtype = 0; }
   if (ww->STRpointsize      != NULL) { PROJ_DBL ; ww->USEpointsize      = 1; ww->pointsize      = dbl; }
   if (ww->STRpointlinewidth != NULL) { PROJ_DBL ; ww->USEpointlinewidth = 1; ww->pointlinewidth = dbl; }
@@ -195,10 +230,12 @@ int eps_plot_WithWordsCheckUsingItemsDimLess(with_words *ww, value *FirstValues,
   if (ww->STRfillcolour3    != NULL) { WWCUID("third component of the fillcolour"); }
   if (ww->STRfillcolour2    != NULL) { WWCUID("second component of the fillcolour"); }
   if (ww->STRfillcolour1    != NULL) { WWCUID("first component of the fillcolour"); }
+  if (ww->STRfillcolour     != NULL) { WWCUID("fillcolour"); }
   if (ww->STRcolour4        != NULL) { WWCUID("fourth component of the colour"); }
   if (ww->STRcolour3        != NULL) { WWCUID("third component of the colour"); }
   if (ww->STRcolour2        != NULL) { WWCUID("second component of the colour"); }
   if (ww->STRcolour1        != NULL) { WWCUID("first component of the colour"); }
+  if (ww->STRcolour         != NULL) { WWCUID("colour"); }
   if (ww->STRpointtype      != NULL) { WWCUID("point type"); }
   if (ww->STRpointsize      != NULL) { WWCUID("point size"); }
   if (ww->STRpointlinewidth != NULL) { WWCUID("point line width"); }

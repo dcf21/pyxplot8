@@ -481,10 +481,10 @@ void ppl_settings_readconfig()
 
 int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
                         double *outcol1, double *outcol2, double *outcol3, double *outcol4,
-                        char **outcol1S, char **outcol2S, char **outcol3S, char **outcol4S,
+                        char **outcolS, char **outcol1S, char **outcol2S, char **outcol3S, char **outcol4S,
                         unsigned char *USEcol, unsigned char *USEcol1234, int *errpos, unsigned char malloced)
  {
-  char *tempstr, DictName[32];
+  char *tempstr, *tempstre, DictName[32];
   int   cindex, i, j, palette_index;
   void *tmp;
   value valobj;
@@ -510,6 +510,12 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
   sprintf(DictName, "%scolourMexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrM);
   sprintf(DictName, "%scolourYexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrY);
   sprintf(DictName, "%scolourKexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrK);
+
+  // Decide whether colour expression contains $columns and needs postponing
+  tempstre=NULL;
+  if (tempstr!=NULL)
+   for (j=0; tempstr[j]!='\0'; j++)
+    if (tempstr[j]=='$') { tempstre=tempstr; tempstr=NULL; break; }
 
   if (tempstr != NULL) // Colour is specified by name or by palette index
    {
@@ -539,17 +545,42 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
       *outcol4     = settings_palette4_current[palette_index];
      }
     *outcol  = cindex;
+    if (malloced && (outcolS !=NULL) && (*outcolS !=NULL)) free(*outcolS );
     if (malloced && (outcol1S!=NULL) && (*outcol1S!=NULL)) free(*outcol1S);
     if (malloced && (outcol2S!=NULL) && (*outcol2S!=NULL)) free(*outcol2S);
     if (malloced && (outcol3S!=NULL) && (*outcol3S!=NULL)) free(*outcol3S);
     if (malloced && (outcol4S!=NULL) && (*outcol4S!=NULL)) free(*outcol4S);
+    if (outcolS !=NULL) *outcolS =NULL;
     if (outcol1S!=NULL) *outcol1S=NULL;
     if (outcol2S!=NULL) *outcol2S=NULL;
     if (outcol3S!=NULL) *outcol3S=NULL;
     if (outcol4S!=NULL) *outcol4S=NULL;
     if (USEcol    !=NULL) *USEcol     = (cindex> 0);
     if (USEcol1234!=NULL) *USEcol1234 = (cindex==0);
-   } else if ((tempvalR!=NULL) || (tempvalH!=NULL) || (tempvalC!=NULL)) { // Colour is specified by RGB/HSB/CMYK components
+   }
+  else if (tempstre!=NULL)
+   {
+    if (USEcol    !=NULL) *USEcol     = 0;
+    if (USEcol1234!=NULL) *USEcol1234 = 0;
+    if (outcol1S  ==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Received colour expressions, but have not received strings to put them into."); return 1; }
+    if (malloced)
+     {
+      if (*outcolS !=NULL) free(*outcolS );
+      if (*outcol1S!=NULL) free(*outcol1S);
+      if (*outcol2S!=NULL) free(*outcol2S);
+      if (*outcol3S!=NULL) free(*outcol3S);
+      if (*outcol4S!=NULL) free(*outcol4S);
+      *outcol1S = *outcol2S = *outcol3S = *outcol4S = NULL;
+      *outcolS  = (char *)COLMALLOC(strlen(tempstre)+1); strcpy(*outcolS , tempstre);
+     }
+    else
+     {
+      *outcol1S = *outcol2S = *outcol3S = *outcol4S = NULL;
+      *outcolS  = tempstre;
+     }
+   }
+  else if ((tempvalR!=NULL) || (tempvalH!=NULL) || (tempvalC!=NULL)) // Colour is specified by RGB/HSB/CMYK components
+   {
 
 #define CHECK_REAL_DIMLESS(X) \
    { \
@@ -586,10 +617,12 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
      }
     if (USEcol    !=NULL) *USEcol     = 0;
     if (USEcol1234!=NULL) *USEcol1234 = 1;
+    if (malloced && (outcolS !=NULL) && (*outcolS !=NULL)) free(*outcolS );
     if (malloced && (outcol1S!=NULL) && (*outcol1S!=NULL)) free(*outcol1S);
     if (malloced && (outcol2S!=NULL) && (*outcol2S!=NULL)) free(*outcol2S);
     if (malloced && (outcol3S!=NULL) && (*outcol3S!=NULL)) free(*outcol3S);
     if (malloced && (outcol4S!=NULL) && (*outcol4S!=NULL)) free(*outcol4S);
+    if (outcolS !=NULL) *outcolS =NULL;
     if (outcol1S!=NULL) *outcol1S=NULL;
     if (outcol2S!=NULL) *outcol2S=NULL;
     if (outcol3S!=NULL) *outcol3S=NULL;
@@ -600,11 +633,12 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
     if (outcol1S  ==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Received colour expressions, but have not received strings to put them into."); return 1; }
     if (malloced)
      {
+      if (*outcolS !=NULL) free(*outcolS );
       if (*outcol1S!=NULL) free(*outcol1S);
       if (*outcol2S!=NULL) free(*outcol2S);
       if (*outcol3S!=NULL) free(*outcol3S);
       if (*outcol4S!=NULL) free(*outcol4S);
-      *outcol4S = NULL;
+      *outcolS = *outcol4S = NULL;
       if (tempstrR!=NULL)
        {
         *outcolspace = SW_COLSPACE_RGB;
@@ -630,7 +664,7 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
      }
     else
      {
-      *outcol4S = NULL;
+      *outcolS = *outcol4S = NULL;
       if (tempstrR!=NULL)
        {
         *outcolspace = SW_COLSPACE_RGB;
@@ -1163,7 +1197,7 @@ void with_words_zero(with_words *a, const unsigned char malloced)
   a->linewidth = a->pointlinewidth = a->pointsize = 1.0;
   a->colour1 = a->colour2 = a->colour3 = a->colour4 = a->fillcolour1 = a->fillcolour2 = a->fillcolour3 = a->fillcolour4 = 0.0;
   a->STRlinetype = a->STRlinewidth = a->STRpointlinewidth = a->STRpointsize = a->STRpointtype = NULL;
-  a->STRcolour1 = a->STRcolour2 = a->STRcolour3 = a->STRcolour4 = a->STRfillcolour1 = a->STRfillcolour2 = a->STRfillcolour3 = a->STRfillcolour4 = NULL;
+  a->STRcolour = a->STRcolour1 = a->STRcolour2 = a->STRcolour3 = a->STRcolour4 = a->STRfillcolour = a->STRfillcolour1 = a->STRfillcolour2 = a->STRfillcolour3 = a->STRfillcolour4 = NULL;
   a->USEcolour = a->USEfillcolour = a->USElinespoints = a->USElinetype = a->USElinewidth = a->USEpointlinewidth = a->USEpointsize = a->USEpointtype = a->USEstyle = a->USEcolour1234 = a->USEfillcolour1234 = 0;
   a->AUTOcolour = a->AUTOlinetype = a->AUTOpointtype = 0;
   a->malloced = malloced;
@@ -1182,10 +1216,10 @@ void with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNe
 
   // read colour names
   colour_fromdict(in,""    ,&out->colour    ,&out->Col1234Space    ,&out->colour1        ,&out->colour2        ,&out->colour3        ,&out->colour4       ,
-                                                                    &out->STRcolour1     ,&out->STRcolour2     ,&out->STRcolour3     ,&out->STRcolour4    ,
+                                               &out->STRcolour     ,&out->STRcolour1     ,&out->STRcolour2     ,&out->STRcolour3     ,&out->STRcolour4    ,
                   &out->USEcolour    ,&out->USEcolour1234    ,&i,MallocNew);
   colour_fromdict(in,"fill",&out->fillcolour,&out->FillCol1234Space,&out->fillcolour1    ,&out->fillcolour2    ,&out->fillcolour3    ,&out->fillcolour4   ,
-                                                                    &out->STRfillcolour1 ,&out->STRfillcolour2 ,&out->STRfillcolour3 ,&out->STRfillcolour4,
+                                            &out->STRfillcolour    ,&out->STRfillcolour1 ,&out->STRfillcolour2 ,&out->STRfillcolour3 ,&out->STRfillcolour4,
                   &out->USEfillcolour,&out->USEfillcolour1234,&i,MallocNew);
 
   // Other settings
@@ -1349,6 +1383,7 @@ void with_words_merge(with_words *out, const with_words *a, const with_words *b,
      }
     if (x->USEcolour1234          ) { out->colour1 = x->colour1; out->colour2 = x->colour2; out->colour3 = x->colour3; out->colour4 = x->colour4; out->Col1234Space = x->Col1234Space; out->USEcolour1234 = 1; out->USEcolour = 0; out->STRcolour1 = out->STRcolour2 = out->STRcolour3 = out->STRcolour4 = NULL; out->AUTOcolour = x->AUTOcolour; }
     if (x->USEcolour              ) { out->colour = x->colour; out->USEcolour = 1; out->USEcolour1234 = 0; out->STRcolour1 = out->STRcolour2 = out->STRcolour3 = out->STRcolour4 = NULL; out->AUTOcolour = x->AUTOcolour; }
+    if (x->STRcolour        !=NULL) { out->STRcolour = x->STRcolour; }
     if (x->STRcolour1       !=NULL) { out->STRcolour1 = x->STRcolour1; out->STRcolour2 = x->STRcolour2; out->STRcolour3 = x->STRcolour3; out->STRcolour4 = x->STRcolour4; out->Col1234Space = x->Col1234Space; }
     if (x->STRfillcolour1   !=NULL) { out->STRfillcolour1 = x->STRfillcolour1; out->STRfillcolour2 = x->STRfillcolour2; out->STRfillcolour3 = x->STRfillcolour3; out->STRfillcolour4 = x->STRfillcolour4; out->FillCol1234Space = x->FillCol1234Space; out->USEfillcolour1234 = 0; out->USEfillcolour = 0; }
     if (x->USEfillcolour1234      ) { out->fillcolour1 = x->fillcolour1; out->fillcolour2 = x->fillcolour2; out->fillcolour3 = x->fillcolour3; out->fillcolour4 = x->fillcolour4; out->FillCol1234Space = x->FillCol1234Space; out->USEfillcolour1234 = 1; out->USEfillcolour = 0; out->STRfillcolour1 = out->STRfillcolour2 = out->STRfillcolour3 = out->STRfillcolour4 = NULL; }

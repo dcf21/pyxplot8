@@ -333,7 +333,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
   int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
   int            i, j, k, cn, pass, Ncol, face, xcell, ycell;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, CMin, CMax, xpos, ypos;
-  double         col1=-1,col2=-1,col3=-1,col4=-1,fc1=-1,fc2=-1,fc3=-1,fc4=-1;
+  double         col=GSL_NAN,col1=-1,col2=-1,col3=-1,col4=-1,fc=GSL_NAN,fc1=-1,fc2=-1,fc3=-1,fc4=-1;
   unsigned char  CLog, CMinAuto, CMaxAuto, CRenorm, *flags;
   char          *errtext, c1name[]="c1";
   value         *CVar=NULL, CDummy;
@@ -641,11 +641,11 @@ GOT_CONTOURS:
         // Evaluate any expressions in style information for next contour
         for (i=0 ; ; i++)
          {
-          char          *expr [] = { pd->ww_final.STRlinetype ,  pd->ww_final.STRlinewidth ,  pd->ww_final.STRpointlinewidth ,  pd->ww_final.STRpointsize ,  pd->ww_final.STRpointtype ,  pd->ww_final.STRcolour1    ,  pd->ww_final.STRcolour2    ,  pd->ww_final.STRcolour3    ,  pd->ww_final.STRcolour4    ,  pd->ww_final.STRfillcolour1    ,  pd->ww_final.STRfillcolour2    ,  pd->ww_final.STRfillcolour3    ,  pd->ww_final.STRfillcolour4    , NULL};
-          double        *outD [] = { NULL                     , &pd->ww_final.linewidth    , &pd->ww_final.pointlinewidth    , &pd->ww_final.pointsize    ,  NULL                      , &col1                       , &col2                       , &col3                       , &col4                       , &fc1                            , &fc2                            , &fc3                            , &fc4                            , NULL};
-          int           *outI [] = {&pd->ww_final.linetype    ,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.pointtype    ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
-          unsigned char *flagU[] = {&pd->ww_final.USElinetype , &pd->ww_final.USElinewidth , &pd->ww_final.USEpointlinewidth , &pd->ww_final.USEpointsize , &pd->ww_final.USEpointtype ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
-          int           *flagA[] = {&pd->ww_final.AUTOlinetype,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.AUTOpointtype,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+          char          *expr [] = { pd->ww_final.STRlinetype ,  pd->ww_final.STRlinewidth ,  pd->ww_final.STRpointlinewidth ,  pd->ww_final.STRpointsize ,  pd->ww_final.STRpointtype ,  pd->ww_final.STRcolour     , pd->ww_final.STRcolour1     ,  pd->ww_final.STRcolour2    ,  pd->ww_final.STRcolour3    ,  pd->ww_final.STRcolour4    ,  pd->ww_final.STRfillcolour     ,  pd->ww_final.STRfillcolour1    ,  pd->ww_final.STRfillcolour2    ,  pd->ww_final.STRfillcolour3    ,  pd->ww_final.STRfillcolour4    , NULL};
+          double        *outD [] = { NULL                     , &pd->ww_final.linewidth    , &pd->ww_final.pointlinewidth    , &pd->ww_final.pointsize    ,  NULL                      , &col                        , &col1                       , &col2                       , &col3                       , &col4                       , &fc                             , &fc1                            , &fc2                            , &fc3                            , &fc4                            , NULL};
+          int           *outI [] = {&pd->ww_final.linetype    ,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.pointtype    ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+          unsigned char *flagU[] = {&pd->ww_final.USElinetype , &pd->ww_final.USElinewidth , &pd->ww_final.USEpointlinewidth , &pd->ww_final.USEpointsize , &pd->ww_final.USEpointtype ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
+          int           *flagA[] = {&pd->ww_final.AUTOlinetype,  NULL                      ,  NULL                           ,  NULL                      , &pd->ww_final.AUTOpointtype,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                       ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           ,  NULL                           , NULL};
           unsigned char  clip [] = {0,0,0,0,0,1,1,1,1,1,1,1,1,2};
           value outval; double dbl; int end=-1, errpos=-1;
 
@@ -669,6 +669,38 @@ GOT_CONTOURS:
 
         if ((col1>=0.0)&&(col2>=0.0)&&(col3>=0.0)&&((pd->ww_final.    Col1234Space!=SW_COLSPACE_CMYK)||(col4>=0.0))) { pd->ww_final.colour1=col1; pd->ww_final.colour2=col2; pd->ww_final.colour3=col3; pd->ww_final.colour4=col4; pd->ww_final.USEcolour=0; pd->ww_final.USEcolour1234=1; pd->ww_final.AUTOcolour=0; }
         if ((fc1 >=0.0)&&(fc2 >=0.0)&&(fc3 >=0.0)&&((pd->ww_final.FillCol1234Space!=SW_COLSPACE_CMYK)||(fc4 >=0.0))) { pd->ww_final.fillcolour1=fc1; pd->ww_final.fillcolour2=fc2; pd->ww_final.fillcolour3=fc3; pd->ww_final.fillcolour4=fc4; pd->ww_final.USEfillcolour=0; pd->ww_final.USEfillcolour1234=1; }
+
+        if (gsl_finite(col))
+         {
+          int j, palette_index;
+          for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
+          palette_index = (((int)col)-1)%j;
+          while (palette_index < 0) palette_index+=j;
+          pd->ww_final.colour        = settings_palette_current [palette_index];
+          pd->ww_final.Col1234Space  = settings_paletteS_current[palette_index];
+          pd->ww_final.colour1       = settings_palette1_current[palette_index];
+          pd->ww_final.colour2       = settings_palette2_current[palette_index];
+          pd->ww_final.colour3       = settings_palette3_current[palette_index];
+          pd->ww_final.colour4       = settings_palette4_current[palette_index];
+          pd->ww_final.USEcolour1234 = (pd->ww_final.colour == 0);
+          pd->ww_final.AUTOcolour    = 0;
+          pd->ww_final.USEcolour     = (pd->ww_final.colour >  0);
+         }
+        if (gsl_finite(fc ))
+         {
+          int j, palette_index;
+          for (j=1; j<PALETTE_LENGTH; j++) if (settings_palette_current[j]==-1) break;
+          palette_index = (((int)fc)-1)%j;
+          while (palette_index < 0) palette_index+=j;                                                                
+          pd->ww_final.fillcolour        = settings_palette_current [palette_index];
+          pd->ww_final.FillCol1234Space  = settings_paletteS_current[palette_index];
+          pd->ww_final.fillcolour1       = settings_palette1_current[palette_index];
+          pd->ww_final.fillcolour2       = settings_palette2_current[palette_index];
+          pd->ww_final.fillcolour3       = settings_palette3_current[palette_index];
+          pd->ww_final.fillcolour4       = settings_palette4_current[palette_index];
+          pd->ww_final.USEfillcolour1234 = (pd->ww_final.fillcolour == 0);
+          pd->ww_final.USEfillcolour     = (pd->ww_final.fillcolour >  0);
+         }
 
         // Advance automatic plot styles
         if (pd->ww_final.AUTOcolour)
