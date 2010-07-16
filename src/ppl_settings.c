@@ -513,7 +513,7 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
 
   // Decide whether colour expression contains $columns and needs postponing
   tempstre=NULL;
-  if (tempstr!=NULL)
+  if ((tempstr!=NULL) && (outcolS!=NULL))
    for (j=0; tempstr[j]!='\0'; j++)
     if (tempstr[j]=='$') { tempstre=tempstr; tempstr=NULL; break; }
 
@@ -562,7 +562,7 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
    {
     if (USEcol    !=NULL) *USEcol     = 0;
     if (USEcol1234!=NULL) *USEcol1234 = 0;
-    if (outcol1S  ==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Received colour expressions, but have not received strings to put them into."); return 1; }
+    if (outcolS   ==NULL) { ppl_error(ERR_INTERNAL, -1, -1, "Received colour expressions, but have not received strings to put them into."); return 1; }
     if (malloced)
      {
       if (*outcolS !=NULL) free(*outcolS );

@@ -280,7 +280,7 @@ static int GetNextPoint(double c1, DataTable *data, int pass, int XSize, int YSi
   return 0;
  }
 
-static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v, unsigned char *flags, int XSize, int YSize, int xcell, int ycell, int face, double xpos, double ypos)
+static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v, unsigned char *flags, int XSize, int YSize, int xcell, int ycell, int face, double xpos, double ypos, double Lx, double ThetaX, double Ly, double ThetaY)
  {
   long   i, j, i_flatest=0;
   int    xcelli=xcell, ycelli=ycell;
@@ -297,7 +297,12 @@ static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v
     double grad;
     if (xpos!=xold)
      {
-      grad = fabs((ypos-yold)/(xpos-xold));
+      double x0, y0, x1, y1;
+      x0 = Lx*xold/(XSize-1)*sin(ThetaX) + Ly*yold/(YSize-1)*sin(ThetaY);
+      y0 = Lx*xold/(XSize-1)*cos(ThetaX) + Ly*yold/(YSize-1)*cos(ThetaY);
+      x1 = Lx*xpos/(XSize-1)*sin(ThetaX) + Ly*ypos/(YSize-1)*sin(ThetaY);
+      y1 = Lx*xpos/(XSize-1)*cos(ThetaX) + Ly*ypos/(YSize-1)*cos(ThetaY);
+      grad = fabs((y1-y0)/(x1-x0));
       if (grad<grad_flatest) { grad_flatest=grad; i_flatest=i; }
      }
     xold=xpos; yold=ypos;
@@ -476,7 +481,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
       {
        clist[cpos].i=k; clist[cpos].vreal=CVar->real;
        clist[cpos].closepath = 0;
-       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos, Lx, ThetaX, Ly, ThetaY);
        if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
       }
     for (i=0; i<YSize-1; i++) // Right face
@@ -484,7 +489,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
       {
        clist[cpos].i=k; clist[cpos].vreal=CVar->real;
        clist[cpos].closepath = 0;
-       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos, Lx, ThetaX, Ly, ThetaY);
        if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
       }
     for (i=0; i<XSize-1; i++) // Bottom face
@@ -492,7 +497,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
       {
        clist[cpos].i=k; clist[cpos].vreal=CVar->real;
        clist[cpos].closepath = 0;
-       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos, Lx, ThetaX, Ly, ThetaY);
        if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
       }
     for (i=0; i<YSize-1; i++) // Left face
@@ -500,7 +505,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
       {
        clist[cpos].i=k; clist[cpos].vreal=CVar->real;
        clist[cpos].closepath = 0;
-       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+       FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos, Lx, ThetaX, Ly, ThetaY);
        if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
       }
 
@@ -511,7 +516,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
        {
         clist[cpos].i=k; clist[cpos].vreal=CVar->real;
         clist[cpos].closepath = 1;
-        FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos);
+        FollowContour(x, data, &clist[cpos], &v, flags, XSize, YSize, xcell, ycell, face, xpos, ypos, Lx, ThetaX, Ly, ThetaY);
         if (++cpos>=MAX_CONTOUR_PATHS) goto GOT_CONTOURS;
        }
    } // Finish looping over contours we are to trace
