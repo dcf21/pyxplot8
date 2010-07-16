@@ -547,10 +547,19 @@ fit f() 'data.dat' index 1 using 2:3 via a,b
 \end{verbatim}
 
 \noindent The first line specifies the functional form which is to be used.
-The coefficients within this function which are to be varied during the fitting
-process are listed after the keyword \indkeyt{via} in the {\tt fit} command.
-The modifiers \indmodt{index}, \indmodt{every}, \indmodt{select} and
-\indmodt{using} have the same meanings as in the {\tt plot} command.
+The coefficients within this function, {\tt a} and {\tt b}, which are to be
+varied during the fitting process are listed after the keyword \indkeyt{via}
+in the {\tt fit} command.  The modifiers \indmodt{index}, \indmodt{every},
+\indmodt{select} and \indmodt{using} have the same meanings in the {\tt fit}
+command as in the {\tt plot} command. When fitting a function of $n$
+variables, at least $n+1$ columns (or rows -- see
+Section~\ref{sec:horizontal_datafiles}) of data must be specified after the {\tt using}
+modifier. By default, the first $n+1$ columns are used. These correspond to the
+values of each of the $n$ arguments to the function, plus finally the value which
+the output from the function is aiming to match.  If an additional column is
+specified, then this is taken to contain the standard error in the value that
+the output from the function is aiming to match, and can be used to weight the
+\datapoint s which are being used to constrain the fit.
 
 As the {\tt fit} command works, it displays statistics including the best-fit
 values of each of the fitting parameters, the uncertainties in each of them,
@@ -561,6 +570,18 @@ parameters are being fitted simultaneously. The optional keyword {\tt
 withouterrors} can be included immediately before the filename of the
 \datafile\ to be fitted to substantially speed up cases where this information
 is not required.
+
+By default, the starting values for each of the fitting parameters is
+$1.0$. However, if the variables to be used in the fitting process are already
+set before the {\tt fit} command is called, these initial values are used
+instead. For example, the following would use the initial values
+$\{a=100,b=50\}$:
+\begin{verbatim}
+f(x) = a*x+b
+a = 100
+b = 50
+fit f() 'data.dat' index 1 using 2:3 via a,b
+\end{verbatim}
 
 More details can be found in Section~\ref{sec:fit_command}.
 
@@ -866,8 +887,8 @@ supplied from a \datafile. Either one- or two-dimensional interpolation is
 possible.
 
 In the case of one-dimensional interpolation, various different types of
-interpolation are supported: linear interpolation, power-law interpolation,
-polynomial interpolation, cubic-spline interpolation and akima-spline
+interpolation are supported: linear interpolation, power law interpolation,
+polynomial interpolation, cubic spline interpolation and akima spline
 interpolation. Stepwise interpolation returns the value of the datapoint
 nearest to the requested point in argument space. The use of polynomial
 interpolation with large datasets is strongly discouraged, as polynomial fits
@@ -879,12 +900,12 @@ which it interpolates, PyXPlot returns an error or value of not-a-number.
 In the case of two-dimensional interpolation, the type of interpolation to be
 used is set using the {\tt interpolate} modifier to the \indcmdt{set samples},
 and may be changed at any time after the interpolation function has been
-created.  The options available are nearest-neighbour interpolation -- which is
-the two-dimensional equivalent of stepwise interpolation, inverse-square
+created.  The options available are nearest neighbour interpolation -- which is
+the two-dimensional equivalent of stepwise interpolation, inverse square
 interpolation -- which returns a weighted average of the supplied \datapoint s,
 using the inverse squares of their distances from the requested point in
 argument space as weights, and Monaghan Lattanzio interpolation, which uses the
-kernel (Monaghan \& Lattanzio 1985)
+weighting function (Monaghan \& Lattanzio 1985)
 \begin{eqnarray*}
 w(x) & = 1 - \nicefrac{3}{2}v^2 + \nicefrac{3}{4}v^3 & \,\mathrm{for~}0\leq v\leq 1 \\
      & = \nicefrac{1}{4}(2-v)^3                      & \,\mathrm{for~}1\leq v\leq 2
@@ -1105,9 +1126,10 @@ origin 8,8} had been executed before it had originally been plotted.
 \section{plot}\indcmd{plot}
 
 \begin{verbatim}
-plot [item <id>] [{<range>}] ( '<filename>' | <function> )
+plot [3d] [item <id>] [{<range>}] ( '<filename>' | <function> )
      [axes <axes>] [every <expression> {:<expression>}]
      [index <value>] [select <expression>]
+     [label <string expression>]
      [title <string>] [using <expression> {:<expression>}]
      [with {<option>}]
 \end{verbatim}
@@ -1170,6 +1192,23 @@ and the {\tt x}-axis as the abscissa axis:
 \begin{verbatim}
 plot sin(x) axes yx
 \end{verbatim}
+
+
+\subsection{label}\indcmd{plot label}
+
+The {\tt label} modifier to the {\tt plot} command may be used to render text 
+labels next to datapoints, as in the following examples:
+\begin{verbatim}
+set samples 8
+plot [2:5] x**2 label "$x=%.2f$"%($1) with points
+
+plot 'datafile' using 1:2 label "%s"%($3)
+\end{verbatim}
+
+\noindent Datapoints can be labelled in any of the following plot styles: {\tt 
+arrows} (and similar styles), {\tt dots}, {\tt errorbars} (and similar styles),
+{\tt linespoints}, {\tt lowerlimits}, {\tt points}, {\tt stars} and {\tt
+upperlimits}.
 
 
 \subsection{title}\indcmd{plot title}
@@ -1749,8 +1788,28 @@ units, but must be real and finite.
 
 \subsection{c1format}\indcmd{set x1format}
 
+\begin{verbatim}
+set c1format ( auto | '<format>' )
+      ( horizontal | vertical | rotate <angle> )
+\end{verbatim}
+
+The {\tt c1format} setting is used to manually specify an explicit format for
+the axis labels to take along the colour scale bars drawn alongside plots which
+make use of the \indpst{colourmap} plot style. It has similar syntax to the
+{\tt set xformat} command.
 
 \subsection{c1label}\indcmd{set c1label}
+
+\begin{verbatim}
+set c1label '<text>' [ rotate <angle> ]
+\end{verbatim}
+
+The setting {\tt c1label} sets the label which should be written alongside the
+colour scale bars drawn next to plots when the \indpst{\colourmap} plot style
+is used. An optional rotation angle may be specified to rotate axis labels
+clockwise by arbitrary angles. The angle should be specified either as a
+dimensionless number of degrees, or as a quantity with physical dimensions of
+angle.
 
 
 \subsection{calendar}\indcmd{set calendar}
@@ -3355,10 +3414,10 @@ to take, as demonstrated by the following pair of examples:
 set xformat "%.2f"%(x)
 set yformat "%s$^\prime$"%(y/unit(feet))
 \end{verbatim}
-The first example specifies that ordinate values should be displayed to two
+The first example specifies that values should be displayed to two
 decimal places along the {\tt x}-axis; the second specifies that distances should
 be displayed in feet along the {\tt y}-axis. Note that the dummy variable used to
-represent the ordinate value is {\tt x}, {\tt y} or {\tt z} depending upon the
+represent the represented value is {\tt x}, {\tt y} or {\tt z} depending upon the
 direction of the axis, but that the dummy variable used in the {\tt set
 x2format} command is still {\tt x}. The following pair of examples both have
 the equivalent effect of returning the {\tt x2}-axis to its default system of
@@ -3385,7 +3444,7 @@ strings.
 \subsection{xlabel}\indcmd{set xlabel}
 
 \begin{verbatim}
-set <axis>label '<text>'
+set <axis>label '<text>' [ rotate <angle> ]
 \end{verbatim}
 
 The setting {\tt xlabel} sets the label which should be written along the {\tt
@@ -3411,6 +3470,9 @@ set ylabel '$y$'
 set y2label 'foo'
 \end{verbatim}
 
+An optional rotation angle may be specified to rotate axis labels clockwise by
+arbitrary angles. The angle should be specified either as a dimensionless
+number of degrees, or as a quantity with physical dimensions of angle.
 
 \subsection{xrange}\indcmd{set xrange}
 

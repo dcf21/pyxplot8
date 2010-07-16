@@ -1020,10 +1020,10 @@ void label_add(label_object **list, Dict *in)
   // Check for halign or valign modifiers
   DictLookup(in,"halign",NULL,(void **)&tempstr);
   if (tempstr != NULL) out->HAlign = FetchSettingByName(tempstr, SW_HALIGN_INT, SW_HALIGN_STR);
-  else                 out->HAlign = 0;
+  else                 out->HAlign = settings_graph_current.TextHAlign;
   DictLookup(in,"valign",NULL,(void **)&tempstr);
   if (tempstr != NULL) out->VAlign = FetchSettingByName(tempstr, SW_VALIGN_INT, SW_VALIGN_STR);
-  else                 out->VAlign = 0;
+  else                 out->VAlign = settings_graph_current.TextVAlign;
 
   if (ang != NULL) out->rotation = ang->real;
   else             out->rotation = 0.0;

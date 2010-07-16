@@ -514,8 +514,9 @@ void ReadConfigFile(char *ConfigFname)
     else if (state == 7) // [units] section
      {
 
-#define GET_UNITNAME(output, last, type, sep) \
-      if (isalpha(setkey[i])) do { i++; } while ((isalnum(setkey[i])) || (setkey[i]=='_')); \
+#define GET_UNITNAME(output, last, type, sep, LaTeX) \
+      if (!LaTeX) { if (isalpha(setkey[i])) do { i++; } while ((isalnum(setkey[i])) || (setkey[i]=='_')); } \
+      else        { while ((setkey[i]!=sep)&&(setkey[i]!='\0')) i++; } \
       if (i==j) \
        { \
         if (&last==&output) \
@@ -539,13 +540,13 @@ void ReadConfigFile(char *ConfigFname)
       i=j=0;
       if (ppl_unit_pos == UNITS_MAX) { sprintf(temp_err_string, "Error in line %d of configuration file %s: Unit definition list full.", linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
 
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLs  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFp  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAp  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLp  , ppl_unit_database[ppl_unit_pos].nameAp  , "unit"    , ':' );
-      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].quantity, ppl_unit_database[ppl_unit_pos].quantity, "quantity", ' ' );
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' , 0);
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAs  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' , 0);
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLs  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' , 1);
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameFp  , ppl_unit_database[ppl_unit_pos].nameFs  , "unit"    , '/' , 0);
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameAp  , ppl_unit_database[ppl_unit_pos].nameAs  , "unit"    , '/' , 0);
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].nameLp  , ppl_unit_database[ppl_unit_pos].nameAp  , "unit"    , ':' , 1);
+      GET_UNITNAME( ppl_unit_database[ppl_unit_pos].quantity, ppl_unit_database[ppl_unit_pos].quantity, "quantity", ' ' , 0);
 
       if (setvalue[0]=='\0')
        {

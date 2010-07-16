@@ -474,7 +474,12 @@ This data can then be plotted using the following PyXPlot script:
 
 \subsection{Colour Maps, Contour Maps and Surface Plots}
 
-The following plot styles
+The following plot styles differ from those above in that, regardless of
+whether a three-dimensional plot is being produced, they read in datapoints
+with $x$, $y$ and $z$ coordinates in three columns. The first two are useful
+for producing two-dimensional representations of ($x$, $y$, $z$) surfaces using
+colours or contours to show the magnitude of $z$, while the third is useful for
+producing three-dimensional graphs of such surfaces:
 
 \begin{itemize}
 \item colourmap
@@ -482,9 +487,24 @@ The following plot styles
 \item surface
 \end{itemize}
 
+They are discussed in detail in Sections~\ref{sec:colourmaps},
+\ref{sec:contourmaps} and \ref{sec:surfaces} respectively.
+
 \section{Labelling Datapoints}
 
-The {\tt label} modifier
+The {\tt label} modifier to the {\tt plot} command may be used to render text
+labels next to datapoints, as in the following examples:
+\begin{verbatim}
+set samples 8
+plot [2:5] x**2 label "$x=%.2f$"%($1) with points
+
+plot 'datafile' using 1:2 label "%s"%($3)
+\end{verbatim}
+
+\noindent Datapoints can be labelled in any of the following plot styles: {\tt
+arrows} (and similar styles), {\tt dots}, {\tt errorbars} (and similar styles),
+{\tt linespoints}, {\tt lowerlimits}, {\tt points}, {\tt stars} and {\tt
+upperlimits}.
 
 \section{The {\tt style} Keyword}
 
@@ -1591,6 +1611,7 @@ The resulting image is shown below:
 }
 
 \section{Contour Maps}
+\label{sec:contourmaps}
 
 \begin{itemize}
 \item set contour
@@ -1601,6 +1622,8 @@ The resulting image is shown below:
 \section{Three-Dimensional Plotting}
 \label{sec:threedim}
 
+\subsection{Surface Plotting}
+\label{sec:surfaces}
 
 % \section{Non-Flat Projections}
 
