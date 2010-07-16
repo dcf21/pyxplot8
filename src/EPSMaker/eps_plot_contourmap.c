@@ -747,14 +747,14 @@ GOT_CONTOURS:
          {
           int    page = x->current->DatasetTextID[pdn]+clist[cn].i;
           long   i    = clist[cn].segment_flatest;
-          double xlab = (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
-          double ylab = (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
-          double wlab, hlab;
+          double xlab0= (clist[cn].posdata[2*((i  )%n)+0] + clist[cn].posdata[2*((i+1)%n)+0] )/2;
+          double ylab0= (clist[cn].posdata[2*((i  )%n)+1] + clist[cn].posdata[2*((i+1)%n)+1] )/2;
+          double xlab, ylab, wlab, hlab;
           double bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
           postscriptPage *dviPage;
   
-          xlab = xo + Lx*xlab/(XSize-1)*sin(ThetaX) + Ly*ylab/(YSize-1)*sin(ThetaY);
-          ylab = yo + Lx*xlab/(XSize-1)*cos(ThetaX) + Ly*ylab/(YSize-1)*cos(ThetaY);
+          xlab = xo + Lx*xlab0/(XSize-1)*sin(ThetaX) + Ly*ylab0/(YSize-1)*sin(ThetaY);
+          ylab = yo + Lx*xlab0/(XSize-1)*cos(ThetaX) + Ly*ylab0/(YSize-1)*cos(ThetaY);
           if (x->dvi == NULL) { continue; }
           dviPage = (postscriptPage *)ListGetItem(x->dvi->output->pages, page+1);
           if (dviPage== NULL) { continue; }

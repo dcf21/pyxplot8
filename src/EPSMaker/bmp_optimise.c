@@ -61,7 +61,7 @@ void bmp_colour_count(bitmap_data *image)
      }
    }
 
-  if (ncols > 256) { ppl_log("Image contains more than 256 colours"); return; }
+  if (ncols > 256) { if (DEBUG) ppl_log("Image contains more than 256 colours"); return; }
 
   if (DEBUG) { sprintf(temp_err_string, "Image contains only %d colours: reducing to paletted image",ncols); ppl_log(temp_err_string); }
 
