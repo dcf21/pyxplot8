@@ -567,7 +567,7 @@ void directive_set(Dict *command)
     if (tempint != NULL)
      {
       if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
-      if (*tempint > MAX_CONTOURS) { sprintf(temp_err_string, "Contour maps cannot be constucted with fewer than %d contours.", MAX_CONTOURS); ppl_error(ERR_GENERAL,-1,-1,temp_err_string); return; }
+      if (*tempint > MAX_CONTOURS) { sprintf(temp_err_string, "Contour maps cannot be constucted with more than %d contours.", MAX_CONTOURS); ppl_error(ERR_GENERAL,-1,-1,temp_err_string); return; }
       sg->ContoursN       = *tempint;
       memcpy((void*)sg->ContoursList, (void*)settings_graph_default.ContoursList, MAX_CONTOURS*sizeof(double));
       sg->ContoursListLen = -1;

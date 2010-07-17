@@ -799,10 +799,13 @@ void eps_plot_RenderEPS(EPSComm *x)
        status = (j?eps_plot_contourmap:eps_plot_colourmap)(x, x->current->plotdata[i], x->current->ThreeDim, xyzaxis[0], xyzaxis[1], xyzaxis[2], &x->current->settings, pd, i, origin_x, origin_y, width, height, zdepth);
        if (status) { *(x->status) = 1; return; }
       }
-   }
 
-  // Render gridlines
-  eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);
+    if (j==0)
+     {
+      // Render gridlines after colourmaps and before contourmaps
+      eps_plot_gridlines(x, origin_x, origin_y, width, height, zdepth);
+     }
+   }
 
   // Activate three-dimensional buffer if graph is 3D
   if (x->current->ThreeDim) ThreeDimBuffer_Activate(x);
