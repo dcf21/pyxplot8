@@ -81,7 +81,7 @@ void eps_point_RenderEPS(EPSComm *x)
   with_words_merge(&ww, &x->current->with_data, &ww_default, NULL, NULL, NULL, 1);
 
   // Display point
-  eps_core_SetColour(x, &ww, 0);
+  eps_core_SetColour(x, &ww, 1);
   IF_NOT_INVISIBLE
    {
     // Set linewidth and linetype of point
