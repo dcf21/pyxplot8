@@ -114,6 +114,9 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
   imax = (sg->SamplesXAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesX;
   jmax = (sg->SamplesYAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesY;
 
+  // If input data is NULL, return NULL
+  if (in==NULL) { *output=NULL; return; }
+
   k = in->Ncolumns;
   *output = DataFile_NewDataTable(k, lt_GetMemContext(), imax*jmax);
   if (*output == NULL) return; // Memory fail
