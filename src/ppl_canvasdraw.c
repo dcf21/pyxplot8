@@ -825,13 +825,13 @@ void canvas_EPSRenderTextItem(EPSComm *x, char **strout, int pageno, double xpos
 
   // Update bounding box of canvas. For this, use BOUNDING box, not ALIGNMENT box.
   eps_core_PlotBoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),
-                              ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0);
+                              ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0, 1);
   eps_core_PlotBoundingBox(x, xpos*M_TO_PS + (bb_right - xanchor)*fontsize*cos(rotate) + (bb_bottom - yanchor)*fontsize*-sin(rotate),
-                              ypos*M_TO_PS + (bb_right - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0);
+                              ypos*M_TO_PS + (bb_right - xanchor)*fontsize*sin(rotate) + (bb_bottom - yanchor)*fontsize* cos(rotate), 0, 1);
   eps_core_PlotBoundingBox(x, xpos*M_TO_PS + (bb_left  - xanchor)*fontsize*cos(rotate) + (bb_top    - yanchor)*fontsize*-sin(rotate),
-                              ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_top    - yanchor)*fontsize* cos(rotate), 0);
+                              ypos*M_TO_PS + (bb_left  - xanchor)*fontsize*sin(rotate) + (bb_top    - yanchor)*fontsize* cos(rotate), 0, 1);
   eps_core_PlotBoundingBox(x, xpos*M_TO_PS + (bb_right - xanchor)*fontsize*cos(rotate) + (bb_top    - yanchor)*fontsize*-sin(rotate),
-                              ypos*M_TO_PS + (bb_right - xanchor)*fontsize*sin(rotate) + (bb_top    - yanchor)*fontsize* cos(rotate), 0);
+                              ypos*M_TO_PS + (bb_right - xanchor)*fontsize*sin(rotate) + (bb_top    - yanchor)*fontsize* cos(rotate), 0, 1);
 
 
   // Perform translation such that postscript text appears in the right place on the page

@@ -171,8 +171,8 @@ void eps_plot_axispaint(EPSComm *x, with_words *ww, settings_axis *a, const int 
                   ThreeDimBuffer_writeps(x, *z1 + (*z2-*z1)*TLP[l], lt, lw, 0.0, 1, last_colstr, temp_err_string);
                  }
                }
-              eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
-              eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH);
+              eps_core_PlotBoundingBox(x, tic_x2, tic_y2, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1);
+              eps_core_PlotBoundingBox(x, tic_x3, tic_y3, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1);
              }
            }
           if (state) continue;
@@ -340,7 +340,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
       if (j!=0) k=2*k+xap; else l=xap;
       if (l==0) { xpos1[k] = tmp_x; ypos1[k] = tmp_y; zpos1[k] = tmp_z; }
       else      { xpos2[k] = tmp_x; ypos2[k] = tmp_y; zpos2[k] = tmp_z; }
-      eps_core_PlotBoundingBox(x, tmp_x, tmp_y, 0.0);
+      eps_core_PlotBoundingBox(x, tmp_x, tmp_y, 0.0, 0);
      }
 
     // Swap edges of cube around to put edges at (x,y)-extremes first
