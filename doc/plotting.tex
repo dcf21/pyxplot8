@@ -1576,7 +1576,7 @@ installation tarball in the directory {\tt doc/\-examples/}.
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
-\noindent{\tt set samples grid 200x200}\newline
+\noindent{\tt set samples grid 400x400}\newline
 \noindent{\tt set c1range[-pi:pi]}\newline
 \noindent{\tt set c1format "\$\%s$\backslash$pi\$"\%(x/pi)}\newline
 \noindent{\tt plot [-20:6][-13:13] arg(zeta(x+i*y)) with colourmap}
@@ -1585,8 +1585,8 @@ installation tarball in the directory {\tt doc/\-examples/}.
 
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
-\noindent{\tt set samples grid 200x200 interpolate MonaghanLattanzio}\newline
-\noindent{\tt plot [-2:2][-2:2] '--' with colourmap}\newline
+\noindent{\tt set samples grid 200x200 interpolate InverseSquare}\newline
+\noindent{\tt plot [-4:4][-4:4] '--' with colourmap}\newline
 \noindent{\tt -1 -1  1}\newline
 \noindent{\tt -1  1 -1}\newline
 \noindent{\tt \phantom{x}1 -1 -1}\newline
@@ -1656,7 +1656,7 @@ The resulting image is shown below:
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
 \noindent{\tt plot [-10:10][-10:10] x**3/20+y**2 with colourmap, $\backslash$}\newline
-\noindent{\tt \phantom{xxxxxxxxxxxxxxxxxxxxxx}x**3/20+y**2 with contours col green}
+\noindent{\tt \phantom{xxxxxxxxxxxxxxxxxxxxxx}x**3/20+y**2 with contours col green lw 2 lt 1}
 
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_contourmap}}
 
@@ -1664,7 +1664,7 @@ The resulting image is shown below:
 \label{sec:threedim}
 
 \noindent{\tt set key below}\newline
-\noindent{\tt set size 8 square}\newline
+\noindent{\tt set size 8 ratio 0.6 zratio 0.6}\newline
 \noindent{\tt set grid}\newline
 \noindent{\tt plot 3d sin(x):cos(x) with lw 3 col hsb(x/20+0.5):0.9:0.8}
 

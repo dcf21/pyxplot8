@@ -30,7 +30,7 @@ load "examples/fig_init.ppl"
 set numerics complex
 set nokey
 set size 8 square
-set samples grid 200x200
+set samples grid 400x400
 set c1range[-pi:pi]
 set c1format "$%s\pi$"%(x/pi)
 plot [-20:6][-13:13] arg(zeta(x+i*y)) with colourmap

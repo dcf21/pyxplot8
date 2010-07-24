@@ -292,7 +292,7 @@ static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v
   *flags |= 1<<(((face==FACE_L)||(face==FACE_R)) + 0);
 
   // Trace path, looking for flattest segment and counting length
-  for (i=0; (GetNextPoint(v->real, data, 0, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos)!=0); i++)
+  for (i=1; (GetNextPoint(v->real, data, 0, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos)!=0); i++)
    {
     double grad;
     if (xpos!=xold)
@@ -321,7 +321,9 @@ static void FollowContour(EPSComm *x, DataTable *data, ContourDesc *cd, value *v
   *flags |= 1<<(((face==FACE_L)||(face==FACE_R)) + 2);
 
   // Trace path, looking for flattest segment and counting length
-  for (j=0; (GetNextPoint(v->real, data, 1, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos)!=0); j++)
+  cd->posdata[2*0  ] = xpos;
+  cd->posdata[2*0+1] = ypos;
+  for (j=1; (GetNextPoint(v->real, data, 1, XSize, YSize, xcell, ycell, face, &face, &xcell, &ycell, &xpos, &ypos)!=0); j++)
    {
     cd->posdata[2*j  ] = xpos;
     cd->posdata[2*j+1] = ypos;

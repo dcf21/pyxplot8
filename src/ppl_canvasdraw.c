@@ -721,7 +721,7 @@ void canvas_EPSWrite(EPSComm *x)
   if (chdir(settings_session_default.cwd) < 0) { ppl_fatal(__FILE__,__LINE__,"chdir into cwd failed."); }
 
   // setlinejoin to avoid spikey wiggles
-  fprintf(epsout, "1 setlinejoin\n");
+  // fprintf(epsout, "0 setlinejoin\n");
 
   // Output macros which PyXPlot needs
   if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "%s", PS_PROLOG_TEXT);

@@ -29,13 +29,8 @@ load "examples/fig_init.ppl"
 # Main body of figure script
 set nokey
 set size 8 square
-set samples grid 200x200 interpolate MonaghanLattanzio
-plot [-2:2][-2:2] '--' with colourmap
--1 -1  1
--1  1 -1
- 1 -1 -1
- 1  1  1
-END
+set samples grid 200x200 interpolate InverseSquare
+plot [-4:4][-4:4] 'examples/ex_quadrapole.dat' with colourmap
 
 # Call common cleanup script
 load "examples/fig_end.ppl"

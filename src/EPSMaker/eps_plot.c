@@ -530,7 +530,7 @@ void eps_plot_SampleFunctions(EPSComm *x)
   canvas_plotdesc *pd;
   settings_axis   *OrdinateAxis, *OrdinateAxis2, *axissets[3];
   List            *UsingList, *EveryList;
-  unsigned char    AutoUsingList=0;
+  unsigned char    AutoUsingList=0, prev_RangeFinalised, prev_TickListFinalised;
   Dict            *tempdict;
   char             errbuffer[LSTR_LENGTH];
   unsigned char    SampleGrid;
@@ -554,6 +554,9 @@ void eps_plot_SampleFunctions(EPSComm *x)
       ErrCount     = DATAFILE_NERRS;
       NExpect      = eps_plot_styles_NDataColumns(pd->ww_final.linespoints, x->current->ThreeDim);
       OrdinateAxis = &axissets[pd->axis1xyz][pd->axis1];
+
+      prev_RangeFinalised    = axissets[pd->axis1xyz][pd->axis1].RangeFinalised;
+      prev_TickListFinalised = axissets[pd->axis1xyz][pd->axis1].TickListFinalised;
 
       if (pd->ww_final.linespoints==SW_STYLE_COLOURMAP)
        {
@@ -648,7 +651,11 @@ void eps_plot_SampleFunctions(EPSComm *x)
       eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis1xyz][pd->axis1]);
       eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis2xyz][pd->axis2]);
       eps_plot_LinkedAxisBackPropagate(x, &axissets[pd->axis3xyz][pd->axis3]);
-      axissets[pd->axis1xyz][pd->axis1].RangeFinalised = axissets[pd->axis1xyz][pd->axis1].TickListFinalised = 0;
+      if (!SampleGrid)
+       {
+        axissets[pd->axis1xyz][pd->axis1].RangeFinalised    = prev_RangeFinalised;
+        axissets[pd->axis1xyz][pd->axis1].TickListFinalised = prev_TickListFinalised;
+       }
      }
     pd=pd->next; i++;
    }
