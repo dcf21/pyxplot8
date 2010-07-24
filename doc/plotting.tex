@@ -477,7 +477,7 @@ This data can then be plotted using the following PyXPlot script:
 The following plot styles differ from those above in that, regardless of
 whether a three-dimensional plot is being produced, they read in datapoints
 with $x$, $y$ and $z$ coordinates in three columns. The first two are useful
-for producing two-dimensional representations of ($x$, $y$, $z$) surfaces using
+for producing two-dimensional representations of $(x, y, z)$ surfaces using
 colours or contours to show the magnitude of $z$, while the third is useful for
 producing three-dimensional graphs of such surfaces:
 
@@ -1573,6 +1573,40 @@ installation tarball in the directory {\tt doc/\-examples/}.
 \item set colkey
 \end{itemize}
 
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt set nokey}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt set samples grid 200x200}\newline
+\noindent{\tt set c1range[-pi:pi]}\newline
+\noindent{\tt set c1format "\$\%s$\backslash$pi\$"\%(x/pi)}\newline
+\noindent{\tt plot [-20:6][-13:13] arg(zeta(x+i*y)) with colourmap}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_zeta_arg}}
+
+\noindent{\tt set nokey}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt set samples grid 200x200 interpolate MonaghanLattanzio}\newline
+\noindent{\tt plot [-2:2][-2:2] '--' with colourmap}\newline
+\noindent{\tt -1 -1  1}\newline
+\noindent{\tt -1  1 -1}\newline
+\noindent{\tt \phantom{x}1 -1 -1}\newline
+\noindent{\tt \phantom{x}1  1  1}\newline
+\noindent{\tt END}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_quadrapole}}
+
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt set sample grid 400x400}\newline
+\noindent{\tt set nogrid}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt set key below}\newline
+\noindent{\tt set c1range[0:2]}\newline
+\noindent{\tt set colmap hsb(c1):(c2*0.7+0.3):1}\newline
+\noindent{\tt f(x) = 3*x**2 / (x**3+1)}\newline
+\noindent{\tt plot [-3:3][-3:3] abs(f(x+i*y)):arg(f(x+i*y)) with colourmap}
+
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_branch_cuts}}
+
 \example{ex:mandelbrot}{An image of the Mandelbrot Set}{
 The Mandelbrot set is a set of points in the complex plane whose boundary forms
 a fractal with a Hausdorff dimension of two.  A point $c$ in the complex plane
@@ -1619,11 +1653,79 @@ The resulting image is shown below:
 \item different linetype \$1 algebra
 \end{itemize}
 
+\noindent{\tt set nokey}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt plot [-10:10][-10:10] x**3/20+y**2 with colourmap, $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxxxxxxxxxxxxxxxx}x**3/20+y**2 with contours col green}
+
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_contourmap}}
+
 \section{Three-Dimensional Plotting}
 \label{sec:threedim}
 
+\noindent{\tt set key below}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt set grid}\newline
+\noindent{\tt plot 3d sin(x):cos(x) with lw 3 col hsb(x/20+0.5):0.9:0.8}
+
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_3d_helix}}
+
 \subsection{Surface Plotting}
 \label{sec:surfaces}
+
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt set xlabel "Re(\$z\$)"}\newline
+\noindent{\tt set ylabel "Im(\$z\$)"}\newline
+\noindent{\tt set zlabel "\$|$\backslash$mathrm\{log\}(z)|\$"}\newline
+\noindent{\tt set key below}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt set grid}\newline
+\noindent{\tt set view -30,30}\newline
+\noindent{\tt plot 3d [-10:10][-10:10] Im(log(x+i*y)) $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}with surface col black fillcol blue}
+
+\centerline{\includegraphics[width=10cm]{examples/eps/ex_surface_log}}
+
+\example{ex:surface-polynomial}{A surface plotted above a contour map}{
+In this example, we
+\nlscf
+\noindent{\tt set nokey}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt plot 3d x**3/20+y**2 with surface col black fillc blue, $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxx}x**3/20+y**2 with contours col black}
+\nlscf
+The resulting image is shown below:
+\nlscf
+\begin{center}
+\includegraphics[width=10cm]{examples/eps/ex_surface_polynomial}
+\end{center}
+}
+
+\example{ex:surface-sinc}{The sinc($x$) function represented as a surface}{
+In this example, we
+\nlscf
+\noindent{\tt set numerics complex}\newline
+\noindent{\tt set xlabel "\$x\$"}\newline
+\noindent{\tt set ylabel "\$y\$"}\newline
+\noindent{\tt set zlabel "\$z\$"}\newline
+\noindent{\tt set xformat "\%s\$$\backslash$pi\$"\%(x/pi)}\newline
+\noindent{\tt set yformat "\%s\$$\backslash$pi\$"\%(y/pi)}\newline
+\noindent{\tt set xtics 3*pi ; set mxtics pi}\newline
+\noindent{\tt set ytics 3*pi ; set mytics pi}\newline
+\noindent{\tt set ztics}\newline
+\noindent{\tt set key below}\newline
+\noindent{\tt set size 8 square}\newline
+\noindent{\tt set grid}\newline
+\noindent{\tt plot 3d [-6*pi:6*pi][-6*pi:6*pi][-0.3:1] sinc(hypot(x,y)) $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}with surface col black $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}fillcol hsb(atan2(\$1,\$2)/(2*pi)+0.5):hypot(\$1,\$2)/30+0.2:(\$3*0.5+0.5)}
+\nlscf
+The resulting image is shown below:
+\nlscf
+\begin{center}
+\includegraphics[width=10cm]{examples/eps/ex_surface_sinc}
+\end{center}
+}
 
 % \section{Non-Flat Projections}
 

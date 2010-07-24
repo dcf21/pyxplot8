@@ -154,7 +154,7 @@ void MAKE_INLINE ppl_units_pow (const value *a, const value *b, value *o, int *s
        }
       o->real = GSL_REAL(ac);
       o->imag = GSL_IMAG(ac);
-      o->FlagComplex = !ppl_units_DblEqual(o->imag, 0.0);
+      o->FlagComplex = fabs(o->imag)>(fabs(o->real)*1e-15);
       if (!o->FlagComplex) o->imag=0.0; // Enforce that real numbers have positive zero imaginary components
       if ((!gsl_finite(o->real))||(!gsl_finite(o->imag)))
        {
