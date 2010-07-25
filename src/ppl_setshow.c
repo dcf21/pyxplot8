@@ -3113,7 +3113,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         {
          if (AxisPtrDef->enabled)
           {
-           sprintf(temp1, "%c%d", "xyz"[k], j);
+           sprintf(temp1, "%c%d", "xyzc"[k], j);
            sprintf(buf2, "Axis %s has been disabled", temp1);
            directive_show3(out+i, ItemSet, 1, interactive, "noaxis", temp1, 0, buf2);
            i += strlen(out+i) ; p=1;
@@ -3121,11 +3121,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          continue;
         }
 
-       sprintf(temp1, "%c%d", "xyz"[k], j);
-       sprintf(temp2, "%c"  , "xyz"[k]   );
+       sprintf(temp1, "%c%d", "xyzc"[k], j);
+       sprintf(temp2, "%c"  , "xyzc"[k]   );
        if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
-         sprintf(buf  , "%c%d ", "xyz"[k], j); m = strlen(buf);
+         sprintf(buf  , "%c%d ", "xyzc"[k], j); m = strlen(buf);
          sprintf(buf+m, "%s ", (AxisPtr->invisible ? "invisible" : "visible"  )); m += strlen(buf+m);
          if      (k==1) sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "right" : "left"  ));
          else if (k==2) sprintf(buf+m, "%s ", (AxisPtr->topbottom ? "back"  : "front" ));
@@ -3142,10 +3142,10 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
           {
            strcpy(buf+m, "linked"); m += strlen(buf+m);
            if (AxisPtr->LinkedAxisCanvasID > 0) { sprintf(buf+m, " item %d", AxisPtr->LinkedAxisCanvasID); m += strlen(buf+m); }
-           sprintf(buf+m, " %c%d", "xyz"[AxisPtr->LinkedAxisToXYZ], AxisPtr->LinkedAxisToNum); m += strlen(buf+m);
+           sprintf(buf+m, " %c%d", "xyzc"[AxisPtr->LinkedAxisToXYZ], AxisPtr->LinkedAxisToNum); m += strlen(buf+m);
            if (AxisPtr->linkusing != NULL) { sprintf(buf+m, " using %s", AxisPtr->linkusing); m += strlen(buf+m); }
           }
-         sprintf(buf2, "Settings for the %c%d axis", "xyz"[k], j);
+         sprintf(buf2, "Settings for the %c%d axis", "xyzc"[k], j);
          directive_show3(out+i, ItemSet, 1, interactive, "axis", buf,
                          (AxisPtr->atzero             == AxisPtrDef->atzero            ) &&
                          (AxisPtr->enabled            == AxisPtrDef->enabled           ) &&
@@ -3162,8 +3162,8 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          i += strlen(out+i) ; p=1;
         }
 
-       sprintf(temp1, "%c%dformat", "xyz"[k], j);
-       sprintf(temp2, "%cformat"  , "xyz"[k]   );
+       sprintf(temp1, "%c%dformat", "xyzc"[k], j);
+       sprintf(temp2, "%cformat"  , "xyzc"[k]   );
        if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
          if (AxisPtr->format != NULL) sprintf(buf, "%s ", AxisPtr->format);
@@ -3175,7 +3175,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
            ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->TickLabelRotate;
            sprintf(buf+m, " %s", ppl_units_NumericDisplay(&valobj,0,0,0));
           }
-         sprintf(buf2, "Format string for the tick labels on the %c%d axis", "xyz"[k], j);
+         sprintf(buf2, "Format string for the tick labels on the %c%d axis", "xyzc"[k], j);
          directive_show3(out+i, ItemSet, 1, interactive, temp1, buf,
                          (  ( AxisPtr->TickLabelRotate  ==AxisPtrDef->TickLabelRotate  ) &&
                             ( AxisPtr->TickLabelRotation==AxisPtrDef->TickLabelRotation) &&
@@ -3186,14 +3186,14 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          i += strlen(out+i) ; p=1;
         }
 
-       sprintf(temp1, "%c%dlabel", "xyz"[k], j);
-       sprintf(temp2, "%clabel"  , "xyz"[k]   );
+       sprintf(temp1, "%c%dlabel", "xyzc"[k], j);
+       sprintf(temp2, "%clabel"  , "xyzc"[k]   );
        if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
          StrEscapify(AxisPtr->label==NULL ? "" : AxisPtr->label , buf); m = strlen(buf);
          ppl_units_zero(&valobj); valobj.exponent[UNIT_ANGLE] = 1; valobj.dimensionless = 0; valobj.real = AxisPtr->LabelRotate;
          sprintf(buf+m, " rotate %s", ppl_units_NumericDisplay(&valobj,0,0,0));
-         sprintf(buf2, "Textual label for the %c%d axis", "xyz"[k], j);
+         sprintf(buf2, "Textual label for the %c%d axis", "xyzc"[k], j);
          directive_show3(out+i, ItemSet, 1, interactive, temp1, buf,
                          (  ( AxisPtr->LabelRotate==AxisPtrDef->LabelRotate) &&
                            (((AxisPtr->label==NULL)&&(AxisPtrDef->label==NULL)) ||
@@ -3207,15 +3207,15 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
         {
          if (AxisPtr->log==SW_BOOL_TRUE) bufp = "logscale";
          else                            bufp = "nologscale";
-         sprintf(buf, "%c%d", "xyz"[k], j); m = strlen(buf);
+         sprintf(buf, "%c%d", "xyzc"[k], j); m = strlen(buf);
          if (AxisPtr->log==SW_BOOL_TRUE) sprintf(buf+m, " base %d", (int)AxisPtr->LogBase);
-         sprintf(buf2, "Sets whether the %c%d axis scales linearly or logarithmically", "xyz"[k], j);
+         sprintf(buf2, "Sets whether the %c%d axis scales linearly or logarithmically", "xyzc"[k], j);
          directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (AxisPtr->log==AxisPtrDef->log), buf2);
          i += strlen(out+i) ; p=1;
         }
 
-       sprintf(temp1, "%c%drange", "xyz"[k], j);
-       sprintf(temp2, "%crange"  , "xyz"[k]   );
+       sprintf(temp1, "%c%drange", "xyzc"[k], j);
+       sprintf(temp2, "%crange"  , "xyzc"[k]   );
        if (l || (StrAutocomplete(word, "autoscale", 1)>=0) || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
          AxisPtr->unit.real = AxisPtr->min;
@@ -3225,7 +3225,7 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          if (AxisPtr->MaxSet==SW_BOOL_TRUE) bufp2 = ppl_units_NumericDisplay(&(AxisPtr->unit),1,0,0);
          else                               bufp2 = "*";
          sprintf(buf , "[%s:%s]%s", bufp, bufp2, AxisPtr->RangeReversed ? " reversed" : "");
-         sprintf(buf2, "Sets the range of the %c%d axis", "xyz"[k], j);
+         sprintf(buf2, "Sets the range of the %c%d axis", "xyzc"[k], j);
          directive_show3(out+i, ItemSet, 1, interactive, temp1, buf, (AxisPtr->min    == AxisPtrDef->min   ) &&
                                                                      (AxisPtr->MinSet == AxisPtrDef->MinSet) &&
                                                                      (AxisPtr->max    == AxisPtrDef->max   ) &&
@@ -3233,12 +3233,12 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          i += strlen(out+i) ; p=1;
         }
 
-       sprintf(temp1, "%c%dtics", "xyz"[k], j);
-       sprintf(temp2, "%ctics"  , "xyz"[k]   );
+       sprintf(temp1, "%c%dtics", "xyzc"[k], j);
+       sprintf(temp2, "%ctics"  , "xyzc"[k]   );
        m=0;
        if (l || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
-         sprintf(buf2, "Sets where the major ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
+         sprintf(buf2, "Sets where the major ticks are placed along the %c%d axis, and how they appear", "xyzc"[k], j);
          sprintf(buf, "%s ", *(char **)FetchSettingName(AxisPtr->TickDir, SW_TICDIR_INT, (void *)SW_TICDIR_STR, sizeof(char *))); m = strlen(buf);
          if      ((!AxisPtr->TickStepSet) && (AxisPtr->TickList == NULL))
           {
@@ -3290,11 +3290,11 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
          m=1; // If we've shown major tics, also show minor ticks too.
         }
 
-       sprintf(temp1, "m%c%dtics", "xyz"[k], j);
-       sprintf(temp2, "m%ctics"  , "xyz"[k]   );
+       sprintf(temp1, "m%c%dtics", "xyzc"[k], j);
+       sprintf(temp2, "m%ctics"  , "xyzc"[k]   );
        if (l || m || (StrAutocomplete(word, temp1, 1)>=0) || ((j==1)&&(StrAutocomplete(word, temp2, 1)>=0)))
         {
-         sprintf(buf2, "Sets where the minor ticks are placed along the %c%d axis, and how they appear", "xyz"[k], j);
+         sprintf(buf2, "Sets where the minor ticks are placed along the %c%d axis, and how they appear", "xyzc"[k], j);
          sprintf(buf, "%s ", *(char **)FetchSettingName(AxisPtr->MTickDir, SW_TICDIR_INT, (void *)SW_TICDIR_STR, sizeof(char *))); m = strlen(buf);
          if      ((!AxisPtr->MTickStepSet) && (AxisPtr->MTickList == NULL))
           {

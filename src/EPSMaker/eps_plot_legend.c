@@ -129,9 +129,9 @@ void GraphLegend_YieldUpText(EPSComm *x)
         if (pd->axis1set || pd->axis2set || pd->axis3set) // Print axes to use
          {
           strcpy(cptr+k, " axes "); k+=strlen(cptr+k);
-          if (pd->axis1set) { sprintf(cptr+k, "$%c%d$", "xyz"[pd->axis1xyz], pd->axis1); k+=strlen(cptr+k); }
-          if (pd->axis2set) { sprintf(cptr+k, "$%c%d$", "xyz"[pd->axis2xyz], pd->axis2); k+=strlen(cptr+k); }
-          if (pd->axis3set) { sprintf(cptr+k, "$%c%d$", "xyz"[pd->axis3xyz], pd->axis3); k+=strlen(cptr+k); }
+          if (pd->axis1set) { sprintf(cptr+k, "$%c%d$", "xyzc"[pd->axis1xyz], pd->axis1); k+=strlen(cptr+k); }
+          if (pd->axis2set) { sprintf(cptr+k, "$%c%d$", "xyzc"[pd->axis2xyz], pd->axis2); k+=strlen(cptr+k); }
+          if (pd->axis3set) { sprintf(cptr+k, "$%c%d$", "xyzc"[pd->axis3xyz], pd->axis3); k+=strlen(cptr+k); }
          }
         if (pd->EverySet>0) { sprintf(cptr+k, " every $%d$", pd->EveryList[0]); k+=strlen(cptr+k); } // Print out 'every' clause of plot command
         if (pd->EverySet>1) { sprintf(cptr+k, ":$%d$", pd->EveryList[1]); k+=strlen(cptr+k); }

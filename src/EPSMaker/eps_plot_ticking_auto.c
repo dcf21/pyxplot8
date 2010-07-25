@@ -401,7 +401,7 @@ void eps_plot_ticking_auto(settings_axis *axis, double UnitMultiplier, unsigned 
   if (DummyStr==NULL) goto FAIL;
 
   // Work through format string identifying substitution expressions
-  VarName[0] = "xyz"[axis->xyz];
+  VarName[0] = "xyzc"[axis->xyz];
   if (axis->format == NULL) { sprintf(FormatTemp, "\"%%s\"%%(%s)", VarName); format=FormatTemp; }
   else                      { format=axis->format; }
   if ((format==FormatTemp) && (axis->AxisLinearInterpolation==NULL) && (axis->LogFinal==SW_BOOL_TRUE) && (log(axis->MaxFinal / axis->MinFinal) / log(axis->LogBase) > axis->PhysicalLengthMajor)) { sprintf(FormatTemp, "\"%%s\"%%(logn(%s,%f))", VarName, axis->LogBase); }

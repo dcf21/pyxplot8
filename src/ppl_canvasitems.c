@@ -442,9 +442,9 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       if (pd->axis1set || pd->axis2set || pd->axis3set) // Print axes to use
        {
         strcpy(output+i, " axes "); i+=strlen(output+i);
-        if (pd->axis1set) { sprintf(output+i, "%c%d", "xyz"[pd->axis1xyz], pd->axis1); i+=strlen(output+i); }
-        if (pd->axis2set) { sprintf(output+i, "%c%d", "xyz"[pd->axis2xyz], pd->axis2); i+=strlen(output+i); }
-        if (pd->axis3set) { sprintf(output+i, "%c%d", "xyz"[pd->axis3xyz], pd->axis3); i+=strlen(output+i); }
+        if (pd->axis1set) { sprintf(output+i, "%c%d", "xyzc"[pd->axis1xyz], pd->axis1); i+=strlen(output+i); }
+        if (pd->axis2set) { sprintf(output+i, "%c%d", "xyzc"[pd->axis2xyz], pd->axis2); i+=strlen(output+i); }
+        if (pd->axis3set) { sprintf(output+i, "%c%d", "xyzc"[pd->axis3xyz], pd->axis3); i+=strlen(output+i); }
        }
       if (pd->EverySet>0) { sprintf(output+i, " every %d", pd->EveryList[0]); i+=strlen(output+i); } // Print out 'every' clause of plot command
       if (pd->EverySet>1) { sprintf(output+i, ":%d", pd->EveryList[1]); i+=strlen(output+i); }

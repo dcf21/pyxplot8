@@ -171,7 +171,7 @@ void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *s
   pd->C1Axis.FinalAxisLabel = NULL;
   pd->C1Axis.PhysicalLengthMajor = PhysicalLengthMajor;
   pd->C1Axis.PhysicalLengthMinor = PhysicalLengthMinor;
-  pd->C1Axis.xyz            = 0;
+  pd->C1Axis.xyz            = 3;
   pd->C1Axis.axis_n         = 1;
   pd->C1Axis.canvas_id      = x->current->id;
 

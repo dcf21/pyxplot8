@@ -204,8 +204,8 @@ int eps_plot_styles_NDataColumns(int style, unsigned char ThreeDim)
 
 // UpdateUsage... assert that axis X should be dimensionally compatible with unit Y
 #define UUAU(XYZ,XYZN,X,Y) \
- if ((X->HardUnitSet) && (!ppl_units_DimEqual(&X->HardUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> as compared to range of axis, which has units of <%s>.", "xyz"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&(Y),NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&X->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; } \
- if ((X->DataUnitSet) && (!ppl_units_DimEqual(&X->DataUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> and <%s>.", "xyz"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&X->DataUnit,NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&(Y),NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; } \
+ if ((X->HardUnitSet) && (!ppl_units_DimEqual(&X->HardUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> as compared to range of axis, which has units of <%s>.", "xyzc"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&(Y),NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&X->HardUnit,NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; } \
+ if ((X->DataUnitSet) && (!ppl_units_DimEqual(&X->DataUnit , &(Y)))) { sprintf(temp_err_string, "Axis %c%d on plot %d has data plotted against it with conflicting physical units of <%s> and <%s>.", "xyzc"[XYZ], XYZN, id,  ppl_units_GetUnitStr(&X->DataUnit,NULL,NULL,0,1,0),  ppl_units_GetUnitStr(&(Y),NULL,NULL,1,1,0)); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; } \
  if (!X->DataUnitSet) \
   { \
    X->DataUnitSet = 1; \

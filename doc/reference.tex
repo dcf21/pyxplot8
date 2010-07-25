@@ -1900,16 +1900,16 @@ to a value in the range zero to one. Within these expressions, the variables
 {\tt c1}, {\tt c2}, {\tt c3} and {\tt c4} refer quantities calculated from the
 third through sixth columns of data supplied to the \indpst{colourmap} plot
 style in a way determined by the {\tt c<n>range} setting.  Thus, the following
-setting, which is the default, produces a greyscale colour mapping of the third
-column of data supplied to the \indpst{colourmap} plot style; further columns
-of data, if supplied, are not used:
+colour mapping, which is the default, produces a greyscale colour mapping of
+the third column of data supplied to the \indpst{colourmap} plot style; further
+columns of data, if supplied, are not used:
 
 \begin{verbatim}
 set c1range [*:*] renormalise
 set colourmap rgb(c1):(c1):(c1)
 \end{verbatim}
 
-If a mask expression is supplied, then any areas in a colourmap where this
+If a mask expression is supplied, then any areas in a colour map where this
 expression evaluates to zero (i.e.\ false) are made transparent.
 
 
@@ -2354,7 +2354,7 @@ default base is~10.
 In addition to acting upon any combination of $x$-, $y$- and $z$-axes, the {\tt
 set logscale} command may also be requested to set the {\tt c1}, {\tt c2}, {\tt
 c3}, {\tt c4} and/or {\tt t} axes to scale logatharithmically. The first four
-of these options affect whether the colours on colourmaps scale linearly or
+of these options affect whether the colours on colour maps scale linearly or
 logarithmically with input ordinate values; see the {\tt set c<n>range} command
 for more details. The last of these options specifies whether parametric
 functions are sampled linearly or logarithmically in the variable {\tt t}; see

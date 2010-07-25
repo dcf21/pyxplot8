@@ -61,7 +61,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source)
   settings_axis *target;
   canvas_item   *item;
 
-  if (DEBUG) { sprintf(temp_err_string, "Back-propagating axis usage for axis %c%d on plot %d", "xyz"[source->xyz], source->axis_n, source->canvas_id); }
+  if (DEBUG) { sprintf(temp_err_string, "Back-propagating axis usage for axis %c%d on plot %d", "xyzc"[source->xyz], source->axis_n, source->canvas_id); }
   item       = x->current;
 
   // Propagating MinUsed and MaxUsed variables along links between axes
@@ -90,7 +90,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source)
      {
       if ((target->DataUnitSet && source->DataUnitSet) && (!ppl_units_DimEqual(&target->DataUnit , &source->DataUnit)))
        {
-        sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but axes have data plotted against them with conflicting physical units. The former has units of <%s> whilst the latter has units of <%s>.","xyz"[source->xyz],source->axis_n,source->canvas_id,"xyz"[target->xyz],target->axis_n,target->canvas_id,ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,0,1,0),ppl_units_GetUnitStr(&source->DataUnit,NULL,NULL,1,1,0));
+        sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but axes have data plotted against them with conflicting physical units. The former has units of <%s> whilst the latter has units of <%s>.","xyzc"[source->xyz],source->axis_n,source->canvas_id,"xyzc"[target->xyz],target->axis_n,target->canvas_id,ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,0,1,0),ppl_units_GetUnitStr(&source->DataUnit,NULL,NULL,1,1,0));
         ppl_warning(ERR_GENERAL, temp_err_string);
         break;
        }
@@ -158,9 +158,9 @@ void eps_plot_LinkedAxisForwardPropagate(EPSComm *x, settings_axis *axis, int mo
      {
       item = x->itemlist->first;
       while ((item != NULL) && (item->id)<target->LinkedAxisCanvasID) item=item->next;
-      if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyz"[target->xyz],target->axis_n,target->canvas_id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
-      if (item->type != CANVAS_PLOT) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but this canvas item is not a plot.","xyz"[target->xyz],target->axis_n,target->canvas_id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
-      if ((item->XAxes==NULL)||(item->YAxes==NULL)||(item->ZAxes==NULL)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but this item has NULL axes.","xyz"[target->xyz],target->axis_n,target->canvas_id,"xyz"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_INTERNAL, temp_err_string); } break; }
+      if ((item == NULL) || (item->id != target->LinkedAxisCanvasID)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but no such plot exists.","xyzc"[target->xyz],target->axis_n,target->canvas_id,"xyzc"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
+      if (item->type != CANVAS_PLOT) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but this canvas item is not a plot.","xyzc"[target->xyz],target->axis_n,target->canvas_id,"xyzc"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_GENERAL, temp_err_string); } break; }
+      if ((item->XAxes==NULL)||(item->YAxes==NULL)||(item->ZAxes==NULL)) { if ((IterDepth==1)&&(mode==0)) { sprintf(temp_err_string,"Axis %c%d of plot %d is linked to axis %c%d of plot %d, but this item has NULL axes.","xyzc"[target->xyz],target->axis_n,target->canvas_id,"xyzc"[target->LinkedAxisToXYZ],target->LinkedAxisToNum,target->LinkedAxisCanvasID); ppl_warning(ERR_INTERNAL, temp_err_string); } break; }
      }
     if      (target->LinkedAxisToXYZ == 0) target2 = item->XAxes + target->LinkedAxisToNum;
     else if (target->LinkedAxisToXYZ == 1) target2 = item->YAxes + target->LinkedAxisToNum;
@@ -259,7 +259,8 @@ int eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in)
   value DummyTemp, OutVal, *VarVal;
   if      (in->xyz==0) VarName = "x";
   else if (in->xyz==1) VarName = "y";
-  else                 VarName = "z";
+  else if (in->xyz==2) VarName = "z";
+  else                 VarName = "c";
 
   // Look up variable in user space and get pointer to its value
   DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
@@ -444,7 +445,8 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
 
   if      (target->xyz==0) VarName = "x";
   else if (target->xyz==1) VarName = "y";
-  else                    VarName = "z";
+  else if (target->xyz==2) VarName = "z";
+  else                     VarName = "c";
 
   // Look up xyz dummy variable in user space and get pointer to its value
   DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
@@ -484,7 +486,7 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
   // If there was a problem, throw a warning and proceed no further
   if ((commlink.WarningPos>=0) || (errpos>=0))
    {
-    sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Recommend setting an explicit range for axis %c%d of plot %d.", "xyz"[source->xyz], source->axis_n, source->canvas_id, "xyz"[target->xyz], target->axis_n, target->canvas_id, source->linkusing, "xyz"[target->xyz], target->axis_n, target->canvas_id);
+    sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Recommend setting an explicit range for axis %c%d of plot %d.", "xyzc"[source->xyz], source->axis_n, source->canvas_id, "xyzc"[target->xyz], target->axis_n, target->canvas_id, source->linkusing, "xyzc"[target->xyz], target->axis_n, target->canvas_id);
     ppl_warning(ERR_GENERAL, temp_err_string);
    }
   else
@@ -501,22 +503,22 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
     // Check that dimension of propagated value fits with existing unit of axis
     if      ((target->HardUnitSet) && (!ppl_units_DimEqual(&target->HardUnit, VarVal)))
      {
-      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has a range set with units of <%s>.", "xyz"[source->xyz], source->axis_n, source->canvas_id, "xyz"[target->xyz], target->axis_n, target->canvas_id, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,1,0), "xyz"[target->xyz], target->axis_n, target->canvas_id, ppl_units_GetUnitStr(&target->HardUnit,NULL,NULL,1,1,0));
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has a range set with units of <%s>.", "xyzc"[source->xyz], source->axis_n, source->canvas_id, "xyzc"[target->xyz], target->axis_n, target->canvas_id, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,1,0), "xyzc"[target->xyz], target->axis_n, target->canvas_id, ppl_units_GetUnitStr(&target->HardUnit,NULL,NULL,1,1,0));
       ppl_warning(ERR_GENERAL, temp_err_string);
      }
     else if ((target->DataUnitSet) && (!ppl_units_DimEqual(&target->DataUnit, VarVal)))
      {
-      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has data plotted against it with units of <%s>.", "xyz"[source->xyz], source->axis_n, source->canvas_id, "xyz"[target->xyz], target->axis_n, target->canvas_id, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,1,0), "xyz"[target->xyz], target->axis_n, target->canvas_id, ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,1,1,0));
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Propagated axis range has units of <%s>, but axis %c%d of plot %d has data plotted against it with units of <%s>.", "xyzc"[source->xyz], source->axis_n, source->canvas_id, "xyzc"[target->xyz], target->axis_n, target->canvas_id, source->linkusing, ppl_units_GetUnitStr(VarVal,NULL,NULL,0,1,0), "xyzc"[target->xyz], target->axis_n, target->canvas_id, ppl_units_GetUnitStr(&target->DataUnit,NULL,NULL,1,1,0));
       ppl_warning(ERR_GENERAL, temp_err_string);
      }
     else if (VarVal->FlagComplex)
      {
-      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Axis usage was a complex number.", "xyz"[source->xyz], source->axis_n, source->canvas_id, "xyz"[target->xyz], target->axis_n, target->canvas_id, source->linkusing);
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Axis usage was a complex number.", "xyzc"[source->xyz], source->axis_n, source->canvas_id, "xyzc"[target->xyz], target->axis_n, target->canvas_id, source->linkusing);
       ppl_warning(ERR_GENERAL, temp_err_string);
      }
     else if (!gsl_finite(VarVal->real))
      {
-      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Axis usage was a non-finite number.", "xyz"[source->xyz], source->axis_n, source->canvas_id, "xyz"[target->xyz], target->axis_n, target->canvas_id, source->linkusing);
+      sprintf(temp_err_string, "Could not propagate axis range information from axis %c%d of plot %d to axis %c%d of plot %d using expression <%s>. Axis usage was a non-finite number.", "xyzc"[source->xyz], source->axis_n, source->canvas_id, "xyzc"[target->xyz], target->axis_n, target->canvas_id, source->linkusing);
       ppl_warning(ERR_GENERAL, temp_err_string);
      }
     else

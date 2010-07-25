@@ -1567,27 +1567,68 @@ Colour maps provide a graphical means of producing two-dimensional
 representations of $(x,y,z)$ surfaces, or equivalently of producing maps of the
 values $z(x,y)$ of functions of two variables. Each point in the $(x,y)$ plane
 is assigned a colour which indicates the value $z$ associated with that point.
+In the following Section, we refer to the third coordinate as $c$ rather than
+$z$, to distinguish it from the third axes of three-dimensional
+plots\footnote{When colour maps are plotted on three-dimensional graphs, they
+appear in a flat plane on one of the back faces of the plot selected using the
+{\tt axes} modifier to the {\tt plot} command, and the {\tt c}-axes associated
+with each are entirely independent of the plot's {\tt z}-axis.}.
 
-\begin{itemize}
-\item takes 3 columns
-\item set samples grid
-\item if datafile, use set samples interpolate
-\item set colmap
-\item set crange
-\item renormalise. reverse.
-\item set log c1
-\item set colkey
-\end{itemize}
+The default mapping used between values of $c$ and colour is a greyscale
+mapping, such that the smallest value of $c$ in any given colour map
+corresponds to black, and largest value corresponds to white. More generally,
+however, the user can supply any algebraic expressions for the RGB, HSB or CMYK
+components of the colours to be used, and even specify a mask such that some
+parts of the colour map appear transparent. Moreover, these custom colour
+mappings need not be one-parameter mappings depending only upon a single
+variable $c$, but can depend on up to four quantities $c_1$, $c_2$, $c_3$ and
+$c_4$.
+
+PyXPlot's \indpst{colourmap} plot style takes between three and seven columns
+of data, which may be supplied either from one or more function(s), or from a
+\datafile. If data is read from a \datafile, then the first two columns of
+output data are assumed to contain the respective positions of each datapoint
+along the $x$-axis and the $y$-axis. The next column contains the value $c_1$,
+and may be followed by up to three further optional values $c_2$, $c_3$ and
+$c_4$. In the case where one or more function(s) are supplied, they are assumed
+to be functions of both $x$ and $y$, and are sampled at a grid of points in the
+$(x,y)$ plane; the first supplied function returns the value $c_1$, and may be
+followed by up to three further optional functions.
+
+In the following simple example, a colour map of the complex argument of the
+Riemann zeta function $\zeta(z)$ is produced, taking the $(x,y)$ plane to be an
+Argand plane in which each point corresponds to a value of $z$, with $x$ being
+the real axis, and $y$ being the imaginary axis:
 
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
 \noindent{\tt set samples grid 400x400}\newline
 \noindent{\tt set c1range[-pi:pi]}\newline
-\noindent{\tt set c1format "\$\%s$\backslash$pi\$"\%(x/pi)}\newline
+\noindent{\tt set c1format "\$\%s$\backslash$pi\$"\%(c/pi)}\newline
 \noindent{\tt plot [-20:6][-13:13] arg(zeta(x+i*y)) with colourmap}
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_zeta_arg}}
+
+The command \indcmdt{set samples grid} sets the dimensions of the grid of
+samples -- or pixels -- taken of the input functions. If either value is
+replaced with an asterisk ({\tt *}) then the current number of samples set in
+the {\tt set samples} command is substituted.
+
+If a \datafile\ is supplied to the {\tt colourmap} plot style, then the
+datapoints need not lie on the specified regular grid, but are first re-sampled
+onto this grid using the interpolation method specified using the \indcmdt{set
+samples interpolate} (see Section~\ref{sec:spline_command}). Three methods are
+available. {\tt NearestNeighbour} uses the values of $c_1$\ldots$c_4$
+associated with the datapoint closest to each grid point, producing colour maps
+which look like Voronoi diagrams. {\tt InverseSquare} interpolation returns a
+weighted average of the supplied \datapoint s, using the inverse squares of
+their distances from each grid point as weights. {\tt MonaghanLattanzio}
+interpolation uses the weighting function of Monaghan \& Lattanzio (1985) which
+is described further in Section~\ref{sec:spline_command}).
+
+In the following example, a colour map of a quadrapole is produced using four
+input datapoints:
 
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
@@ -1600,6 +1641,44 @@ is assigned a colour which indicates the value $z$ associated with that point.
 \noindent{\tt END}
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_quadrapole}}
+
+The colour mapping used by the {\tt colourmap} plot style is set using the
+\indcmdt{set colourmap}, which takes algebraic expressions for the RGB, HSB or
+CMYK components of the colour to use as a function of the variables {\tt c1},
+{\tt c2}, {\tt c3} and {\tt c4}. As elsewhere in PyXPlot, these colour
+components should take values in the range zero to one; values outside of this
+range are clipped.  The syntax of the \indcmdt{set colourmap} is as follows:
+
+\begin{verbatim}
+set colourmap ( rgb<r>:<g>:<b> |
+                hsb<h>:<s>:<b> |
+                cmyk<c>:<m>:<y>:<k> )
+              [ mask <expr> ]
+\end{verbatim}
+
+\noindent If the optional mask expression is supplied, then any areas in a
+colour map where this expression evaluates to zero (i.e.\ false) are made
+transparent. The following colour mapping, which is the default, produces a
+greyscale colour mapping of the third column of data supplied to the
+\indpst{colourmap} plot style; further columns of data, if supplied, are not
+used:
+
+\begin{verbatim}
+set c1range [*:*] renormalise noreverse
+set colourmap rgb(c1):(c1):(c1)
+\end{verbatim}
+
+The \indcmdt{set c1range} command specifies how the values of $c_1$ are
+processed before being used in the expressions supplied to the \indcmdt{set
+colourmap}.
+
+\begin{itemize}
+\item set crange
+\item renormalise. reverse.
+\item set log c1
+\item set colmap
+\item set colkey
+\end{itemize}
 
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt set sample grid 400x400}\newline
