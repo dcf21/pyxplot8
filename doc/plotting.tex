@@ -1642,6 +1642,8 @@ input datapoints:
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_quadrapole}}
 
+\subsection{Custom Colour Mappings}
+
 The colour mapping used by the {\tt colourmap} plot style is set using the
 \indcmdt{set colourmap}, which takes algebraic expressions for the RGB, HSB or
 CMYK components of the colour to use as a function of the variables {\tt c1},
@@ -1668,17 +1670,37 @@ set c1range [*:*] renormalise noreverse
 set colourmap rgb(c1):(c1):(c1)
 \end{verbatim}
 
-The \indcmdt{set c1range} command specifies how the values of $c_1$ are
+The \indcmdt{set c<n>range} command specifies how the values of $c_n$ are
 processed before being used in the expressions supplied to the \indcmdt{set
-colourmap}.
+colourmap}. It has the following syntax:
 
-\begin{itemize}
-\item set crange
-\item renormalise. reverse.
-\item set log c1
-\item set colmap
-\item set colkey
-\end{itemize}
+\begin{verbatim}
+set c<n>range [ <range> ]
+              [ reversed | noreversed ]
+              [ renormalise | norenormalise ]
+\end{verbatim}
+
+\noindent If the {\tt renor\-malise} option is specified, then the values of
+$c_n$ at each point in the data grid are first scaled into the range zero to
+one. This is generally useful, since the colour components themselves must be
+in this range; in the example given above, the lowest value of $c_1$
+corresponds to black (i.e.\ brightness 0), and the highest value corresponds to
+white (i.e.\ brightness 1). If an explicit range is specified to the {\tt set
+c<n>range} command, then the upper limit of this range maps to the value one,
+and the lower limit maps to the value zero. An asterisk ({\tt *}) means that
+the lowest or highest value is substituted. The mapping is inverted if the {\tt
+reverse} option is specified, such that the upper limit maps to zero, and the
+lower limit maps to one.  Intermediate values are scaled either linearly or
+logarithmically, and these behaviours can be selected with the following
+commands:
+\begin{verbatim}
+set logscale c1
+set linearscale c1
+\end{verbatim}
+
+In the example below, a colour map of the function $f(z)=3x^2/(x^3+1)$ is made,
+using hue to represent the magnitude of $f(z)$ and saturation to represent the
+complex argument of $f(z)$:
 
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt set sample grid 400x400}\newline
@@ -1691,6 +1713,48 @@ colourmap}.
 \noindent{\tt plot [-3:3][-3:3] abs(f(x+i*y)):arg(f(x+i*y)) with colourmap}
 
 \centerline{\includegraphics[width=8cm]{examples/eps/ex_branch_cuts}}
+
+\subsection{Colour Scale Bars}
+
+By default, plots with colour maps with single-parameter colour mappings are
+accompanied by colour scale bars, which appear by default on the right-hand
+side of the plot. Such scale bars may be configured using the \indcmdt{set
+colourkey}. Issuing the command
+
+\begin{verbatim}
+set colourkey
+\end{verbatim}
+
+\noindent by itself causes such a scale to be drawn on graphs in the default
+position, usually along the right-hand edge of the graphs. The converse action
+is achieved by:
+
+\begin{verbatim}
+set nocolourkey
+\end{verbatim}
+
+\noindent The command
+
+\begin{verbatim}
+unset colourkey
+\end{verbatim}
+
+\noindent causes PyXPlot to revert to its default behaviour, as specified in a
+configuration file, if present. A position for the key may optionally be
+specified after the {\tt set colourkey} command, as in the example:
+
+\begin{verbatim}
+set colourkey bottom
+\end{verbatim}
+
+Recognised positions are {\tt top}, {\tt bottom}, {\tt left} and {\tt right}.
+{\tt above} is an alias for {\tt top}; {\tt below} is an alias for {\tt bottom}
+and {\tt outside} is an alias for {\tt right}.
+
+The format of the ticks along such scale bars may be set using the \indcmdt{set
+c1format} command, which is similar in syntax to the {\tt set xformat} command
+(see Section~\ref{sec:set_xformat}), but which uses {\tt c} as its dummy
+variable.
 
 \example{ex:mandelbrot}{An image of the Mandelbrot Set}{
 The Mandelbrot set is a set of points in the complex plane whose boundary forms
