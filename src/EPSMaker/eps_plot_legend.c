@@ -302,22 +302,26 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
 
   // Translate legend to desired place on canvas (2D case)
   if (!x->current->ThreeDim)
-   switch (kp)
-    {
-     case SW_KEYPOS_TR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN; break;
-     case SW_KEYPOS_TM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff = height                     - LEGEND_MARGIN; break;
-     case SW_KEYPOS_TL:      xoff =                                 LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN; break;
-     case SW_KEYPOS_MR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff = height/2 + AttainedHeight/2               ; break;
-     case SW_KEYPOS_MM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff = height/2 + AttainedHeight/2               ; break;
-     case SW_KEYPOS_ML:      xoff =                                 LEGEND_MARGIN; yoff = height/2 + AttainedHeight/2               ; break;
-     case SW_KEYPOS_BR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
-     case SW_KEYPOS_BM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
-     case SW_KEYPOS_BL:      xoff =                                 LEGEND_MARGIN; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
-     case SW_KEYPOS_ABOVE:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =            AttainedHeight  + LEGEND_MARGIN + x->current->PlotTopMargin    - x->current->settings.OriginY.real*M_TO_PS; break;
-     case SW_KEYPOS_BELOW:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =                            - LEGEND_MARGIN + x->current->PlotBottomMargin - x->current->settings.OriginY.real*M_TO_PS; break;
-     case SW_KEYPOS_OUTSIDE: xoff =                                 LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN;
-                             xoff+= x->current->PlotRightMargin - x->current->settings.OriginX.real*M_TO_PS; break;
-    }
+   {
+    switch (kp)
+     {
+      case SW_KEYPOS_TR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN; break;
+      case SW_KEYPOS_TM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff = height                     - LEGEND_MARGIN; break;
+      case SW_KEYPOS_TL:      xoff =                                 LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN; break;
+      case SW_KEYPOS_MR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff = height/2 + AttainedHeight/2               ; break;
+      case SW_KEYPOS_MM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff = height/2 + AttainedHeight/2               ; break;
+      case SW_KEYPOS_ML:      xoff =                                 LEGEND_MARGIN; yoff = height/2 + AttainedHeight/2               ; break;
+      case SW_KEYPOS_BR:      xoff = width   - ColumnX[Ncolumns]   - LEGEND_MARGIN; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_BM:      xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_BL:      xoff =                                 LEGEND_MARGIN; yoff =            AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_ABOVE:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =            AttainedHeight  + LEGEND_MARGIN + x->current->PlotTopMargin    - x->current->settings.OriginY.real*M_TO_PS; break;
+      case SW_KEYPOS_BELOW:   xoff = width/2 - ColumnX[Ncolumns]/2                ; yoff =                            - LEGEND_MARGIN + x->current->PlotBottomMargin - x->current->settings.OriginY.real*M_TO_PS; break;
+      case SW_KEYPOS_OUTSIDE: xoff =                                 LEGEND_MARGIN; yoff = height                     - LEGEND_MARGIN;
+                              xoff+= x->current->PlotRightMargin - x->current->settings.OriginX.real*M_TO_PS; break;
+     }
+    xoff += x->current->settings.OriginX.real * M_TO_PS;
+    yoff += x->current->settings.OriginY.real * M_TO_PS;
+   }
 
   // Translate legend to desired place on canvas (3D case)
   else
@@ -326,24 +330,24 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
 
     switch (kp)
      {
-      case SW_KEYPOS_TR: SortByAzimuthTarget =  1*M_PI/4; xoff =                      LEGEND_MARGIN; yoff = AttainedHeight  + LEGEND_MARGIN; break;
-      case SW_KEYPOS_TM: SortByAzimuthTarget =  0*M_PI/4; xoff = -ColumnX[Ncolumns]/2              ; yoff = AttainedHeight  + LEGEND_MARGIN; break;
-      case SW_KEYPOS_TL: SortByAzimuthTarget = -1*M_PI/4; xoff = -ColumnX[Ncolumns]  -LEGEND_MARGIN; yoff = AttainedHeight  + LEGEND_MARGIN; break;
-      case SW_KEYPOS_MR: SortByAzimuthTarget =  2*M_PI/4; xoff =                      LEGEND_MARGIN; yoff = AttainedHeight/2               ; break;
-      case SW_KEYPOS_MM:                                  xoff = -ColumnX[Ncolumns]/2              ; yoff = AttainedHeight/2               ; break;
-      case SW_KEYPOS_ML: SortByAzimuthTarget = -2*M_PI/4; xoff = -ColumnX[Ncolumns]  -LEGEND_MARGIN; yoff = AttainedHeight/2               ; break;
-      case SW_KEYPOS_BR: SortByAzimuthTarget =  3*M_PI/4; xoff =                      LEGEND_MARGIN; yoff =                 - LEGEND_MARGIN; break;
-      case SW_KEYPOS_BM: SortByAzimuthTarget =  4*M_PI/4; xoff = -ColumnX[Ncolumns]/2              ; yoff =                 - LEGEND_MARGIN; break;
-      case SW_KEYPOS_BL: SortByAzimuthTarget = -3*M_PI/4; xoff = -ColumnX[Ncolumns]  -LEGEND_MARGIN; yoff =                 - LEGEND_MARGIN; break;
+      case SW_KEYPOS_TR: SortByAzimuthTarget =  1*M_PI/4; xoff =                       LEGEND_MARGIN + x->current->PlotRightMargin; yoff = AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_TM: SortByAzimuthTarget =  0*M_PI/4; xoff = -ColumnX[Ncolumns]/2                                             ; yoff = AttainedHeight + LEGEND_MARGIN + x->current->PlotTopMargin; break;
+      case SW_KEYPOS_TL: SortByAzimuthTarget = -1*M_PI/4; xoff = -ColumnX[Ncolumns]  - LEGEND_MARGIN + x->current->PlotLeftMargin ; yoff = AttainedHeight  + LEGEND_MARGIN; break;
+      case SW_KEYPOS_MR: SortByAzimuthTarget =  2*M_PI/4; xoff =                       LEGEND_MARGIN + x->current->PlotRightMargin; yoff = AttainedHeight/2               ; break;
+      case SW_KEYPOS_MM:                                  xoff = -ColumnX[Ncolumns]/2 + x->current->settings.OriginX.real * M_TO_PS; yoff = AttainedHeight/2 + x->current->settings.OriginY.real * M_TO_PS; break;
+      case SW_KEYPOS_ML: SortByAzimuthTarget = -2*M_PI/4; xoff = -ColumnX[Ncolumns]  - LEGEND_MARGIN + x->current->PlotLeftMargin ; yoff = AttainedHeight/2               ; break;
+      case SW_KEYPOS_BR: SortByAzimuthTarget =  3*M_PI/4; xoff =                       LEGEND_MARGIN + x->current->PlotRightMargin; yoff =                 - LEGEND_MARGIN; break;
+      case SW_KEYPOS_BM: SortByAzimuthTarget =  4*M_PI/4; xoff = -ColumnX[Ncolumns]/2                                             ; yoff = - LEGEND_MARGIN + x->current->PlotBottomMargin; break;
+      case SW_KEYPOS_BL: SortByAzimuthTarget = -3*M_PI/4; xoff = -ColumnX[Ncolumns]  - LEGEND_MARGIN + x->current->PlotLeftMargin ; yoff =                 - LEGEND_MARGIN; break;
 
-      case SW_KEYPOS_ABOVE:   xoff = -ColumnX[Ncolumns]/2;
-                              yoff = AttainedHeight + LEGEND_MARGIN + x->current->PlotTopMargin    - x->current->settings.OriginY.real*M_TO_PS;
+      case SW_KEYPOS_ABOVE:   xoff = -ColumnX[Ncolumns]/2 + x->current->settings.OriginX.real * M_TO_PS;
+                              yoff = AttainedHeight + LEGEND_MARGIN + x->current->PlotTopMargin;
                               break;
-      case SW_KEYPOS_BELOW:   xoff = -ColumnX[Ncolumns]/2;
-                              yoff =                - LEGEND_MARGIN + x->current->PlotBottomMargin - x->current->settings.OriginY.real*M_TO_PS;
+      case SW_KEYPOS_BELOW:   xoff = -ColumnX[Ncolumns]/2 + x->current->settings.OriginX.real * M_TO_PS;
+                              yoff =                - LEGEND_MARGIN + x->current->PlotBottomMargin;
                               break;
-      case SW_KEYPOS_OUTSIDE: xoff =  LEGEND_MARGIN + x->current->PlotRightMargin - x->current->settings.OriginX.real*M_TO_PS;
-                              yoff = -LEGEND_MARGIN + x->current->PlotTopMargin   - x->current->settings.OriginY.real*M_TO_PS;
+      case SW_KEYPOS_OUTSIDE: xoff =  LEGEND_MARGIN + x->current->PlotRightMargin;
+                              yoff = -LEGEND_MARGIN + x->current->PlotTopMargin;
                               break;
      }
 
@@ -367,13 +371,15 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
       if ((data[3*0+2]==data[3*1+2])&&(hypot(data[3*0+0]-origin_x,data[3*0+1]-origin_y)>hypot(data[3*1+0]-origin_x,data[3*1+1]-origin_y))) TriSwap(data+3*0,data+3*1);
       if ((data[3*7+2]==data[3*6+2])&&(hypot(data[3*7+0]-origin_x,data[3*7+1]-origin_y)>hypot(data[3*6+0]-origin_x,data[3*6+1]-origin_y))) TriSwap(data+3*7,data+3*6);
       qsort((void *)(data+3),6,3*sizeof(double),SortByAzimuthProximity);
-      xoff += data[3*1+0];
-      yoff += data[3*1+1];
+      if ((kp==SW_KEYPOS_TM)||(kp==SW_KEYPOS_BM))
+        xoff += data[3*1+0];
+      else
+        yoff += data[3*1+1];
      }
    }
-
-  xoff += (x->current->settings.OriginX.real + x->current->settings.KeyXOff.real) * M_TO_PS;
-  yoff += (x->current->settings.OriginY.real + x->current->settings.KeyYOff.real) * M_TO_PS;
+ 
+  xoff += x->current->settings.KeyXOff.real * M_TO_PS;
+  yoff += x->current->settings.KeyYOff.real * M_TO_PS;   
   LOOP_OVER_DATASETS;
   pd->TitleFinal_xpos += xoff;
   pd->TitleFinal_ypos += yoff;

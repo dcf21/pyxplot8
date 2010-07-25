@@ -30,7 +30,7 @@ load "examples/fig_init.ppl"
 set numerics complex
 set xlabel "Re($z$)"
 set ylabel "Im($z$)"
-set zlabel "$|\mathrm{log}(z)|$"
+set zlabel "$\mathrm{Im}(\mathrm{log}[z])$"
 set key below
 set size 8 square
 set grid

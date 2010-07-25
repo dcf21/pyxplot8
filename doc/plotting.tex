@@ -34,6 +34,7 @@ galleries of multiple plots side-by-side, together with more sophisticated
 vector graphics (Chapter~\ref{ch:vector_graphics}).
 
 \section{The {\tt with} modifier}
+\label{sec:with_modifier}
 
 In Chapter~\ref{ch:first_steps} an overview of the syntax of the \indcmdt{plot}
 was provided, including a description of the {\tt every}, {\tt index}, {\tt
@@ -129,7 +130,7 @@ In addition to setting these parameters on a per-dataset basis, the {\tt
 linewidth}, {\tt pointlinewidth} and {\tt pointsize} settings can also have
 their default values changed for all datasets as in the following examples:
 \begin{verbatim}
- set linewidth 1
+set linewidth 1
 set pointlinewidth 2
 set pointsize 3
 plot "datafile"
@@ -477,7 +478,7 @@ This data can then be plotted using the following PyXPlot script:
 The following plot styles differ from those above in that, regardless of
 whether a three-dimensional plot is being produced, they read in datapoints
 with $x$, $y$ and $z$ coordinates in three columns. The first two are useful
-for producing two-dimensional representations of $(x, y, z)$ surfaces using
+for producing two-dimensional representations of $(x,y,z)$ surfaces using
 colours or contours to show the magnitude of $z$, while the third is useful for
 producing three-dimensional graphs of such surfaces:
 
@@ -1562,13 +1563,18 @@ installation tarball in the directory {\tt doc/\-examples/}.
 \section{Colour Maps}
 \label{sec:colourmaps}
 
+Colour maps provide a graphical means of producing two-dimensional
+representations of $(x,y,z)$ surfaces, or equivalently of producing maps of the
+values $z(x,y)$ of functions of two variables. Each point in the $(x,y)$ plane
+is assigned a colour which indicates the value $z$ associated with that point.
+
 \begin{itemize}
 \item takes 3 columns
 \item set samples grid
 \item if datafile, use set samples interpolate
 \item set colmap
 \item set crange
-\item --> renormalise --> reverse
+\item renormalise. reverse.
 \item set log c1
 \item set colkey
 \end{itemize}
@@ -1647,36 +1653,149 @@ The resulting image is shown below:
 \section{Contour Maps}
 \label{sec:contourmaps}
 
-\begin{itemize}
-\item set contour
-\item contour labelling
-\item different linetype \$1 algebra
-\end{itemize}
+Contour maps are similar to colour maps, but instead of colouring the whole
+$(x,y)$ plane, lines are drawn to indicate paths of constant $c(x,y)$. The
+number of contours drawn, and the values $c$ that they correspond to, is set
+using the \indcmdt{set contour}, which has the following syntax:
 
+\begin{verbatim}
+set contours [ ( <number> |
+               \( <value> {, <value>} \) ) ]
+             [ (label | nolabel) ]
+\end{verbatim}
+
+If {\tt <number>} is specified, as in the example
+\begin{verbatim}
+set contours 8
+\end{verbatim}
+then the specified number of contours are drawn at evenly spaced intervals.
+Whether the contours are linearly or logarithmically spaced can be changed
+using the commands
+\begin{verbatim}
+set logscale c1
+set linearscale c1
+\end{verbatim}
+By default, the range of values spanned by the contours is automatically scales
+to the range of the data provided. However, it may also be set manually using
+the \indcmdt{set c1range} as in the example
+\begin{verbatim}
+set c1range [0:10]
+\end{verbatim}
+The default autoscaling behaviour can be restored using the command
+\begin{verbatim}
+set c1range [*:*]
+\end{verbatim}
+
+Alternatively, an explicit list of the values of $c$ for which contours should
+be drawn may be specified to the \indcmdt{set contour} as a ()-bracketed
+comma-separated list.
+
+If the option {\tt label} is specified to the \indcmdt{set contour}, then each
+contour is labelled with the value of $c$ that it corresponds to. If the option
+{\tt nolabel} is specified, then the contours are left unlabelled.
+
+In the following example, a contour map is overlaid on top of a colour map of
+the function $x^3/20+y^2$:
+
+\vspace{2mm}
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
 \noindent{\tt plot [-10:10][-10:10] x**3/20+y**2 with colourmap, $\backslash$}\newline
 \noindent{\tt \phantom{xxxxxxxxxxxxxxxxxxxxxx}x**3/20+y**2 with contours col green lw 2 lt 1}
 
+\vspace{2mm}
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_contourmap}}
+\vspace{2mm}
+
+The {\tt contourmap} plot style differs from other plot styles in that it is
+not permitted to take expressions such as {\tt \$2+1} for style modifiers such
+as {\tt linetype} (see Section~\ref{sec:with_modifier}) which use additional
+columns of input data to plot different points in different styles. However,
+the variable {\tt c1} may be used in such expressions to define different
+styles for different contours:
+
+\begin{dontdo}
+plot 'datafile' with contourmap linetype \$5
+\end{dontdo}
+
+\begin{dodo}
+plot 'datafile' with contourmap linetype c1/10
+\end{dodo}
 
 \section{Three-Dimensional Plotting}
 \label{sec:threedim}
 
+Three-dimensional graphs may be produced by placing the modifier {\tt 3d}
+immediately after the {\tt plot} command, as demonstrated by the following
+simple example which draws a helix:
+
+\vspace{2mm}
 \noindent{\tt set key below}\newline
 \noindent{\tt set size 8 ratio 0.6 zratio 0.6}\newline
 \noindent{\tt set grid}\newline
 \noindent{\tt plot 3d sin(x):cos(x) with lw 3 col hsb(x/20+0.5):0.9:0.8}
 
+\vspace{2mm}
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_3d_helix}}
+\vspace{2mm}
+
+Many plot styles take additional columns of data when used on
+three-dimen\-sional plots, reading in three values for the $x$, $y$ and $z$
+coordinates of each datapoint, where previously only $x$ and $y$ coordinates
+were required. In the above example, the {\tt lines} plot style is used, which
+takes three columns of input data when used on three-dimensional plots, as
+compared to two on two-dimensional plots.  The descriptions of each plot style
+in Section~\ref{sec:list_of_plotstyles} includes information on the number of
+columns of data required for two- and three-dimensional plots. 
+
+The example above also demonstrates that the \indcmdt{set size} takes an
+additional aspect ratio {\tt zratio} which affects three-dimensional plots;
+whereas the aspect ratio {\tt ratio} determines the ratio of the lengths of the
+$y$-axes of plots to their $x$-axes, the aspect ratio {\tt zratio} determines
+the ratio of the lengths of the $z$-axes of plots to their $x$-axes.
+
+The angle from which three-dimensional plots are viewed can be set using the
+\indcmdt{set view}. This should be followed by two angles, which can either be
+expressed in degrees, as dimensionless numbers, or as quantities with physical
+units of angle:
+\begin{verbatim}
+set view 60,30
+
+set unit angle nodimensionless
+set view unit(0.1*rev),unit(2*rad)
+\end{verbatim}
+The orientation $(0,0)$ corresponds to having the $x$-axis horizontal, the
+$z$-axis vertical, and the $y$-axis directed into the page. The first angle
+supplied to the {\tt set view} command rotates the plot in the $(x,y)$ plane,
+and the second angle tips the plot up in the plane containing the $z$-axis and
+the normal to the user's two-dimensional display.
+
+The \indcmdt{replot} command may be used to add additional datasets to
+three-dimensional plots in an entirely analogous fashion to two-dimensional
+plots.
 
 \subsection{Surface Plotting}
 \label{sec:surfaces}
 
+The {\tt surface} plot style is similar to the {\tt colourmap} and {\tt
+contourmap} plot styles, but produces maps of the values $z(x,y)$ of functions
+of two variables using three-dimensional surfaces. The surface is displayed as
+a grid of four-sided elements, whose number may be specified using the
+\indcmdt{set samples}, as in the example
+\begin{verbatim}
+set samples grid 40x40
+\end{verbatim}
+If data is supplied from a \datafile, then it is first resampled onto a regular
+grid using one of the methods described in Section~\ref{sec:colourmaps}.
+
+The example below plots a surface indicating the magnitude of the imaginary
+part of $\log(x+iy)$:
+
+\vspace{2mm}
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt set xlabel "Re(\$z\$)"}\newline
 \noindent{\tt set ylabel "Im(\$z\$)"}\newline
-\noindent{\tt set zlabel "\$|$\backslash$mathrm\{log\}(z)|\$"}\newline
+\noindent{\tt set zlabel "\$$\backslash$mathrm\{Im\}($\backslash$mathrm\{log\}[z])\$"}\newline
 \noindent{\tt set key below}\newline
 \noindent{\tt set size 8 square}\newline
 \noindent{\tt set grid}\newline
@@ -1684,10 +1803,13 @@ The resulting image is shown below:
 \noindent{\tt plot 3d [-10:10][-10:10] Im(log(x+i*y)) $\backslash$}\newline
 \noindent{\tt \phantom{xxxxx}with surface col black fillcol blue}
 
+\vspace{2mm}
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_surface_log}}
+\vspace{2mm}
 
 \example{ex:surface-polynomial}{A surface plotted above a contour map}{
-In this example, we
+In this example, we plot a surface showing the value of the expression
+$x^3/20+y^2$, and project below it a series of contours in the $(x,y)$ plane.
 \nlscf
 \noindent{\tt set nokey}\newline
 \noindent{\tt set size 8 square}\newline
@@ -1702,7 +1824,11 @@ The resulting image is shown below:
 }
 
 \example{ex:surface-sinc}{The sinc($x$) function represented as a surface}{
-In this example, we
+In this example, we produce a surface showing the function $\mathrm{sinc}(r)$
+where $r=\sqrt{x^2+y^2}$. To produce a prettier result, we vary the colour of
+the surface such that the hue of the surface varies with azimuthal position,
+its saturation varies with radius $r$, and its brightness varies with height
+$z$.
 \nlscf
 \noindent{\tt set numerics complex}\newline
 \noindent{\tt set xlabel "\$x\$"}\newline
@@ -1718,7 +1844,8 @@ In this example, we
 \noindent{\tt set grid}\newline
 \noindent{\tt plot 3d [-6*pi:6*pi][-6*pi:6*pi][-0.3:1] sinc(hypot(x,y)) $\backslash$}\newline
 \noindent{\tt \phantom{xxxxx}with surface col black $\backslash$}\newline
-\noindent{\tt \phantom{xxxxx}fillcol hsb(atan2(\$1,\$2)/(2*pi)+0.5):hypot(\$1,\$2)/30+0.2:(\$3*0.5+0.5)}
+\noindent{\tt \phantom{xxxxx}fillcol hsb(atan2(\$1,\$2)/(2*pi)+0.5):hypot(\$1,\$2)/30+0.2: $\backslash$}\newline
+\noindent{\tt \phantom{xxxxxxxxxxxxxxx}(\$3*0.5+0.5)}
 \nlscf
 The resulting image is shown below:
 \nlscf

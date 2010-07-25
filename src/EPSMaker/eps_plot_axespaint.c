@@ -278,8 +278,11 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
   IF_NOT_INVISIBLE eps_core_SetLinewidth(x, EPS_AXES_LINEWIDTH * EPS_DEFAULT_LINEWIDTH, 1, 0.0);
 
   // Reset plot bounding box; we're about to make this sensible below by factoring in plot vertices
-  x->current->PlotLeftMargin = x->current->PlotRightMargin  = origin_x;
-  x->current->PlotTopMargin  = x->current->PlotBottomMargin = origin_y;
+  if ((pass==0)||(!x->current->ThreeDim))
+   {
+    x->current->PlotLeftMargin = x->current->PlotRightMargin  = origin_x;
+    x->current->PlotTopMargin  = x->current->PlotBottomMargin = origin_y;
+   }
 
   // Fetch coordinates of centre of graph
   if (x->current->ThreeDim) { eps_plot_ThreeDimProject(0.5,0.5,0.5, &x->current->settings,origin_x,origin_y,width,height,zdepth, &xc,&yc,&zc); }
@@ -346,7 +349,7 @@ void eps_plot_axespaint(EPSComm *x, double origin_x, double origin_y, double wid
     // Swap edges of cube around to put edges at (x,y)-extremes first
     if (x->current->ThreeDim)
      {
-      #define TSM(A) hypot(xpos1[A]+xpos2[A] , ypos1[A]+ypos2[A])
+      #define TSM(A) hypot(xpos1[A]+xpos2[A]-2*origin_x , ypos1[A]+ypos2[A]-2*origin_y)
       #define TRY_SWAP(A,B) if (TSM(A)<0.9999999*TSM(B)) { double tmp[6]={xpos1[A],ypos1[A],zpos1[A],xpos2[A],ypos2[A],zpos2[A]}; unsigned char tsa=side_a[A], tsb=side_b[A]; xpos1[A]=xpos1[B]; ypos1[A]=ypos1[B]; zpos1[A]=zpos1[B]; xpos2[A]=xpos2[B]; ypos2[A]=ypos2[B]; zpos2[A]=zpos2[B]; xpos1[B]=tmp[0]; ypos1[B]=tmp[1]; zpos1[B]=tmp[2]; xpos2[B]=tmp[3]; ypos2[B]=tmp[4]; zpos2[B]=tmp[5]; side_a[A]=side_a[B]; side_b[A]=side_b[B]; side_a[B]=tsa; side_b[B]=tsb; }
       TRY_SWAP(2,3); TRY_SWAP(1,2); TRY_SWAP(0,1);
       TRY_SWAP(2,3); TRY_SWAP(1,2);
