@@ -717,7 +717,7 @@ By default, plots have only one horizontal {\tt x}-axis and one vertical {\tt
 y}-axis.  Additional axes may be added parallel to these and are referred to
 as, for example, the {\tt x2} axis, the {\tt x3} axis, and so forth up to a
 maximum of {\tt x127}.  In keeping with this nomenclature, the first axis in
-each direction can be referred to interchangably as, for example, {\tt x} or
+each direction can be referred to interchangeably as, for example, {\tt x} or
 {\tt x1}, or as {\tt y} or {\tt y1}.  Further axes are automatically generated
 when statements such as the following are issued:
 
@@ -862,7 +862,7 @@ positional keywords listed above, which specify how the axis should appear:
 \item {\tt notatzero} -- Opposite of {\tt atzero}; the axis should be placed along an edge of the plot. [{\bf Default}].
 \item {\tt notlinked} -- Specifies that the axis should no longer be linked to any other; see Section~\ref{sec:linked_axes}. [{\bf Default}].
 \item {\tt reversearrow} -- Specifies that an arrowhead should be drawn on the left/bottom end of the axis. [{\bf Not default}].
-\item {\tt twowayarrow} -- Specifies that arrowheadsshould be drawn on both ends of the axis. [{\bf Not default}].
+\item {\tt twowayarrow} -- Specifies that arrowheads should be drawn on both ends of the axis. [{\bf Not default}].
 \item {\tt visible} -- Specifies that the axis should be displayed; opposite of {\tt invisible}. [{\bf Default}].
 \end{itemize}
 
@@ -1627,7 +1627,7 @@ their distances from each grid point as weights. {\tt MonaghanLattanzio}
 interpolation uses the weighting function of Monaghan \& Lattanzio (1985) which
 is described further in Section~\ref{sec:spline_command}).
 
-In the following example, a colour map of a quadrapole is produced using four
+In the following example, a colour map of a quadrupole is produced using four
 input datapoints:
 
 \noindent{\tt set nokey}\newline
@@ -1640,7 +1640,7 @@ input datapoints:
 \noindent{\tt \phantom{x}1  1  1}\newline
 \noindent{\tt END}
 
-\centerline{\includegraphics[width=8cm]{examples/eps/ex_quadrapole}}
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_quadrupole}}
 
 \subsection{Custom Colour Mappings}
 
@@ -1771,7 +1771,7 @@ produce a more pleasing image, points in the complex plane are often coloured
 differently, depending upon how many iterations $n$ of the above series are
 required for $|z_n|$ to exceed~2. This is the point of no return, beyond which
 it can be shown that $|z_{n+1}|>|z_n|$ and that divergence is guaranteed. In
-numerical implementations of the above iteration, in the absense of any better
+numerical implementations of the above iteration, in the absence of any better
 way to prove that the iteration remains bounded for a certain value of $c$,
 some maximum number of iterations $m$ is chosen, and the series is deemed to
 have remained bounded if $|z_m|<2$.  This is implemented in PyXPlot by the
@@ -1928,7 +1928,7 @@ a grid of four-sided elements, whose number may be specified using the
 \begin{verbatim}
 set samples grid 40x40
 \end{verbatim}
-If data is supplied from a \datafile, then it is first resampled onto a regular
+If data is supplied from a \datafile, then it is first re-sampled onto a regular
 grid using one of the methods described in Section~\ref{sec:colourmaps}.
 
 The example below plots a surface indicating the magnitude of the imaginary

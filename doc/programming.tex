@@ -54,7 +54,7 @@ set title plotname
 
 Most string manipulations are performed using the string substitution operator,
 {\tt \%}\index{\% operator@{\tt \%} operator}. This operator should be
-preceeded by a format string, such as {\tt x=\%f}, in which tokens such as {\tt
+preceded by a format string, such as {\tt x=\%f}, in which tokens such as {\tt
 \%f} mark places where numbers and strings should be substituted. The
 substitution operator is followed by a bracketed list of the quantities which
 should be substituted in place of these tokens in the format string. This
@@ -111,7 +111,7 @@ dimensionless, to be certain of the unit in which it will be displayed.
 {\tt g}, {\tt G}   & A floating-point value, either using scientific notation, if the exponent is greater than the precision or less than $-4$, otherwise without the use of scientific notation. \\
 {\tt o}            & An integer value in octal (base~8). \\
 {\tt s}, {\tt S}, {\tt c} & A string, if a string is provided, or a numerical quantity, with units, if such is provided. \\
-{\tt x}, {\tt X}   & An integer value in hexidecimal (base~16). \\
+{\tt x}, {\tt X}   & An integer value in hexadecimal (base~16). \\
 {\tt \%}           & A literal {\tt \%} sign. \\
 \hline
 \end{tabular}
@@ -185,7 +185,7 @@ recognised by the =$\sim$ operator.
 {\tt m} & When specified, the pattern character {\tt \^{}} matches the beginning of the string and the beginning of each line immediately following each newline. The pattern character {\tt \$} matches at the end of the string and the end of each line immediately preceding each newline. By default, {\tt \^{}} matches only the beginning of the string, and {\tt \$} only the end of the string and immediately before the newline, if present, at the end of the string. \\
 {\tt s} & Make the {\tt .} special character match any character at all, including a newline; without this flag, {\tt .} will match anything except a newline. \\
 {\tt u} & Make {\tt $\backslash$w}, {\tt $\backslash$W}, {\tt $\backslash$b}, {\tt $\backslash$B}, {\tt $\backslash$s} and {\tt $\backslash$S} dependent on the Unicode character properties database. \\
-{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an unescaped backslash. When a line contains a {\tt \#}, neither in a character class nor preceded by an unescaped backslash, all characters from the left-most such {\tt \#} through to the end of the line are ignored. \\
+{\tt x} & This flag allows the user to write regular expressions that look nicer. Whitespace within the pattern is ignored, except when in a character class or preceded by an un-escaped backslash. When a line contains a {\tt \#}, neither in a character class nor preceded by an un-escaped backslash, all characters from the left-most such {\tt \#} through to the end of the line are ignored. \\
 \hline
 \end{tabular}}
 \caption{A list of the flags accepted by the =$\sim$ operator. Most are rarely used, but the {\tt g} flag is very useful.}
@@ -298,11 +298,11 @@ Here, as previously, the first script block is executed if the first
 conditional, {\tt x==0}, is true. If this script block is not executed, the
 second conditional, {\tt x>0}, is then tested. If this is true, then the second
 script block is executed.  The final script block, following the {\tt else}, is
-executed if none of the preceeding conditionals have been true. Any number of
+executed if none of the preceding conditionals have been true. Any number of
 {\tt else if} statements can be chained one after another, and a final {\tt
 else} statement can always be optionally supplied. The {\tt else} and {\tt else
 if} statements must always be placed on the same line as the closing brace of
-the preceeding script block.
+the preceding script block.
 
 The precise way in which a string of {\tt else if} statements are arranged in a
 PyXPlot script is a matter of taste: the following is a more compact but

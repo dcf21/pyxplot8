@@ -921,7 +921,7 @@ set samples interpolate MonaghanLattanzio
 \end{verbatim}
 
 Finally, data can be imported from graphical images in bitmap ({\tt .bmp}) 
-format to produce a funcion of two arguments returning a value in the
+format to produce a function of two arguments returning a value in the
 range~$0\to1$ which represents the data in one of the image's three colour
 channels. The two arguments are the horizontal and vertical position within the
 bitmap image, as measured in pixels.
@@ -1656,7 +1656,7 @@ listed above to specify how the axis should appear:
 \item {\tt notatzero} -- Opposite of {\tt atzero}; the axis should be placed along an edge of the plot. [{\bf Default}].
 \item {\tt notlinked} -- Specifies that the axis should no longer be linked to any other; see Section~\ref{sec:linked_axes}. [{\bf Default}].
 \item {\tt reversearrow} -- Specifies that an arrowhead should be drawn on the left/bottom end of the axis. [{\bf Not default}].
-\item {\tt twowayarrow} -- Specifies that arrowheadsshould be drawn on both ends of the axis. [{\bf Not default}].
+\item {\tt twowayarrow} -- Specifies that arrowheads should be drawn on both ends of the axis. [{\bf Not default}].
 \item {\tt visible} -- Specifies that the axis should be displayed; opposite of {\tt invisible}. [{\bf Default}].
 \end{itemize}
 
@@ -2353,7 +2353,7 @@ default base is~10.
 
 In addition to acting upon any combination of $x$-, $y$- and $z$-axes, the {\tt
 set logscale} command may also be requested to set the {\tt c1}, {\tt c2}, {\tt
-c3}, {\tt c4} and/or {\tt t} axes to scale logatharithmically. The first four
+c3}, {\tt c4} and/or {\tt t} axes to scale logarithmically. The first four
 of these options affect whether the colours on colour maps scale linearly or
 logarithmically with input ordinate values; see the {\tt set c<n>range} command
 for more details. The last of these options specifies whether parametric
@@ -2615,7 +2615,7 @@ by zero, numerical overflows, and the querying functions outside of the domains
 in which they are defined, are communicated to the user.  The option {\tt
 explicit} (default) causes an error message to be displayed on the terminal
 whenever a calculation causes an error.  The option {\tt quiet} causes such
-calcluations to silently generate a {\tt nan} (not a number) result. The latter
+calculations to silently generate a {\tt nan} (not a number) result. The latter
 is especially useful when, for example, plotting an expression with the
 ordinate axis range set to extend outside the domain in which that expression
 returns a well-defined real result; it suppresses the error messages which
@@ -2802,8 +2802,9 @@ set preamble \def\degrees{$^\circ$}
 \begin{verbatim}
 set samples [<value>]
             [grid <x_samples> [x] <y_samples>]
-            [interpolate ( inversesquare |
-                           nearestneighbour ) ]
+            [interpolate ( InverseSquare |
+                           MonaghanLattanzio |
+                           NearestNeighbour ) ]
 \end{verbatim}
 
 The setting {\tt samples} determines the number of values along the ordinate
@@ -2829,8 +2830,8 @@ specified in {\tt <value>} are taken.
 
 After the keyword {\tt interpolate}, the method used for interpolating
 non-gridded two-dimensional data onto the above-mentioned grid may be
-specified. The available options are {\tt inversesquare} and {\tt
-nearestneighbour}.
+specified. The available options are {\tt Inverse\-Square}, {\tt
+Monag\-han\-Lat\-tan\-zio} and {\tt Nearest\-Neigh\-bour}.
 
 
 \subsection{seed}\indcmd{set seed}
@@ -3311,7 +3312,7 @@ set unit of length inch
 
 The \indcmdt{set unit preferred} offers a slightly more flexible way of
 achieving the same result. Whereas the \indcmdt{set unit of} can only operate
-on named quanities such as lengths and powers, and cannot act upon compound
+on named quantities such as lengths and powers, and cannot act upon compound
 units such as {\tt W/Hz}, the \indcmdt{set unit preferred} can act upon any
 unit or combination of units, as in the examples:
 \begin{verbatim}
@@ -3359,7 +3360,7 @@ application is used to display PyXPlot output on screen in the {\tt X11}
 terminals. If the option {\tt auto} is selected, then either \ghostview\ or
 {\tt ggv} is used, if installed. Alternatively, any other application such as
 {\tt evince} or {\tt okular} can be selected by name, providing it is installed
-in within your shell's search path or an abolute path is provided, as in the
+in within your shell's search path or an absolute path is provided, as in the
 examples:
 
 \begin{verbatim}
@@ -3498,7 +3499,7 @@ set y23range [-5:5]
 \end{verbatim}
 
 \noindent sets the range of the 23rd vertical axis to run from~$-5$ to~5.  To
-request a range to be automatically scaled an asterix can be used.  The
+request a range to be automatically scaled an asterisk can be used.  The
 following command would set the {\tt x}-axis to have an upper limit of 10, but
 does not affect the lower limit; its range remains at its previous setting:
 

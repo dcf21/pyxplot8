@@ -1,4 +1,4 @@
-# EX_QUADRAPOLE.PPL
+# EX_QUADRUPOLE.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -23,14 +23,14 @@
 
 # Call common initialisation script
 reset
-title = "ex_quadrapole"
+title = "ex_quadrupole"
 load "examples/fig_init.ppl"
 
 # Main body of figure script
 set nokey
 set size 8 square
 set samples grid 200x200 interpolate InverseSquare
-plot [-4:4][-4:4] 'examples/ex_quadrapole.dat' with colourmap
+plot [-4:4][-4:4] 'examples/ex_quadrupole.dat' with colourmap
 
 # Call common cleanup script
 load "examples/fig_end.ppl"

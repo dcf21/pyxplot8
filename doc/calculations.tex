@@ -77,7 +77,7 @@ variables in PyXPlot, and the user can freely re-define them.
 Most of the pre-defined physical constants are not dimensionless quantities,
 and make use of PyXPlot's native ability to keep track of the physical units of
 quantities and to convert them between different unit systems -- for example,
-between inchs and centimetres.  This will be explained in more detail in
+between inches and centimetres.  This will be explained in more detail in
 Section~\ref{sec:units}.
 
 \section{Functions} \label{sec:functions}
@@ -706,7 +706,7 @@ set unit of mass Mpluto
 
 The \indcmdt{set unit preferred} offers a slightly more flexible way of
 achieving the same result. Whereas the \indcmdt{set unit of} can only operate
-on named quanities such as lengths and powers, and cannot act upon compound
+on named quantities such as lengths and powers, and cannot act upon compound
 units such as {\tt W/Hz}, the \indcmdt{set unit preferred} can act upon any
 unit or combination of units:
 \begin{verbatim}
@@ -1081,14 +1081,14 @@ Time-series data often need special consideration when intervals of days or
 months are spanned. Given a series of times and calendar dates, it is not
 straightforward to calculate the elapsed times between the datapoints since
 the non-uniform lengths of the months must be accounted for, as well as the
-occurance of leap years. Similarly, given datapoints spread over a period of
+occurrence of leap years. Similarly, given datapoints spread over a period of
 days from some start point, it may be desirable to label a time axis with
 calendar dates. But working out what calendar date comes $N$ days after some
 start point requires considerable effort.
 
 Astronomers usually get around such issues by expressing dates and times as
 Julian Day (JD) numbers\index{Julian Day numbers}, which count the number of
-days ellapsed since noon on 1st~January 4713\,{\footnotesize BC} in the Julian
+days elapsed since noon on 1st~January 4713\,{\footnotesize BC} in the Julian
 Calendar. The time of day is represented as the fractional part of the Julian
 Day number. For example, midnight on 1st~January 2000 (Gregorian calendar) was
 JD~$2451544.5$, and noon on the same day was JD~$2451545.0$.
@@ -1114,7 +1114,7 @@ By default, the {\tt time\_julianday()} function makes a transition from the
 Julian calendar to the Gregorian calendar at midnight on 14th~September 1752
 (Gregorian calendar), when Britain and the British Empire switched calendars.
 Thus, dates between 2nd~September and 14th~September 1752 are not valid input
-dates, since they days never occured in the British calendar. This behaviour
+dates, since they days never occurred in the British calendar. This behaviour
 may be changed using the \indcmdt{set calendar}, which offers a choice of nine
 different calendars listed in Table~\ref{tab:calendars}.
 
@@ -1350,8 +1350,8 @@ are contained in the 5th to 10th white-space-separated columns respectively.
 In the script below, the {\tt time\_\-julianday()} is then used to convert
 these components into Julian Days, and the \indcmdt{histogram} (see
 Section~\ref{sec:histogram}) is used to sort each of the web accesses recorded
-in the Apache logfile into hour-sized bins.  Because this may be a
-time-consuming process for large logfiles on busy servers, we use the
+in the Apache log file into hour-sized bins.  Because this may be a
+time-consuming process for large log files on busy servers, we use the
 \indcmdt{tabulate} (see Section~\ref{sec:tabulate}) to store the data into a
 temporary datafile on disk before deciding how to plot it:
 \nlscf
