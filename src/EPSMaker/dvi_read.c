@@ -400,7 +400,7 @@ int DisplayDVIOperator(DVIOperator *op)
    {
     int i;
     i=op->op;
-    if ((i>=31) && (i<=126)) snprintf(s2, 128, "DVI: Read character %d %s", i, (char *)&i);
+    if ((i>=31) && (i<=126)) snprintf(s2, 128, "DVI: Read character %d %c", i, i);
     else                     snprintf(s2, 128, "DVI: Read character %d", i);
     s = s2;
    }

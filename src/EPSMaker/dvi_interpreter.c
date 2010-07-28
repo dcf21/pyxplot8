@@ -256,7 +256,7 @@ int dviInOpChar(dviInterpreterState *interp, DVIOperator *op)
   s = interp->currentString+strlen(interp->currentString); // s now points to the \0
   if      (charToTypeset == 40) snprintf(s, 3, "%s", "\\(");
   else if (charToTypeset == 41) snprintf(s, 3, "%s", "\\)");
-  else                          snprintf(s, 2, "%s", (char *)&charToTypeset);
+  else                          snprintf(s, 2, "%c", charToTypeset);
   return 0;
  }
 
@@ -627,11 +627,9 @@ int dviInOpPostPost(dviInterpreterState *interp, DVIOperator *op)
 // Accumulate characters output in special mode into a string
 int dviSpecialChar(dviInterpreterState *interp, DVIOperator *op)
  {
-  int c;
   char *s;
-  c = op->op;
   s = interp->spString+strlen(interp->spString);
-  snprintf(s, SSTR_LENGTH, "%s", (char *)&c);
+  snprintf(s, SSTR_LENGTH, "%c", op->op);
   return 0;
  }
 
