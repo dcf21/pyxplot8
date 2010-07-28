@@ -1205,10 +1205,20 @@ plot [2:5] x**2 label "$x=%.2f$"%($1) with points
 plot 'datafile' using 1:2 label "%s"%($3)
 \end{verbatim}
 
-\noindent Datapoints can be labelled in any of the following plot styles: {\tt 
-arrows} (and similar styles), {\tt dots}, {\tt errorbars} (and similar styles),
-{\tt linespoints}, {\tt lowerlimits}, {\tt points}, {\tt stars} and {\tt
-upperlimits}.
+\noindent Note that if a particular column of a \datafile\ contains strings
+which are to be used as labels, as in the second example above, syntax such as 
+{\tt "\%s"\%(\$3)} must be used to explicitly read the data as strings rather
+than as numerical quantities.  As PyXPlot treats any whitespace as separating
+columns of data, such labels cannot contain spaces, though \LaTeX's {\tt
+$\sim$} character can be used to achieve a space.
+
+Datapoints can be labelled when plotted in any of the following plot styles:
+{\tt arrows} (and similar styles), {\tt dots}, {\tt errorbars} (and similar
+styles), {\tt errorrange} (and similar styles), {\tt impulses}, {\tt
+linespoints}, {\tt lowerlimits}, {\tt points}, {\tt stars} and {\tt 
+upperlimits}. It is not possible to label datapoints plotted in other styles.
+Labels are rendered in the same colour as the datapoints with which they are
+associated.
 
 
 \subsection{title}\indcmd{plot title}

@@ -160,12 +160,61 @@ replot
 
 This section provides an exhaustive list of all of PyXPlot's {\it plot styles},
 which we place into a series of groups for clarity.
+Table~\ref{tab:plot_style_columns} summarises the columns of data expected by
+each of the plot styles when used on two- and three-dimensional plots.
+
+\begin{table}
+\begin{tabular}{|rll|}
+\hline
+{\bf Style} & {\bf Columns (2D plots)} & {\bf Columns (3D plots)} \\
+\hline
+{\tt arrows\_head} & $(x_1,y_1,x_2,y_2)$ & $(x_1,y_1,z_1,x_2,y_2,z_2)$ \\
+{\tt arrows\_nohead} & $(x_1,y_1,x_2,y_2)$ & $(x_1,y_1,z_1,x_2,y_2,z_2)$ \\
+{\tt arrows\_twohead} & $(x_1,y_1,x_2,y_2)$ & $(x_1,y_1,z_1,x_2,y_2,z_2)$ \\
+{\tt boxes} & $(x,y)$ & $(x,y)$ \\
+{\tt colourmap} & $(x,y,c_1,\ldots)$ & $(x,y,c_1,\ldots)$ \\
+{\tt contourmap} & $(x,y,c_1,\ldots)$ & $(x,y,c_1,\ldots)$ \\
+{\tt dots} & $(x,y)$ & $(x,y,z)$ \\
+{\tt FilledRegion} & $(x,y)$ & $(x,y)$ \\
+{\tt fsteps} & $(x,y)$ & $(x,y)$ \\
+{\tt histeps} & $(x,y)$ & $(x,y)$ \\
+{\tt impulses} & $(x,y)$ & $(x,y,z)$ \\
+{\tt lines} & $(x,y)$ & $(x,y,z)$ \\
+{\tt LinesPoints} & $(x,y)$ & $(x,y,z)$ \\
+{\tt LowerLimits} & $(x,y)$ & $(x,y,z)$ \\
+{\tt points} & $(x,y)$ & $(x,y,z)$ \\
+{\tt stars} & $(x,y)$ & $(x,y,z)$ \\
+{\tt steps} & $(x,y)$ & $(x,y)$ \\
+{\tt surface} & $(x,y,z)$ & $(x,y,z)$ \\
+{\tt UpperLimits} & $(x,y)$ & $(x,y,z)$ \\
+{\tt wboxes} & $(x,y,w)$ & $(x,y,w)$ \\
+{\tt XErrorBars} & $(x,y,\sigma_x)$ & $(x,y,z,\sigma_x)$ \\
+{\tt XErrorRange} & $(x,y,x_\mathrm{min},x_\mathrm{max})$ & $(x,y,z,x_\mathrm{min},x_\mathrm{max})$ \\
+{\tt XYErrorBars} & $(x,y,\sigma_x,\sigma_y)$ & $(x,y,z,\sigma_x,\sigma_y)$ \\
+{\tt XYErrorRange} & $(x,y,x_\mathrm{min},x_\mathrm{max},y_\mathrm{min},y_\mathrm{max})$ & $(x,y,z,x_\mathrm{min},x_\mathrm{max},y_\mathrm{min},y_\mathrm{max})$ \\
+{\tt XYZErrorBars} & $(x,y,z,\sigma_x,\sigma_y,\sigma_z)$ & $(x,y,z,\sigma_x,\sigma_y,\sigma_z)$ \\
+{\tt XYZErrorRange} & $(x,y,z,x_\mathrm{min},x_\mathrm{max},y_\mathrm{min},$ -- & $(x,y,z,x_\mathrm{min},x_\mathrm{max},y_\mathrm{min},$ -- \\
+                    & -- $y_\mathrm{max},z_\mathrm{min},z_\mathrm{max})$ & -- $y_\mathrm{max},z_\mathrm{min},z_\mathrm{max})$ \\
+{\tt XZErrorBars} & $(x,y,z,\sigma_x,\sigma_z)$ & $(x,y,z,\sigma_x,\sigma_z)$ \\
+{\tt XZErrorRange} & $(x,y,z,x_\mathrm{min},x_\mathrm{max},z_\mathrm{min},z_\mathrm{max})$ & $(x,y,z,x_\mathrm{min},x_\mathrm{max},z_\mathrm{min},z_\mathrm{max})$ \\
+{\tt YErrorBars} & $(x,y,\sigma_y)$ & $(x,y,z,\sigma_y)$ \\
+{\tt YErrorRange} & $(x,y,y_\mathrm{min},y_\mathrm{max})$ & $(x,y,z,y_\mathrm{min},y_\mathrm{max})$ \\
+{\tt YErrorShaded} & $(x,y_\mathrm{min},y_\mathrm{max})$ & $(x,y_\mathrm{min},y_\mathrm{max})$ \\
+{\tt YZErrorBars} & $(x,y,z,\sigma_y,\sigma_z)$ & $(x,y,z,\sigma_y,\sigma_z)$ \\
+{\tt YZErrorRange} & $(x,y,z,y_\mathrm{min},y_\mathrm{max},z_\mathrm{min},z_\mathrm{max})$ & $(x,y,z,y_\mathrm{min},y_\mathrm{max},z_\mathrm{min},z_\mathrm{max})$ \\
+{\tt ZErrorBars} & $(x,y,z,\sigma_z)$ & $(x,y,z,\sigma_z)$ \\
+{\tt ZErrorRange} & $(x,y,z,z_\mathrm{min},z_\mathrm{max})$ & $(x,y,z,z_\mathrm{min},z_\mathrm{max})$ \\
+\hline
+\end{tabular}
+\caption{A summary of the columns of data expected by each of PyXPlot's plot styles when used on two- and three-dimensional plots.}
+\label{tab:plot_style_columns}
+\end{table}
 
 \subsection{Lines and Points}
 
-The following is a list of PyXPlot's simplest plot styles, all of which take as
-input two columns of data, representing the $x$- and $y$-coordinates of the
-positions of each point:
+The following is a list of PyXPlot's simplest plot styles, all of which take
+two (or three) columns of input data on 2D (or 3D) plots, representing the
+$x$-, $y$- (and $z$-)coordinates of the positions of each point:
 \begin{itemize}
 \item \indpst{dots} -- places a small dot at each datum.
 \item \indpst{lines} -- connects adjacent \datapoint s with straight lines.
@@ -239,39 +288,43 @@ indicating the uncertainties in either their vertical or horizontal positions:
 \item \indpst{yerrorbars}
 \item \indpst{xerrorbars}
 \end{itemize}
-Both of these plot styles take three columns of input data, the first two of
-which represent the $x$- or $y$-coordinates of the positions of each point,
-and the last of which represents the uncertainty in either the $x$- and
-$y$-coordinate.  The plot style \indpst{errorbars} is an alias for
-\indpst{yerrorbars}.  Additionally, the following plot style allows datapoints
-to be plotted with both horizontal and vertical errorbars:
+Both of these plot styles take three (or four) columns of input data on 2D (or
+3D) plots, the first two (or three) of which represent the $x$-, $y$- (and
+$z$-)coordinates of the central position of each errorbar, and the last of
+which represents the uncertainty in either the $x$- and $y$-coordinate. The
+plot style \indpst{errorbars} is an alias for \indpst{yerrorbars}.
+Additionally, the following plot style allows datapoints to be plotted with
+both horizontal and vertical errorbars:
 \begin{itemize}
 \item \indpst{xyerrorbars}
 \end{itemize}
-This plot style takes four columns of data as input, the first two of which
-represent the $x$- and $y$-coordinates of the positions of each point, the
-third of which gives the uncertainty in the $x$-coordinate, and the last of
-which gives the uncertainty in the $y$-coordinate.
+This plot style takes four (or five) columns of data as input, the first two
+(or three) of which represent the $x$-, $y$- (and $z$-)coordinates of the
+central position of each errorbar, the last but one of which gives the
+uncertainty in the $x$-coordinate, and the last of which gives the uncertainty
+in the $y$-coordinate.
 
 Each of the plot styles listed above has a corresponding partner which takes
-minimum and maximum limit in place of each uncertainty, equivalent to writing
-$5^{+2}_{-3}$ instead of $5\pm2$, except that the absolute values of~2 and~7
-should be given in the supplied data in place of $-3$ and $+2$:
+minimum and maximum limits for each errorbar, equivalent to writing
+$5^{+2}_{-3}$, in place of a single symmetric uncertainty:
 \begin{itemize}
-\item \indpst{xerrorrange} -- takes four columns of data.
-\item \indpst{yerrorrange} -- takes four columns of data.
-\item \indpst{xyerrorrange} -- takes six columns of data.
+\item \indpst{xerrorrange} -- takes four (or five) columns of data.
+\item \indpst{yerrorrange} -- takes four (or five) columns of data.
+\item \indpst{xyerrorrange} -- takes six (or seven) columns of data.
 \end{itemize}
 The plot style \indpst{errorrange} is an alias of \indpst{yerrorrange}.
 
 Corresponding plot styles also exist to plot data with errorbars along the
 $z$-axes of three-dimensional plots: {\tt zerrorbars}, {\tt zerrorrange}, {\tt
 xzerrorbars}, {\tt xzerrorrange}, {\tt yzerrorbars}, {\tt yzerrorrange}, {\tt
-xyzerrorbars}, {\tt xyzerrorrange}.
+xyzerrorbars}, {\tt xyzerrorrange}. Though it does not make sense to use these
+on two-dimensional plots, it is not an error to do so; they expect the same
+number of columns of input data on both two- and three-dimensional plots.
 
 \subsection{Shaded Regions}
 
 The following plot styles allow regions of graphs to be shaded with colour:
+
 \begin{itemize}
 \item \indpst{yerrorshaded}
 \item \indpst{shadedregion}
@@ -281,35 +334,33 @@ Both of these plot styles fill specified regions of graphs with the selected
 {\tt fillcolour} and draw a line around the boundary of the region with the
 selected {\tt colour}, {\tt linetype} and {\tt linewidth}. They differ in the
 format in which they expect the input data to be arranged. The
-\indpst{yerrorshaded} plot style expects data to be arranged in the same format
-as the \indpst{yerrorrange} plot style, specifying the $x$- and $y$-coordinates
-of a series of \datapoint s in the first two columns, together with the minimum
-and maximum extremes of the vertical errorbar on each \datapoint\ in the third
-and fourth columns. The region contained between the upper and lower limits of
-the error bars is filled with colour; the $y$-coordinate specified in the
-second column is unused. This plot style provides easy conversion between plots
-drawn with errorbars and with shaded error regions. Note that the \datapoint s
-must be sorted in order of either increasing or decreasing $x$-coordinate for
-sensible behaviour.
+\indpst{yerrorshaded} plot style is similar to the \indpst{yerrorrange} plot
+style, and expects three columns of data, specifying respectively the
+$x$-coordinate and the minimum and maximum extremes of the vertical errorbar on
+each \datapoint.  The region contained between the upper and lower limits of
+these error bars is filled with colour.  Note that the \datapoint s must be
+sorted in order of either increasing or decreasing $x$-coordinate for sensible
+behaviour.
 
 The \indpst{shadedregion} plot style takes only two columns of input data,
 specifying the $x$- and $y$-coordinates of a series of \datapoint s which are
 to be joined in a join-the-dots fashion. At the end of each dataset, the drawn
 path is closed and filled.
 
+The use of these plot styles on three-dimensional graphs may produce unexpected
+results.
+
 \subsection{Barcharts and Histograms}
 \label{sec:barcharts}
 \index{bar charts}
 
 The following plot styles allow barcharts to be produced:
-
 \begin{itemize}
 \item \indpst{boxes}
 \item \indpst{impulses}
 \item \indpst{wboxes}
 \end{itemize}
-
-\noindent These styles differ in where the horizontal interfaces between the
+These styles differ in where the horizontal interfaces between the
 bars are placed along the abscissa axis and how wide the bars are.  In the
 \indpst{boxes} plot style, the interfaces between the bars are at the midpoints
 between the specified \datapoint s by default (see, for example,
@@ -382,6 +433,12 @@ plot 'data.dat' with boxes fc 4
 \noindent Figures~\ref{fig:ex_barchart2}(b) and (d) demonstrate the use of
 filled bars.
 
+The {\tt boxes} and {\tt wboxes} plot styles expect identically-formatted data
+when used on two- and three-dimensional plots; in the latter case, all bars are
+drawn in the plane $z=0$. The {\tt impulses} plot style takes an additional
+column of data on three-dimensional plots, specifying the $z$-coordinate at
+which each impulse should be drawn.
+
 \subsubsection{Stacked Bar Charts}
 
 If multiple \datapoint s are supplied to the \indpst{boxes} or \indpst{wboxes}
@@ -409,16 +466,18 @@ steps associated with each supplied \datapoint:
 \item \indpst{fsteps}
 \item \indpst{histeps}
 \end{itemize}
-Like the {\tt points} plot style, each of these styles takes only two columns
-of data as input, containing the $x$- and $y$-coordinates of each \datapoint.
-An example of their appearance  is shown in Figures~\ref{fig:ex_barchart1}(d),
-(e) and (f); for clarity, the positions of each of the supplied \datapoint s
-are marked by red crosses.  These plot styles differ in their placement of the
-edges of each of the horizontal steps.  The \indpst{steps} plot style places
-the right-most edge of each step on the \datapoint\ it represents.  The
-\indpst{fsteps} plot style places the left-most edge of each step on the
-\datapoint\ it represents.  The \indpst{histeps} plot style centres each step
-upon the \datapoint\ it represents.
+Each of these styles takes two columns of data as input containing the $x$- and
+$y$-coordinates of each \datapoint.  They expect identically-formatted data
+regardless of whether they are used on two- and three-dimensional plots; in the
+latter case, the steps are drawn in the plane $z=0$.  An example of their
+appearance  is shown in Figures~\ref{fig:ex_barchart1}(d), (e) and (f); for
+clarity, the positions of each of the supplied \datapoint s are marked by red
+crosses.  These plot styles differ in their placement of the edges of each of
+the horizontal steps.  The \indpst{steps} plot style places the right-most edge
+of each step on the \datapoint\ it represents.  The \indpst{fsteps} plot style
+places the left-most edge of each step on the \datapoint\ it represents.  The
+\indpst{histeps} plot style centres each step upon the \datapoint\ it
+represents.
 
 \subsection{Arrows}
 
@@ -430,13 +489,15 @@ positions dictated by a series of \datapoint s:
 \item \indpst{arrows\_twohead}
 \end{itemize}
 The plot style of \indpst{arrows} is an alias for \indpst{arrows\_head}.  Each
-of these plot styles take four columns of data -- $x_1$, $y_1$, $x_2$ and $y_2$
--- and each \datapoint\ results in an arrow being drawn from the point
-$(x_1,y_1)$ to the point $(x_2,y_2)$. The three plot styles differ in the kinds
-of arrows that they draw: \indpst{arrows\_head} draws an arrow head on each
-arrow at the point $(x_2,y_2)$; \indpst{arrows\_nohead} draws simple lines
-without arrow heads on either end; \indpst{arrows\_twohead} draws arrow heads
-on both ends of each arrow.
+of these plot styles take four columns of data on two-dimensional plots --
+$x_1$, $y_1$, $x_2$ and $y_2$ -- or six columns of data on three-dimensional
+plots with additional $z$-coordinates. Each \datapoint\ results in an arrow
+being drawn from the point $(x_1,y_1,z_1)$ to the point $(x_2,y_2,z_2)$. The
+three plot styles differ in the kinds of arrows that they draw:
+\indpst{arrows\_head} draws an arrow head on each arrow at the point
+$(x_2,y_2,z_2)$; \indpst{arrows\_nohead} draws simple lines without arrow heads
+on either end; \indpst{arrows\_twohead} draws arrow heads on both ends of each
+arrow.
 
 \example{ex:vortex}{A diagram of fluid flow around a vortex}{
 In this example we produce a velocity map of fluid circulating in a vortex. For
@@ -481,13 +542,11 @@ with $x$, $y$ and $z$ coordinates in three columns. The first two are useful
 for producing two-dimensional representations of $(x,y,z)$ surfaces using
 colours or contours to show the magnitude of $z$, while the third is useful for
 producing three-dimensional graphs of such surfaces:
-
 \begin{itemize}
 \item colourmap
 \item contourmap
 \item surface
 \end{itemize}
-
 They are discussed in detail in Sections~\ref{sec:colourmaps},
 \ref{sec:contourmaps} and \ref{sec:surfaces} respectively.
 
@@ -502,10 +561,20 @@ plot [2:5] x**2 label "$x=%.2f$"%($1) with points
 plot 'datafile' using 1:2 label "%s"%($3)
 \end{verbatim}
 
-\noindent Datapoints can be labelled in any of the following plot styles: {\tt
-arrows} (and similar styles), {\tt dots}, {\tt errorbars} (and similar styles),
-{\tt linespoints}, {\tt lowerlimits}, {\tt points}, {\tt stars} and {\tt
-upperlimits}.
+\noindent Note that if a particular column of a \datafile\ contains strings
+which are to be used as labels, as in the second example above, syntax such as
+{\tt "\%s"\%(\$3)} must be used to explicitly read the data as strings rather
+than as numerical quantities.  As PyXPlot treats any whitespace as separating
+columns of data, such labels cannot contain spaces, though \LaTeX's {\tt
+$\sim$} character can be used to achieve a space.
+
+Datapoints can be labelled when plotted in any of the following plot styles:
+{\tt arrows} (and similar styles), {\tt dots}, {\tt errorbars} (and similar
+styles), {\tt errorrange} (and similar styles), {\tt impulses}, {\tt
+linespoints}, {\tt lowerlimits}, {\tt points}, {\tt stars} and {\tt
+upperlimits}. It is not possible to label datapoints plotted in other styles.
+Labels are rendered in the same colour as the datapoints with which they are
+associated.
 
 \section{The {\tt style} Keyword}
 
