@@ -138,7 +138,7 @@ if test "$whichout_gv" != "" ; then
  fi
 else
  echo "NO"
- echo "GGV_COMMAND=/bin/false" >> Makefile
+ echo "GV_COMMAND=/bin/false" >> Makefile
 fi
 
 # 9. FIND GGV
