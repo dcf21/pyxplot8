@@ -886,8 +886,10 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           LineDraw_Point(ld, UUR(xn+2+ThreeDim), UUR(yn+2+ThreeDim), ThreeDim ? UUR(zn+3) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_PenUp(ld);
 
-          eps_plot_GetPosition(&xpos , &ypos , &depth , &xap , &yap , &zap , NULL, NULL, NULL, ThreeDim, UUR(xn           ), UUR(yn           ), ThreeDim ? UUR(zn  ) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
-          eps_plot_GetPosition(&xpos2, &ypos2, &depth2, &xap2, &yap2, &zap2, NULL, NULL, NULL, ThreeDim, UUR(xn+2+ThreeDim), UUR(yn+2+ThreeDim), ThreeDim ? UUR(zn+3) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
+          eps_plot_GetPosition(&xpos , &ypos , &depth , &xap , &yap , &zap , NULL, NULL, NULL, ThreeDim, UUR(xn           ), UUR(yn           ), ThreeDim ? UUR(zn  ) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1);
+          eps_plot_GetPosition(&xpos2, &ypos2, &depth2, &xap2, &yap2, &zap2, NULL, NULL, NULL, ThreeDim, UUR(xn+2+ThreeDim), UUR(yn+2+ThreeDim), ThreeDim ? UUR(zn+3) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 1);
+          if ((!gsl_finite(xpos))||(!gsl_finite(ypos))||(!gsl_finite(xpos2))||(!gsl_finite(ypos2)) || (ThreeDim&&((!gsl_finite(depth))||(!gsl_finite(depth2)))) )
+             { if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0')) x->LaTeXpageno++; continue; }
           theta = atan2(xpos2-xpos,ypos2-ypos);
           if (!gsl_finite(theta)) theta=0.0;
 
@@ -922,9 +924,10 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0'))
          {
           char *text=NULL;
+          if ((xap2<0.0)||(xap2>1.0)||(yap2<0.0)||(yap2>1.0)||(ThreeDim&&((zap2<0.0)||(zap2>1.0)))) { x->LaTeXpageno++; continue; }
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
-          canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos/M_TO_PS, ypos/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
-          if (text!=NULL) ThreeDimBuffer_writeps(x, depth, 1, 1, 0, 1, last_colstr, text);
+          canvas_EPSRenderTextItem(x, &text, x->LaTeXpageno++, xpos2/M_TO_PS, ypos2/M_TO_PS, x->current->settings.TextHAlign, x->current->settings.TextVAlign, x->CurrentColour, x->current->settings.FontSize, 0.0, NULL, NULL);
+          if (text!=NULL) ThreeDimBuffer_writeps(x, depth2, 1, 1, 0, 1, last_colstr, text);
          }
        }
       blk=blk->next;
