@@ -149,9 +149,13 @@ void eps_plot_GetPosition(double *xpos, double *ypos, double *depth, double *xap
   if (ThreeDim)
    {
     eps_plot_ThreeDimProject(*xap,*yap,*zap,sg,origin_x,origin_y,width,height,zdepth,xpos,ypos,depth);
-    if (theta_x != NULL) *theta_x = atan2( cos(sg->XYview.real) , sin(sg->XYview.real)*sin(sg->YZview.real) );
-    if (theta_y != NULL) *theta_y = atan2( sin(sg->XYview.real) ,-cos(sg->XYview.real)*sin(sg->YZview.real) );
-    if (theta_z != NULL) *theta_z = 0.0;
+    if (theta_x != NULL) *theta_x = atan2( cos(sg->XYview.real) ,-sin(sg->XYview.real)*sin(sg->YZview.real) );
+    if (theta_y != NULL) *theta_y = atan2( sin(sg->XYview.real) , cos(sg->XYview.real)*sin(sg->YZview.real) );
+    if (theta_z != NULL) *theta_z = atan2( 0                    ,                      cos(sg->YZview.real) );
+
+    if ((theta_x != NULL) && (!gsl_finite(*theta_x))) *theta_x=0.0;
+    if ((theta_y != NULL) && (!gsl_finite(*theta_y))) *theta_y=0.0;
+    if ((theta_z != NULL) && (!gsl_finite(*theta_z))) *theta_z=0.0;
    }
   else // 2D plots
    {

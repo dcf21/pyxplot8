@@ -1,4 +1,4 @@
-2010 Aug  1: PyxPlot 0.8.2
+2010 Aug  4: PyxPlot 0.8.2
    - 3D plotting implemented.
    - New plot styles colourmap, contourmap and surface added.
    - Interpolation of 2D datagrids and bitmap images implemented.

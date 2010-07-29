@@ -653,8 +653,8 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
             double boxfrom = sg->BoxFrom.real;
             if ((a[yn]->LogFinal==SW_BOOL_TRUE) && (boxfrom<DBL_MIN)) boxfrom=DBL_MIN;
             if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
-            LineDraw_Point(ld, UUR(xn), boxfrom, ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
-            LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
+            LineDraw_Point(ld, (xn==1)?boxfrom:(UUR(xn)), (yn==1)?boxfrom:(UUR(yn)), ThreeDim ? ((zn==1)?boxfrom:(UUR(zn))) : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
+            LineDraw_Point(ld,                  UUR(xn) ,                  UUR(yn) , ThreeDim ?                   UUR(zn)   : 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr);
            }
           LineDraw_PenUp(ld);
 
@@ -676,7 +676,9 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   else if ((style == SW_STYLE_LOWERLIMITS) || (style == SW_STYLE_UPPERLIMITS)) // LOWERLIMITS, UPPERLIMITS
    {
-    double ps, sgn, lw, theta_y, x2, y2, x3, y3, x4, y4, x5, y5;
+    int    an;
+    double ps, sgn, lw, theta[3], x2, y2, x3, y3, x4, y4, x5, y5;
+    double offset_barx, offset_bary, offset_arrx, offset_arry;
     ps  = pd->ww_final.pointsize * EPS_DEFAULT_PS / M_TO_PS;
     sgn = ( (style == SW_STYLE_UPPERLIMITS) ^ (a[yn]->MaxFinal > a[yn]->MinFinal) ) ? 1.0 : -1.0;
     lw  = pd->ww_final.pointlinewidth;
@@ -694,29 +696,36 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
         LineDraw_PenUp(ld);
         IF_NOT_INVISIBLE
          {
-          eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, &theta_y, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
+          eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, &theta[0], &theta[1], &theta[2], ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
           if (!gsl_finite(xpos)) // Position of point is off side of graph
            {
             if ((blk->text[j] != NULL) && (blk->text[j][0] != '\0')) x->LaTeXpageno++;
             continue;
            }
 
+          if (xn==1) an=0; else if (yn==1) an=1; else an=2;
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
-          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,-ps,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
-          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, ps,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
+
+          offset_barx = ps * sin(theta[an] + M_PI/2);
+          offset_bary = ps * cos(theta[an] + M_PI/2);
+          offset_arrx = sgn*2*ps * sin(theta[an]);
+          offset_arry = sgn*2*ps * cos(theta[an]);
+
+          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,-offset_barx,-offset_bary,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
+          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, offset_barx, offset_bary,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_PenUp(ld);
-          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,  0,       0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
-          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,  0,sgn*2*ps,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
+          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0,           0,           0,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
+          LineDraw_Point(ld, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, offset_arrx, offset_arry,0,0,0,0, pd->ww_final.linetype, lw, last_colstr);
           LineDraw_PenUp(ld);
-          x2 = xpos + sgn*2*ps*M_TO_PS * sin(theta_y);
-          y2 = ypos + sgn*2*ps*M_TO_PS * cos(theta_y);
-          if (sgn<0.0) theta_y += M_PI;
-          x3 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta_y - EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on one side
-          y3 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta_y - EPS_ARROW_ANGLE / 2);
-          x5 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta_y + EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on other side
-          y5 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta_y + EPS_ARROW_ANGLE / 2);
-          x4 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
-          y4 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta_y) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
+          x2 = xpos + sgn*2*ps*M_TO_PS * sin(theta[an]);
+          y2 = ypos + sgn*2*ps*M_TO_PS * cos(theta[an]);
+          if (sgn<0.0) theta[an] += M_PI;
+          x3 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta[an] - EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on one side
+          y3 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta[an] - EPS_ARROW_ANGLE / 2);
+          x5 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta[an] + EPS_ARROW_ANGLE / 2); // Pointy back of arrowhead on other side
+          y5 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta[an] + EPS_ARROW_ANGLE / 2);
+          x4 = x2 - EPS_ARROW_HEADSIZE/2 * lw * sin(theta[an]) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2); // Point where back of arrowhead crosses stalk
+          y4 = y2 - EPS_ARROW_HEADSIZE/2 * lw * cos(theta[an]) * (1.0 - EPS_ARROW_CONSTRICT) * cos(EPS_ARROW_ANGLE / 2);
           sprintf(epsbuff, "newpath\n%.2f %.2f moveto\n%.2f %.2f lineto\n%.2f %.2f lineto\n%.2f %.2f lineto\nclosepath\nfill\n", x4,y4,x3,y3,x2,y2,x5,y5);
           ThreeDimBuffer_writeps(x, depth, 1, lw, 0.0, 1.0, last_colstr, epsbuff);
          }
@@ -745,40 +754,40 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 #define MAKE_STEP(X0,Y0,WIDTH) \
  IF_NOT_INVISIBLE \
   { \
-   double x0=X0,y0=Y0,width=WIDTH; \
-   double xl,xr; \
+   double pA[3]={(X0)-(WIDTH),(Y0),0}, pB[3]={(X0)+(WIDTH),(Y0),0}; \
    if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); } \
-   xl=x0-width; \
-   xr=x0+width; \
-   if (logaxis) { xl=exp(xl); xr=exp(xr); } \
-   LineDraw_Point(ld, xl, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-   LineDraw_Point(ld, xr, y0, 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+   if (logaxis) { pA[0]=exp(pA[0]); pB[0]=exp(pB[0]); } \
+   LineDraw_Point(ld, pA[xn], pA[yn], ThreeDim?(pA[zn]):0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+   LineDraw_Point(ld, pB[xn], pB[yn], ThreeDim?(pB[zn]):0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
   } \
 
 #define MAKE_BOX(X0,Y0,WIDTH) \
  { \
-  double x0=X0,y0=Y0,width=WIDTH; \
-  double xl,xr,yb,yt; \
-  xl = x0-width; \
-  xr = x0+width; \
-  if (logaxis) { xl=exp(xl); xr=exp(xr); } \
+  int    an; \
+  double pA[3] = {(X0)-(WIDTH), sg->BoxFrom.real, 0}; \
+  double pB[3] = {(X0)-(WIDTH), (Y0)            , 0}; \
+  double pC[3] = {(X0)+(WIDTH), (Y0)            , 0}; \
+  double pD[3] = {(X0)+(WIDTH), sg->BoxFrom.real, 0}; \
+  if (logaxis) { pA[0]=exp(pA[0]); pB[0]=exp(pB[0]); pC[0]=exp(pC[0]); pD[0]=exp(pD[0]); } \
+  if (xn==1) an=0; else if (yn==1) an=1; else an=2; \
+  if ((a[an]->LogFinal==SW_BOOL_TRUE) && (pA[1]<DBL_MIN)) pA[1]=DBL_MIN; \
+  if ((a[an]->LogFinal==SW_BOOL_TRUE) && (pB[1]<DBL_MIN)) pB[1]=DBL_MIN; \
+  if ((a[an]->LogFinal==SW_BOOL_TRUE) && (pC[1]<DBL_MIN)) pC[1]=DBL_MIN; \
+  if ((a[an]->LogFinal==SW_BOOL_TRUE) && (pD[1]<DBL_MIN)) pD[1]=DBL_MIN; \
 \
   /* Set fill colour of box */ \
   eps_core_SetFillColour(x, &pd->ww_final); \
   eps_core_SwitchTo_FillColour(x,0); \
 \
   /* Fill box */ \
-  IF_NOT_INVISIBLE \
+  IF_NOT_INVISIBLE if (!ThreeDim) \
    { \
     FilledRegionHandle *fr; \
-    yb = sg->BoxFrom.real; \
-    if ((a[yn]->LogFinal==SW_BOOL_TRUE) && (yb<DBL_MIN)) yb=DBL_MIN; \
-    yt = y0; \
     fr = FilledRegion_Init(x, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, ThreeDim, origin_x, origin_y, scale_x, scale_y, scale_z); \
-    FilledRegion_Point(fr, xl, yb); \
-    FilledRegion_Point(fr, xl, yt); \
-    FilledRegion_Point(fr, xr, yt); \
-    FilledRegion_Point(fr, xr, yb); \
+    FilledRegion_Point(fr, pA[xn], pA[yn]); \
+    FilledRegion_Point(fr, pB[xn], pB[yn]); \
+    FilledRegion_Point(fr, pC[xn], pC[yn]); \
+    FilledRegion_Point(fr, pD[xn], pD[yn]); \
     FilledRegion_Finish(fr, pd->ww_final.linetype, pd->ww_final.linewidth, 0); \
    } \
   eps_core_SwitchFrom_FillColour(x,0); \
@@ -787,13 +796,11 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   IF_NOT_INVISIBLE \
    { \
     if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); } \
-    yb = sg->BoxFrom.real; \
-    if ((a[yn]->LogFinal==SW_BOOL_TRUE) && (yb<DBL_MIN)) yb=DBL_MIN; \
-    LineDraw_Point(ld, xl, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-    LineDraw_Point(ld, xl, y0 , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-    LineDraw_Point(ld, xr, y0 , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-    LineDraw_Point(ld, xr, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
-    LineDraw_Point(ld, xl, yb , 0.0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, pA[xn], pA[yn], ThreeDim?pA[zn]:0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, pB[xn], pB[yn], ThreeDim?pB[zn]:0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, pC[xn], pC[yn], ThreeDim?pC[zn]:0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, pD[xn], pD[yn], ThreeDim?pD[zn]:0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
+    LineDraw_Point(ld, pA[xn], pA[yn], ThreeDim?pA[zn]:0, 0,0,0,0,0,0, pd->ww_final.linetype, pd->ww_final.linewidth, last_colstr); \
     LineDraw_PenUp(ld); \
    } \
  } \
