@@ -223,18 +223,16 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
       else if (TickStepSet)
        {
         double TMin, TStep, TMax, tmp;
+        unsigned char inverted=0;
         *TickListPositions = (double  *)lt_malloc(102 * (axis->AxisValueTurnings+1) * sizeof(double));
         *TickListStrings   = (char   **)lt_malloc(102 * (axis->AxisValueTurnings+1) * sizeof(char *));
         if ((*TickListPositions==NULL) || (*TickListStrings==NULL)) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
         TStep= TickStep;
-        if (TStep<0) TStep=-TStep;
-        if (axis->LogFinal == SW_BOOL_TRUE) { if (TStep<1) TStep=1/TStep; }
+        if (TStep<0) { TStep=-TStep; inverted=1; }
+        if (axis->LogFinal == SW_BOOL_TRUE) { if (TStep<1) { TStep=1/TStep; inverted=1; } else inverted=0; }
 
         for (xrn=j=0; xrn<=axis->AxisValueTurnings; xrn++)
          {
-          TMin = TickMinSet ? TickMin : axis->MinFinal;
-          TMax = TickMaxSet ? TickMax : axis->MaxFinal;
-
           if (axis->AxisLinearInterpolation!=NULL)
            {
             double RegionMin, RegionMax, first;
@@ -242,8 +240,11 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
             RegionMin = axis->AxisLinearInterpolation[axis->AxisTurnings[xrn  ]];
             RegionMax = axis->AxisLinearInterpolation[axis->AxisTurnings[xrn+1]];
             if (RegionMax<RegionMin) { tmp=RegionMin; RegionMin=RegionMax; RegionMax=tmp; }
-            if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
-            if (TMin < RegionMin)
+
+            if (!inverted) { TMin = TickMinSet ? TickMin : first;  TMax = TickMaxSet ? TickMax : RegionMax; }
+            else           { TMin = TickMaxSet ? TickMax : first;  TMax = TickMinSet ? TickMin : RegionMax; }
+
+            if ((TMin < RegionMin) || ((!inverted)&&(!TickMinSet)) || ((inverted)&&(!TickMaxSet)))
              {
               if (axis->LogFinal == SW_BOOL_TRUE) TMin *= exp(ceil ((log(RegionMin / TMin))/log(TStep)) * log(TStep));
               else                                TMin +=     ceil ((    RegionMin - TMin )/    TStep ) *     TStep  ;
@@ -256,21 +257,32 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
            }
           else
            {
-            if (TMax < TMin) { tmp=TMax; TMax=TMin; TMin=tmp; }
-            if (TMin < axis->MinFinal)
+            if (!inverted) { TMin = TickMinSet ? TickMin : min(axis->MinFinal , axis->MaxFinal);  TMax = TickMaxSet ? TickMax : max(axis->MinFinal , axis->MaxFinal); }
+            else           { TMin = TickMaxSet ? TickMax : min(axis->MinFinal , axis->MaxFinal);  TMax = TickMinSet ? TickMin : max(axis->MinFinal , axis->MaxFinal); }
+
+            if (TMin < min(axis->MinFinal , axis->MaxFinal))
              {
               if (axis->LogFinal == SW_BOOL_TRUE) TMin *= exp(ceil ((log(axis->MinFinal / TMin))/log(TStep)) * log(TStep));
               else                                TMin +=     ceil ((    axis->MinFinal - TMin )/    TStep ) *     TStep  ;
              }
-            if (TMax > axis->MaxFinal)
+            if (TMax > max(axis->MinFinal , axis->MaxFinal))
              {
               if (axis->LogFinal == SW_BOOL_TRUE) TMax /= exp(floor((log(TMax / axis->MaxFinal))/log(TStep)) * log(TStep));
               else                                TMax -=     floor((    TMax - axis->MaxFinal )/    TStep ) *     TStep  ;
              }
            }
-          tmp = TMin;
-          for (i=0; (i<100)&&(tmp<=TMax); i++)
+          for (i=0; i<100; i++)
            {
+            if (!inverted)
+             {
+              if (axis->LogFinal == SW_BOOL_TRUE) tmp = TMin * pow(TStep, i);
+              else                                tmp = TMin + i*TStep;
+             } else {
+              if (axis->LogFinal == SW_BOOL_TRUE) tmp = TMax * pow(TStep,-i);
+              else                                tmp = TMax - i*TStep;
+             }
+            if (((!inverted)&&(tmp>TMax)) || ((inverted)&&(tmp<TMin))) break;
+            if ((axis->LogFinal != SW_BOOL_TRUE) && (fabs(tmp)<fabs(TStep*1e-14))) tmp=0; // Enforce that ticks close to zero are at zero
             (*TickListPositions)[j] = eps_plot_axis_GetPosition(tmp, axis, xrn, 0);
             if ( (!gsl_finite((*TickListPositions)[j])) || ((*TickListPositions)[j]<0.0) || ((*TickListPositions)[j]>1.0) ) continue; // Filter out ticks which are off the end of the axis
             if      (MajMin==0)            (*TickListStrings)[j] = "";
@@ -278,7 +290,6 @@ void eps_plot_ticking(settings_axis *axis, int AxisUnitStyle, settings_axis *lin
             else                           TickLabelFromFormat(&(*TickListStrings)[j], axis->format, tmp, &axis->DataUnit, axis->xyz, OutContext);
             if ((*TickListStrings)[j]==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); *TickListPositions = NULL; *TickListStrings = NULL; return; }
             j++;
-            if (axis->LogFinal == SW_BOOL_TRUE) tmp*=TStep; else tmp+=TStep;
            }
          }
         (*TickListStrings)[j] = NULL; // null terminate list
