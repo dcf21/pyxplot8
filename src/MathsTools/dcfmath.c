@@ -1507,14 +1507,21 @@ void dcfmath_zernike(value *in1, value *in2, value *in3, value *in4, value *outp
       if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
       else { NULL_OUTPUT; }
      }
-    if ((n%2)!=(m%2)) return; // Defined to be zero
-    for (i=0; i<(1+(n-m)/2); i++)
+    if ((r<0)||(r>1))
      {
-      output->real += sgn * gsl_sf_fact(n-i) / ( gsl_sf_fact(i) * gsl_sf_fact((n+m)/2-i) * gsl_sf_fact((n-m)/2-i) ) * pow(r , n-2*i);
-      sgn*=-1;
+      output->real = GSL_NAN; // Defined only within the unit disk
      }
-    if (ms>0) output->real *= cos(m*in4->real);
-    else      output->real *= sin(m*in4->real);
+    else
+     {
+      if ((n%2)!=(m%2)) return; // Defined to be zero
+      for (i=0; i<(1+(n-m)/2); i++)
+       {
+        output->real += sgn * gsl_sf_fact(n-i) / ( gsl_sf_fact(i) * gsl_sf_fact((n+m)/2-i) * gsl_sf_fact((n-m)/2-i) ) * pow(r , n-2*i);
+        sgn*=-1;
+       }
+      if      (ms>0) output->real *= cos(m*in4->real);
+      else if (ms<0) output->real *= sin(m*in4->real);
+     }
    }
   ENDIF
   CHECK_OUTPUT_OKAY;
@@ -1542,12 +1549,19 @@ void dcfmath_zernikeR(value *in1, value *in2, value *in3, value *output, int *st
       if (settings_term_current.ExplicitErrors == SW_ONOFF_ON) { *status=1; sprintf(errtext, "The function %s is only defined for -n<=m<=n.", FunctionDescription); return; }
       else { NULL_OUTPUT; }
      }
-    if ((n%2)!=(m%2)) return; // Defined to be zero
-
-    for (i=0; i<(1+(n-m)/2); i++)
+    if ((r<0)||(r>1))
      {
-      output->real += sgn * gsl_sf_fact(n-i) / ( gsl_sf_fact(i) * gsl_sf_fact((n+m)/2-i) * gsl_sf_fact((n-m)/2-i) ) * pow(r , n-2*i);
-      sgn*=-1;
+      output->real = GSL_NAN; // Defined only within the unit disk
+     }
+    else
+     {
+      if ((n%2)!=(m%2)) return; // Defined to be zero
+
+      for (i=0; i<(1+(n-m)/2); i++)
+       {
+        output->real += sgn * gsl_sf_fact(n-i) / ( gsl_sf_fact(i) * gsl_sf_fact((n+m)/2-i) * gsl_sf_fact((n-m)/2-i) ) * pow(r , n-2*i);
+        sgn*=-1;
+       }
      }
    }
   ENDIF
