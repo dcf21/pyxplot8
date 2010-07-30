@@ -370,7 +370,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
      for (c=0;c<4; c++)
       if      (c>cmax)  /* No c<c> */         { *CVar[c]       = CDummy[c]; }
       else if (sg->Crenorm[c]==SW_BOOL_FALSE) {  CVar[c]->real = blk->data_real[c+2 + Ncol*(i+XSize*j)].d; } // No renormalisation
-      else if (CMax[c]==CMin[c])  /* Ooops */ {  CVar[c]->real = 0.5; }
+      else if (CMax[c]==CMin[c])  /* Ooops */ {  CVar[c]->real = (gsl_finite(blk->data_real[c+2 + Ncol*(i+XSize*j)].d))?0.5:(GSL_NAN); }
       else if (!CLog[c]) /* Linear */         {  CVar[c]->real = (blk->data_real[c+2 + Ncol*(i+XSize*j)].d - CMin[c]) / (CMax[c] - CMin[c]); }
       else               /* Logarithmic */    {  CVar[c]->real = log(blk->data_real[c+2 + Ncol*(i+XSize*j)].d / CMin[c]) / log(CMax[c] / CMin[c]); }
 
