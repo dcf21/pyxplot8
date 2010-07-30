@@ -1171,6 +1171,12 @@ comma-separated list, as in the example:
 plot sin(x) with colour blue, cos(x) with linetype 2
 \end{verbatim}
 
+If the {\tt 3d} modifier is supplied to the {\tt plot} command, then a
+three-dimensional plot is produced; many plot styles then take additional
+columns of data to signify the positions of datapoints along the $z$-axis. This
+is described further in Chapter~\ref{ch:plotting}. The angle from which
+three-dimensional plots are viewed can be set using the {\tt set view} command.
+
 
 \subsection{axes}\indcmd{plot axes}
 
@@ -1254,20 +1260,20 @@ would use twice the default width of line.
 
 The following is a complete list of all of PyXPlot's plot styles -- i.e.\ all
 of the words which may be used in place of {\tt lines}: {\tt arrows\_\-head},
-{\tt arrows\_\-no\-head}, {\tt arrows\_\-two\-head}, {\tt boxes}, {\tt dots},
-{\tt Filled\-Region}, {\tt fsteps}, {\tt histeps}, {\tt impulses}, {\tt lines},
-{\tt Lines\-Points}, {\tt Lower\-Limits}, {\tt points}, {\tt stars}, {\tt
-steps}, {\tt Upper\-Limits}, {\tt wbox\-es}, {\tt X\-Error\-Bars}, {\tt
-X\-Error\-Range}, {\tt XY\-Error\-Bars}, {\tt XY\-Error\-Range}, {\tt
-XYZ\-Error\-Bars}, {\tt XYZ\-Error\-Range}, {\tt XZ\-Error\-Bars}, {\tt
-XZ\-Error\-Range}, {\tt Y\-Error\-Bars}, {\tt Y\-Error\-Range}, {\tt
-Y\-Error\-Shaded}, {\tt YZ\-Error\-Bars}, {\tt YZ\-Error\-Range}, {\tt
-Z\-Error\-Bars}, {\tt Z\-Error\-Range}. In addition, {\tt lp} and {\tt pl} are
-recognised as abbreviations for {\tt lines\-points}; {\tt error\-bars} is
-recognised as an abbreviation for {\tt y\-error\-bars}; {\tt error\-range} is
-recognised as an abbreviation for {\tt y\-error\-range}; and {\tt
-arrows\_\-two\-way} is recognised as an alternative for {\tt
-arrows\_\-two\-head}.
+{\tt arrows\_\-no\-head}, {\tt arrows\_\-two\-head}, {\tt boxes}, {\tt
+Colour\-Map}, {\tt Contour\-Map}, {\tt dots}, {\tt Filled\-Region}, {\tt
+fsteps}, {\tt histeps}, {\tt impulses}, {\tt lines}, {\tt Lines\-Points}, {\tt
+Lower\-Limits}, {\tt points}, {\tt stars}, {\tt steps}, {\tt surface}, {\tt
+Upper\-Limits}, {\tt wbox\-es}, {\tt X\-Error\-Bars}, {\tt X\-Error\-Range},
+{\tt XY\-Error\-Bars}, {\tt XY\-Error\-Range}, {\tt XYZ\-Error\-Bars}, {\tt
+XYZ\-Error\-Range}, {\tt XZ\-Error\-Bars}, {\tt XZ\-Error\-Range}, {\tt
+Y\-Error\-Bars}, {\tt Y\-Error\-Range}, {\tt Y\-Error\-Shaded}, {\tt
+YZ\-Error\-Bars}, {\tt YZ\-Error\-Range}, {\tt Z\-Error\-Bars}, {\tt
+Z\-Error\-Range}. In addition, {\tt lp} and {\tt pl} are recognised as
+abbreviations for {\tt lines\-points}; {\tt error\-bars} is recognised as an
+abbreviation for {\tt y\-error\-bars}; {\tt error\-range} is recognised as an
+abbreviation for {\tt y\-error\-range}; and {\tt arrows\_\-two\-way} is
+recognised as an alternative for {\tt arrows\_\-two\-head}.
 
 As well as the names of these plot styles, the {\tt with} modifier can also be
 followed by style modifiers such as {\tt line\-width} which alter the exact
