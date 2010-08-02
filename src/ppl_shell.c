@@ -263,7 +263,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
     // Parse and execute command
     if (status==0)
      {
-      command = parse(DirectiveLinebuffer);
+      command = parse(DirectiveLinebuffer, IterLevel);
       if (command != NULL) status = ProcessDirective2(DirectiveLinebuffer, command, interactive, memcontext, IterLevel);
       else                 status = 1;
       // If command is NULL, we had a syntax error

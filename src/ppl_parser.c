@@ -68,7 +68,7 @@ typedef struct ParserNode {
 
 ParserNode SeparatorNode = {PN_TYPE_ITEM, NULL,-2, NULL, NULL, NULL, NULL};
 
-void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos, Dict *output, int *match, int *success);
+void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos, Dict *output, int *match, int *success);
 
 // --------------------------------------------------------------------------
 // PART I: READ SYNTAX SPECIFICATION
@@ -281,7 +281,7 @@ void ppl_commands_read()
 // PARSE(): Top-level interface. Parses a commandline "line" from the user.
 // It expects that ; and `` have already been dealt with by pyxplot.py
 
-Dict *parse(char *line)
+Dict *parse(char *line, int IterLevel)
  {
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
@@ -328,7 +328,7 @@ Dict *parse(char *line)
     AlgebraNewError[0] = '\0';
     output          = DictInit(HASHSIZE_SMALL);
 
-    parse_descend(CmdDescriptor, line, &linepos, NULL, NULL, expecting, &ExpectingPos, &ExpectingLinePos,
+    parse_descend(CmdDescriptor, line, IterLevel, &linepos, NULL, NULL, expecting, &ExpectingPos, &ExpectingLinePos,
                   AlgebraError, &AlgebraLinepos, AlgebraNewError, &AlgebraNewLinepos, output, &match, &success);
 
     if (match==0) continue; // This command did not even begin to match
@@ -385,6 +385,7 @@ char *parse_autocomplete(const char *LineConst, int status)
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
   int           i, cln, match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, NumberCpy;
+  int           IterLevel=0;
   static char  *line = NULL, *linep = NULL;
   static char   expecting      [SSTR_LENGTH];
   char          ErrText        [LSTR_LENGTH];
@@ -439,7 +440,7 @@ char *parse_autocomplete(const char *LineConst, int status)
       ErrText[0]      = '\0';
       AlgebraError[0] = '\0';
 
-      parse_descend(CmdDescriptor, linep, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, &ExpectingLinePos,
+      parse_descend(CmdDescriptor, linep, IterLevel, &linepos, &start, &NumberCpy, expecting, &ExpectingPos, &ExpectingLinePos,
                     AlgebraError, &AlgebraLinepos, AlgebraNewError, &AlgebraNewLinepos, NULL, &match, &success);
 
       if (expecting[0] == '\n')
@@ -504,7 +505,7 @@ char **ppl_rl_completion(const char *text, int start, int end)
 
 #define PER_MAXSIZE 32
 
-void parse_descend(ParserNode *node, char *line, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos,
+void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos,
                    char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos,
                    Dict *output, int *match, int *success)
  {
@@ -619,7 +620,7 @@ NO_TAB_COMPLETION:
        {
         i=-1;
         *AlgebraNewLinepos=-1;
-        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
+        ppl_GetQuotedString(line, TempMatchStr, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, IterLevel);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;
@@ -708,7 +709,7 @@ NO_TAB_COMPLETION:
           (*linepos)++;
           i = -1;
           *AlgebraNewLinepos = -1;
-          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
+          ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, IterLevel);
           if (*AlgebraNewLinepos >= 0)
            {
             TempMatchStr[1]='1'; TempMatchStr[2]='\0'; *AlgebraNewLinepos = -1;
@@ -800,7 +801,7 @@ NO_TAB_COMPLETION:
        {
         i = -1;
         *AlgebraNewLinepos=-1;
-        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, 0);
+        ppl_EvaluateAlgebra(line, &MatchVal._val, *linepos, &i, 0, AlgebraNewLinepos, AlgebraNewError, IterLevel);
         if (*AlgebraNewLinepos >= 0)
          {
           *success=0;
@@ -916,7 +917,7 @@ NO_TAB_COMPLETION:
     NodeIter = node->FirstChild;
     while (NodeIter != NULL)
      {
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+      parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                     AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
       if (*success==2) return;
       NodeIter = NodeIter->NextSibling;
@@ -938,7 +939,7 @@ NO_TAB_COMPLETION:
       SeparatorNode.MatchString = SeparatorString;
       if ((first==0)&&(SeparatorString[0]!='\0'))
        {
-        parse_descend(&SeparatorNode, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+        parse_descend(&SeparatorNode, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                       AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, DictBaby, match, success);
         if (*success==2) return;
        }
@@ -947,7 +948,7 @@ NO_TAB_COMPLETION:
         NodeIter = node->FirstChild;
         while (NodeIter != NULL)
          {
-          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+          parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                         AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, DictBaby, match, success);
           if (*success==2) return;
           if (*success==0)
@@ -977,7 +978,7 @@ NO_TAB_COMPLETION:
     NodeIter = node->FirstChild;
     while (NodeIter != NULL)
      {
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+      parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                     AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
       if (*success==2) return;
       if (*success==0)
@@ -1004,7 +1005,7 @@ NO_TAB_COMPLETION:
        {
         if (excluded[i]==0)
          {
-          parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+          parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                         AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
           if (*success==2) return;
           if (*success!=0)
@@ -1032,7 +1033,7 @@ NO_TAB_COMPLETION:
     while (NodeIter != NULL)
      {
       *success = 1;
-      parse_descend(NodeIter, line, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
+      parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                     AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
       if (*success==2) return;
       if (*success==0) // Reset output and try the next ORA item

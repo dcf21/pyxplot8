@@ -29,7 +29,7 @@
 
 #include "lt_memory.h"
 
-#define PPL_MAX_CONTEXTS 120
+#define PPL_MAX_CONTEXTS 160
 
 // lt_memory functions
 // These provide simple wrapper for fastmalloc which keep track of the current memory allocation context

@@ -181,7 +181,8 @@ int directive_do(Dict *command, int IterLevel)
   else if (status == -2) { ppl_error(ERR_SYNTAX, -1, -1, "do clause should be terminated with a while statement."); return 1; }
 
   // Check that final line has a while clause on it
-  cmd2 = parse(cptr);
+  cmd2 = parse(cptr, IterLevel);
+
   if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
   DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
   if (strcmp(cptr,"while")!=0) { ppl_error(ERR_SYNTAX, -1, -1, "Only the statement 'while' can be placed after a } here."); return 1; }
@@ -629,7 +630,7 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
   // See whether final line has an else clause on it
   if (status == -1)
    {
-    cmd2 = parse(cptr);
+    cmd2 = parse(cptr, IterLevel);
     if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
     DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
     if (strcmp(cptr,"else")!=0) { ppl_error(ERR_SYNTAX, -1, -1, "Only the statement 'else' can be placed after a } here."); return 1; }
@@ -757,6 +758,8 @@ int SubroutineCall(char *name, List *ArgList, char *errtext, int IterLevel)
   value        *VarData, *InputValue, *ValueBuffer, TempValue;
   cmd_chain     chainiter = NULL;
 
+  if (IterLevel > MAX_ITERLEVEL_DEPTH) { ppl_error(ERR_GENERAL, -1, -1, "Maximum recursion depth exceeded."); return 1; }
+
   ppl_units_zero(&TempValue);
 
   // Look up subroutine name
@@ -837,7 +840,7 @@ int directive_call(Dict *command, int IterLevel)
   List *ArgList;
   DictLookup(command,"subroutine_name",NULL,(void **)(&name));
   DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
-  return SubroutineCall(name, ArgList, NULL, IterLevel);
+  return SubroutineCall(name, ArgList, NULL, IterLevel+1);
  }
 
 int CallSubroutineFromAlgebra(char *FunctionName, char *ArgStart, int *endpos, int *errpos, char *errtext, int IterLevel)
@@ -891,7 +894,7 @@ int CallSubroutineFromAlgebra(char *FunctionName, char *ArgStart, int *endpos, i
 
   *errpos = -1;
   *endpos = i+1;
-  output = SubroutineCall(FunctionName, ArgList, errtext, IterLevel);
+  output = SubroutineCall(FunctionName, ArgList, errtext, IterLevel+1);
   return output;
  }
 

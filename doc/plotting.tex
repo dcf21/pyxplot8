@@ -1228,23 +1228,28 @@ Section~\ref{sec:linked_axes} to produce three parallel horizontal axes showing
 wavelength of light, frequency of light and photon energy.
 \nlscf
 \noindent{\tt set numeric display latex}\newline
+\noindent{\tt set unit angle nodimensionless}\newline
 \noindent{\tt set log x y}\newline
 \noindent{\tt set key bottom right}\newline
-\noindent{\tt set ylabel "Flux density / W/Hz/m\$\^{}2\$/sterad"}\newline
+\noindent{\tt set ylabel "Flux density"   ; set unit preferred W/Hz/m**2/sterad}\newline
 \noindent{\tt set x1label "Wavelength"}\newline
-\noindent{\tt set x2label "Frequency"~~~~~; set unit of frequency Hz}\newline
+\noindent{\tt set x2label "Frequency"     ; set unit of frequency Hz}\newline
 \noindent{\tt set x3label "Photon Energy" ; set unit of energy eV}\newline
 \noindent{\tt set axis x2 linked x1 using phy\_c/x}\newline
 \noindent{\tt set axis x3 linked x2 using phy\_h*x}\newline
+\noindent{\tt set xtics unit(0.1*um),10}\newline
+\noindent{\tt set x2tics 1e12*unit(Hz),10}\newline
+\noindent{\tt set x3tics 0.01*unit(eV),10}\newline
+\noindent{\tt set xrange [80*unit(nm):unit(mm)]}\newline
+\noindent{\tt set yrange [1e-20*unit(W/Hz/m**2/sterad):]}\newline
 \\
-\noindent{\tt bb(wlen,T) = Bv(phy\_c/wlen,T)/unit(W/Hz/m\^{}2/sterad)}\newline
+\noindent{\tt bb(wlen,T) = Bv(phy\_c/wlen,T)}\newline
 \\
-\noindent{\tt plot [80*unit(nm):unit(mm)][1e-20:] $\backslash$}\newline
-\noindent{\tt \phantom{xx}bb(x,~~30) title "\$T=~~30\$$\backslash$,K", $\backslash$}\newline
-\noindent{\tt \phantom{xx}bb(x, 100) title "\$T= 100\$$\backslash$,K", $\backslash$}\newline
-\noindent{\tt \phantom{xx}bb(x, 300) title "\$T= 300\$$\backslash$,K", $\backslash$}\newline
-\noindent{\tt \phantom{xx}bb(x,1000) title "\$T=1000\$$\backslash$,K", $\backslash$}\newline
-\noindent{\tt \phantom{xx}bb(x,3000) title "\$T=3000\$$\backslash$,K"}
+\noindent{\tt plot bb(x,  30) title "\$T=  30\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}bb(x, 100) title "\$T= 100\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}bb(x, 300) title "\$T= 300\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}bb(x,1000) title "\$T=1000\$$\backslash$,K", $\backslash$}\newline
+\noindent{\tt \phantom{xxxxx}bb(x,3000) title "\$T=3000\$$\backslash$,K"}
 \nlscf
 \centerline{\includegraphics[width=10cm]{examples/eps/ex_multiaxes}}
 }

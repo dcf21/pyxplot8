@@ -594,7 +594,7 @@ void ReadConfigFile(char *ConfigFname)
       label_list_destroy(&label_list);
       label_list_copy(&label_list, &label_list_default);
       ppl_error_setstreaminfo(linecounter, "configuration file");
-      scriptcmd = parse(linebuffer);
+      scriptcmd = parse(linebuffer, 0);
       if (scriptcmd != NULL)
        {
         DictLookup(scriptcmd,"directive",NULL,(void **)(&StringScan));

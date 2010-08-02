@@ -26,7 +26,7 @@
 #include "ListTools/lt_dict.h"
 
 void   ppl_commands_read();
-Dict  *parse             (char *line);
+Dict  *parse             (char *line, int IterLevel);
 char **ppl_rl_completion (const char *text, int start, int end);
 
 #endif
