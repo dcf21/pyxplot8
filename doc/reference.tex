@@ -3365,6 +3365,29 @@ set unit display noprefix
 \end{verbatim}
 
 
+\subsection{view}\indcmd{set view}
+
+\begin{verbatim}
+set view <theta>, <phi>
+\end{verbatim}
+
+The \indcmdt{set view} is used to specify the angle from which
+three-dimensional plots are viewed. It should be followed by two angles, which
+can either be expressed in degrees, as dimensionless numbers, or as quantities
+with physical units of angle:
+\begin{verbatim}
+set view 60,30
+
+set unit angle nodimensionless
+set view unit(0.1*rev),unit(2*rad)
+\end{verbatim}
+The orientation $(0,0)$ corresponds to having the $x$-axis horizontal, the
+$z$-axis vertical, and the $y$-axis directed into the page. The first angle
+supplied to the {\tt set view} command rotates the plot in the $(x,y)$ plane,
+and the second angle tips the plot up in the plane containing the $z$-axis and
+the normal to the user's two-dimensional display.
+
+
 \subsection{viewer}\indcmd{set viewer}
 
 \begin{verbatim}
