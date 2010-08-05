@@ -1017,7 +1017,7 @@ set#contours#[#(#\labnumber\rab#|\\###############\(#\labvalue\rab#{,#\labvalue\
 The setting contours is used to define the set of ordinate values for which contours are drawn when using the contourmap plot style. If \labnumber\rab is specified, the contours are evenly spaced - either linearly or logarithmically, depending upon the state of the logscale c1 setting - between the values specified in the c1range setting. Otherwise, the list of ordinate values may be specified as a ()-bracketed comma-separated list. If the option label is specified, then each contour is labelled with the ordinate value that it follows. If the option nolabel is specified, then the contours are not labelled. 
 
    </contours>
-   <c\labn\rabrange>
+   <cnrange>
 
 set#c\labn\rabrange#[#\labrange\rab#]\\##############[#reversed#|#noreversed#]\\##############[#renormalise#|#norenormalise#]\\
 
@@ -1033,7 +1033,7 @@ The colour of each pixel in a colour map is determined by the colourmap setting,
 
     </Colour_Maps>
 
-   </c\labn\rabrange>
+   </cnrange>
    <data_style>
 
 See set style data. 
