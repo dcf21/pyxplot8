@@ -443,7 +443,11 @@ The fit command can be used to fit arbitrary functional forms to datapoints read
 
 f(x)#=#a*x+b\\fit#f()#'data.dat'#index#1#using#2:3#via#a,b\\
 
-The first line specifies the functional form which is to be used. The coefficients within this function which are to be varied during the fitting process are listed after the keyword via in the fit command. The modifiers index, every, select and using have the same meanings as in the plot command. As the fit command works, it displays statistics including the best-fit values of each of the fitting parameters, the uncertainties in each of them, and the covariance matrix. These can be useful for analysing the security of the fit achieved, but calculating the uncertainties in the best-fit parameters and the covariance matrix can be time consuming, especially when many parameters are being fitted simultaneously. The optional keyword withouterrors can be included immediately before the filename of the datafile to be fitted to substantially speed up cases where this information is not required. More details can be found in Section 5.6 of the Users' Guide. 
+The first line specifies the functional form which is to be used. The coefficients within this function, a and b, which are to be varied during the fitting process are listed after the keyword via in the fit command. The modifiers index, every, select and using have the same meanings in the fit command as in the plot command. When fitting a function of n variables, at least n+1 columns (or rows - see Section 3.9.1 of the Users' Guide) of data must be specified after the using modifier. By default, the first n+1 columns are used. These correspond to the values of each of the n arguments to the function, plus finally the value which the output from the function is aiming to match. If an additional column is specified, then this is taken to contain the standard error in the value that the output from the function is aiming to match, and can be used to weight the datapoints which are being used to constrain the fit. As the fit command works, it displays statistics including the best-fit values of each of the fitting parameters, the uncertainties in each of them, and the covariance matrix. These can be useful for analysing the security of the fit achieved, but calculating the uncertainties in the best-fit parameters and the covariance matrix can be time consuming, especially when many parameters are being fitted simultaneously. The optional keyword withouterrors can be included immediately before the filename of the datafile to be fitted to substantially speed up cases where this information is not required. By default, the starting values for each of the fitting parameters is 1.0. However, if the variables to be used in the fitting process are already set before the fit command is called, these initial values are used instead. For example, the following would use the initial values {a=100,b=50}: 
+
+f(x)#=#a*x+b\\a#=#100\\b#=#50\\fit#f()#'data.dat'#index#1#using#2:3#via#a,b\\
+
+More details can be found in Section 5.6 of the Users' Guide. 
 
   </fit>
   <for>
@@ -534,9 +538,15 @@ The image command allows graphical images to be inserted onto the current multip
   </image>
   <interpolate>
 
-interpolate#(#akima#|#linear#|#loglinear#|#polynomial#|#spline#)\\############[\labrange#specification\rab]#\labfunction#name\rab"()"\\############'\labfilename\rab'\\############[#every#\labexpression\rab#{:\labexpression}#]\\############[#index#\labvalue\rab#]\\############[#select#\labexpression\rab#]\\############[#using#\labexpression\rab#{:\labexpression}#]\\
+interpolate#(#akima#|#linear#|#loglinear#|#polynomial#|\\##############spline#|#stepwise#|\\##############2d#[(#bmp_r#|#bmp_g#|#bmp_b#)]#)\\############[\labrange#specification\rab]#\labfunction#name\rab"()"\\############'\labfilename\rab'\\############[#every#\labexpression\rab#{:\labexpression}#]\\############[#index#\labvalue\rab#]\\############[#select#\labexpression\rab#]\\############[#using#\labexpression\rab#{:\labexpression}#]\\
 
-The interpolate command can be used to generate a special function within PyXPlot's mathematical environment which interpolates a set of datapoints supplied from a datafile. Various different types of interpolation are supported: linear interpolation, power-law interpolation, polynomial interpolation, cubic-spline interpolation and akima-spline interpolation. The use of polynomial interpolation with large datasets is strongly discouraged, as polynomial fits tend to show severe oscillations between datapoints. Extrapolation is not permitted; if an attempt is made to evaluate an interpolated function beyond the limits of the datapoints which it interpolates, PyXPlot returns an error or value of not-a-number. A very common application of the interpolate command is to perform arithmetic functions such as addition or subtraction on datasets which are not sampled at the same abscissa values. The following example would plot the difference between two such datasets: 
+The interpolate command can be used to generate a special function within PyXPlot's mathematical environment which interpolates a set of datapoints supplied from a datafile. Either one- or two-dimensional interpolation is possible. In the case of one-dimensional interpolation, various different types of interpolation are supported: linear interpolation, power law interpolation, polynomial interpolation, cubic spline interpolation and akima spline interpolation. Stepwise interpolation returns the value of the datapoint nearest to the requested point in argument space. The use of polynomial interpolation with large datasets is strongly discouraged, as polynomial fits tend to show severe oscillations between datapoints. Except in the case of stepwise interpolation, extrapolation is not permitted; if an attempt is made to evaluate an interpolated function beyond the limits of the datapoints which it interpolates, PyXPlot returns an error or value of not-a-number. In the case of two-dimensional interpolation, the type of interpolation to be used is set using the interpolate modifier to the set samples command, and may be changed at any time after the interpolation function has been created. The options available are nearest neighbour interpolation - which is the two-dimensional equivalent of stepwise interpolation, inverse square interpolation - which returns a weighted average of the supplied datapoints, using the inverse squares of their distances from the requested point in argument space as weights, and Monaghan Lattanzio interpolation, which uses the weighting function (Monaghan &amp; Lattanzio 1985) <eqnarray*>
+
+</eqnarray*> where v=r/h for h=sqrtA/n, A is the product (x-x)(y-y) and n is the number of input datapoints. These are selected as follows: 
+
+set#samples#interpolate#NearestNeighbour\\set#samples#interpolate#InverseSquare\\set#samples#interpolate#MonaghanLattanzio\\
+
+Finally, data can be imported from graphical images in bitmap (.bmp) format to produce a function of two arguments returning a value in the range0to1 which represents the data in one of the image's three colour channels. The two arguments are the horizontal and vertical position within the bitmap image, as measured in pixels. A very common application of the interpolate command is to perform arithmetic functions such as addition or subtraction on datasets which are not sampled at the same abscissa values. The following example would plot the difference between two such datasets: 
 
 interpolate#linear#f()#'data1.dat'\\interpolate#linear#g()#'data2.dat'\\plot#[min:max]#f(x)-g(x)\\
 
@@ -610,7 +620,7 @@ would move multiplot item23 to position (8,8) centimetres. If this item were a p
   </move>
   <plot>
 
-plot#[item#\labid\rab]#[{\labrange\rab}]#(#'\labfilename\rab'#|#\labfunction\rab#)\\#####[axes#\labaxes\rab]#[every#\labexpression\rab#{:\labexpression\rab}]\\#####[index#\labvalue\rab]#[select#\labexpression\rab]\\#####[title#\labstring\rab]#[using#\labexpression\rab#{:\labexpression\rab}]\\#####[with#{\laboption\rab}]\\
+plot#[3d]#[item#\labid\rab]#[{\labrange\rab}]#(#'\labfilename\rab'#|#\labfunction\rab#)\\#####[axes#\labaxes\rab]#[every#\labexpression\rab#{:\labexpression\rab}]\\#####[index#\labvalue\rab]#[select#\labexpression\rab]\\#####[label#\labstring#expression\rab]\\#####[title#\labstring\rab]#[using#\labexpression\rab#{:\labexpression\rab}]\\#####[with#{\laboption\rab}]\\
 
 The plot command is used to produce graphs. The following simple example would plot the sine function: 
 
@@ -628,7 +638,7 @@ which would plot data from the file data.dat. Section 3.8 of the Users' Guide pr
 
 plot#sin(x)#with#colour#blue,#cos(x)#with#linetype#2\\
 
-
+If the 3d modifier is supplied to the plot command, then a three-dimensional plot is produced; many plot styles then take additional columns of data to signify the positions of datapoints along the z-axis. This is described further in Chapter 7 of the Users' Guide. The angle from which three-dimensional plots are viewed can be set using the set view command. 
    <axes>
 
 The axes modifier may be used to specify which axes data should be plotted against when plots have multiple parallel axes - for example, if a plot has an x-axis along its lower edge and an x2-axis along its upper edge. The following example would plot data using the x2-axis as the ordinate axis and the y-axis as the abscissa axis: 
@@ -640,6 +650,15 @@ It is also possible to use the axes modifier to specify that a vertical ordinate
 plot#sin(x)#axes#yx\\
 
    </axes>
+   <label>
+
+The label modifier to the plot command may be used to render text labels next to datapoints, as in the following examples: 
+
+set#samples#8\\plot#[2:5]#x**2#label#"$x=%.2f$"%($1)#with#points\\\\plot#'datafile'#using#1:2#label#"%s"%($3)\\
+
+Note that if a particular column of a datafile contains strings which are to be used as labels, as in the second example above, syntax such as "%s"%($3) must be used to explicitly read the data as strings rather than as numerical quantities. As PyXPlot treats any whitespace as separating columns of data, such labels cannot contain spaces, though LaTeX's ~ character can be used to achieve a space. Datapoints can be labelled when plotted in any of the following plot styles: arrows (and similar styles), dots, errorbars (and similar styles), errorrange (and similar styles), impulses, linespoints, lowerlimits, points, stars and upperlimits. It is not possible to label datapoints plotted in other styles. Labels are rendered in the same colour as the datapoints with which they are associated. 
+
+   </label>
    <title>
 
 By default, PyXPlot generates its own entry in the legend of a plot for each dataset plotted. This default behaviour can be overridden using the title modifier. The following example labels a dataset as `Dataset1': 
@@ -659,7 +678,7 @@ plot#"data.dat"#index#1#using#4:5#with#lines\\
 
 plot#"data.dat"#with#lines#linewidth#2.0\\
 
- would use twice the default width of line. The following is a complete list of all of PyXPlot's plot styles - i.e. all of the words which may be used in place of lines: arrows_head, arrows_nohead, arrows_twohead, boxes, dots, FilledRegion, fsteps, histeps, impulses, lines, LinesPoints, LowerLimits, points, stars, steps, UpperLimits, wboxes, XErrorBars, XErrorRange, XYErrorBars, XYErrorRange, XYZErrorBars, XYZErrorRange, XZErrorBars, XZErrorRange, YErrorBars, YErrorRange, YErrorShaded, YZErrorBars, YZErrorRange, ZErrorBars, ZErrorRange. In addition, lp and pl are recognised as abbreviations for linespoints; errorbars is recognised as an abbreviation for yerrorbars; errorrange is recognised as an abbreviation for yerrorrange; and arrows_twoway is recognised as an alternative for arrows_twohead. As well as the names of these plot styles, the with modifier can also be followed by style modifiers such as linewidth which alter the exact appearance of various plot styles. A complete list of these is as follows: 
+ would use twice the default width of line. The following is a complete list of all of PyXPlot's plot styles - i.e. all of the words which may be used in place of lines: arrows_head, arrows_nohead, arrows_twohead, boxes, ColourMap, ContourMap, dots, FilledRegion, fsteps, histeps, impulses, lines, LinesPoints, LowerLimits, points, stars, steps, surface, UpperLimits, wboxes, XErrorBars, XErrorRange, XYErrorBars, XYErrorRange, XYZErrorBars, XYZErrorRange, XZErrorBars, XZErrorRange, YErrorBars, YErrorRange, YErrorShaded, YZErrorBars, YZErrorRange, ZErrorBars, ZErrorRange. In addition, lp and pl are recognised as abbreviations for linespoints; errorbars is recognised as an abbreviation for yerrorbars; errorrange is recognised as an abbreviation for yerrorrange; and arrows_twoway is recognised as an alternative for arrows_twohead. As well as the names of these plot styles, the with modifier can also be followed by style modifiers such as linewidth which alter the exact appearance of various plot styles. A complete list of these is as follows: 
 
 * colour - used to select the colour in which each dataset is to be plotted. It should be followed either by an integer, to set a colour from the present palette (see Section 7.1.1 of the Users' Guide), or by a recognised colour name, a complete list of which can be found in Section 17.4 of the Users' Guide. Alternatively, arbitrary colours may be specified by using one of the forms rgb0.1:0.2:0.3, hsb0.1:0.2:0.3 or cmyk0.4:0.3:0.2:0.1, where the colon-separated values indicate the RGB, HSB or CMYK components of the desired colour in the range0 to1. This modifier may also be spelt color.  \\
 * fillcolour - used to select the colour in which each dataset is filled. The colour may be specified using any of the styles listed for colour. May also be spelt fillcolour.  \\
@@ -862,7 +881,7 @@ set#axis#x#top\\set#axis#y#right\\set#axis#z#back\\
 * notatzero - Opposite of atzero; the axis should be placed along an edge of the plot. [Default].  \\
 * notlinked - Specifies that the axis should no longer be linked to any other; see Section 7.7.7 of the Users' Guide. [Default].  \\
 * reversearrow - Specifies that an arrowhead should be drawn on the left/bottom end of the axis. [Not default].  \\
-* twowayarrow - Specifies that arrowheadsshould be drawn on both ends of the axis. [Not default].  \\
+* twowayarrow - Specifies that arrowheads should be drawn on both ends of the axis. [Not default].  \\
 * visible - Specifies that the axis should be displayed; opposite of invisible. [Default].  \\
 
    </axis>
@@ -931,6 +950,20 @@ set#boxwidth#-2\\
 would set all of the bars to have differing widths, centred upon their specified horizontal positions, such that their interfaces occur at the horizontal midpoints between them. The specified width may have any physical units, but must be real and finite. 
 
    </boxwidth>
+   <c1format>
+
+set#c1format#(#auto#|#'\labformat\rab'#)\\######(#horizontal#|#vertical#|#rotate#\labangle\rab#)\\
+
+The c1format setting is used to manually specify an explicit format for the axis labels to take along the colour scale bars drawn alongside plots which make use of the colourmap plot style. It has similar syntax to the set xformat command. 
+
+   </c1format>
+   <c1label>
+
+set#c1label#'\labtext\rab'#[#rotate#\labangle\rab#]\\
+
+The setting c1label sets the label which should be written alongside the colour scale bars drawn next to plots when the colourmap plot style is used. An optional rotation angle may be specified to rotate axis labels clockwise by arbitrary angles. The angle should be specified either as a dimensionless number of degrees, or as a quantity with physical dimensions of angle. 
+
+   </c1label>
    <calendar>
 
 set#calendar#[#(#input#|#output#)#]#\labcalendar\rab\\
@@ -945,6 +978,64 @@ set#clip\\
 The set clip command causes PyXPlot to clip points which extend over the edge of plots. The opposite effect is achieved using the set noclip command. 
 
    </clip>
+   <colourkey>
+
+set#colourkey#[\labposition\rab]\\
+
+The setting colourkey determines whether colour scales are drawn along the edges of plots drawn using the colourmap plot style, indicating the mapping between represented values and colours. Note that such scales are only ever drawn when the colourmap plot style is supplied with only three columns of data, since the colour mappings are themselves multi-dimensional when more columns are supplied. Issuing the command 
+
+set#colourkey\\
+
+by itself causes such a scale to be drawn on graphs in the default position, usually along the right-hand edge of the graphs. The converse action is achieved by: 
+
+set#nocolourkey\\
+
+The command 
+
+unset#colourkey\\
+
+causes PyXPlot to revert to its default behaviour, as specified in a configuration file, if present. A position for the key may optionally be specified after the set colourkey command, as in the example: 
+
+set#colourkey#bottom\\
+
+Recognised positions are top, bottom, left and right. above is an alias for top; below is an alias for bottom and outside is an alias for right. 
+
+   </colourkey>
+   <colourmap>
+
+set#colourmap#(#rgb\labr\rab:\labg\rab:\labb\rab#|\\################hsb\labh\rab:\labs\rab:\labb\rab#|\\################cmyk\labc\rab:\labm\rab:\laby\rab:\labk\rab#)\\##############[#mask#\labexpr\rab#]\\
+
+The setting colourmap is used to specify the mapping between ordinate values and colours used by the colourmap plot style. As elsewhere in PyXPlot, the colour components should be numerical expressions which evaluate to a value in the range zero to one. Within these expressions, the variables c1, c2, c3 and c4 refer quantities calculated from the third through sixth columns of data supplied to the colourmap plot style in a way determined by the c\labn\rabrange setting. Thus, the following colour mapping, which is the default, produces a greyscale colour mapping of the third column of data supplied to the colourmap plot style; further columns of data, if supplied, are not used: 
+
+set#c1range#[*:*]#renormalise\\set#colourmap#rgb(c1):(c1):(c1)\\
+
+If a mask expression is supplied, then any areas in a colour map where this expression evaluates to zero (i.e. false) are made transparent. 
+
+   </colourmap>
+   <contours>
+
+set#contours#[#(#\labnumber\rab#|\\###############\(#\labvalue\rab#{,#\labvalue\rab}#\)#)#]\\#############[#(label#|#nolabel)#]\\
+
+The setting contours is used to define the set of ordinate values for which contours are drawn when using the contourmap plot style. If \labnumber\rab is specified, the contours are evenly spaced - either linearly or logarithmically, depending upon the state of the logscale c1 setting - between the values specified in the c1range setting. Otherwise, the list of ordinate values may be specified as a ()-bracketed comma-separated list. If the option label is specified, then each contour is labelled with the ordinate value that it follows. If the option nolabel is specified, then the contours are not labelled. 
+
+   </contours>
+   <c\labn\rabrange>
+
+set#c\labn\rabrange#[#\labrange\rab#]\\##############[#reversed#|#noreversed#]\\##############[#renormalise#|#norenormalise#]\\
+
+The set c\labn\rabrange command changes the range of ordinate values represented by different colours in the colourmap plot style, and in the case of the set c1range command, also by contours in the contourmap plot style. The value \labn\rab should be an integer in the range 1-4. 
+    <Contour_Maps>
+
+The effect of the set c1range command upon the set of ordinate values for which contours are drawn in the contourmap plot style is dependent upon whether the set contours command has been supplied with a number of contours to draw, or a list of explicit ordinate values for which they should be drawn. In the latter case, the set c1range command has no effect. In the former case, the contours are evenly spaced, either linearly or logarithmically depending upon the state of the logscale c1 setting, between the minimum and maximum ordinate values supplied to the set c1range command. If an asterisk (*) is supplied in place of either the minimum and/or the maximum, then the range of values used is automatically scaled to fit the range of the data supplied. 
+
+    </Contour_Maps>
+    <Colour_Maps>
+
+The colour of each pixel in a colour map is determined by the colourmap setting, which should contain an expression of the form rgb(c1):(c2):(c3), specifying the components of a colour in either RGB, HSB or CMYK space, as a function of the variables c1, c2, c3 and c4. The colourmap plot style should be supplied with between three and six columns of data, the first two of which contain the x- and y-positions of points, and the remainder of which are used to set the values of the variables c1, c2, c3 and c4 when calculating the colour with which that point should be represented. If fewer than six columns of data are supplied, then not all of these variables will be set. The set c\labn\rabrange command is used to determine how the raw data values are mapped to the values of the variables c1-c4. If the norenormalise option is specified, then the raw values are passed directly to the expression. Otherwise, they are first scaled into the range zero to one. If an explicit range is specified to the set c\labn\rabrange command, then the upper limit of this range maps to the value one, and the lower limit maps to the value zero. This mapping is inverted if the reverse option is specified, such that the upper limit maps to zero, and the lower limit maps to one. If an asterisk (*) is supplied in place of either the upper and/or lower limit, then the range automatically scales to fit the data supplied. Intermediate values are scaled, either linearly or logarithmically, depending upon the state of the logscale c\labn\rab setting. For more details of the syntax of the range specifier, see the set xrange command. 
+
+    </Colour_Maps>
+
+   </c\labn\rabrange>
    <data_style>
 
 See set style data. 
@@ -1127,7 +1218,7 @@ and
 
 unset#log#x1y2\\
 
-Optionally, a base may be specified at the end of the set logscale command, to produce axes labelled in logarithms of arbitrary bases. The default base is10. 
+Optionally, a base may be specified at the end of the set logscale command, to produce axes labelled in logarithms of arbitrary bases. The default base is10. In addition to acting upon any combination of x-, y- and z-axes, the set logscale command may also be requested to set the c1, c2, c3, c4 and/or t axes to scale logarithmically. The first four of these options affect whether the colours on colour maps scale linearly or logarithmically with input ordinate values; see the set c\labn\rabrange command for more details. The last of these options specifies whether parametric functions are sampled linearly or logarithmically in the variable t; see the set trange command for more details. 
 
    </logscale>
    <multiplot>
@@ -1188,6 +1279,13 @@ See backup.
 See clip. 
 
    </noclip>
+   <nocolourkey>
+
+set#nocolourkey\\
+
+Issuing the command set nocolourkey causes plots to be generated with no colour scale when the colourmap plot style is used. See the set colourkey command for more details. 
+
+   </nocolourkey>
    <nodisplay>
 
 See display. 
@@ -1288,7 +1386,7 @@ set#numerics#[#(#complex#|#real#)#]#[#errors#(#explicit#|#quiet)#]\\####[#displa
 The set numerics command is used to adjust the way in which calculations are carried out and numerical quantities are displayed: 
 
 * The option complex causes PyXPlot to switch from performing real arithmetic (default) to performing complex arithmetic. The option real causes any calculations which return results with finite imaginary components to generate errors.  \\
-* The option errors controls how numerical errors such as divisions by zero, numerical overflows, and the querying functions outside of the domains in which they are defined, are communicated to the user. The option explicit (default) causes an error message to be displayed on the terminal whenever a calculation causes an error. The option quiet causes such calcluations to silently generate a nan (not a number) result. The latter is especially useful when, for example, plotting an expression with the ordinate axis range set to extend outside the domain in which that expression returns a well-defined real result; it suppresses the error messages which might otherwise result from PyXPlot's attempts to evaluate the expression in those domains where its result is undefined. The option nan is a synonym for quiet.  \\
+* The option errors controls how numerical errors such as divisions by zero, numerical overflows, and the querying functions outside of the domains in which they are defined, are communicated to the user. The option explicit (default) causes an error message to be displayed on the terminal whenever a calculation causes an error. The option quiet causes such calculations to silently generate a nan (not a number) result. The latter is especially useful when, for example, plotting an expression with the ordinate axis range set to extend outside the domain in which that expression returns a well-defined real result; it suppresses the error messages which might otherwise result from PyXPlot's attempts to evaluate the expression in those domains where its result is undefined. The option nan is a synonym for quiet.  \\
 * The setting display changes the format in which numbers are displayed on the terminal. Setting the option to typeable causes the numbers to be printed in a form suitable for pasting back into PyXPlot commands. The setting latex causes LaTeX-compatible output to be generated. The setting natural generates concise, human-readable output which has neither of the above properties.  \\
 * The setting sigfig changes the number of significant figures to which numbers are displayed on the PyXPlot terminal. Regardless of the value set, all calculations are internally carried out and stored at double precision, accurate to around16 significant figures.  \\
 
@@ -1507,13 +1605,13 @@ set#preamble#\usepackage{marvosym}\\set#preamble#\def\degrees{$^\circ$}\\
    </preamble>
    <samples>
 
-set#samples#\labvalue\rab\\
+set#samples#[\labvalue\rab]\\############[grid#\labx_samples\rab#[x]#\laby_samples\rab]\\############[interpolate#(#InverseSquare#|\\###########################MonaghanLattanzio#|\\###########################NearestNeighbour#)#]\\
 
-The setting samples determines the number of values along the ordinate axis at which functions are evaluated when they are plotted. For example: 
+The setting samples determines the number of values along the ordinate axis at which functions are evaluated when they are plotted. For example, the command 
 
 set#samples#100\\
 
-would cause functions to be evaluated at 100points along the ordinate axis. Increasing this value will cause functions to be plotted more smoothly, but also more slowly, and the PostScript files generated will also be larger. When functions are plotted with the points plot style, this setting controls the number of points plotted. 
+would cause functions to be evaluated at 100points along the ordinate axis. Increasing this value will cause functions to be plotted more smoothly, but also more slowly, and the PostScript files generated will also be larger. When functions are plotted with the points plot style, this setting controls the number of points plotted. After the keyword grid may be specified the dimensions of the two-dimensional grid of samples used in the colourmap and surface plot styles, and internally when calculating the contours to be plotted in the contourmap plot style. If a * is given in place of either of the dimensions, then the same number of samples as are specified in \labvalue\rab are taken. After the keyword interpolate, the method used for interpolating non-gridded two-dimensional data onto the above-mentioned grid may be specified. The available options are InverseSquare, MonaghanLattanzio and NearestNeighbour. 
 
    </samples>
    <seed>
@@ -1525,9 +1623,9 @@ The set seed command sets the seed used by all of those mathematical functions w
    </seed>
    <size>
 
-set#size#(#\labwidth\rab#|#ratio#\labratio\rab#|#noratio#|#square#)\\
+set#size#[\labwidth\rab]\\#########[(#ratio#\labratio\rab#|#noratio##|#square)]\\#########[(zratio#\labratio\rab#|#nozratio#)]\\
 
-The setting size is used to set the width or aspect ratio of the next graph to be generated. If a width is specified, then it may either take the form of a dimensionless number implicitly measured in centimetres, or a quantity with physical dimensions of length such as unit(50*mm). When the keyword ratio is specified, it should be followed by the ratio of the graph's height to its width. The keyword noratio returns the aspect ratio to its default value of the golden ratio, and the keyword square sets the aspect ratio to one. 
+The setting size is used to set the width or aspect ratio of the next graph to be generated. If a width is specified, then it may either take the form of a dimensionless number implicitly measured in centimetres, or a quantity with physical dimensions of length such as unit(50*mm). When the keyword ratio is specified, it should be followed by the ratio of the graph's height to its width, i.e. of the length of its y-axes to that of its x-axes. The keyword noratio returns the aspect ratio to its default value of the golden ratio, and the keyword square sets the aspect ratio to one. When the keyword zratio is specified, it should be followed by the ratio of the length of three-dimensional graphs' z-axes to that of their x-axes. The keyword nozratio returns this aspect ratio to its default value of the golden ratio. 
     <noratio>
 
 set#size#noratio\\
@@ -1760,7 +1858,7 @@ set#notitle\\
 
 set#trange#\labrange\rab\\
 
-The set trange command changes the range of the free parameter t used when generating parametric plots. For more details of the syntax of the range specifier, see the set xrange command. 
+The set trange command changes the range of the free parameter t used when generating parametric plots. For more details of the syntax of the range specifier, see the set xrange command. Note that t is not allowed to autoscale, and so the * character is not permitted in the specified range. 
 
    </trange>
    <unit>
@@ -1771,7 +1869,7 @@ The set unit command controls how quantities with physical units are displayed b
 
 set#unit#of#length#inch\\
 
-The set unit preferred command offers a slightly more flexible way of achieving the same result. Whereas the set unit of command can only operate on named quanities such as lengths and powers, and cannot act upon compound units such as W/Hz, the set unit preferred command can act upon any unit or combination of units, as in the examples: 
+The set unit preferred command offers a slightly more flexible way of achieving the same result. Whereas the set unit of command can only operate on named quantities such as lengths and powers, and cannot act upon compound units such as W/Hz, the set unit preferred command can act upon any unit or combination of units, as in the examples: 
 
 set#unit#preferred#parsec\\set#unit#preferred#W/Hz\\set#unit#preferred#N*m\\
 
@@ -1788,11 +1886,22 @@ and in the latter case using the following pair of commands:
 set#unit#display#prefix\\set#unit#display#noprefix\\
 
    </unit>
+   <view>
+
+set#view#\labtheta\rab,#\labphi\rab\\
+
+The set view command is used to specify the angle from which three-dimensional plots are viewed. It should be followed by two angles, which can either be expressed in degrees, as dimensionless numbers, or as quantities with physical units of angle: 
+
+set#view#60,30\\\\set#unit#angle#nodimensionless\\set#view#unit(0.1*rev),unit(2*rad)\\
+
+ The orientation (0,0) corresponds to having the x-axis horizontal, the z-axis vertical, and the y-axis directed into the page. The first angle supplied to the set view command rotates the plot in the (x,y) plane, and the second angle tips the plot up in the plane containing the z-axis and the normal to the user's two-dimensional display. 
+
+   </view>
    <viewer>
 
 set#viewer#(#auto#|#\labcommand\rab#)\\
 
-The set viewer command is used to select which external PostScript viewing application is used to display PyXPlot output on screen in the X11 terminals. If the option auto is selected, then either Ghostview or ggv is used, if installed. Alternatively, any other application such as evince or okular can be selected by name, providing it is installed in within your shell's search path or an abolute path is provided, as in the examples: 
+The set viewer command is used to select which external PostScript viewing application is used to display PyXPlot output on screen in the X11 terminals. If the option auto is selected, then either Ghostview or ggv is used, if installed. Alternatively, any other application such as evince or okular can be selected by name, providing it is installed in within your shell's search path or an absolute path is provided, as in the examples: 
 
 set#viewer#evince\\set#viewer#/usr/bin/okular\\
 
@@ -1820,7 +1929,7 @@ set#log#x1#2\\
 
 set#xformat#"%.2f"%(x)\\set#yformat#"%s$^\prime$"%(y/unit(feet))\\
 
- The first example specifies that ordinate values should be displayed to two decimal places along the x-axis; the second specifies that distances should be displayed in feet along the y-axis. Note that the dummy variable used to represent the ordinate value is x, y or z depending upon the direction of the axis, but that the dummy variable used in the set x2format command is still x. The following pair of examples both have the equivalent effect of returning the x2-axis to its default system of tick labels: 
+ The first example specifies that values should be displayed to two decimal places along the x-axis; the second specifies that distances should be displayed in feet along the y-axis. Note that the dummy variable used to represent the represented value is x, y or z depending upon the direction of the axis, but that the dummy variable used in the set x2format command is still x. The following pair of examples both have the equivalent effect of returning the x2-axis to its default system of tick labels: 
 
 set#x2format#auto\\set#x2format#"%s"%(x)\\
 
@@ -1833,7 +1942,7 @@ Note that where possible, PyXPlot intelligently changes the positions along axes
    </xformat>
    <xlabel>
 
-set#\labaxis\rablabel#'\labtext\rab'\\
+set#\labaxis\rablabel#'\labtext\rab'#[#rotate#\labangle\rab#]\\
 
 The setting xlabel sets the label which should be written along the x-axis. For example, 
 
@@ -1846,6 +1955,8 @@ set#x10label#'foo'\\
 would label the tenth horizontal axis. Similarly, labels can be placed on vertical axes as follows: 
 
 set#ylabel#'$y$'\\set#y2label#'foo'\\
+
+An optional rotation angle may be specified to rotate axis labels clockwise by arbitrary angles. The angle should be specified either as a dimensionless number of degrees, or as a quantity with physical dimensions of angle. 
 
    </xlabel>
    <xrange>
@@ -1860,7 +1971,7 @@ sets the first horizontal axis to run from0 to10. Higher numbered axes may be re
 
 set#y23range#[-5:5]\\
 
-sets the range of the 23rd vertical axis to run from-5 to5. To request a range to be automatically scaled an asterix can be used. The following command would set the x-axis to have an upper limit of 10, but does not affect the lower limit; its range remains at its previous setting: 
+sets the range of the 23rd vertical axis to run from-5 to5. To request a range to be automatically scaled an asterisk can be used. The following command would set the x-axis to have an upper limit of 10, but does not affect the lower limit; its range remains at its previous setting: 
 
 set#xrange#[:10][*:*]\\
 
@@ -1869,7 +1980,7 @@ The keyword reverse is used to indicate that the two limits of an axis should be
    </xrange>
    <xtics>
 
-set#[m]\labaxis\rabtics\\####[#(#axis#|#border#|#inward#|#outward#|#both#)#]\\####[#(#auto\\##########|#[\labminimum\rab,]#\labincrement\rab#[,#\labmaximum\rab]\\##########|#{#'\lablabel\rab'#\labposition\rab#}\\#########]#)\\
+set#[m]\labaxis\rabtics\\####[#(#axis#|#border#|#inward#|#outward#|#both#)#]\\####[#(#autofreq\\##########|#[\labminimum\rab,]#\labincrement\rab#[,#\labmaximum\rab]\\##########|#\(#{#'\lablabel\rab'#\labposition\rab#}#\)\\#########]#)\\
 
 By default, PyXPlot places a series of tick marks at significant points along each axis, with the most significant points being labelled. Labelled tick marks are termed major ticks, and unlabelled tick marks are termed minor ticks. The position and appearance of the major ticks along the x-axis can be configured using the set xtics command; the corresponding set mxtics command configures the appearance of the minor ticks along the x-axis. Analogous commands such as set ytics and set mx2tics configure the major and minor ticks along other axes. The keywords inward, outward and both are used to configure how the ticks appear - whether they point inward, towards the plot, as is default, or outwards towards the axis labels, or in both directions. The keyword axis is an alias for inward, and border is an alias for outward. The remaining options are used to configure where along the axis ticks are placed. If a series of comma-separated values \labminimum\rab, \labincrement\rab, \labmaximum\rab are specified, then ticks are placed at evenly spaced intervals between the specified limits. The \labminimum\rab and \labmaximum\rab values are optional; if only one value is specified then it is taken to be the step size between ticks. If two values are specified, then the first is taken to be \labminimum\rab. In the case of logarithmic axes, \labincrement\rab is applied as a multiplicative step size. Alternatively, if a bracketed list of quoted tick labels and tick positions are provided, then ticks can be placed on an axis manually and each given its own textual label. The quoted tick labels may be omitted, in which case they are automatically generated: 
 
