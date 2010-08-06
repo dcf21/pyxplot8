@@ -1017,23 +1017,21 @@ set#contours#[#(#\labnumber\rab#|\\###############\(#\labvalue\rab#{,#\labvalue\
 The setting contours is used to define the set of ordinate values for which contours are drawn when using the contourmap plot style. If \labnumber\rab is specified, the contours are evenly spaced - either linearly or logarithmically, depending upon the state of the logscale c1 setting - between the values specified in the c1range setting. Otherwise, the list of ordinate values may be specified as a ()-bracketed comma-separated list. If the option label is specified, then each contour is labelled with the ordinate value that it follows. If the option nolabel is specified, then the contours are not labelled. 
 
    </contours>
-   <cnrange>
+   <c1range>
 
 set#c\labn\rabrange#[#\labrange\rab#]\\##############[#reversed#|#noreversed#]\\##############[#renormalise#|#norenormalise#]\\
 
-The set c\labn\rabrange command changes the range of ordinate values represented by different colours in the colourmap plot style, and in the case of the set c1range command, also by contours in the contourmap plot style. The value \labn\rab should be an integer in the range 1-4. 
-    <Contour_Maps>
+The set c\labn\rabrange command changes the range of ordinate values represented by different colours in the colourmap plot style, and in the case of the set c1range command, also by contours in the contourmap plot style. The value \labn\rab should be an integer in the range 1-4.
+
+Contour Maps
 
 The effect of the set c1range command upon the set of ordinate values for which contours are drawn in the contourmap plot style is dependent upon whether the set contours command has been supplied with a number of contours to draw, or a list of explicit ordinate values for which they should be drawn. In the latter case, the set c1range command has no effect. In the former case, the contours are evenly spaced, either linearly or logarithmically depending upon the state of the logscale c1 setting, between the minimum and maximum ordinate values supplied to the set c1range command. If an asterisk (*) is supplied in place of either the minimum and/or the maximum, then the range of values used is automatically scaled to fit the range of the data supplied. 
 
-    </Contour_Maps>
-    <Colour_Maps>
+Colour Maps
 
 The colour of each pixel in a colour map is determined by the colourmap setting, which should contain an expression of the form rgb(c1):(c2):(c3), specifying the components of a colour in either RGB, HSB or CMYK space, as a function of the variables c1, c2, c3 and c4. The colourmap plot style should be supplied with between three and six columns of data, the first two of which contain the x- and y-positions of points, and the remainder of which are used to set the values of the variables c1, c2, c3 and c4 when calculating the colour with which that point should be represented. If fewer than six columns of data are supplied, then not all of these variables will be set. The set c\labn\rabrange command is used to determine how the raw data values are mapped to the values of the variables c1-c4. If the norenormalise option is specified, then the raw values are passed directly to the expression. Otherwise, they are first scaled into the range zero to one. If an explicit range is specified to the set c\labn\rabrange command, then the upper limit of this range maps to the value one, and the lower limit maps to the value zero. This mapping is inverted if the reverse option is specified, such that the upper limit maps to zero, and the lower limit maps to one. If an asterisk (*) is supplied in place of either the upper and/or lower limit, then the range automatically scales to fit the data supplied. Intermediate values are scaled, either linearly or logarithmically, depending upon the state of the logscale c\labn\rab setting. For more details of the syntax of the range specifier, see the set xrange command. 
 
-    </Colour_Maps>
-
-   </cnrange>
+   </c1range>
    <data_style>
 
 See set style data. 
