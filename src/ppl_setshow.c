@@ -1991,7 +1991,9 @@ void directive_set(Dict *command)
          if (i==0) tempstr=tempstr2;
          else      tempstr=tempstr3;
          if (tempstr == NULL) continue;
+         errpos=-1;
          MakePreferredUnit(&pu, tempstr, 0, &errpos, buf);
+         if (errpos>=0) { ppl_error(ERR_NUMERIC,-1,-1,buf); continue; }
 
          // Remove any preferred unit which is dimensionally equal to new preferred unit
          listiter = ListIterateInit(ppl_unit_PreferredUnits);
