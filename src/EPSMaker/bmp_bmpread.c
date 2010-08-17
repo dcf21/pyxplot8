@@ -40,7 +40,7 @@
 void bmp_bmpread(FILE *in, bitmap_data *image)
  {
   unsigned char buff[60],encode,*p,c;
-  unsigned width,height,depth,dw;
+  unsigned width,height,depth,dw,excess;
   unsigned long offset,off2,size;
   int i,j,ncols,os2,rle;
 
@@ -60,7 +60,7 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   if (fread(buff,12,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
   off2 += 12;
 
-  if ((buff[0]==12)&&(buff[1]==0)) // OS/2 bitmap
+  if ((buff[0]==12)&&(buff[1]==0)) // OS/2 1.x bitmap
    {
     os2=1;
     if ((buff[8]!=1)||(buff[9])) { ppl_error(ERR_FILE, -1, -1,"This OS/2 bitmap file appears to be corrupted"); return; }
@@ -73,10 +73,20 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
   else // Windows bitmap
    {
     os2=0;
-    if ((buff[0]!=40)||(buff[1])||(buff[2])||(buff[3])) { ppl_error(ERR_FILE, -1, -1,"This Windows bitmap file appears to be corrupted"); return; }
+
+    // Known valid header lengths at this point are 40, 64, 108 and 124
+    // So accept from 40 to 255
+    if ((buff[0]<40)||(buff[1])||(buff[2])||(buff[3])) { ppl_error(ERR_FILE, -1, -1,"This Windows bitmap file appears to be corrupted"); return; }
+    excess=buff[0]-40;
 
     if (fread(buff+12,40-12,1,in)!=1) { ppl_error(ERR_FILE, -1, -1,"This bitmap file appears to be corrupted"); return; }
     off2 += 40-12;
+
+    if (excess)
+     {
+      off2 += excess;
+      for (;excess;excess--) fgetc(in); // Can't seek stdin
+     }
 
     width  = buff[4] + ((unsigned)buff[5]<<8) + ((unsigned)buff[ 6]<<16) + ((unsigned)buff[ 7]<<24);
     height = buff[8] + ((unsigned)buff[9]<<8) + ((unsigned)buff[10]<<16) + ((unsigned)buff[11]<<24);
@@ -86,7 +96,12 @@ void bmp_bmpread(FILE *in, bitmap_data *image)
     depth  = buff[14];
     encode = buff[16];
     size   = buff[20] + (((int)(buff[21]))<<8) + (((int)(buff[22]))<<16) + (((int)(buff[23]))<<24);
-  }
+
+    image->XDPI = 0.0254*(buff[24]+(((int)(buff[25]))<<8)+(((int)(buff[26]))<<16)+(((int)(buff[27]))<<24));
+    image->YDPI = 0.0254*(buff[28]+(((int)(buff[29]))<<8)+(((int)(buff[30]))<<16)+(((int)(buff[31]))<<24));
+    if (image->XDPI<1) image->XDPI=180; // Sensible default resolution in case of zero input
+    if (image->YDPI<1) image->YDPI=180;
+   }
 
   if (DEBUG) { sprintf(temp_err_string, "Size %dx%d depth %d bits",width,height,depth); ppl_log(temp_err_string); }
 

@@ -1,3 +1,6 @@
+2010 xxx xx: PyXPlot 0.8.3
+   - Bugfix to the 'set unit preferred' command.
+   - Improved support for newer Windows bitmap images.
 2010 Aug  4: PyxPlot 0.8.2
    - 3D plotting implemented.
    - New plot styles colourmap, contourmap and surface added.
