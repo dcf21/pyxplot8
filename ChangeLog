@@ -2,6 +2,7 @@
    - Bugfix to the 'set unit preferred' command.
    - Improved support for newer Windows bitmap images.
    - Binary not operator bugfixed.
+   - Mathematical function finite() added.
 2010 Aug  4: PyxPlot 0.8.2
    - 3D plotting implemented.
    - New plot styles colourmap, contourmap and surface added.

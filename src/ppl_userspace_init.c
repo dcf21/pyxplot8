@@ -117,6 +117,7 @@ void ppl_UserSpaceInit()
   FunctionDescriptor fd_exp           = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_exp         , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{exp}@<@1@>", "exp(x) returns e to the power of x. x may either be a dimensionless number or may have units of angle"};
   FunctionDescriptor fd_expm1         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_expm1       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expm1}@<@1@>", "expm1(x) accurately evaluates exp(x)-1"};
   FunctionDescriptor fd_expint        = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcfmath_expint      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{expint}@<@1,@2@>", "expint(n,x) evaluates the integral of exp(-xt)/t**n between one and infinity"};
+  FunctionDescriptor fd_finite        = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_finite      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{finite}@<@1@>", "finite(x) returns 1 if x is a finite number, and 0 otherwise"};
   FunctionDescriptor fd_floor         = { PPL_USERSPACE_SYSTEM , 0 , 1 , (void *)&dcfmath_floor       , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{floor}@<@1@>", "floor(x) returns the largest integer value smaller than or equal to x"};
   FunctionDescriptor fd_fr_julia      = { PPL_USERSPACE_SYSTEM , 0 , 3 , (void *)&dcffract_julia      , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{fractal\\_julia}@<@1,@2,@3@>", "fractal_julia(z,cz,MaxIter) returns the number of iterations required before the Julia set iterator diverges outside the circle |z'|<2"};
   FunctionDescriptor fd_fr_mandelbrot = { PPL_USERSPACE_SYSTEM , 0 , 2 , (void *)&dcffract_mandelbrot , NULL, NULL, NULL, NULL, NULL, NULL, "\\mathrm{fractal\\_mandelbrot}@<@1,@2@>", "fractal_mandelbrot(z,MaxIter) returns the number of iterations required before the Mandelbrot set iterator diverges outside the circle |z'|<2"};
@@ -387,6 +388,7 @@ void ppl_UserSpaceInit()
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "exp"            , (void *)&fd_exp         , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "expm1"          , (void *)&fd_expm1       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "expint"         , (void *)&fd_expint      , sizeof(FunctionDescriptor), DATATYPE_VOID);
+  DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "finite"         , (void *)&fd_finite      , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "floor"          , (void *)&fd_floor       , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "fractal_julia"  , (void *)&fd_fr_julia    , sizeof(FunctionDescriptor), DATATYPE_VOID);
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs,"fractal_mandelbrot",(void *)&fd_fr_mandelbrot,sizeof(FunctionDescriptor), DATATYPE_VOID);

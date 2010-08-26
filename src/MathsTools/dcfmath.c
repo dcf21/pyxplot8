@@ -766,6 +766,14 @@ void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *er
   CHECK_OUTPUT_OKAY;
  }
 
+void dcfmath_finite(value *in, value *output, int *status, char *errtext)
+ {
+  WRAPPER_INIT;
+  if ((settings_term_current.ComplexNumbers == SW_ONOFF_OFF) && (in->FlagComplex)) return;
+  if ((!gsl_finite(in->real)) || (!gsl_finite(in->imag))) return;
+  output->real = 1;
+ }
+
 void dcfmath_floor(value *in, value *output, int *status, char *errtext)
  {
   char *FunctionDescription = "floor(x)";

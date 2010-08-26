@@ -90,6 +90,7 @@ void dcfmath_erfc(value *in, value *output, int *status, char *errtext);
 void dcfmath_exp(value *in, value *output, int *status, char *errtext);
 void dcfmath_expm1(value *in, value *output, int *status, char *errtext);
 void dcfmath_expint(value *in1, value *in2, value *output, int *status, char *errtext);
+void dcfmath_finite(value *in, value *output, int *status, char *errtext);
 void dcfmath_floor(value *in, value *output, int *status, char *errtext);
 void dcfmath_gamma(value *in, value *output, int *status, char *errtext);
 void dcfmath_gaussianPDF(value *in1, value *in2, value *output, int *status, char *errtext);
