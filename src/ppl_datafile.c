@@ -576,6 +576,11 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
   int           ContextOut = ( out)->MemoryContext;
 
   long int      file_linenumber[MAX_DATACOLS];
+  unsigned char hadspace[MAX_DATACOLS];
+  unsigned char hadcomma[MAX_DATACOLS];
+
+  for (i=0; i<MAX_DATACOLS; i++) hadspace[i] = 1;
+  for (i=0; i<MAX_DATACOLS; i++) hadcomma[i] = 0;
 
   while (1)
    {
@@ -586,19 +591,34 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
       for (i=0; ((i<blk->BlockPosition)&&(ItemsOnLine<MAX_DATACOLS)); i++)
        {
         if (blk->text[i]==NULL)
-         { RowData[ItemsOnLine++]=" "; }
+         {
+          RowData[ItemsOnLine]=" ";
+          file_linenumber[ItemsOnLine]=-1;
+          ItemsOnLine++;
+         }
         else
          {
-          while ((blk->text[i][0]!='\0') && (blk->text[i][0]<=' ')) blk->text[i]++;
-          if (blk->text[i][0]=='\0') RowData[ItemsOnLine++]=" ";
+          unsigned char caught=0;
+          for ( ; ((blk->text[i][0]!='\0') && (!caught)) ; blk->text[i]++)
+           {
+            if      (blk->text[i][0]<=' ') { hadspace[ItemsOnLine] = 1; }
+            else if (blk->text[i][0]==',') { blk->text[i]++; while ((blk->text[i][0]!='\0')&&(blk->text[i][0]<=' ')) { blk->text[i]++; } caught=1; hadspace[ItemsOnLine] = hadcomma[ItemsOnLine] = 1; }
+            else                           { if (hadspace[ItemsOnLine] && !hadcomma[ItemsOnLine]) { caught=1; } hadspace[ItemsOnLine] = hadcomma[ItemsOnLine] = 0; }
+            if (caught) break;
+           }
+
+          if (!caught)
+           {
+            RowData[ItemsOnLine]=" ";
+            file_linenumber[ItemsOnLine]=-1;
+            ItemsOnLine++;
+           }
           else
            {
             RowData        [ItemsOnLine] = blk->text    [i];
             file_linenumber[ItemsOnLine] = blk->FileLine[i];
             ItemsOnLine++;
             GotData = 1;
-            while  (blk->text[i][0]> ' ' )                            blk->text[i]++;
-            while ((blk->text[i][0]!='\0') && (blk->text[i][0]<=' ')) blk->text[i]++;
            }
          }
        }

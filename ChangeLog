@@ -1,4 +1,5 @@
 2010 xxx xx: PyXPlot 0.8.3
+   - @ macro expansion operator implemented.
    - Bugfix to the 'set unit preferred' command.
    - Improved support for newer Windows bitmap images.
    - Binary not operator bugfixed.
