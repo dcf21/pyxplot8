@@ -1,8 +1,9 @@
 2010 xxx xx: PyXPlot 0.8.3
    - @ macro expansion operator implemented.
-   - Bugfix to the 'set unit preferred' command.
    - Improved support for newer Windows bitmap images.
+   - Bugfix to the 'set unit preferred' command.
    - Binary not operator bugfixed.
+   - Bugfix to handling of comma-separated horizontal datafiles.
    - Mathematical function finite() added.
 2010 Aug  4: PyxPlot 0.8.2
    - 3D plotting implemented.
