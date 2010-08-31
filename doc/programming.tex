@@ -330,12 +330,12 @@ for <variable> = <start> to <end> {step <step>} {loopname <name>}
 \noindent The first time that the script block is executed, the variable named
 at the start of the {\tt for} statement has the value given for {\tt start}.
 Upon each iteration of the loop, this is incremented by amount {\tt step}. The
-loop finishes when the value equals or exceeds {\tt end}. If {\tt step} is
-negative, then {\tt end} is required to be less than {\tt start}. A step size
-of zero is considered to be an error.  The iterator variable can have any
-physical dimensions, so long as {\tt start}, {\tt end} and {\tt step} all have
-the same dimensions, but the iterator variable must always be a real number. If
-no step size is given then a step size of unity is assumed.  As an example, the
+loop finishes when the value exceeds {\tt end}. If {\tt step} is negative, then
+{\tt end} is required to be less than or equal to {\tt start}. A step size of
+zero is considered to be an error.  The iterator variable can have any physical
+dimensions, so long as {\tt start}, {\tt end} and {\tt step} all have the same
+dimensions, but the iterator variable must always be a real number. If no step
+size is given then a step size of unity is assumed.  As an example, the
 following script would print the numbers 0, 2, 4, 6 and 8:
 
 \begin{verbatim}
