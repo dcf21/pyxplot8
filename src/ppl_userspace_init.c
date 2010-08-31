@@ -323,6 +323,9 @@ void ppl_UserSpaceInit()
   v.dimensionless = 0;
   v.exponent[UNIT_LENGTH] = 1; v.exponent[UNIT_TIME] =-2;
   DictAppendValue(_ppl_UserSpace_Vars , "phy_g"         , v); // The standard acceleration due to gravity on Earth
+  ppl_units_zero(&v);
+  v.string = VERSION;
+  DictAppendValue(_ppl_UserSpace_Vars , "version"       , v); // PyXPlot version string
 
   // Copy function descriptors for core mathematical functions into function namespace
   DictAppendPtrCpy  (_ppl_UserSpace_Funcs, "abs"            , (void *)&fd_abs         , sizeof(FunctionDescriptor), DATATYPE_VOID);

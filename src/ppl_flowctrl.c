@@ -279,7 +279,7 @@ int directive_for(Dict *command, int IterLevel)
   value     *iterval;
   double     itervalD;
   value      step_dummy;
-  unsigned char backwards;
+  unsigned char backwards_step;
   char      *cptr;
   cmd_chain  chain     = NULL;
   cmd_chain  chainiter = NULL;
@@ -306,10 +306,10 @@ int directive_for(Dict *command, int IterLevel)
   if (!ppl_units_DimEqual(start, end)) { sprintf(temp_err_string, "The start and end values in this for loop are not dimensionally compatible. The start value has units of <%s>, while the end value has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(end, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
   if (!ppl_units_DimEqual(start, step)) { sprintf(temp_err_string, "The start value and step size  in this for loop are not dimensionally compatible. The start value has units of <%s>, while the step size has units of <%s>.", ppl_units_GetUnitStr(start, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(step, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
 
-  if (start->real < end->real) backwards=0;
-  else                         backwards=1;
+  backwards_step  = (step->real < 0);
 
-  if (((!backwards) && (step->real<=0)) || ((backwards) && (step->real>=0))) { sprintf(temp_err_string, "The projected number of steps in this for loop is infinite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
+  if ((step->real==0.0) || ((backwards_step)&&(start->real < end->real)) || ((!backwards_step)&&(start->real > end->real)))
+   { sprintf(temp_err_string, "The projected number of steps in this for loop is infinite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
@@ -333,7 +333,7 @@ int directive_for(Dict *command, int IterLevel)
 
   // Execute this for loop repeatedly
   status = 0;
-  while (((!backwards)&&(iterval->real < end->real)) || ((backwards)&&(iterval->real > end->real)))
+  while (((!backwards_step)&&(iterval->real <= end->real)) || ((backwards_step)&&(iterval->real >= end->real)))
    {
     chainiter = chain;
     status = loop_execute(&chainiter, 1, 0, IterLevel);

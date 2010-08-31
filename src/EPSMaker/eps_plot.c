@@ -612,10 +612,10 @@ void eps_plot_SampleFunctions(EPSComm *x)
           if (SampleGrid || (*_OrdinateAxis)->OrdinateRaster == NULL) // Make ordinate raster if we don't already have one
            {
             int Nsamp = (!SampleGrid) ? x->current->settings.samples :
-                  (a ? (  (x->current->settings.SamplesXAuto == SW_BOOL_TRUE) ?
-                          x->current->settings.samples : x->current->settings.SamplesX )
-                     : (  (x->current->settings.SamplesYAuto == SW_BOOL_TRUE) ?
-                          x->current->settings.samples : x->current->settings.SamplesY ) );
+                  ((!a) ? (  (x->current->settings.SamplesXAuto == SW_BOOL_TRUE) ?
+                             x->current->settings.samples : x->current->settings.SamplesX )
+                        : (  (x->current->settings.SamplesYAuto == SW_BOOL_TRUE) ?
+                             x->current->settings.samples : x->current->settings.SamplesY ) );
             *_OrdinateRaster = (double *)lt_malloc(Nsamp * sizeof(double));
             if (*_OrdinateRaster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
             for (j=0; j<Nsamp; j++)

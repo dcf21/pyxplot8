@@ -74,7 +74,7 @@ sprintf(txt_init, "\n\
 |  __/| |_| |/  \\|  __/| | (_) | |_ \n\
 |_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-2010 Dominic Ford\n\
        |___/                                         2008-2010 Ross Church\n\
-\n\
+                                                     2010      Zoltan Voros\n\
 \n\
 Send comments, bug reports, feature requests and coffee supplies to:\n\
 <coders@pyxplot.org.uk>\n\

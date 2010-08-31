@@ -366,6 +366,8 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    return directive_interpolate(command,INTERP_AKIMA);
   else if ( (strcmp(directive, "arrow")==0) || (strcmp(directive, "line")==0) )
    directive_arrow(command, interactive);
+  else if (strcmp(directive, "assert")==0)
+   return directive_assert(command);
   else if (strcmp(directive, "box")==0)
    directive_box(command, interactive);
   else if (strcmp(directive, "break")==0)
@@ -544,6 +546,63 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
   else
    ppl_report(DictPrint(command, buffer, LSTR_LENGTH));
 
+  return 0;
+ }
+
+int directive_assert(Dict *command)
+ {
+  char  *txt, *version, *gtreq, *lt;
+  value *val;
+  DictLookup(command,"message",NULL,(void **)(&txt));
+  DictLookup(command,"gtreq"  ,NULL,(void **)(&gtreq));
+  DictLookup(command,"lt"     ,NULL,(void **)(&lt));
+  DictLookup(command,"version",NULL,(void **)(&version));
+  DictLookup(command,"expr",NULL,(void **)(&val));
+  if (val != NULL)
+   {
+    if (txt==NULL) txt="Assertion was not true.";
+    if ((val->real==0.0)&&(val->imag==0.0))
+     {
+      sprintf(temp_err_string, "Assertion Error: %s", txt);
+      ppl_error(ERR_PREFORMED,-1,-1,temp_err_string);
+      return 1;
+     }
+   }
+  if (version != NULL)
+   {
+    int i=0,j=0,sgn,pass=0;
+    char txtauto[64];
+    sprintf(txtauto, "This script requires a%s version of PyXPlot (%s %s)", (lt==NULL)?" newer":"n older", (lt==NULL)?">=":"<", version);
+#define VERSION_FAIL { sprintf(temp_err_string, "Assertion Error: %s", txt); ppl_error(ERR_PREFORMED,-1,-1,temp_err_string); return 1; }
+    if (txt==NULL) txt=txtauto;
+    sgn = (lt==NULL)?1:-1;
+    while ((version[i]>'\0')&&(version[i]<=' ')) i++;
+    if (version[i]=='\0') return 0;
+    for (j=0; ((version[i]>='0')&&(version[i]<='9')); i++) { j=10*j+(version[i]-'0'); if (j>1e6)j=1e6; }
+    if ((sgn*VERSION_MAJ < sgn*j)&&(!pass)) VERSION_FAIL;
+    if  (sgn*VERSION_MAJ > sgn*j) pass=1;
+    while ((version[i]>'\0')&&(version[i]<=' ')) i++;
+    if      (version[i]=='.') i++;
+    else if (version[i]!='\0') { ppl_error(ERR_SYNTAX,-1,-1,"Malformed version string."); return 1; }
+    while ((version[i]>'\0')&&(version[i]<=' ')) i++;
+    if ((version[i]=='\0')&&(sgn==-1)&&(!pass)) VERSION_FAIL;
+    if (version[i]=='\0') return 0;
+    for (j=0; ((version[i]>='0')&&(version[i]<='9')); i++) { j=10*j+(version[i]-'0'); if (j>1e6)j=1e6; }
+    if ((sgn*VERSION_MIN < sgn*j)&&(!pass)) VERSION_FAIL;
+    if  (sgn*VERSION_MIN > sgn*j) pass=1;
+    while ((version[i]>'\0')&&(version[i]<=' ')) i++;
+    if      (version[i]=='.') i++;
+    else if (version[i]!='\0') { ppl_error(ERR_SYNTAX,-1,-1,"Malformed version string."); return 1; }
+    while ((version[i]>'\0')&&(version[i]<=' ')) i++;
+    if ((version[i]=='\0')&&(sgn==-1)&&(!pass)) VERSION_FAIL;
+    if (version[i]=='\0') return 0;
+    for (j=0; ((version[i]>='0')&&(version[i]<='9')); i++) { j=10*j+(version[i]-'0'); if (j>1e6)j=1e6; }
+    if ((sgn*VERSION_REV < sgn*j)&&(!pass)) VERSION_FAIL;
+    if  (sgn*VERSION_REV > sgn*j) pass=1;
+    while ((version[i]>'\0')&&(version[i]<=' ')) i++;
+    if (version[i]!='\0') { ppl_error(ERR_SYNTAX,-1,-1,"Malformed version string."); return 1; }
+    if ((version[i]=='\0')&&(sgn==-1)&&(!pass)) VERSION_FAIL;
+   }
   return 0;
  }
 

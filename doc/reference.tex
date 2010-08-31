@@ -136,6 +136,35 @@ be deleted and subsequently restored with the {\tt delete} and {\tt undelete}
 commands respectively.
 
 
+\section{assert}\indcmd{assert}
+
+\begin{verbatim}
+assert ( <expression> | version ( >= | < ) <version> )
+       [<error message>]
+\end{verbatim}
+
+The \indcmdt{assert} can be used to assert that a logical expression, such as
+{\tt x>0}, is true. An error is reported if the expression is false, and
+optionally a string can be supplied to provide a more informative error message 
+to the user:
+
+\begin{verbatim}
+assert x>0
+assert y<0 "y must be less than zero."
+\end{verbatim}
+
+The \indcmdt{assert} can also be used to test the version number of PyXPlot. It
+is possible to test either that the version is newer than or equal to a
+specific version, using the {\tt $>$=} operator, or that it is older than a
+specific version, using the {\tt $<$} operator, as demonstrated in the
+following examples:
+
+\begin{verbatim}
+assert version >= 0.8.2
+assert version <  0.8  "This script is designed for PyXPlot 0.7"
+\end{verbatim}
+
+
 \section{box}\indcmd{box}
 
 \begin{verbatim}

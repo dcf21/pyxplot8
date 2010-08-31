@@ -5,6 +5,7 @@
 %
 % Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
 %               2008-2010 Ross Church
+%               2010      Zoltan Voros
 %
 % $Id$
 %
@@ -780,6 +781,59 @@ samples for each value of $\psi$:
 \index{macros}
 \index{@ operator@{\tt @} operator}
 
+The $@$ operator can be used for literal substitution of the content of a
+string variable into the command line.  The name of the string variable follows
+the $@$ sign, and its content is expanded to the command line, as in this
+example
+\begin{verbatim}
+mac = "with lines lw 2 lt 1"
+plot sin(x) @mac
+\end{verbatim}
+which is equivalent to 
+\begin{verbatim}
+plot sin(x) with lines lw 2 lt 1
+\end{verbatim}
+
+The macro, being a string, can contain any characters, but as with other
+variable names, the name of the macro can contain only alphanumeric characters
+and the underscore sign. This also means that any operator, with the exception
+of the {\tt and} and {\tt or} operators, can signify the end of the macro name,
+without the need for a trailing white space. Therefore, in the example
+\begin{verbatim}
+ foo = "50"
+ printf @foo*3
+\end{verbatim}
+the end result is 150; {\tt 50*3} is passed to the command line interpreter.
+
+One application of macros may be to supply arbitrary algebraic expressions for
+later evaluation.
+
+\example{ex:macro}{Using a macro to calculate the mean of a dataset}{
+In this example, we create a subroutine which calculates the mean value of an
+arbitrary function of the columns in a \datafile. The subroutine takes two
+arguments: the name of the \datafile and a string containing the function to be
+averaged.
+\nlscf
+\noindent{\tt subroutine mean(filename, func)}\newline
+\noindent{\tt \phantom{x}\{}\newline
+\noindent{\tt \phantom{xx}N\_data = 0}\newline
+\noindent{\tt \phantom{xx}sum\_x  = 0}\newline
+\\
+\noindent{\tt \phantom{xx}foreach datum x in filename using $@$func}\newline
+\noindent{\tt \phantom{xxx}\{}\newline
+\noindent{\tt \phantom{xxxx}N\_data = N\_data + 1}\newline
+\noindent{\tt \phantom{xxxx}sum\_x = sum\_x + x}\newline
+\noindent{\tt \phantom{xxx}\}}\newline
+\noindent{\tt \phantom{xxx}if(N\_data > 0) \{ ; return sum\_x / N\_data ; \} }\newline
+\noindent{\tt \phantom{x}\}}\newline
+\nlscf
+This subroutine can be called from the command line as in the example
+\newline\\ 
+\noindent{\tt print mean('data.dat', "sin(\$1)*exp(\$2)")} 
+\newline\\
+where it returns the mean of the product of the sine of the first column, and
+the exponential of the second column.
+} 
 
 \section{The \indcmdt{exec}}
 
@@ -793,6 +847,31 @@ exec "set terminal %s"%(terminal)
 
 \noindent It can also be used to write obfuscated PyXPlot scripts, and its use
 should be minimised wherever possible.
+
+\section{Assertions}
+\index{assertions}
+
+The \indcmdt{assert} can be used to assert that a logical expression, such as
+{\tt x>0}, is true. An error is reported if the expression is false, and
+optionally a string can be supplied to provide a more informative error message
+to the user:
+
+\begin{verbatim}
+assert x>0
+assert y<0 "y must be less than zero."
+\end{verbatim}
+
+The \indcmdt{assert} can also be used to test the version number of PyXPlot. It
+is possible to test either that the version is newer than or equal to a
+specific version, using the {\tt $>$=} operator, or that it is older than a
+specific version, using the {\tt $<$} operator, as demonstrated in the
+following examples:
+
+\begin{verbatim}
+assert version >= 0.8.2
+assert version <  0.8  "This script is designed for PyXPlot 0.7"
+\end{verbatim}
+
 
 \section{Shell Commands}
 
