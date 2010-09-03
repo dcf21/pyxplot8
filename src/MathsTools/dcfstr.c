@@ -105,6 +105,8 @@ void dcfstr_strcmp (char *in, int inlen, value *output, unsigned char DollarAllo
   while ((in[i]>'\0')&&(in[i]<=' ')) i++;
   END_INPUT_STRING;
   output->real = strcmp(InString, InString2);
+  if (output->real > 0) output->real =  1;
+  if (output->real < 0) output->real = -1;
   return;
  }
 
