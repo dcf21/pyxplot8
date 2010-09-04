@@ -30,6 +30,9 @@
 /* Strings defined in ppl_commands.c */
 extern char ppl_commands[];
 
+/* Defined in dcfstr.h */
+extern int NestedConditionalDepth;
+
 /* Functions defined in ppl_shell.c */
 #ifndef _PPL_SHELL_C
 extern int       PPL_SHELL_EXITING;

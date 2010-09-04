@@ -97,6 +97,7 @@ void InteractiveSession()
       else                           SetInputSourcePipe(&linenumber, "piped input");
       line_ptr = FetchInputStatement("pyxplot> ",".......> ");
       if (line_ptr == NULL) break;
+      NestedConditionalDepth=0; // Reset nested conditional depth after SIGINT
       ProcessDirective(line_ptr, isatty(STDIN_FILENO), 0);
       ppl_error_setstreaminfo(-1, "");
       PPLKillAllHelpers();

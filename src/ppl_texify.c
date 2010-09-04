@@ -583,11 +583,13 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
 
 void wrapper_texify(char *in, int inlen, value *output, unsigned char DollarAllowed, int RecursionDepth, int *status, char *errtext)
  {
-  int BracketLevel=0, offset=0;
+  int BracketLevel=0, outlen, offset=0;
 
   *status=-1;
   ppl_units_zero(output);
-  output->string = lt_malloc(LSTR_LENGTH);
+  outlen = 5 * (inlen+10); // Guess length of texified output to be no more than five times original length
+  if (outlen > LSTR_LENGTH) outlen = LSTR_LENGTH;
+  output->string = lt_malloc(outlen);
   if (output->string==NULL) { sprintf(errtext,"Out of memory."); *status=0; return; }
   output->string[0] = '\0';
   inlen--; // Make inlen point to last character
