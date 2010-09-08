@@ -1,8 +1,9 @@
-2010 xxx xx: PyXPlot 0.8.3
+2010 Sep 15: PyXPlot 0.8.3
    - @ macro expansion operator implemented.
    - assert command implemented.
 	- for command behaviour changed such that "for i=1 to 10" includes a final
 	  iteration with i=10.
+   - Point types rearranged into a more logical order.
    - Improved support for newer Windows bitmap images.
    - Bugfix to the 'set unit preferred' command.
    - Binary not operator bugfixed.
