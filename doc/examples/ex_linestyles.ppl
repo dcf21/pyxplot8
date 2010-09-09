@@ -33,11 +33,11 @@ set nodisplay
 set texthalign left
 set textvalign centre
 
-for i=0 to 29
+for i=0 to 43
  {
-  y = -(i%10) * unit(1*cm)
-  x = floor(i/10) * unit(4*cm)
-  point x,y with pt i+1
+  y = -(i%15) * unit(1*cm)
+  x = floor(i/15) * unit(4*cm)
+  point x,y with pt i+1 colour rgb1:0:0
   if (i<10) { ; name = "Point type \phantom{0}%d"%(i+1)
   } else    { ; name = "Point type %d"%(i+1) ; }
   text name at x+unit(5*mm),y

@@ -22,7 +22,7 @@
 #ifndef _PPL_EPS_STYLE_H
 #define _PPL_EPS_STYLE_H 1
 
-#define N_POINTTYPES 30
+#define N_POINTTYPES 44
 #define N_STARTYPES   9
 
 char *eps_LineType(int lt, double lw, double offset);

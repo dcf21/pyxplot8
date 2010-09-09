@@ -727,7 +727,22 @@ void canvas_EPSWrite(EPSComm *x)
   if (settings_term_current.TermType == SW_TERMTYPE_PS) fprintf(epsout, "%s", PS_PROLOG_TEXT);
   fprintf(epsout, "%s", EPS_PROLOG_TEXT);
   fprintf(epsout, "/ps { 1 } def\n/ps75 { ps .75 mul } def\n"); // Pointsize variables
-  if (x->PointTypesUsed[2]) { x->PointTypesUsed[0]=x->PointTypesUsed[1]=1; } // pt3 depends upon pt1 and pt2
+
+  if (x->PointTypesUsed[28]) { x->PointTypesUsed[14]=x->PointTypesUsed[ 0]=1; } // pt6 depends upon pt4 and pt5
+  if (x->PointTypesUsed[29]) { x->PointTypesUsed[15]=x->PointTypesUsed[ 1]=1; } // pt9 depends upon pt7 and pt8
+  if (x->PointTypesUsed[30]) { x->PointTypesUsed[16]=x->PointTypesUsed[ 2]=1; } // pt12 depends upon pt10 and pt11
+  if (x->PointTypesUsed[31]) { x->PointTypesUsed[17]=x->PointTypesUsed[ 3]=1; } // pt15 depends upon pt13 and pt14
+  if (x->PointTypesUsed[32]) { x->PointTypesUsed[18]=x->PointTypesUsed[ 4]=1; } // pt18 depends upon pt16 and pt17
+  if (x->PointTypesUsed[33]) { x->PointTypesUsed[19]=x->PointTypesUsed[ 5]=1; } // pt21 depends upon pt19 and pt20
+  if (x->PointTypesUsed[34]) { x->PointTypesUsed[20]=x->PointTypesUsed[ 6]=1; } // pt24 depends upon pt22 and pt23
+  if (x->PointTypesUsed[35]) { x->PointTypesUsed[21]=x->PointTypesUsed[ 7]=1; } // pt27 depends upon pt25 and pt26
+  if (x->PointTypesUsed[36]) { x->PointTypesUsed[22]=x->PointTypesUsed[ 8]=1; } // pt30 depends upon pt28 and pt29
+  if (x->PointTypesUsed[37]) { x->PointTypesUsed[23]=x->PointTypesUsed[ 9]=1; } // pt33 depends upon pt31 and pt32
+  if (x->PointTypesUsed[38]) { x->PointTypesUsed[24]=x->PointTypesUsed[10]=1; } // pt36 depends upon pt34 and pt35
+  if (x->PointTypesUsed[39]) { x->PointTypesUsed[25]=x->PointTypesUsed[11]=1; } // pt33 depends upon pt37 and pt38
+  if (x->PointTypesUsed[40]) { x->PointTypesUsed[26]=x->PointTypesUsed[12]=1; } // pt3 depends upon pt1 and pt2
+  if (x->PointTypesUsed[41]) { x->PointTypesUsed[27]=x->PointTypesUsed[13]=1; } // pt6 depends upon pt4 and pt5
+
   if (x->StarTypesUsed [6]) { x->StarTypesUsed [5]=1; } // st7 depends upon st6
   for (i=0; i<N_POINTTYPES; i++) if (x->PointTypesUsed[i]) fprintf(epsout, "%s\n", eps_PointTypes[i]);
   for (i=0; i<N_STARTYPES ; i++) if (x->StarTypesUsed [i]) { fprintf(epsout, "%s\n", eps_StarCore); break; }

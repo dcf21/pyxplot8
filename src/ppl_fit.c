@@ -521,6 +521,8 @@ int directive_fit(Dict *command)
   // Estimate the size of the errorbars on the supplied data if no errorbars were supplied (this doesn't affect best fit position, but does affect error estimates)
   if (!DataComm.FlagYErrorBars)
    {
+    sprintf(temp_err_string, "\n# Estimating the size of the error bars on supplied data.\n# This may take a while.\n# The fit command can be made to run very substantially faster if the 'withouterrors' option is set.");
+    ppl_report(temp_err_string);
     status = FitMinimiseIterate(&DataComm, &FitSigmaData, 1);
     if (status) { ppl_error(ERR_GENERAL, -1, -1, DataComm.errtext); gsl_vector_free(BestFitParamVals); return 1; }
     FirstVals[NArgs].real = DataComm.SigmaData;
