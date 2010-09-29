@@ -516,7 +516,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
           if ((last_colstr==NULL)||(strcmp(last_colstr,x->CurrentColour)!=0)) { last_colstr = (char *)lt_malloc(strlen(x->CurrentColour)+1); if (last_colstr==NULL) break; strcpy(last_colstr, x->CurrentColour); }
           if (style != SW_STYLE_STARS)
            {
-            pt = (style == SW_STYLE_DOTS) ? 9 : ((pd->ww_final.pointtype-1) % N_POINTTYPES); // Dots are always pt 9 (circle)
+            pt = (style == SW_STYLE_DOTS) ? 17 : ((pd->ww_final.pointtype-1) % N_POINTTYPES); // Dots are always pt 17 (filled circle)
             while (pt<0) pt+=N_POINTTYPES;
             x->PointTypesUsed[pt] = 1;
             sprintf(epsbuff, "%.2f %.2f pt%d", xpos, ypos, pt+1);
