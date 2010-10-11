@@ -112,7 +112,7 @@ void eps_eps_RenderEPS(EPSComm *x)
    }
 
   // Copy contents of EPS into output postscript file
-  fprintf(x->epsbuffer, "%% ---- Beginning of included EPS graphic ----\n");
+  fprintf(x->epsbuffer, "%% ---- Beginning of included EPS graphic ----\n%%%%BeginDocument: epsfile.eps\n");
   inf = fopen(filename, "r");
   if (inf==NULL) { sprintf(temp_err_string, "Could not open EPS file '%s'.", filename); ppl_error(ERR_FILE, -1, -1, temp_err_string); *(x->status) = 1; return; }
   while (fgets(temp_err_string, FNAME_LENGTH, inf) != NULL)
@@ -126,7 +126,7 @@ void eps_eps_RenderEPS(EPSComm *x)
   fclose(inf);
 
   // Finish off encapsulation of EPS file
-  fprintf(x->epsbuffer, "\n%% ---- End of included EPS graphic ----\nEndEPSF\n");
+  fprintf(x->epsbuffer, "%%%%EOF\n%%%%EndDocument\n\n%% ---- End of included EPS graphic ----\nEndEPSF\n");
 
   // Update postscript bounding box
   r = x->current->rotation;
