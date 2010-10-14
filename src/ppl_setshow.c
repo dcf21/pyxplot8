@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -905,13 +905,17 @@ void directive_set(Dict *command)
 
           DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Tlog = SW_BOOL_TRUE;
+          DictLookup(tempdict,"ulog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Ulog = SW_BOOL_TRUE;
+          DictLookup(tempdict,"vlog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Vlog = SW_BOOL_TRUE;
          }
         listiter = ListIterate(listiter, NULL);
        }
      }
     else
      {
-      sg->Clog[0] = sg->Clog[1] = sg->Clog[2] = sg->Clog[3] = sg->Tlog = SW_BOOL_TRUE;
+      sg->Clog[0] = sg->Clog[1] = sg->Clog[2] = sg->Clog[3] = sg->Tlog = sg->Ulog = sg->Vlog = SW_BOOL_TRUE;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis2=&XAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis2=&YAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis2=&ZAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_TRUE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_TRUE; if (tempint!=NULL) tempaxis->LogBase=(double)(*tempint); } }
@@ -945,8 +949,13 @@ void directive_set(Dict *command)
           if (tempstr != NULL) sg->Clog[2] = settings_graph_default.Clog[2];
           DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Clog[3] = settings_graph_default.Clog[3];
+
           DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Tlog = settings_graph_default.Tlog;
+          DictLookup(tempdict,"ulog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Ulog = settings_graph_default.Ulog;
+          DictLookup(tempdict,"vlog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Vlog = settings_graph_default.Vlog;
          }
         listiter = ListIterate(listiter, NULL);
        }
@@ -958,6 +967,8 @@ void directive_set(Dict *command)
       sg->Clog[2] = settings_graph_default.Clog[2];
       sg->Clog[3] = settings_graph_default.Clog[3];
       sg->Tlog    = settings_graph_default.Tlog;
+      sg->Ulog    = settings_graph_default.Ulog;
+      sg->Vlog    = settings_graph_default.Vlog;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; if (tempaxis->log != XAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=XAxesDefault[i].log; tempaxis->LogBase=XAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; if (tempaxis->log != YAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=YAxesDefault[i].log; tempaxis->LogBase=YAxesDefault[i].LogBase; }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; if (tempaxis->log != ZAxesDefault[i].log) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; } tempaxis->log=ZAxesDefault[i].log; tempaxis->LogBase=ZAxesDefault[i].LogBase; }
@@ -1053,15 +1064,20 @@ void directive_set(Dict *command)
           if (tempstr != NULL) sg->Clog[2] = SW_BOOL_FALSE;
           DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Clog[3] = SW_BOOL_FALSE;
+
           DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
           if (tempstr != NULL) sg->Tlog = SW_BOOL_FALSE;
+          DictLookup(tempdict,"ulog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Ulog = SW_BOOL_FALSE;
+          DictLookup(tempdict,"vlog",NULL,(void **)&tempstr);
+          if (tempstr != NULL) sg->Vlog = SW_BOOL_FALSE;
          }
         listiter = ListIterate(listiter, NULL);
        }
      }
     else
      {
-      sg->Clog[0] = sg->Clog[1] = sg->Clog[2] = sg->Clog[3] = sg->Tlog = SW_BOOL_FALSE;
+      sg->Clog[0] = sg->Clog[1] = sg->Clog[2] = sg->Clog[3] = sg->Tlog = sg->Ulog = sg->Vlog = SW_BOOL_FALSE;
       for (i=0;i<MAX_AXES;i++) { tempaxis=&xa[i]; tempaxis2=&XAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&ya[i]; tempaxis2=&YAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
       for (i=0;i<MAX_AXES;i++) { tempaxis=&za[i]; tempaxis2=&ZAxesDefault[i]; if (tempaxis->enabled) { if (tempaxis->log != SW_BOOL_FALSE) { tempaxis->TickStepSet = tempaxis->TickMinSet = tempaxis->TickMaxSet = tempaxis->MTickStepSet = tempaxis->MTickMinSet = tempaxis->MTickMaxSet = 0; tempaxis->TickStep=tempaxis2->TickStep; tempaxis->TickMin=tempaxis2->TickMin; tempaxis->TickMax=tempaxis2->TickMax; tempaxis->MTickStep=tempaxis2->MTickStep; tempaxis->MTickMin=tempaxis2->MTickMin; tempaxis->MTickMax=tempaxis2->MTickMax; } tempaxis->log=SW_BOOL_FALSE; } }
@@ -1951,22 +1967,28 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"trange")==0)) /* set trange */
    {
-    DictLookup(command,"min",NULL,(void **)&tempval);
-    DictLookup(command,"max",NULL,(void **)&tempval2);
-    if (tempval == NULL) tempval = &sg->Tmin;
-    if (tempval2== NULL) tempval2= &sg->Tmax;
-    if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
-    if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
-    if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
-    sg->Tmin = *tempval;
-    sg->Tmax = *tempval2;
+    DictLookup(command,"range",NULL,(void **)&tempstr);
+    if (tempstr!=NULL)
+     {
+      DictLookup(command,"min",NULL,(void **)&tempval);
+      DictLookup(command,"max",NULL,(void **)&tempval2);
+      if (tempval == NULL) tempval = &sg->Tmin;
+      if (tempval2== NULL) tempval2= &sg->Tmax;
+      if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
+      if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
+      if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set trange with dimensionally incompatible minimum and maximum."); return; }
+      sg->Tmin = *tempval;
+      sg->Tmax = *tempval2;
+     }
     DictLookup(command,"reverse",NULL,(void **)&tempstr);
     if (tempstr != NULL) { valobj = sg->Tmin; sg->Tmin = sg->Tmax; sg->Tmax = valobj; }
+    sg->USE_T_or_uv = 1;
    }
   else if (strcmp_unset && (strcmp(setoption,"trange")==0)) /* unset trange */
    {
-    sg->Tmin = settings_graph_default.Tmin;
-    sg->Tmax = settings_graph_default.Tmax;
+    sg->USE_T_or_uv = settings_graph_default.USE_T_or_uv;
+    sg->Tmin        = settings_graph_default.Tmin;
+    sg->Tmax        = settings_graph_default.Tmax;
    }
   else if (strcmp_set && (strcmp(setoption,"unit")==0)) /* set unit */
    {
@@ -2129,6 +2151,56 @@ void directive_set(Dict *command)
        }
      }
     if (i==0) { sprintf(temp_err_string, "No such quantity as a '%s'.", tempstr); ppl_warning(ERR_GENERAL, temp_err_string); }
+   }
+  else if (strcmp_set && (strcmp(setoption,"urange")==0)) /* set urange */
+   {
+    DictLookup(command,"range",NULL,(void **)&tempstr);
+    if (tempstr!=NULL)
+     {
+      DictLookup(command,"min",NULL,(void **)&tempval);
+      DictLookup(command,"max",NULL,(void **)&tempval2);
+      if (tempval == NULL) tempval = &sg->Umin;
+      if (tempval2== NULL) tempval2= &sg->Umax;
+      if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set urange' command had non-finite limits."); return; }
+      if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set urange' command had non-finite limits."); return; }
+      if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set urange with dimensionally incompatible minimum and maximum."); return; }
+      sg->Umin = *tempval;
+      sg->Umax = *tempval2;
+     }
+    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { valobj = sg->Umin; sg->Umin = sg->Umax; sg->Umax = valobj; }
+    sg->USE_T_or_uv = 0;
+   }
+  else if (strcmp_unset && (strcmp(setoption,"urange")==0)) /* unset urange */
+   {
+    sg->USE_T_or_uv = settings_graph_default.USE_T_or_uv;
+    sg->Umin        = settings_graph_default.Umin;
+    sg->Umax        = settings_graph_default.Umax;
+   }
+  else if (strcmp_set && (strcmp(setoption,"vrange")==0)) /* set vrange */
+   {
+    DictLookup(command,"range",NULL,(void **)&tempstr);
+    if (tempstr!=NULL)
+     {
+      DictLookup(command,"min",NULL,(void **)&tempval);
+      DictLookup(command,"max",NULL,(void **)&tempval2);
+      if (tempval == NULL) tempval = &sg->Vmin;
+      if (tempval2== NULL) tempval2= &sg->Vmax;
+      if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set vrange' command had non-finite limits."); return; }
+      if (!gsl_finite(tempval2->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set vrange' command had non-finite limits."); return; }
+      if (!ppl_units_DimEqual(tempval,tempval2)) { ppl_error(ERR_NUMERIC, -1, -1, "Attempt to set vrange with dimensionally incompatible minimum and maximum."); return; }
+      sg->Vmin = *tempval;
+      sg->Vmax = *tempval2;
+     }
+    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    if (tempstr != NULL) { valobj = sg->Vmin; sg->Vmin = sg->Vmax; sg->Vmax = valobj; }
+    sg->USE_T_or_uv = 0;
+   }
+  else if (strcmp_unset && (strcmp(setoption,"vrange")==0)) /* unset vrange */
+   {
+    sg->USE_T_or_uv = settings_graph_default.USE_T_or_uv;
+    sg->Vmin        = settings_graph_default.Vmin;
+    sg->Vmax        = settings_graph_default.Vmax;
    }
   else if (strcmp_unset && (strcmp(setoption,"width")==0)) /* unset width */
    {
@@ -3013,9 +3085,10 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "trange", 1)>=0))
+  if (sg->USE_T_or_uv)
    {
     sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Tmin), 0, 0, 0), ppl_units_NumericDisplay(&(sg->Tmax), 1, 0, 0));
-    directive_show3(out+i, ItemSet, 1, interactive, "trange", buf, (settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
+    directive_show3(out+i, ItemSet, 1, interactive, "trange", buf, (settings_graph_default.USE_T_or_uv==sg->USE_T_or_uv)&&(settings_graph_default.Tmin.real==sg->Tmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmin),&(sg->Tmin))&&(settings_graph_default.Tmax.real==sg->Tmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Tmax),&(sg->Tmax)), "The range of input values used in constructing parametric function plots");
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || (StrAutocomplete(word, "linearscale", 1)>=0))
@@ -3074,10 +3147,20 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
       listiter = ListIterate(listiter, NULL);
      }
    }
-  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "urange", 1)>=0))
+  if (!sg->USE_T_or_uv)
    {
-    sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0, 0));
-    directive_show3(out+i, ItemSet, 1, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
+    sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Umin), 0, 0, 0), ppl_units_NumericDisplay(&(sg->Umax), 1, 0, 0));
+    directive_show3(out+i, ItemSet, 1, interactive, "urange", buf, (settings_graph_default.USE_T_or_uv==sg->USE_T_or_uv)&&(settings_graph_default.Umin.real==sg->Umin.real)&&ppl_units_DimEqual(&(settings_graph_default.Umin),&(sg->Umin))&&(settings_graph_default.Umax.real==sg->Umax.real)&&ppl_units_DimEqual(&(settings_graph_default.Umax),&(sg->Umax)), "The range of input values used in constructing 2d parametric function plots");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || (StrAutocomplete(word, "linearscale", 1)>=0))
+   {
+    if (sg->Ulog==SW_BOOL_TRUE) bufp = "logscale";
+    else                        bufp = "nologscale";
+    sprintf(buf, "u");
+    sprintf(buf2, "Sets whether the u-axis scales linearly or logarithmically");
+    directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (sg->Ulog==settings_graph_default.Ulog), buf2);
     i += strlen(out+i) ; p=1;
    }
   if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "view", 1)>=0))
@@ -3094,6 +3177,28 @@ int directive_show2(char *word, char *ItemSet, int interactive, settings_graph *
     sprintf(buf, "Selects the postscript viewer used by the X11 terminals%s%s%s", (settings_term_current.viewer != SW_VIEWER_CUSTOM)?" (":"", (settings_term_current.viewer ==SW_VIEWER_GGV)?"g":"", (settings_term_current.viewer != SW_VIEWER_CUSTOM)?"gv)":"");
     if ((settings_term_current.viewer == SW_VIEWER_CUSTOM) && (settings_term_default.viewer == SW_VIEWER_CUSTOM)) changed=(strcmp(settings_term_current.ViewerCmd,settings_term_default.ViewerCmd)!=0);
     directive_show3(out+i, ItemSet, 0, interactive, "viewer", (settings_term_current.viewer != SW_VIEWER_CUSTOM)?"auto":settings_term_current.ViewerCmd, !changed, buf);
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "vrange", 1)>=0))
+  if (!sg->USE_T_or_uv)
+   {
+    sprintf(buf, "[%s:%s]", ppl_units_NumericDisplay(&(sg->Vmin), 0, 0, 0), ppl_units_NumericDisplay(&(sg->Vmax), 1, 0, 0));
+    directive_show3(out+i, ItemSet, 1, interactive, "vrange", buf, (settings_graph_default.USE_T_or_uv==sg->USE_T_or_uv)&&(settings_graph_default.Vmin.real==sg->Vmin.real)&&ppl_units_DimEqual(&(settings_graph_default.Vmin),&(sg->Vmin))&&(settings_graph_default.Vmax.real==sg->Vmax.real)&&ppl_units_DimEqual(&(settings_graph_default.Vmax),&(sg->Vmax)), "The range of input values used in constructing 2d parametric function plots");
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "logscale", 1)>=0) || (StrAutocomplete(word, "linearscale", 1)>=0))
+   {
+    if (sg->Vlog==SW_BOOL_TRUE) bufp = "logscale";
+    else                        bufp = "nologscale";
+    sprintf(buf, "v");
+    sprintf(buf2, "Sets whether the t-axis scales linearly or logarithmically");
+    directive_show3(out+i, ItemSet, 1, interactive, bufp, buf, (sg->Vlog==settings_graph_default.Vlog), buf2);
+    i += strlen(out+i) ; p=1;
+   }
+  if ((StrAutocomplete(word, "settings", 1)>=0) || (StrAutocomplete(word, "width", 1)>=0) || (StrAutocomplete(word, "size", 1)>=0))
+   {
+    sprintf(buf, "%s", ppl_units_NumericDisplay(&(sg->width), 0, 0, 0));
+    directive_show3(out+i, ItemSet, 1, interactive, "width", buf, (settings_graph_default.width.real==sg->width.real), "The width of graphs");
     i += strlen(out+i) ; p=1;
    }
 

@@ -3,8 +3,8 @@
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
 #
-# Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2008-2010 Ross Church
+# Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+#               2008-2011 Ross Church
 #
 # $Id$
 #
@@ -37,12 +37,11 @@ plot [-1:1][-1:1] '--' with lowerlimits
 0 0
 END
 
+# Call common cleanup script
+load "examples/fig_end.ppl"
+
+
 # Set output destination
-set term pdf
-set output "examples/eps/%s.pdf"%(title)
-refresh
-0 0
-END
 title = "ex_upperlimit" ; load "examples/fig_init.ppl"
 
 # Main body of figure script
@@ -53,12 +52,11 @@ plot [-1:1][-1:1] '--' with upperlimits
 0 0
 END
 
+# Call common cleanup script
+load "examples/fig_end.ppl"
+
+
 # Set output destination
-set term pdf
-set output "examples/eps/%s.pdf"%(title)
-refresh
-0 0
-END
 title = "ex_plotstyletab" ; load "examples/fig_init.ppl"
 
 # Main body of figure script

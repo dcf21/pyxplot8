@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -242,6 +242,17 @@ void ppl_settings_makedefault()
   ppl_units_zero(&(settings_graph_default.Tmax));
   settings_graph_default.Tmin.real     = 0.0;
   settings_graph_default.Tmax.real     = 1.0;
+  settings_graph_default.USE_T_or_uv   = 1;
+  settings_graph_default.Ulog          = SW_BOOL_FALSE;
+  ppl_units_zero(&(settings_graph_default.Umin));
+  ppl_units_zero(&(settings_graph_default.Umax));
+  settings_graph_default.Umin.real     = 0.0;
+  settings_graph_default.Umax.real     = 1.0;
+  settings_graph_default.Vlog          = SW_BOOL_FALSE;
+  ppl_units_zero(&(settings_graph_default.Vmin));
+  ppl_units_zero(&(settings_graph_default.Vmax));
+  settings_graph_default.Vmin.real     = 0.0;
+  settings_graph_default.Vmax.real     = 1.0;
   ppl_units_zero(&(settings_graph_default.width));
   settings_graph_default.width.real    = 0.08; // 8cm
   settings_graph_default.width.dimensionless = 0; settings_graph_default.width.exponent[UNIT_LENGTH] = 1;

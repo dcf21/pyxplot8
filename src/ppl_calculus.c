@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -113,19 +113,8 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
   commlink.RecursionDepth = RecursionDepth;
   ppl_units_zero(&commlink.first);
 
-  DictLookup(_ppl_UserSpace_Vars, dummy, NULL, (void **)&DummyVar);
-  if (DummyVar!=NULL)
-   {
-    memcpy( &DummyTemp , DummyVar , sizeof(value));
-    memcpy(  DummyVar  , min      , sizeof(value)); // Get units of DummyVar right
-   }
-  else
-   {
-    DictAppendValue(_ppl_UserSpace_Vars, dummy, *min); // Get units of DummyVar right
-    DictLookup     (_ppl_UserSpace_Vars, dummy, NULL, (void **)&DummyVar);
-    ppl_units_zero(&DummyTemp);
-    DummyTemp.modified = 2;
-   }
+  ppl_UserSpace_GetVarPointer(dummy, &DummyVar, &DummyTemp);
+  memcpy(DummyVar, min, sizeof(value)); // Get units of DummyVar right
   commlink.dummy     = DummyVar;
   commlink.DummyReal = DummyVar->real;
   commlink.DummyImag = DummyVar->imag;
@@ -144,7 +133,7 @@ void Integrate(char *expr, char *dummy, value *min, value *max, value *out, int 
 
   gsl_integration_workspace_free(ws);
 
-  memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using
+  ppl_UserSpace_RestoreVarPointer(&DummyVar, &DummyTemp); // Restore old value of the dummy variable we've been using
 
   if (*errpos < 0)
    {
@@ -195,19 +184,8 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
   commlink.RecursionDepth = RecursionDepth;
   ppl_units_zero(&commlink.first);
 
-  DictLookup(_ppl_UserSpace_Vars, dummy, NULL, (void **)&DummyVar);
-  if (DummyVar!=NULL)
-   {
-    memcpy( &DummyTemp , DummyVar , sizeof(value));
-    memcpy(  DummyVar  , point    , sizeof(value)); // Get units of DummyVar right
-   }
-  else
-   {
-    DictAppendValue(_ppl_UserSpace_Vars, dummy, *point); // Get units of DummyVar right
-    DictLookup     (_ppl_UserSpace_Vars, dummy, NULL, (void **)&DummyVar);
-    ppl_units_zero(&DummyTemp);
-    DummyTemp.modified = 2;
-   }
+  ppl_UserSpace_GetVarPointer(dummy, &DummyVar, &DummyTemp);
+  memcpy(DummyVar, point, sizeof(value)); // Get units of DummyVar right
   commlink.dummy     = DummyVar;
   commlink.DummyReal = DummyVar->real;
   commlink.DummyImag = DummyVar->imag;
@@ -230,7 +208,7 @@ void Differentiate(char *expr, char *dummy, value *point, value *step, value *ou
      { *errpos = 0; sprintf(errtext, "The Cauchy-Riemann equations are not satisfied at this point in the complex plane. It does not therefore appear possible to perform complex differentiation. In the notation f(x+iy)=u+iv, the offending derivatives were: du/dx=%e, dv/dy=%e, du/dy=%e and dv/dx=%e.", ResultReal, dIdI, dRdI, ResultImag); return; }
    }
 
-  memcpy( DummyVar  , &DummyTemp , sizeof(value)); // Restore old value of the dummy variable we've been using
+  ppl_UserSpace_RestoreVarPointer(&DummyVar, &DummyTemp); // Restore old value of the dummy variable we've been using
 
   if (*errpos < 0)
    {

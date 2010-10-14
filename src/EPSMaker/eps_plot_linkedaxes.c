@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -263,18 +263,7 @@ int eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in)
   else                 VarName = "c";
 
   // Look up variable in user space and get pointer to its value
-  DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
-  if (VarVal!=NULL)
-   {
-    DummyTemp = *VarVal;
-   }
-  else
-   {
-    ppl_units_zero(&DummyTemp);
-    DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
-    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
-    DummyTemp.modified = 2;
-   }
+  ppl_UserSpace_GetVarPointer(VarName, &VarVal, &DummyTemp);
 
   out->AxisLinearInterpolation = (double *)lt_malloc(AXISLINEARINTERPOLATION_NPOINTS * sizeof(double));
   out->AxisValueTurnings       = 0;
@@ -316,7 +305,7 @@ int eps_plot_LinkedAxisLinkUsing(settings_axis *out, settings_axis *in)
    }
 
   // Restore original value of x (or y/z)
-  *VarVal = DummyTemp;
+  ppl_UserSpace_RestoreVarPointer(&VarVal, &DummyTemp);
   out->AxisTurnings[xrn--] = AXISLINEARINTERPOLATION_NPOINTS-1;
   out->AxisValueTurnings = xrn;
   return 0;
@@ -449,18 +438,7 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
   else                     VarName = "c";
 
   // Look up xyz dummy variable in user space and get pointer to its value
-  DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
-  if (VarVal!=NULL)
-   {
-    DummyTemp = *VarVal;
-   }
-  else
-   {
-    ppl_units_zero(&DummyTemp);
-    DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
-    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
-    DummyTemp.modified = 2;
-   }
+  ppl_UserSpace_GetVarPointer(VarName, &VarVal, &DummyTemp);
 
   // Set up commlink structure to use in minimiser
   commlink.expr        = source->linkusing;
@@ -530,7 +508,7 @@ void eps_plot_LinkUsingBackPropagate(EPSComm *x, double val, settings_axis *targ
    }
 
   // Restore original value of x (or y/z)
-  *VarVal = DummyTemp;
+  ppl_UserSpace_RestoreVarPointer(&VarVal, &DummyTemp);
   return;
  }
 

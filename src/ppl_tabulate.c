@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -302,7 +302,7 @@ int directive_tabulate(Dict *command, char *line)
         ContextDataTab = lt_DescendIntoNewContext();
 
         // Read data from file
-        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
+        DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, 0, &ErrCount);
         if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); ppl_glob_close(glob_handle); fclose(output); return 1; }
         status = DataGridDisplay(output, data, NUsingItems, min, max, format);
         if (status) { ppl_glob_close(glob_handle); fclose(output); return 1; }

@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "EPSMaker/eps_plot.h"
+#include "EPSMaker/eps_plot_styles.h"
 
 #include "ListTools/lt_dict.h"
 #include "ListTools/lt_memory.h"
@@ -1155,6 +1158,7 @@ int directive_piechart(Dict *command, int interactive)
   ptr->plotitems=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc));
   if (ptr->plotitems == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; }
   memset((void *)(ptr->plotitems), 0, sizeof(canvas_plotdesc));
+  ptr->plotitems->PersistentDataTable=NULL;
 
   // Store either filename of datafile, or the list of functions which we are plotting
   DictLookup(command, "filename", NULL, (void **)&tempstr);
@@ -1277,6 +1281,28 @@ FinishedUsing:
 
   // Read in style information from with clause
   with_words_fromdict(command, &ptr->plotitems->ww, 1);
+
+  // If plotting data from pipe, read and store it now
+  if ((ptr->plotitems->filename!=NULL) && ((strcmp(ptr->plotitems->filename,"-")==0) || (strcmp(ptr->plotitems->filename,"--")==0)))
+   {
+    canvas_plotdesc *pd = ptr->plotitems;
+    int              j, status=0, ErrCount, NExpect;
+    List            *UsingList, *EveryList;
+    Dict            *tempdict;
+    unsigned char    AutoUsingList=0;
+    char            *errbuff;
+
+    UsingList   = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+    EveryList   = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+    ErrCount    = DATAFILE_NERRS;
+    NExpect     = 1;
+
+    errbuff = (char *)lt_malloc(LSTR_LENGTH);
+    if (errbuff==NULL) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Piechart has been removed from multiplot, because it generated an error."); return 1; }
+
+    if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, &AutoUsingList, UsingList)) { canvas_delete(id); ppl_error(ERR_GENERAL, -1, -1, "Piechart has been removed from multiplot, because it generated an error."); return 1; } // Add extra using items for, e.g. "linewidth $3".
+    DataFile_read(&pd->PersistentDataTable, &status, errbuff, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, 1, &ErrCount);
+   }
 
   // Redisplay the canvas as required
   if (settings_term_current.display == SW_ONOFF_ON)
@@ -1613,6 +1639,7 @@ int directive_plot(Dict *command, int interactive, int replot)
 
       // Malloc a structure to hold this plot item
       if (*PlotItemPtr == NULL) { *PlotItemPtr=(canvas_plotdesc *)malloc(sizeof(canvas_plotdesc)); if (*PlotItemPtr == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } memset((void *)(*PlotItemPtr), 0, sizeof(canvas_plotdesc)); }
+      (*PlotItemPtr)->PersistentDataTable = NULL;
 
       // Enter details of datafile filename or functions into plotdesc structure
       if (PlottingDatafiles) // We are plotting a datafile
@@ -1765,6 +1792,38 @@ FinishedUsing:
 
       // Read in style information from with clause
       with_words_fromdict(TempDict, &(*PlotItemPtr)->ww, 1);
+
+      // If plotting data from pipe, read and store it now
+      if (((*PlotItemPtr)->filename!=NULL) && ((strcmp((*PlotItemPtr)->filename,"-")==0) || (strcmp((*PlotItemPtr)->filename,"--")==0)))
+       {
+        canvas_plotdesc *pd = (*PlotItemPtr);
+        int              j, status=0, ErrCount, NExpect, linespoints;
+        List            *UsingList, *EveryList;
+        Dict            *tempdict;
+        unsigned char    AutoUsingList=0;
+        char            *errbuff;
+
+        UsingList   = ListInit(); for (j=0; j<pd->NUsing  ; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "using_item", (void *)pd->UsingList[j], 0, 0, DATATYPE_VOID); ListAppendPtr(UsingList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+        EveryList   = ListInit(); for (j=0; j<pd->EverySet; j++) { tempdict = DictInit(HASHSIZE_SMALL); DictAppendPtr(tempdict, "every_item", (void *)(pd->EveryList+j), 0, 0, DATATYPE_VOID); ListAppendPtr(EveryList, (void *)tempdict, 0, 0, DATATYPE_VOID); }
+        ErrCount    = DATAFILE_NERRS;
+        linespoints = pd->ww.USElinespoints ? pd->ww.linespoints : (ptr->settings.DataStyle.USElinespoints ? ptr->settings.DataStyle.linespoints : SW_STYLE_POINTS);
+        NExpect     = eps_plot_styles_NDataColumns(linespoints, ptr->ThreeDim);
+
+        pd->ww.linespoints    = linespoints; // Fix plot style, so that number of expected columns doesn't later change with DataStyle
+        pd->ww.USElinespoints = 1;
+
+        if (linespoints==SW_STYLE_COLOURMAP)
+         {
+          int ll = ListLen(UsingList);
+          if ((ll>=3)&&(ll<=6)) NExpect=ll; // Colour maps can take 3,4,5 or 6 columns of data
+         }
+
+        errbuff = (char *)lt_malloc(LSTR_LENGTH);
+        if (errbuff==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
+
+        if (eps_plot_AddUsingItemsForWithWords(&pd->ww, &NExpect, &AutoUsingList, UsingList)) { free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; } // Add extra using items for, e.g. "linewidth $3".
+        DataFile_read(&pd->PersistentDataTable, &status, errbuff, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, 1, &ErrCount);
+       }
 
       PlotItemPtr=&(*PlotItemPtr)->next; // Next plot item...
       if (!PlottingDatafiles) break; // Only loop once when plotting functions, as there's no globbing to do

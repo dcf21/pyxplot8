@@ -3,8 +3,8 @@
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
 #
-# Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2008-2010 Ross Church
+# Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+#               2008-2011 Ross Church
 #
 # $Id$
 #
@@ -35,14 +35,13 @@ piechart '--' using $1 label key "%s"%($2)
 0.74 Dark~Energy
 END
 
-# Produce second version of figure
+# Call common cleanup script
 set term pdf
 set output "examples/eps/%s.pdf"%(title)
 refresh
-0.22 Dark~Matter
-0.04 Baryonic~Matter
-0.74 Dark~Energy
-END
+
+
+# Produce second version of figure
 title = "ex_piechart2" ; load "examples/fig_init.ppl"
 set width 6
 
@@ -56,8 +55,4 @@ END
 set term pdf
 set output "examples/eps/%s.pdf"%(title)
 refresh
-0.22 Dark~Matter
-0.04 Baryonic~Matter
-0.74 Dark~Energy
-END
 

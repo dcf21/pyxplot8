@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -281,18 +281,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
   for (i=0; i<4; i++)
    {
     char v[3]={'c','1'+i,'\0'};
-    DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar[i]);
-    if (CVar[i]!=NULL)
-     {
-      CDummy[i] = *CVar[i];
-     }
-    else // If variable is not defined, create it now
-     {
-      ppl_units_zero(&CDummy[i]);
-      DictAppendValue(_ppl_UserSpace_Vars, v, CDummy[i]);
-      DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar[i]);
-      CDummy[i].modified = 2;
-     }
+    ppl_UserSpace_GetVarPointer(v, CVar+i, CDummy+i);
     if ((i<NcolsData-2)&&(sg->Crenorm[i]==SW_BOOL_FALSE)) { *CVar[i] = data->FirstEntries[i+2]; CVar[i]->FlagComplex=0; CVar[i]->imag=0.0; }
     else ppl_units_zero(CVar[i]); // c1...c4 are dimensionless numbers in range 0-1, regardless of units of input data
    }
@@ -339,7 +328,7 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
     if ((!CMinSet[c])||(!CMaxSet[c]))
      {
       sprintf(temp_err_string, "No data supplied to determine range for variable c%d", c+1);
-      for (i=0; i<4; i++) *CVar[i] = CDummy[i];
+      for (i=0; i<4; i++) ppl_UserSpace_RestoreVarPointer(CVar+i, CDummy+i);
       return 0;
      }
 
@@ -450,7 +439,7 @@ write_rgb: \
     }
 
   // Restore variables c1...c4 in the user's variable space
-  for (i=0; i<4; i++) *CVar[i] = CDummy[i];
+  for (i=0; i<4; i++) ppl_UserSpace_RestoreVarPointer(CVar+i, CDummy+i);
 
 #define COMPRESS_POSTSCRIPT_IMAGE \
   /* Consider converting RGB data into a paletted image */ \
@@ -627,18 +616,7 @@ int  eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
       CLog = (sg->Clog[0]==SW_BOOL_TRUE);
 
       // Get pointer to variable c1 in the user's variable space
-      DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar);
-      if (CVar!=NULL)
-       {
-        CDummy = *CVar;
-       }
-      else // If variable is not defined, create it now
-       {
-        ppl_units_zero(&CDummy);
-        DictAppendValue(_ppl_UserSpace_Vars, v, CDummy);
-        DictLookup(_ppl_UserSpace_Vars, v, NULL, (void **)&CVar);
-        CDummy.modified = 2;
-       }
+      ppl_UserSpace_GetVarPointer(v, &CVar, &CDummy);
       if (sg->Crenorm[0]==SW_BOOL_FALSE) { *CVar = data->FirstEntries[2]; CVar->FlagComplex=0; CVar->imag=0.0; }
       else ppl_units_zero(CVar); // c1...c4 are dimensionless numbers in range 0-1, regardless of units of input data
 
@@ -666,7 +644,7 @@ int  eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
 
 POST_BITMAP:
       // Restore variable c1 in the user's variable space
-      if (CVar!=NULL) *CVar = CDummy;
+      if (CVar!=NULL) ppl_UserSpace_RestoreVarPointer(&CVar, &CDummy);
 
       // Paint inner-facing scale
       theta = ((sg->ColKeyPos==SW_COLKEYPOS_T)||(sg->ColKeyPos==SW_COLKEYPOS_B))?M_PI:(M_PI/2);

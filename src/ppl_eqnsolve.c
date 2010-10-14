@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -280,8 +280,6 @@ void MinOrMax(Dict *command, double sign)
   value        *DummyVar, DummyTemp;
   int           i, errpos=-1;
 
-  ppl_units_zero(&DummyTemp);
-  DummyTemp.real    = 1.0; // Default starting point is 1.0
   commlink.Nfitvars = 0;
   commlink.Nexprs   = 1;
 
@@ -290,21 +288,9 @@ void MinOrMax(Dict *command, double sign)
   while (ListIter != NULL)
    {
     DictLookup(ListIter->data, "fit_variable", NULL, (void *)&VarName);
-    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
-
-    if (DummyVar!=NULL)
-     {
-      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
-      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
-      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
-     }
-    else
-     {
-      DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
-      DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
-      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
-      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
-     }
+    ppl_UserSpace_GetVarPointer(VarName, &DummyVar, &DummyTemp);
+    commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
+    commlink.fitvarname[ commlink.Nfitvars ] = VarName;
 
     commlink.Nfitvars += 1;
     ListIter = ListIterate(ListIter, NULL);
@@ -346,8 +332,6 @@ void directive_solve(Dict *command)
   value        *DummyVar, DummyTemp;
   int           i, errpos=-1;
 
-  ppl_units_zero(&DummyTemp);
-  DummyTemp.real    = 1.0; // Default starting point is 1.0
   commlink.Nfitvars = 0;
   commlink.Nexprs   = 0;
 
@@ -357,21 +341,9 @@ void directive_solve(Dict *command)
   while (ListIter != NULL)
    {
     DictLookup(ListIter->data, "fit_variable", NULL, (void *)&VarName); // Look up each fitting variable in the user's variable space
-    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
-
-    if (DummyVar!=NULL)
-     {
-      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
-      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
-      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
-     }
-    else // If variable is not defined, create it now
-     {
-      DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
-      DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&DummyVar);
-      commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
-      commlink.fitvarname[ commlink.Nfitvars ] = VarName;
-     }
+    ppl_UserSpace_GetVarPointer(VarName, &DummyVar, &DummyTemp);
+    commlink.fitvar    [ commlink.Nfitvars ] = DummyVar;
+    commlink.fitvarname[ commlink.Nfitvars ] = VarName;
 
     commlink.Nfitvars += 1;
     ListIter = ListIterate(ListIter, NULL);

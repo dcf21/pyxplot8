@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-%               2008-2010 Ross Church
+% Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+%               2008-2011 Ross Church
 %
 % $Id$
 %
@@ -2397,12 +2397,14 @@ default base is~10.
 
 In addition to acting upon any combination of $x$-, $y$- and $z$-axes, the {\tt
 set logscale} command may also be requested to set the {\tt c1}, {\tt c2}, {\tt
-c3}, {\tt c4} and/or {\tt t} axes to scale logarithmically. The first four
-of these options affect whether the colours on colour maps scale linearly or
-logarithmically with input ordinate values; see the {\tt set c<n>range} command
-for more details. The last of these options specifies whether parametric
-functions are sampled linearly or logarithmically in the variable {\tt t}; see
-the {\tt set trange} command for more details.
+c3}, {\tt c4}, {\tt t}, {\tt u} and/or {\tt v} axes to scale logarithmically.
+The first four of these options affect whether the colours on colour maps scale
+linearly or logarithmically with input ordinate values; see the {\tt set
+c<n>range} command for more details. The final three of these options specifies
+whether parametric functions are sampled linearly or logarithmically in the
+variables {\tt t} (one-dimensional), or {\tt u} and {\tt v} (two-dimensional);
+see the {\tt set trange}, {\tt set urange} and {\tt set vrange} commands for
+more details.
 
 
 \subsection{multiplot}\indcmd{set multiplot}
@@ -3311,7 +3313,7 @@ set notitle
 \subsection{trange}\indcmd{set trange}
 
 \begin{verbatim}
-set trange <range>
+set trange [<range>] [reverse]
 \end{verbatim}
 
 The {\tt set trange} command changes the range of the free parameter {\tt t}
@@ -3319,7 +3321,6 @@ used when generating parametric plots.  For more details of the syntax of the
 range specifier, see the {\tt set xrange} command. Note that {\tt t} is not
 allowed to autoscale, and so the {\tt *} character is not permitted in the
 specified range.
-
 
 \subsection{unit}\indcmd{set unit}
 
@@ -3393,6 +3394,23 @@ set unit display noprefix
 \end{verbatim}
 
 
+\subsection{urange}\indcmd{set urange}
+
+\begin{verbatim}
+set urange [<range>] [reverse]
+\end{verbatim}
+
+The {\tt set urange} command changes the range of the free parameter {\tt u}
+used when generating parametric plots sampled over grids of ({\tt u},{\tt v})
+values.  For more details of the syntax of the range specifier, see the {\tt
+set xrange} command. Note that {\tt u} is not allowed to autoscale, and so the
+{\tt *} character is not permitted in the specified range.
+
+Specifying the {\tt set urange} command by itself specified that parametric
+plots should be sampled over two-dimensional grids of ({\tt u},{\tt v}) values,
+rather than one-dimensional ranges of {\tt t} values.
+
+
 \subsection{view}\indcmd{set view}
 
 \begin{verbatim}
@@ -3441,6 +3459,15 @@ of the application to be used, as in the example
 \begin{verbatim}
 set viewer gv --grayscale
 \end{verbatim}
+
+
+\subsection{vrange}\indcmd{set vrange}
+
+\begin{verbatim}
+set vrange [<range>] [reverse]
+\end{verbatim}
+
+See the {\tt set urange} command.
 
 
 \subsection{width}\indcmd{set width}

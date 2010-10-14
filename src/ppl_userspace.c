@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -85,6 +85,38 @@ void ppl_UserSpace_SetVarNumeric(char *name, value *inval, int modified)
 void ppl_UserSpace_UnsetVar(char *name)
  {
   DictRemoveKey(_ppl_UserSpace_Vars , name);
+  return;
+ }
+
+// ppl_UserSpace_GetVarPointer(): Called to get a pointer to a variable's value
+void ppl_UserSpace_GetVarPointer(char *name, value **output, value *temp)
+ {
+  DictLookup(_ppl_UserSpace_Vars, name, NULL, (void **)output);
+  if (*output!=NULL)
+   {
+    *temp = **output;
+    if ((*output)->modified==2)
+     {
+      ppl_units_zero(*output); (*output)->real=1.0;
+     }
+   }
+  else // If variable is not defined, create it now
+   {
+    ppl_units_zero(temp);
+    temp->real = 1.0;
+    DictAppendValue(_ppl_UserSpace_Vars, name, *temp);
+    DictLookup(_ppl_UserSpace_Vars, name, NULL, (void **)output);
+    temp->modified = 2;
+   }
+  if (((*output)->string != NULL) || (((*output)->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite((*output)->real)) || (!gsl_finite((*output)->imag))) { ppl_units_zero(*output); (*output)->real=1.0; } // Turn string variables into floats
+  return;
+ }
+
+// ppl_UserSpace_RestoreVarPointer(); Called to restore a variable to its original value
+void ppl_UserSpace_RestoreVarPointer(value **output, value *temp)
+ {
+  if ((output==NULL)||(temp==NULL)) return;
+  **output = *temp;
   return;
  }
 

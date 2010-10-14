@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -384,10 +384,10 @@ void ReadConfigFile(char *ConfigFname)
         if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                          settings_graph_default.Tlog            = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TRange_Log."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "TRANGE_MIN"   )==0)
-        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.Tmin.real       = fl;
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))             { settings_graph_default.Tmin.real       = fl; settings_graph_default.USE_T_or_uv = 1; }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TRange_Min."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "TRANGE_MAX"   )==0)
-        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.Tmax.real       = fl;
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))             { settings_graph_default.Tmax.real       = fl; settings_graph_default.USE_T_or_uv = 1; }
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting TRange_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "UNITABBREV"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_ONOFF_INT, SW_ONOFF_STR ))>0)                      settings_term_default .UnitDisplayAbbrev= i;
@@ -401,6 +401,24 @@ void ReadConfigFile(char *ConfigFname)
       else if (strcmp(setkey, "UNITSCHEME"   )==0)
         if ((i=FetchSettingByName(setvalue,SW_UNITSCH_INT,SW_UNITSCH_STR))>0)                    settings_term_default.UnitScheme = i;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting UnitScheme."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "URANGE_LOG"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                          settings_graph_default.Ulog            = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting URange_Log."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "URANGE_MIN"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))             { settings_graph_default.Umin.real       = fl; settings_graph_default.USE_T_or_uv = 0; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting URange_Min."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "URANGE_MAX"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))             { settings_graph_default.Umax.real       = fl; settings_graph_default.USE_T_or_uv = 0; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting URange_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "VRANGE_LOG"   )==0)
+        if ((i=FetchSettingByName(setvalue,SW_BOOL_INT,SW_BOOL_STR))>0)                          settings_graph_default.Vlog            = i;
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting VRange_Log."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "VRANGE_MIN"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))             { settings_graph_default.Vmin.real       = fl; settings_graph_default.USE_T_or_uv = 0; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting VRange_Min."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
+      else if (strcmp(setkey, "VRANGE_MAX"   )==0)
+        if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))             { settings_graph_default.Vmax.real       = fl; settings_graph_default.USE_T_or_uv = 0; }
+        else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting VRange_Max."   , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }
       else if (strcmp(setkey, "WIDTH"        )==0)
         if  (fl=GetFloat(setvalue, &i), ((gsl_finite(fl))&&(i==strlen(setvalue))))               settings_graph_default.width.real      = fl/100;
         else {sprintf(temp_err_string, "Error in line %d of configuration file %s: Illegal value for setting Width."        , linecounter, ConfigFname); ppl_warning(ERR_PREFORMED, temp_err_string); continue; }

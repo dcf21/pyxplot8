@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -426,18 +426,7 @@ int  eps_plot_contourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, in
    }
 
   // Get pointer to variable c1 in the user's variable space
-  DictLookup(_ppl_UserSpace_Vars, c1name, NULL, (void **)&CVar);
-  if (CVar!=NULL)
-   {
-    CDummy = *CVar;
-   }
-  else // If variable is not defined, create it now
-   {
-    ppl_units_zero(&CDummy);
-    DictAppendValue(_ppl_UserSpace_Vars, c1name, CDummy);
-    DictLookup(_ppl_UserSpace_Vars, c1name, NULL, (void **)&CVar);
-    CDummy.modified = 2;
-   }
+  ppl_UserSpace_GetVarPointer(c1name, &CVar, &CDummy);
   if (!CRenorm) { *CVar = pd->CRangeUnit; CVar->FlagComplex=0; CVar->imag=0.0; }
   else ppl_units_zero(CVar); // c1 is a dimensionless number in range 0-1, regardless of units of input data
 
@@ -833,7 +822,7 @@ GOT_CONTOURS:
    }
 
   // Reset value of variable c1
-  if (CVar!=NULL) *CVar = CDummy;
+  if (CVar!=NULL) ppl_UserSpace_RestoreVarPointer(&CVar, &CDummy);
 
   return 0;
  }

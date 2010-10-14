@@ -3,8 +3,8 @@
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
 #
-# Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-#               2008-2010 Ross Church
+# Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+#               2008-2011 Ross Church
 #
 # $Id$
 #
@@ -30,7 +30,12 @@ load "examples/fig_init.ppl"
 set nokey
 set size 8 square
 set samples grid 200x200 interpolate InverseSquare
-plot [-4:4][-4:4] 'examples/ex_quadrupole.dat' with colourmap
+plot [-4:4][-4:4] '--' with colourmap
+-1 -1  1
+-1  1 -1
+ 1 -1 -1
+ 1  1  1
+END
 
 # Call common cleanup script
 load "examples/fig_end.ppl"

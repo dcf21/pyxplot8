@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -482,10 +482,6 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
 
   if (DEBUG) ppl_log("Beginning to read data in for 'foreach datum' command");
 
-  // Initialise DummyTemp
-  ppl_units_zero(&DummyTemp);
-  DummyTemp.real    = 1.0;
-
   DictLookup(command, "variables," , NULL, (void **)&VarList);
   i = ListLen(VarList);
   if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The 'foreach ... in datafile' construct must be supplied a list of between %d and %d variables to read.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); *status=1; return; }
@@ -496,18 +492,8 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
     DictLookup(TempDict,"variable",NULL,(void **)(ReadVars+j)); // Read variable name into ReadVars[j]
 
     // Look up variable in user space and get pointer to its value
-    DictLookup(_ppl_UserSpace_Vars, ReadVars[j], NULL, (void **)&DummyVar);
-    if (DummyVar!=NULL)
-     {
-      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
-      outval[j] = DummyVar;
-     }
-    else
-     {
-      DictAppendValue(_ppl_UserSpace_Vars, ReadVars[j], DummyTemp);
-      DictLookup(_ppl_UserSpace_Vars, ReadVars[j], NULL, (void **)&DummyVar);
-      outval[j] = DummyVar;
-     }
+    ppl_UserSpace_GetVarPointer(ReadVars[j], &DummyVar, &DummyTemp);
+    outval[j] = DummyVar;
     ListIter = ListIterate(ListIter, NULL);
    }
 
@@ -533,7 +519,7 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
    if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the 'foreach ... in datafile' construct. %d ranges were supplied, even though only %ld variables are being read.", ListLen(RangeList), i); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); *status=1; return; }
 
   ContextDataTab = lt_DescendIntoNewContext();
-  DataFile_read(&data, status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, i, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, &ErrCount);
+  DataFile_read(&data, status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, i, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, 0, &ErrCount);
   if (*status) { ppl_error(ERR_GENERAL, -1, -1, errtext); *status=1; return; }
 
   // Check that the FirstEntries above have the same units as any supplied ranges
@@ -791,18 +777,8 @@ int SubroutineCall(char *name, List *ArgList, char *errtext, int IterLevel)
       TempValue.string = cptr;
      }
 
-    DictLookup(_ppl_UserSpace_Vars, sd->ArgList+j, NULL, (void **)&VarData);
-    if (VarData!=NULL)
-     {
-      memcpy(ValueBuffer+k, VarData, sizeof(value));
-      memcpy(VarData, InputValue, sizeof(value));
-     }
-    else
-     {
-      ppl_units_zero(ValueBuffer+k);
-      ValueBuffer[k].modified=2;
-      DictAppendValue(_ppl_UserSpace_Vars, sd->ArgList+j, *InputValue);
-     }
+    ppl_UserSpace_GetVarPointer(sd->ArgList+j, &VarData, ValueBuffer+k);
+    memcpy(VarData, InputValue, sizeof(value));
     j += strlen(sd->ArgList+j)+1;
     ListIter = ListIterate(ListIter, NULL);
    }

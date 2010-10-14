@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -88,7 +88,7 @@ save@2:directive = < %q:filename | %S:filename >\n\
 set@2:directive { item@1 %d:editno } %a:axis format@1:set_option:xformat = < auto@1:auto_format | %Q:format_string > { < horizontal@1:orient | vertical@1:orient | rotate@1:orient %fu:rotation > }\n\
 set@2:directive { item@1 %d:editno } %a:axis label@1:set_option:xlabel = < %q:label_text | %s:label_text > { rotate@1 %fu:rotation }\n\
 set@2:directive { item@1 %d:editno } %a:axis range@1:set_option = < reversed@1:reverse | noreversed@3:noreverse | \\[@n { { < %fu:min | \\*@n:minauto > } < :@n | to@n > { < %fu:max | \\*@n:maxauto > } } \\]@n { < reversed@1:reverse | noreversed@3:noreverse > } >\n\
-set@2:directive { item@1 %d:editno } { m@n:minor } { %a:axis } tics@1:set_option = { < axis@2:dir:inwards | border@3:dir:outwards | inwards@2:dir | outwards@3:dir | both@3:dir > } { < autofreq@3:autofreq | %fu:start { ,@n %fu:increment { ,@n %fu:end } } | \\(@n [ { %q:label } %fu:x ]:@tick_list, \\)@n > }\n\
+set@2:directive { item@1 %d:editno } { m@n:minor } { %a:axis } < tics@1:set_option | ticks@1:set_option:tics > = { < axis@2:dir:inwards | border@3:dir:outwards | inwards@2:dir | outwards@3:dir | both@3:dir > } { < autofreq@3:autofreq | %fu:start { ,@n %fu:increment { ,@n %fu:end } } | \\(@n [ { %q:label } %fu:x ]:@tick_list, \\)@n > }\n\
 set@2:directive { item@1 %d:editno } arrow@1:set_option = %d:arrow_id { from@1 } { < first@1:x0_system | second@1:x0_system | page@2:x0_system | graph@1:x0_system | axis@n:x0_system %d:x0_axis > } %fu:x0 ,@n { < first@1:y0_system | second@1:y0_system | page@2:y0_system | graph@1:y0_system | axis@n:y0_system %d:y0_axis > } %fu:y0 { ,@n { < first@1:z0_system | second@1:z0_system | page@2:z0_system | graph@1:z0_system | axis@n:z0_system %d:z0_axis > } %fu:z0 } to@1 { < first@1:x1_system | second@1:x1_system | page@2:x1_system | graph@1:x1_system | axis@n:x1_system %d:x1_axis > } %fu:x1 ,@n { < first@1:y1_system | second@1:y1_system | page@2:y1_system | graph@1:y1_system | axis@n:y1_system %d:y1_axis > } %fu:y1 { ,@n { < first@1:z1_system | second@1:z1_system | page@2:z1_system | graph@1:z1_system | axis@n:z1_system %d:z1_axis > } %fu:z1 } { with@1 ( < linetype@5 | lt@2 > %d:linetype ~ < linewidth@5 | lw@2 > %f:linewidth ~ style@2 %d:style_number ~ < colour@1 | color@1 > < rgb@n %fi:colourR \\:@n %fi:colourG \\:@n %fi:colourB | hsb@n %fi:colourH \\:@n %fi:colourS \\:@n %fi:colourB | cmyk@n %fi:colourC \\:@n %fi:colourM \\:@n %fi:colourY \\:@n %fi:colourK | %e:colour > ~ < nohead@2:arrow_style | head@2:arrow_style | twohead@2:arrow_style:twoway | twoway@2:arrow_style > ) }\n\
 set@2:directive { item@1 %d:editno } autoscale@2:set_option = { [ %a:axis ]:axes }\n\
 set@2:directive { item@1 %d:editno } < axescolour@5:set_option | axescolor@5:set_option:axescolour > = < rgb@n %fi:colourR \\:@n %fi:colourG \\:@n %fi:colourB | hsb@n %fi:colourH \\:@n %fi:colourS \\:@n %fi:colourB | cmyk@n %fi:colourC \\:@n %fi:colourM \\:@n %fi:colourY \\:@n %fi:colourK | %e:colour >\n\
@@ -119,7 +119,7 @@ set@2:directive { item@1 %d:editno } key@1:set_option = < below@2:pos | above@2:
 set@2:directive { item@1 %d:editno } keycolumns@4:set_option = < %d:key_columns | auto@1:auto_columns > \n\
 set@2:directive { item@1 %d:editno } label@2:set_option = %d:label_id < %q:label_text | %s:label_text > { at@1 } { < first@1:x_system | second@1:x_system | page@2:x_system | graph@1:x_system | axis@n:x_system %d:x_axis > } %fu:x ,@n { < first@1:y_system | second@1:y_system | page@2:y_system | graph@1:y_system | axis@n:y_system %d:y_axis > } %fu:y { ,@n { < first@1:z_system | second@1:z_system | page@2:z_system | graph@1:z_system | axis@n:z_system %d:z_axis > } %fu:z } ( rotate@1 %fu:rotation ~ gap@1 %fu:gap ~ halign@2 < left@1:halign | centre@1:halign | center@1:halign:centre | right@1:halign > ~ valign@2 < top@1:valign | centre@1:valign | center@1:valign:centre | bottom@1:valign > ~ with@1 < colour@1 | color@1 > < rgb@n %fi:colourR \\:@n %fi:colourG \\:@n %fi:colourB | hsb@n %fi:colourH \\:@n %fi:colourS \\:@n %fi:colourB | cmyk@n %fi:colourC \\:@n %fi:colourM \\:@n %fi:colourY \\:@n %fi:colourK | %e:colour > )\n\
 set@2:directive { item@1 %d:editno } < linewidth@5:set_option | lw@2:set_option:linewidth > = %f:linewidth\n\
-set@2:directive { item@1 %d:editno } logscale@1:set_option = { [ < %a:axis | t@n:tlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes } { %d:base }\n\
+set@2:directive { item@1 %d:editno } logscale@1:set_option = { [ < %a:axis | t@n:tlog | u@n:ulog | v@n:vlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes } { %d:base }\n\
 set@2:directive                      multiplot@1:set_option =\n\
 set@2:directive { item@1 %d:editno } noarrow@3:set_option = [ %d:arrow_id ]:@arrow_list,\n\
 set@2:directive:unset { item@1 %d:editno } noaxis@3:set_option:axis = [ %a:axis ]:axes\n\
@@ -131,9 +131,9 @@ set@2:directive { item@1 %d:editno } nogrid@3:set_option = [ %a:axis ]:@axes\n\
 set@2:directive { item@1 %d:editno } nokey@3:set_option =\n\
 set@2:directive { item@1 %d:editno } nolabel@4:set_option = [ %d:label_id ]:@label_list,\n\
 set@2:directive:unset { item@1 %d:editno } nostyle@3:set_option:style [ %d:id ]:style_ids, =\n\
-set@2:directive { item@1 %d:editno } < nologscale@3:set_option | linearscale@3:set_option:nologscale > = { [ < %a:axis | t@n:tlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes }\n\
+set@2:directive { item@1 %d:editno } < nologscale@3:set_option | linearscale@3:set_option:nologscale > = { [ < %a:axis | t@n:tlog | u@n:ulog | v@n:vlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes }\n\
 set@2:directive                      nomultiplot@3:set_option =\n\
-set@2:directive { item@1 %d:editno } no@n { m@n:minor } { %a:axis } tics:set_option:notics =\n\
+set@2:directive { item@1 %d:editno } no@n { m@n:minor } { %a:axis } < tics@1:set_option:notics | ticks@1:set_option:notics > =\n\
 set@2:directive { item@1 %d:editno } noc1format@1:set_option =\n\
 set@2:directive { item@1 %d:editno } notitle@3:set_option =\n\
 set@2:directive { item@1 %d:editno } no@n %a:axis format@1:set_option:noxformat =\n\
@@ -154,10 +154,12 @@ set@2:directive { item@1 %d:editno } < textcolour@5:set_option | textcolor@5:set
 set@2:directive { item@1 %d:editno } texthalign@5:set_option = < left@1:left | centre@1:centre | center@1:centre | right@1:right >\n\
 set@2:directive { item@1 %d:editno } textvalign@5:set_option = < top@1:top | centre@1:centre | center@1:centre | bottom@1:bottom >\n\
 set@2:directive { item@1 %d:editno } title@2:set_option = < %q:title | %s:title > { %fu:x_offset ,@n %fu:y_offset }\n\
-set@2:directive { item@1 %d:editno } trange@2:set_option = < reverse@1:reverse | \\[@n { %fu:min } < :@n | to@n > { %fu:max } \\]@n { reverse@1:reverse } >\n\
+set@2:directive { item@1 %d:editno } trange@2:set_option = { \\[@n:range { %fu:min } < :@n | to@n > { %fu:max } \\]@n } { reverse@1:reverse }\n\
 set@2:directive                      unit@1:set_option = ( angle@1 < dimensionless@1:angle:On | nodimensionless@1:angle:Off > ~ display@1 ( < abbreviated@1:abbrev:On | noabbreviated@3:abbrev:Off | full@1:abbrev:Off | nofull@3:abbrev:On > ~ < prefix@1:prefix:On | noprefix@3:prefix:Off > ) ~ scheme@1 < si@2:scheme:SI | cgs@1:scheme:CGS | ancient@1:scheme:ANCIENT | imperial@1:scheme:IMPERIAL | uscustomary@1:scheme:USCustomary | planck@1:scheme:PLANCK | natural@1:scheme:PLANCK > ~ [ of@1 %s:quantity %v:unit ]:preferred_units, ~ preferred@5 %e:preferred_unit ~ nopreferred@7 %e:unpreferred_unit )\n\
+set@2:directive { item@1 %d:editno } urange@2:set_option = { \\[@n:range { %fu:min } < :@n | to@n > { %fu:max } \\]@n } { reverse@1:reverse }\n\
 set@2:directive { item@1 %d:editno } view@1:set_option = %fu:xy_angle { ,@n } %fu:yz_angle\n\
 set@2:directive                      viewer@5:set_option = < auto@4:auto_viewer | %r:viewer >\n\
+set@2:directive { item@1 %d:editno } vrange@2:set_option = { \\[@n:range { %fu:min } < :@n | to@n > { %fu:max } \\]@n } { reverse@1:reverse }\n\
 set@2:directive { item@1 %d:editno } width@1:set_option:size = %fu:width\n\
 set@2:directive:set_error = { item@1 %d:editno } { %s:set_option } %r:restofline\n\
 show@2:directive = { item@1 %d:editno } [ %S:setting ]:@setting_list\n\
@@ -171,7 +173,7 @@ undelete@3:directive = { item@1 } [ %d:number ]:undeleteno,\n\
 unset@3:directive { item@1 %d:editno } { no@n } %a:axis format@1:set_option:xformat =\n\
 unset@3:directive { item@1 %d:editno } %a:axis label@1:set_option:xlabel =\n\
 unset@3:directive { item@1 %d:editno } %a:axis range@1:set_option =\n\
-unset@3:directive { item@1 %d:editno } { no@n } { m@n:minor } { %a:axis } tics@1:set_option =\n\
+unset@3:directive { item@1 %d:editno } { no@n } { m@n:minor } { %a:axis } < tics@1:set_option | ticks@1:set_option:tics > =\n\
 unset@3:directive { item@1 %d:editno } arrow@2:set_option = [ %d:arrow_id ]:@arrow_list,\n\
 unset@2:directive { item@1 %d:editno } autoscale@2:set_option = { [ %a:axis ]:axes }\n\
 unset@3:directive { item@1 %d:editno } < axescolour@5:set_option | axescolor@5:set_option:axescolour > =\n\
@@ -204,7 +206,7 @@ unset@3:directive { item@1 %d:editno } style@2:set_option = < [ %d:id ]:style_id
 unset@3:directive { item@1 %d:editno } data@1:dataset_type style@1:set_option =\n\
 unset@3:directive { item@1 %d:editno } function@1:dataset_type style@1:set_option =\n\
 unset@3:directive { item@1 %d:editno } < linewidth@5:set_option | lw@2:set_option:linewidth > =\n\
-unset@3:directive { item@1 %d:editno } logscale@1:set_option = { [ < %a:axis | t@n:tlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes }\n\
+unset@3:directive { item@1 %d:editno } logscale@1:set_option = { [ < %a:axis | t@n:tlog | u@n:ulog | v@n:vlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes }\n\
 unset@3:directive                      multiplot@1:set_option =\n\
 unset@3:directive { item@1 %d:editno } noarrow@3:set_option:arrow = [ %d:arrow_id ]:@arrow_list,\n\
 unset@3:directive { item@1 %d:editno } noaxis@4:set_option:axis = [ %a:axis ]:axes\n\
@@ -217,7 +219,7 @@ unset@3:directive { item@1 %d:editno } nokey@3:set_option:key =\n\
 unset@3:directive { item@1 %d:editno } nolabel@4:set_option:label = [ %d:label_id ]:@label_list,\n\
 unset@3:directive { item@1 %d:editno } nostyle@4:set_option:style [ %d:id ]:style_ids, =\n\
 unset@3:directive { item@1 %d:editno } < nolinewidth@7:set_option:linewidth | nolw@4:set_option:linewidth >\n\
-unset@3:directive { item@1 %d:editno } nologscale@3:set_option:logscale = { [ < %a:axis | t@n:tlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes }\n\
+unset@3:directive { item@1 %d:editno } nologscale@3:set_option:logscale = { [ < %a:axis | t@n:tlog | u@n:ulog | v@n:vlog | c1@n:c1log | c2@n:c2log | c3@n:c3log | c4@n:c4log > ]:axes }\n\
 unset@3:directive { item@1 %d:editno } nomultiplot@3:set_option:multiplot =\n\
 unset@3:directive { item@1 %d:editno } notitle@3:set_option:title =\n\
 unset@3:directive                      numerics@2:set_option = { < sigfig@3:set_option:numerics_sigfig | sf@2:set_option:numerics_sigfig | errors@2:set_option:numerics_errors | complex@1:set_option:numerics_complex | real@1:set_option:numerics_complex | nocomplex@3:set_option:numerics_complex | noreal@3:set_option:numerics_complex | display@1:set_option:numerics_display > }\n\
@@ -239,8 +241,10 @@ unset@3:directive { item@1 %d:editno } textvalign@5:set_option =\n\
 unset@3:directive { item@1 %d:editno } title@2:set_option =\n\
 unset@2:directive { item@1 %d:editno } trange@2:set_option =\n\
 unset@3:directive                      unit@1:set_option = { < display@1:set_option:unit_display | scheme@1:set_option:unit_scheme | of@1:set_option:unit_of %s:quantity | preferred@1:set_option:unit_preferred > }\n\
+unset@2:directive { item@1 %d:editno } urange@2:set_option =\n\
 unset@3:directive { item@1 %d:editno } view@1:set_option =\n\
 unset@3:directive                      viewer@1:set_option =\n\
+unset@2:directive { item@1 %d:editno } vrange@2:set_option =\n\
 unset@3:directive { item@1 %d:editno } width@1:set_option =\n\
 unset@3:directive:unset_error = { item@1 %d:editno } { %s:set_option } %r:restofline\n\
 while@5:directive = %e:criterion { loopname@1 %s:loopname } { \\{@n:brace { %r:command } }\n\

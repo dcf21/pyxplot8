@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -309,7 +309,7 @@ static int FitMinimiseIterate(FitComm *commlink, double(*slave)(const gsl_vector
 // Main entry point for the implementation of the fit command
 int directive_fit(Dict *command)
  {
-  int        status, NArgs, NExpect;
+  int        status=0, NArgs, NExpect;
   char      *cptr, *filename;
   long int   i, j, k, NDataPoints;
   int        ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
@@ -340,11 +340,6 @@ int directive_fit(Dict *command)
   filename = ppl_glob_oneresult(cptr);
   if (filename == NULL) return 1;
 
-  // Default starting point for fitting is 1.0
-  status=0;
-  ppl_units_zero(&DummyTemp);
-  DummyTemp.real    = 1.0;
-
   // Get list of fitting variables
   DictLookup(command, "fit_variables," , NULL, (void **)&VarList);
   i = ListLen(VarList);
@@ -357,18 +352,8 @@ int directive_fit(Dict *command)
     DictLookup(TempDict,"fit_variable",NULL,(void **)(FitVars+j)); // Read variable name into FitVars[j]
 
     // Look up variable in user space and get pointer to its value
-    DictLookup(_ppl_UserSpace_Vars, FitVars[j], NULL, (void **)&DummyVar);
-    if (DummyVar!=NULL)
-     {
-      if ((DummyVar->string != NULL) || ((DummyVar->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(DummyVar->real)) || (!gsl_finite(DummyVar->imag))) { ppl_units_zero(DummyVar); DummyVar->real=1.0; } // Turn string variables into floats
-      outval[j] = DummyVar;
-     }
-    else
-     {
-      DictAppendValue(_ppl_UserSpace_Vars, FitVars[j], DummyTemp);
-      DictLookup(_ppl_UserSpace_Vars, FitVars[j], NULL, (void **)&DummyVar);
-      outval[j] = DummyVar;
-     }
+    ppl_UserSpace_GetVarPointer(FitVars[j], &DummyVar, &DummyTemp);
+    outval[j] = DummyVar;
     ListIter = ListIterate(ListIter, NULL);
    }
 
@@ -412,7 +397,7 @@ int directive_fit(Dict *command)
   ContextDataTab = lt_DescendIntoNewContext();
 
   // Read data from file
-  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NExpect, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, &ErrCount);
+  DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NExpect, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, 0, &ErrCount);
   if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
 
   // Check that the FirstEntries above have the same units as any supplied ranges

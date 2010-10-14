@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -171,7 +171,7 @@ int directive_fft(Dict *command)
     // Read data from file
     status=0;
     errtext = (char *)lt_malloc(LSTR_LENGTH);
-    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, Ndims+2, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, &ErrCount);
+    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, Ndims+2, SelectCrit, DATAFILE_CONTINUOUS, NULL, -1, 0, &ErrCount);
     if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); return 1; }
     if (data->Nrows==0) { ppl_error(ERR_FILE, -1, -1, "No data was read from file"); return 1; }
 

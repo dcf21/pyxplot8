@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -356,19 +356,7 @@ void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit,
   else             VarName = "c";
 
   // Look up variable in user space and get pointer to its value
-  DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
-  if (VarVal!=NULL)
-   {
-    DummyTemp = *VarVal;
-    if ((VarVal->string != NULL) || ((VarVal->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite(VarVal->real)) || (!gsl_finite(VarVal->imag))) { ppl_units_zero(VarVal); VarVal->real=1.0; } // Turn string variables into floats
-   }
-  else
-   {
-    ppl_units_zero(&DummyTemp);
-    DictAppendValue(_ppl_UserSpace_Vars, VarName, DummyTemp);
-    DictLookup(_ppl_UserSpace_Vars, VarName, NULL, (void **)&VarVal);
-    DummyTemp.modified = 2;
-   }
+  ppl_UserSpace_GetVarPointer(VarName, &VarVal, &DummyTemp);
 
   // Set value of x (or y/z)
   *VarVal = *xunit;
@@ -388,7 +376,7 @@ void TickLabelFromFormat(char **output, char *FormatStr, double x, value *xunit,
   sprintf(*output,"%s",tmp_string);
 
   // Restore original value of x (or y/z)
-  *VarVal = DummyTemp;
+  ppl_UserSpace_RestoreVarPointer(&VarVal, &DummyTemp);
   return;
  }
 

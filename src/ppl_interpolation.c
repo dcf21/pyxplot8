@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -161,7 +161,7 @@ RANGES_DONE:
   // Read input data
   if (bmp<0)
    {
-    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NcolRequired, SelectCrit, continuity, NULL, -1, &ErrCount);
+    DataFile_read(&data, &status, errtext, filename, *indexptr, rowcol, UsingList, 0, EveryList, NULL, NcolRequired, SelectCrit, continuity, NULL, -1, 0, &ErrCount);
 
     // Transfer data from multiple data tables into single vectors
     if ((NcolRequired<3)&&(mode!=INTERP_STEPWISE)) xdata = (double *)lt_malloc_incontext(NcolRequired * (data->Nrows+2) * sizeof(double), ContextLocalVec);

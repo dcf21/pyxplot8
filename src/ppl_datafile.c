@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -638,7 +638,7 @@ void DataFile_RotateRawData(RawDataTable **in, DataTable *out, char **UsingItems
 // DataFile_read is the main entry point for reading a table of data from a data file
 // ----------------------------------------------------------------------------------
 
-void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, unsigned char AutoUsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, int *ErrCounter)
+void DataFile_read(DataTable **output, int *status, char *errout, char *filename, int index, int UsingRowCol, List *UsingList, unsigned char AutoUsingList, List *EveryList, char *LabelStr, int Ncolumns, char *SelectCriterion, int continuity, char *SortBy, int SortByContinuity, unsigned char persistent, int *ErrCounter)
  {
   unsigned char HadNonNullUsingItem=0, ReadFromCommandLine=0, discontinuity=0, hadwhitespace, hadcomma, OneColumnInput=1;
   int           UsingLen, logi, logj, ContextOutput, ContextRough, ContextRaw;
@@ -780,7 +780,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
  }
 
   // Keep a record of the memory context we're going to output into, and then make a scratchpad context
-  ContextOutput = lt_GetMemContext();
+  ContextOutput = persistent ? 0 : lt_GetMemContext();
   ContextRough  = lt_DescendIntoNewContext(); // Rough mallocs inside this subroutine happen in this context
   ContextRaw    = lt_DescendIntoNewContext(); // Raw data goes into here when plotting with rows
 
@@ -1130,18 +1130,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
     if (!a) { v="x"; _OrdinateVar=&OrdinateVar ; _DummyTemp=&DummyTemp ; _RasterUnits=&RasterUnits ; }
     else    { v="y"; _OrdinateVar=&OrdinateVar2; _DummyTemp=&DummyTemp2; _RasterUnits=&RasterYUnits; }
 
-    DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":v, NULL, (void **)_OrdinateVar);
-    if (*_OrdinateVar!=NULL)
-     {
-      *_DummyTemp = **_OrdinateVar;
-     }
-    else // If variable is not defined, create it now
-     {
-      ppl_units_zero(_DummyTemp);
-      DictAppendValue(_ppl_UserSpace_Vars, FlagParametric?"t":v, *_DummyTemp);
-      DictLookup(_ppl_UserSpace_Vars, FlagParametric?"t":v, NULL, (void **)_OrdinateVar);
-      (*_DummyTemp).modified = 2;
-     }
+    ppl_UserSpace_GetVarPointer(FlagParametric?"t":v, _OrdinateVar, _DummyTemp);
     **_OrdinateVar = **_RasterUnits;
     (*_OrdinateVar)->imag        = 0.0;
     (*_OrdinateVar)->FlagComplex = 0;
@@ -1188,8 +1177,8 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   }
 
   // Reset the variable x (and maybe y or t) to its old value
-  *OrdinateVar = DummyTemp;
-  if (OrdinateVar2!=NULL) *OrdinateVar2 = DummyTemp2;
+  ppl_UserSpace_RestoreVarPointer(&OrdinateVar, &DummyTemp);
+  if (OrdinateVar2!=NULL) ppl_UserSpace_RestoreVarPointer(&OrdinateVar2, &DummyTemp2);
 
   // If data is to be sorted, sort it now
   if ((!SampleGrid) && (SortBy != NULL))

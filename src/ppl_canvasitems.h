@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -53,6 +53,9 @@ typedef struct canvas_plotdesc {
  char                   *filename, **functions, *label, *SelectCriterion, *title, **UsingList;
  value                   Tmin, Tmax;
  struct canvas_plotdesc *next;
+
+ // used with plot '-' and plot '--' to indicate that data is read only once; otherwise NULL
+ DataTable              *PersistentDataTable;
 
  // Structure members which are used at plot time
  DataTable              *data;

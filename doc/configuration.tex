@@ -3,8 +3,8 @@
 % The documentation in this file is part of PyXPlot
 % <http://www.pyxplot.org.uk>
 %
-% Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-%               2008-2010 Ross Church
+% Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+%               2008-2011 Ross Church
 %
 % $Id$
 %
@@ -229,6 +229,12 @@ TextVAlign = Bottom
 Title =
 Title_XOff = 0.0
 Title_YOff = 0.0
+URange_Log = False
+URange_Max = 1.0
+URange_Min = 0.0
+VRange_Log = False
+VRange_Max = 1.0
+VRange_Min = 0.0
 TRange_Log = False
 TRange_Max = 1.0
 TRange_Min = 0.0
@@ -788,6 +794,42 @@ The {\tt settings} section can contain any of the following settings in any orde
                {\bf Analogous set command:} \indcmdts{set unit}
 
                Sets the scheme of physical units in which quantities are displayed.
+               \\
+{\tt URange\_Log} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set logscale u}
+
+               Sets whether the $u$-axis -- used for parametric plotting -- is linear or logarithmic.
+               \\
+{\tt URange\_Max} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set urange}
+
+               Sets upper limit of the $u$-axis, used for parametric plotting.
+               \\
+{\tt URange\_Min} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set urange}
+
+               Sets lower limit of the $t$-axis, used for parametric plotting.
+               \\
+{\tt VRange\_Log} & {\bf Possible values:} {\tt True}, {\tt False}.
+
+               {\bf Analogous set command:} \indcmdts{set logscale v}
+
+               Sets whether the $v$-axis -- used for parametric plotting -- is linear or logarithmic.
+               \\
+{\tt VRange\_Max} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set vrange}
+
+               Sets upper limit of the $v$-axis, used for parametric plotting.
+               \\
+{\tt VRange\_Min} & {\bf Possible values:} Any floating-point number.
+
+               {\bf Analogous set command:} \indcmdts{set vrange}
+
+               Sets lower limit of the $v$-axis, used for parametric plotting.
                \\
 {\tt Width} & {\bf Possible values:} Any floating-point number.
 

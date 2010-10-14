@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -72,9 +72,9 @@ sprintf(txt_init, "\n\
 |  _ \\ _   _\\ \\/ /  _ \\| | ___ | |_    Version %s\n\
 | |_) | | | |\\  /| |_) | |/ _ \\| __|   %s\n\
 |  __/| |_| |/  \\|  __/| | (_) | |_ \n\
-|_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-2010 Dominic Ford\n\
-       |___/                                         2008-2010 Ross Church\n\
-                                                     2010      Zoltan Voros\n\
+|_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-2011 Dominic Ford\n\
+       |___/                                         2008-2011 Ross Church\n\
+                                                     2010-2011 Zoltan Voros\n\
 \n\
 Send comments, bug reports, feature requests and coffee supplies to:\n\
 <coders@pyxplot.org.uk>\n\
@@ -99,8 +99,8 @@ sprintf(txt_valid_set_options, "\n\
 'output', 'palette', 'papersize', 'pointlinewidth', 'pointsize', 'preamble',\n\
 'samples', 'seed', 'size', 'size noratio', 'size ratio', 'size square',\n\
 'style', 'terminal', 'textcolour', 'texthalign', 'textvalign', 'title',\n\
-'trange', 'unit', 'view', 'viewer', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
-'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'trange', 'unit', 'urange', 'view', 'viewer', 'vrange', 'width',\n\
+'[xyz]<n>format', '[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set_noword, "\n\
@@ -120,8 +120,9 @@ Unset options which PyXPlot recognises are: [] = choose one, <> = optional\n\
 'nolabel', 'nologscale', 'nomultiplot', 'notitle', 'no<m>[xyz]<n>tics',\n\
 'numerics', 'origin', 'output', 'palette', 'papersize', 'pointlinewidth',\n\
 'pointsize', 'preamble', 'samples', 'size', 'style', 'terminal', 'textcolour',\n\
-'texthalign', 'textvalign', 'title', 'trange', 'unit', 'view', 'viewer',\n\
-'width', '[xyz]<n>format', '[xyz]<n>label', '[xyz]<n>range', '<m>[xyz]<n>tics'\n\
+'texthalign', 'textvalign', 'title', 'trange', 'unit', 'urange', 'view',\n\
+'viewer', 'vrange', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 ");
 
 sprintf(txt_set, "\n\
@@ -149,8 +150,8 @@ or any of the following set options:\n\
 'logscale', 'multiplot', 'numerics', 'origin', 'output', 'palette',\n\
 'papersize', 'pointlinewidth', 'pointsize', 'preamble', 'samples', 'seed',\n\
 'size', 'size noratio', 'size ratio', 'size square', 'style', 'terminal',\n\
-'textcolour', 'texthalign', 'textvalign', 'title', 'trange', 'unit', 'view',\n\
-'viewer', 'width', '[xyz]<n>format', '[xyz]<n>label', '[xyz]<n>range',\n\
-'<m>[xyz]<n>tics'\n\
+'textcolour', 'texthalign', 'textvalign', 'title', 'trange', 'unit', 'urange',\n\
+'view', 'viewer', 'vrange', 'width', '[xyz]<n>format', '[xyz]<n>label',\n\
+'[xyz]<n>range', '<m>[xyz]<n>tics'\n\
 "); }
 

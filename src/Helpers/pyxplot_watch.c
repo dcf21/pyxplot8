@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -117,9 +117,9 @@ sprintf(init_string, "\n\
 |  _ \\ _   _\\ \\/ /  _ \\| | ___ | |_    Version %s\n\
 | |_) | | | |\\  /| |_) | |/ _ \\| __|   %s\n\
 |  __/| |_| |/  \\|  __/| | (_) | |_ \n\
-|_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-9 Dominic Ford\n\
-       |___/                                         2008-9 Ross Church\n\
-\n\
+|_|    \\__, /_/\\_\\_|   |_|\\___/ \\__|   Copyright (C) 2006-2011 Dominic Ford\n\
+       |___/                                         2008-2011 Ross Church\n\
+                                                     2010-2011 Zoltan Voros\n\
 \n\
 Send comments, bug reports, feature requests and coffee supplies to:\n\
 <coders@pyxplot.org.uk>\n\
@@ -181,7 +181,7 @@ Send comments, bug reports, feature requests and coffee supplies to:\n\
   // Check that we have some filenames to watch
   if (!HaveFilenames)
    {
-    ppl_error(ERR_PREFORMED, -1, -1, "No filenames were supplied to watch. PyXPlot Watch's commandline syntax is:\n\npyxplot_watch [options] filename_list\n\nAs PyXPlot Watch has no work to do, it is exitting...");
+    ppl_error(ERR_PREFORMED, -1, -1, "No filenames were supplied to watch. PyXPlot Watch's commandline syntax is:\n\npyxplot_watch [options] filename_list\n\nAs PyXPlot Watch has no work to do, it is exiting...");
     exit(1);
    }
 

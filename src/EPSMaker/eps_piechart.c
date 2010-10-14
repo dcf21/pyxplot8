@@ -3,8 +3,8 @@
 // The code in this file is part of PyXPlot
 // <http://www.pyxplot.org.uk>
 //
-// Copyright (C) 2006-2010 Dominic Ford <coders@pyxplot.org.uk>
-//               2008-2010 Ross Church
+// Copyright (C) 2006-2011 Dominic Ford <coders@pyxplot.org.uk>
+//               2008-2011 Ross Church
 //
 // $Id$
 //
@@ -95,7 +95,8 @@ void eps_pie_ReadAccessibleData(EPSComm *x)
   if (pd->function == 0) // Read data from file
    {
     if (DEBUG) { sprintf(temp_err_string, "Reading data from file '%s' for piechart item %d", pd->filename, x->current->id); ppl_log(temp_err_string); }
-    DataFile_read(x->current->plotdata, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, LabelString, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, &ErrCount);
+    if (pd->PersistentDataTable==NULL) DataFile_read(x->current->plotdata, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, LabelString, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, 0, &ErrCount);
+    else                               x->current->plotdata[0] = pd->PersistentDataTable;
    } else {
     if (DEBUG) { sprintf(temp_err_string, "Reading data from functions for piechart item %d", x->current->id); ppl_log(temp_err_string); }
     DataFile_FromFunctions(ordinate_raster, 1, x->current->settings.samples, &settings_graph_current.Tmin, NULL, 0, NULL, x->current->plotdata, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, LabelString, NExpect, pd->SelectCriterion, pd->continuity, NULL, -1, &ErrCount);
@@ -137,15 +138,9 @@ void eps_pie_YieldUpText(EPSComm *x)
   else                        FormatString=x->current->text;
 
   // Get pointers to the variables [percentage, label, wedgesize]
-  DictLookup(_ppl_UserSpace_Vars, "label"     , NULL, (void **)&var_l);
-  if (var_l != NULL) { DummyTemp_l = *var_l; }
-  else  { ppl_units_zero(&DummyTemp_l); DictAppendValue(_ppl_UserSpace_Vars, "label"     , DummyTemp_l); DictLookup(_ppl_UserSpace_Vars, "label"     , NULL, (void **)&var_l); DummyTemp_l.modified = 2; }
-  DictLookup(_ppl_UserSpace_Vars, "percentage", NULL, (void **)&var_p);
-  if (var_p != NULL) { DummyTemp_p = *var_p; }
-  else  { ppl_units_zero(&DummyTemp_p); DictAppendValue(_ppl_UserSpace_Vars, "percentage", DummyTemp_p); DictLookup(_ppl_UserSpace_Vars, "percentage", NULL, (void **)&var_p); DummyTemp_p.modified = 2; }
-  DictLookup(_ppl_UserSpace_Vars, "wedgesize" , NULL, (void **)&var_w);
-  if (var_w != NULL) { DummyTemp_w = *var_w; }
-  else  { ppl_units_zero(&DummyTemp_w); DictAppendValue(_ppl_UserSpace_Vars, "wedgesize" , DummyTemp_w); DictLookup(_ppl_UserSpace_Vars, "wedgesize" , NULL, (void **)&var_w); DummyTemp_w.modified = 2; }
+  ppl_UserSpace_GetVarPointer("label"     , &var_l, &DummyTemp_l);
+  ppl_UserSpace_GetVarPointer("percentage", &var_p, &DummyTemp_p);
+  ppl_UserSpace_GetVarPointer("wedgesize" , &var_w, &DummyTemp_w);
   ppl_units_zero(var_l);
   ppl_units_zero(var_p);
   *var_w = x->current->plotdata[0]->FirstEntries[0];
@@ -176,9 +171,9 @@ void eps_pie_YieldUpText(EPSComm *x)
    }
 
   // Restore values of the variables [percentage, label, wedgesize]
-  *var_l = DummyTemp_l;
-  *var_p = DummyTemp_p;
-  *var_w = DummyTemp_w;
+  ppl_UserSpace_RestoreVarPointer(&var_l, &DummyTemp_l);
+  ppl_UserSpace_RestoreVarPointer(&var_p, &DummyTemp_p);
+  ppl_UserSpace_RestoreVarPointer(&var_w, &DummyTemp_w);
 
   // Title of piechart
   x->current->TitleTextID = x->NTextItems;
