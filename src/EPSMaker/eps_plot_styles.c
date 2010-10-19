@@ -1092,6 +1092,7 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
     double final_pointsize = pd->ww_final.pointsize;
     if (style==SW_STYLE_DOTS) final_pointsize *= 0.05; // Dots are 1/20th size of points
     eps_core_SetColour(x, &pd->ww_final, 1);
+    eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, 1, 0);
     IF_NOT_INVISIBLE
      {
       int pt = (pd->ww_final.pointtype-1) % N_POINTTYPES;
