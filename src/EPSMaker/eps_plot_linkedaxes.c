@@ -114,7 +114,7 @@ void eps_plot_LinkedAxisBackPropagate(EPSComm *x, settings_axis *source)
 void eps_plot_DecideAxisRanges(EPSComm *x)
  {
   int            i, j;
-  settings_axis *axes;
+  settings_axis *axes=NULL;
 
   // Decide the range of each axis in turn
   for (j=0; j<3; j++)
@@ -122,6 +122,7 @@ void eps_plot_DecideAxisRanges(EPSComm *x)
     if      (j==0) axes = x->current->XAxes;
     else if (j==1) axes = x->current->YAxes;
     else if (j==2) axes = x->current->ZAxes;
+    else           ppl_fatal(__FILE__,__LINE__,"Internal fail.");
     for (i=0; i<MAX_AXES; i++)
      {
       if (!axes[i].RangeFinalised   ) { eps_plot_LinkedAxisForwardPropagate(x, &axes[i], 1); if (*x->status) return; }

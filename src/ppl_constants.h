@@ -32,9 +32,9 @@
 
 #define MAX_STR_FORMAT_ITEMS 256 // The maximum number of arguments passed to the %(....) string substitution operator
 
-#define ALGEBRA_MAXLENGTH 4096 // The maximum length of an algebraic expression
-#define ALGEBRA_MAXITEMS   128 // The number of calculated quantities we can store
-#define MAX_RECURSION_DEPTH 50 // The maximum recursion depth
+#define ALGEBRA_MAXLENGTH  4096 // The maximum length of an algebraic expression
+#define ALGEBRA_MAXITEMS    128 // The number of calculated quantities we can store
+#define MAX_RECURSION_DEPTH  50 // The maximum recursion depth
 
 #define DUMMYVAR_MAXLEN 16 // Maximum number of characters in a dummy variable name for integration / differentiation
 

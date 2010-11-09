@@ -27,7 +27,7 @@
 #include "ppl_units.h"
 
 // Maximum permitted iteration level
-#define MAX_ITERLEVEL_DEPTH 75
+#define MAX_ITERLEVEL_DEPTH 50
 
 typedef struct cmd_chain_item {
  char *line;

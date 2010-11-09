@@ -66,8 +66,6 @@ typedef struct ParserNode {
   struct ParserNode *NextSibling;
  } ParserNode;
 
-ParserNode SeparatorNode = {PN_TYPE_ITEM, NULL,-2, NULL, NULL, NULL, NULL};
-
 void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, int *start, int *number, char *expecting, int *ExpectingPos, int *ExpectingLinePos, char *AlgebraError, int *AlgebraLinepos, char *AlgebraNewError, int *AlgebraNewLinepos, Dict *output, int *match, int *success);
 
 // --------------------------------------------------------------------------
@@ -281,22 +279,63 @@ void ppl_commands_read()
 // PARSE(): Top-level interface. Parses a commandline "line" from the user.
 // It expects that ; and `` have already been dealt with by pyxplot.py
 
+static int bn=0, bnd=0;
+
+void ppl_parser_bnreset()
+ {
+  bn=0;
+  bnd=0;
+  return;
+ }
+
 Dict *parse(char *line, int IterLevel)
  {
   ListIterator *CmdIterator;
   ParserNode   *CmdDescriptor;
   Dict         *output;
   int           match, success, AlgebraLinepos, AlgebraNewLinepos, linepos, ExpectingPos, ExpectingLinePos, ErrPos, i, cln;
-  char          expecting      [LSTR_LENGTH];
-  char          ErrText        [LSTR_LENGTH];
-  char          AlgebraError   [LSTR_LENGTH];
-  char          AlgebraNewError[LSTR_LENGTH];
+  int           OutContext, TempContext=0, OwnContext=0, bn_old;
+  char         *expecting, *ErrText, *AlgebraError, *AlgebraNewError;
 
+  static char *b1[5] = {NULL,NULL,NULL,NULL,NULL};
+  static char *b2[5] = {NULL,NULL,NULL,NULL,NULL};
+  static char *b3[5] = {NULL,NULL,NULL,NULL,NULL};
+  static char *b4[5] = {NULL,NULL,NULL,NULL,NULL};
+
+  // Check that input commandline won't overflow fixed-length buffers
   if (strlen(line)>LSTR_LENGTH-STR_MARGIN)
    {
     ppl_error(ERR_SYNTAX, -1, -1, "Input commandline is too long.");
     return NULL;
    }
+
+  // Malloc processing buffers
+  bn_old = bn;
+  if (bn<5)
+   {
+    if ((b1[bn]==NULL)||(b2[bn]==NULL)||(b3[bn]==NULL)||(b4[bn]==NULL)) { b1[bn]=(char*)lt_malloc_incontext(LSTR_LENGTH,0); b2[bn]=(char*)lt_malloc_incontext(LSTR_LENGTH,0); b3[bn]=(char*)lt_malloc_incontext(LSTR_LENGTH,0); b4[bn]=(char*)lt_malloc_incontext(LSTR_LENGTH,0); }
+    if ((b1[bn]==NULL)||(b2[bn]==NULL)||(b3[bn]==NULL)||(b4[bn]==NULL)) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); return NULL; }
+    expecting       = b1[bn];
+    ErrText         = b2[bn];
+    AlgebraError    = b3[bn];
+    AlgebraNewError = b4[bn];
+    bn              ++;
+   }
+  else
+   {
+    OutContext  = lt_GetMemContext();
+    if (OutContext < 2)
+     {
+      TempContext = lt_DescendIntoNewContext();
+      _lt_SetMemContext(OutContext);
+      OwnContext  = 1;
+     }
+    expecting       = (char *)lt_malloc(LSTR_LENGTH);
+    ErrText         = (char *)lt_malloc(LSTR_LENGTH);
+    AlgebraError    = (char *)lt_malloc(LSTR_LENGTH);
+    AlgebraNewError = (char *)lt_malloc(LSTR_LENGTH);
+    if ((expecting==NULL)||(ErrText==NULL)||(AlgebraError==NULL)||(AlgebraNewError==NULL)) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); if (OwnContext) { _lt_SetMemContext(TempContext); lt_AscendOutOfContext(TempContext); } bn=bn_old; return NULL; }
+  }
 
   // Fetch first non-whitespace character of command string
   for (i=0; ((line[i]>='\0')&&(line[i]<=' ')); i++);
@@ -366,12 +405,18 @@ Dict *parse(char *line, int IterLevel)
        }
       strcpy(ErrText+ErrPos, "\n"); ErrPos += strlen(ErrText+ErrPos);
       ppl_error(ERR_PREFORMED, HighlightPos1, HighlightPos2, ErrText);
+      if (OwnContext) { _lt_SetMemContext(TempContext); lt_AscendOutOfContext(TempContext); }
+      bn=bn_old;
       return NULL;
      }
+    if (OwnContext) { _lt_SetMemContext(TempContext); lt_AscendOutOfContext(TempContext); }
+    bn=bn_old;
     return output;
    }
   output = DictInit(HASHSIZE_SMALL);
   DictAppendString(output, "directive" , "unrecognised");
+  if (OwnContext) { _lt_SetMemContext(TempContext); lt_AscendOutOfContext(TempContext); }
+  bn=bn_old;
   return output;
  }
 
@@ -510,19 +555,48 @@ void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, in
                    Dict *output, int *match, int *success)
  {
   unsigned char repeating=0, first=0;
-  int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, j, ACLevel;
+  int MatchType=0, LinePosOld=-1, excluded[PER_MAXSIZE], i, j, ACLevel, OutContext, TempContext=0, OwnContext=0, bnd_old;
   struct {int _int; char *_str; value _val; } MatchVal;
-  char varname[SSTR_LENGTH], TempMatchStr[LSTR_LENGTH], SeparatorString[4], QuoteType;
+  char *varname, *TempMatchStr, SeparatorString[4], QuoteType;
   unsigned char DummyStatus[ALGEBRA_MAXLENGTH];
   Dict *OutputOld=NULL, *DictBaby=NULL;
   List *DictBabyList=NULL;
   ParserNode *NodeIter=NULL;
+
+  static char *b1[5] = {NULL,NULL,NULL,NULL,NULL};
+  static char *b2[5] = {NULL,NULL,NULL,NULL,NULL};
 
   static int AtNLastPos=-1;
   if (*linepos<AtNLastPos) AtNLastPos=-1;
 
   while ((line[*linepos]!='\0') && (line[*linepos]<=' ')) (*linepos)++; // FFW over spaces
   *success = 1; // We are successful until proven otherwise
+
+#define BND_QUIT if (OwnContext) { _lt_SetMemContext(TempContext); lt_AscendOutOfContext(TempContext); } bnd=bnd_old;
+
+  // Malloc processing buffers
+  bnd_old = bnd;
+  if (bnd<5)
+   {
+    if ((b1[bnd]==NULL)||(b2[bnd]==NULL)) { b1[bnd]=(char*)lt_malloc_incontext(SSTR_LENGTH,0); b2[bnd]=(char*)lt_malloc_incontext(LSTR_LENGTH,0); }
+    if ((b1[bnd]==NULL)||(b2[bnd]==NULL)) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); *success=0; return; }
+    varname         = b1[bnd];
+    TempMatchStr    = b2[bnd];
+    bnd             ++;
+   }
+  else
+   {
+    OutContext  = lt_GetMemContext();
+    if (OutContext < 2)
+     {
+      TempContext = lt_DescendIntoNewContext();
+      _lt_SetMemContext(OutContext);
+      OwnContext  = 1;
+     }
+    varname         = (char *)lt_malloc(LSTR_LENGTH);
+    TempMatchStr    = (char *)lt_malloc(LSTR_LENGTH);
+    if ((varname==NULL)||(TempMatchStr==NULL)) { ppl_error(ERR_MEMORY,-1,-1,"Out of memory."); BND_QUIT; *success=0; return; }
+  }
 
   if      (node->type == PN_TYPE_ITEM)
    {
@@ -533,8 +607,8 @@ void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, in
        {
         if ((node->VarName != NULL) && ((strcmp(node->VarName,"filename")==0)||(strcmp(node->VarName,"directory")==0)))
          { // Expecting a filename
-          if ((*number)!=0) {(*success)=0; (*number)--; return;}
-          (*success)=2; strcpy(expecting, "\n"); (*number)--; return;
+          if ((*number)!=0) {(*success)=0; (*number)--; BND_QUIT; return;}
+          (*success)=2; strcpy(expecting, "\n"); (*number)--; BND_QUIT; return;
          }
         goto NO_TAB_COMPLETION; // Expecting a float or string, which we don't tab complete... move along and look for something else
        }
@@ -542,7 +616,7 @@ void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, in
        {
         if ((node->MatchString[0]=='=') && (node->MatchString[1]=='\0'))
          {
-          (*success)=1; return; // Ignore match character
+          (*success)=1; BND_QUIT; return; // Ignore match character
          }
 
         if ((*linepos>0) && (isalnum(line[(*linepos)-1])) && (AtNLastPos!=*linepos)) goto NO_TAB_COMPLETION; // 'plot a' cannot tab complete 'using' without space
@@ -550,15 +624,15 @@ void parse_descend(ParserNode *node, char *line, int IterLevel, int *linepos, in
         for (i=0; ((line[*linepos+i]>' ') && (node->MatchString[i]>' ')); i++)
          if (toupper(line[*linepos+i])!=toupper(node->MatchString[i]))
           {
-           (*success)=0; return; // We don't match the beginning of this string
+           (*success)=0; BND_QUIT; return; // We don't match the beginning of this string
           }
         if ((node->ACLevel == -2) && (node->MatchString[i]<=' ')) goto NO_TAB_COMPLETION; // We've matched an @n string right to the end... move on
-        if ((*number)!=0) {(*success)=0; (*number)--; return;}
+        if ((*number)!=0) {(*success)=0; (*number)--; BND_QUIT; return;}
         (*success)=2;
         for (i=0; i<((*linepos)-(*start)); i++) expecting[i] = line[*start+i];
         strcpy(expecting+i, node->MatchString); // Matchstring should match itself
         (*number)--;
-        return;
+        BND_QUIT; return;
        }
      }
 NO_TAB_COMPLETION:
@@ -919,7 +993,7 @@ NO_TAB_COMPLETION:
      {
       parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                     AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
-      if (*success==2) return;
+      if (*success==2) { BND_QUIT; return; }
       NodeIter = NodeIter->NextSibling;
       if (*success==0) break;
      }
@@ -934,14 +1008,19 @@ NO_TAB_COMPLETION:
 
     while (repeating != 0)
      {
+      ParserNode SeparatorNode;
       if (output != NULL) DictBaby = DictInit(HASHSIZE_SMALL);
       LinePosOld = *linepos;
+      SeparatorNode.type        = PN_TYPE_ITEM;
+      SeparatorNode.ACLevel     = -2;
       SeparatorNode.MatchString = SeparatorString;
+      SeparatorNode.VarName     = SeparatorNode.VarSetVal = NULL;
+      SeparatorNode.FirstChild  = SeparatorNode.NextSibling = NULL;
       if ((first==0)&&(SeparatorString[0]!='\0'))
        {
         parse_descend(&SeparatorNode, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                       AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, DictBaby, match, success);
-        if (*success==2) return;
+        if (*success==2) { BND_QUIT; return; }
        }
       if (*success!=0)
        {
@@ -950,7 +1029,7 @@ NO_TAB_COMPLETION:
          {
           parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                         AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, DictBaby, match, success);
-          if (*success==2) return;
+          if (*success==2) { BND_QUIT; return; }
           if (*success==0)
            {
             *linepos = LinePosOld;
@@ -980,7 +1059,7 @@ NO_TAB_COMPLETION:
      {
       parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                     AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
-      if (*success==2) return;
+      if (*success==2) { BND_QUIT; return; }
       if (*success==0)
        {
         if ((output != NULL)&&(*linepos!=LinePosOld)) *output = *OutputOld; // Don't need to do another deepcopy; just overwrite top Dict struct
@@ -1007,7 +1086,7 @@ NO_TAB_COMPLETION:
          {
           parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                         AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
-          if (*success==2) return;
+          if (*success==2) { BND_QUIT; return; }
           if (*success!=0)
            { excluded[i]=1; repeating=1; break; } // This item worked; flag it and loop again
           else
@@ -1035,7 +1114,7 @@ NO_TAB_COMPLETION:
       *success = 1;
       parse_descend(NodeIter, line, IterLevel, linepos, start, number, expecting, ExpectingPos, ExpectingLinePos,
                     AlgebraError, AlgebraLinepos, AlgebraNewError, AlgebraNewLinepos, output, match, success);
-      if (*success==2) return;
+      if (*success==2) { BND_QUIT; return; }
       if (*success==0) // Reset output and try the next ORA item
        {
         if ((output != NULL)&&(*linepos!=LinePosOld))
@@ -1051,8 +1130,10 @@ NO_TAB_COMPLETION:
    }
   else
    {
-    ppl_fatal(__FILE__,__LINE__,"Hit an unexpected node type.");
+    sprintf(temp_err_string, "Hit an unexpected node type %d.", node->type);
+    ppl_fatal(__FILE__,__LINE__,temp_err_string);
    }
+  BND_QUIT;
   return;
  }
 

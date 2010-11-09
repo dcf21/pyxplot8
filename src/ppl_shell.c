@@ -93,6 +93,7 @@ void InteractiveSession()
       sigjmp_FromSigInt = &sigjmp_ToInteractive;
 
       CheckForGvOutput();
+      ppl_parser_bnreset();
       if (isatty(STDIN_FILENO) == 1) SetInputSourceReadline(&linenumber);
       else                           SetInputSourcePipe(&linenumber, "piped input");
       line_ptr = FetchInputStatement("pyxplot> ",".......> ");

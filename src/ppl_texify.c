@@ -511,9 +511,20 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
         StrBracketMatch(in+j, CommaPositions, &Nargs, &k, MAX_STR_FORMAT_ITEMS);
         if ((RequiredNargs >= 0) && (RequiredNargs != Nargs))
          {
-          *status=j;
-          sprintf(errtext,"The %s() function takes %d arguments, but %d have been supplied in expression to be texified.", FunctionName, RequiredNargs, Nargs);
-          return;
+          int exception = 0;
+          if ((RequiredNargs==0)&&(Nargs==1))
+           {
+            int i;
+            exception=1;
+            for (i=CommaPositions[0]+1; i<CommaPositions[1]; i++) if (!((in[j+i]>='\0')&&(in[j+i]<=' '))) exception=0;
+            if (exception) Nargs=0;
+           }
+          if (!exception)
+           {
+            *status=j;
+            sprintf(errtext,"The %s() function takes %d arguments, but %d have been supplied in expression to be texified.", FunctionName, RequiredNargs, Nargs);
+            return;
+           }
          }
 
         // Realise LaTeX model

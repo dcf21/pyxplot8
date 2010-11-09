@@ -141,7 +141,7 @@ static void(*AfterHandlers[])(EPSComm *) = {NULL                       , NULL   
 // Main entry point for rendering a canvas to graphical output
 void canvas_draw(unsigned char *unsuccessful_ops)
  {
-  int i, j, termtype, status=0, CSPCommand;
+  int i, j, termtype, status=0, CSPCommand=0;
   static long TempFile_counter=0, TeXFile_counter=0;
   char EPSFilenameTemp[FNAME_LENGTH], TeXFilenameTemp[FNAME_LENGTH], TitleTemp[FNAME_LENGTH], FinalFilenameTemp[FNAME_LENGTH], GSOutputTemp[FNAME_LENGTH];
   wordexp_t WordExp;

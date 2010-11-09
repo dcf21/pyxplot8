@@ -4,6 +4,7 @@
    - Bugfix to linewidths used when drawing line icons on graph legends.
    - Bugfix to Makefile to ensure libraries link correctly under Red Hat and
      SUSE.
+   - Code cleanup to ensure correct compilation with -O2 optimisation.
 2010 Sep 15: PyXPlot 0.8.3
    - @ macro expansion operator implemented.
    - assert command implemented.
