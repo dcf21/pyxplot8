@@ -47,11 +47,11 @@ typedef struct canvas_plotrange {
 } canvas_plotrange;
 
 typedef struct canvas_plotdesc {
- unsigned char           function, parametric, TRangeSet, axis1set, axis2set, axis3set, ContinuitySet, IndexSet, EverySet, TitleSet, NoTitleSet;
+ unsigned char           function, parametric, TRangeSet, VRangeSet, axis1set, axis2set, axis3set, ContinuitySet, IndexSet, EverySet, TitleSet, NoTitleSet;
  int                     NFunctions, axis1xyz, axis2xyz, axis3xyz, axis1, axis2, axis3, EveryList[6], index, continuity, UsingRowCols, NUsing;
  with_words              ww;
  char                   *filename, **functions, *label, *SelectCriterion, *title, **UsingList;
- value                   Tmin, Tmax;
+ value                   Tmin, Tmax, Vmin, Vmax;
  struct canvas_plotdesc *next;
 
  // used with plot '-' and plot '--' to indicate that data is read only once; otherwise NULL

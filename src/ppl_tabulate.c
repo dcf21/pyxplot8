@@ -204,12 +204,12 @@ int directive_tabulate(Dict *command, char *line)
   wordexp_t     WordExp;
   ppl_glob     *glob_handle;
   int           i, k, status, NUsingItems, ContextOutput, ContextLocalVec, ContextDataTab, index=-1, *indexptr, rowcol=DATAFILE_COL, ErrCount=DATAFILE_NERRS;
-  int           NumberOfSamples;
+  int           NumberOfSamples, NumberOfSamples2;
   long int      j;
   value        *min[USING_ITEMS_MAX+1], *max[USING_ITEMS_MAX+1], *spacing;
-  double       *ordinate_raster, raster_min, raster_max, SpacingDbl, NumberOfSamplesDbl;
-  unsigned char raster_log, FlagParametric;
-  value         raster_units, para_Tunit;
+  double       *ordinate_raster=NULL, *ordinate2_raster=NULL, raster_min, raster_max, raster2_min=1, raster2_max=10, SpacingDbl, NumberOfSamplesDbl;
+  unsigned char raster_log, raster2_log=0, FlagParametric, USE_T_or_uv=1;
+  value         raster_units, raster2_units;
   DataTable    *data;
   List         *RangeList, *TabList, *ExprList;
   ListIterator *ListIter, *ExprListIter;
@@ -338,7 +338,7 @@ int directive_tabulate(Dict *command, char *line)
       while (ExprListIter != NULL)
        {
         TempExprDict = (Dict *)ExprListIter->data;
-        if (k>=USING_ITEMS_MAX) {sprintf(temp_err_string, "Colon-separated lists of expressions can only contain a maximum of %d expressions.",USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1,temp_err_string);}
+        if (k>=USING_ITEMS_MAX) { sprintf(temp_err_string, "Colon-separated lists of expressions can only contain a maximum of %d expressions.",USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1,temp_err_string); break; }
         DictLookup(TempExprDict, "expression", NULL, (void **)(fnlist+k));
         k++;
         ExprListIter = ListIterate(ExprListIter, NULL);
@@ -361,14 +361,33 @@ int directive_tabulate(Dict *command, char *line)
         if      ((max[0] != NULL)                  && (ppl_units_DimEqual(&raster_units,max[0]          ))) raster_max = max[0]->real;
         else if ((XAxes[1].MaxSet == SW_BOOL_TRUE) && (ppl_units_DimEqual(&raster_units,&(XAxes[1].unit)))) raster_max = XAxes[1].max;
         else                                                                                                raster_max = raster_log ? (raster_min * 100) : (raster_min + 20);
+        ppl_units_zero(&raster2_units);
        } else {
-        value *tempval1, *tempval2;
-        raster_log = (settings_graph_current.Tlog == SW_BOOL_TRUE);
-        raster_min = settings_graph_current.Tmin.real;
-        raster_max = settings_graph_current.Tmax.real;
-        para_Tunit = settings_graph_current.Tmin;
+        value *tempval1, *tempval2, *tempval3, *tempval4;
+        if ((USE_T_or_uv = settings_graph_current.USE_T_or_uv))
+         {
+          raster_log    = (settings_graph_current.Tlog == SW_BOOL_TRUE);
+          raster_min    = settings_graph_current.Tmin.real;
+          raster_max    = settings_graph_current.Tmax.real;
+          raster2_log   = raster_log;
+          raster2_min   = 1;
+          raster2_max   = 10;
+          raster_units  = settings_graph_current.Tmin;
+          ppl_units_zero(&raster2_units);
+         } else {
+          raster_log    = (settings_graph_current.Ulog == SW_BOOL_TRUE);
+          raster_min    = settings_graph_current.Umin.real;
+          raster_max    = settings_graph_current.Umax.real;
+          raster_units  = settings_graph_current.Umin;
+          raster2_log   = (settings_graph_current.Vlog == SW_BOOL_TRUE);
+          raster2_min   = settings_graph_current.Vmin.real;
+          raster2_max   = settings_graph_current.Vmax.real;
+          raster2_units = settings_graph_current.Vmin;
+         }
         DictLookup(TempDict, "tmin", NULL, (void **)&tempval1);
         DictLookup(TempDict, "tmax", NULL, (void **)&tempval2);
+        DictLookup(TempDict, "vmin", NULL, (void **)&tempval3);
+        DictLookup(TempDict, "vmax", NULL, (void **)&tempval4);
         if (tempval1 != NULL)
          {
           if      (!gsl_finite(tempval1->real)) { sprintf(temp_err_string, "Lower limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); }
@@ -376,61 +395,103 @@ int directive_tabulate(Dict *command, char *line)
           else if (!ppl_units_DimEqual(tempval1,tempval2)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter t have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(tempval1, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(tempval2, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); }
           else
            {
-            raster_min = tempval1->real;
-            raster_max = tempval2->real;
-            para_Tunit = *tempval1;
+            raster_min   = tempval1->real;
+            raster_max   = tempval2->real;
+            raster_units = *tempval1;
            }
          }
+        if (tempval3 != NULL)
+         {
+          if      (!gsl_finite(tempval3->real)) { sprintf(temp_err_string, "Lower limit specified for parameter v is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); }
+          else if (!gsl_finite(tempval4->real)) { sprintf(temp_err_string, "Upper limit specified for parameter v is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); }
+          else if (!ppl_units_DimEqual(tempval3,tempval4)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter v have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(tempval3, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(tempval4, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); }
+          else
+           {
+            raster2_min   = tempval3->real;
+            raster2_max   = tempval4->real;
+            raster2_units = *tempval3;
+           }
+         }
+        if (tempval1 != NULL) USE_T_or_uv = (tempval3 == NULL);
        }
       if (raster_log && ((raster_min<=0) || (raster_max<=0))) ppl_warning(ERR_NUMERIC,"Attempt to tabulate data using a logarithmic ordinate axis with negative or zero limits set. Reverting limits to finite positive values with well-defined logarithms.");
+      if ((!USE_T_or_uv) && raster2_log && ((raster2_min<=0) || (raster2_max<=0))) ppl_warning(ERR_NUMERIC,"Attempt to tabulate data using a logarithmic ordinate axis with negative or zero limits set. Reverting limits to finite positive values with well-defined logarithms.");
 
       // See if spacing has already been specified
       DictLookup(TempDict, "spacing", NULL, (void **)&spacing);
       if (spacing != NULL)
        {
-        if (raster_log)
+        int i;
+        for (i=0; i<=(!USE_T_or_uv); i++)
          {
-          if (!spacing->dimensionless) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for a logarithmic ordinate axis. The spacing should be a dimensionless multiplicative factor.", ppl_units_GetUnitStr(spacing,NULL,NULL,0,1,0)); fclose(output); return 1; }
-          if ((spacing->real < 1e-200)||(spacing->real > 1e100)) { sprintf(temp_err_string, "The spacing specified to the tabulate command must be a positive multiplicative factor for logarithmic ordinate axes."); fclose(output); return 1; }
-          SpacingDbl = spacing->real;
-          if ((raster_max > raster_min) && (SpacingDbl < 1.0)) SpacingDbl = 1.0/SpacingDbl;
-          if ((raster_min > raster_max) && (SpacingDbl > 1.0)) SpacingDbl = 1.0/SpacingDbl;
-          NumberOfSamplesDbl = 1.0 + floor(log(raster_max / raster_min) / log(SpacingDbl));
-          if (NumberOfSamplesDbl<2  ) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced fewer than two samples; this does not seem sensible."); fclose(output); return 1; }
-          if (NumberOfSamplesDbl>1e7) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced more than 1e7 samples. If you really want to do this, use 'set samples'."); fclose(output); return 1; }
-          raster_max = raster_min * pow(SpacingDbl, NumberOfSamplesDbl-1);
-          NumberOfSamples = (int)NumberOfSamplesDbl;
-         } else {
-          if (!ppl_units_DimEqual(&raster_units,spacing)) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for an ordinate axis which has units of <%s>,", ppl_units_GetUnitStr(spacing,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&raster_units,NULL,NULL,1,1,0)); fclose(output); return 1; }
-          SpacingDbl = spacing->real;
-          if ((raster_max > raster_min) && (SpacingDbl < 0.0)) SpacingDbl = -SpacingDbl;
-          if ((raster_min > raster_max) && (SpacingDbl > 0.0)) SpacingDbl = -SpacingDbl;
-          NumberOfSamplesDbl = 1.0 + (raster_max - raster_min) / SpacingDbl;
-          if (NumberOfSamplesDbl<2  ) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced fewer than two samples; this does not seem sensible."); fclose(output); return 1; }
-          if (NumberOfSamplesDbl>1e7) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced more than 1e7 samples. If you really want to do this, use 'set samples'."); fclose(output); return 1; }
-          raster_max = raster_min + SpacingDbl*(NumberOfSamplesDbl+1);
-          NumberOfSamples = (int)NumberOfSamplesDbl;
+          unsigned char *rast_log  = i ? &raster2_log     : &raster_log;
+          double        *rast_min  = i ? &raster2_min     : &raster_min;
+          double        *rast_max  = i ? &raster2_max     : &raster_max;
+          value         *rast_unit = i ? &raster2_units   : &raster_units;
+          int           *out       = i ? &NumberOfSamples : &NumberOfSamples2;
+          if (*rast_log)
+           {
+            if (!spacing->dimensionless) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for a logarithmic ordinate axis. The spacing should be a dimensionless multiplicative factor.", ppl_units_GetUnitStr(spacing,NULL,NULL,0,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            if ((spacing->real < 1e-200)||(spacing->real > 1e100)) { sprintf(temp_err_string, "The spacing specified to the tabulate command must be a positive multiplicative factor for logarithmic ordinate axes."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            SpacingDbl = spacing->real;
+            if ((*rast_max > *rast_min) && (SpacingDbl < 1.0)) SpacingDbl = 1.0/SpacingDbl;
+            if ((*rast_min > *rast_max) && (SpacingDbl > 1.0)) SpacingDbl = 1.0/SpacingDbl;
+            NumberOfSamplesDbl = 1.0 + floor(log(*rast_max / *rast_min) / log(SpacingDbl));
+            if (NumberOfSamplesDbl<2  ) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced fewer than two samples; this does not seem sensible."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            if (NumberOfSamplesDbl>1e7) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced more than 1e7 samples. If you really want to do this, use 'set samples'."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            *rast_max = *rast_min * pow(SpacingDbl, NumberOfSamplesDbl-1);
+            *out = (int)NumberOfSamplesDbl;
+           } else {
+            if (!ppl_units_DimEqual(rast_unit,spacing)) { sprintf(temp_err_string, "The tabulate command has been passed a spacing with units of <%s> for an ordinate axis which has units of <%s>,", ppl_units_GetUnitStr(spacing,NULL,NULL,0,1,0), ppl_units_GetUnitStr(rast_unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            SpacingDbl = spacing->real;
+            if ((*rast_max > *rast_min) && (SpacingDbl < 0.0)) SpacingDbl = -SpacingDbl;
+            if ((*rast_min > *rast_max) && (SpacingDbl > 0.0)) SpacingDbl = -SpacingDbl;
+            NumberOfSamplesDbl = 1.0 + (*rast_max - *rast_min) / SpacingDbl;
+            if (NumberOfSamplesDbl<2  ) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced fewer than two samples; this does not seem sensible."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            if (NumberOfSamplesDbl>1e7) { sprintf(temp_err_string, "The spacing specified to the tabulate command produced more than 1e7 samples. If you really want to do this, use 'set samples'."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
+            *rast_max = *rast_min + SpacingDbl*(NumberOfSamplesDbl+1);
+            *out = (int)NumberOfSamplesDbl;
+           }
          }
        } else {
-        NumberOfSamples = settings_graph_current.samples;
+        if (USE_T_or_uv)
+         {
+          NumberOfSamples = settings_graph_current.samples;
+         } else {
+          NumberOfSamples  = settings_graph_current.SamplesX;
+          NumberOfSamples2 = settings_graph_current.SamplesY;
+         }
        }
 
       // Generate the raster of ordinate values at which we will evaluate any functions
-      ordinate_raster = lt_malloc(NumberOfSamples * sizeof(double));
+      ordinate_raster = (double *)lt_malloc(NumberOfSamples * sizeof(double));
+      if (ordinate_raster==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); fclose(output); return 1; }
       if (raster_log) LogarithmicRaster(ordinate_raster, raster_min, raster_max, NumberOfSamples);
       else            LinearRaster     (ordinate_raster, raster_min, raster_max, NumberOfSamples);
+
+      if (!USE_T_or_uv)
+       {
+        ordinate2_raster = (double *)lt_malloc(NumberOfSamples2 * sizeof(double));
+        if (ordinate2_raster==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); fclose(output); return 1; }
+        if (raster2_log) LogarithmicRaster(ordinate2_raster, raster2_min, raster2_max, NumberOfSamples2);
+        else             LinearRaster     (ordinate2_raster, raster2_min, raster2_max, NumberOfSamples2);
+       }
 
       // Read data from supplied functions
       if (spacing == NULL)
        {
-        DataFile_FromFunctions_CheckSpecialRaster(fnlist, k, FlagParametric?"t":"x",
+        DataFile_FromFunctions_CheckSpecialRaster(fnlist, k, FlagParametric?(USE_T_or_uv?"t":"u"):"x",
                           ((!FlagParametric) && (min[0]!=NULL)) ? &raster_min : NULL,
                           ((!FlagParametric) && (max[0]!=NULL)) ? &raster_max : NULL,
                           &ordinate_raster, &NumberOfSamples);
+        if (!USE_T_or_uv)
+         {
+          DataFile_FromFunctions_CheckSpecialRaster(fnlist, k, "v", NULL, NULL, &ordinate2_raster, &NumberOfSamples2);
+         }
        }
       DataFile_FromFunctions(ordinate_raster, FlagParametric,
-                             NumberOfSamples, (FlagParametric ? &para_Tunit : &raster_units),
-                             NULL, 0, NULL,
+                             NumberOfSamples, &raster_units,
+                             ordinate2_raster, NumberOfSamples2, &raster2_units,
                              &data, &status, errtext, fnlist, k, UsingList, 0, NULL, NUsingItems, SelectCrit, DATAFILE_DISCONTINUOUS, SortBy, DATAFILE_CONTINUOUS, &ErrCount);
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errtext); fclose(output); return 1; }
       status = DataGridDisplay(output, data, NUsingItems, min+1, max+1, format); // First range is for ordinate axis

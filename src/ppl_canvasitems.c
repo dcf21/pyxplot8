@@ -434,6 +434,7 @@ char *canvas_item_textify(canvas_item *ptr, char *output)
       if (pd_first) { pd_first=0; } else { output[i++]=','; }
       if (pd->parametric) { sprintf(output+i, " parametric"); i+=strlen(output+i); }
       if (pd->TRangeSet)  { sprintf(output+i, " [%s:%s]", ppl_units_NumericDisplay(&pd->Tmin,0,0,0), ppl_units_NumericDisplay(&pd->Tmax,1,0,0)); i+=strlen(output+i); }
+      if (pd->VRangeSet)  { sprintf(output+i, " [%s:%s]", ppl_units_NumericDisplay(&pd->Vmin,0,0,0), ppl_units_NumericDisplay(&pd->Vmax,1,0,0)); i+=strlen(output+i); }
       if (!pd->function) { output[i++]=' '; StrEscapify(pd->filename, output+i); i+=strlen(output+i); } // Filename of datafile we are plotting
       else
        for (j=0; j<pd->NFunctions; j++) // Print out the list of functions which we are plotting
@@ -1665,6 +1666,17 @@ int directive_plot(Dict *command, int interactive, int replot)
           if      (!gsl_finite((*PlotItemPtr)->Tmin.real)) { sprintf(temp_err_string, "Lower limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
           else if (!gsl_finite((*PlotItemPtr)->Tmax.real)) { sprintf(temp_err_string, "Upper limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
           else if (!ppl_units_DimEqual(&(*PlotItemPtr)->Tmin, &(*PlotItemPtr)->Tmax)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter t have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(&(*PlotItemPtr)->Tmin, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(*PlotItemPtr)->Tmax, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
+         }
+        DictLookup(TempDict, "vmin", NULL, (void **)&tempval);
+        (*PlotItemPtr)->VRangeSet  = (tempval!=NULL);
+        if (tempval!=NULL) (*PlotItemPtr)->Vmin = *tempval;
+        DictLookup(TempDict, "vmax", NULL, (void **)&tempval);
+        if (tempval!=NULL)
+         {
+          (*PlotItemPtr)->Vmax = *tempval;
+          if      (!gsl_finite((*PlotItemPtr)->Vmin.real)) { sprintf(temp_err_string, "Lower limit specified for parameter v is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->VRangeSet = 0; }
+          else if (!gsl_finite((*PlotItemPtr)->Vmax.real)) { sprintf(temp_err_string, "Upper limit specified for parameter v is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->VRangeSet = 0; }
+          else if (!ppl_units_DimEqual(&(*PlotItemPtr)->Vmin, &(*PlotItemPtr)->Vmax)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter v have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(&(*PlotItemPtr)->Vmin, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(*PlotItemPtr)->Vmax, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->VRangeSet = 0; }
          }
         DictLookup(TempDict, "expression_list:", NULL, (void **)&ExpressionList);
         j = (*PlotItemPtr)->NFunctions = ListLen(ExpressionList);
