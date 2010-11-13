@@ -91,7 +91,7 @@ void ppl_UserSpace_UnsetVar(char *name)
 // ppl_UserSpace_GetVarPointer(): Called to get a pointer to a variable's value
 void ppl_UserSpace_GetVarPointer(char *name, value **output, value *temp)
  {
-  DictLookup(_ppl_UserSpace_Vars, name, NULL, (void **)output);
+  DictLookup(_ppl_UserSpace_Vars, name, NULL, (void *)output);
   if (*output!=NULL)
    {
     *temp = **output;
@@ -105,7 +105,7 @@ void ppl_UserSpace_GetVarPointer(char *name, value **output, value *temp)
     ppl_units_zero(temp);
     temp->real = 1.0;
     DictAppendValue(_ppl_UserSpace_Vars, name, *temp);
-    DictLookup(_ppl_UserSpace_Vars, name, NULL, (void **)output);
+    DictLookup(_ppl_UserSpace_Vars, name, NULL, (void *)output);
     temp->modified = 2;
    }
   if (((*output)->string != NULL) || (((*output)->FlagComplex) && (settings_term_current.ComplexNumbers == SW_ONOFF_OFF)) || (!gsl_finite((*output)->real)) || (!gsl_finite((*output)->imag))) { ppl_units_zero(*output); (*output)->real=1.0; } // Turn string variables into floats
@@ -494,7 +494,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     while ((in[pos]>'\0') && (in[pos]<=' ')) pos++; // Fast-forward over trailing spaces
     if (in[pos]=='(') // We have a function
      {
-      DictLookup(_ppl_UserSpace_Funcs, FormatString, NULL, (void **)&FuncDefn); // Look up in database of function definitions
+      DictLookup(_ppl_UserSpace_Funcs, FormatString, NULL, (void *)&FuncDefn); // Look up in database of function definitions
       if (FuncDefn == NULL) { *errpos = start; sprintf(errtext, "No such function, '%s'.", FormatString); return; }
       if (FuncDefn->FunctionType == PPL_USERSPACE_SUBROUTINE)
        {
@@ -568,7 +568,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     else
      {
       if ((end!=NULL)&&(*end>0)&&(pos<*end)) { *errpos = pos; strcpy(errtext, "Syntax Error: Unexpected trailing matter after variable name."); return; } // Have we used up as many characters as we were told we had to?
-      DictLookup(_ppl_UserSpace_Vars, FormatString, NULL, (void **)&VarData); // Look up in database of variable definitions
+      DictLookup(_ppl_UserSpace_Vars, FormatString, NULL, (void *)&VarData); // Look up in database of variable definitions
       if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start; sprintf(errtext, "No such variable, '%s'.", FormatString); return; }
       if (VarData->string == NULL) { *errpos = start; strcpy(errtext, "Type Error: This is a numeric variable where a string is expected."); return; }
       *errpos = -1;
@@ -1054,7 +1054,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
           j=0;
           for (k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
            {
-            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, NULL, (void **)&VarData);
+            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, NULL, (void *)&VarData);
             if (VarData!=NULL)
              {
               memcpy(ResultBuffer+bufpos+k+1, VarData, sizeof(value));
@@ -1074,7 +1074,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
           j=0;
           for (k=0; k<NArgs; k++) // Swap old arguments for new in global dictionary
            {
-            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, NULL, (void **)&VarData);
+            DictLookup(_ppl_UserSpace_Vars, ((FunctionDescriptor *)DictItem->data)->ArgList+j, NULL, (void *)&VarData);
             memcpy(VarData, ResultBuffer+bufpos+k+1, sizeof(value));
             j += strlen(((FunctionDescriptor *)DictItem->data)->ArgList+j)+1;
            }
@@ -1157,7 +1157,7 @@ void ppl_EvaluateAlgebra(char *in, value *out, int start, int *end, unsigned cha
     for (j=i;(StatusRow[j]==8);j++);
     while ((j>i) && (in[start+j-1]<=' ')) j--;
     ck = in[start+j] ; in[start+j]='\0'; // This will not work if string constant is passed to us!!
-    DictLookup(_ppl_UserSpace_Vars, in+start+i, NULL, (void **)&VarData);
+    DictLookup(_ppl_UserSpace_Vars, in+start+i, NULL, (void *)&VarData);
     if ((VarData == NULL) || (VarData->modified==2)) { *errpos = start+i; sprintf(errtext, "No such variable, '%s'.", in+start+i); in[start+j] = ck; return; }
     in[start+j] = ck;
     if (VarData->string != NULL) { *errpos = start+i; strcpy(errtext, "Type Error: This is a string variable where numeric value is expected."); return; }

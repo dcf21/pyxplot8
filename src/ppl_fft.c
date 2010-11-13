@@ -85,12 +85,12 @@ int directive_fft(Dict *command)
   #endif
 
   // Check whether we are doing a forward or a backward FFT
-  DictLookup(command, "directive", NULL, (void **)&cptr);
+  DictLookup(command, "directive", NULL, (void *)&cptr);
   if (strcmp(cptr,"ifft")==0) inverse=1;
   else                        inverse=0;
 
   // Read in specified data ranges
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  DictLookup(command, "range_list", NULL, (void *)&RangeList);
   ListIter = ListIterateInit(RangeList);
   for (Ndims=0; ((Ndims<USING_ITEMS_MAX)&&(ListIter!=NULL)); Ndims++) // Can have up to USING_ITEMS_MAX dimensions
    {
@@ -118,7 +118,7 @@ int directive_fft(Dict *command)
   Nsamples = (int)TempDbl;
 
   // Check that the function we're about to replace isn't a system function
-  DictLookup(command, "fft_function", NULL, (void **)&outfunc);   if (outfunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_fft could not read name of function for output."); return 1; }
+  DictLookup(command, "fft_function", NULL, (void *)&outfunc);   if (outfunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_fft could not read name of function for output."); return 1; }
   DictLookup(_ppl_UserSpace_Funcs, outfunc, NULL, (void *)&FuncPtr); // Check whether we are going to overwrite an existing function
   if ((FuncPtr!=NULL)&&((FuncPtr->FunctionType==PPL_USERSPACE_SYSTEM)||(FuncPtr->FunctionType==PPL_USERSPACE_STRFUNC)||(FuncPtr->FunctionType==PPL_USERSPACE_UNIT)))
    { sprintf(temp_err_string, "Attempt to redefine a core system function %s()", outfunc); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
@@ -129,7 +129,7 @@ int directive_fft(Dict *command)
 
   // Work out what type of window we're going to use
   WindowType = fftwindow_rectangular;
-  DictLookup(command,"window",NULL,(void **)(&cptr));
+  DictLookup(command,"window",NULL,(void *)&cptr);
   if (cptr!=NULL)
    {
     if      (strcmp(cptr,"hamming"     )!=0) WindowType = fftwindow_hamming;
@@ -144,7 +144,7 @@ int directive_fft(Dict *command)
    }
 
   // Fetch filename of potential datafile to FFT
-  DictLookup(command,"filename",NULL,(void **)(&cptr));
+  DictLookup(command,"filename",NULL,(void *)&cptr);
 
   // If we are FFTing data from a file, glob filename now
   if (cptr != NULL)
@@ -161,12 +161,12 @@ int directive_fft(Dict *command)
   if (cptr != NULL) // We are FFTing data from a file
    {
     // Look up index , using , every modifiers to datafile reading
-    DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
-    DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
-    DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
-    DictLookup(command, "using_list:", NULL, (void **)&UsingList);
-    DictLookup(command, "every_list:", NULL, (void **)&EveryList);
-    DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+    DictLookup(command, "index"      , NULL, (void *)&indexptr);   if (indexptr == NULL) indexptr = &index;
+    DictLookup(command, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+    DictLookup(command, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+    DictLookup(command, "using_list:", NULL, (void *)&UsingList);
+    DictLookup(command, "every_list:", NULL, (void *)&EveryList);
+    DictLookup(command, "select_criterion", NULL, (void *)&SelectCrit);
 
     // Read data from file
     status=0;
@@ -233,7 +233,7 @@ int directive_fft(Dict *command)
    }
   else // We are FFTing data from a function
    {
-    DictLookup(command, "input_function", NULL, (void **)&infunc);
+    DictLookup(command, "input_function", NULL, (void *)&infunc);
     if (infunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_fft could not read name of function for input."); return 1; }
     DictLookup(_ppl_UserSpace_Funcs, infunc, NULL, (void *)&FuncPtr2);
     if (FuncPtr2 == NULL) { sprintf(temp_err_string, "No such function as %s()", infunc); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }

@@ -615,10 +615,10 @@ void ReadConfigFile(char *ConfigFname)
       scriptcmd = parse(linebuffer, 0);
       if (scriptcmd != NULL)
        {
-        DictLookup(scriptcmd,"directive",NULL,(void **)(&StringScan));
+        DictLookup(scriptcmd,"directive",NULL,(void *)&StringScan);
         if (strcmp(StringScan,"set_error")==0) { sprintf(temp_err_string, "Error in line %d of configuration file %s: Unrecognised set command.", linecounter, ConfigFname); ppl_error(ERR_PREFORMED, -1, -1, temp_err_string); continue; }
         if (strcmp(StringScan,"set")!=0) { sprintf(temp_err_string, "Error in line %d of configuration file %s: Only set commands are allowed in scripts in configuration files.", linecounter, ConfigFname); ppl_error(ERR_PREFORMED, -1, -1, temp_err_string); continue; }
-        DictLookup(scriptcmd,"editno",NULL,(void **)(&StringScan));
+        DictLookup(scriptcmd,"editno",NULL,(void *)&StringScan);
         if (StringScan != NULL) { sprintf(temp_err_string, "Error in line %d of configuration file %s: Item specifiers are not allowed in set commands in scripts in configuration files.", linecounter, ConfigFname); ppl_error(ERR_PREFORMED, -1, -1, temp_err_string); continue; }
         directive_set(scriptcmd);
        }

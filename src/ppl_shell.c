@@ -287,7 +287,7 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
        {
         for (j=0, l=++i; (isalnum(DirectiveLinebuffer[l])) || (DirectiveLinebuffer[l]=='_'); ) expmac[j++] = DirectiveLinebuffer[l++];
         expmac[j] = '\0';
-        DictLookup(_ppl_UserSpace_Vars, expmac, NULL, (void **)&VarData);
+        DictLookup(_ppl_UserSpace_Vars, expmac, NULL, (void *)&VarData);
         if (VarData == NULL) { sprintf(temp_err_string, "Undefined macro, \"%s\".", expmac); ppl_warning(ERR_SYNTAX, temp_err_string); DirectiveLinebuffer2[k++] = '@'; continue; }
         if (VarData->string == NULL) { sprintf(temp_err_string, "Attempt to expand a macro, \"%s\", which is a numerical variable not a string.", expmac); ppl_warning(ERR_SYNTAX, temp_err_string); DirectiveLinebuffer2[k++] = '@'; continue; }
         j=strlen(VarData->string);
@@ -340,19 +340,19 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
 
   if (IterLevel > MAX_ITERLEVEL_DEPTH) { ppl_error(ERR_GENERAL, -1, -1, "Maximum recursion depth exceeded."); return 1; }
 
-  DictLookup(command,"directive",NULL,(void **)(&directive));
+  DictLookup(command,"directive",NULL,(void *)&directive);
 
   if      (strcmp(directive, "pling")==0)
    {
-    DictLookup(command,"cmd",NULL,(void **)(&directive));
+    DictLookup(command,"cmd",NULL,(void *)&directive);
     if (system(directive)) { if (DEBUG) ppl_log("Pling command received non-zero return value."); }
    }
   else if (strcmp(directive, "var_set")==0)
    {
-    DictLookup(command,"varname"     ,NULL,(void **)(&varname));
-    DictLookup(command,"string_value",NULL,(void **)(&varstrval));
+    DictLookup(command,"varname"     ,NULL,(void *)&varname);
+    DictLookup(command,"string_value",NULL,(void *)&varstrval);
     if (varstrval != NULL) { ppl_UserSpace_SetVarStr(varname, varstrval, 1); return 0; }
-    DictLookup(command,"numeric_value",NULL,(void **)(&varnumval));
+    DictLookup(command,"numeric_value",NULL,(void *)&varnumval);
     if (varnumval != NULL) { ppl_UserSpace_SetVarNumeric(varname, varnumval, 1); return 0; }
     ppl_UserSpace_UnsetVar(varname);
    }
@@ -418,7 +418,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    {
     int type = INTERP_2D;
     char *tempstr;
-    DictLookup(command,"bmp",NULL,(void **)(&tempstr));
+    DictLookup(command,"bmp",NULL,(void *)&tempstr);
     if (tempstr!=NULL) switch (tempstr[4])
      {
       case 'r': type = INTERP_BMPR; break;
@@ -433,7 +433,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_list();
   else if (strcmp(directive, "load")==0)
    {
-    DictLookup(command,"filename",NULL,(void **)(&varstrval));
+    DictLookup(command,"filename",NULL,(void *)&varstrval);
     if ((wordexp(varstrval, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not glob filename '%s'.", varstrval); ppl_error(ERR_FILE, -1, -1, temp_err_string); return 1; }
     for (j=0; j<WordExp.we_wordc; j++)
      {
@@ -535,7 +535,7 @@ int ProcessDirective2(char *in, Dict *command, int interactive, int memcontext, 
    directive_unseterror(command, interactive);
   else if (strcmp(directive, "while")==0)
    {
-    DictLookup(command,"close_brace",NULL,(void **)(&varstrval));
+    DictLookup(command,"close_brace",NULL,(void *)&varstrval);
     if (varstrval == NULL) return directive_while(command, IterLevel+1);
     else                   ppl_error(ERR_SYNTAX, -1, -1, "This while statement does not match any earlier do statement.");
    }
@@ -555,11 +555,11 @@ int directive_assert(Dict *command)
  {
   char  *txt, *version, *gtreq, *lt;
   value *val;
-  DictLookup(command,"message",NULL,(void **)(&txt));
-  DictLookup(command,"gtreq"  ,NULL,(void **)(&gtreq));
-  DictLookup(command,"lt"     ,NULL,(void **)(&lt));
-  DictLookup(command,"version",NULL,(void **)(&version));
-  DictLookup(command,"expr",NULL,(void **)(&val));
+  DictLookup(command,"message",NULL,(void *)&txt);
+  DictLookup(command,"gtreq"  ,NULL,(void *)&gtreq);
+  DictLookup(command,"lt"     ,NULL,(void *)&lt);
+  DictLookup(command,"version",NULL,(void *)&version);
+  DictLookup(command,"expr",NULL,(void *)&val);
   if (val != NULL)
    {
     if (txt==NULL) txt="Assertion was not true.";
@@ -613,7 +613,7 @@ int directive_break(Dict *command, int IterLevel)
   char *loopname;
   int i;
   if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, -1, -1, "The break statement can only be placed inside a loop structure."); return 1; }
-  DictLookup(command,"loopname",NULL,(void **)(&loopname));
+  DictLookup(command,"loopname",NULL,(void *)&loopname);
   if (loopname != NULL)
    {
     for (i=IterLevel; i>=0; i--) if ((PPL_FLOWCTRL_LOOPNAME[i]!=NULL) && (strcmp(loopname, PPL_FLOWCTRL_LOOPNAME[i])==0)) break;
@@ -631,7 +631,7 @@ int directive_continue(Dict *command, int IterLevel)
   char *loopname;
   int i;
   if (!PPL_FLOWCTRL_BREAKABLE) { ppl_error(ERR_SYNTAX, -1, -1, "The continue statement can only be placed inside a loop structure."); return 1; }
-  DictLookup(command,"loopname",NULL,(void **)(&loopname));
+  DictLookup(command,"loopname",NULL,(void *)&loopname);
   if (loopname != NULL)
    {
     for (i=IterLevel; i>=0; i--) if ((PPL_FLOWCTRL_LOOPNAME[i]!=NULL) && (strcmp(loopname, PPL_FLOWCTRL_LOOPNAME[i])==0)) break;
@@ -649,8 +649,8 @@ int directive_return(Dict *command, int IterLevel)
   value *ReturnVal;
   char  *ReturnValStr;
 
-  DictLookup(command,"return_value",NULL,(void **)(&ReturnVal));
-  DictLookup(command,"string_return_value",NULL,(void **)(&ReturnValStr));
+  DictLookup(command,"return_value",NULL,(void *)&ReturnVal);
+  DictLookup(command,"string_return_value",NULL,(void *)&ReturnValStr);
 
   if (!PPL_FLOWCTRL_RETURNABLE) { ppl_error(ERR_SYNTAX, -1, -1, "The return statement can only be placed inside subroutines."); return 1; }
   PPL_FLOWCTRL_BREAKLEVEL = -1;
@@ -670,12 +670,12 @@ void directive_cd(Dict *command)
   wordexp_t     WordExp;
   glob_t        GlobData;
 
-  DictLookup(command,"path",NULL,(void **)(&DirList));
+  DictLookup(command,"path",NULL,(void *)&DirList);
   CDIterate = ListIterateInit(DirList);
   while (CDIterate != NULL)
    {
-    CDIterate = ListIterate(CDIterate , (void **)&DirNameDict);
-    DictLookup(DirNameDict,"directory",NULL,(void **)&DirName);
+    CDIterate = ListIterate(CDIterate , (void *)&DirNameDict);
+    DictLookup(DirNameDict,"directory",NULL,(void *)&DirName);
     if ((wordexp(DirName, &WordExp, 0) != 0) || (WordExp.we_wordc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", DirName); ppl_error(ERR_FILE, -1, -1, temp_err_string); return; }
     if ((glob(WordExp.we_wordv[0], 0, NULL, &GlobData) != 0) || (GlobData.gl_pathc <= 0)) { sprintf(temp_err_string, "Could not enter directory '%s'.", WordExp.we_wordv[0]); ppl_error(ERR_FILE, -1, -1, temp_err_string); wordfree(&WordExp); return; }
     wordfree(&WordExp);
@@ -701,7 +701,7 @@ int directive_exec(Dict *command, int IterLevel)
 
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
-  DictLookup(command,"command",NULL,(void **)(&strval));
+  DictLookup(command,"command",NULL,(void *)&strval);
   SetInputSourceString(strval, &i);
   ClearInputSource(NULL,NULL,NULL,&OldLB,&OldLBP,&OldLBA);
   PPL_SHELL_EXITING = 0;
@@ -731,7 +731,7 @@ void directive_history(Dict *command)
   endpos       = where_history();
   history_data = history_list();
 
-  DictLookup(command,"number_lines",NULL,(void **)&Nlines);
+  DictLookup(command,"number_lines",NULL,(void *)&Nlines);
   if (Nlines != NULL) start = endpos - *Nlines;
   if (start < 0) start=0;
 
@@ -752,7 +752,7 @@ void directive_save(Dict *command)
   FILE *outfile = NULL;
   HIST_ENTRY **history_data;
 
-  DictLookup(command,"filename",NULL,(void **)&outfname);
+  DictLookup(command,"filename",NULL,(void *)&outfname);
   if ((outfname != NULL) && (outfname[0]!='\0'))
    {
     DataFile_CreateBackupIfRequired(outfname);
@@ -789,15 +789,15 @@ void directive_print(Dict *command)
   char          PrintString[LSTR_LENGTH] = "\0";
   int           i=0;
 
-  DictLookup(command,"print_list,",NULL,(void **)(&ItemList));
+  DictLookup(command,"print_list,",NULL,(void *)&ItemList);
   if (ItemList != NULL) ItemIterate = ListIterateInit(ItemList);
   else                  ItemIterate = NULL;
   while (ItemIterate != NULL)
    {
-    ItemIterate = ListIterate(ItemIterate , (void **)&ItemSubDict);
-    DictLookup(ItemSubDict,"string",NULL,(void **)&item_str);
+    ItemIterate = ListIterate(ItemIterate , (void *)&ItemSubDict);
+    DictLookup(ItemSubDict,"string",NULL,(void *)&item_str);
     if (item_str != NULL) { strcpy(PrintString+i, item_str); i+=strlen(PrintString+i); }
-    DictLookup(ItemSubDict,"expression",NULL,(void **)&item_val);
+    DictLookup(ItemSubDict,"expression",NULL,(void *)&item_val);
     if (item_val != NULL)
      {
       strcpy(PrintString+i, ppl_units_NumericDisplay(item_val, 0, 0, 0)); i+=strlen(PrintString+i);
@@ -823,8 +823,8 @@ int directive_regex(Dict *command)
   sigaddset(&sigs,SIGCHLD);
 
   // Extract the name of the variable we're going to perform regular expression upon
-  DictLookup(command, "varname", NULL, (void **)(&varname));
-  DictLookup(_ppl_UserSpace_Vars, varname, NULL, (void **)(&varnumval));
+  DictLookup(command, "varname", NULL, (void *)&varname);
+  DictLookup(_ppl_UserSpace_Vars, varname, NULL, (void *)&varnumval);
   if (varnumval == NULL)
    {
     sprintf(temp_err_string, "No such variable as '%s'.", varname);
@@ -839,7 +839,7 @@ int directive_regex(Dict *command)
    }
 
   // Copy the regular expression we're going to use into cmd, adding s onto the front
-  DictLookup(command, "regex", NULL, (void **)(&varname));
+  DictLookup(command, "regex", NULL, (void *)&varname);
   strcpy(cmd, "s"); i=strlen(cmd);
   for (j=0; (ci=varname[j])!='\0'; j++) cmd[i++] = ci;
   cmd[i++] = '\0';

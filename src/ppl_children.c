@@ -192,7 +192,7 @@ void CSPCheckForChildExits(int signo)
   iter = ListIterateInit(GhostViews);
   while (iter != NULL)
    {
-    iter = ListIterate(iter, (void **)&gv_pid);
+    iter = ListIterate(iter, (void *)&gv_pid);
     if (waitpid(*gv_pid,NULL,WNOHANG) != 0)
      {
       if (DEBUG) { sprintf(temp_err_string, "A ghostview process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
@@ -203,7 +203,7 @@ void CSPCheckForChildExits(int signo)
   iter = ListIterateInit(GhostView_Persists);
   while (iter != NULL)
    {
-    iter = ListIterate(iter, (void **)&gv_pid);
+    iter = ListIterate(iter, (void *)&gv_pid);
     if (waitpid(*gv_pid,NULL,WNOHANG) != 0)
      {
       if (DEBUG) { sprintf(temp_err_string, "A persistent ghostview process with pid %d has terminated.", *gv_pid); ppl_log(temp_err_string); }
@@ -388,7 +388,7 @@ void CSPKillAllGvs()
   iter = ListIterateInit(GhostViews);
   while (iter != NULL)
    {
-    iter = ListIterate(iter, (void **)&gv_pid);
+    iter = ListIterate(iter, (void *)&gv_pid);
     kill(*gv_pid, SIGTERM); // Dulce et decorum est pro patria mori
     if (GhostView_pid == *gv_pid) GhostView_pid = 0;
    }
@@ -421,7 +421,7 @@ void PPLCheckForChildExits(int signo)
   iter = ListIterateInit(HelperPIDs);
   while (iter != NULL)
    {
-    iter = ListIterate(iter, (void **)&pid);
+    iter = ListIterate(iter, (void *)&pid);
     if (waitpid(*pid,NULL,WNOHANG) != 0)
      {
       if (DEBUG) { sprintf(text, "A helper process with pid %d has terminated.", *pid); ppl_log(text); }
@@ -443,7 +443,7 @@ void PPLKillAllHelpers()
   iter = ListIterateInit(HelperPIDs);
   while (iter != NULL)
    {
-    iter = ListIterate(iter, (void **)&pid);
+    iter = ListIterate(iter, (void *)&pid);
     kill(*pid, SIGTERM); // Dulce et decorum est pro patria mori
    }
   sigprocmask(SIG_UNBLOCK, &sigs, NULL);

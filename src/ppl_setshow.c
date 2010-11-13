@@ -52,7 +52,7 @@
 void directive_seterror(Dict *command, int interactive)
  {
   char *tempstr;
-  DictLookup(command,"set_option",NULL, (void **)&tempstr);
+  DictLookup(command,"set_option",NULL, (void *)&tempstr);
   if (tempstr != NULL)
    {
     if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); }
@@ -68,7 +68,7 @@ void directive_seterror(Dict *command, int interactive)
 void directive_unseterror(Dict *command, int interactive)
  {
   char *tempstr;
-  DictLookup(command,"set_option",NULL, (void **)&tempstr);
+  DictLookup(command,"set_option",NULL, (void *)&tempstr);
   if (tempstr != NULL)
    {
     if (!interactive) { sprintf(temp_err_string, "Unrecognised set option '%s'.", tempstr); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); }
@@ -102,7 +102,7 @@ void directive_set(Dict *command)
   label_object  **ll;
   settings_axis  *xa, *ya, *za, *tempaxis, *tempaxis2;
 
-  DictLookup(command,"editno",NULL,(void **)(&EditNo));
+  DictLookup(command,"editno",NULL,(void *)&EditNo);
   if (EditNo == NULL)
    {
     sg = &settings_graph_current;
@@ -128,8 +128,8 @@ void directive_set(Dict *command)
     if ((xa==NULL)||(ya==NULL)||(za==NULL)) { al=NULL; ll=NULL; } // Objects which do not store axes also do not store any text labels or arrows
    }
 
-  DictLookup(command,"directive",NULL,(void **)(&directive));
-  DictLookup(command,"set_option",NULL,(void **)(&setoption));
+  DictLookup(command,"directive",NULL,(void *)&directive);
+  DictLookup(command,"set_option",NULL,(void *)&setoption);
 
   strcmp_set   = (strcmp(directive,"set"  )==0);
   strcmp_unset = (strcmp(directive,"unset")==0);
@@ -166,7 +166,7 @@ void directive_set(Dict *command)
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
       unsigned char set = (directive[0]=='s'), SetAll;
-      DictLookup(command,"axes",NULL,(void **)&templist);
+      DictLookup(command,"axes",NULL,(void *)&templist);
       if ((templist != NULL) && (ListLen(templist)>0))
        {
         SetAll=0;
@@ -174,7 +174,7 @@ void directive_set(Dict *command)
         while (listiter != NULL)
          {
           tempdict = (Dict *)listiter->data;
-          DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
           i = (int)GetFloat(tempstr+1,NULL);
           SET_AUTOSCALE_AXIS;
           listiter = ListIterate(listiter, NULL);
@@ -196,12 +196,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"axis")==0)) /* set axis */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     listiter = ListIterateInit(templist);
     while (listiter != NULL)
      {
       tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
       i = (int)GetFloat(tempstr+1,NULL);
       if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
        {
@@ -209,41 +209,41 @@ void directive_set(Dict *command)
         else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
         else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
         tempaxis->enabled=1;
-        DictLookup(command,"invisible",NULL,(void **)&tempstr2);
+        DictLookup(command,"invisible",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->invisible=1;
-        DictLookup(command,"visible",NULL,(void **)&tempstr2);
+        DictLookup(command,"visible",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->invisible=0;
-        DictLookup(command,"atzero",NULL,(void **)&tempstr2);
+        DictLookup(command,"atzero",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->atzero=1;
-        DictLookup(command,"notatzero",NULL,(void **)&tempstr2);
+        DictLookup(command,"notatzero",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->atzero=0;
-        DictLookup(command,"notlinked",NULL,(void **)&tempstr2);
+        DictLookup(command,"notlinked",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->linked=0;
-        DictLookup(command,"linked",NULL,(void **)&tempstr2);
+        DictLookup(command,"linked",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->linked=1;
-        DictLookup(command,"xorient",NULL,(void **)&tempstr2);
+        DictLookup(command,"xorient",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL)
          {
           if (tempstr[0]!='x') ppl_warning(ERR_SYNTAX, "Can only specify the positions 'top' or 'bottom' for x axes.");
           else                 tempaxis->topbottom=(strcmp(tempstr2,"on")==0);
          }
-        DictLookup(command,"yorient",NULL,(void **)&tempstr2);
+        DictLookup(command,"yorient",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL)
          {
           if (tempstr[0]!='y') ppl_warning(ERR_SYNTAX, "Can only specify the positions 'left' and 'right' for y axes.");
           else                 tempaxis->topbottom=(strcmp(tempstr2,"on")==0);
          }
-        DictLookup(command,"zorient",NULL,(void **)&tempstr2);
+        DictLookup(command,"zorient",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL)
          {
           if (tempstr[0]!='z') ppl_warning(ERR_SYNTAX, "Can only specify the positions 'front' and 'back' for z axes.");
           else                 tempaxis->topbottom=(strcmp(tempstr2,"on")==0);
          }
-        DictLookup(command,"mirror",NULL,(void **)&tempstr2);
+        DictLookup(command,"mirror",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->MirrorType = FetchSettingByName(tempstr2, SW_AXISMIRROR_INT, SW_AXISMIRROR_STR);
-        DictLookup(command,"axisdisp",NULL,(void **)&tempstr2);
+        DictLookup(command,"axisdisp",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL) tempaxis->ArrowType  = FetchSettingByName(tempstr2, SW_AXISDISP_INT, SW_AXISDISP_STR);
-        DictLookup(command,"linkaxis",NULL,(void **)&tempstr2);
+        DictLookup(command,"linkaxis",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL)
          {
           j = (int)GetFloat(tempstr2+1,NULL);
@@ -254,9 +254,9 @@ void directive_set(Dict *command)
           else if (tempstr2[0]=='z') { tempaxis->LinkedAxisToXYZ = 2; }
           else                       { tempaxis->LinkedAxisToXYZ = 0; }
          }
-        DictLookup(command,"linktoid",NULL,(void **)&tempint);
+        DictLookup(command,"linktoid",NULL,(void *)&tempint);
         if (tempint != NULL) tempaxis->LinkedAxisCanvasID = *tempint;
-        DictLookup(command,"usingexp",NULL,(void **)&tempstr2);
+        DictLookup(command,"usingexp",NULL,(void *)&tempstr2);
         if (tempstr2 != NULL)
          {
           tempaxis->linkusing = (char *)malloc(strlen(tempstr2)+1);
@@ -269,12 +269,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_unset && (strcmp(setoption,"axis")==0)) /* unset axis */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     listiter = ListIterateInit(templist);
     while (listiter != NULL)
      {
       tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+      DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
       i = (int)GetFloat(tempstr+1,NULL);
       if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
        {
@@ -287,7 +287,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"axisunitstyle")==0)) /* set axisunitstyle */
    {
-    DictLookup(command,"unitstyle",NULL,(void **)&tempstr);
+    DictLookup(command,"unitstyle",NULL,(void *)&tempstr);
     sg->AxisUnitStyle = FetchSettingByName(tempstr, SW_AXISUNITSTY_INT, SW_AXISUNITSTY_STR);
    }
   else if (strcmp_unset && (strcmp(setoption,"axisunitstyle")==0)) /* unset axisunitstyle */
@@ -304,9 +304,9 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"bar")==0)) /* set bar */
    {
-    DictLookup(command,"bar_size"      ,NULL,(void **)&tempdbl );
-    DictLookup(command,"bar_size_large",NULL,(void **)&tempstr );
-    DictLookup(command,"bar_size_small",NULL,(void **)&tempstr2);
+    DictLookup(command,"bar_size"      ,NULL,(void *)&tempdbl );
+    DictLookup(command,"bar_size_large",NULL,(void *)&tempstr );
+    DictLookup(command,"bar_size_small",NULL,(void *)&tempstr2);
 
     if     ((tempdbl  != NULL) && (!gsl_finite(*tempdbl))) { ppl_error(ERR_NUMERIC, -1, -1, "The bar size specified in the 'set bar' command was not finite."); return; }
 
@@ -321,12 +321,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"binorigin")==0)) /* set binorigin */
    {
-    DictLookup(command,"auto",NULL,(void **)&tempval);
+    DictLookup(command,"auto",NULL,(void *)&tempval);
     if (tempval!=NULL)
      {
       settings_term_current.BinOriginAuto = 1;
      } else {
-      DictLookup(command,"bin_origin",NULL,(void **)&tempval);
+      DictLookup(command,"bin_origin",NULL,(void *)&tempval);
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The specified bin origin was not finite."); return; }
       settings_term_current.BinOrigin = *tempval;
       settings_term_current.BinOriginAuto = 0;
@@ -339,12 +339,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"binwidth")==0)) /* set binwidth */
    {
-    DictLookup(command,"auto",NULL,(void **)&tempval);
+    DictLookup(command,"auto",NULL,(void *)&tempval);
     if (tempval!=NULL)
      {
       settings_term_current.BinWidthAuto = 1;
      } else {
-      DictLookup(command,"bin_width",NULL,(void **)&tempval);
+      DictLookup(command,"bin_width",NULL,(void *)&tempval);
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The specified bin width was not finite."); return; }
       if (tempval->real <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Width of histogram bins must be greater than zero."); return; }
       settings_term_current.BinWidth = *tempval;
@@ -358,12 +358,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"boxfrom")==0)) /* set boxfrom */
    {
-    DictLookup(command,"auto",NULL,(void **)&tempval);
+    DictLookup(command,"auto",NULL,(void *)&tempval);
     if (tempval!=NULL)
      {
       sg->BoxFromAuto = 1;
      } else {
-      DictLookup(command,"box_from",NULL,(void **)&tempval);
+      DictLookup(command,"box_from",NULL,(void *)&tempval);
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set boxfrom' command was not finite."); return; }
       sg->BoxFrom = *tempval;
       sg->BoxFromAuto = 0;
@@ -376,12 +376,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"boxwidth")==0)) /* set boxwidth */
    {
-    DictLookup(command,"auto",NULL,(void **)&tempval);
+    DictLookup(command,"auto",NULL,(void *)&tempval);
     if (tempval!=NULL)
      {
       sg->BoxWidthAuto = 1;
      } else {
-      DictLookup(command,"box_width",NULL,(void **)&tempval);
+      DictLookup(command,"box_width",NULL,(void *)&tempval);
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The width supplied to the 'set boxwidth' command was not finite."); return; }
       sg->BoxWidth = *tempval;
       sg->BoxWidthAuto = 0;
@@ -394,20 +394,20 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"c1format")==0)) /* set c1format */
    {
-    DictLookup(command,"format_string",NULL,(void **)&tempstr2);
+    DictLookup(command,"format_string",NULL,(void *)&tempstr2);
     if (tempstr2 != NULL)
      {
       snprintf(sg->c1format, FNAME_LENGTH, "%s", tempstr2);
       sg->c1format[FNAME_LENGTH-1]='\0';
       sg->c1formatset = 1;
      }
-    DictLookup(command,"orient",NULL,(void **)&tempstr2);
+    DictLookup(command,"orient",NULL,(void *)&tempstr2);
     if (tempstr2 != NULL)
      {
       sg->c1TickLabelRotation = FetchSettingByName(tempstr2, SW_TICLABDIR_INT, SW_TICLABDIR_STR);
       sg->c1TickLabelRotate   = settings_graph_default.c1TickLabelRotate;
      }
-    DictLookup(command,"rotation",NULL,(void **)&tempval);
+    DictLookup(command,"rotation",NULL,(void *)&tempval);
     if (tempval != NULL)
      {
       if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set c1format' command was not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
@@ -440,13 +440,13 @@ void directive_set(Dict *command)
      }
     else
      {
-      DictLookup(command,"label_text",NULL,(void **)&tempstr2);
+      DictLookup(command,"label_text",NULL,(void *)&tempstr2);
       if (tempstr2!=NULL)
        {
         snprintf(sg->c1label, FNAME_LENGTH, "%s", tempstr2);
         sg->c1label[FNAME_LENGTH-1]='\0';
        }
-      DictLookup(command,"rotation",NULL,(void **)&tempval);
+      DictLookup(command,"rotation",NULL,(void *)&tempval);
       if (tempval!=NULL)
        {
         if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set c1label' command was not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
@@ -466,12 +466,12 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"calendar")==0)) /* set calendar */
    {
-    DictLookup(command,"calendar"   ,NULL,(void **)&tempstr);
+    DictLookup(command,"calendar"   ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.CalendarIn  =
                          settings_term_current.CalendarOut = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
-    DictLookup(command,"calendarin" ,NULL,(void **)&tempstr);
+    DictLookup(command,"calendarin" ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.CalendarIn  = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
-    DictLookup(command,"calendarout",NULL,(void **)&tempstr);
+    DictLookup(command,"calendarout",NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.CalendarOut = FetchSettingByName(tempstr, SW_CALENDAR_INT, SW_CALENDAR_STR);
    }
   else if (strcmp_unset && (strcmp(setoption,"calendar")==0)) /* unset calendar */
@@ -490,7 +490,7 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"colkey")==0)) /* set colkey */
    {
     sg->ColKey = SW_ONOFF_ON;
-    DictLookup(command,"pos",NULL,(void **)&tempstr);
+    DictLookup(command,"pos",NULL,(void *)&tempstr);
     if (tempstr!=NULL) sg->ColKeyPos = FetchSettingByName(tempstr, SW_COLKEYPOS_INT, SW_COLKEYPOS_STR);
    }
   else if (strcmp_unset && (strcmp(setoption,"colkey")==0)) /* unset colkey */
@@ -501,17 +501,17 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"colmap")==0)) /* set colmap */
    {
     char *cR, *cG, *cB, *cH, *cS, *cC, *cM, *cY, *cK, *mask, *nomask;
-    DictLookup(command,"colourR",NULL,(void **)&cR);
-    DictLookup(command,"colourG",NULL,(void **)&cG);
-    DictLookup(command,"colourB",NULL,(void **)&cB);
-    DictLookup(command,"colourH",NULL,(void **)&cH);
-    DictLookup(command,"colourS",NULL,(void **)&cS);
-    DictLookup(command,"colourC",NULL,(void **)&cC);
-    DictLookup(command,"colourM",NULL,(void **)&cM);
-    DictLookup(command,"colourY",NULL,(void **)&cY);
-    DictLookup(command,"colourK",NULL,(void **)&cK);
-    DictLookup(command,"mask"   ,NULL,(void **)&mask);
-    DictLookup(command,"nomask" ,NULL,(void **)&nomask);
+    DictLookup(command,"colourR",NULL,(void *)&cR);
+    DictLookup(command,"colourG",NULL,(void *)&cG);
+    DictLookup(command,"colourB",NULL,(void *)&cB);
+    DictLookup(command,"colourH",NULL,(void *)&cH);
+    DictLookup(command,"colourS",NULL,(void *)&cS);
+    DictLookup(command,"colourC",NULL,(void *)&cC);
+    DictLookup(command,"colourM",NULL,(void *)&cM);
+    DictLookup(command,"colourY",NULL,(void *)&cY);
+    DictLookup(command,"colourK",NULL,(void *)&cK);
+    DictLookup(command,"mask"   ,NULL,(void *)&mask);
+    DictLookup(command,"nomask" ,NULL,(void *)&nomask);
     if      (cR!=NULL)
      {
       sg->ColMapColSpace = SW_COLSPACE_RGB;
@@ -562,8 +562,8 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"contours")==0)) /* set contours */
    {
-    DictLookup(command,"contours",NULL,(void **)&tempint);
-    DictLookup(command,"contour_list,",NULL,(void **)&templist);
+    DictLookup(command,"contours",NULL,(void *)&tempint);
+    DictLookup(command,"contour_list,",NULL,(void *)&templist);
     if (tempint != NULL)
      {
       if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Contour maps cannot be constucted with fewer than two contours."); return; }
@@ -581,7 +581,7 @@ void directive_set(Dict *command)
       for (listiter = ListIterateInit(templist); listiter!=NULL; listiter = ListIterate(listiter, NULL), n++)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"contour",NULL,(void **)&tempval);
+        DictLookup(tempdict,"contour",NULL,(void *)&tempval);
         if (n==0) { sg->ContoursUnit = *tempval; sg->ContoursUnit.real = 1.0; }
         else      { if (!ppl_units_DimEqual(tempval, &sg->ContoursUnit)) { sprintf(temp_err_string, "Items in list of contours have conflicting units. First item has units of <%s>, but subsequent item has units of <%s>.", ppl_units_GetUnitStr(&sg->ContoursUnit, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(tempval, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC,-1,-1,temp_err_string); break; } }
         if (!gsl_finite(tempval->real)) { ppl_warning(ERR_NUMERIC,"Ignoring non-finite value in list of contours."); continue; }
@@ -590,8 +590,8 @@ void directive_set(Dict *command)
        }
       sg->ContoursListLen = n;
      }
-    DictLookup(command,"label"  ,NULL,(void **)&tempstr );
-    DictLookup(command,"nolabel",NULL,(void **)&tempstr2);
+    DictLookup(command,"label"  ,NULL,(void *)&tempstr );
+    DictLookup(command,"nolabel",NULL,(void *)&tempstr2);
     if (tempstr !=NULL) sg->ContoursLabel = SW_ONOFF_ON;
     if (tempstr2!=NULL) sg->ContoursLabel = SW_ONOFF_OFF;
    }
@@ -606,11 +606,11 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"crange")==0)) /* set crange */
    {
     char *tempstr_cno; int c;
-    DictLookup(command,"c_number",NULL,(void **)&tempstr_cno); c=(int)(tempstr_cno[0]-'1');
-    DictLookup(command,"minauto",NULL,(void **)&tempstr);
-    DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
-    DictLookup(command,"min",NULL,(void **)&tempval);
-    DictLookup(command,"max",NULL,(void **)&tempval2);
+    DictLookup(command,"c_number",NULL,(void *)&tempstr_cno); c=(int)(tempstr_cno[0]-'1');
+    DictLookup(command,"minauto",NULL,(void *)&tempstr);
+    DictLookup(command,"maxauto",NULL,(void *)&tempstr2);
+    DictLookup(command,"min",NULL,(void *)&tempval);
+    DictLookup(command,"max",NULL,(void *)&tempval2);
     if ((tempstr ==NULL)&&(tempval ==NULL)&&(sg->Cminauto[c]==SW_BOOL_FALSE)) tempval = &sg->Cmin[c];
     if ((tempstr2==NULL)&&(tempval2==NULL)&&(sg->Cmaxauto[c]==SW_BOOL_FALSE)) tempval2= &sg->Cmax[c];
     if ((tempval !=NULL)&&(!gsl_finite(tempval ->real))) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set crange' command had non-finite limits."); return; }
@@ -620,19 +620,19 @@ void directive_set(Dict *command)
     if (tempval2!=NULL) { sg->Cmax[c] = *tempval2; sg->Cmaxauto[c] = SW_BOOL_FALSE; }
     if (tempstr !=NULL) {                          sg->Cminauto[c] = SW_BOOL_TRUE;  }
     if (tempstr2!=NULL) {                          sg->Cmaxauto[c] = SW_BOOL_TRUE;  }
-    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    DictLookup(command,"reverse",NULL,(void *)&tempstr);
     if (tempstr != NULL) { sg->Creverse[c] = SW_BOOL_TRUE; }
-    DictLookup(command,"noreverse",NULL,(void **)&tempstr);
+    DictLookup(command,"noreverse",NULL,(void *)&tempstr);
     if (tempstr != NULL) { sg->Creverse[c] = SW_BOOL_FALSE; }
-    DictLookup(command,"renormalise",NULL,(void **)&tempstr);
+    DictLookup(command,"renormalise",NULL,(void *)&tempstr);
     if (tempstr != NULL) sg->Crenorm[c] = SW_BOOL_TRUE;
-    DictLookup(command,"norenormalise",NULL,(void **)&tempstr);
+    DictLookup(command,"norenormalise",NULL,(void *)&tempstr);
     if (tempstr != NULL) sg->Crenorm[c] = SW_BOOL_FALSE;
    }
   else if (strcmp_unset && (strcmp(setoption,"crange")==0)) /* unset crange */
    {
     char *tempstr_cno; int c;
-    DictLookup(command,"c_number",NULL,(void **)&tempstr_cno); c=(int)(tempstr_cno[0]-'1');
+    DictLookup(command,"c_number",NULL,(void *)&tempstr_cno); c=(int)(tempstr_cno[0]-'1');
     sg->Cmin[c]     = settings_graph_default.Cmin[c];
     sg->Cminauto[c] = settings_graph_default.Cminauto[c];
     sg->Cmax[c]     = settings_graph_default.Cmax[c];
@@ -650,8 +650,8 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"filter")==0)) /* set filter */
    {
-    DictLookup(command,"filename",NULL,(void **)&tempstr);
-    DictLookup(command,"filter",NULL,(void **)&tempstr2);
+    DictLookup(command,"filename",NULL,(void *)&tempstr);
+    DictLookup(command,"filter",NULL,(void *)&tempstr2);
     ppl_units_zero(&valobj);
     valobj.string = tempstr2;
     valobj.modified = 1;
@@ -659,14 +659,14 @@ void directive_set(Dict *command)
    }
   else if (strcmp_unset && (strcmp(setoption,"filter")==0)) /* unset filter */
    {
-    DictLookup(command,"filename",NULL,(void **)&tempstr);
-    DictLookup(settings_filters,tempstr,NULL,(void **)&tempstr2);
+    DictLookup(command,"filename",NULL,(void *)&tempstr);
+    DictLookup(settings_filters,tempstr,NULL,(void *)&tempstr2);
     if (tempstr2 == NULL) { ppl_warning(ERR_GENERAL, "Attempt to unset a filter which did not exist."); return; }
     DictRemoveKey(settings_filters,tempstr);
    }
   else if (strcmp_set && (strcmp(setoption,"fontsize")==0)) /* set fontsize */
    {
-    DictLookup(command,"fontsize",NULL,(void **)&tempdbl);
+    DictLookup(command,"fontsize",NULL,(void *)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set fontsize' command was not finite."); return; }
     if (*tempdbl <= 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Font sizes are not allowed to be less than or equal to zero."); return; }
     sg->FontSize = *tempdbl;
@@ -692,7 +692,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"grid")==0)) /* set grid */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     if (ListLen(templist)==0)
      {
       if (sg->grid != SW_ONOFF_ON)
@@ -714,7 +714,7 @@ void directive_set(Dict *command)
       while (listiter != NULL)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
         i = (int)GetFloat(tempstr+1,NULL);
         if      (tempstr[0]=='y') { sg->GridAxisY[i] = 1; }
         else if (tempstr[0]=='z') { sg->GridAxisZ[i] = 1; }
@@ -733,7 +733,7 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"key")==0)) /* set key */
    {
     sg->key = SW_ONOFF_ON; // Turn key on
-    DictLookup(command,"x_offset",NULL,(void **)&tempval); // Horizontal offset
+    DictLookup(command,"x_offset",NULL,(void *)&tempval); // Horizontal offset
     if (tempval != NULL)
      {
       if (!(tempval->dimensionless))
@@ -750,7 +750,7 @@ void directive_set(Dict *command)
       if (!gsl_finite(tempval->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The horizontal offset supplied to the 'set key' command was not finite."); return; }
       sg->KeyXOff.real = tempval->real;
      }
-    DictLookup(command,"y_offset",NULL,(void **)&tempval); // Vertical offset
+    DictLookup(command,"y_offset",NULL,(void *)&tempval); // Vertical offset
     if (tempval != NULL)
      {
       if (!(tempval->dimensionless))
@@ -769,12 +769,12 @@ void directive_set(Dict *command)
      }
 
     // Now work out position of key
-    DictLookup(command,"pos",NULL,(void **)&tempstr);
+    DictLookup(command,"pos",NULL,(void *)&tempstr);
     if (tempstr != NULL)
      { sg->KeyPos = FetchSettingByName(tempstr, SW_KEYPOS_INT, SW_KEYPOS_STR); }
     else
      {
-      DictLookup(command,"xpos",NULL,(void **)&tempstr);
+      DictLookup(command,"xpos",NULL,(void *)&tempstr);
       if (tempstr != NULL)
        {
         if (strcmp(tempstr,"left")==0)
@@ -796,7 +796,7 @@ void directive_set(Dict *command)
           else                                                                                         sg->KeyPos=SW_KEYPOS_MR;
          }
        }
-      DictLookup(command,"ypos",NULL,(void **)&tempstr);
+      DictLookup(command,"ypos",NULL,(void *)&tempstr);
       if (tempstr != NULL)
        {
         if (strcmp(tempstr,"top")==0)
@@ -829,7 +829,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"keycolumns")==0)) /* set keycolumns */
    {
-    DictLookup(command,"key_columns",NULL,(void **)&tempint);
+    DictLookup(command,"key_columns",NULL,(void *)&tempint);
     if (tempint == NULL) sg->KeyColumns = 0; // automatic columns
     else
      {
@@ -851,7 +851,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"linewidth")==0)) /* set linewidth */
    {
-    DictLookup(command,"linewidth",NULL,(void **)&tempdbl);
+    DictLookup(command,"linewidth",NULL,(void *)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set linewidth' command was not finite."); return; }
     if (*tempdbl < 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Line widths are not allowed to be less than zero."); return; }
     sg->LineWidth = *tempdbl;
@@ -862,7 +862,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"logscale")==0))         /* set logscale */
    {
-    DictLookup(command,"base",NULL,(void **)&tempint);
+    DictLookup(command,"base",NULL,(void *)&tempint);
     if (tempint!=NULL)
      {
       if ((*tempint < 2) || (*tempint > 1024))
@@ -872,14 +872,14 @@ void directive_set(Dict *command)
         tempint = &ten;
        }
      }
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     if (templist != NULL)
      {
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
         if (tempstr != NULL)
          {
           i = (int)GetFloat(tempstr+1,NULL);
@@ -894,20 +894,20 @@ void directive_set(Dict *command)
             if (tempint!=NULL) tempaxis->LogBase = (double)(*tempint);
            }
          } else {
-          DictLookup(tempdict,"c1log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c1log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[0] = SW_BOOL_TRUE; // No concept of log base on C/T axes as they're never drawn as an axis with ticks
-          DictLookup(tempdict,"c2log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c2log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[1] = SW_BOOL_TRUE;
-          DictLookup(tempdict,"c3log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c3log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[2] = SW_BOOL_TRUE;
-          DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c4log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[3] = SW_BOOL_TRUE;
 
-          DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"tlog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Tlog = SW_BOOL_TRUE;
-          DictLookup(tempdict,"ulog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"ulog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Ulog = SW_BOOL_TRUE;
-          DictLookup(tempdict,"vlog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"vlog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Vlog = SW_BOOL_TRUE;
          }
         listiter = ListIterate(listiter, NULL);
@@ -923,14 +923,14 @@ void directive_set(Dict *command)
    }
   else if (strcmp_unset && (strcmp(setoption,"logscale")==0)) /* unset logscale */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     if (templist != NULL)
      {
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
         if (tempstr != NULL)
          {
           i = (int)GetFloat(tempstr+1,NULL);
@@ -941,20 +941,20 @@ void directive_set(Dict *command)
             else                      { if (xa[i].log != XAxesDefault[i].log) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; xa[i].TickStep = XAxesDefault[i].TickStep; xa[i].TickMin = XAxesDefault[i].TickMin; xa[i].TickMax = XAxesDefault[i].TickMax; xa[i].MTickStep = XAxesDefault[i].MTickStep; xa[i].MTickMin = XAxesDefault[i].MTickMin; xa[i].MTickMax = XAxesDefault[i].MTickMax; } xa[i].log = XAxesDefault[i].log; xa[i].LogBase = XAxesDefault[i].LogBase; }
            }
          } else {
-          DictLookup(tempdict,"c1log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c1log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[0] = settings_graph_default.Clog[0];
-          DictLookup(tempdict,"c2log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c2log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[1] = settings_graph_default.Clog[1];
-          DictLookup(tempdict,"c3log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c3log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[2] = settings_graph_default.Clog[2];
-          DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c4log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[3] = settings_graph_default.Clog[3];
 
-          DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"tlog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Tlog = settings_graph_default.Tlog;
-          DictLookup(tempdict,"ulog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"ulog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Ulog = settings_graph_default.Ulog;
-          DictLookup(tempdict,"vlog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"vlog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Vlog = settings_graph_default.Vlog;
          }
         listiter = ListIterate(listiter, NULL);
@@ -1010,7 +1010,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"nogrid")==0)) /* set nogrid */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     if (ListLen(templist)==0)
      {
       sg->grid = SW_ONOFF_OFF;
@@ -1019,7 +1019,7 @@ void directive_set(Dict *command)
       while (listiter != NULL)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
         i = (int)GetFloat(tempstr+1,NULL);
         if      (tempstr[0]=='y') { sg->GridAxisY[i] = 0; }
         else if (tempstr[0]=='z') { sg->GridAxisZ[i] = 0; }
@@ -1038,14 +1038,14 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"nologscale")==0)) /* set nologscale */
    {
-    DictLookup(command,"axes",NULL,(void **)&templist);
+    DictLookup(command,"axes",NULL,(void *)&templist);
     if (templist != NULL)
      {
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"axis",NULL,(void **)&tempstr);
+        DictLookup(tempdict,"axis",NULL,(void *)&tempstr);
         if (tempstr != NULL)
          {
           i = (int)GetFloat(tempstr+1,NULL);
@@ -1056,20 +1056,20 @@ void directive_set(Dict *command)
             else                      { xa[i].enabled=1; if (xa[i].log != SW_BOOL_FALSE) { xa[i].TickStepSet = xa[i].TickMinSet = xa[i].TickMaxSet = xa[i].MTickStepSet = xa[i].MTickMinSet = xa[i].MTickMaxSet = 0; xa[i].TickStep=XAxesDefault[i].TickStep; xa[i].TickMin=XAxesDefault[i].TickMin; xa[i].TickMax=XAxesDefault[i].TickMax; xa[i].MTickStep=XAxesDefault[i].MTickStep; xa[i].MTickMin=XAxesDefault[i].MTickMin; xa[i].MTickMax=XAxesDefault[i].MTickMax; } xa[i].log = SW_BOOL_FALSE; }
            }
          } else {
-          DictLookup(tempdict,"c1log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c1log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[0] = SW_BOOL_FALSE;
-          DictLookup(tempdict,"c2log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c2log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[1] = SW_BOOL_FALSE;
-          DictLookup(tempdict,"c3log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c3log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[2] = SW_BOOL_FALSE;
-          DictLookup(tempdict,"c4log",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"c4log",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Clog[3] = SW_BOOL_FALSE;
 
-          DictLookup(tempdict,"tlog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"tlog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Tlog = SW_BOOL_FALSE;
-          DictLookup(tempdict,"ulog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"ulog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Ulog = SW_BOOL_FALSE;
-          DictLookup(tempdict,"vlog",NULL,(void **)&tempstr);
+          DictLookup(tempdict,"vlog",NULL,(void *)&tempstr);
           if (tempstr != NULL) sg->Vlog = SW_BOOL_FALSE;
          }
         listiter = ListIterate(listiter, NULL);
@@ -1093,7 +1093,7 @@ void directive_set(Dict *command)
 
 #define SET_NOTICS \
  { \
-      DictLookup(command,"minor",NULL,(void **)&tempstr2); \
+      DictLookup(command,"minor",NULL,(void *)&tempstr2); \
       if (tempstr2==NULL) \
        { \
         tempaxis->TickMin      = tempaxis2->TickMin; \
@@ -1134,7 +1134,7 @@ void directive_set(Dict *command)
 
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      DictLookup(command,"axis",NULL,(void **)&tempstr);
+      DictLookup(command,"axis",NULL,(void *)&tempstr);
       if (tempstr != NULL)
        {
         i = (int)GetFloat(tempstr+1,NULL);
@@ -1157,7 +1157,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"noxformat")==0)) /* set noxformat */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    DictLookup(command,"axis",NULL,(void *)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -1171,18 +1171,18 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"numerics")==0)) /* set numerics */
    {
-    DictLookup(command,"complex", NULL,(void **)&tempstr);
+    DictLookup(command,"complex", NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.ComplexNumbers     = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"errortype", NULL,(void **)&tempstr);
+    DictLookup(command,"errortype", NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.ExplicitErrors     = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"number_significant_figures", NULL,(void **)&tempint);
+    DictLookup(command,"number_significant_figures", NULL,(void *)&tempint);
     if (tempint != NULL)
      {
       if (*tempint <  1) { ppl_error(ERR_GENERAL, -1, -1, "Numbers cannot be displayed to fewer than one significant figure."); return; }
       if (*tempint > 30) { ppl_error(ERR_GENERAL, -1, -1, "It is not sensible to try to display numbers to more than 30 significant figures. Calculations in PyXPlot are only accurate to double precision."); return; }
       settings_term_current.SignificantFigures = *tempint;
      }
-    DictLookup(command,"display", NULL,(void **)&tempstr);
+    DictLookup(command,"display", NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.NumDisplay = FetchSettingByName(tempstr, SW_DISPLAY_INT, SW_DISPLAY_STR);
    }
   else if (strcmp_unset && (strcmp(setoption,"numerics")==0)) /* unset numerics */
@@ -1210,8 +1210,8 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"origin")==0)) /* set origin */
    {
-    DictLookup(command,"x_origin",NULL,(void **)&tempval);
-    DictLookup(command,"y_origin",NULL,(void **)&tempval2);
+    DictLookup(command,"x_origin",NULL,(void *)&tempval);
+    DictLookup(command,"y_origin",NULL,(void *)&tempval2);
     if (!(tempval->dimensionless))
      {
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -1246,7 +1246,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"output")==0)) /* set output */
    {
-    DictLookup(command,"filename",NULL,(void **)&tempstr);
+    DictLookup(command,"filename",NULL,(void *)&tempstr);
     strncpy(settings_term_current.output, tempstr, FNAME_LENGTH-4);
     sg->title[FNAME_LENGTH-4]='\0';
    }
@@ -1257,14 +1257,14 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"palette")==0)) /* set palette */
    {
-    DictLookup(command,"palette,",NULL,(void **)&templist);
+    DictLookup(command,"palette,",NULL,(void *)&templist);
     listiter = ListIterateInit(templist);
     i=0;
     while (listiter != NULL)
      {
       if (i == PALETTE_LENGTH-1) { ppl_warning(ERR_GENERAL, "The set palette command has been passed a palette which is too long; truncating it."); break; }
       tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"colour",NULL,(void **)&tempstr);
+      DictLookup(tempdict,"colour",NULL,(void *)&tempstr);
       if (tempstr != NULL)
        {
         j = FetchSettingByName(tempstr, SW_COLOUR_INT, SW_COLOUR_STR);
@@ -1274,15 +1274,15 @@ void directive_set(Dict *command)
         value *colR, *colG, *colB, *colH, *colS, *colC, *colM, *colY, *colK;
         unsigned char fail=0;
 
-        DictLookup(tempdict,"colourR",NULL,(void **)&colR);
-        DictLookup(tempdict,"colourG",NULL,(void **)&colG);
-        DictLookup(tempdict,"colourB",NULL,(void **)&colB);
-        DictLookup(tempdict,"colourH",NULL,(void **)&colH);
-        DictLookup(tempdict,"colourS",NULL,(void **)&colS);
-        DictLookup(tempdict,"colourC",NULL,(void **)&colC);
-        DictLookup(tempdict,"colourM",NULL,(void **)&colM);
-        DictLookup(tempdict,"colourY",NULL,(void **)&colY);
-        DictLookup(tempdict,"colourK",NULL,(void **)&colK);
+        DictLookup(tempdict,"colourR",NULL,(void *)&colR);
+        DictLookup(tempdict,"colourG",NULL,(void *)&colG);
+        DictLookup(tempdict,"colourB",NULL,(void *)&colB);
+        DictLookup(tempdict,"colourH",NULL,(void *)&colH);
+        DictLookup(tempdict,"colourS",NULL,(void *)&colS);
+        DictLookup(tempdict,"colourC",NULL,(void *)&colC);
+        DictLookup(tempdict,"colourM",NULL,(void *)&colM);
+        DictLookup(tempdict,"colourY",NULL,(void *)&colY);
+        DictLookup(tempdict,"colourK",NULL,(void *)&colK);
 
 #define CHECK_COLCOMPS(COLX) \
         { \
@@ -1344,7 +1344,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"papersize")==0)) /* set papersize */
    {
-    DictLookup(command,"paper_name",NULL,(void **)&tempstr);
+    DictLookup(command,"paper_name",NULL,(void *)&tempstr);
     if (tempstr != NULL)
      {
       ppl_PaperSizeByName(tempstr, &dbl1, &dbl2);
@@ -1357,8 +1357,8 @@ void directive_set(Dict *command)
         sprintf(temp_err_string, "Unrecognised paper size '%s'.", tempstr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
        }
      } else {
-      DictLookup(command,"x_size",NULL,(void **)&tempval);
-      DictLookup(command,"y_size",NULL,(void **)&tempval2);
+      DictLookup(command,"x_size",NULL,(void *)&tempval);
+      DictLookup(command,"y_size",NULL,(void *)&tempval2);
       if (!(tempval->dimensionless))
        {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -1398,7 +1398,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"pointlinewidth")==0)) /* set pointlinewidth */
    {
-    DictLookup(command,"pointlinewidth",NULL,(void **)&tempdbl);
+    DictLookup(command,"pointlinewidth",NULL,(void *)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointlinewidth' command was not finite."); return; }
     if (*tempdbl < 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point line widths are not allowed to be less than zero."); return; }
     sg->PointLineWidth = *tempdbl;
@@ -1409,7 +1409,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"pointsize")==0)) /* set pointsize */
    {
-    DictLookup(command,"pointsize",NULL,(void **)&tempdbl);
+    DictLookup(command,"pointsize",NULL,(void *)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set pointsize' command was not finite."); return; }
     if (*tempdbl < 0.0) { ppl_error(ERR_GENERAL, -1, -1, "Point sizes are not allowed to be less than zero."); return; }
     sg->PointSize = *tempdbl;
@@ -1420,7 +1420,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"preamble")==0)) /* set preamble */
    {
-    DictLookup(command,"preamble",NULL,(void **)&tempstr);
+    DictLookup(command,"preamble",NULL,(void *)&tempstr);
     strncpy(settings_term_current.LatexPreamble, tempstr, FNAME_LENGTH-4);
     settings_term_current.LatexPreamble[FNAME_LENGTH-4]='\0';
    }
@@ -1431,7 +1431,7 @@ void directive_set(Dict *command)
    }
 //  else if (strcmp_set && (strcmp(setoption,"projection")==0)) /* set projection */
 //   {
-//    DictLookup(command,"projection",NULL,(void **)&tempstr);
+//    DictLookup(command,"projection",NULL,(void *)&tempstr);
 //    sg->projection = FetchSettingByName(tempstr, SW_PROJ_INT, SW_PROJ_STR);
 //   }
 //  else if (strcmp_unset && (strcmp(setoption,"projection")==0)) /* unset projection */
@@ -1441,31 +1441,31 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"samples")==0)) /* set samples */
    {
     int two=2;
-    DictLookup(command,"samples",NULL,(void **)&tempint);
+    DictLookup(command,"samples",NULL,(void *)&tempint);
     if (tempint != NULL)
      {
       if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); tempint=&two; }
       sg->samples = *tempint;
      }
-    DictLookup(command,"samplesX",NULL,(void **)&tempint);
+    DictLookup(command,"samplesX",NULL,(void *)&tempint);
     if (tempint != NULL)
      {
       if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); tempint=&two; }
       sg->SamplesX     = *tempint;
       sg->SamplesXAuto = SW_BOOL_FALSE;
      }
-    DictLookup(command,"samplesXauto",NULL,(void **)&tempstr);
+    DictLookup(command,"samplesXauto",NULL,(void *)&tempstr);
     if (tempstr != NULL) sg->SamplesXAuto = SW_BOOL_TRUE;
-    DictLookup(command,"samplesY",NULL,(void **)&tempint);
+    DictLookup(command,"samplesY",NULL,(void *)&tempint);
     if (tempint != NULL)
      {
       if (*tempint < 2.0) { ppl_error(ERR_GENERAL, -1, -1, "Graphs cannot be constucted based on fewer than two samples."); tempint=&two; }
       sg->SamplesY     = *tempint;
       sg->SamplesYAuto = SW_BOOL_FALSE;
      }
-    DictLookup(command,"samplesYauto",NULL,(void **)&tempstr);
+    DictLookup(command,"samplesYauto",NULL,(void *)&tempstr);
     if (tempstr != NULL) sg->SamplesYAuto = SW_BOOL_TRUE;
-    DictLookup(command,"method",NULL,(void **)&tempstr);
+    DictLookup(command,"method",NULL,(void *)&tempstr);
     if (tempstr != NULL) sg->Sample2DMethod = FetchSettingByName(tempstr, SW_SAMPLEMETHOD_INT, SW_SAMPLEMETHOD_STR);
    }
   else if (strcmp_unset && (strcmp(setoption,"samples")==0)) /* unset samples */
@@ -1479,7 +1479,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"seed")==0)) /* set seed */
    {
-    DictLookup(command,"seed",NULL,(void **)&tempdbl);
+    DictLookup(command,"seed",NULL,(void *)&tempdbl);
     if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The value supplied to the 'set seed' command was not finite."); return; }
     if      (*tempdbl < LONG_MIN) li = LONG_MIN;
     else if (*tempdbl > LONG_MAX) li = LONG_MAX;
@@ -1496,7 +1496,7 @@ void directive_set(Dict *command)
    {
     if (DictContains(command,"width"))
      {
-      DictLookup(command,"width",NULL,(void **)&tempval);
+      DictLookup(command,"width",NULL,(void *)&tempval);
       if (!(tempval->dimensionless))
        {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -1514,7 +1514,7 @@ void directive_set(Dict *command)
     if (DictContains(command,"height"))
      {
       double r;
-      DictLookup(command,"height",NULL,(void **)&tempval);
+      DictLookup(command,"height",NULL,(void *)&tempval);
       if (!(tempval->dimensionless))
        {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -1535,7 +1535,7 @@ void directive_set(Dict *command)
     if (DictContains(command,"zsize"))
      {
       double r;
-      DictLookup(command,"zsize",NULL,(void **)&tempval);
+      DictLookup(command,"zsize",NULL,(void *)&tempval);
       if (!(tempval->dimensionless))
        {
         for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -1555,7 +1555,7 @@ void directive_set(Dict *command)
      }
     if (DictContains(command,"ratio"))
      {
-      DictLookup(command,"ratio",NULL,(void **)&tempdbl);
+      DictLookup(command,"ratio",NULL,(void *)&tempdbl);
       if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The y/x aspect ratio supplied to the 'set size' command was not finite."); return; }
       if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested y/x aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
       sg->aspect = *tempdbl;
@@ -1563,7 +1563,7 @@ void directive_set(Dict *command)
      }
     if (DictContains(command,"zratio"))
      {
-      DictLookup(command,"zratio",NULL,(void **)&tempdbl);
+      DictLookup(command,"zratio",NULL,(void *)&tempdbl);
       if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The z/x aspect ratio supplied to the 'set size' command was not finite."); return; }
       if ((fabs(*tempdbl) < 1e-6) || (fabs(*tempdbl) > 1e4)) { ppl_error(ERR_GENERAL, -1, -1, "The requested z/x aspect ratios for graphs must be in the range 1e-6 to 10000."); return; }
       sg->zaspect = *tempdbl;
@@ -1597,7 +1597,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"style")==0)) /* set style data / function */
    {
-    DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
+    DictLookup(command,"dataset_type",NULL,(void *)&tempstr);
     if (tempstr[0]=='d') tempstyle = &sg->DataStyle;
     else                 tempstyle = &sg->FuncStyle;
     with_words_fromdict(command, &ww_temp1, 1);
@@ -1607,7 +1607,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"style_numbered")==0)) /* set style */
    {
-    DictLookup(command,"style_set_number"   ,NULL,(void **)&tempint);
+    DictLookup(command,"style_set_number"   ,NULL,(void *)&tempint);
     if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return; }
     with_words_fromdict(command, &ww_temp1, 0);
     with_words_destroy (&(settings_plot_styles[*tempint]));
@@ -1615,18 +1615,18 @@ void directive_set(Dict *command)
    }
   else if (strcmp_unset && (strcmp(setoption,"style")==0)) /* unset style */
    {
-    DictLookup(command,"dataset_type",NULL,(void **)&tempstr);
+    DictLookup(command,"dataset_type",NULL,(void *)&tempstr);
     if (tempstr != NULL)
      {
       if (tempstr[0]=='d') sg->DataStyle = settings_graph_default.DataStyle;
       else                 sg->FuncStyle = settings_graph_default.FuncStyle;
      } else {
-      DictLookup(command,"style_ids,",NULL,(void **)&templist);
+      DictLookup(command,"style_ids,",NULL,(void *)&templist);
       listiter = ListIterateInit(templist);
       while (listiter != NULL)
        {
         tempdict = (Dict *)listiter->data;
-        DictLookup(tempdict,"id",NULL,(void **)&tempint);
+        DictLookup(tempdict,"id",NULL,(void *)&tempint);
         if ((*tempint<0)||(*tempint>=MAX_PLOTSTYLES)) { sprintf(temp_err_string, "plot style numbers must be in the range 0-%d", MAX_PLOTSTYLES-1); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); }
         else
          {
@@ -1639,26 +1639,26 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"terminal")==0)) /* set terminal */
    {
-    DictLookup(command,"term"   ,NULL,(void **)&tempstr);
+    DictLookup(command,"term"   ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.TermType        = FetchSettingByName(tempstr, SW_TERMTYPE_INT, SW_TERMTYPE_STR);
-    DictLookup(command,"antiali",NULL,(void **)&tempstr);
+    DictLookup(command,"antiali",NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.TermAntiAlias   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"col"    ,NULL,(void **)&tempstr);
+    DictLookup(command,"col"    ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.colour          = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"dpi",NULL,(void **)&tempdbl);
+    DictLookup(command,"dpi",NULL,(void *)&tempdbl);
     if (tempdbl != NULL)
      {
       if (!gsl_finite(*tempdbl)) { ppl_error(ERR_NUMERIC, -1, -1, "The DPI resolution supplied to the 'set terminal' command was not finite."); }
       else if (*tempdbl <= 2.0)  { ppl_error(ERR_GENERAL, -1, -1, "Output image resolutions below two dots per inch are not supported."); }
       else                       { settings_term_current.dpi = *tempdbl; }
      }
-    DictLookup(command,"enlarge",NULL,(void **)&tempstr);
+    DictLookup(command,"enlarge",NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.TermEnlarge     = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"land"   ,NULL,(void **)&tempstr);
+    DictLookup(command,"land"   ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.landscape       = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"trans"  ,NULL,(void **)&tempstr);
+    DictLookup(command,"trans"  ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.TermTransparent = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"invert" ,NULL,(void **)&tempstr);
+    DictLookup(command,"invert" ,NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.TermInvert      = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
    }
   else if (strcmp_unset && (strcmp(setoption,"terminal")==0)) /* unset terminal */
@@ -1696,13 +1696,13 @@ void directive_set(Dict *command)
    {
 
 #define SET_TICS \
-      DictLookup(command,"minor"     ,NULL,(void **)&tempstr2); \
-      DictLookup(command,"dir"       ,NULL,(void **)&tempstr3); \
-      DictLookup(command,"autofreq"  ,NULL,(void **)&tempstr4); \
-      DictLookup(command,"start"     ,NULL,(void **)&tempval); \
-      DictLookup(command,"increment" ,NULL,(void **)&tempval2); \
-      DictLookup(command,"end"       ,NULL,(void **)&tempval3); \
-      DictLookup(command,"tick_list,",NULL,(void **)&templist); \
+      DictLookup(command,"minor"     ,NULL,(void *)&tempstr2); \
+      DictLookup(command,"dir"       ,NULL,(void *)&tempstr3); \
+      DictLookup(command,"autofreq"  ,NULL,(void *)&tempstr4); \
+      DictLookup(command,"start"     ,NULL,(void *)&tempval); \
+      DictLookup(command,"increment" ,NULL,(void *)&tempval2); \
+      DictLookup(command,"end"       ,NULL,(void *)&tempval3); \
+      DictLookup(command,"tick_list,",NULL,(void *)&templist); \
       if (tempstr2==NULL) /* major ticks */ \
        { \
         if (tempstr3 != NULL) tempaxis->TickDir = FetchSettingByName(tempstr3, SW_TICDIR_INT, SW_TICDIR_STR); \
@@ -1756,8 +1756,8 @@ void directive_set(Dict *command)
            { \
             tempdict = (Dict *)listiter->data; \
             listiter = ListIterate(listiter, NULL); \
-            DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
-            DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
+            DictLookup(tempdict,"x"    ,NULL,(void *)&tempval); \
+            DictLookup(tempdict,"label",NULL,(void *)&tempstr); \
             if (((k!=0)||(tempaxis->MinSet==SW_BOOL_TRUE)||(tempaxis->MaxSet==SW_BOOL_TRUE)||(tempaxis->MTickList!=NULL)||(tempaxis->MTickStepSet!=0))&&(!ppl_units_DimEqual(tempval, &tempaxis->unit))) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this ordinate value is not finite.", ppl_units_NumericDisplay(tempval,0,0,0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             if ((k==0)&&(tempaxis->MinSet!=SW_BOOL_TRUE)&&(tempaxis->MaxSet!=SW_BOOL_TRUE)&&(tempaxis->MTickList==NULL)&&(tempaxis->MTickStepSet==0)) tempaxis->unit = *tempval; \
@@ -1823,8 +1823,8 @@ void directive_set(Dict *command)
            { \
             tempdict = (Dict *)listiter->data; \
             listiter = ListIterate(listiter, NULL); \
-            DictLookup(tempdict,"x"    ,NULL,(void **)&tempval); \
-            DictLookup(tempdict,"label",NULL,(void **)&tempstr); \
+            DictLookup(tempdict,"x"    ,NULL,(void *)&tempval); \
+            DictLookup(tempdict,"label",NULL,(void *)&tempstr); \
             if (((k!=0)||(tempaxis->MinSet==SW_BOOL_TRUE)||(tempaxis->MaxSet==SW_BOOL_TRUE)||(tempaxis->MTickList!=NULL)||(tempaxis->MTickStepSet!=0))&&(!ppl_units_DimEqual(tempval, &tempaxis->unit))) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this is not dimensionally compatible with the range set for this axis which has units of <%s>.", ppl_units_NumericDisplay(tempval,0,0,0), ppl_units_GetUnitStr(&tempaxis->unit, NULL, NULL, 1, 1, 0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "Ignoring axis label for ordinate value %s; this ordinate value is not finite.", ppl_units_NumericDisplay(tempval,0,0,0)); ppl_warning(ERR_GENERAL, temp_err_string); continue; } \
             if ((k==0)&&(tempaxis->MinSet!=SW_BOOL_TRUE)&&(tempaxis->MaxSet!=SW_BOOL_TRUE)&&(tempaxis->TickList==NULL)&&(tempaxis->TickStepSet==0)) tempaxis->unit = *tempval; \
@@ -1841,7 +1841,7 @@ void directive_set(Dict *command)
 
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      DictLookup(command,"axis",NULL,(void **)&tempstr);
+      DictLookup(command,"axis",NULL,(void *)&tempstr);
       if (tempstr != NULL)
        {
         i = (int)GetFloat(tempstr+1,NULL);
@@ -1863,7 +1863,7 @@ void directive_set(Dict *command)
    {
 
 #define UNSET_TICS \
-      DictLookup(command,"minor",NULL,(void **)&tempstr2); \
+      DictLookup(command,"minor",NULL,(void *)&tempstr2); \
       if (tempstr2==NULL) \
        { \
         tempaxis->TickDir      = tempaxis2->TickDir; \
@@ -1901,7 +1901,7 @@ void directive_set(Dict *command)
 
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
-      DictLookup(command,"axis",NULL,(void **)&tempstr);
+      DictLookup(command,"axis",NULL,(void *)&tempstr);
       if (tempstr != NULL)
        {
         i = (int)GetFloat(tempstr+1,NULL);
@@ -1920,11 +1920,11 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"title")==0)) /* set title */
    {
-    DictLookup(command,"title",NULL,(void **)&tempstr);
+    DictLookup(command,"title",NULL,(void *)&tempstr);
     strncpy(sg->title, tempstr, FNAME_LENGTH-4);
     sg->title[FNAME_LENGTH-4]='\0';
-    DictLookup(command,"x_offset",NULL,(void **)&tempval);
-    DictLookup(command,"y_offset",NULL,(void **)&tempval2);
+    DictLookup(command,"x_offset",NULL,(void *)&tempval);
+    DictLookup(command,"y_offset",NULL,(void *)&tempval2);
     if (tempval != NULL)
      {
       if (!(tempval->dimensionless))
@@ -1967,11 +1967,11 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"trange")==0)) /* set trange */
    {
-    DictLookup(command,"range",NULL,(void **)&tempstr);
+    DictLookup(command,"range",NULL,(void *)&tempstr);
     if (tempstr!=NULL)
      {
-      DictLookup(command,"min",NULL,(void **)&tempval);
-      DictLookup(command,"max",NULL,(void **)&tempval2);
+      DictLookup(command,"min",NULL,(void *)&tempval);
+      DictLookup(command,"max",NULL,(void *)&tempval2);
       if (tempval == NULL) tempval = &sg->Tmin;
       if (tempval2== NULL) tempval2= &sg->Tmax;
       if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set trange' command had non-finite limits."); return; }
@@ -1980,7 +1980,7 @@ void directive_set(Dict *command)
       sg->Tmin = *tempval;
       sg->Tmax = *tempval2;
      }
-    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    DictLookup(command,"reverse",NULL,(void *)&tempstr);
     if (tempstr != NULL) { valobj = sg->Tmin; sg->Tmin = sg->Tmax; sg->Tmax = valobj; }
     sg->USE_T_or_uv = 1;
    }
@@ -1992,15 +1992,15 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"unit")==0)) /* set unit */
    {
-    DictLookup(command,"angle"    , NULL,(void **)&tempstr);
+    DictLookup(command,"angle"    , NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.UnitAngleDimless    = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"prefix"  , NULL,(void **)&tempstr);
+    DictLookup(command,"prefix"  , NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.UnitDisplayPrefix   = FetchSettingByName(tempstr, SW_ONOFF_INT, SW_ONOFF_STR);
-    DictLookup(command,"scheme"  , NULL,(void **)&tempstr);
+    DictLookup(command,"scheme"  , NULL,(void *)&tempstr);
     if (tempstr != NULL) settings_term_current.UnitScheme          = FetchSettingByName(tempstr, SW_UNITSCH_INT, SW_UNITSCH_STR);
 
-    DictLookup(command,"preferred_unit"  , NULL,(void **)&tempstr2);
-    DictLookup(command,"unpreferred_unit", NULL,(void **)&tempstr3);
+    DictLookup(command,"preferred_unit"  , NULL,(void *)&tempstr2);
+    DictLookup(command,"unpreferred_unit", NULL,(void *)&tempstr3);
     if ((tempstr2!=NULL) || (tempstr3!=NULL))
      {
       char *buf = (char *)lt_malloc(LSTR_LENGTH);
@@ -2034,13 +2034,13 @@ void directive_set(Dict *command)
         }
      }
 
-    DictLookup(command,"preferred_units,",NULL,(void **)&templist);
+    DictLookup(command,"preferred_units,",NULL,(void *)&templist);
     listiter = ListIterateInit(templist);
     while (listiter != NULL)
      {
       tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"quantity",NULL,(void **)&tempstr);
-      DictLookup(tempdict,"unit"    ,NULL,(void **)&tempstr2);
+      DictLookup(tempdict,"quantity",NULL,(void *)&tempstr);
+      DictLookup(tempdict,"unit"    ,NULL,(void *)&tempstr2);
       i=0; // Quantity recognised
       pp=p=0; // Unit recognised
       for (j=0; j<ppl_unit_pos; j++)
@@ -2140,7 +2140,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_unset && (strcmp(setoption,"unit_of")==0)) /* unset unit of */
    {
-    DictLookup(command,"quantity",NULL,(void **)&tempstr);
+    DictLookup(command,"quantity",NULL,(void *)&tempstr);
     i=0; // Quantity recognised
     for (j=0; j<ppl_unit_pos; j++)
      {
@@ -2154,11 +2154,11 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"urange")==0)) /* set urange */
    {
-    DictLookup(command,"range",NULL,(void **)&tempstr);
+    DictLookup(command,"range",NULL,(void *)&tempstr);
     if (tempstr!=NULL)
      {
-      DictLookup(command,"min",NULL,(void **)&tempval);
-      DictLookup(command,"max",NULL,(void **)&tempval2);
+      DictLookup(command,"min",NULL,(void *)&tempval);
+      DictLookup(command,"max",NULL,(void *)&tempval2);
       if (tempval == NULL) tempval = &sg->Umin;
       if (tempval2== NULL) tempval2= &sg->Umax;
       if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set urange' command had non-finite limits."); return; }
@@ -2167,7 +2167,7 @@ void directive_set(Dict *command)
       sg->Umin = *tempval;
       sg->Umax = *tempval2;
      }
-    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    DictLookup(command,"reverse",NULL,(void *)&tempstr);
     if (tempstr != NULL) { valobj = sg->Umin; sg->Umin = sg->Umax; sg->Umax = valobj; }
     sg->USE_T_or_uv = 0;
    }
@@ -2179,11 +2179,11 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"vrange")==0)) /* set vrange */
    {
-    DictLookup(command,"range",NULL,(void **)&tempstr);
+    DictLookup(command,"range",NULL,(void *)&tempstr);
     if (tempstr!=NULL)
      {
-      DictLookup(command,"min",NULL,(void **)&tempval);
-      DictLookup(command,"max",NULL,(void **)&tempval2);
+      DictLookup(command,"min",NULL,(void *)&tempval);
+      DictLookup(command,"max",NULL,(void *)&tempval2);
       if (tempval == NULL) tempval = &sg->Vmin;
       if (tempval2== NULL) tempval2= &sg->Vmax;
       if (!gsl_finite(tempval ->real)) { ppl_error(ERR_NUMERIC, -1, -1, "The range supplied to the 'set vrange' command had non-finite limits."); return; }
@@ -2192,7 +2192,7 @@ void directive_set(Dict *command)
       sg->Vmin = *tempval;
       sg->Vmax = *tempval2;
      }
-    DictLookup(command,"reverse",NULL,(void **)&tempstr);
+    DictLookup(command,"reverse",NULL,(void *)&tempstr);
     if (tempstr != NULL) { valobj = sg->Vmin; sg->Vmin = sg->Vmax; sg->Vmax = valobj; }
     sg->USE_T_or_uv = 0;
    }
@@ -2208,8 +2208,8 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"view")==0)) /* set view */
    {
-    DictLookup(command,"xy_angle",NULL,(void **)&tempval);
-    DictLookup(command,"yz_angle",NULL,(void **)&tempval2);
+    DictLookup(command,"xy_angle",NULL,(void *)&tempval);
+    DictLookup(command,"yz_angle",NULL,(void *)&tempval2);
     if (!(tempval->dimensionless))
      {
       for (i=0; i<UNITS_MAX_BASEUNITS; i++)
@@ -2247,8 +2247,8 @@ void directive_set(Dict *command)
   else if (strcmp_set && (strcmp(setoption,"viewer")==0)) /* set viewer */
    {
     unsigned char ChangedViewer = 0;
-    DictLookup(command,"auto_viewer",NULL,(void **)&tempstr );
-    DictLookup(command,"viewer"     ,NULL,(void **)&tempstr2);
+    DictLookup(command,"auto_viewer",NULL,(void *)&tempstr );
+    DictLookup(command,"viewer"     ,NULL,(void *)&tempstr2);
     if (tempstr != NULL)
      {
       int ViewerOld = settings_term_current.viewer;
@@ -2274,7 +2274,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"xformat")==0)) /* set xformat */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    DictLookup(command,"axis",NULL,(void *)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -2282,20 +2282,20 @@ void directive_set(Dict *command)
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
       if (tempaxis->format != NULL) { free(tempaxis->format); tempaxis->format = NULL; }
-      DictLookup(command,"format_string",NULL,(void **)&tempstr2);
+      DictLookup(command,"format_string",NULL,(void *)&tempstr2);
       if (tempstr2 != NULL)
        {
         tempaxis->format = (char *)malloc(strlen(tempstr2)+1);
         if (tempaxis->format == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return; }
         strcpy(tempaxis->format , tempstr2);
        }
-      DictLookup(command,"orient",NULL,(void **)&tempstr2);
+      DictLookup(command,"orient",NULL,(void *)&tempstr2);
       if (tempstr2 != NULL)
        {
         tempaxis->TickLabelRotation = FetchSettingByName(tempstr2, SW_TICLABDIR_INT, SW_TICLABDIR_STR);
         tempaxis->TickLabelRotate   = tempaxis2->TickLabelRotate;
        }
-      DictLookup(command,"rotation",NULL,(void **)&tempval);
+      DictLookup(command,"rotation",NULL,(void *)&tempval);
       if (tempval != NULL)
        {
         if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set %sformat' command was not finite.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
@@ -2315,7 +2315,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_unset && (strcmp(setoption,"xformat")==0)) /* unset xformat */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    DictLookup(command,"axis",NULL,(void *)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -2335,7 +2335,7 @@ void directive_set(Dict *command)
    }
   else if ((strcmp(setoption,"xlabel")==0)) /* set xlabel / unset xlabel */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    DictLookup(command,"axis",NULL,(void *)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -2351,14 +2351,14 @@ void directive_set(Dict *command)
       else
        {
         tempaxis->enabled=1;
-        DictLookup(command,"label_text",NULL,(void **)&tempstr2);
+        DictLookup(command,"label_text",NULL,(void *)&tempstr2);
         if ((tempstr2!=NULL)&&(strlen(tempstr2)>0))
          {
           tempaxis->label = (char *)malloc(strlen(tempstr2)+1);
           if (tempaxis->label == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return; }
           strcpy(tempaxis->label, tempstr2);
          }
-        DictLookup(command,"rotation",NULL,(void **)&tempval);
+        DictLookup(command,"rotation",NULL,(void *)&tempval);
         if (tempval!=NULL)
          {
           if (!gsl_finite(tempval->real)) { sprintf(temp_err_string, "The rotation angle supplied to the 'set %slabel' command was not finite.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
@@ -2379,7 +2379,7 @@ void directive_set(Dict *command)
    }
   else if (strcmp_set && (strcmp(setoption,"range")==0)) /* set xrange */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    DictLookup(command,"axis",NULL,(void *)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -2387,12 +2387,12 @@ void directive_set(Dict *command)
       else if (tempstr[0]=='z') { tempaxis = &za[i]; tempaxis2 = &ZAxesDefault[i]; }
       else                      { tempaxis = &xa[i]; tempaxis2 = &XAxesDefault[i]; }
       tempaxis->enabled=1; // Activate axis
-      DictLookup(command,"minauto",NULL,(void **)&tempstr2);
+      DictLookup(command,"minauto",NULL,(void *)&tempstr2);
       if (tempstr2!=NULL) { tempaxis->MinSet = SW_BOOL_FALSE; tempaxis->min = tempaxis2->min; } // Remove range information if user has specified a *
-      DictLookup(command,"maxauto",NULL,(void **)&tempstr2);
+      DictLookup(command,"maxauto",NULL,(void *)&tempstr2);
       if (tempstr2!=NULL) { tempaxis->MaxSet = SW_BOOL_FALSE; tempaxis->max = tempaxis2->max; }
-      DictLookup(command,"min",NULL,(void **)&tempval); // Read specified min/max. If these are not specified, read existing values
-      DictLookup(command,"max",NULL,(void **)&tempval2);
+      DictLookup(command,"min",NULL,(void *)&tempval); // Read specified min/max. If these are not specified, read existing values
+      DictLookup(command,"max",NULL,(void *)&tempval2);
       if ((tempval == NULL) && (tempaxis->MinSet==SW_BOOL_TRUE)) { tempval = &valobj ; valobj = tempaxis->unit; valobj .real = tempaxis->min; }
       if ((tempval2== NULL) && (tempaxis->MaxSet==SW_BOOL_TRUE)) { tempval2= &valobj2; valobj2= tempaxis->unit; valobj2.real = tempaxis->max; }
       if ((tempval!=NULL)&&(!gsl_finite(tempval->real))) { sprintf(temp_err_string, "The range specified to the 'set %srange' command had a non-finite lower limit.", tempstr); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return; }
@@ -2432,15 +2432,15 @@ void directive_set(Dict *command)
           tempaxis->MTickStrs  = NULL;
          }
        }
-      DictLookup(command,"reverse"  ,NULL,(void **)&tempstr);
+      DictLookup(command,"reverse"  ,NULL,(void *)&tempstr);
       if (tempstr != NULL) { tempaxis->RangeReversed = 1; }
-      DictLookup(command,"noreverse",NULL,(void **)&tempstr);
+      DictLookup(command,"noreverse",NULL,(void *)&tempstr);
       if (tempstr != NULL) { tempaxis->RangeReversed = 0; }
      }
    }
   else if (strcmp_unset && (strcmp(setoption,"range")==0)) /* unset xrange */
    {
-    DictLookup(command,"axis",NULL,(void **)&tempstr);
+    DictLookup(command,"axis",NULL,(void *)&tempstr);
     i = (int)GetFloat(tempstr+1,NULL);
     if ( !((xa==NULL)||(ya==NULL)||(za==NULL)) )
      {
@@ -3753,7 +3753,7 @@ void directive_show(Dict *command, int interactive)
 
   interactive = ( interactive && (settings_session_default.colour == SW_ONOFF_ON) );
 
-  DictLookup(command,"editno",NULL,(void **)&EditNo);
+  DictLookup(command,"editno",NULL,(void *)&EditNo);
   if (EditNo == NULL)
    {
     sg = &settings_graph_current;
@@ -3780,7 +3780,7 @@ void directive_show(Dict *command, int interactive)
     sprintf(ItemSet, "item %d ", *EditNo);
    }
 
-  DictLookup(command, "setting_list", NULL, (void **)&ShowList);
+  DictLookup(command, "setting_list", NULL, (void *)&ShowList);
   if ((ShowList==NULL) || (ListLen(ShowList) == 0))
    { ppl_error(ERR_PREFORMED, -1, -1, txt_show); }
   else
@@ -3804,8 +3804,8 @@ void directive_show(Dict *command, int interactive)
     ShowIterate = ListIterateInit(ShowList);
     while (ShowIterate != NULL)
      {
-      ShowIterate = ListIterate(ShowIterate, (void **)&ShowWordDict);
-      DictLookup(ShowWordDict,"setting",NULL,(void **)&ShowWord);
+      ShowIterate = ListIterate(ShowIterate, (void *)&ShowWordDict);
+      DictLookup(ShowWordDict,"setting",NULL,(void *)&ShowWord);
       if (StrAutocomplete(ShowWord,"all",1)>=0)
        {
         directive_show2("settings"   ,ItemSet, interactive, sg, al, ll, xa, ya, za);

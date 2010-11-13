@@ -353,7 +353,7 @@ Dict *parse(char *line, int IterLevel)
       cln=-1;
       if (CmdIterator==NULL) break;
      }
-    CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
+    CmdIterator     = ListIterate(CmdIterator, (void *)&CmdDescriptor);
     match           = 0;
     success         = 1;
     linepos         = 0;
@@ -473,7 +473,7 @@ char *parse_autocomplete(const char *LineConst, int status)
         CmdIterator = ListIterateInit(PplParserCmdList[cln--]);
         if (CmdIterator==NULL) continue;
        }
-      CmdIterator     = ListIterate(CmdIterator, (void **)&CmdDescriptor);
+      CmdIterator     = ListIterate(CmdIterator, (void *)&CmdDescriptor);
       match           = 0;
       success         = 1;
       linepos         = 0;

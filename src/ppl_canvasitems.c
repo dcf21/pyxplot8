@@ -1162,7 +1162,7 @@ int directive_piechart(Dict *command, int interactive)
   ptr->plotitems->PersistentDataTable=NULL;
 
   // Store either filename of datafile, or the list of functions which we are plotting
-  DictLookup(command, "filename", NULL, (void **)&tempstr);
+  DictLookup(command, "filename", NULL, (void *)&tempstr);
   if (tempstr != NULL) // We are plotting a datafile
    {
     ptr->plotitems->function = 0;
@@ -1175,7 +1175,7 @@ int directive_piechart(Dict *command, int interactive)
     ptr->plotitems->function = 1;
     ptr->plotitems->filename = NULL;
     ptr->plotitems->parametric = 0;
-    DictLookup(command, "expression_list:", NULL, (void **)&ExpressionList);
+    DictLookup(command, "expression_list:", NULL, (void *)&ExpressionList);
     j = ptr->plotitems->NFunctions = ListLen(ExpressionList);
     ptr->plotitems->functions = (char **)malloc(j * sizeof(char *));
     if (ptr->plotitems->functions == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
@@ -1183,7 +1183,7 @@ int directive_piechart(Dict *command, int interactive)
     for (i=0; i<j; i++)
      {
       TempDict2 = (Dict *)ListIter2->data;
-      DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
+      DictLookup(TempDict2, "expression", NULL, (void *)&tempstr);
       ptr->plotitems->functions[i] = (char *)malloc(strlen(tempstr)+1);
       if (ptr->plotitems->functions[i] == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
       strcpy(ptr->plotitems->functions[i], tempstr);
@@ -1192,7 +1192,7 @@ int directive_piechart(Dict *command, int interactive)
    }
 
   // Loop up format string
-  DictLookup(command, "format_string", NULL, (void **)&tempstr);
+  DictLookup(command, "format_string", NULL, (void *)&tempstr);
   if (tempstr==NULL) { ptr->text = NULL; }
   else
    {
@@ -1202,7 +1202,7 @@ int directive_piechart(Dict *command, int interactive)
    }
 
   // Look up label to apply to datapoints
-  DictLookup(command, "label", NULL, (void **)&tempstr);
+  DictLookup(command, "label", NULL, (void *)&tempstr);
   if (tempstr==NULL) { ptr->plotitems->label = NULL; }
   else
    {
@@ -1212,18 +1212,18 @@ int directive_piechart(Dict *command, int interactive)
    }
 
   // Look up label position
-  DictLookup(command, "piekeypos", NULL, (void **)&tempstr);
+  DictLookup(command, "piekeypos", NULL, (void *)&tempstr);
   if (tempstr==NULL) ptr->ArrowType = SW_PIEKEYPOS_AUTO;
   else               ptr->ArrowType = FetchSettingByName(tempstr, SW_PIEKEYPOS_INT, SW_PIEKEYPOS_STR);
 
   // Look up index , every, using modifiers
   ptr->plotitems->UsingRowCols = DATAFILE_COL;
   ptr->plotitems->index = -1;
-  DictLookup(command, "index"      , NULL, (void **)&indexptr);   if ((ptr->plotitems->IndexSet = (indexptr!=NULL))==1) ptr->plotitems->index = *indexptr;
-  DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) ptr->plotitems->UsingRowCols = DATAFILE_ROW;
-  DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) ptr->plotitems->UsingRowCols = DATAFILE_COL;
+  DictLookup(command, "index"      , NULL, (void *)&indexptr);   if ((ptr->plotitems->IndexSet = (indexptr!=NULL))==1) ptr->plotitems->index = *indexptr;
+  DictLookup(command, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) ptr->plotitems->UsingRowCols = DATAFILE_ROW;
+  DictLookup(command, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) ptr->plotitems->UsingRowCols = DATAFILE_COL;
 
-  DictLookup(command, "every_list:", NULL, (void **)&EveryList);
+  DictLookup(command, "every_list:", NULL, (void *)&EveryList);
   if (EveryList==NULL) { ptr->plotitems->EverySet = 0; }
   else
    {
@@ -1233,7 +1233,7 @@ int directive_piechart(Dict *command, int interactive)
     for (i=0; i<j; i++)
      {
       TempDict2 = (Dict *)ListIter2->data;
-      DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
+      DictLookup(TempDict2, "every_item", NULL, (void *)&tempint);
       if (tempint != NULL) ptr->plotitems->EveryList[i] = *tempint;
       else                 ptr->plotitems->EveryList[i] = -1;
       ListIter2 = ListIterate(ListIter2, NULL);
@@ -1241,7 +1241,7 @@ int directive_piechart(Dict *command, int interactive)
    }
 
   // Look up select modifier
-  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+  DictLookup(command, "select_criterion", NULL, (void *)&SelectCrit);
   if (SelectCrit==NULL) { ptr->plotitems->SelectCriterion = NULL; }
   else
    {
@@ -1251,7 +1251,7 @@ int directive_piechart(Dict *command, int interactive)
    }
 
   // Look up using modifiers
-  DictLookup(command, "using_list:", NULL, (void **)&UsingList);
+  DictLookup(command, "using_list:", NULL, (void *)&UsingList);
   if (UsingList==NULL) { ptr->plotitems->NUsing = 0; ptr->plotitems->UsingList = NULL; }
   else
    {
@@ -1260,7 +1260,7 @@ int directive_piechart(Dict *command, int interactive)
      {
       TempDict2 = (Dict *)(UsingList->first->data);
       if (TempDict2==NULL) { ptr->plotitems->NUsing = 0; ptr->plotitems->UsingList = NULL; goto FinishedUsing; }
-      DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+      DictLookup(TempDict2, "using_item", NULL, (void *)&cptr2);
       if (cptr2==NULL) { ptr->plotitems->NUsing = 0; ptr->plotitems->UsingList = NULL; goto FinishedUsing; }
      }
     ptr->plotitems->NUsing = j;
@@ -1270,7 +1270,7 @@ int directive_piechart(Dict *command, int interactive)
     for (i=0; i<j; i++)
      {
       TempDict2 = (Dict *)ListIter2->data;
-      DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+      DictLookup(TempDict2, "using_item", NULL, (void *)&cptr2);
       if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
       ptr->plotitems->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
       if (ptr->plotitems->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(ptr->plotitems); ptr->plotitems = NULL; return 1; }
@@ -1389,9 +1389,9 @@ int directive_text(Dict *command, int interactive)
   if (canvas_itemlist_add(command,CANVAS_TEXT,&ptr,&id,0)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(text); return 1; }
 
   // Check for halign or valign modifiers
-  DictLookup(command,"halign",NULL,(void **)&tempstr);
+  DictLookup(command,"halign",NULL,(void *)&tempstr);
   if (tempstr != NULL) ptr->settings.TextHAlign = FetchSettingByName(tempstr, SW_HALIGN_INT, SW_HALIGN_STR);
-  DictLookup(command,"valign",NULL,(void **)&tempstr);
+  DictLookup(command,"valign",NULL,(void *)&tempstr);
   if (tempstr != NULL) ptr->settings.TextVAlign = FetchSettingByName(tempstr, SW_VALIGN_INT, SW_VALIGN_STR);
 
   if (x  !=NULL) { ptr->xpos     = x  ->real; } else { ptr->xpos      = settings_graph_current.OriginX.real; }
@@ -1501,7 +1501,7 @@ int directive_plot(Dict *command, int interactive, int replot)
 
   if (replot) // If replotting, find canvas item to append plot items onto
    {
-    DictLookup(command, "editno", NULL, (void **)&EditNo);
+    DictLookup(command, "editno", NULL, (void *)&EditNo);
     if (EditNo == NULL) EditNo=&ReplotFocus;
     ptr = NULL;
     if (canvas_items != NULL)
@@ -1555,13 +1555,13 @@ int directive_plot(Dict *command, int interactive, int replot)
 
   if (!replot)
    {
-    DictLookup(command, "threedim", NULL, (void **)&cptr); // Set 3d flag
+    DictLookup(command, "threedim", NULL, (void *)&cptr); // Set 3d flag
     ptr->ThreeDim = (cptr!=NULL);
    }
 
   // Read list of ranges
-  DictLookup(command, "directive", NULL, (void **)&cptr);
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  DictLookup(command, "directive", NULL, (void *)&cptr);
+  DictLookup(command, "range_list", NULL, (void *)&RangeList);
   ListIter = ListIterateInit(RangeList);
   RangePtr = &ptr->plotranges;
   i=0;
@@ -1569,10 +1569,10 @@ int directive_plot(Dict *command, int interactive, int replot)
    {
     if (*RangePtr == NULL) { *RangePtr=(canvas_plotrange *)malloc(sizeof(canvas_plotrange)); if (*RangePtr == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); return 1; } ppl_units_zero(&(*RangePtr)->unit); (*RangePtr)->min=(*RangePtr)->max=0.0; (*RangePtr)->MinSet=(*RangePtr)->MaxSet=(*RangePtr)->AutoMinSet=(*RangePtr)->AutoMaxSet=0; (*RangePtr)->next=NULL; }
     TempDict = (Dict *)ListIter->data;
-    DictLookup(TempDict,"min"    ,NULL,(void **)&min);
-    DictLookup(TempDict,"max"    ,NULL,(void **)&max);
-    DictLookup(TempDict,"minauto",NULL,(void **)&MinAuto);
-    DictLookup(TempDict,"maxauto",NULL,(void **)&MaxAuto);
+    DictLookup(TempDict,"min"    ,NULL,(void *)&min);
+    DictLookup(TempDict,"max"    ,NULL,(void *)&max);
+    DictLookup(TempDict,"minauto",NULL,(void *)&MinAuto);
+    DictLookup(TempDict,"maxauto",NULL,(void *)&MaxAuto);
     if ((min!=NULL)&&(max!=NULL)&&(!ppl_units_DimEqual(min,max))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the %s command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(max,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     if ((min!=NULL)&&(max==NULL)&&(MaxAuto==NULL)&&((*RangePtr)->MaxSet)&&(!ppl_units_DimEqual(min,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The minimum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing maximum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(min,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
     if ((max!=NULL)&&(min==NULL)&&(MinAuto==NULL)&&((*RangePtr)->MinSet)&&(!ppl_units_DimEqual(max,&(*RangePtr)->unit))) { sprintf(temp_err_string, "The maximum limit specified in range %ld in the %s command has conflicting physical dimensions with the pre-existing minimum limit set for this range. The former has units of <%s>, whilst the latter has units of <%s>.", i+1, cptr, ppl_units_GetUnitStr(max,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&(*RangePtr)->unit,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
@@ -1586,7 +1586,7 @@ int directive_plot(Dict *command, int interactive, int replot)
    }
 
   // Read plot items
-  DictLookup(command, "plot_list,", NULL, (void **)&PlotList);
+  DictLookup(command, "plot_list,", NULL, (void *)&PlotList);
   ListIter = ListIterateInit(PlotList);
   PlotItemPtr = &ptr->plotitems;
   while (*PlotItemPtr != NULL) PlotItemPtr=&(*PlotItemPtr)->next; // Find end of list of plot items
@@ -1595,9 +1595,9 @@ int directive_plot(Dict *command, int interactive, int replot)
     TempDict = (Dict *)ListIter->data;
 
     // Check that axes are specified in the correct format before we malloc anything
-    DictLookup(TempDict, "axis_1", NULL, (void **)&tempstr );
-    DictLookup(TempDict, "axis_2", NULL, (void **)&tempstr2);
-    DictLookup(TempDict, "axis_3", NULL, (void **)&tempstr3);
+    DictLookup(TempDict, "axis_1", NULL, (void *)&tempstr );
+    DictLookup(TempDict, "axis_2", NULL, (void *)&tempstr2);
+    DictLookup(TempDict, "axis_3", NULL, (void *)&tempstr3);
     if (!((tempstr==NULL)&&(tempstr2==NULL)&&(tempstr3==NULL)))
      {
       temp_err_string[0]='\0';
@@ -1618,7 +1618,7 @@ int directive_plot(Dict *command, int interactive, int replot)
      }
 
     // Test whether we're plotting datafile or functions
-    DictLookup(TempDict, "filename", NULL, (void **)&tempstr);
+    DictLookup(TempDict, "filename", NULL, (void *)&tempstr);
     if (tempstr != NULL) PlottingDatafiles=1; else PlottingDatafiles=0;
     glob_handle = NULL;
 
@@ -1654,12 +1654,12 @@ int directive_plot(Dict *command, int interactive, int replot)
        {
         (*PlotItemPtr)->function = 1;
         (*PlotItemPtr)->filename = NULL;
-        DictLookup(TempDict, "parametric", NULL, (void **)&tempstr);
+        DictLookup(TempDict, "parametric", NULL, (void *)&tempstr);
         (*PlotItemPtr)->parametric = (tempstr!=NULL);
-        DictLookup(TempDict, "tmin", NULL, (void **)&tempval);
+        DictLookup(TempDict, "tmin", NULL, (void *)&tempval);
         (*PlotItemPtr)->TRangeSet  = (tempval!=NULL);
         if (tempval!=NULL) (*PlotItemPtr)->Tmin = *tempval;
-        DictLookup(TempDict, "tmax", NULL, (void **)&tempval);
+        DictLookup(TempDict, "tmax", NULL, (void *)&tempval);
         if (tempval!=NULL)
          {
           (*PlotItemPtr)->Tmax = *tempval;
@@ -1667,10 +1667,10 @@ int directive_plot(Dict *command, int interactive, int replot)
           else if (!gsl_finite((*PlotItemPtr)->Tmax.real)) { sprintf(temp_err_string, "Upper limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
           else if (!ppl_units_DimEqual(&(*PlotItemPtr)->Tmin, &(*PlotItemPtr)->Tmax)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter t have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(&(*PlotItemPtr)->Tmin, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(*PlotItemPtr)->Tmax, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->TRangeSet = 0; }
          }
-        DictLookup(TempDict, "vmin", NULL, (void **)&tempval);
+        DictLookup(TempDict, "vmin", NULL, (void *)&tempval);
         (*PlotItemPtr)->VRangeSet  = (tempval!=NULL);
         if (tempval!=NULL) (*PlotItemPtr)->Vmin = *tempval;
-        DictLookup(TempDict, "vmax", NULL, (void **)&tempval);
+        DictLookup(TempDict, "vmax", NULL, (void *)&tempval);
         if (tempval!=NULL)
          {
           (*PlotItemPtr)->Vmax = *tempval;
@@ -1678,7 +1678,7 @@ int directive_plot(Dict *command, int interactive, int replot)
           else if (!gsl_finite((*PlotItemPtr)->Vmax.real)) { sprintf(temp_err_string, "Upper limit specified for parameter v is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->VRangeSet = 0; }
           else if (!ppl_units_DimEqual(&(*PlotItemPtr)->Vmin, &(*PlotItemPtr)->Vmax)) { sprintf(temp_err_string, "Upper and lower limits specified for parameter v have conflicting physical units of <%s> and <%s>.", ppl_units_GetUnitStr(&(*PlotItemPtr)->Vmin, NULL, NULL, 0, 1, 0), ppl_units_GetUnitStr(&(*PlotItemPtr)->Vmax, NULL, NULL, 1, 1, 0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); (*PlotItemPtr)->VRangeSet = 0; }
          }
-        DictLookup(TempDict, "expression_list:", NULL, (void **)&ExpressionList);
+        DictLookup(TempDict, "expression_list:", NULL, (void *)&ExpressionList);
         j = (*PlotItemPtr)->NFunctions = ListLen(ExpressionList);
         (*PlotItemPtr)->functions = (char **)malloc(j * sizeof(char *));
         if ((*PlotItemPtr)->functions == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
@@ -1686,7 +1686,7 @@ int directive_plot(Dict *command, int interactive, int replot)
         for (i=0; i<j; i++)
          {
           TempDict2 = (Dict *)ListIter2->data;
-          DictLookup(TempDict2, "expression", NULL, (void **)&tempstr);
+          DictLookup(TempDict2, "expression", NULL, (void *)&tempstr);
           (*PlotItemPtr)->functions[i] = (char *)malloc(strlen(tempstr)+1);
           if ((*PlotItemPtr)->functions[i] == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }
           strcpy((*PlotItemPtr)->functions[i], tempstr);
@@ -1700,15 +1700,15 @@ int directive_plot(Dict *command, int interactive, int replot)
       (*PlotItemPtr)->axis1xyz = 0;
       (*PlotItemPtr)->axis2xyz = 1;
       (*PlotItemPtr)->axis3xyz = 2;
-      DictLookup(TempDict, "axis_1", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "axis_1", NULL, (void *)&tempstr);
       if (tempstr!=NULL) { (*PlotItemPtr)->axis1set = 1; (*PlotItemPtr)->axis1 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis1xyz = tempstr[0]-'x'; }
-      DictLookup(TempDict, "axis_2", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "axis_2", NULL, (void *)&tempstr);
       if (tempstr!=NULL) { (*PlotItemPtr)->axis2set = 1; (*PlotItemPtr)->axis2 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis2xyz = tempstr[0]-'x'; }
-      DictLookup(TempDict, "axis_3", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "axis_3", NULL, (void *)&tempstr);
       if (tempstr!=NULL) { (*PlotItemPtr)->axis3set = 1; (*PlotItemPtr)->axis3 = GetFloat(tempstr+1,NULL); (*PlotItemPtr)->axis3xyz = tempstr[0]-'x'; }
 
       // Look up label to apply to datapoints
-      DictLookup(TempDict, "label", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "label", NULL, (void *)&tempstr);
       if (tempstr==NULL) { (*PlotItemPtr)->label = NULL; }
       else
        {
@@ -1720,16 +1720,16 @@ int directive_plot(Dict *command, int interactive, int replot)
       // Look up continuous / discontinuous flags
       (*PlotItemPtr)->ContinuitySet = 0;
       (*PlotItemPtr)->continuity    = DATAFILE_CONTINUOUS;
-      DictLookup(TempDict, "continuous", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "continuous", NULL, (void *)&tempstr);
       if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_CONTINUOUS; }
-      DictLookup(TempDict, "discontinuous", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "discontinuous", NULL, (void *)&tempstr);
       if (tempstr!=NULL) { (*PlotItemPtr)->ContinuitySet = 1; (*PlotItemPtr)->continuity = DATAFILE_DISCONTINUOUS; }
 
       // Look up title and notitle modifiers
       (*PlotItemPtr)->NoTitleSet = (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL;
-      DictLookup(TempDict, "notitle", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "notitle", NULL, (void *)&tempstr);
       if (tempstr!=NULL) { (*PlotItemPtr)->NoTitleSet = 1; (*PlotItemPtr)->TitleSet = 0; (*PlotItemPtr)->title = NULL; }
-      DictLookup(TempDict, "title", NULL, (void **)&tempstr);
+      DictLookup(TempDict, "title", NULL, (void *)&tempstr);
       if (tempstr!=NULL)
        {
         (*PlotItemPtr)->NoTitleSet = 0; (*PlotItemPtr)->TitleSet = 1;
@@ -1741,11 +1741,11 @@ int directive_plot(Dict *command, int interactive, int replot)
       // Look up index , every, using modifiers
       (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
       (*PlotItemPtr)->index = -1;
-      DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
-      DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_ROW;
-      DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
+      DictLookup(TempDict, "index"      , NULL, (void *)&indexptr);   if (((*PlotItemPtr)->IndexSet = (indexptr!=NULL))==1) (*PlotItemPtr)->index = *indexptr;
+      DictLookup(TempDict, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_ROW;
+      DictLookup(TempDict, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) (*PlotItemPtr)->UsingRowCols = DATAFILE_COL;
 
-      DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
+      DictLookup(TempDict, "every_list:", NULL, (void *)&EveryList);
       if (EveryList==NULL) { (*PlotItemPtr)->EverySet = 0; }
       else
        {
@@ -1755,7 +1755,7 @@ int directive_plot(Dict *command, int interactive, int replot)
         for (i=0; i<j; i++)
          {
           TempDict2 = (Dict *)ListIter2->data;
-          DictLookup(TempDict2, "every_item", NULL, (void **)&tempint);
+          DictLookup(TempDict2, "every_item", NULL, (void *)&tempint);
           if (tempint != NULL) (*PlotItemPtr)->EveryList[i] = *tempint;
           else                 (*PlotItemPtr)->EveryList[i] = -1;
           ListIter2 = ListIterate(ListIter2, NULL);
@@ -1763,7 +1763,7 @@ int directive_plot(Dict *command, int interactive, int replot)
        }
 
       // Look up select modifier
-      DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
+      DictLookup(TempDict, "select_criterion", NULL, (void *)&SelectCrit);
       if (SelectCrit==NULL) { (*PlotItemPtr)->SelectCriterion = NULL; }
       else
        {
@@ -1773,7 +1773,7 @@ int directive_plot(Dict *command, int interactive, int replot)
        }
 
       // Look up using modifiers
-      DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
+      DictLookup(TempDict, "using_list:", NULL, (void *)&UsingList);
       if (UsingList==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; }
       else
        {
@@ -1782,7 +1782,7 @@ int directive_plot(Dict *command, int interactive, int replot)
          {
           TempDict2 = (Dict *)(UsingList->first->data);
           if (TempDict2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
-          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          DictLookup(TempDict2, "using_item", NULL, (void *)&cptr2);
           if (cptr2==NULL) { (*PlotItemPtr)->NUsing = 0; (*PlotItemPtr)->UsingList = NULL; goto FinishedUsing; }
          }
         (*PlotItemPtr)->NUsing = j;
@@ -1792,7 +1792,7 @@ int directive_plot(Dict *command, int interactive, int replot)
         for (i=0; i<j; i++)
          {
           TempDict2 = (Dict *)ListIter2->data;
-          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          DictLookup(TempDict2, "using_item", NULL, (void *)&cptr2);
           if (cptr2==NULL) cptr2=""; // NULL expression means blank using expression
           (*PlotItemPtr)->UsingList[i] = (char *)malloc(strlen(cptr2)+1);
           if ((*PlotItemPtr)->UsingList[i] == NULL)  { ppl_error(ERR_MEMORY, -1, -1,"Out of memory."); free(*PlotItemPtr); *PlotItemPtr = NULL; return 1; }

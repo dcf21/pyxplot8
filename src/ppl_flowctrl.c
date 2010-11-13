@@ -163,9 +163,9 @@ int directive_do(Dict *command, int IterLevel)
   cmd_put = &chain;
 
   // Check whether if statement had { and/or first command on same line
-  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  DictLookup(command,"brace",NULL,(void *)&cptr);
   if (cptr!=NULL) bracegot = 1;
-  DictLookup(command,"command",NULL,(void **)(&cptr));
+  DictLookup(command,"command",NULL,(void *)&cptr);
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
 
   // Fetch lines and add them into loop chain until we get a }
@@ -184,12 +184,12 @@ int directive_do(Dict *command, int IterLevel)
   cmd2 = parse(cptr, IterLevel);
 
   if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
-  DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
+  DictLookup(cmd2,"directive",NULL,(void *)&cptr);
   if (strcmp(cptr,"while")!=0) { ppl_error(ERR_SYNTAX, -1, -1, "Only the statement 'while' can be placed after a } here."); return 1; }
-  DictLookup(cmd2,"criterion",NULL,(void **)(&criterion));
+  DictLookup(cmd2,"criterion",NULL,(void *)&criterion);
 
   // Set loop name, if we have one
-  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  DictLookup(command,"loopname",NULL,(void *)&cptr);
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
 
   // Execute this do loop repeatedly
@@ -226,11 +226,11 @@ int directive_while(Dict *command, int IterLevel)
   cmd_put = &chain;
 
   // Check whether if statement had { and/or first command on same line
-  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  DictLookup(command,"brace",NULL,(void *)&cptr);
   if (cptr!=NULL) bracegot = 1;
-  DictLookup(command,"command",NULL,(void **)(&cptr));
+  DictLookup(command,"command",NULL,(void *)&cptr);
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-  DictLookup(command,"criterion",NULL,(void **)(&criterion));
+  DictLookup(command,"criterion",NULL,(void *)&criterion);
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
@@ -245,7 +245,7 @@ int directive_while(Dict *command, int IterLevel)
   else if (status == -1) { ppl_error(ERR_SYNTAX, -1, -1, "while clause should be terminated with a }."); return 1; }
 
   // Set loop name, if we have one
-  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  DictLookup(command,"loopname",NULL,(void *)&cptr);
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
 
   // Execute this while loop repeatedly
@@ -287,14 +287,14 @@ int directive_for(Dict *command, int IterLevel)
   cmd_put = &chain;
 
   // Check whether if statement had { and/or first command on same line
-  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  DictLookup(command,"brace",NULL,(void *)&cptr);
   if (cptr!=NULL) bracegot = 1;
-  DictLookup(command,"command",NULL,(void **)(&cptr));
+  DictLookup(command,"command",NULL,(void *)&cptr);
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-  DictLookup(command,"var_name",NULL,(void **)(&loopvar));
-  DictLookup(command,"start_value",NULL,(void **)(&start));
-  DictLookup(command,"final_value",NULL,(void **)(&end));
-  DictLookup(command,"step_size",NULL,(void **)(&step));
+  DictLookup(command,"var_name",NULL,(void *)&loopvar);
+  DictLookup(command,"start_value",NULL,(void *)&start);
+  DictLookup(command,"final_value",NULL,(void *)&end);
+  DictLookup(command,"step_size",NULL,(void *)&step);
 
   if (step == NULL)
    {
@@ -328,7 +328,7 @@ int directive_for(Dict *command, int IterLevel)
   itervalD = start->real;
 
   // Set loop name, if we have one
-  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  DictLookup(command,"loopname",NULL,(void *)&cptr);
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
 
   // Execute this for loop repeatedly
@@ -370,14 +370,14 @@ int directive_foreach(Dict *command, int IterLevel)
   cmd_put = &chain;
 
   // Check whether if statement had { and/or first command on same line
-  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  DictLookup(command,"brace",NULL,(void *)&cptr);
   if (cptr!=NULL) bracegot = 1;
-  DictLookup(command,"command",NULL,(void **)(&cptr));
+  DictLookup(command,"command",NULL,(void *)&cptr);
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
-  DictLookup(command,"df",NULL,(void **)(&cptr));
+  DictLookup(command,"df",NULL,(void *)&cptr);
   if (cptr==NULL) { foreachdatum=0; } else { foreachdatum=1; } // See whether we're looping over filenames, or data within files
 
-  if (!foreachdatum) DictLookup(command,"var_name",NULL,(void **)(&loopvar)); // Have one loop variable if not looping over a datafile
+  if (!foreachdatum) DictLookup(command,"var_name",NULL,(void *)&loopvar); // Have one loop variable if not looping over a datafile
 
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
@@ -399,18 +399,18 @@ int directive_foreach(Dict *command, int IterLevel)
    }
 
   // Set loop name, if we have one
-  DictLookup(command,"loopname",NULL,(void **)(&cptr));
+  DictLookup(command,"loopname",NULL,(void *)&cptr);
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = cptr;
 
   // See if we're iterating over a globbed filename
-  DictLookup     (command,"filename_list",NULL,(void **)(&listptr));
+  DictLookup     (command,"filename_list",NULL,(void *)&listptr);
   if (listptr != NULL)
    {
     listiter = ListIterateInit(listptr);
     while (listiter != NULL)
      {
       dictptr = (Dict *)listiter->data;
-      DictLookup(dictptr,"filename",NULL,(void **)(&cptr));
+      DictLookup(dictptr,"filename",NULL,(void *)&cptr);
       status=0;
       glob_handle = ppl_glob_allresults(cptr);
       if (glob_handle == NULL) return 1;
@@ -437,17 +437,17 @@ int directive_foreach(Dict *command, int IterLevel)
    }
 
   // ... otherwise we're looping over a provided list
-  DictLookup     (command,"item_list,",NULL,(void **)(&listptr));
+  DictLookup     (command,"item_list,",NULL,(void *)&listptr);
   listiter = ListIterateInit(listptr);
   while (listiter != NULL)
    {
     dictptr = (Dict *)listiter->data;
-    DictLookup(dictptr,"value",NULL,(void **)&valptr);
+    DictLookup(dictptr,"value",NULL,(void *)&valptr);
     if (valptr != NULL)
      { memcpy(iterval, valptr, sizeof(value)); }
     else
      {
-      DictLookup(dictptr,"string",NULL,(void **)&strptr);
+      DictLookup(dictptr,"string",NULL,(void *)&strptr);
       iterval->string = strptr;
      }
     chainiter = chain;
@@ -482,14 +482,14 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
 
   if (DEBUG) ppl_log("Beginning to read data in for 'foreach datum' command");
 
-  DictLookup(command, "variables," , NULL, (void **)&VarList);
+  DictLookup(command, "variables," , NULL, (void *)&VarList);
   i = ListLen(VarList);
   if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The 'foreach ... in datafile' construct must be supplied a list of between %d and %d variables to read.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); *status=1; return; }
   ListIter = ListIterateInit(VarList);
   for (j=0; j<i; j++)
    {
     TempDict = (Dict *)ListIter->data;
-    DictLookup(TempDict,"variable",NULL,(void **)(ReadVars+j)); // Read variable name into ReadVars[j]
+    DictLookup(TempDict,"variable",NULL,(void *)(ReadVars+j)); // Read variable name into ReadVars[j]
 
     // Look up variable in user space and get pointer to its value
     ppl_UserSpace_GetVarPointer(ReadVars[j], &DummyVar, &DummyTemp);
@@ -497,22 +497,22 @@ void directive_foreach_LoopOverData(Dict *command, char *filename, cmd_chain *ch
     ListIter = ListIterate(ListIter, NULL);
    }
 
-  DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
-  DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
-  DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
-  DictLookup(command, "using_list:", NULL, (void **)&UsingList);
-  DictLookup(command, "every_list:", NULL, (void **)&EveryList);
-  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+  DictLookup(command, "index"      , NULL, (void *)&indexptr);   if (indexptr == NULL) indexptr = &index;
+  DictLookup(command, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+  DictLookup(command, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+  DictLookup(command, "using_list:", NULL, (void *)&UsingList);
+  DictLookup(command, "every_list:", NULL, (void *)&EveryList);
+  DictLookup(command, "select_criterion", NULL, (void *)&SelectCrit);
 
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  DictLookup(command, "range_list", NULL, (void *)&RangeList);
   ListIter = ListIterateInit(RangeList);
   for (j=0; j<i; j++)
    if (ListIter == NULL) { min[j]=NULL; max[j]=NULL; }
    else
     {
      TempDict = (Dict *)ListIter->data;
-     DictLookup(TempDict,"min",NULL,(void **)(min+j));
-     DictLookup(TempDict,"max",NULL,(void **)(max+j));
+     DictLookup(TempDict,"min",NULL,(void *)(min+j));
+     DictLookup(TempDict,"max",NULL,(void *)(max+j));
      if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified for fitting variable %ld (%s) in the 'foreach ... in datafile' construct have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ReadVars[j], ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); *status=1; return; }
      ListIter = ListIterate(ListIter, NULL);
     }
@@ -594,9 +594,9 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
   // Check whether if statement had { and/or first command on same line
-  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  DictLookup(command,"brace",NULL,(void *)&cptr);
   if (cptr!=NULL) bracegot = 1;
-  DictLookup(command,"command",NULL,(void **)(&cptr));
+  DictLookup(command,"command",NULL,(void *)&cptr);
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
 
   // Fetch lines and add them into loop chain until we get a }
@@ -618,14 +618,14 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
    {
     cmd2 = parse(cptr, IterLevel);
     if (cmd2 == NULL) return 1; // Parser has already thrown an error, we assume
-    DictLookup(cmd2,"directive",NULL,(void **)(&cptr));
+    DictLookup(cmd2,"directive",NULL,(void *)&cptr);
     if (strcmp(cptr,"else")!=0) { ppl_error(ERR_SYNTAX, -1, -1, "Only the statement 'else' can be placed after a } here."); return 1; }
-    DictLookup(cmd2,"if",NULL,(void **)(&cptr));
+    DictLookup(cmd2,"if",NULL,(void *)&cptr);
     if (cptr == NULL)
      {
       directive_ifelse(cmd2, state==0, IterLevel+1); // We have an else clause
      } else {
-      DictLookup(cmd2,"criterion",NULL,(void **)(&criterion)); // We have an 'else if' clause
+      DictLookup(cmd2,"criterion",NULL,(void *)&criterion); // We have an 'else if' clause
       if (ppl_units_DblEqual(*criterion, 0.0)) directive_ifelse(cmd2, (state>0)*2, IterLevel);
       else                                     directive_ifelse(cmd2, (state>0)+1, IterLevel);
      }
@@ -646,7 +646,7 @@ int directive_if(Dict *command, int IterLevel)
   // if clauses have no loop names
   PPL_FLOWCTRL_LOOPNAME[IterLevel] = NULL;
 
-  DictLookup(command,"criterion",NULL,(void **)(&criterion));
+  DictLookup(command,"criterion",NULL,(void *)&criterion);
   if (ppl_units_DblEqual(*criterion, 0.0)) status = directive_ifelse(command, 0, IterLevel);
   else                                     status = directive_ifelse(command, 1, IterLevel);
   return status;
@@ -677,13 +677,13 @@ int directive_subroutine(Dict *command, int IterLevel)
   _lt_SetMemContext(0);
 
   // Read arguments of subroutine
-  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
+  DictLookup(command,"argument_list,",NULL,(void *)&ArgList);
   NArgs = ListLen(ArgList);
   ListIter = ListIterateInit(ArgList);
   for (i=0,j=0; i<NArgs; i++)
    {
     TempDict = (Dict *)ListIter->data;
-    DictLookup(TempDict,"argument_name" ,NULL,(void **)(&cptr));
+    DictLookup(TempDict,"argument_name" ,NULL,(void *)&cptr);
     strcpy(temp_err_string+j,cptr);
     j += strlen(temp_err_string+j)+1;
     ListIter = ListIterate(ListIter, NULL);
@@ -708,10 +708,10 @@ int directive_subroutine(Dict *command, int IterLevel)
   NewFD->description     = NewFD->LaTeX = NULL;
 
   // Check whether subroutine statement had { and/or first command on same line
-  DictLookup(command,"subroutine_name",NULL,(void **)(&name));
-  DictLookup(command,"brace",NULL,(void **)(&cptr));
+  DictLookup(command,"subroutine_name",NULL,(void *)&name);
+  DictLookup(command,"brace",NULL,(void *)&cptr);
   if (cptr!=NULL) bracegot = 1;
-  DictLookup(command,"command",NULL,(void **)(&cptr));
+  DictLookup(command,"command",NULL,(void *)&cptr);
   if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
 
   // Fetch lines and add them into loop chain until we get a }
@@ -749,7 +749,7 @@ int SubroutineCall(char *name, List *ArgList, char *errtext, int IterLevel)
   ppl_units_zero(&TempValue);
 
   // Look up subroutine name
-  DictLookup(_ppl_UserSpace_Funcs,name,NULL,(void **)(&fd));
+  DictLookup(_ppl_UserSpace_Funcs,name,NULL,(void *)&fd);
   if (fd==NULL) { sprintf(temp_err_string,"No subroutine defined with name '%s'.",name); if (errtext==NULL) ppl_error(ERR_GENERAL, -1, -1,temp_err_string); else strcpy(errtext, temp_err_string); return 1; }
 
   // Check that we have the right number of arguments
@@ -769,10 +769,10 @@ int SubroutineCall(char *name, List *ArgList, char *errtext, int IterLevel)
   for (j=k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
    {
     TempDict = (Dict *)ListIter->data;
-    DictLookup(TempDict,"argument",NULL,(void **)(&InputValue));
+    DictLookup(TempDict,"argument",NULL,(void *)&InputValue);
     if (InputValue==NULL)
      {
-      DictLookup(TempDict,"string_argument",NULL,(void **)(&cptr));
+      DictLookup(TempDict,"string_argument",NULL,(void *)&cptr);
       InputValue = &TempValue;
       TempValue.string = cptr;
      }
@@ -801,7 +801,7 @@ int SubroutineCall(char *name, List *ArgList, char *errtext, int IterLevel)
   // Return arguments to their original values
   for (j=k=0; k<NArgs; k++) // Swap new arguments for old in global dictionary
    {
-    DictLookup(_ppl_UserSpace_Vars, sd->ArgList+j, NULL, (void **)&VarData);
+    DictLookup(_ppl_UserSpace_Vars, sd->ArgList+j, NULL, (void *)&VarData);
     memcpy(VarData, ValueBuffer+k, sizeof(value));
     j += strlen(sd->ArgList+j)+1;
    }
@@ -814,8 +814,8 @@ int directive_call(Dict *command, int IterLevel)
  {
   char *name;
   List *ArgList;
-  DictLookup(command,"subroutine_name",NULL,(void **)(&name));
-  DictLookup(command,"argument_list,",NULL,(void **)(&ArgList));
+  DictLookup(command,"subroutine_name",NULL,(void *)&name);
+  DictLookup(command,"argument_list,",NULL,(void *)&ArgList);
   return SubroutineCall(name, ArgList, NULL, IterLevel+1);
  }
 
@@ -829,7 +829,7 @@ int CallSubroutineFromAlgebra(char *FunctionName, char *ArgStart, int *endpos, i
   ArgList = ListInit();
 
   // Look up subroutine name
-  DictLookup(_ppl_UserSpace_Funcs,FunctionName,NULL,(void **)(&fd));
+  DictLookup(_ppl_UserSpace_Funcs,FunctionName,NULL,(void *)&fd);
   if (fd==NULL) { sprintf(errtext,"No subroutine defined with name '%s'.",FunctionName); *errpos=-1; return 1; }
   NArgs = fd->NumberArguments;
 

@@ -237,22 +237,22 @@ int directive_tabulate(Dict *command, char *line)
   fprintf(output, "# User: %s\n# PyXPlot command: %s\n\n", UnixGetIRLName(), line);
 
   // Read in specified data ranges
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  DictLookup(command, "range_list", NULL, (void *)&RangeList);
   ListIter = ListIterateInit(RangeList);
   for (j=0; j<USING_ITEMS_MAX+1; j++) // Can have up to USING_ITEMS_MAX ranges, plus first range which is for ordinate axis when tabulating functions
    if (ListIter == NULL) { min[j]=NULL; max[j]=NULL; }
    else
     {
      TempDict = (Dict *)ListIter->data;
-     DictLookup(TempDict,"min",NULL,(void **)(min+j));
-     DictLookup(TempDict,"max",NULL,(void **)(max+j));
+     DictLookup(TempDict,"min",NULL,(void *)(min+j));
+     DictLookup(TempDict,"max",NULL,(void *)(max+j));
      if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the tabulate command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); fclose(output); return 1; }
      ListIter = ListIterate(ListIter, NULL);
     }
    if (ListIter != NULL) { sprintf(temp_err_string, "Too many ranges supplied to the tabulate command. %d ranges were supplied, but only a maximum of %d are supported.", ListLen(RangeList), USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); fclose(output); return 1; }
 
   // Iterate over all of the items we are about to tabulate
-  DictLookup(command, "tabulate_list,", NULL, (void **)&TabList);
+  DictLookup(command, "tabulate_list,", NULL, (void *)&TabList);
   i = ListLen(TabList);
   j=1;
   ListIter = ListIterateInit(TabList);
@@ -262,17 +262,17 @@ int directive_tabulate(Dict *command, char *line)
     fprintf(output, "\n\n\n# Index %ld\n", j); // Put a heading at the top of the new data index
 
     // Look up index , using , every modifiers to datafile reading
-    DictLookup(TempDict, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
-    DictLookup(TempDict, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
-    DictLookup(TempDict, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
-    DictLookup(TempDict, "using_list:", NULL, (void **)&UsingList);
-    DictLookup(TempDict, "every_list:", NULL, (void **)&EveryList);
-    DictLookup(TempDict, "select_criterion", NULL, (void **)&SelectCrit);
-    DictLookup(TempDict, "sort_expression", NULL, (void **)&SortBy);
-    DictLookup(TempDict, "format", NULL, (void **)(&format));
+    DictLookup(TempDict, "index"      , NULL, (void *)&indexptr);   if (indexptr == NULL) indexptr = &index;
+    DictLookup(TempDict, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+    DictLookup(TempDict, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+    DictLookup(TempDict, "using_list:", NULL, (void *)&UsingList);
+    DictLookup(TempDict, "every_list:", NULL, (void *)&EveryList);
+    DictLookup(TempDict, "select_criterion", NULL, (void *)&SelectCrit);
+    DictLookup(TempDict, "sort_expression", NULL, (void *)&SortBy);
+    DictLookup(TempDict, "format", NULL, (void *)&format);
 
     // Case 1: Plotting a datafile
-    DictLookup(TempDict,"filename",NULL,(void **)(&cptr));
+    DictLookup(TempDict,"filename",NULL,(void *)&cptr);
     if (cptr!=NULL)
      {
       NUsingItems = ListLen(UsingList);
@@ -283,7 +283,7 @@ int directive_tabulate(Dict *command, char *line)
         if (TempDict2==NULL) { NUsingItems = 2; }
         else
          {
-          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          DictLookup(TempDict2, "using_item", NULL, (void *)&cptr2);
           if (cptr2==NULL) {  NUsingItems = 2; }
          }
        }
@@ -315,11 +315,11 @@ int directive_tabulate(Dict *command, char *line)
     else // Case 2: Plotting a function
      {
       // See whether we are plotting parametric or explicit function
-      DictLookup(TempDict, "parametric", NULL, (void **)&cptr);
+      DictLookup(TempDict, "parametric", NULL, (void *)&cptr);
       FlagParametric = (cptr != NULL);
 
       // Read list of expressions supplied instead of filename
-      DictLookup(TempDict, "expression_list:", NULL, (void **)&ExprList);
+      DictLookup(TempDict, "expression_list:", NULL, (void *)&ExprList);
       NUsingItems = ListLen(UsingList);
       if      (NUsingItems<1) NUsingItems = ListLen(ExprList)+(!FlagParametric); // Only have x in column 1 for non-parametric function plotting
       else if (NUsingItems==1)
@@ -328,7 +328,7 @@ int directive_tabulate(Dict *command, char *line)
         if (TempDict2==NULL) { NUsingItems = ListLen(ExprList)+(!FlagParametric); }
         else
          {
-          DictLookup(TempDict2, "using_item", NULL, (void **)&cptr2);
+          DictLookup(TempDict2, "using_item", NULL, (void *)&cptr2);
           if (cptr2==NULL) {  NUsingItems = ListLen(ExprList)+(!FlagParametric); }
          }
        }
@@ -339,7 +339,7 @@ int directive_tabulate(Dict *command, char *line)
        {
         TempExprDict = (Dict *)ExprListIter->data;
         if (k>=USING_ITEMS_MAX) { sprintf(temp_err_string, "Colon-separated lists of expressions can only contain a maximum of %d expressions.",USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1,temp_err_string); break; }
-        DictLookup(TempExprDict, "expression", NULL, (void **)(fnlist+k));
+        DictLookup(TempExprDict, "expression", NULL, (void *)(fnlist+k));
         k++;
         ExprListIter = ListIterate(ExprListIter, NULL);
        }
@@ -384,10 +384,10 @@ int directive_tabulate(Dict *command, char *line)
           raster2_max   = settings_graph_current.Vmax.real;
           raster2_units = settings_graph_current.Vmin;
          }
-        DictLookup(TempDict, "tmin", NULL, (void **)&tempval1);
-        DictLookup(TempDict, "tmax", NULL, (void **)&tempval2);
-        DictLookup(TempDict, "vmin", NULL, (void **)&tempval3);
-        DictLookup(TempDict, "vmax", NULL, (void **)&tempval4);
+        DictLookup(TempDict, "tmin", NULL, (void *)&tempval1);
+        DictLookup(TempDict, "tmax", NULL, (void *)&tempval2);
+        DictLookup(TempDict, "vmin", NULL, (void *)&tempval3);
+        DictLookup(TempDict, "vmax", NULL, (void *)&tempval4);
         if (tempval1 != NULL)
          {
           if      (!gsl_finite(tempval1->real)) { sprintf(temp_err_string, "Lower limit specified for parameter t is not finite."); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); }
@@ -418,7 +418,7 @@ int directive_tabulate(Dict *command, char *line)
       if ((!USE_T_or_uv) && raster2_log && ((raster2_min<=0) || (raster2_max<=0))) ppl_warning(ERR_NUMERIC,"Attempt to tabulate data using a logarithmic ordinate axis with negative or zero limits set. Reverting limits to finite positive values with well-defined logarithms.");
 
       // See if spacing has already been specified
-      DictLookup(TempDict, "spacing", NULL, (void **)&spacing);
+      DictLookup(TempDict, "spacing", NULL, (void *)&spacing);
       if (spacing != NULL)
        {
         int i;

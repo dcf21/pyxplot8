@@ -675,7 +675,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
    {
     if (UsingLen>=USING_ITEMS_MAX) { strcpy(errout,"Too many items in using list."); *status=1; if (DEBUG) ppl_log(errout); return; }
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"using_item",NULL,(void **)&(UsingItems[UsingLen]));
+    DictLookup(tempdict,"using_item",NULL,(void *)&(UsingItems[UsingLen]));
     if ((UsingItems[UsingLen]==NULL)||(strlen(StrStrip(UsingItems[UsingLen], UsingItems[UsingLen]))==0)) // Using item is blank; replace with item number
      {
       if ((UsingItems[UsingLen] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };
@@ -727,22 +727,22 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   // Read items out of Every List
   listiter = ListIterateInit(EveryList);
   if   (listiter == NULL) { linestep   =  1; } // READ linestep
-  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void **)&intptr);
+  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void *)&intptr);
                             if ((intptr==NULL) || (*intptr<1)) { linestep  =  1; } else { linestep   = *intptr; } }
   if   (listiter == NULL) { blockstep  =  1; } // READ blockstep
-  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void **)&intptr);
+  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void *)&intptr);
                             if ((intptr==NULL) || (*intptr<1)) { blockstep =  1; } else { blockstep  = *intptr; } }
   if   (listiter == NULL) { linefirst  = -1; } // READ linefirst
-  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void **)&intptr);
+  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void *)&intptr);
                             if ((intptr==NULL) || (*intptr<0)) { linefirst = -1; } else { linefirst  = *intptr; } }
   if   (listiter == NULL) { blockfirst = -1; } // READ blockfirst
-  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void **)&intptr);
+  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void *)&intptr);
                             if ((intptr==NULL) || (*intptr<0)) { blockfirst= -1; } else { blockfirst = *intptr; } }
   if   (listiter == NULL) { linelast   = -1; } // READ linelast
-  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void **)&intptr);
+  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void *)&intptr);
                             if ((intptr==NULL) || (*intptr<0)) { linelast  = -1; } else { linelast   = *intptr; } }
   if   (listiter == NULL) { blocklast  = -1; } // READ blocklast
-  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void **)&intptr);
+  else                    { tempdict = (Dict *)listiter->data; listiter = ListIterate(listiter, NULL); DictLookup(tempdict,"every_item",NULL,(void *)&intptr);
                             if ((intptr==NULL) || (*intptr<0)) { blocklast = -1; } else { blocklast  = *intptr; } }
   if   (listiter != NULL) { strcpy(errout, "More than six items specified in every modifier -- final items are not valid syntax."); *status=1; if (DEBUG) ppl_log(errout); return; }
 
@@ -1060,7 +1060,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
    {
     if (UsingLen>=USING_ITEMS_MAX) { strcpy(errout,"Too many items in using list."); *status=1; if (DEBUG) ppl_log(errout); return; }
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"using_item",NULL,(void **)&(UsingItems[UsingLen]));
+    DictLookup(tempdict,"using_item",NULL,(void *)&(UsingItems[UsingLen]));
     if ((UsingItems[UsingLen]==NULL)||(strlen(StrStrip(UsingItems[UsingLen], UsingItems[UsingLen]))==0)) // Using item is blank; replace with item number
      {
       if ((UsingItems[UsingLen] = (char *)lt_malloc(10))==NULL) { sprintf(errout,"Out of memory."); *status=1; if (DEBUG) ppl_log(errout); return; };

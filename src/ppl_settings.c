@@ -502,25 +502,25 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
   char  *tempstrR, *tempstrG, *tempstrB, *tempstrH, *tempstrS, *tempstrC, *tempstrM, *tempstrY, *tempstrK;
   value *tempvalR, *tempvalG, *tempvalB, *tempvalH, *tempvalS, *tempvalC, *tempvalM, *tempvalY, *tempvalK;
 
-  sprintf(DictName, "%scolour" , prefix);      DictLookup(in,DictName,NULL,(void **)&tempstr);
-  sprintf(DictName, "%scolourR", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalR);
-  sprintf(DictName, "%scolourG", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalG);
-  sprintf(DictName, "%scolourB", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalB);
-  sprintf(DictName, "%scolourH", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalH);
-  sprintf(DictName, "%scolourS", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalS);
-  sprintf(DictName, "%scolourC", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalC);
-  sprintf(DictName, "%scolourM", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalM);
-  sprintf(DictName, "%scolourY", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalY);
-  sprintf(DictName, "%scolourK", prefix);      DictLookup(in,DictName,NULL,(void **)&tempvalK);
-  sprintf(DictName, "%scolourRexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrR);
-  sprintf(DictName, "%scolourGexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrG);
-  sprintf(DictName, "%scolourBexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrB);
-  sprintf(DictName, "%scolourHexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrH);
-  sprintf(DictName, "%scolourSexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrS);
-  sprintf(DictName, "%scolourCexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrC);
-  sprintf(DictName, "%scolourMexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrM);
-  sprintf(DictName, "%scolourYexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrY);
-  sprintf(DictName, "%scolourKexpr", prefix);  DictLookup(in,DictName,NULL,(void **)&tempstrK);
+  sprintf(DictName, "%scolour" , prefix);      DictLookup(in,DictName,NULL,(void *)&tempstr);
+  sprintf(DictName, "%scolourR", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalR);
+  sprintf(DictName, "%scolourG", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalG);
+  sprintf(DictName, "%scolourB", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalB);
+  sprintf(DictName, "%scolourH", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalH);
+  sprintf(DictName, "%scolourS", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalS);
+  sprintf(DictName, "%scolourC", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalC);
+  sprintf(DictName, "%scolourM", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalM);
+  sprintf(DictName, "%scolourY", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalY);
+  sprintf(DictName, "%scolourK", prefix);      DictLookup(in,DictName,NULL,(void *)&tempvalK);
+  sprintf(DictName, "%scolourRexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrR);
+  sprintf(DictName, "%scolourGexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrG);
+  sprintf(DictName, "%scolourBexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrB);
+  sprintf(DictName, "%scolourHexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrH);
+  sprintf(DictName, "%scolourSexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrS);
+  sprintf(DictName, "%scolourCexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrC);
+  sprintf(DictName, "%scolourMexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrM);
+  sprintf(DictName, "%scolourYexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrY);
+  sprintf(DictName, "%scolourKexpr", prefix);  DictLookup(in,DictName,NULL,(void *)&tempstrK);
 
   // Decide whether colour expression contains $columns and needs postponing
   tempstre=NULL;
@@ -709,21 +709,21 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
 
 #define arrow_add_get_system(X,Y) \
  { \
-  DictLookup(in,X "_system",NULL,(void **)&tempstr); \
+  DictLookup(in,X "_system",NULL,(void *)&tempstr); \
   if (tempstr == NULL) Y = SW_SYSTEM_FIRST; \
   else                 Y = FetchSettingByName(tempstr, SW_SYSTEM_INT, SW_SYSTEM_STR); \
  }
 
 #define arrow_add_get_axis(X,Y) \
  { \
-  DictLookup(in,X "_axis",NULL,(void **)&tempint); \
+  DictLookup(in,X "_axis",NULL,(void *)&tempint); \
   if   (tempint == NULL) Y = 0; \
   else                   Y = *tempint; \
  }
 
 #define arrow_add_check_axis(X) \
  { \
-  DictLookup(in,X "_axis",NULL,(void **)&tempint); \
+  DictLookup(in,X "_axis",NULL,(void *)&tempint); \
   if (tempint != NULL) \
    { \
     if ((*tempint<0)||(*tempint>MAX_AXES)) \
@@ -737,7 +737,7 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
 
 #define arrow_add_check_dimensions(X,Y) \
  { \
-  DictLookup(in,X,NULL,(void **)&tempval); \
+  DictLookup(in,X,NULL,(void *)&tempval); \
   if (tempval == NULL) { tempval = &tempvalobj; ppl_units_zero(tempval); } \
   if ((Y == SW_SYSTEM_GRAPH) || (Y == SW_SYSTEM_PAGE)) \
    if (!tempval->dimensionless) \
@@ -754,7 +754,7 @@ int colour_fromdict    (Dict *in, char *prefix, int *outcol, int *outcolspace,
 
 #define arrow_add_copy_coordinate(X,Y,Z) \
  { \
-  DictLookup(in,X,NULL,(void **)&tempval); \
+  DictLookup(in,X,NULL,(void *)&tempval); \
   if (tempval == NULL) { tempval = &tempvalobj; ppl_units_zero(tempval); } \
   if ((Y == SW_SYSTEM_GRAPH) || (Y == SW_SYSTEM_PAGE)) \
    if (tempval->dimensionless) { tempval->dimensionless=0; tempval->exponent[UNIT_LENGTH]=1; tempval->real /= 100; } \
@@ -778,7 +778,7 @@ void arrow_add(arrow_object **list, Dict *in)
   arrow_add_check_axis("x0"); arrow_add_check_axis("y0"); arrow_add_check_axis("z0");
   arrow_add_check_axis("x1"); arrow_add_check_axis("y1"); arrow_add_check_axis("z1");
 
-  DictLookup(in,"arrow_id",NULL,(void **)&tempint);
+  DictLookup(in,"arrow_id",NULL,(void *)&tempint);
   while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
   if ((*list != NULL) && ((*list)->id == *tempint))
    {
@@ -793,7 +793,7 @@ void arrow_add(arrow_object **list, Dict *in)
    }
 
   // Check whether arrow head type has been specified
-  DictLookup(in,"arrow_style",NULL,(void **)&tempstr);
+  DictLookup(in,"arrow_style",NULL,(void *)&tempstr);
   if (tempstr==NULL) out->arrow_style = SW_ARROWTYPE_HEAD;
   else               out->arrow_style = FetchSettingByName(tempstr, SW_ARROWTYPE_INT, SW_ARROWTYPE_STR);
 
@@ -822,13 +822,13 @@ void arrow_remove(arrow_object **list, Dict *in)
   ListIterator *listiter;
 
   first = list;
-  DictLookup(in,"arrow_list,",NULL,(void **)&templist);
+  DictLookup(in,"arrow_list,",NULL,(void *)&templist);
   listiter = ListIterateInit(templist);
   if (listiter == NULL) arrow_list_destroy(list); // set noarrow with no number specified means all arrows deleted
   while (listiter != NULL)
    {
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"arrow_id",NULL,(void **)&tempint);
+    DictLookup(tempdict,"arrow_id",NULL,(void *)&tempint);
     list = first;
     while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
     if ((*list != NULL) && ((*list)->id == *tempint))
@@ -856,14 +856,14 @@ void arrow_unset(arrow_object **list, Dict *in)
 
   arrow_remove(list, in); // First of all, remove any arrows which we are unsetting
   first = list;
-  DictLookup(in,"arrow_list,",NULL,(void **)&templist);
+  DictLookup(in,"arrow_list,",NULL,(void *)&templist);
   listiter = ListIterateInit(templist);
 
   if (listiter == NULL) arrow_list_copy(list, &arrow_list_default); // Check to see whether we are unsetting ALL arrows, and if so, use the copy command
   while (listiter != NULL)
    {
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"arrow_id",NULL,(void **)&tempint); // Go through each arrow_id in supplied list and copy items from default list into current settings
+    DictLookup(tempdict,"arrow_id",NULL,(void *)&tempint); // Go through each arrow_id in supplied list and copy items from default list into current settings
     obj  = arrow_list_default;
     while ((obj != NULL) && (obj->id < *tempint)) obj = (obj->next);
     if ((obj != NULL) && (obj->id == *tempint))
@@ -1000,7 +1000,7 @@ void label_add(label_object **list, Dict *in)
 
   arrow_add_check_axis("x"); arrow_add_check_axis("y"); arrow_add_check_axis("z");
 
-  DictLookup(in,"label_text",NULL,(void **)&tempstr);
+  DictLookup(in,"label_text",NULL,(void *)&tempstr);
   label = (char *)malloc(strlen(tempstr)+1);
   if (label == NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory"); return; }
   strcpy(label, tempstr);
@@ -1014,7 +1014,7 @@ void label_add(label_object **list, Dict *in)
   if (gap != NULL) { ASSERT_LENGTH(gap); }
 
   // Look up ID number of the label we are adding and find appropriate place for it in label list
-  DictLookup(in,"label_id",NULL,(void **)&tempint);
+  DictLookup(in,"label_id",NULL,(void *)&tempint);
   while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
   if ((*list != NULL) && ((*list)->id == *tempint))
    {
@@ -1029,10 +1029,10 @@ void label_add(label_object **list, Dict *in)
    }
 
   // Check for halign or valign modifiers
-  DictLookup(in,"halign",NULL,(void **)&tempstr);
+  DictLookup(in,"halign",NULL,(void *)&tempstr);
   if (tempstr != NULL) out->HAlign = FetchSettingByName(tempstr, SW_HALIGN_INT, SW_HALIGN_STR);
   else                 out->HAlign = settings_graph_current.TextHAlign;
-  DictLookup(in,"valign",NULL,(void **)&tempstr);
+  DictLookup(in,"valign",NULL,(void *)&tempstr);
   if (tempstr != NULL) out->VAlign = FetchSettingByName(tempstr, SW_VALIGN_INT, SW_VALIGN_STR);
   else                 out->VAlign = settings_graph_current.TextVAlign;
 
@@ -1059,13 +1059,13 @@ void label_remove(label_object **list, Dict *in)
   ListIterator *listiter;
 
   first = list;
-  DictLookup(in,"label_list,",NULL,(void **)&templist);
+  DictLookup(in,"label_list,",NULL,(void *)&templist);
   listiter = ListIterateInit(templist);
   if (listiter == NULL) label_list_destroy(list); // set nolabel with no number specified means all labels deleted
   while (listiter != NULL)
    {
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"label_id",NULL,(void **)&tempint);
+    DictLookup(tempdict,"label_id",NULL,(void *)&tempint);
     list = first;
     while ((*list != NULL) && ((*list)->id < *tempint)) list = &((*list)->next);
     if ((*list != NULL) && ((*list)->id == *tempint))
@@ -1094,14 +1094,14 @@ void label_unset(label_object **list, Dict *in)
 
   label_remove(list, in); // First of all, remove any labels which we are unsetting
   first = list;
-  DictLookup(in,"label_list,",NULL,(void **)&templist);
+  DictLookup(in,"label_list,",NULL,(void *)&templist);
   listiter = ListIterateInit(templist);
 
   if (listiter == NULL) label_list_copy(list, &label_list_default); // Check to see whether we are unsetting ALL labels, and if so, use the copy command
   while (listiter != NULL)
    {
     tempdict = (Dict *)listiter->data;
-    DictLookup(tempdict,"label_id",NULL,(void **)&tempint); // Go through each label_id in supplied list and copy items from default list into current settings
+    DictLookup(tempdict,"label_id",NULL,(void *)&tempint); // Go through each label_id in supplied list and copy items from default list into current settings
     obj  = label_list_default;
     while ((obj != NULL) && (obj->id < *tempint)) obj = (obj->next);
     if ((obj != NULL) && (obj->id == *tempint))
@@ -1234,39 +1234,39 @@ void with_words_fromdict(Dict *in, with_words *out, const unsigned char MallocNe
                   &out->USEfillcolour,&out->USEfillcolour1234,&i,MallocNew);
 
   // Other settings
-  DictLookup(in,"linetype",NULL,(void **)&tempint);
+  DictLookup(in,"linetype",NULL,(void *)&tempint);
   if (tempint != NULL) { out->linetype = *tempint; out->USElinetype = 1; }
-  DictLookup(in,"linetype_string",NULL,(void **)&tempstr);
+  DictLookup(in,"linetype_string",NULL,(void *)&tempstr);
   if (tempstr != NULL) { if (!MallocNew) { out->STRlinetype       = tempstr; }
                          else            { out->STRlinetype       = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRlinetype      , tempstr); }
                        }
-  DictLookup(in,"linewidth",NULL,(void **)&tempdbl);
+  DictLookup(in,"linewidth",NULL,(void *)&tempdbl);
   if (tempdbl != NULL) { out->linewidth = *tempdbl; out->USElinewidth = 1; }
-  DictLookup(in,"linewidth_string",NULL,(void **)&tempstr);
+  DictLookup(in,"linewidth_string",NULL,(void *)&tempstr);
   if (tempstr != NULL) { if (!MallocNew) { out->STRlinewidth      = tempstr; }
                          else            { out->STRlinewidth      = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRlinewidth     , tempstr); }
                        }
-  DictLookup(in,"pointsize",NULL,(void **)&tempdbl);
+  DictLookup(in,"pointsize",NULL,(void *)&tempdbl);
   if (tempdbl != NULL) { out->pointsize = *tempdbl; out->USEpointsize = 1; }
-  DictLookup(in,"pointsize_string",NULL,(void **)&tempstr);
+  DictLookup(in,"pointsize_string",NULL,(void *)&tempstr);
   if (tempstr != NULL) { if (!MallocNew) { out->STRpointsize      = tempstr; }
                          else            { out->STRpointsize      = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRpointsize     , tempstr); }
                        }
-  DictLookup(in,"pointtype",NULL,(void **)&tempint);
+  DictLookup(in,"pointtype",NULL,(void *)&tempint);
   if (tempint != NULL) { out->pointtype = *tempint; out->USEpointtype = 1; }
-  DictLookup(in,"pointtype_string",NULL,(void **)&tempstr);
+  DictLookup(in,"pointtype_string",NULL,(void *)&tempstr);
   if (tempstr != NULL) { if (!MallocNew) { out->STRpointtype      = tempstr; }
                          else            { out->STRpointtype      = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRpointtype     , tempstr); }
                        }
-  DictLookup(in,"style_number",NULL,(void **)&tempint);
+  DictLookup(in,"style_number",NULL,(void *)&tempint);
   if (tempint != NULL) { out->style = *tempint; out->USEstyle = 1; }
-  DictLookup(in,"pointlinewidth",NULL,(void **)&tempdbl);
+  DictLookup(in,"pointlinewidth",NULL,(void *)&tempdbl);
   if (tempdbl != NULL) { out->pointlinewidth = *tempdbl; out->USEpointlinewidth = 1; }
-  DictLookup(in,"pointlinewidth_string",NULL,(void **)&tempstr);
+  DictLookup(in,"pointlinewidth_string",NULL,(void *)&tempstr);
   if (tempstr != NULL) { if (!MallocNew) { out->STRpointlinewidth = tempstr; }
                          else            { out->STRpointlinewidth = (char   *)XWWMALLOC(strlen(tempstr)+1); strcpy(out->STRpointlinewidth, tempstr); }
                        }
-  DictLookup(in,"style",NULL,(void **)&tempstr);
+  DictLookup(in,"style",NULL,(void *)&tempstr);
   if (tempstr != NULL)
    {
     i = FetchSettingByName(tempstr, SW_STYLE_INT, SW_STYLE_STR);

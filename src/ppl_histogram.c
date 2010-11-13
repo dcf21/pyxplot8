@@ -69,22 +69,22 @@ int directive_histogram(Dict *command)
   unsigned char logaxis, BinOriginSet;
 
   // Expand filename if it contains wildcards
-  DictLookup(command,"filename",NULL,(void **)(&cptr));
+  DictLookup(command,"filename",NULL,(void *)&cptr);
   if (cptr==NULL) ppl_error(ERR_INTERNAL, -1, -1, "File attribute not found in histogram command.");
   filename = ppl_glob_oneresult(cptr);
   if (filename == NULL) return 1;
 
   status=0;
-  DictLookup(command, "hist_function", NULL, (void **)&histfunc);   if (histfunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_histogram could not read name of function for output."); return 1; }
-  DictLookup(command, "index"        , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
-  DictLookup(command, "use_rows"     , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
-  DictLookup(command, "use_cols"     , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
-  DictLookup(command, "using_list:"  , NULL, (void **)&UsingList);
-  DictLookup(command, "every_list:"  , NULL, (void **)&EveryList);
-  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+  DictLookup(command, "hist_function", NULL, (void *)&histfunc);   if (histfunc == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_histogram could not read name of function for output."); return 1; }
+  DictLookup(command, "index"        , NULL, (void *)&indexptr);   if (indexptr == NULL) indexptr = &index;
+  DictLookup(command, "use_rows"     , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+  DictLookup(command, "use_cols"     , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+  DictLookup(command, "using_list:"  , NULL, (void *)&UsingList);
+  DictLookup(command, "every_list:"  , NULL, (void *)&EveryList);
+  DictLookup(command, "select_criterion", NULL, (void *)&SelectCrit);
 
-  DictLookup(command,"min",NULL,(void **)&xmin);
-  DictLookup(command,"max",NULL,(void **)&xmax);
+  DictLookup(command,"min",NULL,(void *)&xmin);
+  DictLookup(command,"max",NULL,(void *)&xmax);
   if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the histogram command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
 
   continuity = DATAFILE_CONTINUOUS;
@@ -134,7 +134,7 @@ int directive_histogram(Dict *command)
   qsort((void *)xdata, i, sizeof(double), __hcompare);
 
   // Work out whether we are constructing histogram in linear space or log space
-  DictLookup(command,"bin_list,",NULL,(void **)&templist); // Don't use log axis if bins are explicitly given to us
+  DictLookup(command,"bin_list,",NULL,(void *)&templist); // Don't use log axis if bins are explicitly given to us
   logaxis = ((templist == NULL) && (XAxes[1].log == SW_BOOL_TRUE)); // Read from axis x1
 
   // Filter out any values of x which are out-of-range
@@ -168,9 +168,9 @@ int directive_histogram(Dict *command)
   strcpy(output->filename , filename);
 
   // Now need to work out what bins we're going to use
-  DictLookup(command,"bin_list,",NULL,(void **)&templist);
-  DictLookup(command,"binwidth" ,NULL,(void **)&tempval1);
-  DictLookup(command,"binorigin",NULL,(void **)&tempval2);
+  DictLookup(command,"bin_list,",NULL,(void *)&templist);
+  DictLookup(command,"binwidth" ,NULL,(void *)&tempval1);
+  DictLookup(command,"binorigin",NULL,(void *)&tempval2);
   if (templist != NULL)
    {
     output->bins = (double *)malloc(ListLen(templist)*sizeof(double));
@@ -180,7 +180,7 @@ int directive_histogram(Dict *command)
     while (listiter != NULL)
      {
       tempdict = (Dict *)listiter->data;
-      DictLookup(tempdict,"x",NULL,(void **)&tempval1);
+      DictLookup(tempdict,"x",NULL,(void *)&tempval1);
       if (!ppl_units_DimEqual(&FirstEntry,tempval1)) { sprintf(temp_err_string, "The supplied bin boundary at x=%s has conflicting physical dimensions with the data supplied, which has units of <%s>. Ignoring this bin boundary.", ppl_units_GetUnitStr(tempval1,NULL,NULL,0,1,0), ppl_units_GetUnitStr(&FirstEntry,NULL,NULL,1,1,0)); ppl_warning(ERR_NUMERIC, temp_err_string); }
       else { output->bins[j++] = tempval1->real; }
       listiter = ListIterate(listiter, NULL);

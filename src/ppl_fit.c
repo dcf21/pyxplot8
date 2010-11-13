@@ -335,13 +335,13 @@ int directive_fit(Dict *command)
   FitComm       DataComm; // Structure which we fill with variables we need to pass to the minimiser
 
   // Expand filename if it contains wildcards
-  DictLookup(command,"filename",NULL,(void **)(&cptr));
+  DictLookup(command,"filename",NULL,(void *)&cptr);
   if (cptr==NULL) ppl_error(ERR_INTERNAL, -1, -1, "File attribute not found in fit command.");
   filename = ppl_glob_oneresult(cptr);
   if (filename == NULL) return 1;
 
   // Get list of fitting variables
-  DictLookup(command, "fit_variables," , NULL, (void **)&VarList);
+  DictLookup(command, "fit_variables," , NULL, (void *)&VarList);
   i = ListLen(VarList);
   DataComm.NFitVars = i;
   if ((i<0) || (i>USING_ITEMS_MAX)) { sprintf(temp_err_string,"The fit command must be supplied a list of between %d and %d free parameters to fit.", 1, USING_ITEMS_MAX); ppl_error(ERR_SYNTAX, -1, -1, temp_err_string); return 1; }
@@ -349,7 +349,7 @@ int directive_fit(Dict *command)
   for (j=0; j<i; j++)
    {
     TempDict = (Dict *)ListIter->data;
-    DictLookup(TempDict,"fit_variable",NULL,(void **)(FitVars+j)); // Read variable name into FitVars[j]
+    DictLookup(TempDict,"fit_variable",NULL,(void *)(FitVars+j)); // Read variable name into FitVars[j]
 
     // Look up variable in user space and get pointer to its value
     ppl_UserSpace_GetVarPointer(FitVars[j], &DummyVar, &DummyTemp);
@@ -358,34 +358,34 @@ int directive_fit(Dict *command)
    }
 
   // Get name of function to fit
-  DictLookup(command,"fit_function", NULL, (void **)&cptr);
+  DictLookup(command,"fit_function", NULL, (void *)&cptr);
   DataComm.FunctionName = cptr;
   if (cptr   ==NULL) ppl_error(ERR_INTERNAL, -1, -1, "Fitting function name not found in fit command.");
-  DictLookup(_ppl_UserSpace_Funcs, cptr, NULL, (void **)&funcdef);
+  DictLookup(_ppl_UserSpace_Funcs, cptr, NULL, (void *)&funcdef);
   if (funcdef==NULL) { sprintf(temp_err_string,"No such function as '%s()'.",cptr); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); return 1; }
   NArgs = funcdef->NumberArguments;
 
   // Look up index , using , every modifiers to datafile reading
-  DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
-  DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
-  DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
-  DictLookup(command, "using_list:", NULL, (void **)&UsingList);
-  DictLookup(command, "every_list:", NULL, (void **)&EveryList);
-  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+  DictLookup(command, "index"      , NULL, (void *)&indexptr);   if (indexptr == NULL) indexptr = &index;
+  DictLookup(command, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+  DictLookup(command, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+  DictLookup(command, "using_list:", NULL, (void *)&UsingList);
+  DictLookup(command, "every_list:", NULL, (void *)&EveryList);
+  DictLookup(command, "select_criterion", NULL, (void *)&SelectCrit);
 
   // Work out how many columns of data we're going to read
   if ((UsingList==NULL) || (ListLen(UsingList) != NArgs+2)) NExpect = NArgs+1;
   else                                                      NExpect = NArgs+2; // Only expect weights to go with fitting data if using list has exactly the right length
 
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  DictLookup(command, "range_list", NULL, (void *)&RangeList);
   ListIter = ListIterateInit(RangeList);
   for (j=0; j<NExpect; j++) // Can have up to NArgs+2 ranges (argument values, desired expression value, and optional weight)
    if (ListIter == NULL) { min[j]=NULL; max[j]=NULL; }
    else
     {
      TempDict = (Dict *)ListIter->data;
-     DictLookup(TempDict,"min",NULL,(void **)(min+j));
-     DictLookup(TempDict,"max",NULL,(void **)(max+j));
+     DictLookup(TempDict,"min",NULL,(void *)(min+j));
+     DictLookup(TempDict,"max",NULL,(void *)(max+j));
      if ((min[j]!=NULL)&&(max[j]!=NULL)&&(!ppl_units_DimEqual(min[j],max[j]))) { sprintf(temp_err_string, "The minimum and maximum limits specified in range %ld in the fit command have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", j+1, ppl_units_GetUnitStr(min[j],NULL,NULL,0,1,0), ppl_units_GetUnitStr(max[j],NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
      ListIter = ListIterate(ListIter, NULL);
     }
@@ -487,7 +487,7 @@ int directive_fit(Dict *command)
    }
 
   // If 'withouterrors' is specified, stop now
-  DictLookup(command,"withouterrors", NULL, (void **)&cptr);
+  DictLookup(command,"withouterrors", NULL, (void *)&cptr);
   if (cptr != NULL)
    {
     lt_AscendOutOfContext(ContextLocalVec);

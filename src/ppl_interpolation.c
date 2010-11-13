@@ -89,33 +89,33 @@ int directive_interpolate(Dict *command, int mode)
   gsl_interp_accel      *accel     = NULL;
 
   // Expand filename if it contains wildcards
-  DictLookup(command,"filename",NULL,(void **)(&cptr));
+  DictLookup(command,"filename",NULL,(void *)&cptr);
   if (cptr==NULL) ppl_error(ERR_INTERNAL, -1, -1, "File attribute not found in interpolate command.");
   filename = ppl_glob_oneresult(cptr);
   if (filename == NULL) return 1;
 
   status=0;
-  DictLookup(command, "fit_function",NULL, (void **)&fitfunc);    if (fitfunc  == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_interpolation could not read name of function for output."); return 1; }
-  DictLookup(command, "index"      , NULL, (void **)&indexptr);   if (indexptr == NULL) indexptr = &index;
-  DictLookup(command, "use_rows"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
-  DictLookup(command, "use_cols"   , NULL, (void **)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
-  DictLookup(command, "using_list:", NULL, (void **)&UsingList);
-  DictLookup(command, "every_list:", NULL, (void **)&EveryList);
-  DictLookup(command, "select_criterion", NULL, (void **)&SelectCrit);
+  DictLookup(command, "fit_function",NULL, (void *)&fitfunc);    if (fitfunc  == NULL) { ppl_error(ERR_INTERNAL, -1, -1, "ppl_interpolation could not read name of function for output."); return 1; }
+  DictLookup(command, "index"      , NULL, (void *)&indexptr);   if (indexptr == NULL) indexptr = &index;
+  DictLookup(command, "use_rows"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_ROW;
+  DictLookup(command, "use_cols"   , NULL, (void *)&tempstr);    if (tempstr  != NULL) rowcol=DATAFILE_COL;
+  DictLookup(command, "using_list:", NULL, (void *)&UsingList);
+  DictLookup(command, "every_list:", NULL, (void *)&EveryList);
+  DictLookup(command, "select_criterion", NULL, (void *)&SelectCrit);
 
-  DictLookup(command, "range_list", NULL, (void **)&RangeList);
+  DictLookup(command, "range_list", NULL, (void *)&RangeList);
   if (RangeList == NULL) goto RANGES_DONE;
   ListIter = ListIterateInit(RangeList);
   if (ListIter == NULL) goto RANGES_DONE;
   TempDict = (Dict *)ListIter->data;
-  DictLookup(TempDict,"min",NULL,(void **)&xmin);
-  DictLookup(TempDict,"max",NULL,(void **)&xmax);
+  DictLookup(TempDict,"min",NULL,(void *)&xmin);
+  DictLookup(TempDict,"max",NULL,(void *)&xmax);
   if ((xmin!=NULL)&&(xmax!=NULL)&&(!ppl_units_DimEqual(xmin,xmax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the x axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(xmin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(xmax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
   ListIter = ListIterate(ListIter, NULL);
   if (ListIter == NULL) goto RANGES_DONE;
   TempDict = (Dict *)ListIter->data;
-  DictLookup(TempDict,"min",NULL,(void **)&ymin);
-  DictLookup(TempDict,"max",NULL,(void **)&ymax);
+  DictLookup(TempDict,"min",NULL,(void *)&ymin);
+  DictLookup(TempDict,"max",NULL,(void *)&ymax);
   if ((ymin!=NULL)&&(ymax!=NULL)&&(!ppl_units_DimEqual(ymin,ymax))) { sprintf(temp_err_string, "The minimum and maximum limits specified in the interpolate command for the y axis have conflicting physical dimensions. The former has units of <%s>, whilst the latter has units of <%s>.", ppl_units_GetUnitStr(ymin,NULL,NULL,0,1,0), ppl_units_GetUnitStr(ymax,NULL,NULL,1,1,0)); ppl_error(ERR_NUMERIC, -1, -1, temp_err_string); return 1; }
   ListIter = ListIterate(ListIter, NULL);
   if (ListIter != NULL) { ppl_error(ERR_SYNTAX, -1, -1, "Too many ranges have been supplied to the interpolate command. Only two are allowed: one for each ordinate."); return 1; }

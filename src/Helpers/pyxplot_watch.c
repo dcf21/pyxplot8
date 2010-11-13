@@ -197,7 +197,7 @@ Send comments, bug reports, feature requests and coffee supplies to:\n\
       for (j=0; j<GlobData.gl_pathc; j++)
        {
         if (stat(GlobData.gl_pathv[j], &StatInfo) != 0) continue; // Stat didn't work...
-        DictLookup(StatInfoDict, GlobData.gl_pathv[j], NULL, (void **)&StatInfoPtr);
+        DictLookup(StatInfoDict, GlobData.gl_pathv[j], NULL, (void *)&StatInfoPtr);
         if ((StatInfoPtr != NULL) && (StatInfoPtr->st_mtime >= StatInfo.st_mtime)) continue; // This file has not been modified lately
         DictAppendPtrCpy(StatInfoDict, GlobData.gl_pathv[j], (void *)&StatInfo, sizeof(struct stat), DATATYPE_VOID);
         DoneWork = 1;
