@@ -164,7 +164,7 @@ void eps_pie_YieldUpText(EPSComm *x)
         ppl_GetQuotedString(FormatString, label, 0, &k, 0, &l, temp_err_string, 1);
         if (l>=0) strcpy(label, "?");
        }
-      blk->text[j] = label;
+      if ((label==NULL)||(label[0]=='\0')) blk->text[j]=NULL;
       YIELD_TEXTITEM(label);
      }
     blk=blk->next;
@@ -324,7 +324,7 @@ void eps_pie_RenderEPS(EPSComm *x)
       for (j=0; j<blk->BlockPosition; j++)
        {
         size = fabs(blk->data_real[0 + Ncolumns*j].d) / pd->PieChart_total * 2 * M_PI; // Angular size of wedge
-        if ((blk->text[j]!=NULL)&&(blk->text[j][0]!='\0'))
+        if (blk->text[j]!=NULL)
          {
           int    ArrowType;
           double a = angle+size/2; // Central angle of wedge

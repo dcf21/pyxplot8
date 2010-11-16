@@ -166,7 +166,7 @@ void texify_quotedstring(char *in, int *end, char *out, int EvalStrings, int *st
     else if (in[i]=='{' ) { out[j++]='\\'; out[j++]=in[i]; }
     else if (in[i]=='}' ) { out[j++]='\\'; out[j++]=in[i]; }
     else if (in[i]=='#' ) { out[j++]='\\'; out[j++]=in[i]; }
-    else if (in[i]=='^' ) { strcpy(out+j, "\\^{}"); j+=strlen(out+j); }
+    else if (in[i]=='^' ) { strcpy(out+j, "\\verb|^|"); j+=strlen(out+j); }
     else if (in[i]=='~' ) { strcpy(out+j, "$\\sim$"); j+=strlen(out+j); }
     else if (in[i]=='<' ) { strcpy(out+j, "$<$"); j+=strlen(out+j); }
     else if (in[i]=='>' ) { strcpy(out+j, "$>$"); j+=strlen(out+j); }
@@ -452,7 +452,7 @@ void texify_algebra(char *in, int *end, char *out, int EvalStrings, int *status,
       else if ((in[i]=='|')                                ) strcpy(out+outpos, "|");
       else if ((in[i]=='<')                                ) strcpy(out+outpos, "< ");
       else if ((in[i]=='>')                                ) strcpy(out+outpos, "> ");
-      else if ((in[i]=='^')                                ) strcpy(out+outpos, "\\^{}");
+      else if ((in[i]=='^')                                ) strcpy(out+outpos, "\\wedge ");
       outpos += strlen(out+outpos);
       while (StatusRow[i]==7) i++; i--;
       LastItemContainedSuperscript = 0;
