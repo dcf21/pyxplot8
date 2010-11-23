@@ -1139,7 +1139,7 @@ void DataFile_FromFunctions(double *OrdinateRaster, unsigned char FlagParametric
   // Loop over ordinate values
   {
    int i, ilen = RasterLen, i2, i2len = SampleGrid ? RasterYLen : 1; long p=0;
-   for (i2=0; i2<i2len; i2++) for (i=0; i<ilen; i++, p++)
+   for (i2=0; i2<i2len; i2++,discontinuity=1) for (i=0; i<ilen; i++, p++)
    {
     OrdinateVar->real = OrdinateRaster[i];
     if (SampleGrid) OrdinateVar2->real = OrdinateYRaster[i2];
