@@ -105,7 +105,7 @@ void ppl_interp2d_eval(double *output, const settings_graph *sg, const double *i
   return;
  }
 
-void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *in, settings_axis *axis_x, settings_axis *axis_y, unsigned char SampleToEdge)
+void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *in, settings_axis *axis_x, settings_axis *axis_y, unsigned char SampleToEdge, int *XSizeOut, int *YSizeOut)
  {
   int        i, imax, j, jmax, ims, jms, c, k, TempContext;
   double    *indata, *MinList, *MaxList, *d[USING_ITEMS_MAX+4];
@@ -113,6 +113,8 @@ void ppl_interp2d_grid(DataTable **output, const settings_graph *sg, DataTable *
   DataBlock *blk;
   imax = (sg->SamplesXAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesX;
   jmax = (sg->SamplesYAuto == SW_BOOL_TRUE) ? sg->samples : sg->SamplesY;
+  *XSizeOut = imax;
+  *YSizeOut = jmax;
 
   // If input data is NULL, return NULL
   if (in==NULL) { *output=NULL; return; }

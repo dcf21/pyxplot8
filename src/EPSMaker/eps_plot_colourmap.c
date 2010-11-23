@@ -67,8 +67,8 @@
 void eps_plot_colourmap_YieldText(EPSComm *x, DataTable *data, settings_graph *sg, canvas_plotdesc *pd)
  {
   DataBlock     *blk;
-  int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
-  int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+  int            XSize = pd->GridXSize;
+  int            YSize = pd->GridYSize;
   int            i, j, k, l, Ncol;
   double         CMin, CMax, PhysicalLength, PhysicalLengthMajor, PhysicalLengthMinor;
   double         origin_x, origin_y, width, height, zdepth;
@@ -205,8 +205,8 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
  {
   double         scale_x, scale_y, scale_z;
   DataBlock     *blk;
-  int            XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
-  int            YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+  int            XSize = pd->GridXSize;
+  int            YSize = pd->GridYSize;
   int            i, j, c, cmax, errpos, Ncol, NcolsData;
   long           p;
   double         xo, yo, Lx, Ly, ThetaX, ThetaY, comp[4], CMin[4], CMax[4];

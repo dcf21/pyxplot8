@@ -67,6 +67,7 @@ typedef struct canvas_plotdesc {
  unsigned char           CRangeDisplay;
  double                  CMinFinal, CMaxFinal;
  settings_axis           C1Axis;
+ int                     GridXSize, GridYSize;
  double                  PieChart_total;
 } canvas_plotdesc;
 

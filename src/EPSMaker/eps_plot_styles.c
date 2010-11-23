@@ -1002,8 +1002,8 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
   else if ((style == SW_STYLE_SURFACE)&&(xrn==0)&&(yrn==0)&&(zrn==0)) // SURFACE
    {
     int  fill;
-    long XSize = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
-    long YSize = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+    int  XSize = pd->GridXSize;
+    int  YSize = pd->GridYSize;
     long X,Y; long j;
     double xap,yap,zap,theta_x,theta_y,theta_z,depth;
     double x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4;
@@ -1013,7 +1013,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
    if ((xap<0)||(xap>1)||(yap<0)||(yap>1)||(zap<0)||(zap>1)) continue; \
    if ( (!gsl_finite(XO))||(!gsl_finite(YO))||(!gsl_finite(ZO)) ) continue;
 
-    if (blk->BlockPosition != XSize * YSize)
+    if (blk->BlockPosition != ((long)XSize) * YSize)
      {
       ppl_error(ERR_INTERNAL,-1,-1,"Surface plot yielded data grid of the wrong size.");
      }
@@ -1024,7 +1024,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
        for (Y=0; Y<YSize-1; Y++)
         for (X=0; X<XSize-1; X++)
          {
-          j = X + Y*XSize;
+          j = X + Y*((long)XSize);
           eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns); // Work out style information for next point
           if (fill)
            {

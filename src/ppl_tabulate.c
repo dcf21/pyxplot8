@@ -458,8 +458,8 @@ int directive_tabulate(Dict *command, char *line)
          {
           NumberOfSamples = settings_graph_current.samples;
          } else {
-          NumberOfSamples  = settings_graph_current.SamplesX;
-          NumberOfSamples2 = settings_graph_current.SamplesY;
+          NumberOfSamples  = (settings_graph_current.SamplesXAuto==SW_BOOL_TRUE) ? settings_graph_current.samples : settings_graph_current.SamplesX;
+          NumberOfSamples2 = (settings_graph_current.SamplesYAuto==SW_BOOL_TRUE) ? settings_graph_current.samples : settings_graph_current.SamplesY;
          }
        }
 

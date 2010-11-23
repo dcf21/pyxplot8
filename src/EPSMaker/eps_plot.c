@@ -297,7 +297,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   Dict             *tempdict;
   char              errbuffer[LSTR_LENGTH];
   with_words        ww_default;
-  double           *ordinate_raster, size[3], ScreenSize[3], ScreenBearing[3];
+  double           *ordinate_raster, *ordinate2_raster, size[3], ScreenSize[3], ScreenBearing[3];
 
   axissets[0] = x->current->XAxes;
   axissets[1] = x->current->YAxes;
@@ -422,10 +422,27 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
    }
 
   // Make raster on which to evaluate parametric functions
-  ordinate_raster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
-  if (ordinate_raster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
-  if (x->current->settings.Tlog == SW_BOOL_TRUE) LogarithmicRaster(ordinate_raster, x->current->settings.Tmin.real, x->current->settings.Tmax.real, x->current->settings.samples);
-  else                                           LinearRaster     (ordinate_raster, x->current->settings.Tmin.real, x->current->settings.Tmax.real, x->current->settings.samples);
+  if (x->current->settings.USE_T_or_uv)
+   {
+    ordinate_raster  = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
+    ordinate2_raster = NULL;
+    if (ordinate_raster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
+    if (x->current->settings.Tlog == SW_BOOL_TRUE) LogarithmicRaster(ordinate_raster, x->current->settings.Tmin.real, x->current->settings.Tmax.real, x->current->settings.samples);
+    else                                           LinearRaster     (ordinate_raster, x->current->settings.Tmin.real, x->current->settings.Tmax.real, x->current->settings.samples);
+   }
+  else
+   {
+    int SX = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
+    int SY = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+
+    ordinate_raster  = (double *)lt_malloc(x->current->settings.SamplesX * sizeof(double));
+    ordinate2_raster = (double *)lt_malloc(x->current->settings.SamplesY * sizeof(double));
+    if ((ordinate_raster == NULL)||(ordinate2_raster == NULL)) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
+    if (x->current->settings.Ulog == SW_BOOL_TRUE) LogarithmicRaster(ordinate_raster , x->current->settings.Umin.real, x->current->settings.Umax.real, SX);
+    else                                           LinearRaster     (ordinate_raster , x->current->settings.Umin.real, x->current->settings.Umax.real, SX);
+    if (x->current->settings.Vlog == SW_BOOL_TRUE) LogarithmicRaster(ordinate2_raster, x->current->settings.Vmin.real, x->current->settings.Vmax.real, SY);
+    else                                           LinearRaster     (ordinate2_raster, x->current->settings.Vmin.real, x->current->settings.Vmax.real, SY);
+   }
 
   // Loop through all datasets
   pd = x->current->plotitems;
@@ -471,21 +488,63 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         if (pd->PersistentDataTable==NULL) DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, 0, &ErrCount);
         else                               x->current->plotdata[i] = pd->PersistentDataTable;
        } else {
-        double *special_raster = ordinate_raster;
-        int     Nsamples       = x->current->settings.samples;
-        value  *raster_unit    = &settings_graph_current.Tmin;
-        DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "t", NULL, NULL, &special_raster, &Nsamples);
+        double *special_raster, *special_raster2;
+        int     Nsamples      ,  Nsamples2, USE_T_or_uv;
+        value  *raster_unit   , *raster2_unit;
+
+        USE_T_or_uv = x->current->settings.USE_T_or_uv;
+        if (pd->TRangeSet) USE_T_or_uv = !pd->VRangeSet;
+
+        if (USE_T_or_uv)
+         {
+          special_raster  = ordinate_raster;
+          special_raster2 = NULL;
+          Nsamples        = x->current->settings.samples;
+          Nsamples2       = 0;
+          raster_unit     = &settings_graph_current.Tmin;
+          raster2_unit    = NULL;
+          DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "t", NULL, NULL, &special_raster, &Nsamples);
+         }
+        else
+         {
+          special_raster  = ordinate_raster;
+          special_raster2 = ordinate2_raster;
+          Nsamples        = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
+          Nsamples2       = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+          raster_unit     = &settings_graph_current.Umin;
+          raster2_unit    = &settings_graph_current.Vmin;
+          DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "u", NULL, NULL, &special_raster , &Nsamples );
+          DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "v", NULL, NULL, &special_raster2, &Nsamples2);
+         }
 
         if ((special_raster == ordinate_raster) && (pd->TRangeSet))
          {
-          special_raster = (double *)lt_malloc(x->current->settings.samples * sizeof(double));
+          int N;
+          if (USE_T_or_uv) N = x->current->settings.samples;
+          else             N = (x->current->settings.SamplesXAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesX;
+          special_raster = (double *)lt_malloc(N * sizeof(double));
           if (special_raster == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
-          if (x->current->settings.Tlog == SW_BOOL_TRUE) LogarithmicRaster(special_raster, pd->Tmin.real, pd->Tmax.real, x->current->settings.samples);
-          else                                           LinearRaster     (special_raster, pd->Tmin.real, pd->Tmax.real, x->current->settings.samples);
+
+          if ((USE_T_or_uv ? x->current->settings.Tlog : x->current->settings.Ulog)  == SW_BOOL_TRUE) LogarithmicRaster(special_raster, pd->Tmin.real, pd->Tmax.real, N);
+          else                                                                                        LinearRaster     (special_raster, pd->Tmin.real, pd->Tmax.real, N);
+          Nsamples = N;
+          raster_unit = &pd->Tmin;
+         }
+
+        if ((special_raster2 == ordinate2_raster) && (pd->VRangeSet))
+         {
+          int N;
+          N = (x->current->settings.SamplesYAuto==SW_BOOL_TRUE) ? x->current->settings.samples : x->current->settings.SamplesY;
+          special_raster2 = (double *)lt_malloc(N * sizeof(double));
+          if (special_raster2 == NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); *(x->status) = 1; return; }
+          if (x->current->settings.Vlog == SW_BOOL_TRUE) LogarithmicRaster(special_raster2, pd->Vmin.real, pd->Vmax.real, N);
+          else                                           LinearRaster     (special_raster2, pd->Vmin.real, pd->Vmax.real, N);
+          Nsamples2 = N;
+          raster2_unit = &pd->Vmin;
          }
 
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
-        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, NULL, 0, NULL, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+        DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, special_raster2, Nsamples2, raster2_unit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
        }
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
       else
@@ -509,7 +568,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
 
         ppl_interp2d_grid(x->current->plotdata+i, &x->current->settings, tmpdata,
                           &axissets[pd->axis1xyz][pd->axis1], &axissets[pd->axis2xyz][pd->axis2],
-                          (pd->ww_final.linespoints!=SW_STYLE_COLOURMAP)                          );
+                          (pd->ww_final.linespoints!=SW_STYLE_COLOURMAP), &pd->GridXSize, &pd->GridYSize);
        }
      }
     pd=pd->next; i++;
@@ -644,6 +703,8 @@ void eps_plot_SampleFunctions(EPSComm *x)
       if (!SampleGrid)
         DataFile_FromFunctions_CheckSpecialRaster(pd->functions, pd->NFunctions, "x", NULL, NULL, &SpecialRaster, &Nsamples);
       DataFile_FromFunctions(SpecialRaster, 0, Nsamples, &OrdinateAxis->DataUnit, OrdinateRaster2, OrdinateRasterLen2, (OrdinateAxis2==NULL)?NULL:&OrdinateAxis2->DataUnit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+      pd->GridXSize = Nsamples;
+      pd->GridYSize = OrdinateRasterLen2;
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
 
       // Update axes to reflect usage
