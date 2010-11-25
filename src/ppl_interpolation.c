@@ -53,13 +53,13 @@
 #define COUNTEDERR1 if (ErrCount > 0) { ErrCount--;
 #define COUNTEDERR2 if (ErrCount==0) { sprintf(temp_err_string, "%s: Too many errors: no more errors will be shown.",filename); ppl_warning(ERR_STACKED, temp_err_string); } }
 
-static long int __compare_offset;
+static double *CompareZeroPoint;
 
-static int __compare(const void *x, const void *y)
+static int InterpolateSorter(const void *x, const void *y)
  {
-  if      (*(((double *)x)+__compare_offset) > *(((double *)y)+__compare_offset)) return  1.0;
-  else if (*(((double *)x)+__compare_offset) < *(((double *)y)+__compare_offset)) return -1.0;
-  else                                                                            return  0.0;
+  if      (  *(CompareZeroPoint + (*((long *)x))) > *(CompareZeroPoint + (*((long *)y)))  ) return  1;
+  else if (  *(CompareZeroPoint + (*((long *)x))) < *(CompareZeroPoint + (*((long *)y)))  ) return -1;
+  else                                                                                      return  0;
  }
 
 int directive_interpolate(Dict *command, int mode)
@@ -274,10 +274,32 @@ RANGES_DONE:
     lt_AscendOutOfContext(ContextDataTab);
 
     // Sort data vectors according to x values
-    __compare_offset = -Nrows;
-    qsort((void *)ydata, i, sizeof(double), __compare);
-    __compare_offset = 0;
-    qsort((void *)xdata, i, sizeof(double), __compare);
+    {
+     long int *SortArray = (long int *)lt_malloc(2 * i * sizeof(long int));
+     long int *SortArrayI= SortArray + i;
+     long int j;
+     if (SortArray==NULL) { ppl_error(ERR_MEMORY, -1, -1, "Out of memory."); return 1; }
+     for (j=0; j<i; j++) SortArray[j]=j;
+
+     CompareZeroPoint = xdata;
+     qsort((void *)SortArray, i, sizeof(long int), InterpolateSorter);
+     for (j=0; j<i; j++) SortArrayI[SortArray[j]]=j;
+
+     for (j=0; j<i; j++)
+      {
+       double tmp,tmp2; long int tmp3;
+       tmp3            = SortArray[  j ];
+       if (tmp3==j) continue;
+       tmp             = xdata    [  j ];
+       xdata    [  j ] = xdata    [tmp3];
+       xdata    [tmp3] = tmp;
+       tmp2            = ydata    [  j ];
+       ydata    [  j ] = ydata    [tmp3];
+       ydata    [tmp3] = tmp2;
+       SortArray[SortArrayI[j]] = tmp3;
+       SortArrayI[tmp3]         = SortArrayI[j];
+      }
+    }
 
     // Filter out repeat values of x
     for (j=k=0; j<i; j++)
