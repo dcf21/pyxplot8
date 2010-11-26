@@ -449,6 +449,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
   i  = 0;
   while (pd != NULL)
    {
+    double *special_raster=NULL, *special_raster2=NULL;
+
     pd->TitleFinal=NULL;
     pd->TitleFinal_col=0;
     pd->TitleFinal_height = pd->TitleFinal_width = pd->TitleFinal_xpos = pd->TitleFinal_ypos = 0;
@@ -477,7 +479,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
        {
         int ll = ListLen(UsingList);
         if ((ll>=3)&&(ll<=6)) NExpect=ll; // Colour maps can take 3,4,5 or 6 columns of data
-        else if ((pd->function)&&(pd->NFunctions>=1)&&(pd->NFunctions<=4)) NExpect=pd->NFunctions+2;
+        else if ((pd->function)&&(pd->NFunctions>=3)&&(pd->NFunctions<=6)) NExpect=pd->NFunctions;
        }
 
       if (eps_plot_AddUsingItemsForWithWords(&pd->ww_final, &NExpect, &AutoUsingList, UsingList)) { *(x->status) = 1; return; } // Add extra using items for, e.g. "linewidth $3".
@@ -488,7 +490,6 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
         if (pd->PersistentDataTable==NULL) DataFile_read(x->current->plotdata+i, &status, errbuffer, pd->filename, pd->index, pd->UsingRowCols, UsingList, AutoUsingList, EveryList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, 0, &ErrCount);
         else                               x->current->plotdata[i] = pd->PersistentDataTable;
        } else {
-        double *special_raster, *special_raster2;
         int     Nsamples      ,  Nsamples2, USE_T_or_uv;
         value  *raster_unit   , *raster2_unit;
 
@@ -545,6 +546,8 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
 
         if (DEBUG) { sprintf(temp_err_string, "Reading data from parametric functions for dataset %d in plot item %d", i+1, x->current->id); ppl_log(temp_err_string); }
         DataFile_FromFunctions(special_raster, 1, Nsamples, raster_unit, special_raster2, Nsamples2, raster2_unit, x->current->plotdata+i, &status, errbuffer, pd->functions, pd->NFunctions, UsingList, AutoUsingList, pd->label, NExpect, pd->SelectCriterion, pd->continuity, (pd->ww_final.linespoints==SW_STYLE_BOXES)?"@":NULL, DATAFILE_DISCONTINUOUS, &ErrCount);
+        pd->GridXSize = Nsamples;
+        pd->GridYSize = Nsamples2;
        }
       if (status) { ppl_error(ERR_GENERAL, -1, -1, errbuffer); x->current->plotdata[i]=NULL; }
       else
@@ -558,7 +561,7 @@ void eps_plot_ReadAccessibleData(EPSComm *x)
        }
 
       // If plotting surface, colourmap or contourmap, resample data onto grid
-      if ((pd->ww_final.linespoints==SW_STYLE_SURFACE) || (pd->ww_final.linespoints==SW_STYLE_COLOURMAP) || (pd->ww_final.linespoints==SW_STYLE_CONTOURMAP))
+      if (((pd->ww_final.linespoints==SW_STYLE_SURFACE)&&(special_raster2==NULL)) || (pd->ww_final.linespoints==SW_STYLE_COLOURMAP) || (pd->ww_final.linespoints==SW_STYLE_CONTOURMAP))
        {
         DataTable *tmpdata = x->current->plotdata[i];
 
