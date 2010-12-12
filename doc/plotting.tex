@@ -713,6 +713,94 @@ intricate patterns.
 
 \subsection{Parametric Surfaces}
 
+It is possible to plot parametric surfaces in Cartesian coordinates. These are defined 
+through the three equations
+
+\begin{eqnarray*}
+x & = & f(u,v)  \\
+y & = & g(u,v)  \\
+z & = & h(u,v)  ,
+\end{eqnarray*}
+where $u$ and $v$ are the free parameters. As in the case of parametric curves, before plotting, 
+the range of the parameters might have to be defined. This is done by invoking the \texttt{set urange} 
+and \texttt{set vrange} commands. If no ranges are supplied by the user, they default to 
+$0\leq u,v \leq 1$. Optionally, the ranges can be stipulated in the plot itself. 
+The number of samples can be specified by issuing the \indcmdt{set sample grid 20x50}, 
+which would sample \texttt{urange} on 20, and \texttt{vrange} on 50 points. In order 
+to indicate that we are plotting a surface instead of a curve, the plot 
+command itself must contain the \texttt{3d} modifier before \texttt{parametric}, i.e., 
+it should read as 
+\begin{verbatim}
+plot 3d parametric u:v:cos(u+v) 
+\end{verbatim}
+
+\example{ex:torus}{Torus}{
+As a simple example, we will plot a torus, which is parametrised as 
+\begin{eqnarray*}
+x & = & (R + r\cos(v))\cos(u)  \\
+y & = & (R + r\cos(v))\sin(u)  \\
+z & = & r\sin(v)  ,
+\end{eqnarray*}
+where $u$, and $v$ run in the range $[0:2\pi]$, $R$ is the distance of the tube's centre from the centre 
+of the torus, and $r$ is the radius of the tube. 
+\nlscf
+\noindent{\tt R = 3}\newline
+\noindent{\tt r = 0.5}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt f(u,v) = (R+r*cos(v))*cos(u)}\newline
+\noindent{\tt g(u,v) = (R+r*cos(v))*sin(u)}\newline
+\noindent{\tt h(u,v) = r*sin(v)}\newline
+
+\noindent{\tt set urange [0:2*pi]}\newline
+\noindent{\tt set vrange [0:2*pi]}\newline
+\noindent{\tt set zrange [-2.5:2.5]}\newline
+
+\noindent{\tt set nokey}\newline
+\noindent{\tt set sample grid 50x20}\newline
+\noindent{\tt plot 3d parametric f(u,v):g(u,v):h(u,v) with surf fillcol blue}\newline
+\nlscf
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_torus}}	
+\nlscf
+}
+
+\example{ex:trefoil}{Trefoil knot}{
+As a simple example, we will plot a trefoil knot, which is the simplest non-trivial knot in topology. 
+Simply put, this means that it is not possible to untie the knot without cutting it. 
+If we are interested only in the curve, we could parametrise it as 
+ 
+\begin{eqnarray*}
+x & = & (2 + \cos(3t))\cos(2t)  \\
+y & = & (2 + \cos(3t))\sin(2t)  \\
+z & = & \sin(3t)  ,
+\end{eqnarray*}
+
+but this does not result in a surface. We can turn this into a solid body by making use of the 
+following three equations
+\begin{eqnarray*}
+x & = & \cos(2u)\cos(v) + r\cos(2u)(1.5+\sin(3u)/2)   \\
+y & = & \sin(2u)\cos(v) + r\sin(2u)(1.5+\sin(3u)/2) \\
+z & = & \sin(v)+R\cos(3u) ,
+\end{eqnarray*}
+where $u$, and $v$ run in the range $[0:2\pi]$, and $[-\pi:\pi]$, respectively, and $r$, and $R$ are related to the 
+size and thickness of the knot.  
+\nlscf
+\noindent{\tt R = 2}\newline
+\noindent{\tt r = 5}\newline
+\noindent{\tt set size square}\newline
+\noindent{\tt f(u,v) = cos(2*u)*cos(v) + r*cos(2*u)*(1.5+sin(3*u)/2)}\newline
+\noindent{\tt g(u,v) = sin(2*u)*cos(v) + r*sin(2*u)*(1.5+sin(3*u)/2)}\newline
+\noindent{\tt h(u,v) = sin(v)+R*cos(3*u)}\newline
+
+\noindent{\tt set urange [0:2*pi]}\newline
+\noindent{\tt set vrange [-pi:pi]}\newline
+
+\noindent{\tt set nokey}\newline
+\noindent{\tt set sample grid 150x20}\newline
+\noindent{\tt plot 3d parametric f(u,v):g(u,v):h(u,v) with surf fillcol blue}\newline
+\nlscf
+\centerline{\includegraphics[width=8cm]{examples/eps/ex_trefoil}}
+\nlscf
+}
 
 \section{Graph Legends}
 \index{keys}\index{legends}
