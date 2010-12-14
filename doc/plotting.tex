@@ -711,38 +711,59 @@ Other ratios of {\tt r1}:{\tt r2} such as $7:19$ and $5:19$ also produce
 intricate patterns.
 }
 
-\subsection{Parametric Surfaces}
+\subsection{Two-dimensional parametric surfaces}
 
-It is possible to plot parametric surfaces in Cartesian coordinates. These are defined 
-through the three equations
+PyXPlot can also plot datasets which can be parameterised in terms of two free
+parameters $u$ and $v$. This is most often useful in conjunction with the {\tt
+surface} plot style, allowing any $(u,v)$-surface to be plotted. However, it
+also works in conjunction with any other plot style, allowing, for example,
+$(u,v)$-grids of points to be constructed.
 
-\begin{eqnarray*}
-x & = & f(u,v)  \\
-y & = & g(u,v)  \\
-z & = & h(u,v)  ,
-\end{eqnarray*}
-where $u$ and $v$ are the free parameters. As in the case of parametric curves, before plotting, 
-the range of the parameters might have to be defined. This is done by invoking the \texttt{set urange} 
-and \texttt{set vrange} commands. If no ranges are supplied by the user, they default to 
-$0\leq u,v \leq 1$. Optionally, the ranges can be stipulated in the plot itself. 
-The number of samples can be specified by issuing the \indcmdt{set sample grid 20x50}, 
-which would sample \texttt{urange} on 20, and \texttt{vrange} on 50 points. In order 
-to indicate that we are plotting a surface instead of a curve, the plot 
-command itself must contain the \texttt{3d} modifier before \texttt{parametric}, i.e., 
-it should read as 
+As in the case of parametric lines above, the range of values that each free
+parameter should take must be specified. This can be done using the \indcmd{set
+urange}{\tt set urange} and \indcmd{set vrange}{\tt set vrange} commands. These
+commands also act to switch PyXPlot between one- and two-dimensional parametric
+function evaluation; whilst the {\tt set trange} command indicates that the
+next parametric function should be evaluated along a single raster of values of
+$t$, the {\tt set urange} and {\tt set vrange} commands indicate that a grid of
+$(u,v)$ values should be used. By default, the range of values used for $u$ and
+$v$ is $0\leq u,v \leq 1$.
+
+The number of samples to be taken can be specified using a command of the
+form\indcmd{set sample grid}
 \begin{verbatim}
-plot 3d parametric u:v:cos(u+v) 
+set sample grid 20x50
+\end{verbatim}
+which specifies that~20 different values of $u$ and~50 different values of $v$
+should be used, yielding a total of~1000 datapoints. The following example uses
+the {\tt lines} plot style to generate a sequence of cross-sections through a
+two-dimensional Gaussian surface:
+\begin{verbatim}
+set sample grid 20x20
+set urange [-1:1]
+set vrange [-1:1]
+f(u,v) = 0.4*exp(-(u**2+v**2)/0.2)
+plot parametric u:v+f(u,v) with l
+\end{verbatim}
+\centerline{\includegraphics[width=5cm]{examples/eps/ex_datagrid}}
+
+The ranges of values to use for $u$ and $v$ may alternatively be specified on a dataset-by-dataset
+basis within the plot command, as in the example
+\begin{verbatim}
+plot parametric [0:1][0:1] u:v , \
+     parametric [0:1] sin(t):cos(t)
 \end{verbatim}
 
 \example{ex:torus}{Torus}{
-As a simple example, we will plot a torus, which is parametrised as 
+In this example we plot a torus, which can be parametrised in terms of two
+free parameters $u$ and $v$ as
 \begin{eqnarray*}
 x & = & (R + r\cos(v))\cos(u)  \\
 y & = & (R + r\cos(v))\sin(u)  \\
 z & = & r\sin(v)  ,
 \end{eqnarray*}
-where $u$, and $v$ run in the range $[0:2\pi]$, $R$ is the distance of the tube's centre from the centre 
-of the torus, and $r$ is the radius of the tube. 
+where $u$ and $v$ both run in the range $[0:2\pi]$, $R$ is the distance of the
+tube's centre from the centre of the torus, and $r$ is the radius of the tube.
 \nlscf
 \noindent{\tt R = 3}\newline
 \noindent{\tt r = 0.5}\newline
@@ -764,25 +785,24 @@ of the torus, and $r$ is the radius of the tube.
 }
 
 \example{ex:trefoil}{Trefoil knot}{
-As a simple example, we will plot a trefoil knot, which is the simplest non-trivial knot in topology. 
-Simply put, this means that it is not possible to untie the knot without cutting it. 
-If we are interested only in the curve, we could parametrise it as 
- 
+In this example we plot a trefoil knot, which is the simplest non-trivial knot
+in topology.  Simply put, this means that it is not possible to untie the knot
+without cutting it.  The knot follows the line
 \begin{eqnarray*}
 x & = & (2 + \cos(3t))\cos(2t)  \\
 y & = & (2 + \cos(3t))\sin(2t)  \\
 z & = & \sin(3t)  ,
 \end{eqnarray*}
-
-but this does not result in a surface. We can turn this into a solid body by making use of the 
-following three equations
+but in this example we construct a tube around this line using the following
+parameterisation:
 \begin{eqnarray*}
 x & = & \cos(2u)\cos(v) + r\cos(2u)(1.5+\sin(3u)/2)   \\
 y & = & \sin(2u)\cos(v) + r\sin(2u)(1.5+\sin(3u)/2) \\
 z & = & \sin(v)+R\cos(3u) ,
 \end{eqnarray*}
-where $u$, and $v$ run in the range $[0:2\pi]$, and $[-\pi:\pi]$, respectively, and $r$, and $R$ are related to the 
-size and thickness of the knot.  
+where $u$ and $v$ run in the ranges $[0:2\pi]$ and $[-\pi:\pi]$ respectively,
+and $r$ and $R$ determine the size and thickness of the knot as in an analogous
+fashion to the previous example.
 \nlscf
 \noindent{\tt R = 2}\newline
 \noindent{\tt r = 5}\newline

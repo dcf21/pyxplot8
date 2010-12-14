@@ -1,4 +1,4 @@
-# EX_TREFOIL.PPL
+# EX_DATAGRID.PPL
 #
 # The code in this file is part of PyXPlot
 # <http://www.pyxplot.org.uk>
@@ -23,25 +23,20 @@
 
 # Call common initialisation script
 reset
-title = "ex_trefoil"
+title = "ex_datagrid"
 load "examples/fig_init.ppl"
-set term colour
+set num err quiet
 
 # Main body of figure script
-r = 5
-R = 2
-f(u,v) = cos(2*u)*cos(v) + r*cos(2*u)*(1.5+sin(3*u)/2)
-g(u,v) = sin(2*u)*cos(v) + r*sin(2*u)*(1.5+sin(3*u)/2)
-h(u,v) = sin(v)+R*cos(3*u)
-
-set urange [0:2*pi]
-set vrange [-pi:pi]
-
 set nokey
-set size 8 square
-set grid
-set sample grid 150x20
-plot 3d parametric f(u,v):g(u,v):h(u,v) with surf fillcol blue
+set size 7 square
+set sample grid 20x20
+set urange [-1:1]
+set vrange [-1:1]
+set xrange [-1.1:1.1]
+set xrange [-1.1:1.1]
+f(u,v) = 0.4*exp(-(u**2+v**2)/0.2)
+plot parametric u:v+f(u,v) with l
 
 # Call common cleanup script
 load "examples/fig_end.ppl"

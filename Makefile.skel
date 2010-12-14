@@ -39,7 +39,7 @@ CWD=$(shell pwd)
 VERSION_MAJ = 0
 VERSION_MIN = 8
 VERSION_REV = 4
-DATE    = ??/01/2011
+DATE    = 07/01/2011
 
 COMPILE = $(CC) -Wall -g `xml2-config --cflags` `gsl-config --cflags` -c -I $(CWD)/src
 LIBS    = $(LINK_FFTW) `xml2-config --libs` `gsl-config --libs` $(LINK_READLINE) -lz -lpng $(LINK_KPATHSEA) -lm

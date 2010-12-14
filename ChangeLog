@@ -1,4 +1,5 @@
-2011 Jan ??: PyXPlot 0.8.4
+2011 Jan  7: PyXPlot 0.8.4
+   - Two-dimensional parametric grid plotting implemented.
 	- Bugfix to the dots plot style; filled triangles replaces with filled
 	  circles.
    - Bugfix to linewidths used when drawing line icons on graph legends.
