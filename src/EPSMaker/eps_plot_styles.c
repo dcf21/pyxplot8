@@ -491,9 +491,6 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
   if ((style == SW_STYLE_POINTS) || (style == SW_STYLE_LINESPOINTS) || (style == SW_STYLE_STARS) || (style == SW_STYLE_DOTS)) // POINTS, DOTS, STARS
    {
-    double final_pointsize = pd->ww_final.pointsize;
-    if      (style == SW_STYLE_DOTS ) final_pointsize *=  0.05; // Dots are 1/20th size of points
-    else if (style == SW_STYLE_STARS) final_pointsize *= 12.0 ; // Stars are BIG
     last_colstr=NULL;
 
     blk = data->first;
@@ -501,6 +498,7 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
      {
       for (j=0; j<blk->BlockPosition; j++)
        {
+        double final_pointsize=0.0;
         eps_plot_GetPosition(&xpos, &ypos, &depth, &xap, &yap, &zap, NULL, NULL, NULL, ThreeDim, UUR(xn), UUR(yn), ThreeDim ? UUR(zn) : 0.0, a[xn], a[yn], a[zn], xrn, yrn, zrn, sg, origin_x, origin_y, scale_x, scale_y, scale_z, 0);
         if (!gsl_finite(xpos)) // Position of point is off side of graph
          {
@@ -510,6 +508,9 @@ int  eps_plot_dataset(EPSComm *x, DataTable *data, int style, unsigned char Thre
 
         // Work out style information for next point
         eps_plot_WithWordsFromUsingItems(&pd->ww_final, &blk->data_real[Ncolumns*j].d, Ncolumns);
+        final_pointsize = pd->ww_final.pointsize;
+        if      (style == SW_STYLE_DOTS ) final_pointsize *=  0.05; // Dots are 1/20th size of points
+        else if (style == SW_STYLE_STARS) final_pointsize *= 12.0 ; // Stars are BIG
         eps_core_SetColour(x, &pd->ww_final, 0);
         IF_NOT_INVISIBLE
          {
