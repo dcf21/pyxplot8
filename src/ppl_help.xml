@@ -281,6 +281,19 @@ arrow#from#x1,y1#to#x2,y2#with#twohead#linetype#2#colour#blue\\
 The arrow command has a twin, the line command, which has the same syntax, but uses the default arrow style of nohead, producing short line segments. All vector graphics objects placed on multiplot canvases receive unique identification numbers which count sequentially from one, and which may be listed using the list command. By reference to these numbers, they can be deleted and subsequently restored with the delete and undelete commands respectively. 
 
   </arrow>
+  <assert>
+
+assert#(#\labexpression\rab#|#version#(#\rab=#|#\lab#)#\labversion\rab#)\\#######[\laberror#message\rab]\\
+
+The assert command can be used to assert that a logical expression, such as x\rab0, is true. An error is reported if the expression is false, and optionally a string can be supplied to provide a more informative error message to the user: 
+
+assert#x\rab0\\assert#y\lab0#"y#must#be#less#than#zero."\\
+
+The assert command can also be used to test the version number of PyXPlot. It is possible to test either that the version is newer than or equal to a specific version, using the \rab= operator, or that it is older than a specific version, using the \lab operator, as demonstrated in the following examples: 
+
+assert#version#\rab=#0.8.2\\assert#version#\lab##0.8##"This#script#is#designed#for#PyXPlot#0.7"\\
+
+  </assert>
   <box>
 
 box#[#item#\labid\rab#]#at#\labx\rab,#\laby\rab#width#\labw\rab#height#\labh\rab\\#########[#rotate#\labr\rab#]#[#with#{\laboption\rab}#]\\\\box#[#item#\labid\rab#]#from#\labx1\rab,#\laby1\rab#to#\labx2\rab,#\laby2\rab\\#########[#rotate#\labr\rab#]#[#with#{\laboption\rab}#]\\
@@ -454,9 +467,9 @@ More details can be found in Section 5.6 of the Users' Guide.
 
 for#\labvariable\rab#=#\labstart\rab#to#\labend\rab#[step#\labstep\rab]\\##########################[loopname#\labloopname\rab]\\#"{"\\##...\\#"}"\\
 
-The for command executes a set of commands repeatedly, with a specified variable taking a different value on each iteration. The variable takes the value start on the first iteration, and increases by a fixed value step on each iteration; step may be negative if end \lab start. If step is not specified then a value of unity is assumed. The loop terminates when the variable exceeds or equals end; note that the loop is not executed with the variable equalling end. The following example prints the squares of the first five natural numbers: 
+The for command executes a set of commands repeatedly, with a specified variable taking a different value on each iteration. The variable takes the value start on the first iteration, and increases by a fixed value step on each iteration; step may be negative if end \lab start. If step is not specified then a value of unity is assumed. The loop terminates when the variable exceeds end. The following example prints the squares of the first five natural numbers: 
 
-for#i#=#1#to#6\\#{\\##print#i**2\\#}\\
+for#i#=#1#to#5\\#{\\##print#i**2\\#}\\
 
   </for>
   <foreach>
@@ -540,7 +553,7 @@ The image command allows graphical images to be inserted onto the current multip
 
 interpolate#(#akima#|#linear#|#loglinear#|#polynomial#|\\##############spline#|#stepwise#|\\##############2d#[(#bmp_r#|#bmp_g#|#bmp_b#)]#)\\############[\labrange#specification\rab]#\labfunction#name\rab"()"\\############'\labfilename\rab'\\############[#every#\labexpression\rab#{:\labexpression}#]\\############[#index#\labvalue\rab#]\\############[#select#\labexpression\rab#]\\############[#using#\labexpression\rab#{:\labexpression}#]\\
 
-The interpolate command can be used to generate a special function within PyXPlot's mathematical environment which interpolates a set of datapoints supplied from a datafile. Either one- or two-dimensional interpolation is possible. In the case of one-dimensional interpolation, various different types of interpolation are supported: linear interpolation, power law interpolation, polynomial interpolation, cubic spline interpolation and akima spline interpolation. Stepwise interpolation returns the value of the datapoint nearest to the requested point in argument space. The use of polynomial interpolation with large datasets is strongly discouraged, as polynomial fits tend to show severe oscillations between datapoints. Except in the case of stepwise interpolation, extrapolation is not permitted; if an attempt is made to evaluate an interpolated function beyond the limits of the datapoints which it interpolates, PyXPlot returns an error or value of not-a-number. In the case of two-dimensional interpolation, the type of interpolation to be used is set using the interpolate modifier to the set samples command, and may be changed at any time after the interpolation function has been created. The options available are nearest neighbour interpolation - which is the two-dimensional equivalent of stepwise interpolation, inverse square interpolation - which returns a weighted average of the supplied datapoints, using the inverse squares of their distances from the requested point in argument space as weights, and Monaghan Lattanzio interpolation, which uses the weighting function given in (Monaghan &amp; Lattanzio 1985).  These are selected as follows: 
+The interpolate command can be used to generate a special function within PyXPlot's mathematical environment which interpolates a set of datapoints supplied from a datafile. Either one- or two-dimensional interpolation is possible. In the case of one-dimensional interpolation, various different types of interpolation are supported: linear interpolation, power law interpolation, polynomial interpolation, cubic spline interpolation and akima spline interpolation. Stepwise interpolation returns the value of the datapoint nearest to the requested point in argument space. The use of polynomial interpolation with large datasets is strongly discouraged, as polynomial fits tend to show severe oscillations between datapoints. Except in the case of stepwise interpolation, extrapolation is not permitted; if an attempt is made to evaluate an interpolated function beyond the limits of the datapoints which it interpolates, PyXPlot returns an error or value of not-a-number. In the case of two-dimensional interpolation, the type of interpolation to be used is set using the interpolate modifier to the set samples command, and may be changed at any time after the interpolation function has been created. The options available are nearest neighbour interpolation - which is the two-dimensional equivalent of stepwise interpolation, inverse square interpolation - which returns a weighted average of the supplied datapoints, using the inverse squares of their distances from the requested point in argument space as weights, and Monaghan Lattanzio interpolation, which uses the weighting function  given in (Monaghan &amp; Lattanzio 1985). These are selected as follows: 
 
 set#samples#interpolate#NearestNeighbour\\set#samples#interpolate#InverseSquare\\set#samples#interpolate#MonaghanLattanzio\\
 
@@ -1021,15 +1034,17 @@ The setting contours is used to define the set of ordinate values for which cont
 
 set#c\labn\rabrange#[#\labrange\rab#]\\##############[#reversed#|#noreversed#]\\##############[#renormalise#|#norenormalise#]\\
 
-The set c\labn\rabrange command changes the range of ordinate values represented by different colours in the colourmap plot style, and in the case of the set c1range command, also by contours in the contourmap plot style. The value \labn\rab should be an integer in the range 1-4.
-
-Contour Maps
+The set c\labn\rabrange command changes the range of ordinate values represented by different colours in the colourmap plot style, and in the case of the set c1range command, also by contours in the contourmap plot style. The value \labn\rab should be an integer in the range 1-4. 
+    <Contour_Maps>
 
 The effect of the set c1range command upon the set of ordinate values for which contours are drawn in the contourmap plot style is dependent upon whether the set contours command has been supplied with a number of contours to draw, or a list of explicit ordinate values for which they should be drawn. In the latter case, the set c1range command has no effect. In the former case, the contours are evenly spaced, either linearly or logarithmically depending upon the state of the logscale c1 setting, between the minimum and maximum ordinate values supplied to the set c1range command. If an asterisk (*) is supplied in place of either the minimum and/or the maximum, then the range of values used is automatically scaled to fit the range of the data supplied. 
 
-Colour Maps
+    </Contour_Maps>
+    <Colour_Maps>
 
 The colour of each pixel in a colour map is determined by the colourmap setting, which should contain an expression of the form rgb(c1):(c2):(c3), specifying the components of a colour in either RGB, HSB or CMYK space, as a function of the variables c1, c2, c3 and c4. The colourmap plot style should be supplied with between three and six columns of data, the first two of which contain the x- and y-positions of points, and the remainder of which are used to set the values of the variables c1, c2, c3 and c4 when calculating the colour with which that point should be represented. If fewer than six columns of data are supplied, then not all of these variables will be set. The set c\labn\rabrange command is used to determine how the raw data values are mapped to the values of the variables c1-c4. If the norenormalise option is specified, then the raw values are passed directly to the expression. Otherwise, they are first scaled into the range zero to one. If an explicit range is specified to the set c\labn\rabrange command, then the upper limit of this range maps to the value one, and the lower limit maps to the value zero. This mapping is inverted if the reverse option is specified, such that the upper limit maps to zero, and the lower limit maps to one. If an asterisk (*) is supplied in place of either the upper and/or lower limit, then the range automatically scales to fit the data supplied. Intermediate values are scaled, either linearly or logarithmically, depending upon the state of the logscale c\labn\rab setting. For more details of the syntax of the range specifier, see the set xrange command. 
+
+    </Colour_Maps>
 
    </c1range>
    <data_style>
@@ -1214,7 +1229,7 @@ and
 
 unset#log#x1y2\\
 
-Optionally, a base may be specified at the end of the set logscale command, to produce axes labelled in logarithms of arbitrary bases. The default base is10. In addition to acting upon any combination of x-, y- and z-axes, the set logscale command may also be requested to set the c1, c2, c3, c4 and/or t axes to scale logarithmically. The first four of these options affect whether the colours on colour maps scale linearly or logarithmically with input ordinate values; see the set c\labn\rabrange command for more details. The last of these options specifies whether parametric functions are sampled linearly or logarithmically in the variable t; see the set trange command for more details. 
+Optionally, a base may be specified at the end of the set logscale command, to produce axes labelled in logarithms of arbitrary bases. The default base is10. In addition to acting upon any combination of x-, y- and z-axes, the set logscale command may also be requested to set the c1, c2, c3, c4, t, u and/or v axes to scale logarithmically. The first four of these options affect whether the colours on colour maps scale linearly or logarithmically with input ordinate values; see the set c\labn\rabrange command for more details. The final three of these options specifies whether parametric functions are sampled linearly or logarithmically in the variables t (one-dimensional), or u and v (two-dimensional); see the set trange, set urange and set vrange commands for more details. 
 
    </logscale>
    <multiplot>
@@ -1852,7 +1867,7 @@ set#notitle\\
    </title>
    <trange>
 
-set#trange#\labrange\rab\\
+set#trange#[\labrange\rab]#[reverse]\\
 
 The set trange command changes the range of the free parameter t used when generating parametric plots. For more details of the syntax of the range specifier, see the set xrange command. Note that t is not allowed to autoscale, and so the * character is not permitted in the specified range. 
 
@@ -1882,6 +1897,13 @@ and in the latter case using the following pair of commands:
 set#unit#display#prefix\\set#unit#display#noprefix\\
 
    </unit>
+   <urange>
+
+set#urange#[\labrange\rab]#[reverse]\\
+
+The set urange command changes the range of the free parameter u used when generating parametric plots sampled over grids of (u,v) values. For more details of the syntax of the range specifier, see the set xrange command. Note that u is not allowed to autoscale, and so the * character is not permitted in the specified range. Specifying the set urange command by itself specified that parametric plots should be sampled over two-dimensional grids of (u,v) values, rather than one-dimensional ranges of t values. 
+
+   </urange>
    <view>
 
 set#view#\labtheta\rab,#\labphi\rab\\
@@ -1906,6 +1928,13 @@ Additional commandline switches may also be provided after the name of the appli
 set#viewer#gv#--grayscale\\
 
    </viewer>
+   <vrange>
+
+set#vrange#[\labrange\rab]#[reverse]\\
+
+See the set urange command. 
+
+   </vrange>
    <width>
 
 set#width#\labvalue\rab\\
