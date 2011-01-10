@@ -273,22 +273,7 @@ else
  fi
 fi
 
-# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS GUNZIP
-
-echo $ECHO_N "Checking for gunzip            ............. $ECHO_C"
-whichout=`which gunzip 2> conf.stderr`
-rm -f conf.*
-if test "`echo $whichout | sed 's/\([a-z]*\).*/\1/'`" = "no" ; then whichout="" ; fi
-if test "$whichout" != "" ; then
- echo "YES"
- echo "GUNZIP_COMMAND=-D GUNZIP_COMMAND=\"\\\"${whichout} -c\\\"\"" >> Makefile
-else
- echo "NO"
- echo "GUNZIP_COMMAND=" >> Makefile
- echo "WARNING: Gunzip could not be found. Installation will proceed, but PyXPlot will not be able to plot .gz files." >&2
-fi
-
-# 17. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
+# 16. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBXML2 HEADERS
 
 echo $ECHO_N "Checking for libxml2-dev       ............. $ECHO_C"
 whichout=`which xml2-config 2> conf.stderr`
@@ -302,7 +287,7 @@ else
  exit
 fi
 
-# 18. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
+# 17. CHECK TO SEE WHETHER THIS SYSTEM HAS LIBPNG HEADERS
 
 echo $ECHO_N "Checking for libpng-dev        ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <png.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -316,7 +301,7 @@ else
  exit
 fi
 
-# 19. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
+# 18. CHECK TO SEE WHETHER THIS SYSTEM HAS KPATHSEA HEADERS
 
 echo $ECHO_N "Checking for libkpathsea-dev   ............. $ECHO_C"
 if printf '#include <stdlib.h>\n#include <stdio.h>\n#include <kpathsea/kpathsea.h>\nint main() { return 0; }\n' | gcc -x c - -o conf.out > conf.stdout 2> conf.stderr
@@ -345,7 +330,7 @@ else
  fi
 fi
 
-# 20. OUTPUT MAKEFILE
+# 19. OUTPUT MAKEFILE
 
 cat Makefile.skel >> Makefile
 
