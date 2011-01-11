@@ -59,10 +59,10 @@ int dviGetTFM(dviFontDetails *font)
   if (s==NULL) { ppl_error(ERR_MEMORY, -1, -1,"Out of memory"); return DVIE_MEMORY; }
   sprintf(s, "%s.tfm", font->name);
   TFMpath = ppl_kpse_wrap_find_tfm(s);
-  if (TFMpath==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Could not find TFM file"); return 1; }
+  if (TFMpath==NULL) { snprintf(errStr, SSTR_LENGTH, "Could not find TFM file '%s'. You may be able to fix this with a more complete installation of tex.", s); ppl_error(ERR_INTERNAL, -1, -1, errStr); return 1; }
   if (DEBUG) { sprintf(temp_err_string, "Font file %s: TFM path: %s", font->name, TFMpath); ppl_log(temp_err_string); }
   TFMfp = fopen(TFMpath, "r");
-  if (TFMfp==NULL) { ppl_error(ERR_INTERNAL, -1, -1,"Could not open TFM file"); return 1; }
+  if (TFMfp==NULL) { snprintf(errStr, SSTR_LENGTH, "Could not open TFM file '%s'. You may be able to fix this with a more complete installation of tex.", s); ppl_error(ERR_INTERNAL, -1, -1, errStr); return 1; }
   font->tfm = dviReadTFM(TFMfp, &err);
   fclose(TFMfp);
   if (err) return err;
