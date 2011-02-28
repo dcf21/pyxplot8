@@ -111,6 +111,21 @@ int main(int argc, char **argv)
   if (DEBUG) ppl_log("Setting up commandline parser from RE++ definitions.");
   ppl_commands_read();
 
+  // Set default terminal
+  EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
+  if      (strcmp(GHOSTVIEW_COMMAND, "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GV;
+  else if (strcmp(GGV_COMMAND      , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GGV;
+  else                                                 settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_NULL;
+  if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) ||
+                                                (EnvDisplay==NULL) ||
+                                                (EnvDisplay[0]=='\0') ||
+                                                (settings_term_default.viewer == SW_VIEWER_NULL) ||
+                                                (isatty(STDIN_FILENO) != 1)))
+   {
+    if (DEBUG) ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");
+    settings_term_current.TermType = settings_term_default.TermType = SW_TERMTYPE_EPS;
+   }
+
   // Initialise settings and read configuration file; do this BEFORE processing command line arguments which take precedence
   if (DEBUG) ppl_log("Reading configuration file.");
   ppl_settings_readconfig();
@@ -205,21 +220,6 @@ int main(int argc, char **argv)
     read_history(tempdirpath);
     stifle_history(1000);
 #endif
-
-    // Set default terminal
-    EnvDisplay = getenv("DISPLAY"); // Check whether the environment variable DISPLAY is set
-    if      (strcmp(GHOSTVIEW_COMMAND, "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GV;
-    else if (strcmp(GGV_COMMAND      , "/bin/false")!=0) settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_GGV;
-    else                                                 settings_term_current.viewer = settings_term_default.viewer = SW_VIEWER_NULL;
-    if ((ppl_termtype_set_in_configfile == 0) && ((WillBeInteractive==0) ||
-                                                  (EnvDisplay==NULL) ||
-                                                  (EnvDisplay[0]=='\0') ||
-                                                  (settings_term_default.viewer == SW_VIEWER_NULL) ||
-                                                  (isatty(STDIN_FILENO) != 1)))
-     {
-      if (DEBUG) ppl_log("Detected that we are running a non-interactive session; defaulting to the EPS terminal.");
-      settings_term_current.TermType = settings_term_default.TermType = SW_TERMTYPE_EPS;
-     }
 
     // Scan commandline and process all script files we have been given
     for (i=1; i<argc; i++)

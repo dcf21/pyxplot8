@@ -44,8 +44,8 @@
 
 // Pipes for communication between the main PyXPlot process and the CSP
 
-int PipeCSP2MAIN[2];
-int PipeMAIN2CSP[2];
+int PipeCSP2MAIN[2]={0,0};
+int PipeMAIN2CSP[2]={0,0};
 
 char PipeOutputBuffer[LSTR_LENGTH] = "";
 
@@ -160,6 +160,7 @@ void CheckForGvOutput()
 
 void SendCommandToCSP(char *cmd)
  {
+  if (PipeMAIN2CSP[1]==0) return; // Pipe has not yet been opened (Ooops).
   if (write(PipeMAIN2CSP[1], cmd, strlen(cmd)) != strlen(cmd)) ppl_error(ERR_INTERNAL, -1, -1, "Attempt to send a message to the CSP failed.");
   return;
  }
