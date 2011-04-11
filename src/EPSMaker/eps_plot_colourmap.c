@@ -263,6 +263,12 @@ int  eps_plot_colourmap(EPSComm *x, DataTable *data, unsigned char ThreeDim, int
     if (!gsl_finite(ThetaY)) ThetaY = 0.0;
    }
 
+  // Update bounding box
+  eps_core_BoundingBox(x, xo                                   , yo                                   , 0);
+  eps_core_BoundingBox(x, xo + Lx*sin(ThetaX)                  , yo + Lx*cos(ThetaX)                  , 0);
+  eps_core_BoundingBox(x, xo +                  Ly*sin(ThetaY) , yo +                  Ly*cos(ThetaY) , 0);
+  eps_core_BoundingBox(x, xo + Lx*sin(ThetaX) + Ly*sin(ThetaY) , yo + Lx*cos(ThetaX) + Ly*cos(ThetaY) , 0);
+
   // Populate bitmap image decriptor
   img.type     = BMP_COLOUR_BMP;
   img.colour   = BMP_COLOUR_RGB;
