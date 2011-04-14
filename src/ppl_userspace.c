@@ -585,7 +585,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     if ((in[pos]=='\\') && (in[pos+1]=='\\')) { FormatString[outpos++]='\\'; pos++; continue; }
     if ((in[pos]=='\\') && (in[pos+1]=='\'')) { FormatString[outpos++]='\''; pos++; continue; }
     if ((in[pos]=='\\') && (in[pos+1]=='\"')) { FormatString[outpos++]='\"'; pos++; continue; }
-    if (outpos>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
+    if (outpos>=LSTR_LENGTH-STR_MARGIN) { *errpos=1; sprintf(errtext, "String overflow."); return; }
     FormatString[outpos++] = in[pos];
    }
   FormatString[outpos] = '\0';
@@ -618,7 +618,7 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
   // See <http://www.cplusplus.com/reference/clibrary/cstdio/sprintf/>
   for (i=j=ArgCount=0; FormatString[i]!='\0'; i++)
    {
-    if (j>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
+    if (j>=LSTR_LENGTH-STR_MARGIN) { *errpos=pos; sprintf(errtext, "String overflow."); return; }
     if (FormatString[i]!='%') { out[j++] = FormatString[i]; continue; }
     k=i+1; // k looks ahead to see experimentally if syntax is right
     RequiredArgs =1; // Normal %f like tokens require 1 argument
@@ -634,8 +634,11 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     // We do not allow user to specify optional length flag, which could potentially be <hlL>
 
     for (l=0; AllowedFormats[l]!='\0'; l++) if (FormatString[k]==AllowedFormats[l]) break;
-    if ((AllowedFormats[l]=='\0') || ((AllowedFormats[l]=='%')&&(FormatString[k-1]!='%')) || (RequiredArgs > NFormatItems-ArgCount))
+    if (AllowedFormats[l]=='%') RequiredArgs=0;
+    if ((AllowedFormats[l]=='\0') || ((AllowedFormats[l]=='%')&&(FormatString[k-1]!='%')) )
      { out[j++] = FormatString[i]; continue; } // Have not got correct syntax for a format specifier
+    if (RequiredArgs > NFormatItems-ArgCount)
+     { *errpos=pos; sprintf(errtext, "Too few arguments supplied to string substitution operator"); return; } // Have run out of substitution arguments
 
     if (AllowedFormats[l]=='%')
      {
@@ -772,8 +775,10 @@ void ppl_GetQuotedString(char *in, char *out, int start, int *end, unsigned char
     j += strlen(out+j);
     i = k;
    }
-  if (j>=LSTR_LENGTH-STR_MARGIN) { *errpos=0; sprintf(errtext, "String overflow."); return; }
+  if (j>=LSTR_LENGTH-STR_MARGIN) { *errpos=pos; sprintf(errtext, "String overflow."); return; }
   out[j]  = '\0';
+  if (ArgCount != NFormatItems) { *errpos=pos; sprintf(errtext, "Too many arguments supplied to string substitution operator"); return; }
+
   *errpos = -1;
   if ((end!=NULL)&&(*end<0)) *end=pos+pos2+1;
   return;
