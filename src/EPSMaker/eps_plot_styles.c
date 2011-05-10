@@ -1091,14 +1091,15 @@ void eps_plot_LegendIcon(EPSComm *x, int i, canvas_plotdesc *pd, double xpos, do
   if ((style==SW_STYLE_POINTS) || (style==SW_STYLE_LINESPOINTS) || (style==SW_STYLE_STARS) || (style==SW_STYLE_DOTS))
    {
     double final_pointsize = pd->ww_final.pointsize;
-    if (style==SW_STYLE_DOTS) final_pointsize *= 0.05; // Dots are 1/20th size of points
+    if (style==SW_STYLE_DOTS ) final_pointsize *= 0.05; // Dots are 1/20th size of points
+    if (style==SW_STYLE_STARS) final_pointsize =  1;
     eps_core_SetColour(x, &pd->ww_final, 1);
     eps_core_SetLinewidth(x, EPS_DEFAULT_LINEWIDTH * pd->ww_final.pointlinewidth, 1, 0);
     IF_NOT_INVISIBLE
      {
       int pt = (pd->ww_final.pointtype-1) % N_POINTTYPES;
-      if (style==SW_STYLE_DOTS ) pt =  9; // Dots are always pt 9 (circle)
-      if (style==SW_STYLE_STARS) pt = 26; // Stars are always pt 26 (star)
+      if (style==SW_STYLE_DOTS ) pt = 16; // Dots are always pt 17 (circle)
+      if (style==SW_STYLE_STARS) pt = 24; // Stars are always pt 25 (star)
       while (pt<0) pt+=N_POINTTYPES;
       x->PointTypesUsed[pt] = 1;
       fprintf(x->epsbuffer, "/ps { %f } def %.2f %.2f pt%d\n", final_pointsize * EPS_DEFAULT_PS, xpos, ypos, pt+1);
