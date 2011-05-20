@@ -591,8 +591,8 @@ void ppl_units_init()
 
   ppl_unit_database[ppl_unit_pos].nameAs     = "ang"; // Angstrom
   ppl_unit_database[ppl_unit_pos].nameAp     = "ang";
-  ppl_unit_database[ppl_unit_pos].nameLs     = "\\A";
-  ppl_unit_database[ppl_unit_pos].nameLp     = "\\A";
+  ppl_unit_database[ppl_unit_pos].nameLs     = "\\AA";
+  ppl_unit_database[ppl_unit_pos].nameLp     = "\\AA";
   ppl_unit_database[ppl_unit_pos].nameFs     = "angstrom";
   ppl_unit_database[ppl_unit_pos].nameFp     = "angstroms";
   ppl_unit_database[ppl_unit_pos].quantity   = "length";

@@ -174,9 +174,10 @@ static unsigned char TestPointInside(FilledRegionHandle *fr, double X, double Y,
    if      (first_subpath) { fprintf(fr->x->epsbuffer, "newpath "); first_subpath=0; } \
    if      (first_point)   { fprintf(fr->x->epsbuffer, "%.2f %.2f moveto\n", X, Y); first_point=0; } \
    else                    { fprintf(fr->x->epsbuffer, "%.2f %.2f lineto\n", X, Y); } \
+   eps_core_BoundingBox(fr->x, X, Y, linewidth * EPS_DEFAULT_LINEWIDTH); \
  }
 
-static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPointList, int nac, char *EndText)
+static void OutputPath(FilledRegionHandle *fr, FilledRegionAxisCrossing *CrossPointList, int nac, char *EndText, double linewidth)
  {
   unsigned char face, sense, inside_ahead, FillSide, CurrentFace, first_point=1, first_subpath=1, fail=0;
   int i, inew, j, k, l, dir_x, dir_y;
@@ -439,13 +440,13 @@ void FilledRegion_Finish(FilledRegionHandle *fr, int linetype, double linewidth,
   // Output path
   if (DEBUG) { ppl_log("New filled region which crosses edge of clip region."); }
   if (DEBUG) { ppl_log("1. Fill it."); }
-  IF_NOT_INVISIBLE OutputPath(fr, CrossPointList, j, "eofill");
+  IF_NOT_INVISIBLE OutputPath(fr, CrossPointList, j, "eofill", linewidth);
   eps_core_SwitchFrom_FillColour(fr->x,1);
   if (!StrokeOutline) return;
   eps_core_SetLinewidth(fr->x, linewidth, linetype, 0.0);
   li = fr->points->first;
   if (DEBUG) { ppl_log("2. Stroke its outline."); }
-  IF_NOT_INVISIBLE OutputPath(fr, CrossPointList, j, "stroke");
+  IF_NOT_INVISIBLE OutputPath(fr, CrossPointList, j, "stroke", linewidth);
   return;
  }
 
