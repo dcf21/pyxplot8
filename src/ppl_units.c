@@ -263,14 +263,14 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
      if (UnitList[i]->UserSel == 0)
       for (j=UnitList[i]->MinPrefix; j<=UnitList[i]->MaxPrefix; j+=3)
        {
-        NewMagnitude = OldMagnitude / pow(10,j * UnitPow[i]);
+        NewMagnitude = OldMagnitude / pow(10,j);
         if ( (NewMagnitude >= 1) && ((NewMagnitude < PrefixBestVal) || (PrefixBestVal<1)) )
          { PrefixBestPos = i; BestPrefix = j; PrefixBestVal = NewMagnitude; }
        }
     if (PrefixBestPos>=0)
      {
-      in->real /= pow(10,BestPrefix * UnitPow[i]);
-      in->imag /= pow(10,BestPrefix * UnitPow[i]);
+      in->real /= pow(10,BestPrefix);
+      in->imag /= pow(10,BestPrefix);
       UnitPref[PrefixBestPos] = BestPrefix/3;
      }
    }
