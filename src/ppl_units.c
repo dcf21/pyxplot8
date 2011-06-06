@@ -248,8 +248,8 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
   for (i=0; i<Nunits; i++)
    if (UnitList[i]->UserSel)
     {
-     in->real /= pow(10,(UnitList[i]->UserSelPrefix-8)*3);
-     in->imag /= pow(10,(UnitList[i]->UserSelPrefix-8)*3);
+     in->real /= pow(10,(UnitList[i]->UserSelPrefix-8)*3 * UnitPow[i]);
+     in->imag /= pow(10,(UnitList[i]->UserSelPrefix-8)*3 * UnitPow[i]);
      UnitPref[i] = UnitList[i]->UserSelPrefix-8;
     }
 
@@ -263,14 +263,14 @@ void ppl_units_PrefixFix(value *in, unit **UnitList, double *UnitPow, int *UnitP
      if (UnitList[i]->UserSel == 0)
       for (j=UnitList[i]->MinPrefix; j<=UnitList[i]->MaxPrefix; j+=3)
        {
-        NewMagnitude = OldMagnitude / pow(10,j);
+        NewMagnitude = OldMagnitude / pow(10,j * UnitPow[i]);
         if ( (NewMagnitude >= 1) && ((NewMagnitude < PrefixBestVal) || (PrefixBestVal<1)) )
          { PrefixBestPos = i; BestPrefix = j; PrefixBestVal = NewMagnitude; }
        }
     if (PrefixBestPos>=0)
      {
-      in->real /= pow(10,BestPrefix);
-      in->imag /= pow(10,BestPrefix);
+      in->real /= pow(10,BestPrefix * UnitPow[i]);
+      in->imag /= pow(10,BestPrefix * UnitPow[i]);
       UnitPref[PrefixBestPos] = BestPrefix/3;
      }
    }
