@@ -56,7 +56,7 @@ foreach SeriesName in ("Ly","Ba","Pa","Br")
      {
       set label an "\parbox{5cm}{\footnotesize\center{\
         %s-$%s$\\newline $%d\to%d$\\newline %s\\newline}}" \
-        %(SeriesName,GreekLetter,n,m,wl) at wl,0.55+0.2*(m-n) \
+        %(SeriesName,GreekLetter,m,n,wl) at wl,0.55+0.2*(m-n) \
         hal centre val centre
      }
     an = an+1
