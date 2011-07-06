@@ -84,14 +84,23 @@ static int filecopy(const char *in, const char *out)
  }
 
 // Run ghostscript to convert postscript output into bitmap graphics
-#define BITMAP_TERMINAL_CLEANUP(X, Y) \
+#define BITMAP_TERMINAL_CLEANUP(X, Y, CanInvert) \
     if (system(temp_err_string) != 0) /* Run ghostscript */ \
      { ppl_error(ERR_GENERAL, -1, -1, "Error encountered whilst using " X " to generate " Y " output"); } \
     else \
      { \
-      if (filecopy(GSOutputTemp, comm.FinalFilename) != 0) /* Move ghostscript output to desire target file */ \
+      char *src = GSOutputTemp; \
+      if ((CanInvert) && (settings_term_current.TermInvert==SW_ONOFF_ON)) \
+       { \
+        sprintf(temp_err_string, "%s %s -negate %s", CONVERT_COMMAND, GSOutputTemp, GSOutputTemp2); \
+        if (system(temp_err_string) != 0) /* Run convert to negate image */ \
+         { ppl_error(ERR_GENERAL, -1, -1, "Error encountered whilst using ImageMagick to generate negated " Y " output"); } \
+        src = GSOutputTemp2; \
+        remove(GSOutputTemp); \
+       } \
+      if (filecopy(src, comm.FinalFilename) != 0) /* Move ghostscript output to desire target file */ \
        { sprintf(temp_err_string, "Could not write output to file '%s'", comm.FinalFilename); ppl_error(ERR_FILE, -1, -1, temp_err_string); } \
-      remove(GSOutputTemp);  /* Delete temporary files */ \
+      remove(src);  /* Delete temporary files */ \
      } \
     remove(comm.EPSFilename);
 
@@ -143,7 +152,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
  {
   int i, j, termtype, status=0, CSPCommand=0;
   static long TempFile_counter=0, TeXFile_counter=0;
-  char EPSFilenameTemp[FNAME_LENGTH], TeXFilenameTemp[FNAME_LENGTH], TitleTemp[FNAME_LENGTH], FinalFilenameTemp[FNAME_LENGTH], GSOutputTemp[FNAME_LENGTH];
+  char EPSFilenameTemp[FNAME_LENGTH], TeXFilenameTemp[FNAME_LENGTH], TitleTemp[FNAME_LENGTH], FinalFilenameTemp[FNAME_LENGTH];
+  char GSOutputTemp[FNAME_LENGTH], GSOutputTemp2[FNAME_LENGTH];
   wordexp_t WordExp;
   char *EnvDisplay;
   EPSComm comm;
@@ -211,7 +221,8 @@ void canvas_draw(unsigned char *unsuccessful_ops)
    }
 
   // Make GSOutputTemp a temporary file that ghostscript can spit data out to (with a shell-safe filename)
-  sprintf(GSOutputTemp, "%s%spyxplot_%d_%ld%s", settings_session_default.tempdir, PATHLINK, getpid(), TempFile_counter, (termtype==SW_TERMTYPE_GIF)?".gif":".tmp");
+  sprintf(GSOutputTemp , "%s%spyxplot_%d_%ld%s",  settings_session_default.tempdir, PATHLINK, getpid(), TempFile_counter, (termtype==SW_TERMTYPE_GIF)?".gif":".tmp");
+  sprintf(GSOutputTemp2, "%s%spyxplot_%d_%ld_%s", settings_session_default.tempdir, PATHLINK, getpid(), TempFile_counter, (termtype==SW_TERMTYPE_GIF)?".gif":".tmp");
 
   // Set up communications data structure for objects we are rendering
   comm.itemlist             = canvas_items;
@@ -331,7 +342,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
    {
     sprintf(temp_err_string, "%s %s -sDEVICE=pdfwrite -sOutputFile=%s %s",
         GHOSTSCRIPT_COMMAND, GHOSTSCRIPT_STANDARD_FLAGS, GSOutputTemp, comm.EPSFilename);
-    BITMAP_TERMINAL_CLEANUP("ghostscript", "pdf");
+    BITMAP_TERMINAL_CLEANUP("ghostscript", "pdf", 0);
    }
   else if (termtype==SW_TERMTYPE_PNG) // PNG terminal
    {
@@ -341,7 +352,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         (int)floor(settings_term_current.dpi),
         (settings_term_current.TermAntiAlias==SW_ONOFF_ON)?"-dGraphicsAlphaBits=4 -dTextAlphaBits=4":"-dGraphicsAlphaBits=0 -dTextAlphaBits=0",
         GSOutputTemp, comm.EPSFilename);
-    BITMAP_TERMINAL_CLEANUP("ghostscript", "png")
+    BITMAP_TERMINAL_CLEANUP("ghostscript", "png", 1)
    }
   else if (termtype==SW_TERMTYPE_JPG) // JPEG terminal
    {
@@ -350,7 +361,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         (int)floor(settings_term_current.dpi),
         (settings_term_current.TermAntiAlias==SW_ONOFF_ON)?"-dGraphicsAlphaBits=4 -dTextAlphaBits=4":"-dGraphicsAlphaBits=0 -dTextAlphaBits=0",
         GSOutputTemp, comm.EPSFilename);
-    BITMAP_TERMINAL_CLEANUP("ghostscript", "jpeg")
+    BITMAP_TERMINAL_CLEANUP("ghostscript", "jpeg", 1)
    }
   else if (termtype==SW_TERMTYPE_GIF) // GIF terminal
    {
@@ -360,7 +371,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         (settings_term_current.TermTransparent==SW_ONOFF_ON)?"-alpha activate":"-alpha deactivate",
         (settings_term_current.TermAntiAlias==SW_ONOFF_ON)?"-antialias":"+antialias",
         comm.EPSFilename, GSOutputTemp);
-    BITMAP_TERMINAL_CLEANUP("ImageMagick", "gif");
+    BITMAP_TERMINAL_CLEANUP("ImageMagick", "gif", 1);
    }
   else if (termtype==SW_TERMTYPE_BMP) // BMP terminal
    {
@@ -369,7 +380,7 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         (int)floor(settings_term_current.dpi),
         (settings_term_current.TermAntiAlias==SW_ONOFF_ON)?"-dGraphicsAlphaBits=4 -dTextAlphaBits=4":"-dGraphicsAlphaBits=0 -dTextAlphaBits=0",
         GSOutputTemp, comm.EPSFilename);
-    BITMAP_TERMINAL_CLEANUP("ghostscript", "bmp")
+    BITMAP_TERMINAL_CLEANUP("ghostscript", "bmp", 1)
    }
   else if (termtype==SW_TERMTYPE_TIF) // TIF terminal
    {
@@ -378,14 +389,14 @@ void canvas_draw(unsigned char *unsuccessful_ops)
         (int)floor(settings_term_current.dpi),
         (settings_term_current.TermAntiAlias==SW_ONOFF_ON)?"-dGraphicsAlphaBits=4 -dTextAlphaBits=4":"-dGraphicsAlphaBits=0 -dTextAlphaBits=0",
         GSOutputTemp, comm.EPSFilename);
-    BITMAP_TERMINAL_CLEANUP("ghostscript", "tif")
+    BITMAP_TERMINAL_CLEANUP("ghostscript", "tif", 1)
    }
   else if (termtype==SW_TERMTYPE_SVG) // SVG terminal
    {
     sprintf(temp_err_string, "%s %s -sDEVICE=svg -sOutputFile=%s %s > /dev/null 2> /dev/null",
         GHOSTSCRIPT_COMMAND, GHOSTSCRIPT_STANDARD_FLAGS,
         GSOutputTemp, comm.EPSFilename);
-    BITMAP_TERMINAL_CLEANUP("ghostscript", "svg")
+    BITMAP_TERMINAL_CLEANUP("ghostscript", "svg", 0)
    }
 
   // Return to user's current working directory
