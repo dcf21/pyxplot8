@@ -135,7 +135,7 @@ int loop_execute(cmd_chain *chain, int breakable, int returnable, int IterLevel)
     PPL_FLOWCTRL_BREAKABLE  = (breakable  || OldBreakable);
     PPL_FLOWCTRL_RETURNABLE = (returnable || OldReturnable);
     SetInputSourceLoop(chain);
-    line_ptr = FetchInputStatement("","");
+    line_ptr = FetchInputStatement("","",0);
     if (line_ptr == NULL) break;
     if (StrStrip(line_ptr,line_ptr)[0] != '\0') status = ProcessDirective(line_ptr, 0, IterLevel);
    }
@@ -171,7 +171,7 @@ int directive_do(Dict *command, int IterLevel)
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputStatement("do ... > ",".......> ");
+    cptr = FetchInputStatement("do ... > ",".......> ",1);
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error(ERR_SYNTAX, -1, -1, "Unterminated do clause."); return 1; }
    }
@@ -235,7 +235,7 @@ int directive_while(Dict *command, int IterLevel)
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputStatement("while .> ",".......> ");
+    cptr = FetchInputStatement("while .> ",".......> ",1);
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error(ERR_SYNTAX, -1, -1, "Unterminated while loop."); return 1; }
    }
@@ -314,7 +314,7 @@ int directive_for(Dict *command, int IterLevel)
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputStatement("for... > ",".......> ");
+    cptr = FetchInputStatement("for... > ",".......> ",1);
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error(ERR_SYNTAX, -1, -1, "Unterminated for loop."); return 1; }
    }
@@ -382,7 +382,7 @@ int directive_foreach(Dict *command, int IterLevel)
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputStatement("for... > ",".......> ");
+    cptr = FetchInputStatement("for... > ",".......> ",1);
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error(ERR_SYNTAX, -1, -1, "Unterminated for loop."); return 1; }
    }
@@ -602,7 +602,7 @@ int directive_ifelse(Dict *command, int state, int IterLevel) // state = 0 (don'
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputStatement("if ... > ",".......> ");
+    cptr = FetchInputStatement("if ... > ",".......> ",1);
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error(ERR_SYNTAX, -1, -1, "Unterminated if clause."); return 1; }
    }
@@ -717,7 +717,7 @@ int directive_subroutine(Dict *command, int IterLevel)
   // Fetch lines and add them into loop chain until we get a }
   while (status==0)
    {
-    cptr = FetchInputStatement("subrtne> ",".......> ");
+    cptr = FetchInputStatement("subrtne> ",".......> ",1);
     if (cptr!=NULL) loopaddline(&cmd_put, cptr, &bracegot, &bracelevel, &status);
     else            { ppl_error(ERR_SYNTAX, -1, -1, "Unterminated subroutine definition."); _lt_SetMemContext(MemContext); return 1; }
    }

@@ -39,7 +39,7 @@ extern char *InputLineAddBuffer;
 #endif
 
 void ClearInputSource(char *New, char *NewPos, char *NewAdd, char **Old, char **OldPos, char **OldAdd);
-char *FetchInputStatement(char *prompt1, char *prompt2);
+char *FetchInputStatement(char *prompt1, char *prompt2, int MacroSubst);
 
 #endif
 

@@ -96,7 +96,7 @@ void InteractiveSession()
       ppl_parser_bnreset();
       if (isatty(STDIN_FILENO) == 1) SetInputSourceReadline(&linenumber);
       else                           SetInputSourcePipe(&linenumber, "piped input");
-      line_ptr = FetchInputStatement("pyxplot> ",".......> ");
+      line_ptr = FetchInputStatement("pyxplot> ",".......> ",1);
       if (line_ptr == NULL) break;
       NestedConditionalDepth=0; // Reset nested conditional depth after SIGINT
       ProcessDirective(line_ptr, isatty(STDIN_FILENO), 0);
@@ -150,7 +150,7 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
   while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
     SetInputSourceFile(infile, &linenumber, filename_description);
-    line_ptr = FetchInputStatement("","");
+    line_ptr = FetchInputStatement("","",1);
     if (line_ptr == NULL) break;
     if (StrStrip(line_ptr,line_ptr)[0] != '\0')
      {
@@ -175,14 +175,9 @@ void ProcessPyXPlotScript(char *input, int IterLevel)
 
 int ProcessDirective(char *in, int interactive, int IterLevel)
  {
-  int   memcontext, i, is, j, l, breakable, k;
+  int   memcontext, i, breakable;
   int   status=0;
-  char  QuoteChar='\0';
-  char *DirectiveLinebuffer = NULL, *DirectiveLinebuffer2 = NULL;
-  char *expmac;
-  value *VarData = NULL;
   Dict *command;
-  FILE *SubstPipe;
   sigset_t sigs;
 
   static int interactive_last=0;
@@ -199,113 +194,11 @@ int ProcessDirective(char *in, int interactive, int IterLevel)
    {
     if ((interactive!=0) && (IterLevel == 0)) sigjmp_FromSigInt = &sigjmp_ToDirective;
 
-    // Do `` substitution
-    l = strlen(in+1);
-    DirectiveLinebuffer = (char *)lt_malloc(l*sizeof(char));
-
-    if (DirectiveLinebuffer==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
-    for (i=0, j=0, QuoteChar='\0'; in[i]!='\0'; i++)
-     {
-      if      ((QuoteChar=='\0') && (in[i]=='\'')                   ) QuoteChar = '\'';
-      else if ((QuoteChar=='\0') && (in[i]=='\"')                   ) QuoteChar = '\"';
-      else if ((QuoteChar=='\'') && (in[i]=='\'') && (in[i-1]!='\\')) QuoteChar = '\0';
-      else if ((QuoteChar=='\"') && (in[i]=='\"') && (in[i-1]!='\\')) QuoteChar = '\0';
-
-      if      ((QuoteChar=='\0') && (in[i]=='`' )                   )
-       {
-        is=++i;
-        for ( ; ((in[i]!='\0')&&(in[i]!='`')) ; i++);
-        if (in[i]!='`') { ppl_error(ERR_SYNTAX, -1, -1, "Mismatched `"); status=1; break; }
-        in[i]='\0';
-        if (DEBUG) { sprintf(temp_err_string, "Shell substitution with command '%s'.", in+is); ppl_log(temp_err_string); }
-        if ((SubstPipe = popen(in+is,"r"))==NULL)
-         {
-          sprintf(temp_err_string, "Could not spawl shell substitution command '%s'.", in+is); ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
-          status=1; break;
-         }
-        while ((!feof(SubstPipe)) && (!ferror(SubstPipe)))
-         {
-          if (l <= j)
-           {
-            char *new;
-            new = (char *)lt_malloc(l+LSTR_LENGTH);
-            if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
-            memcpy(new, DirectiveLinebuffer, l);
-            l+=LSTR_LENGTH;
-            DirectiveLinebuffer=new;
-           }
-          if (fscanf(SubstPipe,"%c",DirectiveLinebuffer + j) == EOF) break;
-          if (DirectiveLinebuffer[j] == '\n') DirectiveLinebuffer[j] = ' ';
-          if (DirectiveLinebuffer[j] != '\0') j++;
-         }
-        status = pclose(SubstPipe);
-        if (status != 0) break;
-       }
-      else
-       {
-        if (l <= j)
-         {
-          char *new;
-          new = (char *)lt_malloc(l+LSTR_LENGTH);
-          if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
-          memcpy(new, DirectiveLinebuffer, l);
-          l+=LSTR_LENGTH;
-          DirectiveLinebuffer=new;
-         }
-        DirectiveLinebuffer[j++] = in[i];
-       }
-     }
-    if (l <= j)
-     {
-      char *new;
-      new = (char *)lt_malloc(l+LSTR_LENGTH);
-      if (new==NULL) ppl_fatal(__FILE__,__LINE__,"Out of memory.");
-      memcpy(new, DirectiveLinebuffer, l);
-      l+=LSTR_LENGTH;
-      DirectiveLinebuffer=new;
-     }
-    DirectiveLinebuffer[j] = '\0';
-
-    // Substitute for macros
-    l                    = strlen(DirectiveLinebuffer);
-    expmac               = (char *)lt_malloc(l*sizeof(char));
-    DirectiveLinebuffer2 = (char *)lt_malloc(LSTR_LENGTH*sizeof(char));
-
-    for (i=0, k=0, QuoteChar='\0'; DirectiveLinebuffer[i]!='\0'; )
-     {
-      if      ((QuoteChar=='\0') && (DirectiveLinebuffer[i]=='\'')                       ) QuoteChar = '\'';
-      else if ((QuoteChar=='\0') && (DirectiveLinebuffer[i]=='\"')                       ) QuoteChar = '\"';
-      else if ((QuoteChar=='\'') && (DirectiveLinebuffer[i]=='\'') && (DirectiveLinebuffer[i-1]!='\\')) QuoteChar = '\0';
-      else if ((QuoteChar=='\"') && (DirectiveLinebuffer[i]=='\"') && (DirectiveLinebuffer[i-1]!='\\')) QuoteChar = '\0';
-
-      if ((DirectiveLinebuffer[i]!='@')||(QuoteChar!='\0'))
-       {
-        if (k>=LSTR_LENGTH-1) { ppl_error(ERR_SYNTAX, -1, -1, "Line length overflow."); break; }
-        DirectiveLinebuffer2[k++] = DirectiveLinebuffer[i++];
-       }
-      else
-       {
-        for (j=0, l=++i; (isalnum(DirectiveLinebuffer[l])) || (DirectiveLinebuffer[l]=='_'); ) expmac[j++] = DirectiveLinebuffer[l++];
-        expmac[j] = '\0';
-        DictLookup(_ppl_UserSpace_Vars, expmac, NULL, (void *)&VarData);
-        if (VarData == NULL) { sprintf(temp_err_string, "Undefined macro, \"%s\".", expmac); ppl_warning(ERR_SYNTAX, temp_err_string); DirectiveLinebuffer2[k++] = '@'; continue; }
-        if (VarData->string == NULL) { sprintf(temp_err_string, "Attempt to expand a macro, \"%s\", which is a numerical variable not a string.", expmac); ppl_warning(ERR_SYNTAX, temp_err_string); DirectiveLinebuffer2[k++] = '@'; continue; }
-        j=strlen(VarData->string);
-        i=l;
-        for (l=0; ((l<j)&&(k<LSTR_LENGTH-1)); l++)
-         {
-          DirectiveLinebuffer2[k++] = VarData->string[l];
-         }
-        if (k>=LSTR_LENGTH-1) { ppl_error(ERR_SYNTAX, -1, -1, "Line length overflow."); break; }
-       }
-     }
-    DirectiveLinebuffer2[k] = '\0';
-
     // Parse and execute command
     if (status==0)
      {
-      command = parse(DirectiveLinebuffer2, IterLevel);
-      if (command != NULL) status = ProcessDirective2(DirectiveLinebuffer2, command, interactive, memcontext, IterLevel);
+      command = parse(in, IterLevel);
+      if (command != NULL) status = ProcessDirective2(in, command, interactive, memcontext, IterLevel);
       else                 status = 1;
       // If command is NULL, we had a syntax error
      }
@@ -708,7 +601,7 @@ int directive_exec(Dict *command, int IterLevel)
   while ((PPL_SHELL_EXITING == 0) && (PPL_FLOWCTRL_BROKEN == 0) && (PPL_FLOWCTRL_CONTINUED == 0))
    {
     SetInputSourceString(strval, &i);
-    line_ptr = FetchInputStatement("","");
+    line_ptr = FetchInputStatement("","",1);
     if (line_ptr == NULL) break;
     if (StrStrip(line_ptr,line_ptr)[0] != '\0')
      {

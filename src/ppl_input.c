@@ -35,6 +35,7 @@
 
 #include "ppl_error.h"
 #include "ppl_flowctrl.h"
+#include "ppl_userspace.h"
 #include "pyxplot.h"
 
 #define INPUT_PIPE       101
@@ -189,11 +190,12 @@ void ClearInputSource(char *New, char *NewPos, char *NewAdd, char **Old, char **
   return;
  }
 
-char *FetchInputStatement(char *prompt1, char *prompt2)
+char *FetchInputStatement(char *prompt1, char *prompt2, int MacroSubst)
  {
   int   i, j;
   char *line = NULL;
   char  QuoteChar = '\0';
+  static char b[LSTR_LENGTH];
 
   if (InputLineBufferPos==NULL)
    {
@@ -240,26 +242,109 @@ char *FetchInputStatement(char *prompt1, char *prompt2)
      }
    }
 
-  // Cut comments off the ends of lines and split it on semicolons
-  line = InputLineBufferPos;
-  for (i=0; line[i]!='\0'; i++)
-   {
-    if      ((QuoteChar=='\0') && (line[i]=='\'')                     ) QuoteChar = '\'';
-    else if ((QuoteChar=='\0') && (line[i]=='\"')                     ) QuoteChar = '\"';
-    else if ((QuoteChar=='\0') && (line[i]=='`')                      ) QuoteChar = '`';
-    else if ((QuoteChar=='\'') && (line[i]=='\'') && (line[i-1]!='\\')) QuoteChar = '\0';
+#define LOOP_OVER_LINE \
+  for (i=0; line[i]!='\0'; i++) \
+   { \
+    if      ((QuoteChar=='\0') && (line[i]=='\'')                     ) QuoteChar = '\''; \
+    else if ((QuoteChar=='\0') && (line[i]=='\"')                     ) QuoteChar = '\"'; \
+    else if ((QuoteChar=='\'') && (line[i]=='\'') && (line[i-1]!='\\')) QuoteChar = '\0'; \
     else if ((QuoteChar=='\"') && (line[i]=='\"') && (line[i-1]!='\\')) QuoteChar = '\0';
+
+#define LOOP_END }
+
+  line = InputLineBufferPos;
+
+  // Cut comments off the ends of lines
+LOOP_OVER_LINE
+    else if ((QuoteChar=='\0') && (line[i]=='`')                      ) QuoteChar = '`';
+    else if ((QuoteChar=='`' ) && (line[i]=='`' ) && (line[i-1]!='\\')) QuoteChar = '\0';
+    else if ((QuoteChar=='\0') && (line[i]=='#' )                     ) break;
+LOOP_END
+  line[i] = '\0';
+
+  // Do ` ` substitution
+  if (MacroSubst)
+   {
+LOOP_OVER_LINE
+    else if ((QuoteChar=='\0') && (line[i]=='`'))
+     {
+      int is=++i, l=0, status;
+      FILE *SubstPipe;
+      for ( ; ((line[i]!='\0')&&(line[i]!='`')) ; i++);
+      if (line[i]!='`') { ppl_error(ERR_SYNTAX, -1, -1, "Mismatched `"); InputLineBufferPos = NULL; return NULL; }
+      line[i]='\0';
+      if (DEBUG) { sprintf(temp_err_string, "Shell substitution with command '%s'.", line+is); ppl_log(temp_err_string); }
+      if ((SubstPipe = popen(line+is,"r"))==NULL)
+       {
+        sprintf(temp_err_string, "Could not spawl shell substitution command '%s'.", line+is); ppl_error(ERR_GENERAL, -1, -1, temp_err_string);
+        InputLineBufferPos = NULL; return NULL;
+       }
+      while ((!feof(SubstPipe)) && (!ferror(SubstPipe)))
+       {
+        if (l >= LSTR_LENGTH) { sprintf(temp_err_string, "Input line length overflow during ` ` substitution."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); InputLineBufferPos = NULL; return NULL; }
+        if (fscanf(SubstPipe,"%c",b+l) == EOF) break;
+        if (b[l]=='\n') b[l] = ' ';
+        if (b[l]!='\0') l++;
+       }
+      status = pclose(SubstPipe);
+      if (status != 0) { sprintf(temp_err_string, "Command failure during ` ` substitution."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); InputLineBufferPos = NULL; return NULL; }
+      for (i++ ; line[i]!='\0' ; )
+       {
+        b[l++] = line[i++];
+        if (l >= LSTR_LENGTH-is) { sprintf(temp_err_string, "Input line length overflow during ` ` substitution."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); InputLineBufferPos = NULL; return NULL; }
+       }
+      b[l]='\0';
+      for (i=is-1, l=0 ; b[l]!='\0'; ) line[i++] = b[l++];
+      line[i]='\0';
+      i = is-1;
+     }
+LOOP_END
+   }
+
+  // Substitute for macros
+  if (MacroSubst)
+   {
+LOOP_OVER_LINE
+    else if ((QuoteChar=='\0') && (line[i]=='@'))
+     {
+      char end;
+      int is=++i,l=0;
+      value *VarData;
+      for ( ; (isalnum(line[i])) ; i++);
+      end=line[i] ; line[i]='\0';
+      DictLookup(_ppl_UserSpace_Vars, line+is, NULL, (void *)&VarData);
+      if (VarData == NULL) { sprintf(temp_err_string, "Undefined macro, \"%s\".", line+is); ppl_warning(ERR_SYNTAX, temp_err_string); line[i]=end; i=is; continue; }
+      if (VarData->string == NULL) { sprintf(temp_err_string, "Attempt to expand a macro, \"%s\", which is a numerical variable not a string.", line+is); ppl_warning(ERR_SYNTAX, temp_err_string); line[i]=end; i=is; continue; }
+      line[i]=end;
+      if ((l=strlen(VarData->string)) > LSTR_LENGTH-strlen(line)) { sprintf(temp_err_string, "Input line length overflow during macro substitution."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); InputLineBufferPos = NULL; return NULL; }
+      strcpy(b, VarData->string);
+      for ( ; line[i]!='\0' ; )
+       {
+        b[l++] = line[i++];
+        if (l >= LSTR_LENGTH-is) { sprintf(temp_err_string, "Input line length overflow during ` ` substitution."); ppl_error(ERR_GENERAL, -1, -1, temp_err_string); InputLineBufferPos = NULL; return NULL; }
+       }
+      b[l]='\0';
+      for (i=is-1, l=0 ; b[l]!='\0'; ) line[i++] = b[l++];
+      line[i]='\0';
+      i = is-1;
+     }
+LOOP_END
+   }
+
+  // Split line on semicolons
+LOOP_OVER_LINE
+    else if ((QuoteChar=='\0') && (line[i]=='`')                      ) QuoteChar = '`';
     else if ((QuoteChar=='`' ) && (line[i]=='`' ) && (line[i-1]!='\\')) QuoteChar = '\0';
     else if ((QuoteChar=='\0') && (line[i]==';' )                     )
      {
       line[i]='\0';
       if (line[i+1]=='\0') InputLineBufferPos = NULL;
       else                 InputLineBufferPos = line+i+1;
-      return line;
+      return line; // Return semi-colon separated portion of line; save rest for later
      }
-    else if ((QuoteChar=='\0') && (line[i]=='#' )                     ) break;
-   }
-  line[i] = '\0';
+LOOP_END
+
+  // Return final semi-colon separated portion of line
   InputLineBufferPos = NULL;
   return line;
  }

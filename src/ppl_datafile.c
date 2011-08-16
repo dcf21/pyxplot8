@@ -796,7 +796,7 @@ void DataFile_read(DataTable **output, int *status, char *errout, char *filename
   while (ReadFromCommandLine || ( (!ferror(filtered_input)) && (!feof(filtered_input)) ))
    {
     if (!ReadFromCommandLine) file_readline(filtered_input, linebuffer, LSTR_LENGTH);
-    else                      lineptr = FetchInputStatement("data ..> ",".......> ");
+    else                      lineptr = FetchInputStatement("data ..> ",".......> ",0);
 
     if (ReadFromCommandLine && (lineptr==NULL                                 )) break; // End of file reached
     if (ReadFromCommandLine && (strcmp(StrStrip(lineptr, linebuffer),"END")==0)) break;
