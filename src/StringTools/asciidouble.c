@@ -26,6 +26,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <gsl/gsl_math.h>
+
 /* GetFloat(): This gets a float from a string */
 
 double GetFloat(const char *str, int *Nchars)
@@ -36,6 +38,9 @@ double GetFloat(const char *str, int *Nchars)
   unsigned char negative = 0;
   int pos = 0;
   int pos2= 0;
+
+  if ((str[pos+0]=='n') && (str[pos+1]=='a') && (str[pos+2]=='n') && (str[pos+3]>='\0') && (str[pos+3]<=' ')) { if (Nchars!=NULL) *Nchars=3; return GSL_NAN; }
+  if ((str[pos+0]=='N') && (str[pos+1]=='A') && (str[pos+2]=='N') && (str[pos+3]>='\0') && (str[pos+3]<=' ')) { if (Nchars!=NULL) *Nchars=3; return GSL_NAN; }
 
   if      (str[pos] == '-') { negative = 1; pos++; }  /* Deal with negatives */
   else if (str[pos] == '+') {               pos++; }  /* Deal with e.g. 1E+09 */
@@ -75,6 +80,9 @@ int ValidFloat(const char *str, int *end)
   unsigned char past_decimal_point=0, had_number=0, expvalid=1;
   int pos = 0;
   int pos2= 0;
+
+  if ((str[pos+0]=='n') && (str[pos+1]=='a') && (str[pos+2]=='n') && (str[pos+3]>='\0') && (str[pos+3]<=' ')) { pos+=3; had_number=1; goto VALID_FLOAT_ENDED; }
+  if ((str[pos+0]=='N') && (str[pos+1]=='A') && (str[pos+2]=='N') && (str[pos+3]>='\0') && (str[pos+3]<=' ')) { pos+=3; had_number=1; goto VALID_FLOAT_ENDED; }
 
   if      (str[pos] == '-') { pos++; }  /* Deal with negatives */
   else if (str[pos] == '+') { pos++; }  /* Deal with e.g. 1E+09 */
