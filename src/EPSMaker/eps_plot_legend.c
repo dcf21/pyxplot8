@@ -163,14 +163,18 @@ void GraphLegend_YieldUpText(EPSComm *x)
  }
 
 #define LOOP_OVER_DATASETS \
+{\
+  int iDataSet=-1; /* iDataSet counts over all data sets, even ones that we skip because they have no data */\
   pd = x->current->plotitems; \
   while (pd != NULL) \
    { \
+    iDataSet++; \
     if ((pd->NoTitleSet) || (pd->TitleFinal==NULL) || (pd->TitleFinal[0]=='\0')) { pd=pd->next; continue; } /* no title set */
 
 #define END_LOOP_OVER_DATASETS \
     pd = pd->next; \
-   }
+   } \
+}
 
 // Lay out all of the items in the current legend with a maximum allowed column height of TrialHeight.
 void GraphLegend_ArrangeToHeight(EPSComm *x, double TrialHeight, double *AttainedHeight, int *Ncolumns, double *ColumnX, double *ColumnHeight, int *ColumnNItems)
@@ -204,7 +208,7 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
   double xoff=0, yoff=0;
   double ColumnX[MAX_LEGEND_COLUMNS], ColumnHeight[MAX_LEGEND_COLUMNS];
   double BestHeight, AttainedHeight, TrialHeight;
-  int    NDataSet, Ncolumns, ColumnNItems[MAX_LEGEND_COLUMNS];
+  int    Ncolumns, ColumnNItems[MAX_LEGEND_COLUMNS];
   double height1,height2,bb_left,bb_right,bb_top,bb_bottom,ab_left,ab_right,ab_top,ab_bottom;
   unsigned char hfixed=0, vfixed=0;
   canvas_plotdesc *pd;
@@ -386,7 +390,6 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
   END_LOOP_OVER_DATASETS;
 
   // Finally loop over all datasets to display legend items
-  NDataSet=0;
   LOOP_OVER_DATASETS
     int xyzaxis[3];
     settings_axis *a1, *a2, *a3, *axissets[3];
@@ -399,14 +402,13 @@ void GraphLegend_Render(EPSComm *x, double width, double height, double zdepth)
     xyzaxis[pd->axis1xyz] = 0;
     xyzaxis[pd->axis2xyz] = 1;
     xyzaxis[pd->axis3xyz] = 2;
-    eps_plot_LegendIcon(x, NDataSet, pd, pd->TitleFinal_xpos + MARGIN_HSIZE_LEFT/2, pd->TitleFinal_ypos - pd->TitleFinal_height/2, MARGIN_HSIZE_LEFT, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2]);
+    eps_plot_LegendIcon(x, iDataSet, pd, pd->TitleFinal_xpos + MARGIN_HSIZE_LEFT/2, pd->TitleFinal_ypos - pd->TitleFinal_height/2, MARGIN_HSIZE_LEFT, a1, a2, a3, xyzaxis[0], xyzaxis[1], xyzaxis[2]);
     pageno = x->LaTeXpageno++;
     with_words_zero(&ww,0);
     if (x->current->settings.TextColour > 0) { ww.colour = x->current->settings.TextColour; ww.USEcolour = 1; }
     else                                     { ww.Col1234Space = x->current->settings.TextCol1234Space; ww.colour1 = x->current->settings.TextColour1; ww.colour2 = x->current->settings.TextColour2; ww.colour3 = x->current->settings.TextColour3; ww.colour4 = x->current->settings.TextColour4; ww.USEcolour1234 = 1; }
     eps_core_SetColour(x, &ww, 1);
     IF_NOT_INVISIBLE canvas_EPSRenderTextItem(x, NULL, pageno, (pd->TitleFinal_xpos+MARGIN_HSIZE_LEFT)/M_TO_PS, (pd->TitleFinal_ypos - pd->TitleFinal_height/2)/ M_TO_PS, SW_HALIGN_LEFT, SW_VALIGN_CENT, x->CurrentColour, fs, 0.0, NULL, NULL);
-   NDataSet++;
   END_LOOP_OVER_DATASETS
   return;
  }
