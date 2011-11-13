@@ -120,7 +120,7 @@ you need to contact your system administrator.
 
 * Unpack the distributed .tar.gz:
 
-tar xvfz pyxplot_0.8.4.tar.gz
+tar xvfz pyxplot_0.8.5.tar.gz
 cd pyxplot
 
 * Run the installation script:
