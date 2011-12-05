@@ -93,7 +93,7 @@ void bmp_pngread(FILE *in, bitmap_data *image)
     else
      {
       if (DEBUG) ppl_log("PNG does not define a background colour");
-      background.red = background.green = background.blue = 0xff;  // Define background colour to be white
+      background.red = background.green = background.blue = background.gray = 0xff; // Define background colour to be white
       png_set_background(png_ptr,&background,PNG_BACKGROUND_GAMMA_FILE,0,1.0);
      }
    }
