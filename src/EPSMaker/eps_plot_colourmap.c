@@ -481,6 +481,9 @@ write_rgb: \
      break; \
    } \
 
+#ifdef FLATE_DISABLE
+if (img.TargetCompression==BMP_ENCODING_FLATE) img.TargetCompression=BMP_ENCODING_NULL;
+#endif
   COMPRESS_POSTSCRIPT_IMAGE;
 
   // Write out postscript image
@@ -640,6 +643,9 @@ int  eps_plot_colourmap_DrawScales(EPSComm *x, double origin_x, double origin_y,
 
          SET_RGB_COLOUR;
         }
+#ifdef FLATE_DISABLE
+if (img.TargetCompression==BMP_ENCODING_FLATE) img.TargetCompression=BMP_ENCODING_NULL;
+#endif
        COMPRESS_POSTSCRIPT_IMAGE;
 
        // Write postscript image
